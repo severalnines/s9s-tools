@@ -51,5 +51,6 @@ SUFFIXES = parser.h parser.cpp lexer.h lexer.cpp
 			-p $$(basename $@ parser.h) $<
 
 libs9s_a_SOURCES =        \
-	library.cpp
+	library.cpp           \
+	s9sstring.cpp         
 
