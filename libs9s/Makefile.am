@@ -53,5 +53,5 @@ SUFFIXES = parser.h parser.cpp lexer.h lexer.cpp
 libs9s_a_SOURCES =        \
 	library.cpp           \
 	s9sstring.cpp         \
-	s9svariant.cpp
-
+	s9svariant.cpp        \
+	s9svariantmap.cpp     
