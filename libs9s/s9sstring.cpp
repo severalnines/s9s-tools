@@ -152,6 +152,10 @@ S9sString::toULongLong(
     return defaultVal;
 }
 
+/**
+ * \param defaultVal the value to return when the conversion fails.
+ * \returns the string converted to a double.
+ */
 double
 S9sString::toDouble(
         const double defaultVal) const
@@ -163,6 +167,8 @@ S9sString::toDouble(
 }
 
 /**
+ * \returns the value of the string converted to a boolean.
+ *
  * This is the "official way" to convert a string to boolean. 
  */
 bool
@@ -208,6 +214,11 @@ S9sString::replace(
     }
 }
 
+/**
+ * \returns the string with the escaped special characters
+ *
+ * Replaces special characters with escaped version.
+ */
 S9sString
 S9sString::escape() const
 {
@@ -239,6 +250,8 @@ S9sString::escape() const
 }
 
 /**
+ * \returns the string with the replaced escape substrings.
+ *
  * Replaces escaped character notations (e.g. \n or \t) with the binary value
  * (e.g. ASCII 10 or 9).
  */
@@ -291,7 +304,10 @@ S9sString::unEscape() const
     return retval;
 }
 
-
+/**
+ * \param str the substring to find.
+ * \returns true if the string starts with the substring.
+ */
 bool
 S9sString::startsWith(
         const char *str) const
@@ -302,6 +318,10 @@ S9sString::startsWith(
     return strncmp(c_str(), str, strlen(str)) == 0;
 }
 
+/**
+ * \param ending the substring to find.
+ * \returns true if the string ends with the substring.
+ */
 bool 
 S9sString::endsWith(
         S9sString const &ending) const
@@ -316,6 +336,11 @@ S9sString::endsWith(
 }
 
 /**
+ * \param pWhitespace the string with all the characters considered as white
+ *   space characters.
+ * \returns the string with the wite space characters removed from the beginning
+ *   and the end.
+ *
  * Remove (or strip) leading and trailing characters.
  */
 S9sString 
