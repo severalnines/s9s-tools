@@ -30,7 +30,7 @@ class S9sVariant
         bool isInt() const { return m_type == Int; };
         bool isULongLong() const { return m_type == Ulonglong; };
         bool isDouble() const { return m_type == Double; };
-        int toInt() const;
+        int toInt(const int defaultValue = 0) const;
 
         bool isNumber() const { 
             return isInt() || isULongLong() || isDouble(); }; 

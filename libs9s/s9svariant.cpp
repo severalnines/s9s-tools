@@ -83,7 +83,8 @@ S9sVariant::toVariantMap() const
 }
 
 int
-S9sVariant::toInt() const
+S9sVariant::toInt(
+        const int defaultValue) const
 {
     if (m_type == Int)
     {
@@ -103,12 +104,10 @@ S9sVariant::toInt() const
     {
         // The integer value defaults to 0 as a global int variable would. You
         // can rely on this.
-        return 0;
+        return defaultValue;
     }
 
-    // more to come
-    //CMON_WARNING("TBD: convert %s to integer", STR(typeName()));
-    return 0;
+    return defaultValue;
 }
 
 

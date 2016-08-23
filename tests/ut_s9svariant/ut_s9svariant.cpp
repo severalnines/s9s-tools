@@ -42,6 +42,9 @@ UtS9sVariant::runTest(const char *testName)
 
     PERFORM_TEST(testConstruct, retval);
     PERFORM_TEST(testAssign,    retval);
+    PERFORM_TEST(testToDouble,  retval);
+    PERFORM_TEST(testToBoolean, retval);
+    PERFORM_TEST(testToInt,     retval);
 
     return retval;
 }
@@ -116,6 +119,87 @@ UtS9sVariant::testAssign()
     S9S_COMPARE(var4.toString(), std::string("a string"));
     S9S_COMPARE(var5.isInvalid(), false);
     S9S_COMPARE(var5.toString(), std::string("another string"));
+
+    return true;
+}
+
+/**
+ * Testing the toDouble() function.
+ */
+bool
+UtS9sVariant::testToDouble()
+{
+    S9S_COMPARE(S9sVariant(42.0).toDouble(), 42.0);
+    S9S_COMPARE(S9sVariant(42).toDouble(), 42.0);
+    S9S_COMPARE(S9sVariant(42ull).toDouble(), 42.0);
+    S9S_COMPARE(S9sVariant("42").toDouble(), 42.0);
+
+    return true;
+}
+
+bool
+UtS9sVariant::testToBoolean()
+{
+    S9S_COMPARE(S9sVariant("yes").toBoolean(), true);
+    S9S_COMPARE(S9sVariant("true").toBoolean(), true);
+    S9S_COMPARE(S9sVariant("on").toBoolean(), true);
+    S9S_COMPARE(S9sVariant("t").toBoolean(), true);
+
+    S9S_COMPARE(S9sVariant("no").toBoolean(), false);
+    S9S_COMPARE(S9sVariant("false").toBoolean(), false);
+    S9S_COMPARE(S9sVariant("off").toBoolean(), false);
+    S9S_COMPARE(S9sVariant("f").toBoolean(), false);
+    
+    S9S_COMPARE(S9sVariant(1).toBoolean(), true);
+    S9S_COMPARE(S9sVariant(10).toBoolean(), true);
+    
+    S9S_COMPARE(S9sVariant(0).toBoolean(), false);
+    
+    S9S_COMPARE(S9sVariant("yes").toBoolean(false), true);
+    S9S_COMPARE(S9sVariant("true").toBoolean(false), true);
+    S9S_COMPARE(S9sVariant("on").toBoolean(false), true);
+    S9S_COMPARE(S9sVariant("t").toBoolean(false), true);
+
+    S9S_COMPARE(S9sVariant("no").toBoolean(true), false);
+    S9S_COMPARE(S9sVariant("false").toBoolean(true), false);
+    S9S_COMPARE(S9sVariant("off").toBoolean(true), false);
+    S9S_COMPARE(S9sVariant("f").toBoolean(true), false);
+    
+    S9S_COMPARE(S9sVariant("1").toBoolean(false), true);
+    S9S_COMPARE(S9sVariant("10").toBoolean(false), true);
+    
+    S9S_COMPARE(S9sVariant("0").toBoolean(true), false);
+    
+    // An invalid variant defaults to false, and this should be used to simplify
+    // the code.
+    S9sVariant var1;
+    S9S_COMPARE(var1.toBoolean(), false);
+    return true;
+}
+
+/**
+ * Testing the toInt() method.
+ */
+bool
+UtS9sVariant::testToInt()
+{
+    // An invalid variant defaults to 0, and this should be used to simplify the
+    // code.
+    S9sVariant var1;
+    S9S_COMPARE(var1.toInt(), 0);
+    S9S_COMPARE(var1.toInt(3), 3);
+
+    var1 = 42.42;
+    S9S_COMPARE(var1.toInt(), 42);
+    S9S_COMPARE(var1.toInt(3), 42);
+    
+    var1 = 42ull;
+    S9S_COMPARE(var1.toInt(), 42);
+    S9S_COMPARE(var1.toInt(3), 42);
+    
+    var1 = "42";
+    S9S_COMPARE(var1.toInt(), 42);
+    S9S_COMPARE(var1.toInt(3), 42);
 
     return true;
 }

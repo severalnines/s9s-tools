@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <math.h>
 
 #define TERM_CLEAR_RIGHT "\033[0K"
 #define g_option_syntax_highlight true
@@ -493,3 +494,31 @@ S9sUnitTest::compare (
     return false;
 }
 
+bool
+S9sUnitTest::compare (
+        const char *fileName,
+        const int   lineNumber,
+        const char *varName,
+        double      value1,
+        double      value2)
+{
+    incrementChecks();
+
+    if (value1 == value2) {
+        return true;
+    } else if (fabs(value1 - value2) < 0.00001) {
+        return true;
+    }
+
+    printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
+    if (!m_errorString.empty())
+        printf("*** error         : %s\n", STR(m_errorString));
+    printf("*** expression    : %s\n", varName);
+    printf("*** required value: %g\n", value1);
+    printf("*** actual value  : %g\n", value2);
+    printf("\n");
+    fflush(stdout);
+
+    m_failedCounter++;
+    return false;
+}

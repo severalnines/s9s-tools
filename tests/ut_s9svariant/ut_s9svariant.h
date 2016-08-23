@@ -30,6 +30,9 @@ class UtS9sVariant : public S9sUnitTest
     protected:
         bool testConstruct();
         bool testAssign();
+        bool testToDouble();
+        bool testToBoolean();
+        bool testToInt();
 };
 
 
