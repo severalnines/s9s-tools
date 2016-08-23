@@ -41,6 +41,7 @@ UtS9sVariant::runTest(const char *testName)
     bool retval = true;
 
     PERFORM_TEST(testConstruct, retval);
+    PERFORM_TEST(testAssign,    retval);
 
     return retval;
 }
@@ -88,6 +89,37 @@ UtS9sVariant::testConstruct()
 
     return true;
 }
+
+/**
+ * Testing the assignment operator (operator=()).
+ */
+bool
+UtS9sVariant::testAssign()
+{
+    S9sVariant var1;
+    S9sVariant var2;
+    S9sVariant var3;
+    S9sVariant var4;
+    S9sVariant var5;
+    
+    var2 = 12;
+    var3 = true;
+    var4 = "a string";
+    var5 = std::string("another string");
+
+    S9S_COMPARE(var1.isInvalid(), true);
+    S9S_COMPARE(var2.isInvalid(), false);
+    S9S_COMPARE(var2.toInt(), 12);
+    S9S_COMPARE(var3.isInvalid(), false);
+    S9S_COMPARE(var3.toBoolean(), true);
+    S9S_COMPARE(var4.isInvalid(), false);
+    S9S_COMPARE(var4.toString(), std::string("a string"));
+    S9S_COMPARE(var5.isInvalid(), false);
+    S9S_COMPARE(var5.toString(), std::string("another string"));
+
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sVariant)
 
