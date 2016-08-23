@@ -86,46 +86,75 @@ int
 S9sVariant::toInt(
         const int defaultValue) const
 {
-    if (m_type == Int)
+    switch (m_type)
     {
-        return m_union.iVal;
-    } else if (m_type == Double)
-    {
-        return (int) m_union.dVal;
-    } else if (isString())
-    {
-        return toString().empty() ? 0 : atoi(toString().c_str());
-    } else if (m_type == Ulonglong)
-    {
-        // This is cheating, converting an ulonglong value to integer might
-        // cause data loss.
-        return (int) m_union.ullVal;
-    } else if (isInvalid())
-    {
-        // The integer value defaults to 0 as a global int variable would. You
-        // can rely on this.
-        return defaultValue;
+        case Invalid:
+            // The integer value defaults to 0 as a global int variable would.
+            // You can rely on this.
+            return defaultValue;
+
+        case String:
+            return toString().empty() ? defaultValue : atoi(toString().c_str());
+
+        case Int:
+            return m_union.iVal;
+
+        case Double:
+            return (int) m_union.dVal;
+
+        case Ulonglong:
+            // This is cheating, converting an ulonglong value to integer might
+            // cause data loss.
+            return (int) m_union.ullVal;
+
+        case Bool:
+            return m_union.bVal ? 1 : 0;
+
+        case Map:
+        case List:
+            return defaultValue;
     }
 
     return defaultValue;
 }
 
+/**
+ * \param defaultValue the value to be returned if the variant can't be
+ *   converted to unsigned long long.
+ * \returns the value in the variant converted to unsigned long long.
+ *
+ */
 ulonglong
 S9sVariant::toULongLong(
         ulonglong defaultValue) const
 {
-    if (m_type == Ulonglong)
-        return m_union.ullVal;
-    else if (m_type == Int)
-        return (ulonglong) m_union.iVal;
-    else if (m_type == Double)
-        return (ulonglong) m_union.dVal;
-    else if (m_type == String)
+    switch (m_type)
     {
-        if (toString().empty())
+        case Invalid:
             return defaultValue;
 
-        return strtoull(toString().c_str(), NULL, 0);
+        case Ulonglong:
+            return m_union.ullVal;
+
+        case Int:
+            return (ulonglong) m_union.iVal;
+
+        case Double:
+            return (ulonglong) m_union.dVal;
+
+        case String:
+            if (toString().empty())
+                return defaultValue;
+
+            return strtoull(toString().c_str(), NULL, 0);
+
+        case Bool:
+            return m_union.bVal ? 1ull : 0ull;
+
+        case Map:
+        case List:
+            // FIXME: This is not yet implemented.
+            return defaultValue;
     }
 
     return defaultValue;
@@ -333,7 +362,6 @@ S9sVariant::clear()
             break;
 
         case List:
-        case Array:
             // Not yet implemented.
             break;
     }

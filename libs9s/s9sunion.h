@@ -23,8 +23,7 @@ enum S9sBasicType
     Double,
     String,
     Map,
-    List,
-    Array,
+    List
 };
 
 union S9sUnion 
