@@ -46,4 +46,5 @@ stamp-h1
 *.swp
 tags
 tests/ut_library/ut_library
+tests/ut_s9sstring/ut_s9sstring
 y.tab.c

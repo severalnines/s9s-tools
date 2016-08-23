@@ -3,6 +3,7 @@
 #
 
 SUBDIRS =     	    \
-	ut_library
+	ut_library      \
+	ut_s9sstring
 
 
