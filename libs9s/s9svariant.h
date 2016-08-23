@@ -6,6 +6,8 @@
 #include "s9sunion.h"
 #include "S9sString"
 
+class S9sVariantMap;
+
 class S9sVariant
 {
     public:
@@ -17,10 +19,17 @@ class S9sVariant
         inline S9sVariant(const char *stringValue);
         inline S9sVariant(const std::string &stringValue);
         inline S9sVariant(const S9sString &stringValue);
+        S9sVariant(const S9sVariantMap &mapValue);
 
         virtual ~S9sVariant();
 
+        S9sString toString() const;
+        const S9sVariantMap &toVariantMap() const;
+
         void clear();
+
+    private:
+        static const S9sVariantMap sm_emptyMap;
 
     private:
         S9sBasicType    m_type;
@@ -91,3 +100,4 @@ S9sVariant::S9sVariant(
 {
     m_union.stringValue = new S9sString(stringValue);
 }
+
