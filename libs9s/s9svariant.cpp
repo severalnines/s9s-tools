@@ -4,7 +4,30 @@
 #include "s9svariant.h"
 #include "S9sVariantMap"
 
+#include <errno.h>
+#include <strings.h>
+#include <stdlib.h>
+
+#define DEBUG
+#include "s9sdebug.h"
+
 const S9sVariantMap S9sVariant::sm_emptyMap;
+
+S9sVariant::S9sVariant(
+        const S9sVariant &orig)
+{
+    m_type         = orig.m_type;
+    m_union        = orig.m_union;
+
+    if (m_type == String)
+    {
+        m_union.stringValue = new S9sString(*orig.m_union.stringValue);
+    } else if (m_type == Map)
+    {
+        m_union.mapValue = new S9sVariantMap(*orig.m_union.mapValue);
+    }
+}
+
 
 S9sVariant::S9sVariant(
         const S9sVariantMap &mapValue) :
@@ -19,6 +42,36 @@ S9sVariant::~S9sVariant()
     clear();
 }
 
+S9sVariant &
+S9sVariant::operator= (
+        const S9sVariant &rhs)
+{
+    if (this == &rhs)
+        return *this;
+
+    clear();
+
+    m_type         = rhs.m_type;
+    m_union        = rhs.m_union;
+    
+    switch (m_type)
+    {
+        case String:
+            m_union.stringValue = new S9sString(*rhs.m_union.stringValue);
+            break;
+
+        case Map:
+            m_union.mapValue = new S9sVariantMap(*rhs.m_union.mapValue);
+            break;
+
+        default:
+            /* nop */
+            break;
+    }
+    
+    return *this;
+}
+
         
 const S9sVariantMap &
 S9sVariant::toVariantMap() const
@@ -28,6 +81,114 @@ S9sVariant::toVariantMap() const
 
     return sm_emptyMap;
 }
+
+int
+S9sVariant::toInt() const
+{
+    if (m_type == Int)
+    {
+        return m_union.iVal;
+    } else if (m_type == Double)
+    {
+        return (int) m_union.dVal;
+    } else if (isString())
+    {
+        return toString().empty() ? 0 : atoi(toString().c_str());
+    } else if (m_type == Ulonglong)
+    {
+        // This is cheating, converting an ulonglong value to integer might
+        // cause data loss.
+        return (int) m_union.ullVal;
+    } else if (isInvalid())
+    {
+        // The integer value defaults to 0 as a global int variable would. You
+        // can rely on this.
+        return 0;
+    }
+
+    // more to come
+    //CMON_WARNING("TBD: convert %s to integer", STR(typeName()));
+    return 0;
+}
+
+
+/**
+ * If the value can not be converted to a double value this function will return
+ * 0.0.
+ */
+double
+S9sVariant::toDouble(
+        const double defaultValue) const
+{
+    double retval = defaultValue;
+
+    if (m_type == Double)
+    {
+        retval = m_union.dVal;
+    } else if (m_type == Int)
+    {
+        retval = double(m_union.iVal);
+    } else if (m_type == Ulonglong)
+    {
+        retval = double(m_union.ullVal);
+    } else if (m_type == String)
+    {
+        const S9sString &str = toString();
+        errno = 0;
+        retval = strtod(STR (str), NULL);
+        if (errno != 0)
+            return defaultValue;
+    }
+
+    return retval;
+}
+
+bool
+S9sVariant::toBoolean(
+        const bool defaultValue) const
+{
+    if (m_type == Bool)
+        return m_union.bVal;
+
+    if (isInvalid())
+        return defaultValue;
+
+    // From string
+    if (isString())
+    {
+        std::string trimmed = toString().trim();
+
+        if (trimmed.empty())
+            return false;
+        
+        if (!strcasecmp(trimmed.c_str(), "yes") ||
+            !strcasecmp(trimmed.c_str(), "true") ||
+            !strcasecmp(trimmed.c_str(), "on") ||
+            !strcasecmp(trimmed.c_str(), "t"))
+            return true;
+
+        if (!strcasecmp(trimmed.c_str(), "no") ||
+            !strcasecmp(trimmed.c_str(), "false") ||
+            !strcasecmp(trimmed.c_str(), "off") ||
+            !strcasecmp(trimmed.c_str(), "f"))
+            return false;
+
+        if (atoi(trimmed.c_str()) != 0) 
+            return true;
+        else 
+            return false;
+    } else if (m_type == Int)
+    {
+        return m_union.iVal != 0;
+    } else if (isNumber())
+    {
+        return toDouble() != 0.0;
+    }
+
+    // More to come.
+    return defaultValue;
+}
+
 
 /**
  * This is the simplest method of the toString() family. It returns a short, one
@@ -129,7 +290,6 @@ S9sVariant::toString() const
     return retval;
 }
 
-
 void
 S9sVariant::clear()
 {
@@ -141,13 +301,16 @@ S9sVariant::clear()
         case Ulonglong:
         case Double:
             // Nothing to do here.
+            break;
 
         case String:
             delete m_union.stringValue;
+            m_union.stringValue = NULL;
             break;
 
         case Map:
             delete m_union.mapValue;
+            m_union.mapValue = NULL;
             break;
 
         case List:

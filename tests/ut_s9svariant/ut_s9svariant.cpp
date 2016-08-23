@@ -40,14 +40,52 @@ UtS9sVariant::runTest(const char *testName)
 {
     bool retval = true;
 
-    PERFORM_TEST(test01, retval);
+    PERFORM_TEST(testConstruct, retval);
 
     return retval;
 }
 
+/**
+ * This test will check the various types of constructors the CmonVariant class
+ * have.
+ */
 bool
-UtS9sVariant::test01()
+UtS9sVariant::testConstruct()
 {
+    S9sVariant var1;
+    S9sVariant var2 = 12;
+    S9sVariant var3 = true;
+    S9sVariant var4 = "a string";
+    S9sVariant var5 = std::string("another string");
+
+    S9S_COMPARE(var1.isInvalid(), true);
+    S9S_COMPARE(var2.isInvalid(), false);
+    S9S_COMPARE(var2.toInt(), 12);
+    S9S_COMPARE(var3.isInvalid(), false);
+    S9S_COMPARE(var3.toBoolean(), true);
+    S9S_COMPARE(var4.isInvalid(), false);
+    S9S_COMPARE(var4.toString(), std::string("a string"));
+    S9S_COMPARE(var5.isInvalid(), false);
+    S9S_COMPARE(var5.toString(), std::string("another string"));
+
+    //
+    // Copy constructor...
+    //
+    S9sVariant var11(var1);
+    S9sVariant var12(var2);
+    S9sVariant var13(var3);
+    S9sVariant var14(var4);
+    S9sVariant var15(var5);
+    S9S_COMPARE(var11.isInvalid(), true);
+    S9S_COMPARE(var12.isInvalid(), false);
+    S9S_COMPARE(var12.toInt(), 12);
+    S9S_COMPARE(var13.isInvalid(), false);
+    S9S_COMPARE(var13.toBoolean(), true);
+    S9S_COMPARE(var14.isInvalid(), false);
+    S9S_COMPARE(var14.toString(), std::string("a string"));
+    S9S_COMPARE(var15.isInvalid(), false);
+    S9S_COMPARE(var15.toString(), std::string("another string"));
+
     return true;
 }
 

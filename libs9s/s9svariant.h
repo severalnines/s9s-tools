@@ -12,6 +12,7 @@ class S9sVariant
 {
     public:
         inline S9sVariant();
+        S9sVariant(const S9sVariant &orig);
         inline S9sVariant(const int integerValue);
         inline S9sVariant(const ulonglong ullValue);
         inline S9sVariant(double doubleValue);
@@ -23,6 +24,20 @@ class S9sVariant
 
         virtual ~S9sVariant();
 
+        S9sVariant &operator=(const S9sVariant &rhs);
+
+        bool isInvalid() const { return m_type == Invalid; };
+        bool isInt() const { return m_type == Int; };
+        bool isULongLong() const { return m_type == Ulonglong; };
+        bool isDouble() const { return m_type == Double; };
+        int toInt() const;
+
+        bool isNumber() const { 
+            return isInt() || isULongLong() || isDouble(); }; 
+        bool isString() const { return m_type == String; };
+
+        bool toBoolean(const bool defaultValue = false) const;
+        double toDouble(const double defaultValue = 0.0) const;
         S9sString toString() const;
         const S9sVariantMap &toVariantMap() const;
 
