@@ -6,7 +6,7 @@
 #include "S9sString"
 #include "S9sMap"
 
-#define CMON_UNIT_TEST_MAIN(classname) \
+#define S9S_UNIT_TEST_MAIN(classname) \
 int main (int argc, char *argv[]) \
 {\
     classname object; \
@@ -14,14 +14,14 @@ int main (int argc, char *argv[]) \
     return retval;\
 }
 
-#define CMON_COMPARE(actual,required) \
+#define S9S_COMPARE(actual,required) \
     { \
         if (!compare(__FILE__, __LINE__, #actual, required, actual)) \
             return false; \
     }
 
-#define CMON_VERIFY(value) \
-    CMON_COMPARE(value, true)
+#define S9S_VERIFY(value) \
+    S9S_COMPARE(value, true)
 
 #define PERFORM_TEST(functionName,resultvariable) \
 { \

@@ -41,16 +41,28 @@ UtS9sString::runTest(const char *testName)
     bool retval = true;
 
     S9S_DEBUG(" *** running test: %s\n", testName ? testName: "all");
-    PERFORM_TEST(test01, retval);
+    PERFORM_TEST(testCreate, retval);
 
     return retval;
 }
 
+/**
+ * Testing the constructors.
+ */
 bool
-UtS9sString::test01()
+UtS9sString::testCreate()
 {
+    std::string  stdString("stdString");
+    S9sString   string1;
+    S9sString   string2 = "string2";
+    S9sString   string3 = stdString;
+
+    S9S_VERIFY(string1.empty());
+    S9S_VERIFY(string2 == "string2");
+    S9S_VERIFY(string3 == stdString);
+
     return true;
 }
 
-CMON_UNIT_TEST_MAIN(UtS9sString)
+S9S_UNIT_TEST_MAIN(UtS9sString)
 

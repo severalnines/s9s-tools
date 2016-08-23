@@ -27,7 +27,6 @@ class UtS9sString : public S9sUnitTest
         virtual bool runTest(const char *testName = 0);
     
     protected:
-
-        bool test01();
+        bool testCreate();
 };
 

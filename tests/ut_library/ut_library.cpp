@@ -52,4 +52,4 @@ UtLibrary::test01()
     return true;
 }
 
-CMON_UNIT_TEST_MAIN(UtLibrary)
+S9S_UNIT_TEST_MAIN(UtLibrary)
