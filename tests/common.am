@@ -6,6 +6,7 @@ AM_CPPFLAGS = -Wall -Werror -fno-strict-aliasing
 AM_CPPFLAGS += -Wno-deprecated-declarations
 AM_CPPFLAGS += -I../..
 AM_CPPFLAGS += -I../../libs9s/
+AM_CPPFLAGS += -I../common
 AM_CPPFLAGS += -I../../libs9s/include/
 AM_CPPFLAGS += -pipe
 
