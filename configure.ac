@@ -55,7 +55,8 @@ AC_CONFIG_FILES(Makefile                          \
                 s9s/Makefile                      \
                 tests/Makefile                    \
                 tests/ut_library/Makefile         \
-                tests/ut_s9sstring/Makefile
+                tests/ut_s9sstring/Makefile       \
+                tests/ut_s9svariant/Makefile      \
                )
 
 AC_OUTPUT

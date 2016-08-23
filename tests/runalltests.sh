@@ -68,6 +68,7 @@ sudo -n rm -rvf /var/tmp/ut_workflow/mysqldump/mysqldump_*
 
 runTest ut_library $@
 runTest ut_s9sstring $@
+runTest ut_s9svariant $@
 
 echo
 echo

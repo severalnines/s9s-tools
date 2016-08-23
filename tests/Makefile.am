@@ -4,6 +4,7 @@
 
 SUBDIRS =     	    \
 	ut_library      \
-	ut_s9sstring
+	ut_s9sstring    \
+	ut_s9svariant   
 
 

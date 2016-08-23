@@ -47,4 +47,5 @@ stamp-h1
 tags
 tests/ut_library/ut_library
 tests/ut_s9sstring/ut_s9sstring
+tests/ut_s9svariant/ut_s9svariant
 y.tab.c

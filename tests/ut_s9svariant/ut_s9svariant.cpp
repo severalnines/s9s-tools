@@ -17,18 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
-#include "s9sunittest.h"
+#include "ut_s9svariant.h"
 
-class UtLibrary : public S9sUnitTest
+#include "S9sVariant"
+#include <cstdio>
+#include <cstring>
+
+#define DEBUG
+#include "s9sdebug.h"
+
+UtS9sVariant::UtS9sVariant()
 {
-    public:
-        UtLibrary();
-        virtual ~UtLibrary();
-        virtual bool runTest(const char *testName = 0);
-    
-    protected:
+    S9S_DEBUG("");
+}
 
-        bool test01();
-};
+UtS9sVariant::~UtS9sVariant()
+{
+}
+
+bool
+UtS9sVariant::runTest(const char *testName)
+{
+    bool retval = true;
+
+    PERFORM_TEST(test01, retval);
+
+    return retval;
+}
+
+bool
+UtS9sVariant::test01()
+{
+    return true;
+}
+
+S9S_UNIT_TEST_MAIN(UtS9sVariant)
 

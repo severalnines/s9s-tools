@@ -20,15 +20,16 @@
 #pragma once
 #include "s9sunittest.h"
 
-class UtLibrary : public S9sUnitTest
+class UtS9sVariant : public S9sUnitTest
 {
     public:
-        UtLibrary();
-        virtual ~UtLibrary();
+        UtS9sVariant();
+        virtual ~UtS9sVariant();
         virtual bool runTest(const char *testName = 0);
     
     protected:
 
         bool test01();
 };
+
 
