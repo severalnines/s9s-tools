@@ -31,7 +31,8 @@ class S9sVariant
         bool isULongLong() const { return m_type == Ulonglong; };
         bool isDouble() const { return m_type == Double; };
         int toInt(const int defaultValue = 0) const;
-
+        ulonglong toULongLong(ulonglong defaultValue = 0ull) const;
+        
         bool isNumber() const { 
             return isInt() || isULongLong() || isDouble(); }; 
         bool isString() const { return m_type == String; };

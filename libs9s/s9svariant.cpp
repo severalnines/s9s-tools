@@ -110,6 +110,26 @@ S9sVariant::toInt(
     return defaultValue;
 }
 
+ulonglong
+S9sVariant::toULongLong(
+        ulonglong defaultValue) const
+{
+    if (m_type == Ulonglong)
+        return m_union.ullVal;
+    else if (m_type == Int)
+        return (ulonglong) m_union.iVal;
+    else if (m_type == Double)
+        return (ulonglong) m_union.dVal;
+    else if (m_type == String)
+    {
+        if (toString().empty())
+            return defaultValue;
+
+        return strtoull(toString().c_str(), NULL, 0);
+    }
+
+    return defaultValue;
+}
 
 /**
  * If the value can not be converted to a double value this function will return

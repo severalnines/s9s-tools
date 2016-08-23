@@ -522,3 +522,29 @@ S9sUnitTest::compare (
     m_failedCounter++;
     return false;
 }
+
+bool
+S9sUnitTest::compare (
+        const char *fileName,
+        const int   lineNumber,
+        const char *varName,
+        const unsigned long long value1,
+        const unsigned long long value2)
+{
+    incrementChecks();
+
+    if (value1 == value2)
+        return true;
+
+    printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
+    if (!m_errorString.empty())
+        printf("*** error         : %s\n", STR(m_errorString));
+    printf("*** expression    : %s\n", varName);
+    printf("*** required value: %llu\n", value1);
+    printf("*** actual value  : %llu\n", value2);
+    printf("\n");
+    fflush(stdout);
+
+    m_failedCounter++;
+    return false;
+}

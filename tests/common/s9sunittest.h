@@ -109,6 +109,13 @@ class S9sUnitTest
                 double      value1,
                 double      value2);
 
+        bool compare (
+                const char *fileName,
+                const int   lineNumber,
+                const char *varName,
+                const unsigned long long value1,
+                const unsigned long long value2);
+
     protected:
         S9sString               m_errorString;
         S9sString               m_argv0;

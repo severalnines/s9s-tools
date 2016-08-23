@@ -33,6 +33,7 @@ class UtS9sVariant : public S9sUnitTest
         bool testToDouble();
         bool testToBoolean();
         bool testToInt();
+        bool testToULongLong();
 };
 
 

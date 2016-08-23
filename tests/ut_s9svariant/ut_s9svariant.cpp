@@ -40,11 +40,12 @@ UtS9sVariant::runTest(const char *testName)
 {
     bool retval = true;
 
-    PERFORM_TEST(testConstruct, retval);
-    PERFORM_TEST(testAssign,    retval);
-    PERFORM_TEST(testToDouble,  retval);
-    PERFORM_TEST(testToBoolean, retval);
-    PERFORM_TEST(testToInt,     retval);
+    PERFORM_TEST(testConstruct,   retval);
+    PERFORM_TEST(testAssign,      retval);
+    PERFORM_TEST(testToDouble,    retval);
+    PERFORM_TEST(testToBoolean,   retval);
+    PERFORM_TEST(testToInt,       retval);
+    PERFORM_TEST(testToULongLong, retval);
 
     return retval;
 }
@@ -137,6 +138,9 @@ UtS9sVariant::testToDouble()
     return true;
 }
 
+/**
+ * Testing the toBoolean() method.
+ */
 bool
 UtS9sVariant::testToBoolean()
 {
@@ -204,6 +208,17 @@ UtS9sVariant::testToInt()
     return true;
 }
 
+/**
+ * Testting the toULongLong() method.
+ */
+bool
+UtS9sVariant::testToULongLong()
+{
+    S9S_COMPARE(S9sVariant("42").toULongLong(), 42ull);
+    S9S_COMPARE(S9sVariant("").toULongLong(), 0ull);
+    
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sVariant)
 
