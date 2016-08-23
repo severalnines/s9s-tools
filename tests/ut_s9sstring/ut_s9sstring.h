@@ -28,5 +28,9 @@ class UtS9sString : public S9sUnitTest
     
     protected:
         bool testCreate();
+        bool testAssign();
+        bool testUnQuote();
+        bool testToUpper();
+        bool testToInt();
 };
 

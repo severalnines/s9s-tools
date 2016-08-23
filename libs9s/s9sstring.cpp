@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
+#include <algorithm>
 
 S9sString::S9sString() :
     std::string()
@@ -120,6 +121,10 @@ S9sString::vsprintf(
 /**
  * \param defaultVal the default value to return if the conversion fails
  * \returns the integer value of a string
+ *
+ * This function will convert the string to an integer. Should there be extra
+ * characters after the integer part (e.g. "12.06") the first field will only be
+ * considered.
  */
 int
 S9sString::toInt(
@@ -212,6 +217,55 @@ S9sString::replace(
         // In case 'to' contains 'from', like replacing 'x' with 'yx'
         start_pos += to.length(); 
     }
+}
+
+/**
+ * \returns the same string without the quotation marks at the beginning and at
+ *   the end.
+ *
+ * This function checks if the *same* quotation mark can be found at both the
+ * beginning and the end and removes them if so. Does not change the original
+ * string but returns a new, modified string instead.
+ */
+S9sString
+S9sString::unQuote() const
+{
+    S9sString retval = *this;
+
+    if (retval.length() < 2)
+        return retval;
+
+    if ((retval[0] == '"' && retval[retval.length() - 1] == '"') ||
+        (retval[0] == '\'' && retval[retval.length() - 1] == '\'')) 
+    {
+        retval = substr(1, retval.length() - 2);
+    }
+
+    return retval;
+}
+
+/**
+ * \returns the same string converted to upper-case.
+ */
+S9sString
+S9sString::toUpper() const
+{
+    S9sString retval = *this;
+
+    std::transform(retval.begin(), retval.end(), retval.begin(), ::toupper);
+    return retval;
+}
+
+/**
+ * \returns the same string converted to lower-case.
+ */
+S9sString
+S9sString::toLower() const
+{
+    S9sString retval = *this;
+
+    std::transform(retval.begin(), retval.end(), retval.begin(), ::tolower);
+    return retval;
 }
 
 /**

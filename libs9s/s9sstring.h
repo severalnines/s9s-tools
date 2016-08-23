@@ -37,9 +37,14 @@ class S9sString : public std::string
         ulonglong toULongLong(const ulonglong defaultVal = 0ull) const;
         double toDouble(const double defaultVal = 0.0) const;
         bool toBoolean() const;
-       
+      
+        S9sString unQuote() const;
+
         S9sString escape() const;
         S9sString unEscape() const;
+
+        S9sString toUpper() const;
+        S9sString toLower() const;
 
         bool startsWith(const char *str) const;
         bool endsWith(S9sString const &ending) const;

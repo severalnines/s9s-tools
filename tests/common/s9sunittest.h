@@ -88,6 +88,13 @@ class S9sUnitTest
                 const int   value1,
                 const int   value2);
 
+        bool compare (
+                const char *fileName,
+                const int   lineNumber,
+                const char *varName,
+                const std::string value1,
+                const std::string value2);
+
     protected:
         S9sString               m_errorString;
         S9sString               m_argv0;
