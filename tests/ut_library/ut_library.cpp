@@ -23,8 +23,12 @@
 #include <cstdio>
 #include <cstring>
 
+//#define DEBUG
+#include "s9sdebug.h"
+
 UtLibrary::UtLibrary()
 {
+    S9S_DEBUG("");
 }
 
 UtLibrary::~UtLibrary()
@@ -36,7 +40,7 @@ UtLibrary::runTest(const char *testName)
 {
     bool retval = true;
 
-    printf (" *** running test: %s\n", testName ? testName: "all");
+    S9S_DEBUG(" *** running test: %s\n", testName ? testName: "all");
     PERFORM_TEST(test01, retval);
 
     return retval;

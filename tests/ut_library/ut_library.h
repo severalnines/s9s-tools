@@ -24,9 +24,10 @@ class UtLibrary : public S9sUnitTest
     public:
         UtLibrary();
         virtual ~UtLibrary();
-        bool runTest(const char *testName = 0);
-
+        virtual bool runTest(const char *testName = 0);
+    
     protected:
+
         bool test01();
 };
 

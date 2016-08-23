@@ -78,7 +78,8 @@ class S9sUnitTest
         void message(const char *formatString, ...);
         void incrementChecks();
         void testFunctionEnded(bool success);
-        bool runTest(const char *testName = NULL);
+
+        virtual bool runTest(const char *testName = NULL);
         
         bool compare (
                 const char *fileName,
