@@ -4,6 +4,47 @@
 #pragma once
 
 #include "S9sString"
+#include "S9sMap"
+
+#define CMON_UNIT_TEST_MAIN(classname) \
+int main (int argc, char *argv[]) \
+{\
+    classname object; \
+    int retval = object.execute(argc, argv); \
+    return retval;\
+}
+
+#define CMON_COMPARE(actual,required) \
+    { \
+        if (!compare(__FILE__, __LINE__, #actual, required, actual)) \
+            return false; \
+    }
+
+#define CMON_VERIFY(value) \
+    CMON_COMPARE(value, true)
+
+#define PERFORM_TEST(functionName,resultvariable) \
+{ \
+    m_errorString.clear(); \
+    if (m_argvElements.empty() || m_argvElements.contains(#functionName)) \
+    { \
+        setRunningTestName(#functionName); \
+        if (haveTerminal()) \
+            printf ("  %-24s: RUNNING ", #functionName); \
+        fflush(stdout); \
+        if (!functionName()) { \
+            testFunctionEnded(false); \
+            failed(); \
+            resultvariable = false; \
+            resetCounters(); \
+        } else { \
+            testFunctionEnded(true); \
+            resetCounters(); \
+            fflush(stdout); \
+        } \
+        setRunningTestName(""); \
+    } \
+}
 
 /**
  * Base class for all the unit tests with various helper functions and macros.
@@ -13,7 +54,12 @@ class S9sUnitTest
     public:
         S9sUnitTest();
         virtual ~S9sUnitTest();
-        
+       
+        int execute(int argc, char *argv[]);
+
+        void failed();
+        int failedCounter() const;
+
         int nChecks() const;
         void resetCounters();
         bool haveTerminal();
@@ -32,8 +78,8 @@ class S9sUnitTest
         void message(const char *formatString, ...);
         void incrementChecks();
         void testFunctionEnded(bool success);
-        bool runTest(const char *testName);
-
+        bool runTest(const char *testName = NULL);
+        
         bool compare (
                 const char *fileName,
                 const int   lineNumber,
@@ -42,7 +88,9 @@ class S9sUnitTest
                 const int   value2);
 
     protected:
-        S9sString   m_errorString;
+        S9sString               m_errorString;
+        S9sString               m_argv0;
+        S9sMap<S9sString, bool> m_argvElements;
 
     private:
         S9sString   m_testName;

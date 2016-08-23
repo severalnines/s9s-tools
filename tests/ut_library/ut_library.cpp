@@ -34,18 +34,18 @@ UtLibrary::~UtLibrary()
 bool
 UtLibrary::runTest(const char *testName)
 {
-    printf (" *** running test: %s\n", testName ? testName: "all");
+    bool retval = true;
 
-    // TODO
-    //
+    printf (" *** running test: %s\n", testName ? testName: "all");
+    PERFORM_TEST(test01, retval);
+
+    return retval;
+}
+
+bool
+UtLibrary::test01()
+{
     return true;
 }
 
-int main(int argc, char **argv)
-{
-    UtLibrary testSuite;
-    testSuite.runTest();
-
-    return 0;
-}
-
+CMON_UNIT_TEST_MAIN(UtLibrary)

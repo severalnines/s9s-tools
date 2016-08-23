@@ -17,12 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "s9sunittest.h"
 
-class UtLibrary
+class UtLibrary : public S9sUnitTest
 {
     public:
         UtLibrary();
         virtual ~UtLibrary();
         bool runTest(const char *testName = 0);
+
+    protected:
+        bool test01();
 };
 

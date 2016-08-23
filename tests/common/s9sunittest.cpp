@@ -8,9 +8,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <getopt.h>
 
 #define TERM_CLEAR_RIGHT "\033[0K"
 #define g_option_syntax_highlight true
+
+static struct option long_options[] =
+{
+    { "help",             no_argument,       0, 'h' },
+    { "verbose",          no_argument,       0, 'v' },
+    { 0, 0, 0, 0 }
+};
 
 S9sUnitTest::S9sUnitTest() :
     m_verbose(false),
@@ -31,6 +40,18 @@ S9sUnitTest::~S9sUnitTest()
 {
     free(m_basename);
     m_basename = 0;
+}
+
+void 
+S9sUnitTest::failed() 
+{
+    m_failedCounter++; 
+}
+ 
+int 
+S9sUnitTest::failedCounter() const 
+{
+    return m_failedCounter; 
 }
 
 /**
@@ -103,65 +124,22 @@ S9sUnitTest::printHelpAndExit (
 " -h, --help                 Print this help and exit.\n"
 " -v, --verbose              Print more messages to the standard output.\n"
 " -g, --logs                 Print the logs to the standard output.\n"
-" -u, --sqluser=USER         MySQL username (to create and use the 'testdb').\n"
-" -p, --sqlpassword=PASSWORD Password for the local testing MySQL user.\n"
-" -e, --endurance            Turn on endurance test cases (longer runs).\n"
-" --update-examples          Update the example files for the documentation.\n"
-" -l, --loop                 Loop test cases indefinitely until aborted.\n"
-" --until=MINUTES            Loop until the specified time elapsed.\n"
-" -k, --keepdatabase         Do not remove the cmon database.\n"
-" -c, --color                Print in color.\n"
-" --sendmails                Enables the sending of test emails.\n"
-" --emailaddress=ADDRESS     If set emails are going to be sent to here.\n"
-" --template=NAME            Run using the named environment (defaults to\n"
-"                            'vagrant').\n"
-" --mysql-version=STRING     Set the MySQL version for tests that use it. The\n"
-"                            default is '5.5'\n"
-" --vendor=NAME              Set the vendor name for tests that use it. \n"
-"                            Supported values are 'percona', 'mariadb', \n"
-"                            'codership', '10gen'. The default is \n"
-"                            'percona'\n"
-//" --testcase=NAME            What test to run. For now, used for mongo vendor only.\n"
-" --os=OSNAME                Sets the name of the operating system. The test\n"
-"                            should use the name of the os as a search\n"
-"                            category in the test config \n"
-"                            (e.g. ~/.cmon/<TEMPLATE>.conf).\n"
-" -n, --nohalt               Do not halt the VMs when finished.\n"
 "\n");
 
     exit(exitCode);
 }
 
-#if 0
+#if 1
 /**
  * Starts the execution of the tests taking the command line arguments into
  * account.
  */
 int
-CmonUnitTest::execute (
+S9sUnitTest::execute (
         int   argc,
         char *argv[])
 {
     bool success;
-
-    // Check for local config file to read in values before checking 
-    // them on the command line
-    CmonString configFileName("~/.cmon/unit_test.conf");
-    CmonConfigFile configFile;
-    configFile.setFileName(configFileName);
-    if (configFile.sourceFileExists())
-    {
-        if (!configFile.parseSourceFile())
-        {
-            fprintf(stderr, "\nFailed to parse the %s configuration file+", 
-                    STR(configFileName));
-            return false;
-        }
-
-        m_sqluser = configFile.variableValue("sqluser");
-        m_sqlpassword = configFile.variableValue("sqlpassword");
-        m_sqlhost = configFile.variableValue("sqlhost");
-    }
 
     m_commandLine = "";
     for (int n = 0; argv[n] != NULL; ++n)
@@ -174,38 +152,12 @@ CmonUnitTest::execute (
 
     m_argv0 = argv[0];
     m_testName = argv[0];
-    m_testName = Helpers::basename(m_testName);
-
-    // before we anything here, check if we need to re-start ourselves with
-    // 'sudo'
-    if (needRootAccess() && geteuid() != 0)
-    {
-        int retval = 0;
-        // so, lets call ourselves with non-interactive sudo
-        CmonString cmdline = "sudo -n ";
-        
-        for (char **argv2 = argv; argv2 != 0 && *argv2 != 0; argv2++)
-        {
-           cmdline << CmonString (*argv2);
-           cmdline << " ";
-        }
-
-        printf("* test needs 'root' account, starting:\n%s\n", STR(cmdline));
-        fflush(stdout);
-
-        retval = system(STR(cmdline));
-        if (WEXITSTATUS(retval) > 128 && WEXITSTATUS(retval) <= (128+64))
-        {
-            CMON_WARNING("ERROR: got SIGNAL %d.", WEXITSTATUS(retval) - 128);
-        }
-
-        exit(WEXITSTATUS(retval));
-    }
+    m_testName = "Helpers::basename(m_testName)";
 
     // set the locale to 'C'
     setlocale (LC_ALL, "C");
 
-    m_basename = strdup (basename(argv[0]));
+    m_basename = strdup(basename(argv[0]));
 
     int c;
     while (true)
@@ -235,68 +187,16 @@ CmonUnitTest::execute (
                 m_verbose = true;
                 break;
 
-            case 'g':
-                g_option_debug_log = true;
-                break;
-
-            case 'u':
-                m_sqluser = optarg;
-                break;
-
-            case 'p':
-                m_sqlpassword = optarg;
-                break;
-
-            case 's':
-                m_sqlhost = optarg;
-                break;
-
-            case 'k':
-                m_keepDatabase = true;
-                break;
-
             case 'n':
                 m_noHalt = true;
                 break;
            
-            case 'c':
-                g_option_syntax_highlight = true;
-                break;
-
             case 't':
                 m_testCase = optarg;
                 break;
 
             case 1:
                 m_untilMinutes = atoi(optarg);
-                break;
-
-            case 2:
-                m_emailAddress = optarg;
-                break;
-
-            case 3:
-                m_sendMails = true;
-                break;
-
-            case 4:
-                enableCrashHandler (true);
-                break;
-
-            case 5:
-                m_templateName = optarg;
-                break;
-
-            case 6:
-                m_vendor = optarg;
-                break;
-
-            case 7:
-                m_mysqlVersion = optarg;
-                break;
-
-            case 8:
-                m_operatingSystem = optarg;
                 break;
 
             case 9:
@@ -310,31 +210,7 @@ CmonUnitTest::execute (
     }
 
     while (optind < argc)
-    {
         m_argvElements[argv[optind++]] = true;
-    }
-
-    // some default values...
-    if (m_sqluser.empty())
-        m_sqluser = "root";
-
-    if (m_sqlpassword.empty())
-        m_sqlpassword = "p";
-
-    // for "localhost" mysql client might use local socket which we don't want,
-    // so we fall back to 127.0.0.1
-    if (m_sqlhost.empty () || m_sqlhost == "localhost")
-        m_sqlhost = "127.0.0.1";
-
-    /**************************************************************************
-     * Ovverruling some values for all the configurations.
-     */
-    CmonConfiguration::setOverride(PropCcUser, sqlUser());
-    CmonConfiguration::setOverride(PropCcMySqlPassword, sqlPassword());
-    CmonConfiguration::setOverride(PropCcMySqlHost, sqlHost());
-    CmonConfiguration::setOverride(PropOsUser, CmonString(getenv("USER")));
-    CmonConfiguration::setOverride(PropOsUserHome, CmonString(getenv("HOME")));
-    CmonConfiguration::setOverride(PropSshKeypath, testsshkey);
 
     /**************************************************************************
      * Preparing, running the tests and finalizing.
@@ -404,7 +280,6 @@ CmonUnitTest::execute (
         }
     }
 
-    CMON_WARNING("m_failedCounter: %d", m_failedCounter);
     return m_failedCounter;
 }
 #endif
