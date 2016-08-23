@@ -446,6 +446,32 @@ S9sUnitTest::compare (
         const char *fileName,
         const int   lineNumber,
         const char *varName,
+        bool        value1,
+        bool        value2)
+{
+    incrementChecks();
+
+    if (value1 == value2)
+        return true;
+
+    printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
+    if (!m_errorString.empty())
+        printf("*** error         : %s\n", STR(m_errorString));
+    printf("*** expression    : %s\n", varName);
+    printf("*** required value: %s\n", value1 ? "true" : "false");
+    printf("*** actual value  : %s\n", value2 ? "true" : "false");
+    printf("\n");
+    fflush(stdout);
+
+    m_failedCounter++;
+    return false;
+}
+
+bool
+S9sUnitTest::compare (
+        const char *fileName,
+        const int   lineNumber,
+        const char *varName,
         const std::string value1,
         const std::string value2)
 {

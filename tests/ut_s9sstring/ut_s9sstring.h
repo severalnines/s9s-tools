@@ -32,5 +32,11 @@ class UtS9sString : public S9sUnitTest
         bool testUnQuote();
         bool testToUpper();
         bool testToInt();
+        bool testReplace();
+        bool testConcat();
+        bool testStartsWith();
+        bool testPrintf();
+        bool testContains();
+        bool testEscape();
 };
 

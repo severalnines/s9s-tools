@@ -92,6 +92,13 @@ class S9sUnitTest
                 const char *fileName,
                 const int   lineNumber,
                 const char *varName,
+                bool        value1,
+                bool        value2);
+
+        bool compare (
+                const char *fileName,
+                const int   lineNumber,
+                const char *varName,
                 const std::string value1,
                 const std::string value2);
 
