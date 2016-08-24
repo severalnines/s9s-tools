@@ -3,6 +3,7 @@
  */
 #include "s9svariant.h"
 #include "S9sVariantMap"
+#include "S9sVariantList"
 
 #include <errno.h>
 #include <strings.h>
@@ -11,7 +12,8 @@
 #define DEBUG
 #include "s9sdebug.h"
 
-const S9sVariantMap S9sVariant::sm_emptyMap;
+const S9sVariantMap  S9sVariant::sm_emptyMap;
+const S9sVariantList S9sVariant::sm_emptyList;
 
 S9sVariant::S9sVariant(
         const S9sVariant &orig)
@@ -29,12 +31,12 @@ S9sVariant::S9sVariant(
             m_union = orig.m_union;
             break;
         
-        case List:
-            // FIXME: not yet implemented.
-            break;
-
         case String:
             m_union.stringValue = new S9sString(*orig.m_union.stringValue);
+            break;
+
+        case List:
+            m_union.listValue = new S9sVariantList(*orig.m_union.listValue);
             break;
 
         case Map:
@@ -79,12 +81,12 @@ S9sVariant::operator= (
             m_union = rhs.m_union;
             break;
         
-        case List:
-            // FIXME: not yet implemented.
-            break;
-
         case String:
             m_union.stringValue = new S9sString(*rhs.m_union.stringValue);
+            break;
+
+        case List:
+            m_union.listValue = new S9sVariantList(*rhs.m_union.listValue);
             break;
 
         case Map:
@@ -95,14 +97,52 @@ S9sVariant::operator= (
     return *this;
 }
 
-        
+/**
+ * \returns the reference to the S9sVariantMap held in the S9sVariant.
+ */
 const S9sVariantMap &
 S9sVariant::toVariantMap() const
 {
-    if (m_type == Map)
-        return *m_union.mapValue;
+    switch (m_type)
+    {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+        case String:
+        case List:
+            return sm_emptyMap;
 
+        case Map:
+            return *m_union.mapValue;
+    }
+            
     return sm_emptyMap;
+}
+
+/**
+ * \returns the reference to the S9sVariantMap held in the S9sVariant.
+ */
+const S9sVariantList &
+S9sVariant::toVariantList() const
+{
+    switch (m_type)
+    {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+        case String:
+        case Map:
+            return sm_emptyList;
+
+        case List:
+            return *m_union.listValue;
+    }
+            
+    return sm_emptyList;
 }
 
 /**
@@ -391,7 +431,8 @@ S9sVariant::clear()
             break;
 
         case List:
-            // Not yet implemented.
+            delete m_union.listValue;
+            m_union.listValue = NULL;
             break;
     }
 

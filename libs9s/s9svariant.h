@@ -7,6 +7,7 @@
 #include "S9sString"
 
 class S9sVariantMap;
+class S9sVariantList;
 
 class S9sVariant
 {
@@ -41,11 +42,13 @@ class S9sVariant
         double toDouble(const double defaultValue = 0.0) const;
         S9sString toString() const;
         const S9sVariantMap &toVariantMap() const;
+        const S9sVariantList &toVariantList() const;
 
         void clear();
 
     private:
-        static const S9sVariantMap sm_emptyMap;
+        static const S9sVariantMap  sm_emptyMap;
+        static const S9sVariantList sm_emptyList;
 
     private:
         S9sBasicType    m_type;
