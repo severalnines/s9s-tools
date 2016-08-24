@@ -28,9 +28,14 @@ class S9sVariant
         virtual ~S9sVariant();
 
         S9sVariant &operator=(const S9sVariant &rhs);
+        bool operator==(const S9sVariant &rhs) const;
         S9sVariant &operator[] (const S9sString &index);
 
+        S9sBasicType type() const { return m_type; };
+        S9sString typeName() const;
+        
         bool isInvalid() const { return m_type == Invalid; };
+        bool isBoolean() const { return m_type == Bool; };
         bool isInt() const { return m_type == Int; };
         bool isULongLong() const { return m_type == Ulonglong; };
         bool isDouble() const { return m_type == Double; };
@@ -49,6 +54,9 @@ class S9sVariant
         const S9sVariantList &toVariantList() const;
 
         void clear();
+
+    protected:
+        static bool fuzzyCompare(double first, double second);
 
     private:
         static const S9sVariantMap  sm_emptyMap;

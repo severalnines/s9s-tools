@@ -4,6 +4,8 @@
 #pragma once
 
 #include <stdio.h>
+
+#include "S9sVariant"
 #include "S9sString"
 #include "S9sMap"
 
@@ -116,6 +118,13 @@ class S9sUnitTest
                 const char *varName,
                 const unsigned long long value1,
                 const unsigned long long value2);
+
+        bool compare (
+                const char *fileName,
+                const int   lineNumber,
+                const char *varName,
+                S9sVariant  value1,
+                S9sVariant  value2);
 
     protected:
         S9sString               m_errorString;

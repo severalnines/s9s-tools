@@ -8,6 +8,9 @@
 #include <errno.h>
 #include <strings.h>
 #include <stdlib.h>
+#include <climits>
+#include <cmath>
+#include <limits> 
 
 #define DEBUG
 #include "s9sdebug.h"
@@ -107,6 +110,45 @@ S9sVariant::operator= (
     return *this;
 }
 
+bool 
+S9sVariant::operator== (
+        const S9sVariant &rhs) const
+{
+    if (isInt() && rhs.isInt())
+    {
+        return toInt() == rhs.toInt();
+    } else if (isULongLong() && rhs.isULongLong()) 
+    {
+        return toULongLong() == rhs.toULongLong();
+    } else if (isDouble() && rhs.isDouble()) 
+    {
+        return fuzzyCompare(toDouble(), rhs.toDouble());
+    } else if (isString() && rhs.isString())
+    {
+        return toString() == rhs.toString();
+    } else if (isNumber() && rhs.isNumber())
+    {
+        return fuzzyCompare(toDouble(), rhs.toDouble());
+    } else if (isBoolean() && rhs.isBoolean())
+    {
+        return toBoolean() == rhs.toBoolean();
+    } else if ((isString() && !rhs.isString())
+            || (!isString() && rhs.isString()))
+    {
+        // It seems that comparing a string with other than a string returning
+        // true is rather counterintuitive. 
+        return false;
+    } else {
+        //S9S_WARNING("TBD: (%s)%s == (%s)%s", 
+        //        STR(toString()), STR(typeName()),
+        //        STR(rhs.toString()), STR(rhs.typeName()));
+        return false;
+    }
+
+    return false;
+}
+
+
 S9sVariant &
 S9sVariant::operator[] (
         const S9sString &index)
@@ -126,6 +168,48 @@ S9sVariant::operator[] (
     assert(false);
 }
 
+S9sString 
+S9sVariant::typeName() const
+{
+    S9sString retval;
+
+    switch (m_type)
+    {
+        case Invalid:
+            retval = "invalid";
+            break;
+
+        case Int:
+            retval = "int";
+            break;
+
+        case Ulonglong:
+            retval = "ulonglong";
+            break;
+
+        case Double:
+            retval = "double";
+            break;
+
+        case Bool:
+            retval = "bool";
+            break;
+        
+        case String:
+            retval = "string";
+            break;
+
+        case List:
+            retval = "list";
+            break;
+
+        case Map:
+            retval = "map";
+            break;
+    }
+
+    return "";
+}
 
 /**
  * \returns the reference to the S9sVariantMap held in the S9sVariant.
@@ -510,3 +594,16 @@ S9sVariant::clear()
 
     m_type = Invalid;
 }
+
+bool 
+S9sVariant::fuzzyCompare(
+        const double first, 
+        const double second)
+{
+    return std::fabs(first - second) < 
+        // This is much more liberal
+        // 1e-12;
+        // It seems the error is usually much greater than epsilon.
+        10 * std::numeric_limits<double>::epsilon();
+}
+

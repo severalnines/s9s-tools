@@ -69,15 +69,15 @@ UtS9sVariantMap::testAssignMap()
 
     variant = S9sVariant(theMap);
     S9S_VERIFY(variant.isVariantMap());
-    //S9S_COMPARE(variant["life"], 42);
-    //S9S_COMPARE(variant["universe"], 42);
-    //S9S_COMPARE(variant["everything"], 42);
+    S9S_COMPARE(variant["life"], 42);
+    S9S_COMPARE(variant["universe"], 42);
+    S9S_COMPARE(variant["everything"], 42);
 
     other = variant;
     S9S_VERIFY(other.isVariantMap());
-    //S9S_COMPARE(other["life"], 42);
-    //S9S_COMPARE(other["universe"], 42);
-    //S9S_COMPARE(other["everything"], 42);
+    S9S_COMPARE(other["life"], 42);
+    S9S_COMPARE(other["universe"], 42);
+    S9S_COMPARE(other["everything"], 42);
 
     return true;
 }

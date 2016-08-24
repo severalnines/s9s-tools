@@ -548,3 +548,104 @@ S9sUnitTest::compare (
     m_failedCounter++;
     return false;
 }
+
+bool
+S9sUnitTest::compare (
+        const char *fileName,
+        const int   lineNumber,
+        const char *varName,
+        S9sVariant  value1,
+        S9sVariant  value2)
+{
+    incrementChecks();
+        
+    //
+    // The best practice is to consider the invalid values different from any
+    // other values, but here, in the test it is obvious that a null value is
+    // acceptable if a null value is required.
+    //
+    if (value1.isInvalid() && value1.isInvalid()) 
+        return true;
+
+    if (value1.type() != value1.type()) 
+    {
+        printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
+        if (!m_errorString.empty())
+            printf("*** error         : %s\n", STR(m_errorString));
+        printf("*** expression    : %s\n", varName);
+        printf("*** required type : %s\n", STR(value1.typeName()));
+        printf("*** actual type   : %s\n", STR(value2.typeName()));
+        printf("\n");
+        fflush(stdout);
+
+        m_failedCounter++;
+        return false;
+    }
+
+    // at this point we know that the type of variants is equal, lets check the
+    // content:
+    switch (value1.type()) 
+    {
+        case Invalid:
+            // both invalid, ok then
+            return true;
+            break;
+
+        case Bool:
+            return compare (
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toBoolean(),
+                    value2.toBoolean());
+
+        case Int:
+            return compare (
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toInt(),
+                    value2.toInt());
+
+        case Double:
+            return compare (
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toDouble(),
+                    value2.toDouble());
+
+        case String:
+            return compare (
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toString(),
+                    value2.toString());
+
+        case Ulonglong:
+            return compare(
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toULongLong(),
+                    value2.toULongLong());
+        
+        case Map:
+            return compare(
+                    fileName,
+                    lineNumber,
+                    varName,
+                    value1.toString(),
+                    value2.toString());
+
+        default:
+            printf ("*** CHECK IS NOT IMPLEMENTED (type = %d)\n\n",
+                    value1.type ());
+            fflush(stdout);
+    }
+
+    m_failedCounter++;
+    return false;
+}
+
