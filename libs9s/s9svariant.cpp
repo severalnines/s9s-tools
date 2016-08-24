@@ -239,22 +239,38 @@ S9sVariant::toDouble(
 {
     double retval = defaultValue;
 
-    if (m_type == Double)
+    switch (m_type)
     {
-        retval = m_union.dVal;
-    } else if (m_type == Int)
-    {
-        retval = double(m_union.iVal);
-    } else if (m_type == Ulonglong)
-    {
-        retval = double(m_union.ullVal);
-    } else if (m_type == String)
-    {
-        const S9sString &str = toString();
-        errno = 0;
-        retval = strtod(STR (str), NULL);
-        if (errno != 0)
-            return defaultValue;
+        case Map:
+        case List:
+        case Invalid:
+            // The default value is already there.
+            break;
+
+        case Double:
+            retval = m_union.dVal;
+            break;
+
+        case Int:
+            retval = double(m_union.iVal);
+            break;
+
+        case Ulonglong:
+            retval = double(m_union.ullVal);
+            break;
+
+        case String:
+            errno = 0;
+            retval = strtod(STR(toString()), NULL);
+
+            if (errno != 0)
+                retval = defaultValue;
+
+            break;
+
+        case Bool:
+            retval = m_union.bVal ? 1.0 : 0.0;
+            break;
     }
 
     return retval;
