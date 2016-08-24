@@ -13,7 +13,6 @@ class S9sVector : public std::vector<T>
         bool contains(const T &item) const;
 
         S9sVector<T> &operator=(const std::vector<T> &rhs);
-        S9sVector<T> &operator=(std::vector<T> && rhs);
         S9sVector<T> &operator<<(const T &item);
         S9sVector<T> &operator<<(const S9sVector<T> &toInsert);
 
@@ -54,14 +53,6 @@ S9sVector<T>::operator=(
     return *this;
 }
 
-template <typename T>
-S9sVector<T> &S9sVector<T>::operator=(
-        std::vector<T> && rhs)
-{
-    std::vector<T>::operator=((std::vector<T> &&)rhs);
-    return *this;
-}
-
 /**
  * \returns true if the vector contains the given element.
  */
@@ -69,7 +60,7 @@ template <typename T>
 bool S9sVector<T>::contains(
         const T &item) const
 {
-    for (auto it = this->begin (); it != this->end (); it++) 
+    for (typename std::vector<T>::iterator it = this->begin(); it != this->end (); it++) 
     {
         if (item == *it)
             return true;
@@ -170,7 +161,7 @@ S9sVector<T> S9sVector<T>::unique() const
 {
     S9sVector<T> retval;
 
-    for (auto it = this->begin(); it != this->end(); ++it)
+    for (typename std::vector<T>::iterator it = this->begin(); it != this->end(); ++it)
     {
         if (retval.contains (*it))
             continue;
