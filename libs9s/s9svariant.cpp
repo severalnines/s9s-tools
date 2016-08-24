@@ -280,45 +280,58 @@ bool
 S9sVariant::toBoolean(
         const bool defaultValue) const
 {
-    if (m_type == Bool)
-        return m_union.bVal;
-
-    if (isInvalid())
-        return defaultValue;
-
-    // From string
-    if (isString())
+    switch (m_type)
     {
-        std::string trimmed = toString().trim();
+        case Invalid:
+            return defaultValue;
 
-        if (trimmed.empty())
-            return false;
+        case Bool:
+            return m_union.bVal;
+
+        case String:
+            {
+                std::string trimmed = toString().trim();
+
+                if (trimmed.empty())
+                    return defaultValue;
         
-        if (!strcasecmp(trimmed.c_str(), "yes") ||
-            !strcasecmp(trimmed.c_str(), "true") ||
-            !strcasecmp(trimmed.c_str(), "on") ||
-            !strcasecmp(trimmed.c_str(), "t"))
-            return true;
+                if (!strcasecmp(trimmed.c_str(), "yes") ||
+                    !strcasecmp(trimmed.c_str(), "true") ||
+                    !strcasecmp(trimmed.c_str(), "on") ||
+                    !strcasecmp(trimmed.c_str(), "t"))
+                {
+                    return true;
+                }
 
-        if (!strcasecmp(trimmed.c_str(), "no") ||
-            !strcasecmp(trimmed.c_str(), "false") ||
-            !strcasecmp(trimmed.c_str(), "off") ||
-            !strcasecmp(trimmed.c_str(), "f"))
-            return false;
+                if (!strcasecmp(trimmed.c_str(), "no") ||
+                    !strcasecmp(trimmed.c_str(), "false") ||
+                    !strcasecmp(trimmed.c_str(), "off") ||
+                    !strcasecmp(trimmed.c_str(), "f"))
+                {
+                    return false;
+                }
 
-        if (atoi(trimmed.c_str()) != 0) 
-            return true;
-        else 
-            return false;
-    } else if (m_type == Int)
-    {
-        return m_union.iVal != 0;
-    } else if (isNumber())
-    {
-        return toDouble() != 0.0;
+                if (atoi(trimmed.c_str()) != 0) 
+                    return true;
+                else 
+                    return false;
+            }
+            break;
+
+        case Int:
+            return m_union.iVal != 0;
+
+        case Double:
+            return m_union.dVal != 0.0;
+
+        case Ulonglong:
+            return m_union.ullVal != 0ull;
+
+        case Map:
+        case List:
+            return defaultValue;
     }
 
-    // More to come.
     return defaultValue;
 }
 
@@ -423,6 +436,11 @@ S9sVariant::toString() const
     return retval;
 }
 
+/**
+ * Drops the value from the variant, sets its type to "Invalid" and releases all
+ * resources that the variant might hold. This function is also called from the
+ * destructor.
+ */
 void
 S9sVariant::clear()
 {
