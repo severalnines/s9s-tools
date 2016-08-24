@@ -56,4 +56,5 @@ libs9s_a_SOURCES =        \
 	s9sstring.cpp         \
 	s9svariant.cpp        \
 	s9svariantmap.cpp     \
-	s9svariantlist.cpp
+	s9svariantlist.cpp    \
+	s9sstringlist.cpp

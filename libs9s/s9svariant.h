@@ -21,7 +21,9 @@ class S9sVariant
         inline S9sVariant(const char *stringValue);
         inline S9sVariant(const std::string &stringValue);
         inline S9sVariant(const S9sString &stringValue);
+        
         S9sVariant(const S9sVariantMap &mapValue);
+        S9sVariant(const S9sVariantList &listValue);
 
         virtual ~S9sVariant();
 

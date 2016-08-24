@@ -53,12 +53,22 @@ S9sVariant::S9sVariant(
     m_union.mapValue = new S9sVariantMap(mapValue);
 }
 
+S9sVariant::S9sVariant(
+        const S9sVariantList &listValue) :
+    m_type(List)
+{
+    m_union.listValue = new S9sVariantList(listValue);
+}
 
 S9sVariant::~S9sVariant()
 {
     clear();
 }
 
+/**
+ * Assignment operator for the S9sVariant class that accepts an other S9sVariant
+ * object as right hand side argument.
+ */
 S9sVariant &
 S9sVariant::operator= (
         const S9sVariant &rhs)
@@ -276,6 +286,14 @@ S9sVariant::toDouble(
     return retval;
 }
 
+/**
+ * \param defaultValue the value that shall be returned if the variant can't be
+ *   converted to a boolean.
+ * \returns the value from the variant converted to a boolean.
+ *
+ * This method recognizes all the usual strings used to denote boolean values
+ * like "yes", "true", "T", "on".
+ */
 bool
 S9sVariant::toBoolean(
         const bool defaultValue) const
