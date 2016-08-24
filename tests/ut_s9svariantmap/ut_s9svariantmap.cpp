@@ -34,12 +34,14 @@ UtS9sVariantMap::~UtS9sVariantMap()
 }
 
 bool
-UtS9sVariantMap::runTest(const char *testName)
+UtS9sVariantMap::runTest(
+        const char *testName)
 {
     bool retval = true;
 
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(testAssignMap,     retval);
+    PERFORM_TEST(testVariant,       retval);
 
     return retval;
 }
@@ -85,6 +87,24 @@ UtS9sVariantMap::testAssignMap()
     S9S_COMPARE(other["life"], 42);
     S9S_COMPARE(other["universe"], 42);
     S9S_COMPARE(other["everything"], 42);
+
+    return true;
+}
+
+/**
+ * This test will check if an invalid S9sVariant automaically converts into a
+ * variant with a map in it.
+ */
+bool
+UtS9sVariantMap::testVariant()
+{
+    S9sVariant variant;
+
+    variant["one"] = "egy";
+    variant["six"] = "hat";
+
+    S9S_COMPARE(variant["one"], "egy");
+    S9S_COMPARE(variant["six"], "hat");
 
     return true;
 }

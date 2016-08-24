@@ -29,5 +29,6 @@ class UtS9sVariantMap : public S9sUnitTest
     protected:
         bool testCreate();
         bool testAssignMap();
+        bool testVariant();
 };
 
