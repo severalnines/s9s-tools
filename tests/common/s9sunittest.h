@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include <stdio.h>
 #include "S9sString"
 #include "S9sMap"
 

@@ -107,6 +107,26 @@ S9sVariant::operator= (
     return *this;
 }
 
+S9sVariant &
+S9sVariant::operator[] (
+        const S9sString &index)
+{
+    if (m_type == Invalid)
+    {
+        *this = S9sVariantMap();
+        return this->operator[](index);
+    }
+
+    if (m_type == Map)
+    {
+        return m_union.mapValue->S9sMap<
+                S9sString, S9sVariant>::operator[](index);
+    } 
+    
+    assert(false);
+}
+
+
 /**
  * \returns the reference to the S9sVariantMap held in the S9sVariant.
  */

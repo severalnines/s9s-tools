@@ -28,6 +28,7 @@ class S9sVariant
         virtual ~S9sVariant();
 
         S9sVariant &operator=(const S9sVariant &rhs);
+        S9sVariant &operator[] (const S9sString &index);
 
         bool isInvalid() const { return m_type == Invalid; };
         bool isInt() const { return m_type == Int; };
@@ -39,6 +40,7 @@ class S9sVariant
         bool isNumber() const { 
             return isInt() || isULongLong() || isDouble(); }; 
         bool isString() const { return m_type == String; };
+        bool isVariantMap() const { return m_type == Map; };
 
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;
