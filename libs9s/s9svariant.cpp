@@ -17,14 +17,29 @@ S9sVariant::S9sVariant(
         const S9sVariant &orig)
 {
     m_type         = orig.m_type;
-    m_union        = orig.m_union;
 
-    if (m_type == String)
+    switch (m_type)
     {
-        m_union.stringValue = new S9sString(*orig.m_union.stringValue);
-    } else if (m_type == Map)
-    {
-        m_union.mapValue = new S9sVariantMap(*orig.m_union.mapValue);
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+            /* We don't need to copy here. */
+            m_union = orig.m_union;
+            break;
+        
+        case List:
+            // FIXME: not yet implemented.
+            break;
+
+        case String:
+            m_union.stringValue = new S9sString(*orig.m_union.stringValue);
+            break;
+
+        case Map:
+            m_union.mapValue = new S9sVariantMap(*orig.m_union.mapValue);
+            break;
     }
 }
 
