@@ -48,4 +48,5 @@ tags
 tests/ut_library/ut_library
 tests/ut_s9sstring/ut_s9sstring
 tests/ut_s9svariant/ut_s9svariant
+tests/ut_s9svariantmap/ut_s9svariantmap
 y.tab.c
