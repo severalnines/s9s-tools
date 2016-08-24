@@ -52,20 +52,28 @@ S9sVariant::operator= (
     clear();
 
     m_type         = rhs.m_type;
-    m_union        = rhs.m_union;
     
     switch (m_type)
     {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+            /* We don't need to copy here. */
+            m_union = rhs.m_union;
+            break;
+        
+        case List:
+            // FIXME: not yet implemented.
+            break;
+
         case String:
             m_union.stringValue = new S9sString(*rhs.m_union.stringValue);
             break;
 
         case Map:
             m_union.mapValue = new S9sVariantMap(*rhs.m_union.mapValue);
-            break;
-
-        default:
-            /* nop */
             break;
     }
     
@@ -82,6 +90,12 @@ S9sVariant::toVariantMap() const
     return sm_emptyMap;
 }
 
+/**
+ * \param defaultValue the value to be returned if the variant can't be
+ *   converted to an integer.
+ * \returns the value in the variant converted to integer.
+ *
+ */
 int
 S9sVariant::toInt(
         const int defaultValue) const
