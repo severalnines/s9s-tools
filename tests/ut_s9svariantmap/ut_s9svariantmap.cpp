@@ -50,6 +50,11 @@ UtS9sVariantMap::runTest(const char *testName)
 bool
 UtS9sVariantMap::testCreate()
 {
+    S9sVariantMap theMap;
+
+    S9S_VERIFY(theMap.empty());
+    S9S_COMPARE(theMap.size(), 0);
+
     return true;
 }
 
@@ -68,12 +73,14 @@ UtS9sVariantMap::testAssignMap()
     theMap["everything"] = 42;
 
     variant = S9sVariant(theMap);
+    S9S_COMPARE(variant.typeName(), "map");
     S9S_VERIFY(variant.isVariantMap());
     S9S_COMPARE(variant["life"], 42);
     S9S_COMPARE(variant["universe"], 42);
     S9S_COMPARE(variant["everything"], 42);
 
     other = variant;
+    S9S_COMPARE(other.typeName(), "map");
     S9S_VERIFY(other.isVariantMap());
     S9S_COMPARE(other["life"], 42);
     S9S_COMPARE(other["universe"], 42);

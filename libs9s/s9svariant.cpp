@@ -208,7 +208,7 @@ S9sVariant::typeName() const
             break;
     }
 
-    return "";
+    return retval;
 }
 
 /**
