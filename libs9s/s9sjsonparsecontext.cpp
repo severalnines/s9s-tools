@@ -3,6 +3,9 @@
  */
 #include "s9sjsonparsecontext.h"
 
+#define DEBUG
+#include "s9sdebug.h"
+
 S9sJsonParseContext::S9sJsonParseContext(
         const char *input) :
     S9sParseContext(input)

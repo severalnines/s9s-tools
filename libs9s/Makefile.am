@@ -50,7 +50,14 @@ SUFFIXES = parser.h parser.cpp lexer.h lexer.cpp
 			--defines=$@ \
 			-p $$(basename $@ parser.h) $<
 
+BUILT_SOURCES =               \
+    json_lexer.h              \
+    json_lexer.cpp            \
+    json_parser.h             \
+    json_parser.cpp           
+
 libs9s_a_SOURCES =            \
+	$(BUILT_SOURCES)          \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sstring.cpp             \
@@ -59,4 +66,5 @@ libs9s_a_SOURCES =            \
 	s9svariantlist.cpp        \
 	s9sstringlist.cpp         \
 	s9sparsecontextstate.cpp  \
-	s9sparsecontext.cpp       
+	s9sparsecontext.cpp       \
+	s9sjsonparsecontext.cpp       

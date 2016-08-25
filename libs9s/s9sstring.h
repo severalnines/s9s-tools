@@ -51,6 +51,9 @@ class S9sString : public std::string
 
         void replace(const S9sString &from, const S9sString &to);
         S9sString trim(const std::string &pWhitespace = " \t") const;
+
+        bool looksInteger() const;
+        bool looksULongLong() const;
 };
 
 inline bool 

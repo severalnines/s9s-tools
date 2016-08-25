@@ -417,3 +417,55 @@ S9sString::trim(
     return retval;
 }
 
+/**
+ * \returns true if a string is a representation of an integer number, and so
+ *   the string can be converted to an integer
+ */
+bool
+S9sString::looksInteger() const
+{
+    longlong  value;
+    char      *endptr = NULL;
+
+    if (empty())
+        return false;
+
+    value = strtoll(c_str(), &endptr, 10);
+    if (endptr != NULL && *endptr != '\0')
+        return false;
+
+    if (value < INT_MIN || value > INT_MAX)
+        return false;
+
+    return true;
+
+}
+
+/**
+ * A string looks like an ulonglong if it can be converted to a ulonglong, but
+ * it can't be converted into an int.
+ */
+bool
+S9sString::looksULongLong() const
+{
+    ulonglong  value;
+    char      *endptr;
+
+    if (empty())
+        return false;
+
+    // check if it can't be an unsigned
+    if (startsWith("-"))
+        return false;
+
+    value = strtoull(c_str(), &endptr, 10);
+    if (endptr != NULL && *endptr != '\0')
+        return false;
+
+    if (value <= INT_MAX)
+        return false;
+
+    return true;
+}
+
+
