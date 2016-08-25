@@ -44,6 +44,7 @@ UtS9sVariantMap::runTest(
     PERFORM_TEST(testAssignMap,     retval);
     PERFORM_TEST(testVariant,       retval);
     PERFORM_TEST(testToString,      retval);
+    PERFORM_TEST(testParser01,      retval);
 
     return retval;
 }
@@ -139,6 +140,31 @@ UtS9sVariantMap::testToString()
 
     return true;
 }
+
+/**
+ * Parsing a JSON message that has only two string values.
+ */
+bool
+UtS9sVariantMap::testParser01()
+{
+    S9sVariantMap  theMap;
+    bool           success;
+    const char    *jsonString =
+"{\n"
+"    \"key1\": \"value1\",\n"
+"    \"key2\": \"value2\"\n"
+"}\n";
+
+    success = theMap.parse(jsonString);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["key1"], "value1");
+    S9S_COMPARE(theMap["key2"], "value2");
+
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sVariantMap)
 

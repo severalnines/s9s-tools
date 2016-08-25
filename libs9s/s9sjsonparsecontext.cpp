@@ -10,7 +10,6 @@ S9sJsonParseContext::S9sJsonParseContext(
         const char *input) :
     S9sParseContext(input)
 {
-    S9S_DEBUG("*** this: %p", this);
 }
 
 void

@@ -5,7 +5,14 @@
 
 #include <cmath>
 
-#include <S9sVariantList>
+#include "S9sVariantList"
+#include "S9sJsonParseContext"
+
+#define YY_EXTRA_TYPE S9sJsonParseContext *
+#include "json_parser.h"
+#include "json_lexer.h"
+
+
 
 static const char dblQuot = '"';
 
@@ -20,6 +27,41 @@ S9sVariantMap::keys() const
     }
 
     return retval;
+}
+
+/**
+ * \returns true if and only if the string was successfully parsed
+ *
+ * If the input string has syntax error in it the content of the JSON message
+ * will not be changed. If the parsing is successfull, the content of the JSON
+ * message will be clared and filled with the new values.
+ */
+bool
+S9sVariantMap::parse(
+        const char *source)
+{
+    S9sJsonParseContext context(source);
+    int retval;
+    bool success;
+
+    json_lex_init(&context.m_flex_scanner);
+    json_set_extra(&context, context.m_flex_scanner);
+
+    retval = json_parse(context);
+    success = retval == 0;
+
+    json_lex_destroy(context.m_flex_scanner);
+
+    if (success)
+    {
+        clear();
+
+        std::vector<S9sString> newKeys = context.keys();
+        for (uint idx = 0; idx < newKeys.size(); ++idx)
+            (*this)[newKeys[idx]] = context[newKeys[idx]];
+    }
+
+    return success;
 }
 
 S9sString

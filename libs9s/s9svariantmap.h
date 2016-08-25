@@ -19,6 +19,7 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
 
         S9sVector<S9sString> keys() const;
 
+        bool parse(const char *source);
         S9sString toString() const;
 
     private:
