@@ -4,6 +4,7 @@
 #pragma once
 
 #include <vector>
+#include <assert.h>
 
 template <typename T>
 class S9sStack : public std::vector<T>
