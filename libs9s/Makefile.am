@@ -50,11 +50,12 @@ SUFFIXES = parser.h parser.cpp lexer.h lexer.cpp
 			--defines=$@ \
 			-p $$(basename $@ parser.h) $<
 
-libs9s_a_SOURCES =        \
-	library.cpp           \
-	s9sdebug.cpp          \
-	s9sstring.cpp         \
-	s9svariant.cpp        \
-	s9svariantmap.cpp     \
-	s9svariantlist.cpp    \
-	s9sstringlist.cpp
+libs9s_a_SOURCES =            \
+	library.cpp               \
+	s9sdebug.cpp              \
+	s9sstring.cpp             \
+	s9svariant.cpp            \
+	s9svariantmap.cpp         \
+	s9svariantlist.cpp        \
+	s9sstringlist.cpp         \
+	s9sparsecontextstate.cpp 
