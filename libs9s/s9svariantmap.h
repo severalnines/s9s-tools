@@ -7,6 +7,9 @@
 #include "S9sMap"
 #include "S9sVector"
 #include "S9sString"
+#include "S9sParseContext"
+
+class S9sVariantList;
 
 class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
 {
@@ -34,3 +37,5 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
         S9sString indent(int depth) const;
         S9sString quote(const S9sString &s) const;
 };
+
+
