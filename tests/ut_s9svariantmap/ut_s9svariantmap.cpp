@@ -52,10 +52,18 @@ UtS9sVariantMap::runTest(
 bool
 UtS9sVariantMap::testCreate()
 {
-    S9sVariantMap theMap;
+    S9sVariantMap        theMap;
+    S9sVector<S9sString> theKeys;
 
     S9S_VERIFY(theMap.empty());
     S9S_COMPARE(theMap.size(), 0);
+
+    theMap["a one"] = 1;
+    theMap["b two"] = 2;
+
+    theKeys = theMap.keys();
+    S9S_COMPARE(theKeys[0], "a one");
+    S9S_COMPARE(theKeys[1], "b two");
 
     return true;
 }
