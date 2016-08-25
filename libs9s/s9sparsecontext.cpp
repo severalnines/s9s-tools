@@ -134,6 +134,42 @@ S9sParseContext::lastToken() const
 }
 
 /**
+ * This function should be called by the parser/lexer when an error found. A
+ * human readable string will be passed and handled in the context.
+ */
+void 
+S9sParseContext::errorFound(
+        const char *errorString)
+{
+    if (lastToken() == NULL)
+    {
+        m_errorString.sprintf("%s in line %d", 
+                errorString, lineNumber());
+    } else {
+        m_errorString.sprintf("%s in line %d near token '%s'", 
+                errorString, lineNumber(), lastToken());
+    }
+}
+
+void 
+S9sParseContext::setErrorString(
+        const S9sString &error)
+{
+    m_errorString = error;
+}
+
+
+/**
+ * \returns the error string if available
+ */
+S9sString 
+S9sParseContext::errorString() const
+{
+    return m_errorString;
+}
+
+
+/**
  * Public function called before parsing, resets the context.
  */
 void

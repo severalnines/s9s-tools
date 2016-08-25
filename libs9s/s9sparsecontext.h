@@ -29,6 +29,11 @@ class S9sParseContext
         void tokenFound(const char *token);
         const char *lastToken() const;
 
+        void errorFound(const char *errorString);
+        void setErrorString(const S9sString &error);
+        S9sString errorString() const;
+
+
         void reset();
 
     public:
