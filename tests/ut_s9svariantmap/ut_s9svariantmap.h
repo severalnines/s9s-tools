@@ -30,5 +30,6 @@ class UtS9sVariantMap : public S9sUnitTest
         bool testCreate();
         bool testAssignMap();
         bool testVariant();
+        bool testToString();
 };
 

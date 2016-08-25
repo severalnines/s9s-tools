@@ -22,6 +22,7 @@
 #include "S9sVariantMap"
 
 //#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 UtS9sVariantMap::UtS9sVariantMap()
@@ -42,6 +43,7 @@ UtS9sVariantMap::runTest(
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(testAssignMap,     retval);
     PERFORM_TEST(testVariant,       retval);
+    PERFORM_TEST(testToString,      retval);
 
     return retval;
 }
@@ -113,6 +115,27 @@ UtS9sVariantMap::testVariant()
 
     S9S_COMPARE(variant["one"], "egy");
     S9S_COMPARE(variant["six"], "hat");
+
+    return true;
+}
+
+bool
+UtS9sVariantMap::testToString()
+{
+    S9sVariantMap theMap;
+    S9sString     theString;
+
+    theMap["one"] = "egy";
+    theMap["six"] = 6;
+
+
+    theString = theMap.toString();
+    //S9S_WARNING("-> \n%s\n", STR(theString));
+    S9S_COMPARE(theString,
+"{\n"
+"    \"one\": \"egy\",\n"
+"    \"six\": 6\n"
+"}");
 
     return true;
 }
