@@ -3,6 +3,7 @@
  */
 #include "s9sparsecontext.h"
 
+#include "S9sGlobal"
 #include <string.h>
 
 //#define DEBUG
@@ -168,6 +169,63 @@ S9sParseContext::errorString() const
     return m_errorString;
 }
 
+/**
+ * \param scannerBuffer the pointer to the scanners internal buffer. This will
+ *   be handled in a stack and returned by the eofFound() function
+ *
+ * The scanner should call this function to start processing an include file
+ * while keeping the current file to be processed when it is finished the
+ * include file. handling include files is a recursive process, include files
+ * can include other files.
+ */
+bool 
+S9sParseContext::includeFound(
+        const S9sString  &fileName,
+        bool              isSystemFile,
+        S9sString        &errorString,
+        void             *scannerBuffer)
+{
+    S9S_UNUSED(isSystemFile)
+
+    if (m_states.size() > 30)
+    {
+        errorString = "Input stack is too deep";
+        return false;
+    }
+
+    S9sString  content;
+    bool       success;
+
+    success = getFileContent(fileName, content, errorString);
+    m_states.push(S9sParseContextState());
+
+    m_states.top().m_fileName      = fileName;
+    m_states.top().m_inputString   = content;
+    m_states.top().m_scannerBuffer = scannerBuffer;
+
+    //m_includeFiles[fileName]       = NoPragma;
+    return success;
+}
+
+/**
+ * \returns the previously set scanner buffer or NULL if there are no more files
+ *   to process
+ *
+ * This method can be called by the parser. See the documentation of 
+ * includeFound() for further details about the return value.
+ */
+void * 
+S9sParseContext::eofFound()
+{
+    if (m_states.empty())
+    {
+        S9S_WARNING("State stack is empty.");
+        return NULL;
+    }
+    
+    m_lastState = m_states.pop();
+    return m_lastState.m_scannerBuffer;
+}
 
 /**
  * Public function called before parsing, resets the context.
@@ -212,4 +270,41 @@ S9sParseContext::yyinput(
 	}
 
 	return numBytes;
+}
+
+/**
+ * This method is called when an include file needs to be loaded into the
+ * memory. It implements a real file read, so inherited class should be
+ * implementing this virtual function to override that.
+ */
+bool 
+S9sParseContext::getFileContent(
+        const S9sString &fileName,
+        S9sString       &content,
+        S9sString       &errorString)
+{
+    bool success = false;
+#if 0
+    for (uint idx = 0u; idx < m_includeDirs.size(); ++idx)
+    {
+        S9sString path = Helpers::buildPath(m_includeDirs[idx], fileName);
+        S9sFile   inputFile(path);
+
+        if (!inputFile.exists())
+            continue;
+
+        success = inputFile.readTxtFile(content);
+        if (!success)
+        {
+            S9S_WARNING("ERROR: %s", STR(inputFile.errorString()));
+            errorString = inputFile.errorString();
+        }
+
+        return success;
+    }
+
+    errorString.sprintf("Include file '%s' was not found", STR(fileName));
+    S9S_WARNING("%s", STR(errorString));
+#endif
+    return success;
 }

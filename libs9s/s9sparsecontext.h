@@ -33,8 +33,20 @@ class S9sParseContext
         void setErrorString(const S9sString &error);
         S9sString errorString() const;
 
+        bool includeFound(
+                const S9sString  &fileName,
+                bool              isSystemFile,
+                S9sString        &errorString,
+                void             *scannerBuffer);
 
+        void *eofFound();
         void reset();
+
+    protected:
+        bool getFileContent(
+                const S9sString &fileName,
+                S9sString       &content,
+                S9sString       &errorString);
 
     public:
         /** Flex code needs this pointer to store its internal state in it. */
