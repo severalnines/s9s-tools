@@ -23,6 +23,14 @@ class S9sParseContext
         void setFileName(const S9sString &fileName);
         const S9sString &fileName() const;
 
+        int lineNumber() const;
+        void incrementLineNumber();
+
+        void tokenFound(const char *token);
+        const char *lastToken() const;
+
+        void reset();
+
     public:
         /** Flex code needs this pointer to store its internal state in it. */
         void *m_flex_scanner; 

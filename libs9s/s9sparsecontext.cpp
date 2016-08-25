@@ -89,6 +89,62 @@ S9sParseContext::fileName() const
 }
 
 /**
+ * \returns the current line number
+ *
+ * We use this line number in error messages, so it starts from 1 at the first
+ * line. 
+ */
+int 
+S9sParseContext::lineNumber() const
+{
+    if (m_states.empty())
+        return m_lastState.m_currentLineNumber;
+
+    return m_states.top().m_currentLineNumber;
+}
+
+/**
+ * Increments the current line number that is used in error messages. The parser
+ * or more likely the lexer should call it to keep track of the line numbers
+ */
+void
+S9sParseContext::incrementLineNumber()
+{
+    if (m_states.empty())
+        return;
+
+    ++m_states.top().m_currentLineNumber;
+}
+
+/**
+ * The token is a string that helps locate an error inside the line. If the
+ * lexer sets the token in the context it will be added to the error strings.
+ */
+void
+S9sParseContext::tokenFound(
+        const char *token)
+{
+    m_currentToken = token;
+}
+
+const char *
+S9sParseContext::lastToken() const
+{
+    return m_currentToken;
+}
+
+/**
+ * Public function called before parsing, resets the context.
+ */
+void
+S9sParseContext::reset()
+{
+    m_states.top().m_currentLineNumber = 1;
+    m_errorString.clear();
+    m_currentToken = NULL;
+}
+
+/**
  * \param buffer the data should be put here
  * \param maxsize the size of the buffer
  * \returns how many characters are available
