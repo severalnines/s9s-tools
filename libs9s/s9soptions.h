@@ -31,9 +31,16 @@ class S9sOptions
     public:
         static S9sOptions *instance();
 
+        bool readOptions(int *argc, char *argv[]);
+
+        int exitStatus() const;
+
     private:
         S9sOptions();
         ~S9sOptions();
         
         static S9sOptions *sm_instance;
+
+    private:
+        int                m_exitStatus;
 };

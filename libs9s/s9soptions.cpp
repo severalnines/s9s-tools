@@ -19,13 +19,16 @@
  */
 #include "s9soptions.h"
 
+#include <cstdlib>
+
 //#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
 
-S9sOptions::S9sOptions()
+S9sOptions::S9sOptions() :
+    m_exitStatus(EXIT_SUCCESS)
 {
     sm_instance = this;
 }
@@ -44,3 +47,20 @@ S9sOptions::instance()
     return sm_instance;
 }
 
+int 
+S9sOptions::exitStatus() const 
+{ 
+    return m_exitStatus; 
+}
+
+
+bool
+S9sOptions::readOptions(
+        int   *argc,
+        char  *argv[])
+{
+    bool retval = true;
+
+    S9S_WARNING("Not yet implemented.");
+    return retval;
+}

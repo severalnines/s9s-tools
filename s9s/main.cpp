@@ -18,12 +18,14 @@
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <libs9s/library.h>
-#include <cstdio>
-#include <cstring>
+#include "S9sOptions"
 
 int main(int argc, char **argv)
 {
-    printf ("Hello world!\n");
+    S9sOptions *options = S9sOptions::instance();
+
+    options->readOptions(&argc, argv);
+
     return 0;
 }
 
