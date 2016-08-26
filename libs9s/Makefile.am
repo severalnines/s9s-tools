@@ -19,6 +19,10 @@ libs9s.so: libs9s.a $(libs9s_a_OBJECTS)
 all-local: libs9s.so
 	-@echo "Creating shared-objects."
 
+install-exec-hook: libs9s.so
+	-@echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) libs9s.so '$(DESTDIR)$(libdir)'"
+	$(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) libs9s.so "$(DESTDIR)$(libdir)"
+
 SUFFIXES = parser.h parser.cpp lexer.h lexer.cpp
 #
 # Lexer
