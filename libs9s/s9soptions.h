@@ -46,6 +46,8 @@ class S9sOptions
         int exitStatus() const;
 
     private:
+        bool readOptionsNode(int argc, char *argv[]);
+
         bool setMode(const S9sString &modeName);
 
         S9sOptions();
