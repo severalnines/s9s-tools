@@ -56,6 +56,9 @@ class S9sString : public std::string
         bool looksULongLong() const;
 };
 
+typedef S9sString S9sFilePath;
+typedef S9sString S9sFileName;
+
 inline bool 
 S9sString::contains(char c) const
 {
@@ -67,3 +70,5 @@ S9sString::contains(const char *s) const
 {
     return find(s) != std::string::npos;
 }
+
+

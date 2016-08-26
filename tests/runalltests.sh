@@ -70,6 +70,7 @@ runTest ut_library $@
 runTest ut_s9sstring $@
 runTest ut_s9svariant $@
 runTest ut_s9svariantmap $@
+runTest ut_s9soptions $@
 
 echo
 echo

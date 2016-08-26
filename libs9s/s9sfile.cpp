@@ -17,62 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "s9soptions.h"
-
-#include <cstdlib>
+#include "s9sfile.h"
 
 #define DEBUG
 #define WARNING
 #include "s9sdebug.h"
-
-S9sOptions *S9sOptions::sm_instance = 0;
-
-S9sOptions::S9sOptions() :
-    m_exitStatus(EXIT_SUCCESS)
-{
-    sm_instance = this;
-}
-
-S9sOptions::~S9sOptions()
-{
-    sm_instance = NULL;
-}
-
-S9sOptions *
-S9sOptions::instance()
-{
-    if (!sm_instance)
-        sm_instance = new S9sOptions;
-
-    return sm_instance;
-}
-
-void 
-S9sOptions::uninit()
-{
-    if (sm_instance)
-    {
-        delete sm_instance;
-        sm_instance = 0;
-    }
-}
-
-
-
-int 
-S9sOptions::exitStatus() const 
-{ 
-    return m_exitStatus; 
-}
-
-
-bool
-S9sOptions::readOptions(
-        int   *argc,
-        char  *argv[])
-{
-    bool retval = true;
-
-    S9S_DEBUG("*** argc: %d", *argc);
-    return retval;
-}

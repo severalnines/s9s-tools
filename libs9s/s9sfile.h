@@ -20,31 +20,9 @@
 #pragma once
 
 #include "S9sString"
-#include "S9sVariant"
-#include "S9sVariantMap"
 
-/**
- * Singleton class to handle s9s command line options.
- */
-class S9sOptions
+class S9sFile
 {
     public:
-        static S9sOptions *instance();
-        static void uninit();
 
-        bool readOptions(int *argc, char *argv[]);
-
-        int exitStatus() const;
-
-    private:
-        S9sOptions();
-        ~S9sOptions();
-        
-        static S9sOptions *sm_instance;
-
-    private:
-        int                m_exitStatus;
-        S9sString          m_errorMessage;
-
-    friend class UtS9sOptions;
 };
