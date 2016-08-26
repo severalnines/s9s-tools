@@ -50,6 +50,8 @@ class S9sString : public std::string
         bool endsWith(S9sString const &ending) const;
 
         void replace(const S9sString &from, const S9sString &to);
+        void replace(size_t pos, size_t len, const S9sString &str);
+
         S9sString trim(const std::string &pWhitespace = " \t") const;
 
         bool looksInteger() const;

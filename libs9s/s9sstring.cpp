@@ -219,6 +219,15 @@ S9sString::replace(
     }
 }
 
+void
+S9sString::replace(
+        size_t             pos, 
+        size_t             len,
+        const S9sString   &str)
+{
+    std::string::replace(pos, len, str);
+}
+
 /**
  * \returns the same string without the quotation marks at the beginning and at
  *   the end.

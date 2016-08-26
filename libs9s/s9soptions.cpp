@@ -61,6 +61,12 @@ S9sOptions::uninit()
     }
 }
 
+void
+S9sOptions::setController(
+        const S9sString &url)
+{
+    S9S_WARNING("Not implemented yet.");
+}
 
 S9sString
 S9sOptions::binaryName() const
@@ -151,6 +157,7 @@ S9sOptions::readOptionsNode(
     {
         { "help",          no_argument,       0, 'h' },
         { "verbose",       no_argument,       0, 'v' },
+        { "controller",    required_argument, 0, 'c' },
         { "config-file",   required_argument, 0, '1' },
         { 0, 0, 0, 0 }
     };
@@ -172,9 +179,13 @@ S9sOptions::readOptionsNode(
             case 'v':
                 m_options["verbose"] = true;
                 break;
+            
+            case 'c':
+                //m_options["config-file"] = optarg;
+                setController(optarg);
+                break;
 
             case '1':
-                S9S_DEBUG("*** config-file: '%s'", optarg);
                 m_options["config-file"] = optarg;
                 break;
 
