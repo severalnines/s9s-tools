@@ -151,13 +151,14 @@ S9sOptions::readOptionsNode(
     {
         { "help",          no_argument,       0, 'h' },
         { "verbose",       no_argument,       0, 'v' },
+        { "config-file",   required_argument, 0, '1' },
         { 0, 0, 0, 0 }
     };
 
     for (;;)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "hv", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvc:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -165,19 +166,19 @@ S9sOptions::readOptionsNode(
         switch (c)
         {
             case 'h':
-                //print_help_and_exit(EXIT_SUCCESS);
+                m_options["help"] = true;
                 break;
 
             case 'v':
-                //g_option_verbose = 1;
+                m_options["verbose"] = true;
+                break;
+
+            case '1':
+                S9S_DEBUG("*** config-file: '%s'", optarg);
+                m_options["config-file"] = optarg;
                 break;
 
             default:
-                #if 0
-                m_errorMessage.sprintf(
-                        "Invalid command line option option '%s'.",
-                        argv[option_index]);
-                #endif
                 return false;
         }
     }

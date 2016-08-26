@@ -60,6 +60,7 @@ class S9sOptions
         OperationMode      m_operationMode;
         int                m_exitStatus;
         S9sString          m_errorMessage;
+        S9sVariantMap      m_options;
 
     friend class UtS9sOptions;
 };
