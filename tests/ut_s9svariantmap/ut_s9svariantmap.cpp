@@ -48,6 +48,7 @@ UtS9sVariantMap::runTest(
     PERFORM_TEST(testParser02,      retval);
     PERFORM_TEST(testParser03,      retval);
     PERFORM_TEST(testParser04,      retval);
+    PERFORM_TEST(testParser05,      retval);
 
     return retval;
 }
@@ -249,6 +250,40 @@ UtS9sVariantMap::testParser04()
     
     return true;
 }
+
+/**
+ * Testing the parser on a JSON string that has a list in it.
+ */
+bool
+UtS9sVariantMap::testParser05()
+{
+    S9sVariantMap   theMap;
+    S9sVariantList  listValue;
+    bool            success;
+    const char    *jsonString =
+"{\n"
+"    \"key1\": \"value1\",\n"
+"    \"key2\": [ \"value2\", \"value3\" ]\n"
+"}\n";
+
+    success = theMap.parse(jsonString);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["key1"].toString(), "value1");
+    S9S_COMPARE(theMap["key1"].typeName(), "string");
+    S9S_COMPARE(theMap["key2"].typeName(), "list");
+
+    listValue = theMap["key2"].toVariantList();
+    S9S_COMPARE(listValue.size(), 2);
+    S9S_COMPARE(listValue[0].toString(), "value2");
+    S9S_COMPARE(listValue[0].typeName(), "string");
+    S9S_COMPARE(listValue[1].toString(), "value3");
+    S9S_COMPARE(listValue[1].typeName(), "string");
+
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sVariantMap)
 

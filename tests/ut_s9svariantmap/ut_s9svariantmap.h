@@ -35,5 +35,6 @@ class UtS9sVariantMap : public S9sUnitTest
         bool testParser02();
         bool testParser03();
         bool testParser04();
+        bool testParser05();
 };
 
