@@ -24,5 +24,6 @@
 class S9sFile
 {
     public:
+        static S9sFileName basename(const S9sFilePath &filePath);
 
 };
