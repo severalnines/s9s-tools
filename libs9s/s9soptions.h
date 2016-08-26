@@ -41,6 +41,8 @@ class S9sOptions
 
         bool readOptions(int *argc, char *argv[]);
 
+        S9sString binaryName() const;
+        S9sString errorString() const;
         int exitStatus() const;
 
     private:

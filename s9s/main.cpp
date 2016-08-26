@@ -17,15 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <libs9s/library.h>
+#include "library.h"
 #include "S9sOptions"
+
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
     S9sOptions *options = S9sOptions::instance();
+    bool        success;
+    int         exitStatus;
 
-    options->readOptions(&argc, argv);
+    success = options->readOptions(&argc, argv);
+    if (!success)
+    {
+        fprintf(stderr, "%s: %s\n\n", 
+                STR(options->binaryName()),
+                STR(options->errorString()));
+        fflush(stderr);
 
-    return 0;
+        goto finalize;
+    }
+
+finalize:
+    exitStatus = options->exitStatus();
+    S9sOptions::uninit();
+
+    return exitStatus;
 }
 

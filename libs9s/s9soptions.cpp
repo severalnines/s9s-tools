@@ -60,11 +60,22 @@ S9sOptions::uninit()
 }
 
 
+S9sString
+S9sOptions::binaryName() const
+{
+    return m_myName;
+}
 
 int 
 S9sOptions::exitStatus() const 
 { 
     return m_exitStatus; 
+}
+
+S9sString 
+S9sOptions::errorString() const
+{
+    return m_errorMessage;
 }
 
 
@@ -76,12 +87,19 @@ S9sOptions::readOptions(
     bool retval = true;
 
     S9S_DEBUG("*** argc: %d", *argc);
-    if (*argc < 2)
+    if (*argc < 1)
     {
+        m_errorMessage = "Missing command line options.";
         return false;
     }
 
     m_myName = S9sFile::basename(argv[0]);
+    if (*argc < 2)
+    {
+        m_errorMessage = "Missing command line options.";
+        return false;
+    }
+
     retval   = setMode(argv[1]);
     if (!retval)
         return retval;
@@ -102,6 +120,7 @@ S9sOptions::setMode(
     {
         m_operationMode = Node;
     } else {
+        m_errorMessage = "The first command line option must be the mode.";
         retval = false;
     }
 
