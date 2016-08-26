@@ -45,6 +45,9 @@ UtS9sVariantMap::runTest(
     PERFORM_TEST(testVariant,       retval);
     PERFORM_TEST(testToString,      retval);
     PERFORM_TEST(testParser01,      retval);
+    PERFORM_TEST(testParser02,      retval);
+    PERFORM_TEST(testParser03,      retval);
+    PERFORM_TEST(testParser04,      retval);
 
     return retval;
 }
@@ -165,6 +168,87 @@ UtS9sVariantMap::testParser01()
     return true;
 }
 
+/**
+ * First parsing a JSON string with a syntax error, then a well formed message
+ * to see if the parser recovers from the error.
+ */
+bool
+UtS9sVariantMap::testParser02()
+{
+    S9sVariantMap   theMap;
+    bool            success;
+    const char    *jsonString =
+"{\n"
+"    \"key1\": \"value1\",\n"
+"    \"key2\": 42\n"
+"}\n";
+
+    success = theMap.parse("{");
+    S9S_VERIFY(!success);
+    S9S_COMPARE(theMap.size(), 0);
+
+    success = theMap.parse(jsonString);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["key1"], "value1");
+    S9S_COMPARE(theMap["key2"], 42);
+
+    return true;
+}
+
+bool
+UtS9sVariantMap::testParser03()
+{
+    S9sVariantMap  theMap;
+    bool           success;
+    const char    *jsonString =
+"{\n"
+"    \"key1\": true,\n"
+"    \"key2\": \"value2\"\n"
+"}\n";
+
+    success = theMap.parse(jsonString);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["key1"], true);
+    S9S_COMPARE(theMap["key2"], "value2");
+
+    return true;
+}
+
+bool
+UtS9sVariantMap::testParser04()
+{
+    S9sVariantMap  theMap, mapValue;
+    bool           success;
+    const char    *jsonString =
+"{\n"
+"    \"key1\": \"value1\",\n"
+"    \"key2\":\n"
+"        {\n"
+"            \"key3\": \"value2\",\n"
+"            \"key4\": 42\n"
+"        }\n"
+"}\n";
+
+    success = theMap.parse(jsonString);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["key1"].toString(), "value1");
+    S9S_COMPARE(theMap["key1"].typeName(), "string");
+
+    mapValue = theMap["key2"].toVariantMap();
+    S9S_COMPARE(mapValue.size(), 2);
+    S9S_COMPARE(mapValue["key3"].toString(), "value2");
+    S9S_COMPARE(mapValue["key3"].typeName(), "string");
+    S9S_COMPARE(mapValue["key4"].toInt(),    42);
+    S9S_COMPARE(mapValue["key4"].typeName(), "int");
+    
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sVariantMap)
 
