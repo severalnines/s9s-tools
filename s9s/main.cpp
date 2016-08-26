@@ -31,10 +31,13 @@ int main(int argc, char **argv)
     success = options->readOptions(&argc, argv);
     if (!success)
     {
-        fprintf(stderr, "%s: %s\n\n", 
-                STR(options->binaryName()),
-                STR(options->errorString()));
-        fflush(stderr);
+        if (!options->errorString().empty())
+        {
+            fprintf(stderr, "%s: %s\n\n", 
+                    STR(options->binaryName()),
+                    STR(options->errorString()));
+            fflush(stderr);
+        }
 
         goto finalize;
     }

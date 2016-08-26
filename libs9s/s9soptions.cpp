@@ -24,7 +24,7 @@
 #include <cstdlib>
 #include <getopt.h>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -106,6 +106,18 @@ S9sOptions::readOptions(
     if (!retval)
         return retval;
 
+    switch (m_operationMode)
+    {
+        case NoMode:
+        case Cluster:
+            S9S_DEBUG("Unhandled mode.");
+            break;
+
+        case Node:
+            retval = readOptionsNode(*argc, argv);
+            break;
+    }
+
     return retval;
 }
 
@@ -135,7 +147,7 @@ S9sOptions::readOptionsNode(
         char  *argv[])
 {
     int           c;
-    static struct option long_options[] =
+    struct option long_options[] =
     {
         { "help",          no_argument,       0, 'h' },
         { "verbose",       no_argument,       0, 'v' },
@@ -145,7 +157,7 @@ S9sOptions::readOptionsNode(
     for (;;)
     {
         int option_index = 0;
-        c = getopt_long (argc, argv, "hv", long_options, &option_index);
+        c = getopt_long(argc, argv, "hv", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -161,7 +173,11 @@ S9sOptions::readOptionsNode(
                 break;
 
             default:
-                //print_help_and_exit(EXIT_FAILURE);
+                #if 0
+                m_errorMessage.sprintf(
+                        "Invalid command line option option '%s'.",
+                        argv[option_index]);
+                #endif
                 return false;
         }
     }
