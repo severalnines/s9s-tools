@@ -67,4 +67,5 @@ libs9s_a_SOURCES =            \
 	s9sstringlist.cpp         \
 	s9sparsecontextstate.cpp  \
 	s9sparsecontext.cpp       \
-	s9sjsonparsecontext.cpp       
+	s9sjsonparsecontext.cpp   \
+	s9soptions.cpp
