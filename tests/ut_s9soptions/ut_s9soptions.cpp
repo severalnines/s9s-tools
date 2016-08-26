@@ -73,6 +73,9 @@ UtS9sOptions::testReadOptions01()
 
     success = options->readOptions(&argc, (char**)argv);
     S9S_VERIFY(success);
+    S9S_COMPARE(options->m_myName, "binary_name");
+    S9S_COMPARE(options->m_operationMode, S9sOptions::Node);
+
     S9sOptions::uninit();
     return true;
 }

@@ -19,6 +19,24 @@
  */
 #include "s9sfile.h"
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
+
+/**
+ * \returns the base name part of the file name
+ *
+ * For example if the file name is "/my.cnf" the return value will be "my.cnf".
+ */
+S9sFileName
+S9sFile::basename(
+        const S9sFilePath &filePath)
+{
+    S9sFileName retval = filePath;
+
+    size_t lastsep = retval.find_last_of("/");
+    if (lastsep != std::string::npos)
+        retval = retval.substr(lastsep + 1);
+
+    return retval;
+}

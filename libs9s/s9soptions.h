@@ -32,17 +32,28 @@ class S9sOptions
         static S9sOptions *instance();
         static void uninit();
 
+        enum OperationMode 
+        {
+            NoMode  = 0,
+            Cluster,
+            Node,
+        };
+
         bool readOptions(int *argc, char *argv[]);
 
         int exitStatus() const;
 
     private:
+        bool setMode(const S9sString &modeName);
+
         S9sOptions();
         ~S9sOptions();
         
         static S9sOptions *sm_instance;
 
     private:
+        S9sFileName        m_myName;
+        OperationMode      m_operationMode;
         int                m_exitStatus;
         S9sString          m_errorMessage;
 

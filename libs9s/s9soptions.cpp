@@ -19,15 +19,17 @@
  */
 #include "s9soptions.h"
 
+#include "S9sFile"
 #include <cstdlib>
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
 
 S9sOptions::S9sOptions() :
+    m_operationMode(NoMode),
     m_exitStatus(EXIT_SUCCESS)
 {
     sm_instance = this;
@@ -74,5 +76,34 @@ S9sOptions::readOptions(
     bool retval = true;
 
     S9S_DEBUG("*** argc: %d", *argc);
+    if (*argc < 2)
+    {
+        return false;
+    }
+
+    m_myName = S9sFile::basename(argv[0]);
+    retval   = setMode(argv[1]);
+    if (!retval)
+        return retval;
+
+    return retval;
+}
+
+bool 
+S9sOptions::setMode(
+        const S9sString &modeName)
+{
+    bool retval = true;
+    
+    if (modeName == "cluster") 
+    {
+        m_operationMode = Cluster;
+    } else if (modeName == "node")
+    {
+        m_operationMode = Node;
+    } else {
+        retval = false;
+    }
+
     return retval;
 }
