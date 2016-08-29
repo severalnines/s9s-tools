@@ -161,8 +161,16 @@ S9sOptions::readOptions(
     return retval;
 }
 
+/**
+ * \returns true if the operation requested by the command line options is
+ *   performed and so the application can exit gracefuly.
+ *
+ * This method is for executing simple info requests like "--version" or
+ * "--help". If the user request an operation like these the S9sOptions can
+ * execute them and then the application can exit without further ado.
+ */
 bool
-S9sOptions::execute()
+S9sOptions::executeInfoRequest()
 {
     if (m_options["print-version"].toBoolean())
     {
@@ -191,6 +199,7 @@ S9sOptions::setMode(
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
+        // FIXME: maybe not the best way to do this.
     } else {
         m_errorMessage = "The first command line option must be the mode.";
         retval = false;

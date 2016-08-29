@@ -25,7 +25,7 @@
 int main(int argc, char **argv)
 {
     S9sOptions *options = S9sOptions::instance();
-    bool        success;
+    bool        success, finished;
     int         exitStatus;
 
     success = options->readOptions(&argc, argv);
@@ -44,8 +44,8 @@ int main(int argc, char **argv)
 
     PRINT_VERBOSE("Command line options processed.");
 
-    success = options->execute();
-    if (success)
+    finished = options->executeInfoRequest();
+    if (finished)
         goto finalize;
 
 finalize:

@@ -43,7 +43,7 @@ class S9sOptions
         };
 
         bool readOptions(int *argc, char *argv[]);
-        bool execute();
+        bool executeInfoRequest();
 
         void setController(const S9sString &url);
 
