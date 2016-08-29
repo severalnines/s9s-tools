@@ -75,6 +75,8 @@ libs9s_a_SOURCES =            \
 	s9soptions.cpp            \
 	s9sfile.cpp               \
 	s9sregexp_p.cpp           \
-	s9sregexp.cpp
+	s9sregexp.cpp             \
+	s9srpcclient_p.cpp        \
+	s9srpcclient.cpp          
 
 
