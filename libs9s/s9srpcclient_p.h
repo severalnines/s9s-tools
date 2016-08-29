@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include <stdlib.h>
 #include "S9sString"
 
 class S9sRpcClientPrivate
@@ -16,6 +17,8 @@ class S9sRpcClientPrivate
 
     private:
         int connectSocket();
+        void closeSocket(int socketFd);
+        ssize_t writeSocket(int socketFd, const char *data, size_t length);
 
     private:
         int             m_referenceCounter;

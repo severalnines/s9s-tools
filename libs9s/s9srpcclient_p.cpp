@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include "S9sOptions"
 
@@ -94,4 +96,33 @@ S9sRpcClientPrivate::connectSocket()
     }
 
     return socketFd;
+}
+
+void
+S9sRpcClientPrivate::closeSocket(
+        int socketFd)
+{
+    if (socketFd < 0)
+        return;
+
+    ::shutdown(socketFd, SHUT_RDWR);
+    ::close(socketFd);
+}
+
+/**
+ * write safely to a socket
+ */
+ssize_t
+S9sRpcClientPrivate::writeSocket(
+        int         socketFd, 
+        const char *data, 
+        size_t      length)
+{
+    ssize_t retval = -1;
+
+    do {
+        retval = ::write(socketFd, data, length);
+    } while (retval == -1 && errno == EINTR);
+
+    return retval;
 }
