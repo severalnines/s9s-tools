@@ -3,7 +3,6 @@
  */
 #pragma once
 
-#include "S9sAtomicInt"
 #include "S9sString"
 #include "S9sVariant"
 
@@ -33,7 +32,7 @@ class S9sRegExpPrivate
         int unRef();
 
     private:
-        S9sAtomicInt    m_referenceCounter;
+        int             m_referenceCounter;
         bool            m_ignoreCase;
         bool            m_global;
         S9sString       m_stringVersion;
