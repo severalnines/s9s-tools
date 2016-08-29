@@ -42,8 +42,12 @@ int main(int argc, char **argv)
         goto finalize;
     }
 
+    PRINT_VERBOSE("Command line options processed.");
+
 finalize:
     exitStatus = options->exitStatus();
+    PRINT_VERBOSE("Exiting with exitcode %d.", exitStatus);
+
     S9sOptions::uninit();
 
     return exitStatus;

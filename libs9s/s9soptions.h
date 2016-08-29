@@ -23,6 +23,9 @@
 #include "S9sVariant"
 #include "S9sVariantMap"
 
+#define PRINT_VERBOSE(...) \
+    S9sOptions::printVerbose(__VA_ARGS__)
+
 /**
  * Singleton class to handle s9s command line options.
  */

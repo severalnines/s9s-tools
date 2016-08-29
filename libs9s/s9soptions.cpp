@@ -26,7 +26,7 @@
 #include <getopt.h>
 #include <stdarg.h>
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
