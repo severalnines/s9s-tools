@@ -24,4 +24,7 @@ class S9sRpcClientPrivate
         int             m_referenceCounter;
         S9sString       m_hostName;
         int             m_port;
+        S9sString       m_token;
+
+        friend class S9sRpcClient;
 };
