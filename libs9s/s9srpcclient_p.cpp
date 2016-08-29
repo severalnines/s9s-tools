@@ -20,18 +20,14 @@
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_referenceCounter(1),
     m_buffer(0),
-    m_bufferSize(0)
+    m_bufferSize(0),
+    m_dataSize(0)
 {
 }
 
 S9sRpcClientPrivate::~S9sRpcClientPrivate()
 {
-    if (m_buffer)
-    {
-        free(m_buffer);
-        m_buffer     = 0;
-        m_bufferSize = 0;
-    }
+    clearBuffer();
 }
 
 void 
@@ -63,6 +59,17 @@ S9sRpcClientPrivate::ensureHasBuffer(
 
     m_buffer     = (char *) realloc(m_buffer, size);
     m_bufferSize = size;
+}
+
+void
+S9sRpcClientPrivate::clearBuffer()
+{
+    if (m_buffer != 0)
+        free(m_buffer);
+
+    m_buffer     = 0;
+    m_bufferSize = 0;
+    m_dataSize   = 0;
 }
 
 /**
@@ -149,6 +156,24 @@ S9sRpcClientPrivate::writeSocket(
 
     do {
         retval = ::write(socketFd, data, length);
+    } while (retval == -1 && errno == EINTR);
+
+    return retval;
+}
+
+/**
+ * read safely from a socket
+ */
+ssize_t
+S9sRpcClientPrivate::readSocket(
+        int     socketFd, 
+        char   *buffer, 
+        size_t  bufSize)
+{
+    ssize_t retval = -1;
+
+    do {
+        retval = read (socketFd, buffer, bufSize);
     } while (retval == -1 && errno == EINTR);
 
     return retval;

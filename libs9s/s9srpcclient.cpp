@@ -8,6 +8,8 @@
 #define WARNING
 #include "s9sdebug.h"
 
+#define READ_SIZE 512
+
 S9sRpcClient::S9sRpcClient() :
     m_priv(new S9sRpcClientPrivate)
 {
@@ -81,6 +83,7 @@ S9sRpcClient::executeRequest(
 {
     S9sString    header;
     int          socketFd = m_priv->connectSocket();
+    ssize_t      readLength;
 
     if (socketFd < 0)
     {
@@ -104,7 +107,7 @@ S9sRpcClient::executeRequest(
         payload.length());
 
     /*
-     * HTTP request
+     * Sending teh HTTP request header.
      */
     if (m_priv->writeSocket(socketFd, STR(header), header.length()) < 0)
     {
@@ -115,7 +118,7 @@ S9sRpcClient::executeRequest(
     }
 
     /*
-     * And the JSON payload.
+     * Sending the JSON payload.
      */
     if (!payload.empty())
     {
@@ -128,5 +131,32 @@ S9sRpcClient::executeRequest(
         }
     }
 
+    /*
+     * Reading the reply from the server.
+     */
+    m_priv->clearBuffer();
+    readLength = 0;
+    do
+    {
+        m_priv->ensureHasBuffer(m_priv->m_dataSize + READ_SIZE);
+
+        readLength = m_priv->readSocket(
+                socketFd,
+                m_priv->m_buffer + m_priv->m_dataSize, 
+                READ_SIZE - 1);
+
+        if (readLength > 0)
+            m_priv->m_dataSize += readLength;
+
+    } while (readLength > 0);
+
+    // Closing the buffer with a null terminating byte.
+    m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);
+    m_priv->m_buffer[m_priv->m_dataSize] = '\0';
+    m_priv->m_dataSize += 1;
+
+    // Closing the socket.
+    m_priv->closeSocket(socketFd);
+    
     return 0;
 }

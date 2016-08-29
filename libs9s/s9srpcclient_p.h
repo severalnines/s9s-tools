@@ -16,11 +16,13 @@ class S9sRpcClientPrivate
         int unRef();
 
     private:
+        void clearBuffer();
         void ensureHasBuffer(size_t size);
 
         int connectSocket();
         void closeSocket(int socketFd);
         ssize_t writeSocket(int socketFd, const char *data, size_t length);
+        ssize_t readSocket(int socketFd, char *buffer, size_t bufSize);
 
     private:
         int             m_referenceCounter;
@@ -29,6 +31,7 @@ class S9sRpcClientPrivate
         S9sString       m_token;
         char           *m_buffer;
         size_t          m_bufferSize;
-        
+        size_t          m_dataSize;
+
         friend class S9sRpcClient;
 };
