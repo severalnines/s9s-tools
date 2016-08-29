@@ -44,6 +44,10 @@ int main(int argc, char **argv)
 
     PRINT_VERBOSE("Command line options processed.");
 
+    success = options->execute();
+    if (success)
+        goto finalize;
+
 finalize:
     exitStatus = options->exitStatus();
     PRINT_VERBOSE("Exiting with exitcode %d.", exitStatus);

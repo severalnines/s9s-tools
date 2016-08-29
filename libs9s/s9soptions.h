@@ -43,6 +43,7 @@ class S9sOptions
         };
 
         bool readOptions(int *argc, char *argv[]);
+        bool execute();
 
         void setController(const S9sString &url);
 
@@ -54,6 +55,7 @@ class S9sOptions
         static void printVerbose(const char *formatString, ...);
 
     private:
+        bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);

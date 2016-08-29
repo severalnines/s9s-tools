@@ -19,6 +19,7 @@
  */
 #include "s9soptions.h"
 
+#include "config.h"
 #include "S9sFile"
 
 #include <stdio.h>
@@ -117,7 +118,6 @@ S9sOptions::printVerbose(
     printf("%s\n", STR(theString));
 }
 
-
 bool
 S9sOptions::readOptions(
         int   *argc,
@@ -146,6 +146,9 @@ S9sOptions::readOptions(
     switch (m_operationMode)
     {
         case NoMode:
+            retval = readOptionsNoMode(*argc, argv);
+            break;
+
         case Cluster:
             S9S_DEBUG("Unhandled mode.");
             break;
@@ -156,6 +159,21 @@ S9sOptions::readOptions(
     }
 
     return retval;
+}
+
+bool
+S9sOptions::execute()
+{
+    if (m_options["print-version"].toBoolean())
+    {
+        printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+        printf("Copyright (C) 2016...\n");
+        printf("\n");
+        printf("Written by ...\n");
+        return true;
+    }
+
+    return false;
 }
 
 bool 
@@ -170,6 +188,9 @@ S9sOptions::setMode(
     } else if (modeName == "node")
     {
         m_operationMode = Node;
+    } else if (modeName.startsWith("-"))
+    {
+        // Ignored.
     } else {
         m_errorMessage = "The first command line option must be the mode.";
         retval = false;
@@ -188,6 +209,7 @@ S9sOptions::readOptionsNode(
     {
         { "help",          no_argument,       0, 'h' },
         { "verbose",       no_argument,       0, 'v' },
+        { "version",       no_argument,       0, 'V' },
         { "controller",    required_argument, 0, 'c' },
         { "config-file",   required_argument, 0, '1' },
         { 0, 0, 0, 0 }
@@ -196,7 +218,7 @@ S9sOptions::readOptionsNode(
     for (;;)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "hvc:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvc:V", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -211,6 +233,10 @@ S9sOptions::readOptionsNode(
                 m_options["verbose"] = true;
                 break;
             
+            case 'V':
+                m_options["print-version"] = true;
+                break;
+
             case 'c':
                 //m_options["config-file"] = optarg;
                 setController(optarg);
@@ -218,6 +244,50 @@ S9sOptions::readOptionsNode(
 
             case '1':
                 m_options["config-file"] = optarg;
+                break;
+
+            default:
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::readOptionsNoMode(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        { "help",          no_argument,       0, 'h' },
+        { "verbose",       no_argument,       0, 'v' },
+        { "version",       no_argument,       0, 'V' },
+        { 0, 0, 0, 0 }
+    };
+
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hvc:V", long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                m_options["print-version"] = true;
                 break;
 
             default:
