@@ -18,12 +18,20 @@
 #include "s9sdebug.h"
 
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
-    m_referenceCounter(1)
+    m_referenceCounter(1),
+    m_buffer(0),
+    m_bufferSize(0)
 {
 }
 
 S9sRpcClientPrivate::~S9sRpcClientPrivate()
 {
+    if (m_buffer)
+    {
+        free(m_buffer);
+        m_buffer     = 0;
+        m_bufferSize = 0;
+    }
 }
 
 void 
@@ -36,6 +44,25 @@ int
 S9sRpcClientPrivate::unRef()
 {
 	return --m_referenceCounter;
+}
+
+void 
+S9sRpcClientPrivate::ensureHasBuffer(
+        size_t   size)
+{
+    if (size <= m_bufferSize)
+        return;
+
+    if (m_buffer == NULL)
+    {
+        m_buffer     = (char *)malloc(size);
+        m_bufferSize = size;
+
+        return;
+    }
+
+    m_buffer     = (char *) realloc(m_buffer, size);
+    m_bufferSize = size;
 }
 
 /**
