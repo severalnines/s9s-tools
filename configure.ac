@@ -51,6 +51,7 @@ AC_SUBST(GIT_VERSION)
 # Creating teh makefiles.
 #
 AC_CONFIG_FILES(Makefile                          \
+                doc/Makefile                      \
                 libs9s/Makefile                   \
                 s9s/Makefile                      \
                 tests/Makefile                    \
