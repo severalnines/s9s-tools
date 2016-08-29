@@ -158,5 +158,6 @@ S9sRpcClient::executeRequest(
     // Closing the socket.
     m_priv->closeSocket(socketFd);
     
+    S9S_WARNING("reply: \n%s\n", m_priv->m_buffer);
     return 0;
 }
