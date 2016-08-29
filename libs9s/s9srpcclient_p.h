@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#include "S9sString"
+
 class S9sRpcClientPrivate
 {
     public:
@@ -13,5 +15,10 @@ class S9sRpcClientPrivate
         int unRef();
 
     private:
+        int connectSocket();
+
+    private:
         int             m_referenceCounter;
+        S9sString       m_hostName;
+        int             m_port;
 };

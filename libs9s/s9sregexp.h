@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2015 severalnines.com
+ * Copyright (C) 2016 severalnines.com
  */
 #pragma once
 

@@ -1,11 +1,10 @@
 /* 
- * Copyright (C) 2011-2015 severalnines.com
+ * Copyright (C) 2016 severalnines.com
  */
 #include "s9sregexp.h"
 #include "s9sregexp_p.h"
 
 #include "S9sVariant"
-#include "S9sString"
 
 //#define DEBUG
 #define WARNING
