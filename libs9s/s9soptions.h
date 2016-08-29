@@ -46,6 +46,9 @@ class S9sOptions
         S9sString binaryName() const;
         S9sString errorString() const;
         int exitStatus() const;
+        bool isVerbose() const;
+
+        static void printVerbose(const char *formatString, ...);
 
     private:
         bool readOptionsNode(int argc, char *argv[]);

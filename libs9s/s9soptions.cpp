@@ -21,8 +21,10 @@
 
 #include "S9sFile"
 
+#include <stdio.h>
 #include <cstdlib>
 #include <getopt.h>
+#include <stdarg.h>
 
 #define DEBUG
 #define WARNING
@@ -80,10 +82,39 @@ S9sOptions::exitStatus() const
     return m_exitStatus; 
 }
 
+bool
+S9sOptions::isVerbose() const
+{
+    if (!m_options.contains("verbose"))
+        return false;
+
+    return m_options.at("verbose").toBoolean();
+}
+
 S9sString 
 S9sOptions::errorString() const
 {
     return m_errorMessage;
+}
+
+void
+S9sOptions::printVerbose(
+        const char *formatString,
+        ...)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (!options->isVerbose())
+        return;
+
+    S9sString  theString;
+    va_list     arguments;
+    
+    va_start(arguments, formatString);
+    theString.vsprintf (formatString, arguments);
+    va_end(arguments);
+
+    printf("%s\n", STR(theString));
 }
 
 
