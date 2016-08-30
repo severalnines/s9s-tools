@@ -27,7 +27,7 @@
 #include <getopt.h>
 #include <stdarg.h>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -178,7 +178,7 @@ S9sOptions::readOptions(
             break;
 
         case Cluster:
-            S9S_DEBUG("Unhandled mode.");
+            retval = readOptionsCluster(*argc, argv);
             break;
 
         case Node:
@@ -220,9 +220,11 @@ S9sOptions::setMode(
     
     if (modeName == "cluster") 
     {
+        S9S_DEBUG("*** m_operationMode: Cluster");
         m_operationMode = Cluster;
     } else if (modeName == "node")
     {
+        S9S_DEBUG("*** m_operationMode: Node");
         m_operationMode = Node;
     } else if (modeName.startsWith("-"))
     {
@@ -288,6 +290,82 @@ S9sOptions::readOptionsNode(
 
             case 't':
                 m_options["rpc_token"] = optarg;
+                break;
+
+            case '1':
+                m_options["config-file"] = optarg;
+                break;
+
+            default:
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::readOptionsCluster(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "config-file",      required_argument, 0, '1' },
+        { "list",             no_argument,       0, 'L' },
+        { "long",             no_argument,       0, 'l' },
+        { 0, 0, 0, 0 }
+    };
+
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VLl", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                setController(optarg);
+                break;
+
+            case 'P':
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                m_options["rpc_token"] = optarg;
+                break;
+
+            case 'l':
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                m_options["list"] = true;
                 break;
 
             case '1':

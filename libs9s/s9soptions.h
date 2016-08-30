@@ -62,6 +62,7 @@ class S9sOptions
     private:
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
+        bool readOptionsCluster(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);
 
