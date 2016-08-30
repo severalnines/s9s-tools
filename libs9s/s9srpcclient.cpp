@@ -4,7 +4,7 @@
 #include "s9srpcclient.h"
 #include "s9srpcclient_p.h"
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -76,6 +76,24 @@ S9sRpcClient::operator= (
 	return *this;
 }
 
+void
+S9sRpcClient::getClusters()
+{
+    S9sString uri = "/0/clusters/";
+    S9sString request; 
+    
+    request.sprintf(
+        "{\n"
+        "  \"token\":\"%s\",\n"
+        "  \"user\":\"cmonjsclient\"\n"
+        "}\n",
+        STR(m_priv->m_token)
+        );
+
+    S9S_DEBUG("*** request: \n%s\n", STR(request));
+    executeRequest(uri, request);
+}
+
 int
 S9sRpcClient::executeRequest(
         const S9sString &uri,
@@ -109,6 +127,7 @@ S9sRpcClient::executeRequest(
     /*
      * Sending teh HTTP request header.
      */
+    S9S_DEBUG("write: \n%s", STR(header));
     if (m_priv->writeSocket(socketFd, STR(header), header.length()) < 0)
     {
         S9S_WARNING("Error writing socket %d: %m", socketFd);
@@ -122,6 +141,7 @@ S9sRpcClient::executeRequest(
      */
     if (!payload.empty())
     {
+        S9S_DEBUG("write: \n%s", STR(payload));
         if (m_priv->writeSocket(socketFd, STR(payload), payload.length()) < 0)
         {
             S9S_WARNING("Error writing socket %d: %m", socketFd);
@@ -145,6 +165,7 @@ S9sRpcClient::executeRequest(
                 m_priv->m_buffer + m_priv->m_dataSize, 
                 READ_SIZE - 1);
 
+        S9S_DEBUG("*** readLength: %d", readLength);
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
 

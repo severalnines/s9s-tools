@@ -19,8 +19,30 @@
  */
 #include "library.h"
 #include "S9sOptions"
+#include "S9sRpcClient"
 
 #include <stdio.h>
+
+//#define DEBUG
+#define WARNING
+#include "s9sdebug.h"
+
+//
+// FIXME: This is temporary, it will be much more complicated.
+// 
+int
+perform_task()
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sString    controller = options->controller();
+    int          port = options->controllerPort();
+    S9sString    token = options->rpcToken();
+    S9sRpcClient client(controller, port, token);
+
+    client.getClusters();
+    return 0;
+}
+
 
 int main(int argc, char **argv)
 {
@@ -47,6 +69,8 @@ int main(int argc, char **argv)
     finished = options->executeInfoRequest();
     if (finished)
         goto finalize;
+
+    perform_task();
 
 finalize:
     exitStatus = options->exitStatus();

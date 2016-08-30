@@ -21,6 +21,8 @@ class S9sRpcClient
 
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
 
+        void getClusters();
+
     protected:
         int executeRequest(
                 const S9sString &uri,
