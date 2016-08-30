@@ -92,7 +92,8 @@ S9sRpcClient::getClusters()
     
     request.sprintf(
         "{\n"
-        "  operation: \"getAllClusterInfo\",\n"
+        "  \"operation\": \"getAllClusterInfo\",\n"
+        "  \"with_hosts\": true,\n"
         "  \"token\":\"%s\",\n"
         "  \"user\":\"cmonjsclient\"\n"
         "}\n",

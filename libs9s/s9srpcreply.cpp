@@ -34,7 +34,9 @@ S9sRpcReply::printClusterList()
 {
     S9sOptions *options = S9sOptions::instance();
 
-    if (options->isLongRequested())
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
         printClusterListLong();
     else
         printClusterListBrief();
@@ -113,7 +115,7 @@ S9sRpcReply::printClusterListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
 
-    //printf("%s", STR(toString()));
+    printf("%s", STR(toString()));
 
     S9sVariantList theList = operator[]("clusters").toVariantList();
 

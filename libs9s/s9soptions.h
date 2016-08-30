@@ -54,6 +54,8 @@ class S9sOptions
 
         bool isListRequested() const;
         bool isLongRequested() const;
+        bool isJsonRequested() const;
+
 
         bool useSyntaxHighlight() const;
 

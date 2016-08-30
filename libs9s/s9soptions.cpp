@@ -67,6 +67,8 @@ S9sOptions::uninit()
 }
 
 /**
+ * \param uri the Cmon Controller host or host:port.
+ *
  * Sets the controller host name. If the passed string has the format
  * HOSTNAME:PORT sets the controller port too.
  */
@@ -145,6 +147,16 @@ S9sOptions::isLongRequested() const
         return m_options.at("long").toBoolean();
 
     return false;
+}
+
+bool
+S9sOptions::isJsonRequested() const
+{
+    if (m_options.contains("print_json"))
+        return m_options.at("print_json").toBoolean();
+
+    return false;
+
 }
 
 /**
@@ -403,6 +415,7 @@ S9sOptions::readOptionsCluster(
         { "rpc-token",        required_argument, 0, 't' },
         { "list",             no_argument,       0, 'L' },
         { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
 
@@ -462,6 +475,10 @@ S9sOptions::readOptionsCluster(
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
+                break;
+
+            case '3':
+                m_options["print_json"] = true;
                 break;
 
             default:
