@@ -12,7 +12,7 @@ AM_CPPFLAGS += -pipe
 LDADD = -L../libs9s -ls9s
 
 #add '../libs9s' to the lib search path
-AM_LDFLAGS = -Wl,-rpath,. -Wl,-rpath,../libs9s
+AM_LDFLAGS = -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,./libs9s
 
 if COND_GCOV
    AM_CPPFLAGS += -fprofile-arcs -ftest-coverage --no-inline
