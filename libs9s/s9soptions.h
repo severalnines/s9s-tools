@@ -27,7 +27,7 @@
     S9sOptions::printVerbose(__VA_ARGS__)
 
 /**
- * Singleton class to handle s9s command line options.
+ * Singleton class to handle s9s command line options and settings.
  */
 class S9sOptions
 {

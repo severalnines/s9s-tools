@@ -66,6 +66,10 @@ S9sOptions::uninit()
     }
 }
 
+/**
+ * Sets the controller host name. If the passed string has the format
+ * HOSTNAME:PORT sets the controller port too.
+ */
 void
 S9sOptions::setController(
         const S9sString &url)
@@ -82,6 +86,9 @@ S9sOptions::setController(
     }
 }
 
+/**
+ * \returns the controller hostname.
+ */
 S9sString
 S9sOptions::controller() const
 {
@@ -91,6 +98,9 @@ S9sOptions::controller() const
     return S9sString();
 }
 
+/**
+ * \returns the controller port.
+ */
 int
 S9sOptions::controllerPort() const
 {
@@ -100,6 +110,9 @@ S9sOptions::controllerPort() const
     return 0;
 }
 
+/**
+ * \returns the RPC token to be used while communicating with the controller.
+ */
 S9sString
 S9sOptions::rpcToken() const
 {
@@ -109,6 +122,10 @@ S9sOptions::rpcToken() const
     return S9sString();
 }
 
+/**
+ * \returns true if the "list" function is requested by providing the --list
+ *   command line option.
+ */
 bool
 S9sOptions::isListRequested() const
 {
@@ -118,6 +135,9 @@ S9sOptions::isListRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --long command line option was provided.
+ */
 bool
 S9sOptions::isLongRequested() const
 {
@@ -127,6 +147,9 @@ S9sOptions::isLongRequested() const
     return false;
 }
 
+/**
+ * \returns true if the program should use syntax highlighting in its output.
+ */
 bool
 S9sOptions::useSyntaxHighlight() const
 {
@@ -146,18 +169,28 @@ S9sOptions::useSyntaxHighlight() const
     return false;
 }
 
+/**
+ * \returns the binary program name of the running application.
+ */
 S9sString
 S9sOptions::binaryName() const
 {
     return m_myName;
 }
 
+/**
+ * \returns the current exit status of the running application.
+ */
 int 
 S9sOptions::exitStatus() const 
 { 
     return m_exitStatus; 
 }
 
+/**
+ * \returns true if the application is in verbose mode (for e.g. the --verbose
+ *   command line option is provided when the program was started)
+ */
 bool
 S9sOptions::isVerbose() const
 {
@@ -167,6 +200,9 @@ S9sOptions::isVerbose() const
     return m_options.at("verbose").toBoolean();
 }
 
+/**
+ * \returns a human readable error description stored inside the object.
+ */
 S9sString 
 S9sOptions::errorString() const
 {
