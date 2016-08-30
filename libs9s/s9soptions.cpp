@@ -68,7 +68,35 @@ void
 S9sOptions::setController(
         const S9sString &url)
 {
-    S9S_WARNING("Not implemented yet.");
+    // FIXME: here we will use the S9sRegExp to parse the url.
+    m_options["controller"] = url;
+}
+
+S9sString
+S9sOptions::controller() const
+{
+    if (m_options.contains("controller"))
+        return m_options.at("controller").toString();
+
+    return S9sString();
+}
+
+int
+S9sOptions::controllerPort() const
+{
+    if (m_options.contains("controller_port"))
+        return m_options.at("controller_port").toInt();
+
+    return 0;
+}
+
+S9sString
+S9sOptions::rpcToken() const
+{
+    if (m_options.contains("rpc_token"))
+        return m_options.at("rpc_token").toString();
+
+    return S9sString();
 }
 
 S9sString

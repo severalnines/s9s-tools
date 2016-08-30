@@ -46,6 +46,11 @@ class S9sOptions
         bool executeInfoRequest();
 
         void setController(const S9sString &url);
+        S9sString controller() const;
+
+        int controllerPort() const;
+
+        S9sString rpcToken() const;
 
         S9sString binaryName() const;
         S9sString errorString() const;
