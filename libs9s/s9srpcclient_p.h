@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include "S9sString"
+#include "S9sVariantMap"
 
 class S9sRpcClientPrivate
 {
@@ -29,6 +30,8 @@ class S9sRpcClientPrivate
         S9sString       m_hostName;
         int             m_port;
         S9sString       m_token;
+        S9sString       m_jsonReply;
+        S9sVariantMap   m_reply;
         char           *m_buffer;
         size_t          m_bufferSize;
         size_t          m_dataSize;

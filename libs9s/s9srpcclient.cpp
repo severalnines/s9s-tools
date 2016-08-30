@@ -4,6 +4,8 @@
 #include "s9srpcclient.h"
 #include "s9srpcclient_p.h"
 
+#include <string.h>
+
 #define DEBUG
 #define WARNING
 #include "s9sdebug.h"
@@ -102,6 +104,9 @@ S9sRpcClient::executeRequest(
     S9sString    header;
     int          socketFd = m_priv->connectSocket();
     ssize_t      readLength;
+   
+    m_priv->m_jsonReply.clear();
+    m_priv->m_reply.clear();
 
     if (socketFd < 0)
     {
@@ -179,6 +184,25 @@ S9sRpcClient::executeRequest(
     // Closing the socket.
     m_priv->closeSocket(socketFd);
     
-    S9S_WARNING("reply: \n%s\n", m_priv->m_buffer);
+    if (m_priv->m_dataSize > 1)
+    {
+        char *tmp = strstr(m_priv->m_buffer, "\r\n\r\n");
+
+        if (tmp)
+            m_priv->m_jsonReply = (tmp + 4);
+    
+        S9S_WARNING("reply: \n%s\n", STR(m_priv->m_jsonReply));
+    } else {
+        return -1;
+    }
+
+    if (!m_priv->m_reply.parse(STR(m_priv->m_jsonReply)))
+    {
+        S9S_WARNING("Error parsing JSON reply.");
+        return -1;
+    } else {
+        S9S_DEBUG("JSON reply parsed.");
+    }
+
     return 0;
 }
