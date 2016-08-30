@@ -23,12 +23,13 @@ class S9sRpcClient
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
     
         const S9sRpcReply &reply() const;
-
+        S9sString errorString() const;
+        
         /*
          * The executers that send an RPC request and receive an RPC reply from
          * the server.
          */
-        void getClusters();
+        bool getClusters();
 
     protected:
         int executeRequest(

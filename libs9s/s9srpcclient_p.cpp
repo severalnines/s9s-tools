@@ -88,7 +88,7 @@ S9sRpcClientPrivate::connectSocket()
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd == -1)
     {
-        S9S_WARNING("Error creating socket: %m");
+        m_errorString.sprintf("Error creating socket: %m");
         return -1; 
     }
 
@@ -110,12 +110,12 @@ S9sRpcClientPrivate::connectSocket()
     if (hp == NULL)
     {
         S9S_WARNING("Host '%s' not found: %m.", STR(m_hostName));
-        //_cmon_rpc_private_socket_close(priv, socketFd);
+        closeSocket(socketFd);
         return -1;
     }
 
     /*
-     * connect
+     * Connecting to the server.
      */
     memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;
@@ -123,9 +123,11 @@ S9sRpcClientPrivate::connectSocket()
 
     if (connect(socketFd, (struct sockaddr *) &server, sizeof server) == -1)
     {
-        S9S_WARNING("Connect to %s:%d failed: %m", STR(m_hostName), m_port);
-       
-        //_cmon_rpc_private_socket_close(priv, socketFd);
+        m_errorString.sprintf(
+                "Connect to %s:%d failed: %m.", 
+                STR(m_hostName), m_port);
+      
+        closeSocket(socketFd);
         return -1;
     }
 

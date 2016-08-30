@@ -84,12 +84,19 @@ S9sRpcClient::reply() const
     return m_priv->m_reply;
 }
 
-void
+S9sString 
+S9sRpcClient::errorString() const
+{
+    return m_priv->m_errorString;
+}
+
+bool
 S9sRpcClient::getClusters()
 {
     S9sString uri = "/0/clusters/";
     S9sString request; 
-    
+    int       retcode;
+
     request.sprintf(
         "{\n"
         "  \"operation\": \"getAllClusterInfo\",\n"
@@ -101,9 +108,14 @@ S9sRpcClient::getClusters()
         );
 
     S9S_DEBUG("*** request: \n%s\n", STR(request));
-    executeRequest(uri, request);
+    retcode = executeRequest(uri, request);
+
+    return retcode == 0;
 }
 
+/**
+ * \returns 0 if everything is ok.
+ */
 int
 S9sRpcClient::executeRequest(
         const S9sString &uri,
@@ -117,10 +129,7 @@ S9sRpcClient::executeRequest(
     m_priv->m_reply.clear();
 
     if (socketFd < 0)
-    {
-        S9S_WARNING("Connect error.");
         return -1;
-    }
 
     header.sprintf(
         "POST %s HTTP/1.0\r\n"

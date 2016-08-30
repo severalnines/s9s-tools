@@ -42,10 +42,16 @@ perform_task()
     if (options->isListRequested())
     {
         S9sRpcReply reply;
+        bool        success;
 
-        client.getClusters();
-        reply = client.reply();
-        reply.printClusterList();
+        success = client.getClusters();
+        if (success)
+        {
+            reply = client.reply();
+            reply.printClusterList();
+        } else {
+            fprintf(stderr, "%s\n", STR(client.errorString()));
+        }
     }
 
     return 0;
