@@ -359,7 +359,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L' },
         { "long",             no_argument,       0, 'l' },
         { "config-file",      required_argument, 0, '1' },
-        { "color",            required_argument, 0, '2' },
+        { "color",            optional_argument, 0, '2' },
 
         { 0, 0, 0, 0 }
     };
@@ -413,7 +413,10 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case '2':
-                m_options["color"] = optarg;
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
                 break;
 
             default:
