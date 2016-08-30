@@ -216,18 +216,22 @@ S9sOptions::readOptionsNode(
     int           c;
     struct option long_options[] =
     {
-        { "help",          no_argument,       0, 'h' },
-        { "verbose",       no_argument,       0, 'v' },
-        { "version",       no_argument,       0, 'V' },
-        { "controller",    required_argument, 0, 'c' },
-        { "config-file",   required_argument, 0, '1' },
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "config-file",      required_argument, 0, '1' },
         { 0, 0, 0, 0 }
     };
 
     for (;;)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "hvc:V", long_options, &option_index);
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V", 
+                long_options, &option_index);
 
         if (c == -1)
             break;
@@ -247,8 +251,15 @@ S9sOptions::readOptionsNode(
                 break;
 
             case 'c':
-                //m_options["config-file"] = optarg;
                 setController(optarg);
+                break;
+
+            case 'P':
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                m_options["rpc_token"] = optarg;
                 break;
 
             case '1':
