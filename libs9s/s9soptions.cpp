@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "S9sFile"
+#include "S9sRegExp"
 
 #include <stdio.h>
 #include <cstdlib>
@@ -69,8 +70,16 @@ void
 S9sOptions::setController(
         const S9sString &url)
 {
-    // FIXME: here we will use the S9sRegExp to parse the url.
-    m_options["controller"] = url;
+    S9sRegExp regexp;
+   
+    regexp = "(.+):([0-9]+)";
+    if (regexp == url)
+    {
+        m_options["controller"]      = regexp[1];
+        m_options["controller_port"] = regexp[2].toInt();
+    } else {
+        m_options["controller"] = url;
+    }
 }
 
 S9sString

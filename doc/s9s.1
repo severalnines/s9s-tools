@@ -15,7 +15,6 @@ General options for \fBs9s\fP:
 
 .B \-h, \-\-help
 Print the help message and exist.
-printed as integers.
 .TP
 
 .B \-v, \-\-verbose
@@ -26,15 +25,16 @@ Print more messages than normally.
 Print version information and exit.
 .TP
 
-.BI \-c " HOSTNAME" "\fR,\fP \-\^\-controller=" HOSTNAME
-The host name of the Cmon Controller.
+.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The port is also accepted as part of the
+hostname.
 .TP
 
-.B \-P, \-\-controller-port
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
 The port where the Cmon Controller is waiting for connections.
 .TP
 
-.B \-t, \-\-rpc-token
+.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
 The RPC token to be used when authenticating on the Cmon Controller.
 .TP
 
