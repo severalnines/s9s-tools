@@ -55,6 +55,8 @@ class S9sOptions
         bool isListRequested() const;
         bool isLongRequested() const;
 
+        bool useSyntaxHighlight() const;
+
         S9sString binaryName() const;
         S9sString errorString() const;
         int exitStatus() const;

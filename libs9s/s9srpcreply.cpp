@@ -44,14 +44,19 @@ S9sRpcReply::printClusterList()
 void 
 S9sRpcReply::printClusterListBrief()
 {
-    S9sVariantList theList = operator[]("clusters").toVariantList();
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
         S9sString     clusterName = theMap["cluster_name"].toString();
 
-        printf("%s ", STR(clusterName));
+        if (syntaxHighlight)
+            printf("%s%s%s ", TERM_BLUE, STR(clusterName), TERM_NORMAL);
+        else
+            printf("%s ", STR(clusterName));
     }
 
     printf("\n");
@@ -106,7 +111,7 @@ void
 S9sRpcReply::printClusterListLong()
 {
     //printf("%s", STR(toString()));
-#if 1
+
     S9sVariantList theList = operator[]("clusters").toVariantList();
 
     printf("Total: %lu\n", theList.size());
@@ -130,7 +135,6 @@ S9sRpcReply::printClusterListLong()
                 STR(clusterName),
                 STR(text));
     }
-#endif
 }
 
 char 

@@ -26,9 +26,10 @@
 #include <cstdlib>
 #include <getopt.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
@@ -113,6 +114,25 @@ S9sOptions::isLongRequested() const
 {
     if (m_options.contains("long"))
         return m_options.at("long").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::useSyntaxHighlight() const
+{
+    S9sString configValue = "auto";
+
+    if (m_options.contains("color"))
+        configValue = m_options.at("color").toString();
+
+    if (configValue.toLower() == "auto")
+    {
+        return isatty(fileno(stdout)) ? true : false;
+    } else if (configValue.toLower() == "always")
+    {
+        return true;
+    }
 
     return false;
 }
@@ -336,9 +356,11 @@ S9sOptions::readOptionsCluster(
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
-        { "config-file",      required_argument, 0, '1' },
         { "list",             no_argument,       0, 'L' },
         { "long",             no_argument,       0, 'l' },
+        { "config-file",      required_argument, 0, '1' },
+        { "color",            required_argument, 0, '2' },
+
         { 0, 0, 0, 0 }
     };
 
@@ -388,6 +410,10 @@ S9sOptions::readOptionsCluster(
 
             case '1':
                 m_options["config-file"] = optarg;
+                break;
+
+            case '2':
+                m_options["color"] = optarg;
                 break;
 
             default:
