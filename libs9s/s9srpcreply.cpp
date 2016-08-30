@@ -110,6 +110,9 @@ s9s cluster --list --long  --controller=localhost --controller-port=9555 --rpc-t
 void 
 S9sRpcReply::printClusterListLong()
 {
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+
     //printf("%s", STR(toString()));
 
     S9sVariantList theList = operator[]("clusters").toVariantList();
@@ -126,14 +129,26 @@ S9sRpcReply::printClusterListLong()
         bool          nRecovery   = theMap["node_auto_recovery"].toBoolean();
         S9sString     text        = theMap["status_text"].toString();
         
-        printf("%c%c%c %4d %-14s %-20s %s\n", 
-                stateFlagFromState(state),
-                cRecovery ? 'c' : '-',
-                nRecovery ? 'n' : '-',
-                clusterId, 
-                STR(clusterType.toLower()),
-                STR(clusterName),
-                STR(text));
+        if (syntaxHighlight)
+        {
+            printf("%c%c%c %4d %-14s %s%-20s%s %s\n", 
+                    stateFlagFromState(state),
+                    cRecovery ? 'c' : '-',
+                    nRecovery ? 'n' : '-',
+                    clusterId, 
+                    STR(clusterType.toLower()),
+                    TERM_BLUE, STR(clusterName), TERM_NORMAL,
+                    STR(text));
+        } else {
+            printf("%c%c%c %4d %-14s %-20s %s\n", 
+                    stateFlagFromState(state),
+                    cRecovery ? 'c' : '-',
+                    nRecovery ? 'n' : '-',
+                    clusterId, 
+                    STR(clusterType.toLower()),
+                    STR(clusterName),
+                    STR(text));
+        }
     }
 }
 
