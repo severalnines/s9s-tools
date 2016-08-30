@@ -99,6 +99,24 @@ S9sOptions::rpcToken() const
     return S9sString();
 }
 
+bool
+S9sOptions::isListRequested() const
+{
+    if (m_options.contains("list"))
+        return m_options.at("list").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isLongRequested() const
+{
+    if (m_options.contains("long"))
+        return m_options.at("long").toBoolean();
+
+    return false;
+}
+
 S9sString
 S9sOptions::binaryName() const
 {

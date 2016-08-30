@@ -39,7 +39,9 @@ perform_task()
     S9sString    token = options->rpcToken();
     S9sRpcClient client(controller, port, token);
 
-    client.getClusters();
+    if (options->isListRequested())
+        client.getClusters();
+
     return 0;
 }
 

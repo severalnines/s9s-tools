@@ -52,6 +52,9 @@ class S9sOptions
 
         S9sString rpcToken() const;
 
+        bool isListRequested() const;
+        bool isLongRequested() const;
+
         S9sString binaryName() const;
         S9sString errorString() const;
         int exitStatus() const;
