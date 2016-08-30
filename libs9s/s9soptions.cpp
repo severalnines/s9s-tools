@@ -27,8 +27,8 @@
 #include <getopt.h>
 #include <stdarg.h>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;

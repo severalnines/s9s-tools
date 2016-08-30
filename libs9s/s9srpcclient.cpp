@@ -6,8 +6,8 @@
 
 #include <string.h>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -76,6 +76,12 @@ S9sRpcClient::operator= (
 	}
 
 	return *this;
+}
+
+const S9sRpcReply &
+S9sRpcClient::reply() const
+{
+    return m_priv->m_reply;
 }
 
 void

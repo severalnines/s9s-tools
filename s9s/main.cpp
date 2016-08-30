@@ -40,7 +40,13 @@ perform_task()
     S9sRpcClient client(controller, port, token);
 
     if (options->isListRequested())
+    {
+        S9sRpcReply reply;
+
         client.getClusters();
+        reply = client.reply();
+        reply.printClusterList();
+    }
 
     return 0;
 }

@@ -14,7 +14,7 @@
 #include "S9sOptions"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
