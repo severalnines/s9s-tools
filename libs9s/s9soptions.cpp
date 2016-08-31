@@ -374,6 +374,8 @@ S9sOptions::readOptionsNode(
     };
 
     //S9S_DEBUG("*** argc: %d", argc);
+    optind = 0;
+    opterr = 0;
     for (;;)
     {
         int option_index = 0;
@@ -466,6 +468,8 @@ S9sOptions::readOptionsCluster(
         { 0, 0, 0, 0 }
     };
 
+    optind = 0;
+    opterr = 0;
     for (;;)
     {
         int option_index = 0;
