@@ -44,6 +44,7 @@ UtS9sOptions::runTest(const char *testName)
 
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(testReadOptions01, retval);
+    PERFORM_TEST(testReadOptions02, retval);
 
     return retval;
 }
@@ -82,6 +83,36 @@ UtS9sOptions::testReadOptions01()
     
     S9S_COMPARE(options->binaryName(),     "s9s");
     S9S_COMPARE(options->m_operationMode,  S9sOptions::Node);
+    S9S_COMPARE(options->controller(),     "localhost");
+    S9S_COMPARE(options->controllerPort(), 9555);
+    S9S_COMPARE(options->rpcToken(),       "the_token");
+    S9S_VERIFY(options->isListRequested());
+    S9S_VERIFY(options->isVerbose());
+    S9S_VERIFY(options->useSyntaxHighlight());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testReadOptions02()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool  success;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "job", "--list", "--controller=localhost:9555",
+        "--rpc-token=the_token", "--color=always", "--verbose",
+        NULL 
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),     "s9s");
+    S9S_COMPARE(options->m_operationMode,  S9sOptions::Job);
     S9S_COMPARE(options->controller(),     "localhost");
     S9S_COMPARE(options->controllerPort(), 9555);
     S9S_COMPARE(options->rpcToken(),       "the_token");

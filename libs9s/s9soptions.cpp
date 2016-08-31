@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -67,7 +67,7 @@ S9sOptions::uninit()
 }
 
 /**
- * \param uri the Cmon Controller host or host:port.
+ * \param url the Cmon Controller host or host:port.
  *
  * Sets the controller host name. If the passed string has the format
  * HOSTNAME:PORT sets the controller port too.
@@ -77,7 +77,8 @@ S9sOptions::setController(
         const S9sString &url)
 {
     S9sRegExp regexp;
-  
+ 
+    S9S_DEBUG("*** url: '%s'", STR(url));
     regexp = "(.+):([0-9]+)";
     if (regexp == url)
     {
@@ -273,7 +274,7 @@ S9sOptions::readOptions(
         return false;
     }
 
-    retval   = setMode(argv[1]);
+    retval = setMode(argv[1]);
     if (!retval)
         return retval;
 
@@ -354,6 +355,7 @@ S9sOptions::readOptionsNode(
         int    argc,
         char  *argv[])
 {
+    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -445,6 +447,7 @@ S9sOptions::readOptionsCluster(
         int    argc,
         char  *argv[])
 {
+    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -535,6 +538,7 @@ S9sOptions::readOptionsJob(
         int    argc,
         char  *argv[])
 {
+    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -553,6 +557,9 @@ S9sOptions::readOptionsJob(
         { 0, 0, 0, 0 }
     };
 
+    S9S_DEBUG("*** argc : %d", argc);
+    optind = 0;
+    opterr = 0;
     for (;;)
     {
         int option_index = 0;
@@ -562,6 +569,8 @@ S9sOptions::readOptionsJob(
 
         if (c == -1)
             break;
+        
+        S9S_DEBUG("*** c : '%c'", c);
 
         switch (c)
         {
@@ -625,6 +634,7 @@ S9sOptions::readOptionsNoMode(
         int    argc,
         char  *argv[])
 {
+    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
