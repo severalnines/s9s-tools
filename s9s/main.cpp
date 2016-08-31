@@ -67,7 +67,8 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
-    } else if (options->isJobOperationRequested())
+    } else if (options->isJobOperationRequested() &&
+            options->isListRequested())
     {
         S9sRpcReply reply;
         int         clusterId = options->clusterId();
@@ -77,7 +78,7 @@ perform_task()
         if (success)
         {
             reply = client.reply();
-            fprintf(stderr, "%s", STR(reply.toString()));
+            reply.printJobList();
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }

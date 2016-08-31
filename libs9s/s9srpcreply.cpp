@@ -28,6 +28,19 @@
 #include "s9sdebug.h"
 
 void 
+S9sRpcReply::printJobList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printJobListLong();
+    else
+        printJobListBrief();
+}
+
+void 
 S9sRpcReply::printNodeList()
 {
     S9sOptions *options = S9sOptions::instance();
@@ -243,6 +256,56 @@ S9sRpcReply::printNodeListLong()
                     STR(text));
         }
     }
+}
+
+void 
+S9sRpcReply::printJobListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("jobs").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        int            jobId  = theMap["job_id"].toInt();
+        S9sString      status = theMap["status"].toString();
+        S9sString      title  = theMap["title"].toString();
+
+        if (syntaxHighlight)
+        {
+            // RUNNING: XTERM_COLOR_9
+            // FAILED:  XTERM_COLOR_1
+            if (status == "RUNNING" || status == "RUNNING_EXT")
+            {
+                printf("%5d %s%-12s%s %s\n", jobId, 
+                        XTERM_COLOR_9, STR(status), TERM_NORMAL,
+                        STR(title));
+            } else if (status == "FINISHED")
+            {
+                printf("%5d %s%-12s%s %s\n", jobId, 
+                        XTERM_COLOR_9, STR(status), TERM_NORMAL,
+                        STR(title));
+            } else if (status == "FAILED")
+            {
+                printf("%5d %s%-12s%s %s\n", jobId, 
+                        XTERM_COLOR_1, STR(status), TERM_NORMAL,
+                        STR(title));
+            } else {
+                printf("%5d %-12s %s\n", jobId, 
+                        STR(status), STR(title));
+            }
+        } else {
+            printf("%5d %14s %s\n", jobId, STR(status), STR(title));
+        }
+    }
+}
+
+
+void 
+S9sRpcReply::printJobListLong()
+{
+    printf("TBD\n");
 }
 
 char 

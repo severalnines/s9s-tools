@@ -120,29 +120,29 @@ typedef enum S9sMessageLevel
 #  define TERM_BOLD    "\033[1m"
 /** Turns underline in the terminal. */
 #  define TERM_UNDERLINE    "\033[4m"
-/** Terminal custom color. */
+/** Dark red. */
 #  define XTERM_COLOR_1 "\033[38;5;1m"
-/** Terminal custom color. */
+/** Dark green. */
 #  define XTERM_COLOR_2 "\033[38;5;2m"
-/** Terminal custom color. */
+/** Dark orange. */
 #  define XTERM_COLOR_3 "\033[38;5;3m"
-/** Terminal custom color. */
+/** Dark blue. */
 #  define XTERM_COLOR_4 "\033[38;5;4m"
-/** Terminal custom color. */
+/** Brown. */
 #  define XTERM_COLOR_5 "\033[38;5;5m"
-/** Terminal custom color. */
+/** Greenish blue. */
 #  define XTERM_COLOR_6 "\033[38;5;6m"
-/** Terminal custom color. */
+/** Dark grey. */
 #  define XTERM_COLOR_7 "\033[38;5;8m"
-/** Terminal custom color. */
+/** Red color. */
 #  define XTERM_COLOR_8 "\033[38;5;9m"
-/** Terminal custom color. */
+/** Green color. */
 #  define XTERM_COLOR_9 "\033[38;5;10m"
-/** Terminal custom color. */
+/** Blue color. */
 #  define XTERM_COLOR_10 "\033[38;5;12m"
-/** Terminal custom color. */
+/** Light brown color. */
 #  define XTERM_COLOR_11 "\033[38;5;13m"
-/** Terminal custom color. */
+/** Light blue color. */
 #  define XTERM_COLOR_12 "\033[38;5;14m"
 /** Terminal custom color. */
 #  define XTERM_COLOR_13 "\033[38;5;17m"

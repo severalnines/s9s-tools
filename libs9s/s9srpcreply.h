@@ -26,6 +26,7 @@ class S9sRpcReply : public S9sVariantMap
     public:
         void printClusterList();
         void printNodeList();
+        void printJobList();
 
     private:
         void printClusterListBrief();
@@ -33,6 +34,9 @@ class S9sRpcReply : public S9sVariantMap
         
         void printNodeListBrief();
         void printNodeListLong();
+        
+        void printJobListBrief();
+        void printJobListLong();
 
         char stateFlagFromState(const S9sString &state);
 };
