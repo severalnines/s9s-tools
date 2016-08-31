@@ -126,6 +126,7 @@ S9sRpcClient::getJobInstances(
     int       retcode;
 
     uri.sprintf("/%d/job/", clusterId);
+    S9S_WARNING("uri: %s", STR(uri));
     request.sprintf(
         "{\n"
         "  \"operation\": \"getJobInstances\",\n"
@@ -150,6 +151,7 @@ S9sRpcClient::rollingRestart(
     int       retcode;
 
     uri.sprintf("/%d/job/", clusterId);
+    S9S_WARNING("uri: %s", STR(uri));
     request.sprintf(
         "{\n"
         "  \"token\": \"%s\",\n"
