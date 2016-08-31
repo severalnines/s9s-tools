@@ -286,6 +286,10 @@ S9sOptions::readOptions(
         case Cluster:
             retval = readOptionsCluster(*argc, argv);
             break;
+        
+        case Job:
+            retval = readOptionsJob(*argc, argv);
+            break;
 
         case Node:
             retval = readOptionsNode(*argc, argv);
@@ -326,12 +330,13 @@ S9sOptions::setMode(
     
     if (modeName == "cluster") 
     {
-        //S9S_DEBUG("*** m_operationMode: Cluster");
         m_operationMode = Cluster;
     } else if (modeName == "node")
     {
-        //S9S_DEBUG("*** m_operationMode: Node");
         m_operationMode = Node;
+    } else if (modeName == "job")
+    {
+        m_operationMode = Job;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -437,6 +442,96 @@ S9sOptions::readOptionsNode(
 
 bool
 S9sOptions::readOptionsCluster(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "list",             no_argument,       0, 'L' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0, '3' },
+        { "config-file",      required_argument, 0, '1' },
+        { "color",            optional_argument, 0, '2' },
+
+        { 0, 0, 0, 0 }
+    };
+
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VLl", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                setController(optarg);
+                break;
+
+            case 'P':
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                m_options["rpc_token"] = optarg;
+                break;
+
+            case 'l':
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                m_options["list"] = true;
+                break;
+
+            case '1':
+                m_options["config-file"] = optarg;
+                break;
+
+            case '2':
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case '3':
+                m_options["print_json"] = true;
+                break;
+
+            default:
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::readOptionsJob(
         int    argc,
         char  *argv[])
 {

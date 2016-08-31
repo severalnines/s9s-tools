@@ -30,6 +30,7 @@ class S9sRpcClient
          * the server.
          */
         bool getClusters();
+        bool getJobInstances(const int clusterId);
 
     protected:
         int executeRequest(

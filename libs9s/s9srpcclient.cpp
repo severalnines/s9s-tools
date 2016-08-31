@@ -90,6 +90,10 @@ S9sRpcClient::errorString() const
     return m_priv->m_errorString;
 }
 
+/**
+ * The method that sends the "getAllClusterInfo" RPC request and reads the
+ * reply.
+ */
 bool
 S9sRpcClient::getClusters()
 {
@@ -111,6 +115,15 @@ S9sRpcClient::getClusters()
     retcode = executeRequest(uri, request);
 
     return retcode == 0;
+}
+
+bool
+S9sRpcClient::getJobInstances(
+        const int clusterId)
+{
+    //S9sString uri;
+
+    return true;
 }
 
 /**
