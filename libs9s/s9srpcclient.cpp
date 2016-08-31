@@ -141,6 +141,34 @@ S9sRpcClient::getJobInstances(
     return retcode == 0;
 }
 
+bool
+S9sRpcClient::rollingRestart(
+        const int clusterId)
+{
+    S9sString uri;
+    S9sString request;
+    int       retcode;
+
+    uri.sprintf("/%d/job/", clusterId);
+    request.sprintf(
+        "{\n"
+        "  \"token\": \"%s\",\n"
+        "  \"operation\": \"createJob\",\n"
+        "  \"job\": \n"
+        "  {\n"
+        "    \"command\": \"rolling_restart\"\n"
+        "  }\n"
+        "}",
+        STR(m_priv->m_token)
+        );
+
+    S9S_DEBUG("*** request: \n%s\n", STR(request));
+    retcode = executeRequest(uri, request);
+
+    return retcode == 0;
+}
+
+
 /**
  * \returns 0 if everything is ok.
  */

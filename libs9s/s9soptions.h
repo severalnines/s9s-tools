@@ -60,6 +60,7 @@ class S9sOptions
 
 
         bool isListRequested() const;
+        bool isRollingRestartRequested() const;
         bool isLongRequested() const;
         bool isJsonRequested() const;
 

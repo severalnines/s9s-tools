@@ -31,6 +31,7 @@ class S9sRpcClient
          */
         bool getClusters();
         bool getJobInstances(const int clusterId);
+        bool rollingRestart(const int clusterId);
 
     protected:
         int executeRequest(

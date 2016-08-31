@@ -169,6 +169,15 @@ S9sOptions::isListRequested() const
     return false;
 }
 
+bool
+S9sOptions::isRollingRestartRequested() const
+{
+    if (m_options.contains("rolling_restart"))
+        return m_options.at("rolling_restart").toBoolean();
+
+    return false;
+}
+
 /**
  * \returns true if the --long command line option was provided.
  */
@@ -479,6 +488,7 @@ S9sOptions::readOptionsCluster(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "list",             no_argument,       0, 'L' },
+        { "rolling-restart",  no_argument,       0, 'R' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
@@ -531,6 +541,10 @@ S9sOptions::readOptionsCluster(
 
             case 'L': 
                 m_options["list"] = true;
+                break;
+            
+            case 'R': 
+                m_options["rolling_restart"] = true;
                 break;
 
             case '1':

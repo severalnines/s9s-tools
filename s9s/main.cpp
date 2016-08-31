@@ -53,6 +53,21 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
+    } else if (options->isClusterOperationRequested() && 
+            options->isRollingRestartRequested())
+    {
+        int         clusterId = options->clusterId();
+        S9sRpcReply reply;
+        bool        success;
+
+        success = client.rollingRestart(clusterId);
+        if (success)
+        {
+            reply = client.reply();
+            printf("%s\n", STR(reply.toString()));
+        } else {
+            fprintf(stderr, "ERROR: %s\n", STR(client.errorString()));
+        }
     } else if (options->isNodeOperationRequested() && 
             options->isListRequested())
     {
