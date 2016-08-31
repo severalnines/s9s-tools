@@ -52,10 +52,12 @@ class S9sOptions
 
         S9sString rpcToken() const;
 
+        bool isNodeOperationRequested() const;
+        bool isClusterOperationRequested() const;
+
         bool isListRequested() const;
         bool isLongRequested() const;
         bool isJsonRequested() const;
-
 
         bool useSyntaxHighlight() const;
 

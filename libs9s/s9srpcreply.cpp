@@ -27,6 +27,18 @@
 #define WARNING
 #include "s9sdebug.h"
 
+void 
+S9sRpcReply::printNodeList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printNodeListLong();
+    else
+        printNodeListBrief();
+}
 
 
 void 
@@ -111,6 +123,79 @@ s9s cluster --list --long  --controller=localhost --controller-port=9555 --rpc-t
  */
 void 
 S9sRpcReply::printClusterListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+
+    printf("%s", STR(toString()));
+
+    S9sVariantList theList = operator[]("clusters").toVariantList();
+
+    printf("Total: %lu\n", theList.size());
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap      = theList[idx].toVariantMap();
+        S9sString     clusterName = theMap["cluster_name"].toString();
+        int           clusterId   = theMap["cluster_id"].toInt();
+        S9sString     clusterType = theMap["cluster_type"].toString();
+        S9sString     state       = theMap["state"].toString();
+        bool          cRecovery   = theMap["cluster_auto_recovery"].toBoolean();
+        bool          nRecovery   = theMap["node_auto_recovery"].toBoolean();
+        S9sString     text        = theMap["status_text"].toString();
+        
+        if (syntaxHighlight)
+        {
+            printf("%c%c%c %4d %-14s %s%-20s%s %s\n", 
+                    stateFlagFromState(state),
+                    cRecovery ? 'c' : '-',
+                    nRecovery ? 'n' : '-',
+                    clusterId, 
+                    STR(clusterType.toLower()),
+                    TERM_BLUE, STR(clusterName), TERM_NORMAL,
+                    STR(text));
+        } else {
+            printf("%c%c%c %4d %-14s %-20s %s\n", 
+                    stateFlagFromState(state),
+                    cRecovery ? 'c' : '-',
+                    nRecovery ? 'n' : '-',
+                    clusterId, 
+                    STR(clusterType.toLower()),
+                    STR(clusterName),
+                    STR(text));
+        }
+    }
+}
+
+void 
+S9sRpcReply::printNodeListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        S9sVariantList hostList = theMap["hosts"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
+        {
+            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
+            S9sString     hostName = hostMap["hostname"].toString();
+
+            if (syntaxHighlight)
+                printf("%s%s%s ", TERM_BLUE, STR(hostName), TERM_NORMAL);
+            else
+                printf("%s ", STR(clusterName));
+        }
+    }
+
+    printf("\n");
+}
+
+void 
+S9sRpcReply::printNodeListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();

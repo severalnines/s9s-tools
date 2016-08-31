@@ -124,6 +124,18 @@ S9sOptions::rpcToken() const
     return S9sString();
 }
 
+bool
+S9sOptions::isNodeOperationRequested() const
+{
+    return m_operationMode == Node;
+}
+
+bool
+S9sOptions::isClusterOperationRequested() const
+{
+    return m_operationMode == Cluster;
+}
+
 /**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.

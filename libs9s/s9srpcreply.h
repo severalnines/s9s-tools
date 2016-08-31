@@ -25,10 +25,14 @@ class S9sRpcReply : public S9sVariantMap
 {
     public:
         void printClusterList();
+        void printNodeList();
 
     private:
         void printClusterListBrief();
         void printClusterListLong();
+        
+        void printNodeListBrief();
+        void printNodeListLong();
 
         char stateFlagFromState(const S9sString &state);
 };

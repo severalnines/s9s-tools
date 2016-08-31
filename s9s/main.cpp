@@ -39,7 +39,7 @@ perform_task()
     S9sString    token = options->rpcToken();
     S9sRpcClient client(controller, port, token);
 
-    if (options->isListRequested())
+    if (options->isClusterOperationRequested() && options->isListRequested())
     {
         S9sRpcReply reply;
         bool        success;
@@ -49,6 +49,19 @@ perform_task()
         {
             reply = client.reply();
             reply.printClusterList();
+        } else {
+            fprintf(stderr, "%s\n", STR(client.errorString()));
+        }
+    } else if (options->isNodeOperationRequested() && options->isListRequested())
+    {
+        S9sRpcReply reply;
+        bool        success;
+
+        success = client.getClusters();
+        if (success)
+        {
+            reply = client.reply();
+            reply.printNodeList();
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
