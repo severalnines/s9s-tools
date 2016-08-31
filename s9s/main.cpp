@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 //
@@ -39,9 +39,16 @@ perform_task()
     S9sString    token = options->rpcToken();
     S9sRpcClient client(controller, port, token);
 
+    S9S_WARNING("isClusterOperationRequested() : %s",
+            options->isClusterOperationRequested() ? "true" : "false");
+
+    S9S_WARNING("isRollingRestartRequested() : %s",
+            options->isRollingRestartRequested() ? "true" : "false");
+
     if (options->isClusterOperationRequested() && 
             options->isListRequested())
     {
+        S9S_WARNING("list");
         S9sRpcReply reply;
         bool        success;
 
@@ -60,6 +67,7 @@ perform_task()
         S9sRpcReply reply;
         bool        success;
 
+        S9S_WARNING("rolling-restart");
         success = client.rollingRestart(clusterId);
         if (success)
         {
@@ -112,6 +120,7 @@ int main(int argc, char **argv)
     success = options->readOptions(&argc, argv);
     if (!success)
     {
+        S9S_WARNING("Readoption failed.");
         if (!options->errorString().empty())
         {
             fprintf(stderr, "%s: %s\n\n", 

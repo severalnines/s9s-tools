@@ -172,10 +172,12 @@ S9sOptions::isListRequested() const
 bool
 S9sOptions::isRollingRestartRequested() const
 {
+    bool retval = false;
     if (m_options.contains("rolling_restart"))
-        return m_options.at("rolling_restart").toBoolean();
+        retval = m_options.at("rolling_restart").toBoolean();
 
-    return false;
+    S9S_WARNING("*** retval : %s", retval ? "true" : "false");
+    return retval;
 }
 
 /**
@@ -493,6 +495,7 @@ S9sOptions::readOptionsCluster(
         { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
+        { "cluster-id",       required_argument, 0, 'i' },
 
         { 0, 0, 0, 0 }
     };
@@ -503,7 +506,7 @@ S9sOptions::readOptionsCluster(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLl", 
+                argc, argv, "hvc:P:t:VLRli:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -543,7 +546,8 @@ S9sOptions::readOptionsCluster(
                 m_options["list"] = true;
                 break;
             
-            case 'R': 
+            case 'R':
+                S9S_WARNING("rolling restart");
                 m_options["rolling_restart"] = true;
                 break;
 
@@ -560,6 +564,10 @@ S9sOptions::readOptionsCluster(
 
             case '3':
                 m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             default:
