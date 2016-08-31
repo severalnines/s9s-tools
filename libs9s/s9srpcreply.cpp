@@ -183,11 +183,19 @@ S9sRpcReply::printNodeListBrief()
         {
             S9sVariantMap hostMap = hostList[idx2].toVariantMap();
             S9sString     hostName = hostMap["hostname"].toString();
+            S9sString     status = hostMap["hoststatus"].toString();
 
             if (syntaxHighlight)
-                printf("%s%s%s ", TERM_BLUE, STR(hostName), TERM_NORMAL);
-            else
-                printf("%s ", STR(clusterName));
+            {
+                if (status == "CmonHostOnline")
+                    printf("%s%s%s ", TERM_GREEN, STR(hostName), TERM_NORMAL);
+                else if (status == "CmonHostRecovery")
+                    printf("%s%s%s ", TERM_YELLOW, STR(hostName), TERM_NORMAL);
+                else 
+                    printf("%s%s%s ", TERM_RED, STR(hostName), TERM_NORMAL);
+            } else {
+                printf("%s ", STR(hostName));
+            }
         }
     }
 

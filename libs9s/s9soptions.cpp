@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -77,7 +77,7 @@ S9sOptions::setController(
         const S9sString &url)
 {
     S9sRegExp regexp;
-   
+  
     regexp = "(.+):([0-9]+)";
     if (regexp == url)
     {
@@ -260,7 +260,6 @@ S9sOptions::readOptions(
 {
     bool retval = true;
 
-    S9S_DEBUG("*** argc: %d", *argc);
     if (*argc < 1)
     {
         m_errorMessage = "Missing command line options.";
@@ -327,11 +326,11 @@ S9sOptions::setMode(
     
     if (modeName == "cluster") 
     {
-        S9S_DEBUG("*** m_operationMode: Cluster");
+        //S9S_DEBUG("*** m_operationMode: Cluster");
         m_operationMode = Cluster;
     } else if (modeName == "node")
     {
-        S9S_DEBUG("*** m_operationMode: Node");
+        //S9S_DEBUG("*** m_operationMode: Node");
         m_operationMode = Node;
     } else if (modeName.startsWith("-"))
     {
@@ -367,6 +366,7 @@ S9sOptions::readOptionsNode(
         { 0, 0, 0, 0 }
     };
 
+    //S9S_DEBUG("*** argc: %d", argc);
     for (;;)
     {
         int option_index = 0;
@@ -377,6 +377,7 @@ S9sOptions::readOptionsNode(
         if (c == -1)
             break;
 
+        //S9S_DEBUG("*** c : '%c'", c);
         switch (c)
         {
             case 'h':

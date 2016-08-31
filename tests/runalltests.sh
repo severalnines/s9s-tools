@@ -61,7 +61,7 @@ function runTest()
     fi
 }
 
-rm -f core
+rm -f core tests/core
 
 runTest ut_library $@
 runTest ut_s9sstring $@
