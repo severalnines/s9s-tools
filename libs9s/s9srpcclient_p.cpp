@@ -109,7 +109,7 @@ S9sRpcClientPrivate::connectSocket()
     hp = gethostbyname(STR(m_hostName));
     if (hp == NULL)
     {
-        S9S_WARNING("Host '%s' not found: %m.", STR(m_hostName));
+        m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
         closeSocket(socketFd);
         return -1;
     }

@@ -347,7 +347,11 @@ S9sOptions::readOptionsNode(
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
+        { "list",             no_argument,       0, 'L' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
+        { "color",            optional_argument, 0, '2' },
         { 0, 0, 0, 0 }
     };
 
@@ -386,9 +390,28 @@ S9sOptions::readOptionsNode(
             case 't':
                 m_options["rpc_token"] = optarg;
                 break;
+            
+            case 'l':
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                m_options["list"] = true;
+                break;
 
             case '1':
                 m_options["config-file"] = optarg;
+                break;
+            
+            case '2':
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case '3':
+                m_options["print_json"] = true;
                 break;
 
             default:
