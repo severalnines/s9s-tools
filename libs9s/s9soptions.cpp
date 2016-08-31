@@ -125,6 +125,19 @@ S9sOptions::rpcToken() const
     return S9sString();
 }
 
+/**
+ * \returns the cluster ID from the command line, 0 if the cluster id is not
+ *   provided.
+ */
+int
+S9sOptions::clusterId() const
+{
+    if (m_options.contains("cluster_id"))
+        return m_options.at("cluster_id").toInt();
+
+    return 0;
+}
+
 bool
 S9sOptions::isNodeOperationRequested() const
 {
@@ -135,6 +148,12 @@ bool
 S9sOptions::isClusterOperationRequested() const
 {
     return m_operationMode == Cluster;
+}
+
+bool
+S9sOptions::isJobOperationRequested() const
+{
+    return m_operationMode == Job;
 }
 
 /**
@@ -557,6 +576,7 @@ S9sOptions::readOptionsJob(
         { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
+        { "cluster-id",       required_argument, 0, 'i' },
 
         { 0, 0, 0, 0 }
     };
@@ -623,6 +643,10 @@ S9sOptions::readOptionsJob(
 
             case '3':
                 m_options["print_json"] = true;
+                break;
+
+            case 'i':
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             default:

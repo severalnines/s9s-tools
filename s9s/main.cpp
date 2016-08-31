@@ -67,6 +67,20 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
+    } else if (options->isJobOperationRequested())
+    {
+        S9sRpcReply reply;
+        int         clusterId = options->clusterId();
+        bool        success;
+
+        success = client.getJobInstances(clusterId);
+        if (success)
+        {
+            reply = client.reply();
+            fprintf(stderr, "%s", STR(reply.toString()));
+        } else {
+            fprintf(stderr, "%s\n", STR(client.errorString()));
+        }
     }
 
     return 0;

@@ -121,9 +121,24 @@ bool
 S9sRpcClient::getJobInstances(
         const int clusterId)
 {
-    //S9sString uri;
+    S9sString uri;
+    S9sString request;
+    int       retcode;
 
-    return true;
+    uri.sprintf("/%d/job/", clusterId);
+    request.sprintf(
+        "{\n"
+        "  \"operation\": \"getJobInstances\",\n"
+        "  \"token\":\"%s\",\n"
+        "  \"user\":\"cmonjsclient\"\n"
+        "}\n",
+        STR(m_priv->m_token)
+        );
+
+    S9S_DEBUG("*** request: \n%s\n", STR(request));
+    retcode = executeRequest(uri, request);
+
+    return retcode == 0;
 }
 
 /**

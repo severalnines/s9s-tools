@@ -52,9 +52,12 @@ class S9sOptions
         int controllerPort() const;
 
         S9sString rpcToken() const;
+        int clusterId() const;
 
         bool isNodeOperationRequested() const;
         bool isClusterOperationRequested() const;
+        bool isJobOperationRequested() const;
+
 
         bool isListRequested() const;
         bool isLongRequested() const;
