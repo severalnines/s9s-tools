@@ -137,51 +137,6 @@ S9sRpcReply::printClusterListBrief()
     printf("\n");
 }
 
-/*
-s9s cluster --list --long  --controller=localhost --controller-port=9555 --rpc-token="kljkj" 
-{
-    "cc_timestamp": 1472546799,
-    "clusters": [ 
-    {
-        "alarm_statistics": 
-        {
-            "class_name": "CmonAlarmStatistics",
-            "cluster_id": 200,
-            "critical": 3,
-            "warning": 1
-        },
-        "class_name": "CmonClusterInfo",
-        "cluster_auto_recovery": true,
-        "cluster_id": 200,
-        "cluster_name": "default_repl_200",
-        "cluster_type": "MYSQLCLUSTER",
-        "configuration_file": "configs/UtS9sCluster_01.conf",
-        "job_statistics": 
-        {
-            "by_state": 
-            {
-                "ABORTED": 0,
-                "DEFINED": 0,
-                "DEQUEUED": 0,
-                "FAILED": 0,
-                "FINISHED": 0,
-                "RUNNING": 0
-            },
-            "class_name": "CmonJobStatistics",
-            "cluster_id": 200
-        },
-        "log_file": "./cmon-ut-communication.log",
-        "maintenance_mode_active": false,
-        "managed": true,
-        "node_auto_recovery": true,
-        "state": "MGMD_NO_CONTACT",
-        "status_text": "No contact to the management node.",
-        "vendor": "oracle",
-        "version": "5.5"
-    } ],
-    "requestStatus": "ok"
-
- */
 void 
 S9sRpcReply::printClusterListLong()
 {
@@ -381,15 +336,15 @@ S9sRpcReply::printJobListBrief()
         {
             if (status == "RUNNING" || status == "RUNNING_EXT")
             {
-                stateColorStart = XTERM_COLOR_9;
+                stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;
             } else if (status == "FINISHED")
             {
-                stateColorStart = XTERM_COLOR_9;
+                stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;
             } else if (status == "FAILED")
             {
-                stateColorStart = XTERM_COLOR_1;
+                stateColorStart = XTERM_COLOR_RED;
                 stateColorEnd   = TERM_NORMAL;
             }
         }

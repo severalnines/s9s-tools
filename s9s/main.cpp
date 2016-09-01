@@ -123,14 +123,14 @@ perform_task()
     return 0;
 }
 
-
-int main(int argc, char **argv)
+int 
+main(int argc, char **argv)
 {
     S9sOptions *options = S9sOptions::instance();
     bool        success, finished;
     int         exitStatus;
 
-
+    #if 0
     printf("%sXTERM_COLOR_RED%s\n", XTERM_COLOR_RED, TERM_NORMAL);
     printf("%sXTERM_COLOR_GREEN%s\n", XTERM_COLOR_GREEN, TERM_NORMAL);
     printf("%sXTERM_COLOR_ORANGE%s\n", XTERM_COLOR_ORANGE, TERM_NORMAL);
@@ -146,6 +146,7 @@ int main(int argc, char **argv)
     printf("%sXTERM_COLOR_LIGHT_PURPLE%s\n", XTERM_COLOR_LIGHT_PURPLE, TERM_NORMAL);
     printf("%sXTERM_COLOR_LIGHT_CYAN%s\n", XTERM_COLOR_LIGHT_CYAN, TERM_NORMAL);
     printf("%sXTERM_COLOR_WHITE%s\n", XTERM_COLOR_WHITE, TERM_NORMAL);
+    #endif
 
     success = options->readOptions(&argc, argv);
     if (!success)
