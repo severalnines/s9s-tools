@@ -53,6 +53,8 @@ class S9sOptions
 
         S9sString rpcToken() const;
         int clusterId() const;
+        S9sString userName() const;
+        int userId() const;
 
         bool isNodeOperationRequested() const;
         bool isClusterOperationRequested() const;

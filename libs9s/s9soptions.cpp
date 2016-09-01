@@ -138,6 +138,24 @@ S9sOptions::clusterId() const
     return 0;
 }
 
+S9sString 
+S9sOptions::userName() const
+{
+    S9sString retval;
+
+    retval = getenv("USER");
+    return retval;
+}
+
+int
+S9sOptions::userId() const
+{
+    int retval;
+
+    retval = (int) getuid();
+    return retval;
+}
+
 bool
 S9sOptions::isNodeOperationRequested() const
 {

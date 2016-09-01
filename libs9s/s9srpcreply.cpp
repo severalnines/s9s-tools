@@ -34,9 +34,19 @@ S9sRpcReply::printJobStarted()
     S9sString  status = operator[]("requestStatus").toString();
     int        id     = operator[]("jobId").toInt();
 
+    //printf("%s", STR(toString()));
     if (status == "ok")
     {
-        printf("Job with ID %d registered.\n", id);
+        S9sVariantMap job = operator[]("job").toVariantMap();;
+
+        if (job.empty())
+        {
+            printf("Job with ID %d registered.\n", id);
+        } else {
+            id = job["job_id"].toInt();
+
+            printf("Job with ID %d registered.\n", id);
+        }
     } else {
         printf("%s", STR(toString()));
     }
@@ -319,6 +329,11 @@ S9sRpcReply::printJobListBrief()
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
 
+        // The title.
+        if (title.empty())
+            title = "Untitled Job";
+
+        // The user name or if it is not there the user ID.
         if (user.empty())
             user.sprintf("%d", theMap["user_id"].toInt());
 

@@ -4,6 +4,8 @@
 #include "s9srpcclient.h"
 #include "s9srpcclient_p.h"
 
+#include "S9sOptions"
+
 #include <string.h>
 
 //#define DEBUG
@@ -137,30 +139,35 @@ S9sRpcClient::getJobInstances(
     return retcode == 0;
 }
 
+/**
+ * Creates a job for "rolling restart" and receives the controller's answer for
+ * the request. 
+ */
 bool
 S9sRpcClient::rollingRestart(
         const int clusterId)
 {
-    S9sString uri;
-    S9sString request;
-    int       retcode;
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   uri;
+    int         retcode;
 
     uri.sprintf("/%d/job/", clusterId);
-    S9S_WARNING("uri: %s", STR(uri));
-    request.sprintf(
-        "{\n"
-        "  \"token\": \"%s\",\n"
-        "  \"operation\": \"createJob\",\n"
-        "  \"job\": \n"
-        "  {\n"
-        "    \"command\": \"rolling_restart\"\n"
-        "  }\n"
-        "}",
-        STR(m_priv->m_token)
-        );
 
-    S9S_DEBUG("*** request: \n%s\n", STR(request));
-    retcode = executeRequest(uri, request);
+    S9sVariantMap request;
+    S9sVariantMap job, jobSpec;
+
+    jobSpec["command"]   = "rolling_restart";
+
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Rolling Restart";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+    
+    retcode = executeRequest(uri, request.toString());
 
     return retcode == 0;
 }
