@@ -67,12 +67,11 @@ perform_task()
         S9sRpcReply reply;
         bool        success;
 
-        S9S_WARNING("rolling-restart");
         success = client.rollingRestart(clusterId);
         if (success)
         {
             reply = client.reply();
-            printf("%s\n", STR(reply.toString()));
+            reply.printJobStarted();
         } else {
             fprintf(stderr, "ERROR: %s\n", STR(client.errorString()));
         }

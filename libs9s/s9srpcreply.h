@@ -24,6 +24,7 @@
 class S9sRpcReply : public S9sVariantMap
 {
     public:
+        void printJobStarted();
         void printClusterList();
         void printNodeList();
         void printJobList();
