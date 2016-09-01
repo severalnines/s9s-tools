@@ -271,7 +271,11 @@ S9sRpcReply::printJobListBrief()
         int            jobId  = theMap["job_id"].toInt();
         S9sString      status = theMap["status"].toString();
         S9sString      title  = theMap["title"].toString();
+        S9sString      user   = theMap["user_name"].toString();
         S9sString      percent;
+
+        if (user.empty())
+            user.sprintf("%d", theMap["user_id"].toInt());
 
         if (theMap.contains("progress_percent"))
         {
@@ -291,22 +295,36 @@ S9sRpcReply::printJobListBrief()
             // FAILED:  XTERM_COLOR_1
             if (status == "RUNNING" || status == "RUNNING_EXT")
             {
-                printf("%5d %s%-10s%s %s %s\n", jobId, 
+                printf("%5d %s%-10s%s %-8s %s %s\n", 
+                        jobId, 
                         XTERM_COLOR_9, STR(status), TERM_NORMAL,
-                        STR(percent), STR(title));
+                        STR(user),
+                        STR(percent), 
+                        STR(title));
             } else if (status == "FINISHED")
             {
-                printf("%5d %s%-10s%s %s %s\n", jobId, 
+                printf("%5d %s%-10s%s %-8s %s %s\n", 
+                        jobId, 
                         XTERM_COLOR_9, STR(status), TERM_NORMAL,
-                        STR(percent), STR(title));
+                        STR(user),
+                        STR(percent),
+                        STR(title));
             } else if (status == "FAILED")
             {
-                printf("%5d %s%-10s%s %s %s\n", jobId, 
+                printf("%5d %s%-10s%s %-8s %s %s\n", 
+                        jobId, 
                         XTERM_COLOR_1, STR(status), TERM_NORMAL,
-                        STR(percent), STR(title));
+                        STR(user),
+                        STR(percent), 
+                        STR(title));
             } else {
-                printf("%5d %-10s %s %s\n", jobId, 
-                        STR(percent), STR(status), STR(title));
+                printf("%5d %-10s %-8s %s %s\n", 
+                        jobId, 
+                        STR(status), 
+                        STR(user),
+                        STR(percent), 
+                        STR(title)
+                        );
             }
         } else {
             printf("%5d %14s %s\n", jobId, STR(status), STR(title));
