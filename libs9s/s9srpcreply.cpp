@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include "S9sOptions"
+#include "S9sDateTime"
 
 #define DEBUG
 #define WARNING
@@ -264,6 +265,9 @@ S9sRpcReply::printJobListBrief()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("jobs").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             total = operator[]("total").toInt();
+
+    printf("Total: %d\n", total);
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -273,10 +277,15 @@ S9sRpcReply::printJobListBrief()
         S9sString      title  = theMap["title"].toString();
         S9sString      user   = theMap["user_name"].toString();
         S9sString      percent;
+        S9sDateTime    created;
+        S9sString      timeStamp;
+        const char    *stateColorStart = "";
+        const char    *stateColorEnd   = "";
 
         if (user.empty())
             user.sprintf("%d", theMap["user_id"].toInt());
 
+        // The progress.
         if (theMap.contains("progress_percent"))
         {
             double value = theMap["progress_percent"].toDouble();
@@ -289,46 +298,34 @@ S9sRpcReply::printJobListBrief()
             percent = "???%";
         }
 
+        // The timestamp.
+        created.parse(theMap["created"].toString());
+        timeStamp = created.toString(S9sDateTime::MySqlLogFileFormat);
+
         if (syntaxHighlight)
         {
-            // RUNNING: XTERM_COLOR_9
-            // FAILED:  XTERM_COLOR_1
             if (status == "RUNNING" || status == "RUNNING_EXT")
             {
-                printf("%5d %s%-10s%s %-8s %s %s\n", 
-                        jobId, 
-                        XTERM_COLOR_9, STR(status), TERM_NORMAL,
-                        STR(user),
-                        STR(percent), 
-                        STR(title));
+                stateColorStart = XTERM_COLOR_9;
+                stateColorEnd   = TERM_NORMAL;
             } else if (status == "FINISHED")
             {
-                printf("%5d %s%-10s%s %-8s %s %s\n", 
-                        jobId, 
-                        XTERM_COLOR_9, STR(status), TERM_NORMAL,
-                        STR(user),
-                        STR(percent),
-                        STR(title));
+                stateColorStart = XTERM_COLOR_9;
+                stateColorEnd   = TERM_NORMAL;
             } else if (status == "FAILED")
             {
-                printf("%5d %s%-10s%s %-8s %s %s\n", 
-                        jobId, 
-                        XTERM_COLOR_1, STR(status), TERM_NORMAL,
-                        STR(user),
-                        STR(percent), 
-                        STR(title));
-            } else {
-                printf("%5d %-10s %-8s %s %s\n", 
-                        jobId, 
-                        STR(status), 
-                        STR(user),
-                        STR(percent), 
-                        STR(title)
-                        );
+                stateColorStart = XTERM_COLOR_1;
+                stateColorEnd   = TERM_NORMAL;
             }
-        } else {
-            printf("%5d %14s %s\n", jobId, STR(status), STR(title));
         }
+
+        printf("%5d %s%-10s%s %-8s %s %s %s\n", 
+                jobId, 
+                stateColorStart, STR(status), stateColorEnd,
+                STR(user),
+                STR(timeStamp),
+                STR(percent), 
+                STR(title));
     }
 }
 
