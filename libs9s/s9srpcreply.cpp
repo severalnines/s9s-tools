@@ -319,13 +319,12 @@ S9sRpcReply::printJobListBrief()
             }
         }
 
-        printf("%5d %s%-10s%s %-8s %s %s %s\n", 
-                jobId, 
-                stateColorStart, STR(status), stateColorEnd,
-                STR(user),
-                STR(timeStamp),
-                STR(percent), 
-                STR(title));
+        printf("%5d ", jobId);
+        printf("%s%-10s%s ", stateColorStart, STR(status), stateColorEnd);
+        printf("%-8s ", STR(user));
+        printf("%s ", STR(timeStamp));
+        printf("%s ", STR(percent));
+        printf("%s\n", STR(title));
     }
 }
 
