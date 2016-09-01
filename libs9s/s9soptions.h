@@ -53,6 +53,8 @@ class S9sOptions
 
         S9sString rpcToken() const;
         int clusterId() const;
+        int jobId() const;
+
         S9sString userName() const;
         int userId() const;
 
@@ -62,6 +64,7 @@ class S9sOptions
 
 
         bool isListRequested() const;
+        bool isLogRequested() const;
         bool isRollingRestartRequested() const;
         bool isLongRequested() const;
         bool isJsonRequested() const;

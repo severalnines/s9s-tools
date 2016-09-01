@@ -52,6 +52,28 @@ S9sRpcReply::printJobStarted()
     }
 }
 
+void
+S9sRpcReply::printJobLog()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("messages").toVariantList();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap = theList[idx].toVariantMap();
+        S9sString     message = theMap["message_text"].toString();
+
+        html2ansi(message);
+        printf("%s\n", STR(message));
+    }
+}
+
 void 
 S9sRpcReply::printJobList()
 {
@@ -385,6 +407,21 @@ void
 S9sRpcReply::printJobListLong()
 {
     printf("TBD\n");
+}
+
+void 
+S9sRpcReply::html2ansi(
+        S9sString &s)
+{
+    s.replace("<em style='color: #c66211;'>", XTERM_COLOR_3);
+    s.replace("<em style='color: #75599b;'>", XTERM_COLOR_3);
+    s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
+    s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
+    s.replace("<em style='color: #007e18;'>", XTERM_COLOR_4);
+    s.replace("<em style='color: #7415f6;'>", XTERM_COLOR_5);
+    //s.replace("", );
+    s.replace("</em>",                        TERM_NORMAL);
+    s.replace("</strong>",                    TERM_NORMAL);
 }
 
 char 

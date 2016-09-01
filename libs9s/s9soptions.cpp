@@ -138,6 +138,15 @@ S9sOptions::clusterId() const
     return 0;
 }
 
+int
+S9sOptions::jobId() const
+{
+    if (m_options.contains("job_id"))
+        return m_options.at("job_id").toInt();
+
+    return -1;
+}
+
 S9sString 
 S9sOptions::userName() const
 {
@@ -183,6 +192,15 @@ S9sOptions::isListRequested() const
 {
     if (m_options.contains("list"))
         return m_options.at("list").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isLogRequested() const
+{
+    if (m_options.contains("log"))
+        return m_options.at("log").toBoolean();
 
     return false;
 }
@@ -601,7 +619,6 @@ S9sOptions::readOptionsJob(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -612,11 +629,13 @@ S9sOptions::readOptionsJob(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "list",             no_argument,       0, 'L' },
+        { "log",              no_argument,       0, 'G' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
         { "cluster-id",       required_argument, 0, 'i' },
+        { "job-id",           required_argument, 0, '4' },
 
         { 0, 0, 0, 0 }
     };
@@ -669,6 +688,10 @@ S9sOptions::readOptionsJob(
             case 'L': 
                 m_options["list"] = true;
                 break;
+            
+            case 'G': 
+                m_options["log"] = true;
+                break;
 
             case '1':
                 m_options["config-file"] = optarg;
@@ -683,6 +706,10 @@ S9sOptions::readOptionsJob(
 
             case '3':
                 m_options["print_json"] = true;
+                break;
+
+            case '4':
+                m_options["job_id"] = atoi(optarg);
                 break;
 
             case 'i':
