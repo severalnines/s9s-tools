@@ -119,6 +119,10 @@ S9sRpcClient::getClusters()
     return retcode == 0;
 }
 
+/**
+ * Sends a "getJobInstances" request, receives the reply. We use this RPC call
+ * to get the job list (e.g. s9s job --lost).
+ */
 bool
 S9sRpcClient::getJobInstances(
         const int clusterId)
