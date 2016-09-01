@@ -9,12 +9,14 @@
 #include "s9sglobal.h"
 
 /**
- * A macro to convert a CmonString to C strings. This actually works with
+ * A macro to convert a S9sString to C strings. This actually works with
  * std::strings also.
  */
 #ifndef STR
 #  define STR(_thestring) ((_thestring).c_str())
 #endif
+
+class S9sRegExp;
 
 class S9sString : public std::string
 {
@@ -51,6 +53,7 @@ class S9sString : public std::string
 
         void replace(const S9sString &from, const S9sString &to);
         void replace(size_t pos, size_t len, const S9sString &str);
+        void replace(S9sRegExp &regExp, S9sString replacement);
 
         S9sString trim(const std::string &pWhitespace = " \t") const;
 

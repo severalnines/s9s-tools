@@ -23,6 +23,7 @@
 
 #include "S9sOptions"
 #include "S9sDateTime"
+#include "S9sRegExp"
 
 #define DEBUG
 #define WARNING
@@ -413,15 +414,34 @@ void
 S9sRpcReply::html2ansi(
         S9sString &s)
 {
+#if 0
+    //
+    // This is using a palette. Right now it seems to be a bit overcomplicated
+    // to use a palette like this.
+    //
+    S9sRegExp regexp1("<em style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
+    S9sRegExp regexp2("<strong style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
+
+    s.replace(regexp1, "\033]4;1;rgb:$1/$2/$3\033\\\033[31m");
+    s.replace(regexp2, "\033]4;1;rgb:$1/$2/$3\033\\\033[31m");
+    
+    s.replace("</em>",     "\e[m");
+    s.replace("</strong>", "\e[m");
+#else
     s.replace("<em style='color: #c66211;'>", XTERM_COLOR_3);
     s.replace("<em style='color: #75599b;'>", XTERM_COLOR_3);
     s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
     s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
     s.replace("<em style='color: #007e18;'>", XTERM_COLOR_4);
     s.replace("<em style='color: #7415f6;'>", XTERM_COLOR_5);
+    s.replace("<em style='color: #1abc9c;'>", XTERM_COLOR_6);
+    s.replace("<em style='color: #d35400;'>", XTERM_COLOR_7);
+    s.replace("<em style='color: #c0392b;'>", XTERM_COLOR_8);
+
     //s.replace("", );
     s.replace("</em>",                        TERM_NORMAL);
     s.replace("</strong>",                    TERM_NORMAL);
+#endif
 }
 
 char 

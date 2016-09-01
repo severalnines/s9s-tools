@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <algorithm>
 
+#include "S9sRegExp"
+
 S9sString::S9sString() :
     std::string()
 {
@@ -226,6 +228,14 @@ S9sString::replace(
         const S9sString   &str)
 {
     std::string::replace(pos, len, str);
+}
+
+void
+S9sString::replace(
+        S9sRegExp &regExp,
+        S9sString  replacement)
+{
+    regExp.replace(*this, replacement);
 }
 
 /**

@@ -152,6 +152,24 @@ typedef enum S9sMessageLevel
 #  define XTERM_COLOR_15 "\033[38;5;19m"
 /** Neon color terminal color sequence. */
 #  define XTERM_COLOR_16 "\033[38;5;93m"
+
+#define XTERM_COLOR_RED          "\033[0;31m"
+#define XTERM_COLOR_GREEN        "\033[0;32m"
+#define XTERM_COLOR_ORANGE       "\033[0;33m"
+#define XTERM_COLOR_BLUE         "\033[0;34m"
+#define XTERM_COLOR_PURPLE       "\033[0;35m"
+#define XTERM_COLOR_CYAN         "\033[0;36m"
+#define XTERM_COLOR_LIGHT_GRAY   "\033[0;37m"
+#define XTERM_COLOR_DARK_GRAY    "\033[1;30m"
+#define XTERM_COLOR_LIGHT_RED    "\033[1;31m"
+#define XTERM_COLOR_LIGHT_GREEN  "\033[1;32m"
+#define XTERM_COLOR_YELLOW       "\033[1;33m"
+#define XTERM_COLOR_LIGHT_BLUE   "\033[1;34m"
+#define XTERM_COLOR_LIGHT_PURPLE "\033[1;35m"
+#define XTERM_COLOR_LIGHT_CYAN   "\033[1;36m"
+#define XTERM_COLOR_WHITE        "\033[1;37m"
+
+
 #endif
 
 void 
