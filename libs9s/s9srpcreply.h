@@ -40,8 +40,6 @@ class S9sRpcReply : public S9sVariantMap
         void printJobListBrief();
         void printJobListLong();
 
-        char stateFlagFromState(const S9sString &state);
-
         void html2ansi(S9sString &s);
 };
 

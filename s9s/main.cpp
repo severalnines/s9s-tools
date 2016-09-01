@@ -39,14 +39,13 @@ perform_task()
     S9sString    token = options->rpcToken();
     S9sRpcClient client(controller, port, token);
 
-    S9S_WARNING("isClusterOperationRequested() : %s",
-            options->isClusterOperationRequested() ? "true" : "false");
+    S9S_WARNING("isClusterOperation() : %s",
+            options->isClusterOperation() ? "true" : "false");
 
     S9S_WARNING("isRollingRestartRequested() : %s",
             options->isRollingRestartRequested() ? "true" : "false");
 
-    if (options->isClusterOperationRequested() && 
-            options->isListRequested())
+    if (options->isClusterOperation() && options->isListRequested())
     {
         S9S_WARNING("list");
         S9sRpcReply reply;
@@ -60,8 +59,7 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
-    } else if (options->isClusterOperationRequested() && 
-            options->isRollingRestartRequested())
+    } else if (options->isClusterOperation() && options->isRollingRestartRequested())
     {
         int         clusterId = options->clusterId();
         S9sRpcReply reply;
@@ -75,9 +73,10 @@ perform_task()
         } else {
             fprintf(stderr, "ERROR: %s\n", STR(client.errorString()));
         }
-    } else if (options->isNodeOperationRequested() && 
-            options->isListRequested())
+    } else if (options->isNodeOperation() && options->isListRequested())
     {
+        S9S_DEBUG("node list");
+
         S9sRpcReply reply;
         bool        success;
 
@@ -89,7 +88,7 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
-    } else if (options->isJobOperationRequested() && options->isListRequested())
+    } else if (options->isJobOperation() && options->isListRequested())
     {
         S9sRpcReply reply;
         int         clusterId = options->clusterId();
@@ -103,7 +102,7 @@ perform_task()
         } else {
             fprintf(stderr, "%s\n", STR(client.errorString()));
         }
-    } else if (options->isJobOperationRequested() && options->isLogRequested())
+    } else if (options->isJobOperation() && options->isLogRequested())
     {
         S9sRpcReply reply;
         int         clusterId = options->clusterId();
@@ -130,24 +129,6 @@ main(int argc, char **argv)
     bool        success, finished;
     int         exitStatus;
 
-    #if 0
-    printf("%sXTERM_COLOR_RED%s\n", XTERM_COLOR_RED, TERM_NORMAL);
-    printf("%sXTERM_COLOR_GREEN%s\n", XTERM_COLOR_GREEN, TERM_NORMAL);
-    printf("%sXTERM_COLOR_ORANGE%s\n", XTERM_COLOR_ORANGE, TERM_NORMAL);
-    printf("%sXTERM_COLOR_BLUE%s\n", XTERM_COLOR_BLUE, TERM_NORMAL);
-    printf("%sXTERM_COLOR_PURPLE%s\n", XTERM_COLOR_PURPLE, TERM_NORMAL);
-    printf("%sXTERM_COLOR_CYAN%s\n", XTERM_COLOR_CYAN, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_GRAY%s\n", XTERM_COLOR_LIGHT_GRAY, TERM_NORMAL);
-    printf("%sXTERM_COLOR_DARK_GRAY%s\n", XTERM_COLOR_DARK_GRAY, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_RED%s\n", XTERM_COLOR_LIGHT_RED, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_GREEN%s\n", XTERM_COLOR_LIGHT_GREEN, TERM_NORMAL);
-    printf("%sXTERM_COLOR_YELLOW%s\n", XTERM_COLOR_YELLOW, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_BLUE%s\n", XTERM_COLOR_LIGHT_BLUE, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_PURPLE%s\n", XTERM_COLOR_LIGHT_PURPLE, TERM_NORMAL);
-    printf("%sXTERM_COLOR_LIGHT_CYAN%s\n", XTERM_COLOR_LIGHT_CYAN, TERM_NORMAL);
-    printf("%sXTERM_COLOR_WHITE%s\n", XTERM_COLOR_WHITE, TERM_NORMAL);
-    #endif
-
     success = options->readOptions(&argc, argv);
     if (!success)
     {
@@ -164,6 +145,24 @@ main(int argc, char **argv)
     }
 
     PRINT_VERBOSE("Command line options processed.");
+    if (options->isVerbose())
+    {
+        printf("%sXTERM_COLOR_RED%s\n", XTERM_COLOR_RED, TERM_NORMAL);
+        printf("%sXTERM_COLOR_GREEN%s\n", XTERM_COLOR_GREEN, TERM_NORMAL);
+        printf("%sXTERM_COLOR_ORANGE%s\n", XTERM_COLOR_ORANGE, TERM_NORMAL);
+        printf("%sXTERM_COLOR_BLUE%s\n", XTERM_COLOR_BLUE, TERM_NORMAL);
+        printf("%sXTERM_COLOR_PURPLE%s\n", XTERM_COLOR_PURPLE, TERM_NORMAL);
+        printf("%sXTERM_COLOR_CYAN%s\n", XTERM_COLOR_CYAN, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_GRAY%s\n", XTERM_COLOR_LIGHT_GRAY, TERM_NORMAL);
+        printf("%sXTERM_COLOR_DARK_GRAY%s\n", XTERM_COLOR_DARK_GRAY, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_RED%s\n", XTERM_COLOR_LIGHT_RED, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_GREEN%s\n", XTERM_COLOR_LIGHT_GREEN, TERM_NORMAL);
+        printf("%sXTERM_COLOR_YELLOW%s\n", XTERM_COLOR_YELLOW, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_BLUE%s\n", XTERM_COLOR_LIGHT_BLUE, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_PURPLE%s\n", XTERM_COLOR_LIGHT_PURPLE, TERM_NORMAL);
+        printf("%sXTERM_COLOR_LIGHT_CYAN%s\n", XTERM_COLOR_LIGHT_CYAN, TERM_NORMAL);
+        printf("%sXTERM_COLOR_WHITE%s\n", XTERM_COLOR_WHITE, TERM_NORMAL);
+    }
 
     finished = options->executeInfoRequest();
     if (finished)

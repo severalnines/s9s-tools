@@ -45,10 +45,16 @@ is
 .BR never ", " always ", or " auto .
 .TP
 
+
 .SH EXAMPLES
+List the clusters and the nodes managed by the controller:
+
 .RS
 # s9s cluster --list --controller=localhost:9555 --color=always
+
+# s9s node --list --long --controller=localhost:9555
 .RE
+
 
 Get the job list for the specified cluster maintained by the specified
 controller:

@@ -142,10 +142,7 @@ S9sRpcReply::printClusterListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-
-    //printf("%s", STR(toString()));
-
-    S9sVariantList theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
 
     printf("Total: %lu\n", theList.size());
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -155,28 +152,23 @@ S9sRpcReply::printClusterListLong()
         int           clusterId   = theMap["cluster_id"].toInt();
         S9sString     clusterType = theMap["cluster_type"].toString();
         S9sString     state       = theMap["state"].toString();
-        bool          cRecovery   = theMap["cluster_auto_recovery"].toBoolean();
-        bool          nRecovery   = theMap["node_auto_recovery"].toBoolean();
         S9sString     text        = theMap["status_text"].toString();
-        
+        S9sString     vendor      = theMap["vendor"].toString();
+        S9sString     version     = theMap["version"].toString();
+        const char   *nameStart   = "";
+        const char   *nameEnd     = "";
+
         if (syntaxHighlight)
         {
-            printf("%c%c%c %4d %-14s %s%-20s%s\n", 
-                    stateFlagFromState(state),
-                    cRecovery ? 'c' : '-',
-                    nRecovery ? 'n' : '-',
-                    clusterId, 
-                    STR(clusterType.toLower()),
-                    TERM_BLUE, STR(clusterName), TERM_NORMAL);
-        } else {
-            printf("%c%c%c %4d %-14s %-20s\n", 
-                    stateFlagFromState(state),
-                    cRecovery ? 'c' : '-',
-                    nRecovery ? 'n' : '-',
-                    clusterId, 
-                    STR(clusterType.toLower()),
-                    STR(clusterName));
+            nameStart = XTERM_COLOR_BLUE;
+            nameEnd   = TERM_NORMAL;
         }
+        
+        printf("%4d ", clusterId); 
+        printf("%6s ", STR(state));
+        printf("%-8s ", STR(clusterType.toLower()));
+        printf("%-12s ", STR(vendor + " " + version));
+        printf("%s%s%s\n", nameStart, STR(clusterName), nameEnd);
     }
 }
 
@@ -234,30 +226,21 @@ S9sRpcReply::printNodeListLong()
         int           clusterId   = theMap["cluster_id"].toInt();
         S9sString     clusterType = theMap["cluster_type"].toString();
         S9sString     state       = theMap["state"].toString();
-        bool          cRecovery   = theMap["cluster_auto_recovery"].toBoolean();
-        bool          nRecovery   = theMap["node_auto_recovery"].toBoolean();
         S9sString     text        = theMap["status_text"].toString();
-        
+        const char   *nameColor   = "";
+        const char   *endColor    = "";
+
         if (syntaxHighlight)
         {
-            printf("%c%c%c %4d %-14s %s%-20s%s %s\n", 
-                    stateFlagFromState(state),
-                    cRecovery ? 'c' : '-',
-                    nRecovery ? 'n' : '-',
-                    clusterId, 
-                    STR(clusterType.toLower()),
-                    TERM_BLUE, STR(clusterName), TERM_NORMAL,
-                    STR(text));
-        } else {
-            printf("%c%c%c %4d %-14s %-20s %s\n", 
-                    stateFlagFromState(state),
-                    cRecovery ? 'c' : '-',
-                    nRecovery ? 'n' : '-',
-                    clusterId, 
-                    STR(clusterType.toLower()),
-                    STR(clusterName),
-                    STR(text));
+            nameColor = XTERM_COLOR_LIGHT_GREEN;
+            endColor  = TERM_NORMAL;
         }
+
+        printf("%4d %-14s %s%-20s%s %s\n", 
+                clusterId, 
+                STR(clusterType.toLower()),
+                nameColor, STR(clusterName), endColor,
+                STR(text));
     }
 }
 
@@ -399,30 +382,3 @@ S9sRpcReply::html2ansi(
 #endif
 }
 
-char 
-S9sRpcReply::stateFlagFromState(
-        const S9sString &state)
-{
-    if (state == "MGMD_NO_CONTACT")
-        return 'n';
-    else if (state == "STARTED")
-        return 's';
-    else if (state == "NOT_STARTED")
-        return 'F';
-    else if (state == "DEGRADED")
-        return 'd';
-    else if (state == "FAILURE")
-        return 'f';
-    else if (state == "SHUTTING_DOWN")
-        return 'w';
-    else if (state == "RECOVERING")
-        return 'r';
-    else if (state == "STARTING")
-        return 'S';
-    else if (state == "UNKNOWN")
-        return '-';
-    else if (state == "STOPPED")
-        return 't';
-
-    return '?';
-}

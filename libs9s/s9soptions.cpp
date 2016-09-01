@@ -166,19 +166,19 @@ S9sOptions::userId() const
 }
 
 bool
-S9sOptions::isNodeOperationRequested() const
+S9sOptions::isNodeOperation() const
 {
     return m_operationMode == Node;
 }
 
 bool
-S9sOptions::isClusterOperationRequested() const
+S9sOptions::isClusterOperation() const
 {
     return m_operationMode == Cluster;
 }
 
 bool
-S9sOptions::isJobOperationRequested() const
+S9sOptions::isJobOperation() const
 {
     return m_operationMode == Job;
 }
