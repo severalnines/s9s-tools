@@ -79,6 +79,7 @@ libs9s_a_SOURCES =            \
 	s9sregexp.cpp             \
 	s9srpcreply.cpp           \
 	s9srpcclient_p.cpp        \
-	s9srpcclient.cpp          
+	s9srpcclient.cpp          \
+	s9sbusinesslogic.cpp
 
 
