@@ -239,7 +239,15 @@ S9sOptions::isJsonRequested() const
         return m_options.at("print_json").toBoolean();
 
     return false;
+}
 
+bool
+S9sOptions::isWaitRequested() const
+{
+    if (m_options.contains("wait"))
+        return m_options.at("wait").toBoolean();
+
+    return false;
 }
 
 /**
@@ -551,15 +559,16 @@ S9sOptions::readOptionsCluster(
         { "rolling-restart",  no_argument,       0, 'R' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
+        { "wait",             no_argument,       0, '4' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
         { "cluster-id",       required_argument, 0, 'i' },
-
+        
         { 0, 0, 0, 0 }
     };
 
     optind = 0;
-    opterr = 0;
+    //opterr = 0;
     for (;;)
     {
         int option_index = 0;
@@ -624,6 +633,10 @@ S9sOptions::readOptionsCluster(
                 m_options["print_json"] = true;
                 break;
             
+            case '4':
+                m_options["wait"] = true;
+                break;
+            
             case 'i':
                 m_options["cluster_id"] = atoi(optarg);
                 break;
@@ -654,6 +667,7 @@ S9sOptions::readOptionsJob(
         { "log",              no_argument,       0, 'G' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
+        { "wait",             no_argument,       0, '5' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
         { "cluster-id",       required_argument, 0, 'i' },
@@ -664,7 +678,7 @@ S9sOptions::readOptionsJob(
 
     S9S_DEBUG("*** argc : %d", argc);
     optind = 0;
-    opterr = 0;
+    //opterr = 0;
     for (;;)
     {
         int option_index = 0;
@@ -732,6 +746,10 @@ S9sOptions::readOptionsJob(
 
             case '4':
                 m_options["job_id"] = atoi(optarg);
+                break;
+
+            case '5':
+                m_options["wait"] = true;
                 break;
 
             case 'i':

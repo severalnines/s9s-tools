@@ -21,7 +21,9 @@
 
 #include "S9sRpcReply"
 #include "S9sOptions"
+
 #include <stdio.h>
+#include <unistd.h>
 
 #define DEBUG
 #include "s9sdebug.h"
@@ -51,6 +53,9 @@ S9sBusinessLogic::execute()
     } else if (options->isJobOperation() && options->isLogRequested())
     {
         executeJobLog(client);
+    } else if (options->isJobOperation() && options->isWaitRequested())
+    {
+        waitForJob(options->jobId(), client);
     }
 }
 
@@ -186,8 +191,65 @@ S9sBusinessLogic::executeRollingRestart(
     if (success)
     {
         reply = client.reply();
-        reply.printJobStarted();
+
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printJobStarted();
+
+            if (options->isWaitRequested())
+            {
+                waitForJob(reply.jobId(), client);
+            }
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
+}
+        
+void 
+S9sBusinessLogic::waitForJob(
+        const int     jobId, 
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int          clusterId = options->clusterId();
+    const char  *rotate = "/-\\|";
+    int          rotateCycle = 0;
+    S9sRpcReply  reply;
+    bool         success, finished;
+    S9sString    progressLine;
+
+    //printf("\n");
+    for (;;)
+    {
+        success = client.getJobInstance(clusterId, jobId);
+        if (success)
+        {
+            reply = client.reply();
+            success = reply.isOk();
+        }
+        
+        if (!success)
+            continue;
+
+        finished = reply.progressLine(progressLine);
+        printf("%c %s\r", rotate[rotateCycle], STR(progressLine));
+        //printf("%s", STR(reply.toString()));
+        fflush(stdout);
+        sleep(1);
+
+        ++rotateCycle;
+        rotateCycle %= 4;
+
+        if (finished)
+            break;
+    }
+
+    printf("\n");
 }

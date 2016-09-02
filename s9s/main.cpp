@@ -39,7 +39,7 @@ main(int argc, char **argv)
     success = options->readOptions(&argc, argv);
     if (!success)
     {
-        S9S_WARNING("Readoption failed.");
+        options->printError("Readoption failed.");
         if (!options->errorString().empty())
         {
             fprintf(stderr, "%s: %s\n\n", 

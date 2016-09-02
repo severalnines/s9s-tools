@@ -47,19 +47,169 @@ S9sRpcReply::errorString() const
     return S9sString();
 }
 
+/*
+{
+    "cc_timestamp": 1472800942,
+    "job": 
+    {
+        "can_be_aborted": false,
+        "can_be_deleted": true,
+        "class_name": "CmonJobInstance",
+        "cluster_id": 1,
+        "created": "2016-09-02T07:21:53.000Z",
+        "exit_code": 0,
+        "job_id": 16,
+        "job_spec": "{\n    \"command\": \"rolling_restart\"\n}",
+        "status": "DEFINED",
+        "status_text": "Waiting",
+        "title": "Rolling Restart",
+        "user_id": 1000,
+        "user_name": "pipas"
+    },
+    "requestStatus": "ok"
+}
+*/
+int
+S9sRpcReply::jobId() const
+{
+    S9sVariantMap job;
+    int           retval = -1;
+
+    if (!contains("job"))
+        return retval;
+
+    job = at("job").toVariantMap();
+    retval = job["job_id"].toInt();
+
+    return retval;
+}
+
+/**
+ * \returns true if the job is finished (or aborted or failed) and so monitoring
+ *   it should be aborted too.
+ *
+{
+    "cc_timestamp": 1472802884,
+    "job": 
+    {
+        "can_be_aborted": false,
+        "can_be_deleted": true,
+        "class_name": "CmonJobInstance",
+        "cluster_id": 1,
+        "created": "2016-09-02T07:53:53.000Z",
+        "exit_code": 0,
+        "job_id": 21,
+        "job_spec": "{\n    \"command\": \"rolling_restart\"\n}",
+        "status": "DEFINED",
+        "status_text": "Waiting",
+        "title": "Rolling Restart",
+        "user_id": 1000,
+        "user_name": "pipas"
+    },
+    "requestStatus": "ok"
+}
+*/
+bool 
+S9sRpcReply::progressLine(
+        S9sString &retval)
+{
+    S9sVariantMap job = operator[]("job").toVariantMap();
+    int           jobId;
+    S9sString     status;
+    double        percent;
+    bool          hasProgress;
+    int           nHash;
+    S9sString     tmp;
+
+    retval.clear();
+
+    if (job.empty())
+        return false;
+
+    // The job id.
+    jobId = job["job_id"].toInt();
+    tmp.sprintf("Job %d ", jobId);
+    retval += tmp;
+
+    // The status
+    status = job["status"].toString();
+    tmp.sprintf("%-10s ", STR(status));
+    retval += tmp;
+
+    // The progress bar.
+    hasProgress = job.contains("progress_percent");
+    if (status == "FINISHED")
+    {
+        percent = 100.0;
+        hasProgress = true;
+    }
+
+    if (hasProgress)
+    {
+        percent = job["progress_percent"].toDouble();
+        if (status == "FINISHED")
+            percent = 100.0;
+
+        nHash   = percent / 10;
+
+        retval += "[";
+        for (int n = 1; n <= nHash; ++n)
+            retval += "#";
+
+        for (int n = nHash; n < 10; ++n)
+            retval += " ";
+
+        retval += "] ";
+    } else {
+        retval += "[----------] ";
+    }
+
+    // percent string.
+    if (hasProgress)
+    {
+        tmp.sprintf("%3.0f%% ", percent);
+        retval += tmp;
+    } else {
+        retval += "---% ";
+    }
+
+    // Status text.
+    retval += job["status_text"].toString();
+    retval += "      ";
+
+    return 
+        status == "ABORTED"  ||
+        status == "FINISHED" ||
+        status == "FAILED";
+}
+
+
+/**
+ * This is a simple output function that we can call to print a short message
+ * when a new job is registered on the server. This prints the job ID that is
+ * essential for the user to later monitor the job. 
+ */
 void 
 S9sRpcReply::printJobStarted()
 {
-    S9sString  status = operator[]("requestStatus").toString();
-    int        id     = operator[]("jobId").toInt();
+    S9sOptions     *options = S9sOptions::instance();
+    S9sString       status = operator[]("requestStatus").toString();
+    int             id;
 
-    //printf("%s", STR(toString()));
+    if (options->isJsonRequested())
+    {
+        printf("%s", STR(toString()));
+        return;
+    }
+
     if (status == "ok")
     {
         S9sVariantMap job = operator[]("job").toVariantMap();;
 
         if (job.empty())
         {
+            // This should not happen, it is a deprecated reply format.
+            id = operator[]("jobId").toInt();
             printf("Job with ID %d registered.\n", id);
         } else {
             id = job["job_id"].toInt();

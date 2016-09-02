@@ -27,6 +27,8 @@ class S9sBusinessLogic
         void execute();
 
     private:
+        void waitForJob(const int jobId, S9sRpcClient &client);
+
         void executeClusterList(S9sRpcClient &client);
         void executeNodeList(S9sRpcClient &client);
         void executeJobList(S9sRpcClient &client);

@@ -144,6 +144,28 @@ S9sRpcClient::getJobInstances(
 }
 
 bool
+S9sRpcClient::getJobInstance(
+        const int clusterId,
+        const int jobId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    int            retcode;
+
+    uri.sprintf("/%d/job/", clusterId);
+
+    request["operation"] = "getJobInstance";
+    request["job_id"]    = jobId;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retcode = executeRequest(uri, request.toString());
+
+    return retcode == 0;
+}
+
+bool
 S9sRpcClient::getJobLog(
         const int clusterId,
         const int jobId)

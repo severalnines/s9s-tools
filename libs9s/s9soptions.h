@@ -71,6 +71,7 @@ class S9sOptions
         bool isRollingRestartRequested() const;
         bool isLongRequested() const;
         bool isJsonRequested() const;
+        bool isWaitRequested() const;
 
         bool useSyntaxHighlight() const;
 

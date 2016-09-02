@@ -26,6 +26,9 @@ class S9sRpcReply : public S9sVariantMap
     public:
         bool isOk() const;
         S9sString errorString() const;
+        int jobId() const;
+        
+        bool progressLine(S9sString &retval);
 
         void printJobStarted();
         void printJobLog();
