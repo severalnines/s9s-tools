@@ -20,6 +20,7 @@
 #include "library.h"
 #include "S9sOptions"
 #include "S9sRpcClient"
+#include "S9sBusinessLogic"
 
 #include <stdio.h>
 
@@ -126,6 +127,7 @@ int
 main(int argc, char **argv)
 {
     S9sOptions *options = S9sOptions::instance();
+    S9sBusinessLogic businessLogic;
     bool        success, finished;
     int         exitStatus;
 
@@ -168,7 +170,8 @@ main(int argc, char **argv)
     if (finished)
         goto finalize;
 
-    perform_task();
+    //perform_task();
+    businessLogic.execute();
 
 finalize:
     exitStatus = options->exitStatus();

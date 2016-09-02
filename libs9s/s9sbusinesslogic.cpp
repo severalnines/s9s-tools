@@ -19,6 +19,131 @@
  */
 #include "s9sbusinesslogic.h"
 
+#include "S9sRpcReply"
+#include "S9sOptions"
+#include <stdio.h>
+
 #define DEBUG
 #include "s9sdebug.h"
+        
+void 
+S9sBusinessLogic::execute()
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sString    controller = options->controller();
+    int          port = options->controllerPort();
+    S9sString    token = options->rpcToken();
+    S9sRpcClient client(controller, port, token);
 
+    if (options->isClusterOperation() && options->isListRequested())
+    {
+        executeClusterList(client);
+    } else if (options->isClusterOperation() && 
+            options->isRollingRestartRequested())
+    {
+        executeRollingRestart(client);
+    } else if (options->isNodeOperation() && options->isListRequested())
+    {
+        executeNodeList(client);
+    } else if (options->isJobOperation() && options->isListRequested())
+    {
+        executeJobList(client);
+    } else if (options->isJobOperation() && options->isLogRequested())
+    {
+        executeJobLog(client);
+    }
+}
+
+void
+S9sBusinessLogic::executeClusterList(
+        S9sRpcClient &client)
+{
+    S9S_DEBUG("list");
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getClusters();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printClusterList();
+    } else {
+        fprintf(stderr, "%s\n", STR(client.errorString()));
+    }
+}
+        
+void 
+S9sBusinessLogic::executeNodeList(
+        S9sRpcClient &client)
+{
+    S9S_DEBUG("node list");
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getClusters();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printNodeList();
+    } else {
+        fprintf(stderr, "%s\n", STR(client.errorString()));
+    }
+}
+        
+void 
+S9sBusinessLogic::executeJobList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    int         clusterId = options->clusterId();
+    bool        success;
+
+    success = client.getJobInstances(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printJobList();
+    } else {
+        fprintf(stderr, "%s\n", STR(client.errorString()));
+    }    
+}
+        
+void 
+S9sBusinessLogic::executeJobLog(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    int         clusterId = options->clusterId();
+    int         jobId     = options->jobId();
+    bool        success;
+
+    success = client.getJobLog(clusterId, jobId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printJobLog();
+    } else {
+        fprintf(stderr, "%s\n", STR(client.errorString()));
+    }
+}
+        
+void 
+S9sBusinessLogic::executeRollingRestart(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.rollingRestart(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printJobStarted();
+    } else {
+        fprintf(stderr, "ERROR: %s\n", STR(client.errorString()));
+    }
+}

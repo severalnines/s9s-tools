@@ -19,7 +19,19 @@
  */
 #pragma once
 
+#include "S9sRpcClient"
+
 class S9sBusinessLogic
 {
+    public:
+        void execute();
+
+    private:
+        void executeClusterList(S9sRpcClient &client);
+        void executeNodeList(S9sRpcClient &client);
+        void executeJobList(S9sRpcClient &client);
+        void executeJobLog(S9sRpcClient &client);
+
+        void executeRollingRestart(S9sRpcClient &client);
 };
 
