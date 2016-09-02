@@ -22,11 +22,26 @@
 #include "S9sRpcClient"
 #include "S9sBusinessLogic"
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
+
+void enable_cursor()
+{
+    printf("\033[?25h");
+    fflush(stdout);
+}
+
+void intHandler(int dummy) 
+{
+    enable_cursor();
+    printf("\nAborted...\n");
+    exit(128);
+}
 
 int 
 main(int argc, char **argv)
@@ -35,6 +50,10 @@ main(int argc, char **argv)
     S9sBusinessLogic businessLogic;
     bool        success, finished;
     int         exitStatus;
+
+    atexit(enable_cursor);
+    signal(SIGINT, intHandler);
+
 
     success = options->readOptions(&argc, argv);
     if (!success)
