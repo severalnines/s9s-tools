@@ -195,11 +195,12 @@ S9sBusinessLogic::executeRollingRestart(
         success = reply.isOk();
         if (success)
         {
-            reply.printJobStarted();
 
             if (options->isWaitRequested())
             {
                 waitForJob(reply.jobId(), client);
+            } else {
+                reply.printJobStarted();
             }
         } else {
             if (options->isJsonRequested())
@@ -226,6 +227,7 @@ S9sBusinessLogic::waitForJob(
     S9sString    progressLine;
 
     //printf("\n");
+    printf("\033[?25l"); 
     for (;;)
     {
         success = client.getJobInstance(clusterId, jobId);
@@ -251,5 +253,6 @@ S9sBusinessLogic::waitForJob(
             break;
     }
 
+    printf("\033[?25h");
     printf("\n");
 }
