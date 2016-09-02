@@ -111,7 +111,8 @@ S9sRpcReply::jobId() const
 */
 bool 
 S9sRpcReply::progressLine(
-        S9sString &retval)
+        S9sString &retval,
+        bool       syntaxHighlight)
 {
     S9sVariantMap job = operator[]("job").toVariantMap();
     int           jobId;
@@ -134,7 +135,18 @@ S9sRpcReply::progressLine(
     // The status
     status = job["status"].toString();
     tmp.sprintf("%-10s ", STR(status));
+    if (syntaxHighlight)
+    {
+        if (status == "RUNNING" || status == "FINISHED")
+            retval += XTERM_COLOR_GREEN;
+        else if (status == "FAILED" || status == "ABORTED")
+            retval += XTERM_COLOR_RED;
+    }
+
     retval += tmp;
+    
+    if (syntaxHighlight)
+        retval += TERM_NORMAL;
 
     // The progress bar.
     hasProgress = job.contains("progress_percent");
@@ -153,11 +165,18 @@ S9sRpcReply::progressLine(
         nHash   = percent / 10;
 
         retval += "[";
+
+        if (syntaxHighlight)
+            retval += XTERM_COLOR_BLUE;
+
         for (int n = 1; n <= nHash; ++n)
-            retval += "#";
+            retval += "█";
+
+        if (syntaxHighlight)
+            retval += TERM_NORMAL;
 
         for (int n = nHash; n < 10; ++n)
-            retval += " ";
+            retval += "░";
 
         retval += "] ";
     } else {
@@ -174,8 +193,14 @@ S9sRpcReply::progressLine(
     }
 
     // Status text.
+    if (syntaxHighlight)
+        retval += TERM_BOLD;
+
     retval += job["status_text"].toString();
     retval += "      ";
+    
+    if (syntaxHighlight)
+        retval += TERM_NORMAL;
 
     return 
         status == "ABORTED"  ||

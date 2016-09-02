@@ -219,9 +219,15 @@ S9sBusinessLogic::waitForJob(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
+    bool         syntaxHighlight = options->useSyntaxHighlight();
     int          clusterId = options->clusterId();
-    const char  *rotate = "/-\\|";
+    const char  *rotate[] = { "/", "-", "\\", "|" };
+    //const char  *rotate[] = { "˥", "˦", "˧", "˨", "˩" };
+    //const char  *rotate[] = { "⇐", "⇖", "⇑", "⇗", "⇒", "⇘", "⇓", "⇙" };
+    //const char   *rotate[] = { "◜ ", " ◝", " ◞", "◟ " };
+
     int          rotateCycle = 0;
+
     S9sRpcReply  reply;
     bool         success, finished;
     S9sString    progressLine;
@@ -240,14 +246,14 @@ S9sBusinessLogic::waitForJob(
         if (!success)
             continue;
 
-        finished = reply.progressLine(progressLine);
-        printf("%c %s\r", rotate[rotateCycle], STR(progressLine));
+        finished = reply.progressLine(progressLine, syntaxHighlight);
+        printf("%s %s\033[K\r", rotate[rotateCycle], STR(progressLine));
         //printf("%s", STR(reply.toString()));
         fflush(stdout);
         sleep(1);
 
         ++rotateCycle;
-        rotateCycle %= 4;
+        rotateCycle %= sizeof(rotate) / sizeof(void *);
 
         if (finished)
             break;
