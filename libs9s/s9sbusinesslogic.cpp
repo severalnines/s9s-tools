@@ -103,7 +103,17 @@ S9sBusinessLogic::executeJobList(
     if (success)
     {
         reply = client.reply();
-        reply.printJobList();
+
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printJobList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                fprintf(stderr, "%s\n", STR(reply.errorString()));
+        }
     } else {
         fprintf(stderr, "%s\n", STR(client.errorString()));
     }    

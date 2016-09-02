@@ -29,6 +29,24 @@
 #define WARNING
 #include "s9sdebug.h"
 
+bool
+S9sRpcReply::isOk() const
+{
+    if (contains("requestStatus"))
+        return at("requestStatus").toString().toLower() == "ok";
+
+    return false;
+}
+
+S9sString
+S9sRpcReply::errorString() const
+{
+    if (contains("errorString"))
+        return at("errorString").toString();
+
+    return S9sString();
+}
+
 void 
 S9sRpcReply::printJobStarted()
 {

@@ -24,6 +24,9 @@
 class S9sRpcReply : public S9sVariantMap
 {
     public:
+        bool isOk() const;
+        S9sString errorString() const;
+
         void printJobStarted();
         void printJobLog();
         void printClusterList();
