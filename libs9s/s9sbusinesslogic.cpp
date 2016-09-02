@@ -58,7 +58,7 @@ void
 S9sBusinessLogic::executeClusterList(
         S9sRpcClient &client)
 {
-    S9S_DEBUG("list");
+    S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
     bool        success;
 
@@ -66,9 +66,19 @@ S9sBusinessLogic::executeClusterList(
     if (success)
     {
         reply = client.reply();
-        reply.printClusterList();
+
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printClusterList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
     } else {
-        fprintf(stderr, "%s\n", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
         
@@ -76,7 +86,7 @@ void
 S9sBusinessLogic::executeNodeList(
         S9sRpcClient &client)
 {
-    S9S_DEBUG("node list");
+    S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
     bool        success;
 
@@ -84,12 +94,25 @@ S9sBusinessLogic::executeNodeList(
     if (success)
     {
         reply = client.reply();
-        reply.printNodeList();
+
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printNodeList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
     } else {
-        fprintf(stderr, "%s\n", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
-        
+
+/**
+ * Executes the --list operation on the jobs thus providing a list of jobs.
+ */
 void 
 S9sBusinessLogic::executeJobList(
         S9sRpcClient &client)
@@ -112,10 +135,10 @@ S9sBusinessLogic::executeJobList(
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
             else
-                fprintf(stderr, "%s\n", STR(reply.errorString()));
+                PRINT_ERROR("%s", STR(reply.errorString()));
         }
     } else {
-        fprintf(stderr, "%s\n", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(client.errorString()));
     }    
 }
         
@@ -142,11 +165,11 @@ S9sBusinessLogic::executeJobLog(
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
             else
-                fprintf(stderr, "%s\n", STR(reply.errorString()));
+                PRINT_ERROR("%s", STR(reply.errorString()));
         }
 
     } else {
-        fprintf(stderr, "%s\n", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
         
@@ -165,6 +188,6 @@ S9sBusinessLogic::executeRollingRestart(
         reply = client.reply();
         reply.printJobStarted();
     } else {
-        fprintf(stderr, "ERROR: %s\n", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }

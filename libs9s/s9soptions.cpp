@@ -228,6 +228,10 @@ S9sOptions::isLongRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --print-json command line option was provided when the
+ *   program was started.
+ */
 bool
 S9sOptions::isJsonRequested() const
 {
@@ -318,6 +322,24 @@ S9sOptions::printVerbose(
     va_end(arguments);
 
     printf("%s\n", STR(theString));
+}
+
+void
+S9sOptions::printError(
+        const char *formatString,
+        ...)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    S9sString  theString;
+    va_list     arguments;
+    
+    va_start(arguments, formatString);
+    theString.vsprintf(formatString, arguments);
+    va_end(arguments);
+
+    fprintf(stderr, "%s: %s\n", STR(options->m_myName), STR(theString));
+    fflush(stderr);
 }
 
 bool

@@ -26,6 +26,9 @@
 #define PRINT_VERBOSE(...) \
     S9sOptions::printVerbose(__VA_ARGS__)
 
+#define PRINT_ERROR(...) \
+    S9sOptions::printError(__VA_ARGS__)
+
 /**
  * Singleton class to handle s9s command line options and settings.
  */
@@ -77,6 +80,7 @@ class S9sOptions
         bool isVerbose() const;
 
         static void printVerbose(const char *formatString, ...);
+        static void printError(const char *formatString, ...);
 
     private:
         bool readOptionsNoMode(int argc, char *argv[]);
