@@ -177,7 +177,10 @@ S9sBusinessLogic::executeJobLog(
         PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
-        
+
+/**
+ * This method will start a rolling-restart job on the controller. 
+ */
 void 
 S9sBusinessLogic::executeRollingRestart(
         S9sRpcClient &client)
@@ -188,6 +191,47 @@ S9sBusinessLogic::executeRollingRestart(
     bool        success;
 
     success = client.rollingRestart(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+
+        success = reply.isOk();
+        if (success)
+        {
+
+            if (options->isWaitRequested())
+            {
+                waitForJob(reply.jobId(), client);
+            } else {
+                reply.printJobStarted();
+            }
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeCreateCluster(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    //int            clusterId = options->clusterId();
+    S9sVariantList hostNames;
+    S9sString      osUserName;
+    S9sString      vendor;
+    S9sString      mySqlVersion;
+    bool           uninstall = true;
+    S9sRpcReply    reply;
+    bool           success;
+
+    success = client.createGaleraCluster(
+            hostNames, osUserName, vendor, mySqlVersion, uninstall);
     if (success)
     {
         reply = client.reply();
