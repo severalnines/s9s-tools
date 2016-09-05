@@ -132,6 +132,23 @@ S9sOptions::nodes() const
     return S9sVariantList();
 }
 
+S9sString
+S9sOptions::vendor() const
+{
+    if (m_options.contains("vendor"))
+        return m_options.at("vendor").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sOptions::providerVersion() const
+{
+    if (m_options.contains("provider_version"))
+        return m_options.at("provider_version").toString();
+
+    return S9sString();
+}
 
 /**
  * \returns the RPC token to be used while communicating with the controller.
@@ -312,6 +329,8 @@ S9sOptions::binaryName() const
 
 /**
  * \returns the current exit status of the running application.
+ *
+ * The application should return this integer when exiting.
  */
 int 
 S9sOptions::exitStatus() const 
@@ -319,9 +338,13 @@ S9sOptions::exitStatus() const
     return m_exitStatus; 
 }
 
+/**
+ * \param exitStatus the exit status of the program that will be stored in the
+ *   object and shall be returned when the application exits.
+ */
 void
 S9sOptions::setExitStatus(
-        const int exitStatus)
+        const S9sOptions::ExitCodes exitStatus)
 {
     m_exitStatus = exitStatus;
 }
@@ -600,6 +623,8 @@ S9sOptions::readOptionsCluster(
         { "color",            optional_argument, 0, '2' },
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
+        { "vendor",           required_argument, 0,  2  },
+        { "provider-version", required_argument, 0,  3  },
         
         { 0, 0, 0, 0 }
     };
@@ -685,6 +710,16 @@ S9sOptions::readOptionsCluster(
             case 1:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+
+            case 2:
+                // --vendor=STRING
+                m_options["vendor"] = optarg;
+                break;
+
+            case 3:
+                // --provider-version=STRING
+                m_options["provider-version"] = optarg;
                 break;
 
             default:

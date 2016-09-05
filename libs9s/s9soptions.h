@@ -63,6 +63,9 @@ class S9sOptions
         void setNodes(const S9sString &value);
         S9sVariantList nodes() const;
 
+        S9sString vendor() const;
+
+        S9sString providerVersion() const;
 
         S9sString rpcToken() const;
         int clusterId() const;
@@ -90,7 +93,7 @@ class S9sOptions
         S9sString errorString() const;
         
         int exitStatus() const;
-        void setExitStatus(const int exitStatus);
+        void setExitStatus(const S9sOptions::ExitCodes exitStatus);
 
         bool isVerbose() const;
 
