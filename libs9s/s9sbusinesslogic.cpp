@@ -40,6 +40,9 @@ S9sBusinessLogic::execute()
     if (options->isClusterOperation() && options->isListRequested())
     {
         executeClusterList(client);
+    } else if (options->isClusterOperation() && options->isCreateRequested())
+    {
+        executeCreateCluster(client);
     } else if (options->isClusterOperation() && 
             options->isRollingRestartRequested())
     {

@@ -206,6 +206,15 @@ S9sOptions::isLogRequested() const
 }
 
 bool
+S9sOptions::isCreateRequested() const
+{
+    if (m_options.contains("create"))
+        return m_options.at("create").toBoolean();
+
+    return false;
+}
+
+bool
 S9sOptions::isRollingRestartRequested() const
 {
     bool retval = false;
@@ -556,6 +565,7 @@ S9sOptions::readOptionsCluster(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "list",             no_argument,       0, 'L' },
+        { "create",           no_argument,       0, '5' },
         { "rolling-restart",  no_argument,       0, 'R' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
@@ -635,6 +645,10 @@ S9sOptions::readOptionsCluster(
             
             case '4':
                 m_options["wait"] = true;
+                break;
+            
+            case '5':
+                m_options["create"] = true;
                 break;
             
             case 'i':
