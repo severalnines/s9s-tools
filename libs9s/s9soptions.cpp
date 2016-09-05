@@ -113,6 +113,26 @@ S9sOptions::controllerPort() const
     return 0;
 }
 
+void
+S9sOptions::setNodes(
+        const S9sString &value)
+{
+    S9sVariantList nodes = value.split();
+
+    m_options["nodes"] = nodes;
+}
+
+
+S9sVariantList
+S9sOptions::nodes() const
+{
+    if (m_options.contains("nodes"))
+        return m_options.at("nodes").toVariantList();
+
+    return S9sVariantList();
+}
+
+
 /**
  * \returns the RPC token to be used while communicating with the controller.
  */
@@ -297,6 +317,13 @@ int
 S9sOptions::exitStatus() const 
 { 
     return m_exitStatus; 
+}
+
+void
+S9sOptions::setExitStatus(
+        const int exitStatus)
+{
+    m_exitStatus = exitStatus;
 }
 
 /**
@@ -657,6 +684,7 @@ S9sOptions::readOptionsCluster(
 
             case 1:
                 // --nodes=LIST
+                setNodes(optarg);
                 break;
 
             default:

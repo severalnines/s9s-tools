@@ -247,7 +247,18 @@ S9sBusinessLogic::executeCreateCluster(
     S9sRpcReply    reply;
     bool           success;
 
-    hostNames << "10.10.2.2" << "10.10.2.3" << "10.10.2.4";
+    hostNames = options->nodes();
+    if (hostNames.empty())
+    {
+        options->printError(
+                "Node list is empty while creating cluster.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
     mySqlVersion = "5.6";
     osUserName   = "pipas";
     vendor       = "codership";

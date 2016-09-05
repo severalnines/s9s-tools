@@ -46,6 +46,12 @@ class S9sOptions
             Job,
         };
 
+        enum ExitCodes
+        {
+            ExitOk       = 0,
+            BadOptions   = 6,
+        };
+
         bool readOptions(int *argc, char *argv[]);
         bool executeInfoRequest();
 
@@ -53,6 +59,10 @@ class S9sOptions
         S9sString controller() const;
 
         int controllerPort() const;
+
+        void setNodes(const S9sString &value);
+        S9sVariantList nodes() const;
+
 
         S9sString rpcToken() const;
         int clusterId() const;
@@ -78,7 +88,10 @@ class S9sOptions
 
         S9sString binaryName() const;
         S9sString errorString() const;
+        
         int exitStatus() const;
+        void setExitStatus(const int exitStatus);
+
         bool isVerbose() const;
 
         static void printVerbose(const char *formatString, ...);
