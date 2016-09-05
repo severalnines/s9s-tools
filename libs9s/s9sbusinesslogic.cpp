@@ -42,7 +42,23 @@ S9sBusinessLogic::execute()
         executeClusterList(client);
     } else if (options->isClusterOperation() && options->isCreateRequested())
     {
-        executeCreateCluster(client);
+        if (options->clusterType() == "")
+        {
+            options->printError(
+                    "Cluster type is now set.\n"
+                    "Use the --cluster-type command line option to set it.");
+
+            options->setExitStatus(S9sOptions::BadOptions);
+        } else if (options->clusterType() == "galera")
+        {
+            executeCreateGaleraCluster(client);
+        } else {
+            options->printError(
+                    "Cluster type '%s' is not supported.",
+                    STR(options->clusterType()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+        }
     } else if (options->isClusterOperation() && 
             options->isRollingRestartRequested())
     {
@@ -234,11 +250,10 @@ S9sBusinessLogic::executeRollingRestart(
 }
  */
 void
-S9sBusinessLogic::executeCreateCluster(
+S9sBusinessLogic::executeCreateGaleraCluster(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
-    //int            clusterId = options->clusterId();
     S9sVariantList hostNames;
     S9sString      osUserName;
     S9sString      vendor;
@@ -263,6 +278,9 @@ S9sBusinessLogic::executeCreateCluster(
     osUserName   = "pipas";
     vendor       = "codership";
 
+    /*
+     * Running the request on the controller.
+     */
     success = client.createGaleraCluster(
             hostNames, osUserName, vendor, mySqlVersion, uninstall);
     if (success)

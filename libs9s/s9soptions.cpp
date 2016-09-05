@@ -151,6 +151,39 @@ S9sOptions::providerVersion() const
 }
 
 /**
+ * \returns the value of the --os-user command line option or the user name as
+ *   default.
+ *
+ * The --os-user controls what user name will be used when authenticating on the
+ * nodes. This option defaults to the username, that is the username on the
+ * localhost running the application.
+ */
+S9sString
+S9sOptions::osUser() const
+{
+    if (m_options.contains("os_user"))
+        return m_options.at("os_user").toString();
+
+    return userName();
+}
+
+/**
+ * \returns the cluster type string that is provided by the --cluster-type
+ *   command line option
+ *
+ * This function will convert the cluster type string to lowercase for
+ * convenience.
+ */
+S9sString
+S9sOptions::clusterType() const
+{
+    if (m_options.contains("cluster_type"))
+        return m_options.at("cluster_type").toString().toLower();
+
+    return S9sString();
+}
+
+/**
  * \returns the RPC token to be used while communicating with the controller.
  */
 S9sString
@@ -396,8 +429,6 @@ S9sOptions::printError(
         const char *formatString,
         ...)
 {
-    S9sOptions *options = S9sOptions::instance();
-
     S9sString  theString;
     va_list     arguments;
     
@@ -405,7 +436,7 @@ S9sOptions::printError(
     theString.vsprintf(formatString, arguments);
     va_end(arguments);
 
-    fprintf(stderr, "%s: %s\n", STR(options->m_myName), STR(theString));
+    fprintf(stderr, "%s\n", STR(theString));
     fflush(stderr);
 }
 
@@ -625,6 +656,9 @@ S9sOptions::readOptionsCluster(
         { "nodes",            required_argument, 0,  1  },
         { "vendor",           required_argument, 0,  2  },
         { "provider-version", required_argument, 0,  3  },
+        { "os-user",          required_argument, 0,  4  },
+        { "cluster-type",     required_argument, 0,  5  },
+
         
         { 0, 0, 0, 0 }
     };
@@ -722,6 +756,16 @@ S9sOptions::readOptionsCluster(
                 m_options["provider-version"] = optarg;
                 break;
 
+            case 4:
+                // --os-user
+                m_options["os_user"] = optarg;
+                break;
+
+            case 5:
+                // --cluster-type
+                m_options["cluster_type"] = optarg;
+                break;
+                
             default:
                 return false;
         }
