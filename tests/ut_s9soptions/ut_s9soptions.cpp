@@ -23,9 +23,8 @@
 #include <cstdio>
 #include <cstring>
 
-
-
 //#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 UtS9sOptions::UtS9sOptions()
@@ -45,6 +44,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testReadOptions02, retval);
+    PERFORM_TEST(testReadOptions03, retval);
 
     return retval;
 }
@@ -64,6 +64,9 @@ UtS9sOptions::testCreate()
     return true;
 }
 
+/**
+ * Checking the readOptions() method with some command line options.
+ */
 bool
 UtS9sOptions::testReadOptions01()
 {
@@ -94,6 +97,9 @@ UtS9sOptions::testReadOptions01()
     return true;
 }
 
+/**
+ * Checking the readOptions() method with some command line options.
+ */
 bool
 UtS9sOptions::testReadOptions02()
 {
@@ -123,6 +129,55 @@ UtS9sOptions::testReadOptions02()
     S9sOptions::uninit();
     return true;
 }
+
+/**
+ * Checking the readOptions() method with some command line options.
+ */
+bool
+UtS9sOptions::testReadOptions03()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        success;
+    S9sVariantList nodes;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "cluster", "--create", "--controller=localhost:9555",
+        "--rpc-token=the_token", "--cluster-type=Galera", 
+        "--nodes=10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5",
+        "--vendor=codership", "--provider-version=5.6", "--os-user=14j",
+        "--wait", NULL 
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),      "s9s");
+    S9S_COMPARE(options->m_operationMode,   S9sOptions::Cluster);
+    S9S_COMPARE(options->controller(),      "localhost");
+    S9S_COMPARE(options->controllerPort(),  9555);
+    S9S_COMPARE(options->rpcToken(),        "the_token");
+    S9S_COMPARE(options->clusterType(),     "galera");
+    S9S_COMPARE(options->vendor(),          "codership");
+    S9S_COMPARE(options->providerVersion(), "5.6");
+    S9S_COMPARE(options->osUser(),          "14j");
+
+    S9S_VERIFY(options->isWaitRequested());
+    S9S_VERIFY(!options->isListRequested());
+    S9S_VERIFY(!options->isVerbose());
+
+    nodes = options->nodes();
+    S9S_COMPARE(nodes.size(), 4);
+    S9S_COMPARE(nodes[0], "10.10.2.2");
+    S9S_COMPARE(nodes[1], "10.10.2.3");
+    S9S_COMPARE(nodes[2], "10.10.2.4");
+    S9S_COMPARE(nodes[3], "10.10.2.5");
+
+    S9sOptions::uninit();
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sOptions)
 

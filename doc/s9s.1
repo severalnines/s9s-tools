@@ -11,41 +11,53 @@ s9s \- Command line client for the Severalnines Clustercontrol server.
 
 .SH OPTIONS
 General options for \fBs9s\fP:
-.TP
 
+.TP
 .B \-h, \-\-help
 Print the help message and exist.
-.TP
 
+.TP
 .B \-v, \-\-verbose
 Print more messages than normally.
-.TP
 
+.TP
 .B \-V, \-\-version
 Print version information and exit.
-.TP
 
+.TP
 .BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
 The host name of the Cmon Controller. The port is also accepted as part of the
 hostname.
-.TP
 
+.TP
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
 The port where the Cmon Controller is waiting for connections.
-.TP
 
+.TP
 .BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
 The RPC token to be used when authenticating on the Cmon Controller.
-.TP
 
+.TP
 .BR \-\^\-color [ =\fIWHEN\fP "]
 Turn on and off the syntax highlighting of the output. The supported values for 
 .I WHEN
 is
 .BR never ", " always ", or " auto .
-.TP
 
+.\"
+.\"
+.\"
+.SH ENVIRONMENT
+The s9s applition will read and consider the following environment variables:
+.TP 5 
+CMON_CONTROLLER
+The host name and optionally the port number of the controller that will be
+contacted. This also can be set using the \fB\-\-controller\fR command line
+option.
 
+.\"
+.\"
+.\"
 .SH EXAMPLES
 List the clusters and the nodes managed by the controller:
 

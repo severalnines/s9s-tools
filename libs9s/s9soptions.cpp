@@ -39,7 +39,13 @@ S9sOptions::S9sOptions() :
     m_operationMode(NoMode),
     m_exitStatus(EXIT_SUCCESS)
 {
+    const char *tmp;
+
     sm_instance = this;
+
+    tmp = getenv("CMON_CONTROLLER");
+    if (tmp)
+        setController(tmp);
 }
 
 S9sOptions::~S9sOptions()
@@ -759,7 +765,7 @@ S9sOptions::readOptionsCluster(
 
             case 3:
                 // --provider-version=STRING
-                m_options["provider-version"] = optarg;
+                m_options["provider_version"] = optarg;
                 break;
 
             case 4:

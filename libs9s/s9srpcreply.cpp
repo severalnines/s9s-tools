@@ -176,7 +176,7 @@ S9sRpcReply::progressLine(
             retval += TERM_NORMAL;
 
         for (int n = nHash; n < 10; ++n)
-            retval += "░";
+            retval += " ";
 
         retval += "] ";
     } else {
