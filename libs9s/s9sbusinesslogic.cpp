@@ -274,9 +274,23 @@ S9sBusinessLogic::executeCreateGaleraCluster(
         return;
     }
 
-    mySqlVersion = "5.6";
-    osUserName   = "pipas";
-    vendor       = "codership";
+    mySqlVersion = options->providerVersion();
+    if (mySqlVersion.empty())
+        mySqlVersion = "5.6";
+
+    osUserName = options->osUser();
+
+    vendor = options->vendor();
+    if (vendor.empty())
+    {
+        options->printError(
+                "The vendor name is unknown while creating a galera cluster.\n"
+                "Use the --vendor command line option to provide the vendor."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
 
     /*
      * Running the request on the controller.

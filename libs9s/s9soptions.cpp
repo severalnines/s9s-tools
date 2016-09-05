@@ -638,20 +638,26 @@ S9sOptions::readOptionsCluster(
     int           c;
     struct option long_options[] =
     {
+        // Generic Options
         { "help",             no_argument,       0, 'h' },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
-        { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0, '5' },
-        { "rolling-restart",  no_argument,       0, 'R' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
-        { "wait",             no_argument,       0, '4' },
-        { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
+        { "config-file",      required_argument, 0, '1' },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L' },
+        { "create",           no_argument,       0, '5' },
+        { "rolling-restart",  no_argument,       0, '6' },
+
+        // Job Related Options
+        { "wait",             no_argument,       0, '4' },
+
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
         { "vendor",           required_argument, 0,  2  },
@@ -659,7 +665,6 @@ S9sOptions::readOptionsCluster(
         { "os-user",          required_argument, 0,  4  },
         { "cluster-type",     required_argument, 0,  5  },
 
-        
         { 0, 0, 0, 0 }
     };
 
@@ -669,7 +674,7 @@ S9sOptions::readOptionsCluster(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLRli:", 
+                argc, argv, "hvc:P:t:VLli:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -709,7 +714,8 @@ S9sOptions::readOptionsCluster(
                 m_options["list"] = true;
                 break;
             
-            case 'R':
+            case '6':
+                // --rolling-restart
                 S9S_WARNING("rolling restart");
                 m_options["rolling_restart"] = true;
                 break;

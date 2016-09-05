@@ -1,0 +1,126 @@
+.TH S9S 1 "August 29, 2016"
+
+.SH NAME
+s9s_cluster \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s_cluster
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP is command line tool to manage and monitor... more info needed...
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-L, \-\-list
+List the clusters managed by the controller.
+
+.TP
+.B \-\-create
+Create a new cluster. When this command line option is provided the program
+will contact the controller and register a new job to will eventually create
+a new cluster. 
+
+.TP
+.B \-\-rolling-restart
+Restart all nodes of the cluster by keeping the cluster alive. This command 
+line option will create a job that will restart all the nodes.
+
+
+.SS Generic Options
+
+.TP
+.B \-h, \-\-help
+Print the help message and exist.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The port is also accepted as part of the
+hostname.
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
+The RPC token to be used when authenticating on the Cmon Controller.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+
+.\"
+.\"
+.\"
+.SS Job Related Options
+
+.TP
+.B \-\-wait
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided it will wait until the job is executed.
+
+.\"
+.\"
+.\"
+.SS Cluster Related Options
+
+.TP
+.BI \-i " INTEGER" "\fR,\fP \-\^\-cluster-id=" INTEGER
+If the operation related to an existing cluster this option can be used to
+control which cluster will be manipulated. If the operation creates a new
+cluster the cluster ID is assigned automatically, so this option can't be used.
+
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+List the clusters and the nodes managed by the controller:
+
+.RS
+# s9s cluster --list --controller=localhost:9555 --color=always
+
+# s9s node --list --long --controller=localhost:9555
+.RE
+
+
+Get the job list for the specified cluster maintained by the specified
+controller:
+.RS
+
+# s9s job --list --cluster-id=1  --controller=localhost:9555
+.RE
+
+.RS
+
+# 9s/s9s cluster --create --controller=localhost:9555 --cluster-type=galera --nodes="10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5" --vendor=codership --provider-version=5.7 --os-user=pipas --wait
+.RE
+
