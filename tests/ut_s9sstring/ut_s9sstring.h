@@ -38,5 +38,6 @@ class UtS9sString : public S9sUnitTest
         bool testPrintf();
         bool testContains();
         bool testEscape();
+        bool testSplit();
 };
 

@@ -219,6 +219,20 @@ S9sBusinessLogic::executeRollingRestart(
     }
 }
 
+/*
+{
+    "command": "create_cluster",
+    "id": 0,
+    "job_data": 
+    {
+        "enable_mysql_uninstall": true,
+        "mysql_hostnames": [ "10.10.2.2", "10.10.2.3", "10.10.2.4" ],
+        "mysql_version": "5.6",
+        "ssh_user": "pipas",
+        "vendor": "codership"
+    }
+}
+ */
 void
 S9sBusinessLogic::executeCreateCluster(
         S9sRpcClient &client)
@@ -236,7 +250,7 @@ S9sBusinessLogic::executeCreateCluster(
     hostNames << "10.10.2.2" << "10.10.2.3" << "10.10.2.4";
     mySqlVersion = "5.6";
     osUserName   = "pipas";
-    vendor       = "mariadb";
+    vendor       = "codership";
 
     success = client.createGaleraCluster(
             hostNames, osUserName, vendor, mySqlVersion, uninstall);

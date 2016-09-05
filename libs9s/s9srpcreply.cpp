@@ -258,7 +258,7 @@ S9sRpcReply::printJobLog()
         return;
     }
 
-    for (uint idx = 0; idx < theList.size(); ++idx)
+    for (int idx = theList.size() - 1; idx >= 0; --idx)
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
         S9sString     message = theMap["message_text"].toString();
@@ -294,7 +294,10 @@ S9sRpcReply::printNodeList()
         printNodeListBrief();
 }
 
-
+/**
+ * Prints the RPC reply as a cluster list. Considers command line options to
+ * decide what format will be used to print the list.
+ */
 void 
 S9sRpcReply::printClusterList()
 {
@@ -308,7 +311,11 @@ S9sRpcReply::printClusterList()
         printClusterListBrief();
 }
 
-        
+/**
+ * Private low-level function to print the cluster list in the "brief" format.
+ * The brief format can be used in shell scripts to create lists to walk
+ * through.
+ */
 void 
 S9sRpcReply::printClusterListBrief()
 {
@@ -568,6 +575,7 @@ S9sRpcReply::html2ansi(
     s.replace("<em style='color: #1abc9c;'>", XTERM_COLOR_6);
     s.replace("<em style='color: #d35400;'>", XTERM_COLOR_7);
     s.replace("<em style='color: #c0392b;'>", XTERM_COLOR_8);
+    s.replace("<em style='color: #0b33b5;'>", XTERM_COLOR_BLUE);
 
     //s.replace("", );
     s.replace("</em>",                        TERM_NORMAL);

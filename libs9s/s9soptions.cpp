@@ -554,7 +554,6 @@ S9sOptions::readOptionsCluster(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -573,6 +572,7 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
         { "cluster-id",       required_argument, 0, 'i' },
+        { "nodes",            required_argument, 0,  1  },
         
         { 0, 0, 0, 0 }
     };
@@ -653,6 +653,10 @@ S9sOptions::readOptionsCluster(
             
             case 'i':
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case 1:
+                // --nodes=LIST
                 break;
 
             default:

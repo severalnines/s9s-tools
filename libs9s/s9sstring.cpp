@@ -71,6 +71,39 @@ S9sString::operator= (
 }
 
 /**
+ * \returns the variant list contains the parts of the original string.
+ *
+ * Splits the string into words using ";, " as delimiters. These delimiters are
+ * used in config files, so this method is made to process config files.
+ *
+ * This is an important function, we use this to split command line strings into
+ * pieces so that the user need to type less by providing lists (e.g. host 
+ * names) in a simple string.
+ */
+S9sVariantList
+S9sString::split() const
+{
+    S9sVariantList retval;
+
+    if (empty())
+        return retval;
+
+    char *copy = strdup(this->c_str());
+    char *x = copy;
+    char *dd;
+
+    dd = strtok(x, ";, ");
+    while (dd != NULL)
+    {
+        retval.push_back(dd);
+        dd = strtok (NULL, ";, ");
+    }
+
+    free(copy);
+    return retval;
+}
+
+/**
  * \param formatString a standard printf() style formatstring.
  */
 void

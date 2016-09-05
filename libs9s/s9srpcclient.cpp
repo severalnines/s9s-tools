@@ -178,7 +178,7 @@ S9sRpcClient::getJobLog(
 
     request["operation"] = "getJobLog";
     request["job_id"]    = jobId;
-    request["limit"]     = 1000;
+    //request["limit"]     = 1000;
 
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
@@ -358,7 +358,7 @@ S9sRpcClient::executeRequest(
         if (tmp)
             m_priv->m_jsonReply = (tmp + 4);
     
-        S9S_WARNING("reply: \n%s\n", STR(m_priv->m_jsonReply));
+        S9S_DEBUG("reply: \n%s\n", STR(m_priv->m_jsonReply));
     } else {
         return -1;
     }

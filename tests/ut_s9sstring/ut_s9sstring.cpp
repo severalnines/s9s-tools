@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <cstring>
 
+#include "S9sVariantList"
+
 //#define DEBUG
 #include "s9sdebug.h"
 
@@ -51,6 +53,7 @@ UtS9sString::runTest(const char *testName)
     PERFORM_TEST(testPrintf,        retval);
     PERFORM_TEST(testContains,      retval);
     PERFORM_TEST(testEscape,        retval);
+    PERFORM_TEST(testSplit,         retval);
 
     return retval;
 }
@@ -292,6 +295,76 @@ UtS9sString::testEscape()
     S9S_COMPARE(string8.escape(), "it\\'s");
     S9S_COMPARE(string9.escape(), "one\\\"two");
     S9S_COMPARE(string10.escape(), "it\\'\\'s");
+
+    return true;
+}
+
+/**
+ * This function will test the S9sString::split() function with various inputs.
+ */
+bool
+UtS9sString::testSplit()
+{
+    S9sString      string;
+    S9sVariantList list;
+
+    //
+    // Regular format...
+    //
+    string = "one;two;three";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    //
+    // Extra delimiters...
+    //
+    string = "one;two;three;";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    string = ";one;two;three";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    string = ";;one;;two;;;;three;";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    //
+    // Extra delimiters...
+    //
+    string = "one;two;three;";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    string = ";one;two;three";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
+    string = ";;one;;two;;;;three;";
+    list = string.split();
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
 
     return true;
 }

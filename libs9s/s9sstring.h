@@ -17,6 +17,7 @@
 #endif
 
 class S9sRegExp;
+class S9sVariantList;
 
 class S9sString : public std::string
 {
@@ -34,6 +35,8 @@ class S9sString : public std::string
 
         void sprintf(const char *formatString, ...);
         void vsprintf(const char *formatString, va_list arguments);
+
+        S9sVariantList split() const;
 
         int toInt(const int defaultVal = 0) const;
         ulonglong toULongLong(const ulonglong defaultVal = 0ull) const;
