@@ -196,14 +196,14 @@ bool
 S9sRpcClient::rollingRestart(
         const int clusterId)
 {
-    S9sOptions *options = S9sOptions::instance();
-    S9sString   uri;
-    int         retcode;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobSpec;
+    S9sString      uri;
+    int            retcode;
 
     uri.sprintf("/%d/job/", clusterId);
 
-    S9sVariantMap request;
-    S9sVariantMap job, jobSpec;
 
     jobSpec["command"]   = "rolling_restart";
 
@@ -216,6 +216,46 @@ S9sRpcClient::rollingRestart(
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
+    retcode = executeRequest(uri, request.toString());
+
+    return retcode == 0;
+}
+
+bool
+S9sRpcClient::createGaleraCluster(
+        const S9sVariantList &hostNames,
+        const S9sString      &osUserName,
+        const S9sString      &vendor,
+        const S9sString      &mySqlVersion,
+        bool                  uninstall)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    int            retcode;
+    
+    uri = "/0/job/";
+
+    jobData["mysql_hostnames"] = hostNames;
+    jobData["ssh_user"]        = osUserName;
+    jobData["vendor"]          = vendor;
+    jobData["mysql_version"]   = mySqlVersion;
+    jobData["enable_mysql_uninstall"] = uninstall;
+
+    jobSpec["command"]  = "create_cluster";
+    jobSpec["job_data"] = jobData;
+
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Create Galera Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    S9S_WARNING("->\n%s\n", STR(request.toString()));
     retcode = executeRequest(uri, request.toString());
 
     return retcode == 0;

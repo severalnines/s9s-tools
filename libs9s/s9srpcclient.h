@@ -34,6 +34,12 @@ class S9sRpcClient
         bool getJobInstance(const int clusterId, const int jobId);
         bool getJobLog(const int clusterId, const int jobId);
         bool rollingRestart(const int clusterId);
+        bool createGaleraCluster(
+                const S9sVariantList &hostNames,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
 
     protected:
         int executeRequest(
