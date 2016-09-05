@@ -178,6 +178,7 @@ S9sRpcClient::getJobLog(
 
     request["operation"] = "getJobLog";
     request["job_id"]    = jobId;
+    request["limit"]     = 1000;
 
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;

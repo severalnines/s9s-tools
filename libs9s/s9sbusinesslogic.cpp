@@ -233,6 +233,11 @@ S9sBusinessLogic::executeCreateCluster(
     S9sRpcReply    reply;
     bool           success;
 
+    hostNames << "10.10.2.2" << "10.10.2.3" << "10.10.2.4";
+    mySqlVersion = "5.6";
+    osUserName   = "pipas";
+    vendor       = "mariadb";
+
     success = client.createGaleraCluster(
             hostNames, osUserName, vendor, mySqlVersion, uninstall);
     if (success)
