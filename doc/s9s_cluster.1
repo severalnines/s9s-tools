@@ -97,30 +97,43 @@ If the operation related to an existing cluster this option can be used to
 control which cluster will be manipulated. If the operation creates a new
 cluster the cluster ID is assigned automatically, so this option can't be used.
 
+.TP
+.BI \-\^\-nodes= NODELIST
+The list of nodes given by their hostnames or IP addresses.
+
+.TP
+.BI \-\^\-vendor= VENDOR
+The name of the vendor to be installed.
+
+.TP
+.BI \-\^\-provider-version= VERSION
+The version string of the software to be installed. 
+
+.TP
+.BI \-\^\-os-user= USERNAME
+The name of the remote user that is used to gain SSH access on the remote nodes.
+If this command line option is omitted the name of the local user will be used
+on the remote hosts too.
+
+.TP
+.BI \-\^\-cluster-type= TYPENAME
+The name of the cluster type to be installed. Currently the following types are
+supported: galera,... (ok, I will add more :).
 
 .\" 
 .\" The examples. The are very helpful for people just started to use the
 .\" application.
 .\" 
 .SH EXAMPLES
+.PP
 List the clusters and the nodes managed by the controller:
 
-.RS
-# s9s cluster --list --controller=localhost:9555 --color=always
+.nf
+# \fBs9s cluster --list --controller=localhost:9555 --color=always\fR
+.fi
 
-# s9s node --list --long --controller=localhost:9555
-.RE
+Creating a cluster:
 
-
-Get the job list for the specified cluster maintained by the specified
-controller:
-.RS
-
-# s9s job --list --cluster-id=1  --controller=localhost:9555
-.RE
-
-.RS
-
-# 9s/s9s cluster --create --controller=localhost:9555 --cluster-type=galera --nodes="10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5" --vendor=codership --provider-version=5.7 --os-user=pipas --wait
-.RE
-
+.nf
+# \fBs9s cluster \-\-create \-\-controller=localhost:9555 \-\-cluster-type=galera \-\-nodes="10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5" \-\-vendor=codership \-\-provider-version=5.6 \-\-os-user=pipas \-\-wait\fR
+.fi

@@ -256,9 +256,8 @@ S9sRpcClient::createGaleraCluster(
     request["operation"] = "createJobInstance";
     request["job"]       = job;
 
-    S9S_WARNING("->\n%s\n", STR(request.toString()));
     retcode = executeRequest(uri, request.toString());
-
+    
     return retcode == 0;
 }
 
