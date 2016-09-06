@@ -78,6 +78,19 @@ S9sBusinessLogic::execute()
     }
 }
 
+void 
+S9sBusinessLogic::waitForJob(
+        const int     jobId, 
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    
+    if (options->isLogRequested())
+        waitForJobWithLog(jobId, client);
+    else
+        waitForJobWithProgess(jobId, client);
+}
+
 void
 S9sBusinessLogic::executeClusterList(
         S9sRpcClient &client)
@@ -218,7 +231,7 @@ S9sBusinessLogic::executeRollingRestart(
         if (success)
         {
 
-            if (options->isWaitRequested())
+            if (options->isWaitRequested() || options->isLogRequested())
             {
                 waitForJob(reply.jobId(), client);
             } else {
@@ -305,7 +318,7 @@ S9sBusinessLogic::executeCreateGaleraCluster(
         if (success)
         {
 
-            if (options->isWaitRequested())
+            if (options->isWaitRequested() || options->isLogRequested())
             {
                 waitForJob(reply.jobId(), client);
             } else {
@@ -323,7 +336,7 @@ S9sBusinessLogic::executeCreateGaleraCluster(
 }
         
 void 
-S9sBusinessLogic::waitForJob(
+S9sBusinessLogic::waitForJobWithProgess(
         const int     jobId, 
         S9sRpcClient &client)
 {
@@ -366,6 +379,58 @@ S9sBusinessLogic::waitForJob(
 
         if (finished)
             break;
+    }
+
+    printf("\033[?25h");
+    printf("\n");
+}
+
+void 
+S9sBusinessLogic::waitForJobWithLog(
+        const int     jobId, 
+        S9sRpcClient &client)
+{
+    S9sOptions   *options = S9sOptions::instance();
+    int           clusterId = options->clusterId();
+    S9sVariantMap job;
+    S9sRpcReply   reply;
+    bool          success, finished;
+    int           nLogsPrinted = 0;
+    int           nEntries;
+
+    //printf("\n");
+    printf("\033[?25l"); 
+
+    for (;;)
+    {
+        success = client.getJobLog(clusterId, jobId, nLogsPrinted);
+        if (success)
+        {
+            reply = client.reply();
+            success = reply.isOk();
+        }
+        
+        if (!success)
+            continue;
+
+        nEntries = reply["messages"].toVariantList().size();
+        
+        if (nEntries > 0)
+            reply.printJobLog();
+
+        nLogsPrinted += nEntries;
+
+        job = reply["job"].toVariantMap();
+        finished = 
+            job["status"] == "ABORTED"   ||
+            job["status"] == "FINISHED"  ||
+            job["status"] == "FAILED";
+        
+        fflush(stdout);
+        if (finished)
+            break;
+        
+        sleep(1);
     }
 
     printf("\033[?25h");

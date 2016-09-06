@@ -84,7 +84,14 @@ is
 .TP
 .B \-\-wait
 If the application created a job (e.g. to create a new cluster) and this command
-line option is provided it will wait until the job is executed.
+line option is provided it will wait until the job is executed. While waiting a
+progress bar will be shown unless the silent mode is set.
+
+.TP
+.B \-\-log
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided it will wait until the job is executed. While waiting
+the job logs will be shown unless the silent mode is set.
 
 .\"
 .\"

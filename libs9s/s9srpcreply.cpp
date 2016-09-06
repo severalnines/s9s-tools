@@ -566,16 +566,17 @@ S9sRpcReply::html2ansi(
     s.replace("</em>",     "\e[m");
     s.replace("</strong>", "\e[m");
 #else
-    s.replace("<em style='color: #c66211;'>", XTERM_COLOR_3);
-    s.replace("<em style='color: #75599b;'>", XTERM_COLOR_3);
+    s.replace("<em style='color: #c66211;'>",     XTERM_COLOR_3);
+    s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
     s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
     s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
-    s.replace("<em style='color: #007e18;'>", XTERM_COLOR_4);
-    s.replace("<em style='color: #7415f6;'>", XTERM_COLOR_5);
-    s.replace("<em style='color: #1abc9c;'>", XTERM_COLOR_6);
-    s.replace("<em style='color: #d35400;'>", XTERM_COLOR_7);
-    s.replace("<em style='color: #c0392b;'>", XTERM_COLOR_8);
-    s.replace("<em style='color: #0b33b5;'>", XTERM_COLOR_BLUE);
+    s.replace("<em style='color: #007e18;'>",     XTERM_COLOR_4);
+    s.replace("<em style='color: #7415f6;'>",     XTERM_COLOR_5);
+    s.replace("<em style='color: #1abc9c;'>",     XTERM_COLOR_6);
+    s.replace("<em style='color: #d35400;'>",     XTERM_COLOR_7);
+    s.replace("<em style='color: #c0392b;'>",     XTERM_COLOR_8);
+    s.replace("<em style='color: #0b33b5;'>",     XTERM_COLOR_BLUE);
+    s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
 
     //s.replace("", );
     s.replace("</em>",                        TERM_NORMAL);

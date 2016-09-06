@@ -26,8 +26,11 @@ class S9sBusinessLogic
     public:
         void execute();
 
-    private:
         void waitForJob(const int jobId, S9sRpcClient &client);
+
+    private:
+        void waitForJobWithProgess(const int jobId, S9sRpcClient &client);
+        void waitForJobWithLog(const int jobId, S9sRpcClient &client);
 
         void executeClusterList(S9sRpcClient &client);
         void executeNodeList(S9sRpcClient &client);

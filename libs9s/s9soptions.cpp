@@ -716,6 +716,7 @@ S9sOptions::readOptionsCluster(
 
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
+        { "log",              no_argument,       0,  6 },
 
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
@@ -796,6 +797,11 @@ S9sOptions::readOptionsCluster(
             
             case '4':
                 m_options["wait"] = true;
+                break;
+
+            case 6:
+                // --log
+                m_options["log"] = true;
                 break;
             
             case '5':
