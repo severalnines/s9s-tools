@@ -119,6 +119,12 @@ S9sOptions::controllerPort() const
     return 0;
 }
 
+/**
+ * \param value the node list as a string using field separators that the
+ *   S9sString::split() function can interpret.
+ *
+ * The node list is usually set in the command line using the --nodes option.
+ */
 void
 S9sOptions::setNodes(
         const S9sString &value)
@@ -128,7 +134,9 @@ S9sOptions::setNodes(
     m_options["nodes"] = nodes;
 }
 
-
+/**
+ * \returns the node list, one host name in every list item
+ */
 S9sVariantList
 S9sOptions::nodes() const
 {
@@ -138,6 +146,9 @@ S9sOptions::nodes() const
     return S9sVariantList();
 }
 
+/**
+ * \returns the vendor name as it is set by the --vendor command line option.
+ */
 S9sString
 S9sOptions::vendor() const
 {
@@ -147,6 +158,10 @@ S9sOptions::vendor() const
     return S9sString();
 }
 
+/**
+ * \returns the provider version string as it is set by the --provider-version
+ *   command line option.
+ */
 S9sString
 S9sOptions::providerVersion() const
 {
@@ -214,6 +229,9 @@ S9sOptions::clusterId() const
     return 0;
 }
 
+/**
+ * \returns the job ID as it is set by the --job-id command line option.
+ */
 int
 S9sOptions::jobId() const
 {
@@ -223,6 +241,9 @@ S9sOptions::jobId() const
     return -1;
 }
 
+/**
+ * FIXME: there is no command line option for this.
+ */
 S9sString 
 S9sOptions::userName() const
 {
@@ -232,6 +253,9 @@ S9sOptions::userName() const
     return retval;
 }
 
+/**
+ * FIXME: there is no command line option for this.
+ */
 int
 S9sOptions::userId() const
 {
@@ -241,18 +265,27 @@ S9sOptions::userId() const
     return retval;
 }
 
+/**
+ * \returns true if the main operation is "node".
+ */
 bool
 S9sOptions::isNodeOperation() const
 {
     return m_operationMode == Node;
 }
 
+/**
+ * \returns true if the main operation is "cluster".
+ */
 bool
 S9sOptions::isClusterOperation() const
 {
     return m_operationMode == Cluster;
 }
 
+/**
+ * \returns true if the main operation is "job".
+ */
 bool
 S9sOptions::isJobOperation() const
 {
@@ -272,6 +305,10 @@ S9sOptions::isListRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --log command line option was provided when the program
+ *   was started.
+ */
 bool
 S9sOptions::isLogRequested() const
 {
@@ -281,6 +318,10 @@ S9sOptions::isLogRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --create command line option was provided when the
+ *   program was started.
+ */
 bool
 S9sOptions::isCreateRequested() const
 {
@@ -290,6 +331,10 @@ S9sOptions::isCreateRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --rolling-restart command line option was provided when
+ *   the program was started.
+ */
 bool
 S9sOptions::isRollingRestartRequested() const
 {
@@ -297,7 +342,6 @@ S9sOptions::isRollingRestartRequested() const
     if (m_options.contains("rolling_restart"))
         retval = m_options.at("rolling_restart").toBoolean();
 
-    S9S_WARNING("*** retval : %s", retval ? "true" : "false");
     return retval;
 }
 
@@ -326,6 +370,9 @@ S9sOptions::isJsonRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --wait command line option was used.
+ */
 bool
 S9sOptions::isWaitRequested() const
 {
@@ -410,6 +457,9 @@ S9sOptions::errorString() const
     return m_errorMessage;
 }
 
+/**
+ * \param formatString Standard printf() style format string.
+ */
 void
 S9sOptions::printVerbose(
         const char *formatString,
@@ -430,6 +480,9 @@ S9sOptions::printVerbose(
     printf("%s\n", STR(theString));
 }
 
+/**
+ * \param formatString Standard printf() style format string.
+ */
 void
 S9sOptions::printError(
         const char *formatString,
