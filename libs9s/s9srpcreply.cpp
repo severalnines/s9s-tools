@@ -412,35 +412,71 @@ void
 S9sRpcReply::printNodeListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    uint            maxHostNameLength = 0u;
+    S9sString       hostNameFormat;
 
-    printf("%s", STR(toString()));
-
-    S9sVariantList theList = operator[]("clusters").toVariantList();
-
-    printf("Total: %lu\n", theList.size());
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap      = theList[idx].toVariantMap();
-        S9sString     clusterName = theMap["cluster_name"].toString();
-        int           clusterId   = theMap["cluster_id"].toInt();
-        S9sString     clusterType = theMap["cluster_type"].toString();
-        S9sString     state       = theMap["state"].toString();
-        S9sString     text        = theMap["status_text"].toString();
-        const char   *nameColor   = "";
-        const char   *endColor    = "";
-
-        if (syntaxHighlight)
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList hostList = theMap["hosts"].toVariantList();
+        
+        for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            nameColor = XTERM_COLOR_LIGHT_GREEN;
-            endColor  = TERM_NORMAL;
-        }
+            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
+            S9sString     hostName = hostMap["hostname"].toString();
 
-        printf("%4d %-14s %s%-20s%s %s\n", 
-                clusterId, 
-                STR(clusterType.toLower()),
-                nameColor, STR(clusterName), endColor,
-                STR(text));
+            if (hostName.length() > maxHostNameLength)
+                maxHostNameLength = hostName.length();
+        }
+    }
+
+    hostNameFormat.sprintf("%%s%%-%us%%s ", maxHostNameLength);
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        S9sVariantList hostList = theMap["hosts"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
+        {
+            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
+            S9sString     hostName = hostMap["hostname"].toString();
+            S9sString     status = hostMap["hoststatus"].toString();
+            S9sString     className = hostMap["class_name"].toString();
+            S9sString     nodeType  = hostMap["nodetype"].toString();
+            S9sString     message   = hostMap["message"].toString();
+            S9sString     version   = hostMap["version"].toString();
+            bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
+            int port = hostMap["port"].toInt(-1);
+            const char   *nameStart = "";
+            const char   *nameEnd   = "";
+
+            if (syntaxHighlight)
+            {
+                nameStart = XTERM_COLOR_GREEN;
+                nameEnd   = TERM_NORMAL;
+            }
+
+            printf("%s", STR(nodeTypeFlag(className, nodeType)));
+            printf("%s", STR(nodeStateFlag(status)));
+            printf("%c ", maintenance ? 'M' : '-');
+
+            printf("%-6s ", STR(version));
+            printf("%s ", STR(clusterName));
+
+            printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
+
+            if (port >= 0)
+                printf("%4d ", port);
+            else
+                printf("   - ");
+
+
+            printf("%s\n", STR(message));
+        }
     }
 }
 
@@ -582,5 +618,55 @@ S9sRpcReply::html2ansi(
     s.replace("</em>",                        TERM_NORMAL);
     s.replace("</strong>",                    TERM_NORMAL);
 #endif
+}
+
+S9sString 
+S9sRpcReply::nodeTypeFlag(
+        const S9sString &className,
+        const S9sString &nodeType)
+{
+    if (nodeType == "controller")
+        return "c";
+    else if (nodeType == "galera")
+        return "g";
+    else if (nodeType == "maxscale")
+        return "x";
+    else if (nodeType == "keepalived")
+        return "k";
+    else if (nodeType == "postgres")
+        return "p";
+    else if (nodeType == "mongo")
+        return "m";
+    else if (nodeType == "memcached")
+        return "e";
+    else if (nodeType == "proxysql")
+        return "y";
+    else if (nodeType == "haproxy")
+        return "h";
+
+    if (className == "CmonMySqlHost")
+        return "s";
+    
+    return "?";
+}
+
+S9sString 
+S9sRpcReply::nodeStateFlag(
+        const S9sString &state)
+{
+    if (state == "CmonHostUnknown")
+        return "?";
+    else if (state == "CmonHostOnline")
+        return "o";
+    else if (state == "CmonHostOffLine")
+        return "?";
+    else if (state == "CmonHostFailed")
+        return "f";
+    else if (state == "CmonHostRecovery")
+        return "r";
+    else if (state == "CmonHostShutDown")
+        return "-";
+
+    return "?";
 }
 
