@@ -32,7 +32,13 @@ class S9sRpcClient
         bool getClusters();
         bool getJobInstances(const int clusterId);
         bool getJobInstance(const int clusterId, const int jobId);
-        bool getJobLog(const int clusterId, const int jobId);
+        
+        bool getJobLog(
+                const int clusterId, 
+                const int jobId,
+                const int limit   = 0,
+                const int offset  = 0);
+
         bool rollingRestart(const int clusterId);
         bool createGaleraCluster(
                 const S9sVariantList &hostNames,

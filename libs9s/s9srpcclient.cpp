@@ -168,7 +168,9 @@ S9sRpcClient::getJobInstance(
 bool
 S9sRpcClient::getJobLog(
         const int clusterId,
-        const int jobId)
+        const int jobId,
+        const int limit,
+        const int offset)
 {
     S9sString      uri;
     S9sVariantMap  request;
@@ -176,12 +178,18 @@ S9sRpcClient::getJobLog(
 
     uri.sprintf("/%d/job/", clusterId);
 
-    request["operation"] = "getJobLog";
-    request["job_id"]    = jobId;
-    //request["limit"]     = 1000;
+    // Building the request.
+    request["operation"]  = "getJobLog";
+    request["job_id"]     = jobId;
+
+    if (limit != 0)
+        request["limit"]  = limit;
+
+    if (offset != 0)
+        request["offset"] = offset;
 
     if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+        request["token"]  = m_priv->m_token;
 
     retcode = executeRequest(uri, request.toString());
 
