@@ -51,7 +51,10 @@ S9sBusinessLogic::execute()
             options->setExitStatus(S9sOptions::BadOptions);
         } else if (options->clusterType() == "galera")
         {
-            executeCreateGaleraCluster(client);
+            executeCreateCluster(client);
+        } else if (options->clusterType() == "mysqlreplication")
+        {
+            executeCreateCluster(client);
         } else {
             options->printError(
                     "Cluster type '%s' is not supported.",
@@ -263,7 +266,7 @@ S9sBusinessLogic::executeRollingRestart(
 }
  */
 void
-S9sBusinessLogic::executeCreateGaleraCluster(
+S9sBusinessLogic::executeCreateCluster(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
@@ -308,8 +311,20 @@ S9sBusinessLogic::executeCreateGaleraCluster(
     /*
      * Running the request on the controller.
      */
-    success = client.createGaleraCluster(
-            hostNames, osUserName, vendor, mySqlVersion, uninstall);
+    if (options->clusterType() == "galera")
+    {
+        success = client.createGaleraCluster(
+                hostNames, osUserName, vendor, 
+                mySqlVersion, uninstall);
+    } else if (options->clusterType() == "mysqlreplication")
+    {
+        success = client.createMySqlReplication(
+                hostNames, osUserName, vendor, 
+                mySqlVersion, uninstall);
+    } else {
+        success = false;
+    }
+
     if (success)
     {
         reply = client.reply();

@@ -38,6 +38,6 @@ class S9sBusinessLogic
         void executeJobLog(S9sRpcClient &client);
 
         void executeRollingRestart(S9sRpcClient &client);
-        void executeCreateGaleraCluster(S9sRpcClient &client);
+        void executeCreateCluster(S9sRpcClient &client);
 };
 

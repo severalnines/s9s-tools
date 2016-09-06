@@ -99,22 +99,21 @@ S9sRpcClient::errorString() const
 bool
 S9sRpcClient::getClusters()
 {
-    S9sString uri = "/0/clusters/";
-    S9sString request; 
-    int       retcode;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/0/clusters/";
+    S9sVariantMap  request;
+    int            retcode;
 
-    request.sprintf(
-        "{\n"
-        "  \"operation\": \"getAllClusterInfo\",\n"
-        "  \"with_hosts\": true,\n"
-        "  \"token\":\"%s\",\n"
-        "  \"user\":\"cmonjsclient\"\n"
-        "}\n",
-        STR(m_priv->m_token)
-        );
+    request["operation"]  = "getAllClusterInfo";
+    request["with_hosts"] = true;
+    request["user"]           = options->userName();
+    //job["user_id"]        = options->userId();
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
 
-    S9S_DEBUG("*** request: \n%s\n", STR(request));
-    retcode = executeRequest(uri, request);
+    S9S_DEBUG("*** request: \n%s\n", STR(request.toString()));
+    retcode = executeRequest(uri, request.toString());
 
     return retcode == 0;
 }
@@ -259,6 +258,7 @@ S9sRpcClient::createGaleraCluster(
     
     uri = "/0/job/";
 
+    jobData["cluster_type"]    = "galera";
     jobData["mysql_hostnames"] = hostNames;
     jobData["ssh_user"]        = osUserName;
     jobData["vendor"]          = vendor;
@@ -285,6 +285,50 @@ S9sRpcClient::createGaleraCluster(
     return retcode == 0;
 }
 
+bool
+S9sRpcClient::createMySqlReplication(
+        const S9sVariantList &hostNames,
+        const S9sString      &osUserName,
+        const S9sString      &vendor,
+        const S9sString      &mySqlVersion,
+        bool                  uninstall)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    int            retcode;
+    
+    uri = "/0/job/";
+
+    jobData["cluster_type"]    = "replication";
+    jobData["mysql_hostnames"] = hostNames;
+    jobData["master_address"]  = hostNames[0].toString();
+    jobData["ssh_user"]        = osUserName;
+    jobData["vendor"]          = vendor;
+    jobData["mysql_version"]   = mySqlVersion;
+    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["type"]            = "mysql";
+
+    jobSpec["command"]  = "create_cluster";
+    jobSpec["job_data"] = jobData;
+
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Create Galera Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retcode = executeRequest(uri, request.toString());
+    
+    return retcode == 0;
+}
 
 /**
  * \returns 0 if everything is ok.

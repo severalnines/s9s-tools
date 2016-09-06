@@ -40,7 +40,15 @@ class S9sRpcClient
                 const int offset  = 0);
 
         bool rollingRestart(const int clusterId);
+
         bool createGaleraCluster(
+                const S9sVariantList &hostNames,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
+        bool createMySqlReplication(
                 const S9sVariantList &hostNames,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,

@@ -19,6 +19,7 @@
 
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_referenceCounter(1),
+    m_port(0),
     m_buffer(0),
     m_bufferSize(0),
     m_dataSize(0)
@@ -85,7 +86,13 @@ S9sRpcClientPrivate::connectSocket()
 
     if (m_hostName.empty())
     {
-        m_errorString = "Controller host name not set.";
+        m_errorString = "Controller host name is not set.";
+        return true;
+    }
+
+    if (m_port <= 0)
+    {
+        m_errorString = "Controller port is not set.";
         return true;
     }
 
