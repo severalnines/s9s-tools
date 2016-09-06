@@ -83,6 +83,12 @@ S9sRpcClientPrivate::connectSocket()
     struct sockaddr_in server;
     int    socketFd;
 
+    if (m_hostName.empty())
+    {
+        m_errorString = "Controller host name not set.";
+        return true;
+    }
+
     PRINT_VERBOSE("Connecting...");
 
     socketFd = socket(AF_INET, SOCK_STREAM, 0);

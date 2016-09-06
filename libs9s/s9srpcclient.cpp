@@ -235,6 +235,9 @@ S9sRpcClient::rollingRestart(
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+    
     retcode = executeRequest(uri, request.toString());
 
     return retcode == 0;
@@ -273,6 +276,9 @@ S9sRpcClient::createGaleraCluster(
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
 
     retcode = executeRequest(uri, request.toString());
     
