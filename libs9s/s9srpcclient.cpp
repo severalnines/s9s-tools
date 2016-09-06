@@ -165,6 +165,16 @@ S9sRpcClient::getJobInstance(
     return retcode == 0;
 }
 
+/**
+ * \param clusterId the ID of the cluster that owns the job
+ * \param jobId the ID of the job
+ * \param limit the maximum number of log entries we are ready to process
+ * \param offset the number of log entries to skip
+ * \returns true if the request was succesfully sent and the reply was received
+ *
+ * This function will get the log entries in ascending order. This is because
+ * the terminal normally used like that.
+ */
 bool
 S9sRpcClient::getJobLog(
         const int clusterId,
