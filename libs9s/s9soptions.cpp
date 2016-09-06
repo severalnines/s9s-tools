@@ -383,6 +383,18 @@ S9sOptions::isWaitRequested() const
 }
 
 /**
+ * \returns true if the --batch command line option was used.
+ */
+bool
+S9sOptions::isBatchRequested() const
+{
+    if (m_options.contains("batch"))
+        return m_options.at("batch").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the program should use syntax highlighting in its output.
  */
 bool
@@ -717,6 +729,7 @@ S9sOptions::readOptionsCluster(
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
         { "log",              no_argument,       0,  6 },
+        { "batch",            no_argument,       0,  7 },
 
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
@@ -802,6 +815,11 @@ S9sOptions::readOptionsCluster(
             case 6:
                 // --log
                 m_options["log"] = true;
+                break;
+            
+            case 7:
+                // --batch
+                m_options["batch"] = true;
                 break;
             
             case '5':

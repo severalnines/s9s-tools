@@ -218,6 +218,7 @@ void
 S9sRpcReply::printJobStarted()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            isBatch = options->isBatchRequested();
     S9sString       status = operator[]("requestStatus").toString();
     int             id;
 
@@ -235,12 +236,14 @@ S9sRpcReply::printJobStarted()
         {
             // This should not happen, it is a deprecated reply format.
             id = operator[]("jobId").toInt();
-            printf("Job with ID %d registered.\n", id);
         } else {
             id = job["job_id"].toInt();
-
-            printf("Job with ID %d registered.\n", id);
         }
+            
+        if (isBatch)
+            printf("%d\n", id);
+        else
+            printf("Job with ID %d registered.\n", id);
     } else {
         printf("%s", STR(toString()));
     }

@@ -91,6 +91,7 @@ class S9sOptions
         bool isLongRequested() const;
         bool isJsonRequested() const;
         bool isWaitRequested() const;
+        bool isBatchRequested() const;
 
         bool useSyntaxHighlight() const;
 
