@@ -399,11 +399,11 @@ S9sBusinessLogic::waitForJobWithLog(
     int           nEntries;
 
     //printf("\n");
-    printf("\033[?25l"); 
+    //printf("\033[?25l"); 
 
     for (;;)
     {
-        success = client.getJobLog(clusterId, jobId, nLogsPrinted);
+        success = client.getJobLog(clusterId, jobId, 300, nLogsPrinted);
         if (success)
         {
             reply = client.reply();
@@ -433,6 +433,6 @@ S9sBusinessLogic::waitForJobWithLog(
         sleep(1);
     }
 
-    printf("\033[?25h");
+    //printf("\033[?25h");
     printf("\n");
 }

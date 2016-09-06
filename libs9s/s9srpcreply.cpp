@@ -258,7 +258,7 @@ S9sRpcReply::printJobLog()
         return;
     }
 
-    for (int idx = theList.size() - 1; idx >= 0; --idx)
+    for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
         S9sString     message = theMap["message_text"].toString();

@@ -181,7 +181,7 @@ S9sRpcClient::getJobLog(
     // Building the request.
     request["operation"]  = "getJobLog";
     request["job_id"]     = jobId;
-
+    request["ascending"]  = true;
     if (limit != 0)
         request["limit"]  = limit;
 
