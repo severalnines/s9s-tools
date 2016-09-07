@@ -8,6 +8,7 @@ SUBDIRS =     	     \
 	ut_s9svariant    \
 	ut_s9svariantmap \
 	ut_s9sregexp     \
-	ut_s9soptions  
+	ut_s9soptions    \
+	ut_s9sconfigfile 
 
 

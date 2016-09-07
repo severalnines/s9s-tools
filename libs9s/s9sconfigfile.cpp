@@ -1424,7 +1424,7 @@ S9sConfigFile::variableValue(
         }
     }
 
-    return retval;
+    return retval.unQuote();
 }
 
 /**

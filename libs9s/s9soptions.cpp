@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
@@ -72,6 +72,45 @@ S9sOptions::uninit()
     }
 }
 
+bool
+S9sOptions::loadConfigFiles()
+{
+    S9sFile userConfig("~/.s9s/s9s.conf");
+    bool    success;
+
+    m_userConfig = S9sConfigFile();
+
+    if (userConfig.exists())
+    {
+        S9sString content;
+
+        S9S_DEBUG("User config exists.");
+        success = userConfig.readTxtFile(content);
+        if (!success)
+        {
+            printError(
+                    "Error reading user configuration file: %s",
+                    STR(userConfig.errorString()));
+
+            return false;
+        }
+
+        success = m_userConfig.parse(STR(content));
+        if (!success)
+        {
+            printError(
+                    "Error parsing user configuration file: %s",
+                    STR(m_userConfig.errorString()));
+
+            return false;
+        }
+    } else {
+        S9S_DEBUG("User config does not exist.");
+    }
+
+    return true;
+}
+
 /**
  * \param url the Cmon Controller host or host:port.
  *
@@ -101,10 +140,15 @@ S9sOptions::setController(
 S9sString
 S9sOptions::controller() const
 {
+    S9sString  retval;
     if (m_options.contains("controller"))
-        return m_options.at("controller").toString();
+    {
+        retval = m_options.at("controller").toString();
+    } else {
+        retval = m_userConfig.variableValue("controller_host_name");
+    }
 
-    return S9sString();
+    return retval;
 }
 
 /**
@@ -113,10 +157,16 @@ S9sOptions::controller() const
 int
 S9sOptions::controllerPort() const
 {
-    if (m_options.contains("controller_port"))
-        return m_options.at("controller_port").toInt();
+    int retval = 0;
 
-    return 0;
+    if (m_options.contains("controller_port"))
+    {
+        retval = m_options.at("controller_port").toInt();
+    } else {
+        retval = m_userConfig.variableValue("controller_port").toInt();
+    }
+
+    return retval;
 }
 
 /**

@@ -325,6 +325,7 @@ S9sRpcReply::printClusterListBrief()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             nPrinted = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -335,9 +336,15 @@ S9sRpcReply::printClusterListBrief()
             printf("%s%s%s ", TERM_BLUE, STR(clusterName), TERM_NORMAL);
         else
             printf("%s ", STR(clusterName));
+
+        ++nPrinted;
     }
 
-    printf("\n");
+    if (nPrinted > 0)
+    {
+        printf("\n");
+        fflush(stdout);
+    }
 }
 
 void 
@@ -381,6 +388,7 @@ S9sRpcReply::printNodeListBrief()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             nPrinted = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -405,10 +413,16 @@ S9sRpcReply::printNodeListBrief()
             } else {
                 printf("%s ", STR(hostName));
             }
+
+            ++nPrinted;
         }
     }
 
-    printf("\n");
+    if (nPrinted > 0)
+    {
+        printf("\n");
+        fflush(stdout);
+    }
 }
 
 void 

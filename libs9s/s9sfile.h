@@ -36,8 +36,9 @@ class S9sFile
         S9sFile &operator=(const S9sFile &rhs);
 
         bool exists() const;
-
         bool readTxtFile(S9sString &content);
+
+        S9sString errorString() const;
 
         static S9sFilePath currentWorkingDirectory();
         static S9sFileName basename(const S9sFilePath &filePath);
@@ -49,6 +50,14 @@ class S9sFile
             buildPath(
                 const S9sString &path1,
                 const S9sString &path2);
+
+        static void
+            listFiles (
+                const S9sFilePath &directoryPath,
+                S9sVariantList    &files,
+                bool               prependPath = false,
+                bool               recursive   = false,
+                bool               includeDirs = false);
 
     private:
         ssize_t safeRead(

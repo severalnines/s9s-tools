@@ -20,6 +20,8 @@
 #include "s9sfile.h"
 #include "s9sfile_p.h"
 
+#include "S9sVariantList"
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -27,6 +29,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #define READ_BUFFER_SIZE 16384
 #define DIRSEPARATOR '/'
@@ -193,6 +196,11 @@ S9sFile::readTxtFile(
     return retval;
 }
 
+S9sString 
+S9sFile::errorString() const
+{
+    return m_priv->m_errorString;
+}
 
 S9sFilePath 
 S9sFile::currentWorkingDirectory()
@@ -247,6 +255,63 @@ S9sFile::isAbsolutePath(
 {
     return !path.empty() && path[0] == '/';
 }
+
+void
+S9sFile::listFiles (
+        const S9sFilePath &directoryPath,
+        S9sVariantList    &files,
+        bool               prependPath,
+        bool               recursive,
+        bool               includeDirs)
+{
+    DIR             *directory;
+    S9sVariantList   subDirs;
+
+    if ((directory = opendir(STR(directoryPath))))
+    {
+        dirent *entry = NULL;
+        while ((entry = readdir (directory)) != NULL)
+        {
+            S9sString fullPath;
+            struct stat ss;
+
+            if (strcmp(entry->d_name, ".") == 0 ||
+                strcmp(entry->d_name, "..") == 0)
+                continue;
+
+            fullPath = buildPath(directoryPath, S9sString(entry->d_name));
+
+            if (stat(STR(fullPath), &ss) == 0 && S_ISDIR(ss.st_mode))
+            {
+                subDirs << S9sString (entry->d_name);
+
+                // we might don't want the dirs in the returned list
+                if (! includeDirs)
+                    continue;
+            }
+
+            if (prependPath) 
+            {
+                files << S9sVariant(fullPath);
+            } else {
+                files << S9sVariant(entry->d_name);
+            }
+        }
+
+        closedir(directory);
+    }
+
+    if (recursive)
+    {
+        // ok lets go trough on the sub-dirs one-by-one
+        for (uint idx = 0; idx < subDirs.size (); ++idx)
+        {
+            S9sString path = buildPath(directoryPath, subDirs[idx].toString());
+            listFiles (path, files, prependPath, recursive, includeDirs);
+        }
+    }
+}
+
 
 S9sFilePath
 S9sFile::buildPath(

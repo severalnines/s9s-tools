@@ -54,6 +54,7 @@ main(int argc, char **argv)
     atexit(enable_cursor);
     signal(SIGINT, intHandler);
 
+    options->loadConfigFiles();
 
     success = options->readOptions(&argc, argv);
     if (!success)

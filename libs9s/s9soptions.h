@@ -22,6 +22,7 @@
 #include "S9sString"
 #include "S9sVariant"
 #include "S9sVariantMap"
+#include "S9sConfigFile"
 
 #define PRINT_VERBOSE(...) \
     S9sOptions::printVerbose(__VA_ARGS__)
@@ -54,6 +55,9 @@ class S9sOptions
 
         bool readOptions(int *argc, char *argv[]);
         bool executeInfoRequest();
+
+        bool loadConfigFiles();
+
 
         void setController(const S9sString &url);
         S9sString controller() const;
@@ -125,6 +129,7 @@ class S9sOptions
         int                m_exitStatus;
         S9sString          m_errorMessage;
         S9sVariantMap      m_options;
+        S9sConfigFile      m_userConfig;
 
     friend class UtS9sOptions;
 };
