@@ -80,6 +80,7 @@ libs9s_a_SOURCES =            \
 	s9soptions.cpp            \
 	s9sfile_p.cpp             \
 	s9sfile.cpp               \
+	s9sdir.cpp                \
 	s9sregexp_p.cpp           \
 	s9sregexp.cpp             \
 	s9srpcreply.cpp           \

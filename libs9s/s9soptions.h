@@ -56,8 +56,8 @@ class S9sOptions
         bool readOptions(int *argc, char *argv[]);
         bool executeInfoRequest();
 
+        void createConfigFiles();
         bool loadConfigFiles();
-
 
         void setController(const S9sString &url);
         S9sString controller() const;

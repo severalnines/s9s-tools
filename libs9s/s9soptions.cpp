@@ -22,6 +22,8 @@
 #include "config.h"
 #include "S9sFile"
 #include "S9sRegExp"
+#include "S9sFile"
+#include "S9sDir"
 
 #include <stdio.h>
 #include <cstdlib>
@@ -70,6 +72,28 @@ S9sOptions::uninit()
         delete sm_instance;
         sm_instance = 0;
     }
+}
+
+void
+S9sOptions::createConfigFiles()
+{
+    S9sDir   userDir("~/.s9s");
+    S9sFile  userFile("~/.s9s/s9s.conf");
+
+    if (!userDir.exists())
+        userDir.mkdir();
+
+    if (!userDir.exists())
+        return;
+
+    if (userFile.exists())
+        return;
+
+    userFile.fprintf("[global]\n");
+    userFile.fprintf("# controller_host_name = localhost\n");
+    userFile.fprintf("# controller_port      = 9555\n");
+    userFile.fprintf("\n");
+    userFile.fprintf("\n");
 }
 
 bool

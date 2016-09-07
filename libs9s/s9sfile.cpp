@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -68,16 +69,11 @@ S9sFile::S9sFile(
         free (orig);
     } else if (m_priv->m_path.startsWith("~/")) 
     {
-        // FIXME: This might be a remote file and then we would need the home
-        // directory of the remote user on the remote host, right? Anyway, this
-        // works for us now.
         S9sString homeDir = getenv("HOME");
 
         m_priv->m_fileName.erase(0, 2);
         m_priv->m_path.erase(0, 2);
-
-        m_priv->m_path = 
-            homeDir + dirSeparator() + m_priv->m_path;
+        m_priv->m_path = homeDir + dirSeparator() + m_priv->m_path;
     } else if (!m_priv->m_path.empty()) 
     {
         // Just a regular file name, the path is the current working directory
@@ -145,6 +141,12 @@ S9sFile::exists() const
     return retval;
 }
 
+void
+S9sFile::close()
+{
+    m_priv->close();
+}
+
 bool
 S9sFile::readTxtFile(
         S9sString &content)
@@ -195,6 +197,50 @@ S9sFile::readTxtFile(
 
     return retval;
 }
+
+/**
+ * Prints formatted string into a file. Pretty easy to create and fill text
+ * files using this function.
+ */
+bool
+S9sFile::fprintf(
+        const char *formatString,
+        ...)
+{
+    int  nChars;
+
+    m_priv->m_errorString.clear();
+
+    /*
+     * If the file is not open we open it here.
+     */
+    if (m_priv->m_outputStream == NULL)
+    {
+        m_priv->m_outputStream = fopen(STR(m_priv->m_path), "a");
+        if (!m_priv->m_outputStream)
+        {
+            m_priv->m_errorString.sprintf(
+                    "Unable to open '%s' for writing: %m",
+                    STR(m_priv->m_path));
+            return false;
+        }
+    }
+
+    /*
+     * Printing into the file.
+     */
+    va_list arguments;
+    va_start(arguments, formatString);
+
+    nChars = vfprintf(m_priv->m_outputStream, formatString, arguments);
+    if (nChars <= 0)
+        m_priv->m_errorString.sprintf("Error writing file: %m.");
+
+    va_end(arguments);
+
+    return nChars >= 0;
+}
+
 
 S9sString 
 S9sFile::errorString() const
