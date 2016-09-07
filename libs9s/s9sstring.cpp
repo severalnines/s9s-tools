@@ -1,5 +1,21 @@
 /*
- * Copyright (C) 2011-2016 severalnines.com
+ * Severalnines Tools
+ * Copyright (C) 2016  Severalnines AB
+ *
+ * This file is part of s9s-tools.
+ *
+ * s9s-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Foobar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sstring.h"
 
@@ -9,6 +25,10 @@
 #include <limits.h>
 #include <stdio.h>
 #include <algorithm>
+
+#if 0
+#include <regex>
+#endif
 
 #include "S9sRegExp"
 
@@ -253,6 +273,104 @@ S9sString::replace(
         start_pos += to.length(); 
     }
 }
+
+#if 0
+bool
+S9sString::regMatch(
+        const S9sString &regExp) const
+{
+    regex_t    preg;
+    size_t     nmatch = 10;
+    regmatch_t pmatch[11];
+    int        retval;
+
+    if (regcomp(&preg, STR(regExp), REG_EXTENDED) != 0) 
+    {
+        S9S_WARNING("ERROR in regular expression.");
+        return false;
+    }
+
+    retval = regexec(&preg, this->c_str(), nmatch, pmatch, 0) == 0; 
+    regfree(&preg);
+
+    return retval != 0;
+}
+
+bool
+S9sString::regMatch(
+        const S9sString &regExp,
+        S9sString       &matched) const
+{
+    regex_t    preg;
+    size_t     nmatch = 2;
+    regmatch_t pmatch[2];
+    int        retval;
+
+    matched.clear();
+    if (regcomp(&preg, STR(regExp), REG_EXTENDED) != 0) 
+    {
+        S9S_WARNING("ERROR in regular expression.");
+        return false;
+    }
+
+    retval = regexec(&preg, this->c_str(), nmatch, pmatch, 0) == 0; 
+    if (retval != 0 && 
+            pmatch[1].rm_so != -1 &&
+            pmatch[1].rm_eo != -1)
+    {
+        matched = this->substr(
+                pmatch[1].rm_so,
+                pmatch[1].rm_eo - pmatch[1].rm_so);
+    }
+
+    regfree(&preg);
+
+    return retval;
+}
+
+bool
+S9sString::regMatch(
+        const S9sString &regExp,
+        S9sString       &matched1,
+        S9sString       &matched2) const
+{
+    regex_t    preg;
+    size_t     nmatch = 3;
+    regmatch_t pmatch[3];
+    int        retval;
+
+    matched1.clear();
+    matched2.clear();
+    if (regcomp(&preg, STR(regExp), REG_EXTENDED) != 0) 
+    {
+        S9S_WARNING("ERROR in regular expression.");
+        return false;
+    }
+
+    retval = regexec(&preg, this->c_str(), nmatch, pmatch, 0) == 0; 
+    if (retval != 0 && 
+            pmatch[1].rm_so != -1 &&
+            pmatch[1].rm_eo != -1)
+    {
+        matched1 = this->substr(
+                pmatch[1].rm_so,
+                pmatch[1].rm_eo - pmatch[1].rm_so);
+    }
+
+    if (retval != 0 && 
+            pmatch[2].rm_so != -1 &&
+            pmatch[2].rm_eo != -1)
+    {
+        matched2 = this->substr(
+                pmatch[2].rm_so,
+                pmatch[2].rm_eo - pmatch[2].rm_so);
+    }
+
+    regfree(&preg);
+
+    return retval;
+}
+#endif
 
 void
 S9sString::replace(

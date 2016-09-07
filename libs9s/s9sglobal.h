@@ -15,3 +15,16 @@ template <typename T>
 inline void s9sUnused(T &x) { (void)x; }
 
 #define S9S_UNUSED(x) s9sUnused(x);
+
+namespace S9s
+{
+    enum Syntax
+    {
+        GenericConfigSyntax,
+        MySqlConfigSyntax,
+        HaProxyConfigSyntax,
+        YamlSyntax,
+        UnknownSyntax,
+        MongoConfigSyntax = YamlSyntax
+    };
+};

@@ -1,9 +1,26 @@
 /*
- * Copyright (C) 2011-2016 severalnines.com
+ * Severalnines Tools
+ * Copyright (C) 2016  Severalnines AB
+ *
+ * This file is part of s9s-tools.
+ *
+ * s9s-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Foobar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
 #include <vector>
+#include <algorithm>
 #include <assert.h>
 
 template <typename T>
@@ -30,6 +47,7 @@ class S9sVector : public std::vector<T>
                 const unsigned int to );
 
         S9sVector<T> unique() const;
+        void sort();
 
         T takeLast();
         T takeFirst();
@@ -60,7 +78,7 @@ template <typename T>
 bool S9sVector<T>::contains(
         const T &item) const
 {
-    for (typename std::vector<T>::iterator it = this->begin(); it != this->end (); it++) 
+    for (typename std::vector<T>::const_iterator it = this->begin(); it != this->end (); it++) 
     {
         if (item == *it)
             return true;
@@ -192,3 +210,12 @@ S9sVector<T>::limit(
         this->pop_back();
 }
 
+/**
+ * Sorts the list in ascending alphabetical order.
+ */
+template <typename T>
+void
+S9sVector<T>::sort()
+{
+    std::sort(this->begin(), this->end());
+}

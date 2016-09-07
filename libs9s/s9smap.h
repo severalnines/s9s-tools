@@ -9,14 +9,15 @@
 
 #include "S9sGlobal"
 #include "S9sString"
+#include "S9sVector"
 
 template <typename Key, typename T>
 class S9sMap : public std::map<Key, T>
 {
     public:
         bool contains(const Key &key) const;
-#if 0
         S9sVector<Key> keys() const;
+#if 0
         static S9sMap<Key, T> fromVector(const std::vector<Key> &theVector);
         static S9sMap<Key, T> fromVector(const CmonStringList &theVector);
 #endif
@@ -50,23 +51,23 @@ inline bool S9sMap<Key, T>::contains(
     return this->find(key) != this->end();
 }
 
-#if 0
+
 /**
  * \returns a list that holds all the keys from the map
  */
 template <typename Key, typename T>
-std::vector<Key> S9sMap<Key, T>::keys() const
+S9sVector<Key> S9sMap<Key, T>::keys() const
 {
-    std::vector<Key> retval;
+    S9sVector<Key> retval;
 
-    for(auto it = this->begin(); it != this->end(); ++it) 
+    for (typename std::map<Key, T>::const_iterator it = this->begin(); it != this->end(); ++it) 
     {
         retval.push_back(it->first);
     }
 
     return retval;
 }
-#endif
+
 
 #if 0
 /**

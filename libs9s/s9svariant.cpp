@@ -148,6 +148,21 @@ S9sVariant::operator== (
     return false;
 }
 
+bool 
+S9sVariant::operator< (
+        const S9sVariant &rhs) const
+{
+    if (isInt() && rhs.isInt())
+        return toInt() < rhs.toInt();
+    else if (isULongLong() && rhs.isULongLong())
+        return toULongLong() < rhs.toULongLong();
+    else if (isNumber() && rhs.isNumber())
+        return toDouble() < rhs.toDouble();
+    else if (isString() && rhs.isString())
+        return toString() < rhs.toString();
+
+    return false;
+}
 
 S9sVariant &
 S9sVariant::operator[] (

@@ -58,7 +58,11 @@ BUILT_SOURCES =               \
     json_lexer.h              \
     json_lexer.cpp            \
     json_parser.h             \
-    json_parser.cpp           
+    json_parser.cpp           \
+    config_lexer.h            \
+    config_lexer.cpp          \
+    config_parser.h           \
+    config_parser.cpp           
 
 libs9s_a_SOURCES =            \
 	$(BUILT_SOURCES)          \
@@ -74,12 +78,15 @@ libs9s_a_SOURCES =            \
 	s9sparsecontext.cpp       \
 	s9sjsonparsecontext.cpp   \
 	s9soptions.cpp            \
+	s9sfile_p.cpp             \
 	s9sfile.cpp               \
 	s9sregexp_p.cpp           \
 	s9sregexp.cpp             \
 	s9srpcreply.cpp           \
 	s9srpcclient_p.cpp        \
 	s9srpcclient.cpp          \
-	s9sbusinesslogic.cpp
+	s9sbusinesslogic.cpp      \
+	s9sconfigfile.cpp         \
+	s9sconfigfile_p.cpp
 
 

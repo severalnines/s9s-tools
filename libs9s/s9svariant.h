@@ -29,6 +29,7 @@ class S9sVariant
 
         S9sVariant &operator=(const S9sVariant &rhs);
         bool operator==(const S9sVariant &rhs) const;
+        bool operator<(const S9sVariant &rhs) const;
         S9sVariant &operator[] (const S9sString &index);
 
         S9sBasicType type() const { return m_type; };

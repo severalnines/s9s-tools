@@ -20,10 +20,42 @@
 #pragma once
 
 #include "S9sString"
+#include <sys/types.h>
+
+class S9sFilePrivate;
 
 class S9sFile
 {
     public:
-        static S9sFileName basename(const S9sFilePath &filePath);
+        S9sFile();
+        S9sFile(const S9sFilePath path);
+        S9sFile(const S9sFile &orig);
 
+        virtual ~S9sFile();
+       
+        S9sFile &operator=(const S9sFile &rhs);
+
+        bool exists() const;
+
+        bool readTxtFile(S9sString &content);
+
+        static S9sFilePath currentWorkingDirectory();
+        static S9sFileName basename(const S9sFilePath &filePath);
+        static S9sDirName dirname(const S9sFilePath &fileName);
+        static bool isAbsolutePath(const S9sFilePath &path);
+        static S9sString dirSeparator() { return "/"; };
+
+        static S9sFilePath 
+            buildPath(
+                const S9sString &path1,
+                const S9sString &path2);
+
+    private:
+        ssize_t safeRead(
+                int     fileDescriptor, 
+                void   *buffer, 
+                size_t  bufferSize);
+        
+    protected: 
+        S9sFilePrivate    *m_priv;
 };
