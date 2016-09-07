@@ -732,6 +732,8 @@ S9sOptions::readOptionsCluster(
         { "batch",            no_argument,       0,  7 },
 
         // Cluster information.
+        // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
+        // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
         { "vendor",           required_argument, 0,  2  },
