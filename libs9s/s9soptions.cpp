@@ -731,6 +731,7 @@ S9sOptions::readOptionsCluster(
         { "log",              no_argument,       0,  6 },
         { "batch",            no_argument,       0,  7 },
 
+        // Cluster information.
         { "cluster-id",       required_argument, 0, 'i' },
         { "nodes",            required_argument, 0,  1  },
         { "vendor",           required_argument, 0,  2  },
