@@ -332,7 +332,9 @@ S9sRpcClient::createMySqlReplication(
         request["token"] = m_priv->m_token;
 
     retcode = executeRequest(uri, request.toString());
-    
+
+    S9S_DEBUG("URI    : %s", STR(uri));
+    S9S_DEBUG("request: \n%s\n", STR(request.toString()));
     return retcode == 0;
 }
 

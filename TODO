@@ -1,0 +1,11 @@
+o send password when creating a cluster (root user password).
+ /job_data/postgre_password
+
+o add node
+o remove node
+o remove job
+- job scheduling
+o delete cluster (maybe shutdown).
+o create load balancer
+
+
