@@ -324,6 +324,7 @@ S9sRpcClient::createMySqlReplication(
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
     job["user_id"]       = options->userId();
+    //job["api_id"]        = -1;
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
