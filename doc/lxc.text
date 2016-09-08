@@ -3,9 +3,22 @@ https://insights.ubuntu.com/2016/04/19/directly-interacting-with-the-lxd-api/
 lxc config set core.https_address "[::]:8443"
 lxc config set core.trust_password pipas
 
+man lxc.container.conf
 
 https://insights.ubuntu.com/2016/04/19/directly-interacting-with-the-lxd-api/
 
+#
+# This gives the basic info about the server.
+#
 curl -s -k --cert ~/.config/lxc/client.crt --key ~/.config/lxc/client.key https://server1:8443/1.0 | jq .
 
+
 curl -s -k --cert ~/.config/lxc/client.crt --key ~/.config/lxc/client.key https://server1:8443/1.0/containers/xenial/state | jq .
+
+
+
+wget http://lxc-webpanel.github.io/tools/install.sh -O - | sudo bash
+
+
+https://www.flockport.com/lxc-networking-guide/
+

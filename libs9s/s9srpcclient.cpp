@@ -258,12 +258,15 @@ S9sRpcClient::createGaleraCluster(
     
     uri = "/0/job/";
 
+    // The job_data describing the cluster.
     jobData["cluster_type"]    = "galera";
     jobData["mysql_hostnames"] = hostNames;
-    jobData["ssh_user"]        = osUserName;
     jobData["vendor"]          = vendor;
     jobData["mysql_version"]   = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["ssh_user"]        = osUserName;
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"]     = options->osKeyFile();
 
     jobSpec["command"]  = "create_cluster";
     jobSpec["job_data"] = jobData;
@@ -301,14 +304,17 @@ S9sRpcClient::createMySqlReplication(
     
     uri = "/0/job/";
 
+    // The job_data describing the cluster.
     jobData["cluster_type"]    = "replication";
     jobData["mysql_hostnames"] = hostNames;
     jobData["master_address"]  = hostNames[0].toString();
-    jobData["ssh_user"]        = osUserName;
     jobData["vendor"]          = vendor;
     jobData["mysql_version"]   = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
     jobData["type"]            = "mysql";
+    jobData["ssh_user"]        = osUserName;
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"]     = options->osKeyFile();
 
     jobSpec["command"]  = "create_cluster";
     jobSpec["job_data"] = jobData;

@@ -72,6 +72,7 @@ class S9sOptions
         S9sString providerVersion() const;
 
         S9sString osUser() const;
+        S9sString osKeyFile() const;
 
         S9sString clusterType() const;
 

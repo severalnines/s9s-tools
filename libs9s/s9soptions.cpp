@@ -93,6 +93,14 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("# controller_host_name = localhost\n");
     userFile.fprintf("# controller_port      = 9555\n");
     userFile.fprintf("\n");
+
+    userFile.fprintf("\n");
+    userFile.fprintf("#\n");
+    userFile.fprintf("# Information about the user for the controller to \n");
+    userFile.fprintf("# access the nodes.\n");
+    userFile.fprintf("#\n");
+    userFile.fprintf("# os_user     = some_user\n");
+    userFile.fprintf("# os_key_file = /home/some_user/.ssh/test_ssh_key\n");
     userFile.fprintf("\n");
 }
 
@@ -256,10 +264,29 @@ S9sOptions::providerVersion() const
 S9sString
 S9sOptions::osUser() const
 {
-    if (m_options.contains("os_user"))
-        return m_options.at("os_user").toString();
+    S9sString retval;
 
-    return userName();
+    if (m_options.contains("os_user"))
+    {
+        retval = m_options.at("os_user").toString();
+    } else {
+        retval = m_userConfig.variableValue("os_user");
+    }
+
+    if (retval.empty())
+        retval = userName();
+
+    return retval;
+}
+
+S9sString
+S9sOptions::osKeyFile() const
+{
+    S9sString retval;
+
+    retval = m_userConfig.variableValue("os_key_file");
+
+    return retval;
 }
 
 /**
