@@ -290,6 +290,31 @@ S9sOptions::osKeyFile() const
     return retval;
 }
 
+S9sString 
+S9sOptions::dbAdminUserName(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    if (m_options.contains("db_admin_user_name"))
+        retval = m_options.at("db_admin_user_name").toString();
+    else
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString 
+S9sOptions::dbAdminPassword()
+{
+    S9sString retval;
+
+    if (m_options.contains("db_admin_password"))
+        retval = m_options.at("db_admin_password").toString();
+
+    return retval;
+}
+
 /**
  * \returns the cluster type string that is provided by the --cluster-type
  *   command line option
@@ -852,6 +877,8 @@ S9sOptions::readOptionsCluster(
         { "provider-version", required_argument, 0,  3  },
         { "os-user",          required_argument, 0,  4  },
         { "cluster-type",     required_argument, 0,  5  },
+        { "db-admin",         required_argument, 0,  6  },
+        { "db-admin-passwd",  required_argument, 0,  7  },
 
         { 0, 0, 0, 0 }
     };
