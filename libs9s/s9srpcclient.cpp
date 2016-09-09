@@ -346,12 +346,17 @@ S9sRpcClient::createMySqlReplication(
     jobData["enable_mysql_uninstall"] = uninstall;
     jobData["type"]            = "mysql";
     jobData["ssh_user"]        = osUserName;
+    jobData["repl_user"]       = options->dbAdminUserName();
+    jobData["repl_password"]   = options->dbAdminPassword();
+    
     if (!options->osKeyFile().empty())
         jobData["ssh_key"]     = options->osKeyFile();
 
+    // The jobspec describing the command.
     jobSpec["command"]  = "create_cluster";
     jobSpec["job_data"] = jobData;
 
+    // The job instance describing how the job will be executed.
     job["class_name"]    = "CmonJobInstance";
     job["title"]         = "Create MySQL Replication Cluster";
     job["job_spec"]      = jobSpec;
@@ -359,6 +364,7 @@ S9sRpcClient::createMySqlReplication(
     job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
+    // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
