@@ -110,6 +110,12 @@ control which cluster will be manipulated. If the operation creates a new
 cluster the cluster ID is assigned automatically, so this option can't be used.
 
 .TP
+.BI \-n " NAME" "\fR,\fP \-\^\-cluster-name=" NAME
+Sets the cluster name. If the operation creates a new cluster this will be the
+name of the new cluster. (Usage of this option for selecting an existing cluster
+is not yet implemented.)
+
+.TP
 .BI \-\^\-nodes= NODELIST
 The list of nodes given by their hostnames or IP addresses.
 
