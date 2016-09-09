@@ -9,7 +9,7 @@
 #include <string.h>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -320,7 +320,7 @@ S9sRpcClient::createMySqlReplication(
     jobSpec["job_data"] = jobData;
 
     job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create Galera Cluster";
+    job["title"]         = "Create MySQL Replication Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
     job["user_id"]       = options->userId();
@@ -354,6 +354,7 @@ S9sRpcClient::executeRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
+    S9S_WARNING("*** socketFd: %d", socketFd);
     if (socketFd < 0)
         return -1;
 

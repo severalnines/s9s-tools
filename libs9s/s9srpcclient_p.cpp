@@ -87,13 +87,13 @@ S9sRpcClientPrivate::connectSocket()
     if (m_hostName.empty())
     {
         m_errorString = "Controller host name is not set.";
-        return true;
+        return -1;
     }
 
     if (m_port <= 0)
     {
         m_errorString = "Controller port is not set.";
-        return true;
+        return -1;
     }
 
     PRINT_VERBOSE("Connecting...");
