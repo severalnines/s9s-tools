@@ -7,6 +7,7 @@
 #include "S9sOptions"
 
 #include <string.h>
+#include <stdio.h>
 
 //#define DEBUG
 //#define WARNING
@@ -102,7 +103,7 @@ S9sRpcClient::getClusters()
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/0/clusters/";
     S9sVariantMap  request;
-    int            retcode;
+    bool           retval;
 
     request["operation"]  = "getAllClusterInfo";
     request["with_hosts"] = true;
@@ -112,9 +113,9 @@ S9sRpcClient::getClusters()
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
 
-    return retcode == 0;
+    return retval;
 }
 
 /**
@@ -343,6 +344,7 @@ S9sRpcClient::executeRequest(
         const S9sString &uri,
         const S9sString &payload)
 {
+    S9sOptions  *options = S9sOptions::instance();    
     S9sString    header;
     int          socketFd = m_priv->connectSocket();
     ssize_t      readLength;
@@ -374,6 +376,8 @@ S9sRpcClient::executeRequest(
      */
     if (m_priv->writeSocket(socketFd, STR(header), header.length()) < 0)
     {
+        S9S_DEBUG("Error writing socket %d: %m", socketFd);
+
         m_priv->m_errorString.sprintf("Error writing socket %d: %m", socketFd);
         m_priv->closeSocket(socketFd);
 
@@ -393,6 +397,11 @@ S9sRpcClient::executeRequest(
        
             m_priv->closeSocket(socketFd);
             return false;
+        } else {
+            if (options->isJsonRequested() && options->isVerbose())
+            {
+                printf("Request: \n%s\n", STR(payload));
+            }
         }
     }
 
@@ -418,6 +427,8 @@ S9sRpcClient::executeRequest(
     m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);
     m_priv->m_buffer[m_priv->m_dataSize] = '\0';
     m_priv->m_dataSize += 1;
+            
+
 
     // Closing the socket.
     m_priv->closeSocket(socketFd);
@@ -427,19 +438,25 @@ S9sRpcClient::executeRequest(
         char *tmp = strstr(m_priv->m_buffer, "\r\n\r\n");
 
         if (tmp)
+        {
             m_priv->m_jsonReply = (tmp + 4);
+
+            if (options->isJsonRequested() && options->isVerbose())
+                printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
+        }
     } else {
         m_priv->m_errorString.sprintf(
-                "Error writing socket %d: %m", 
-                socketFd);
+                "Error reading socket %d: %m", socketFd);
         return false;
     }
 
     if (!m_priv->m_reply.parse(STR(m_priv->m_jsonReply)))
     {
+        PRINT_ERROR("Error parsing JSON reply.");
         m_priv->m_errorString.sprintf("Error parsing JSON reply.");
         return false;
     }
 
+    //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
     return true;
 }

@@ -109,9 +109,9 @@ typedef enum S9sMessageLevel
 /** Yellow terminal color sequence. */
 #  define TERM_RED  "\033[1;31m" 
 /** Red terminal color sequence. */
-#  define TERM_GREEN      "\033[1;33m" 
+#  define TERM_YELLOW     "\033[1;33m" 
 /** Green terminal color sequence. */
-#  define TERM_YELLOW  "\033[1;32m"
+#  define TERM_GREEN   "\033[1;32m"
 /** Blue terminal color sequence. */
 #  define TERM_BLUE    "\033[1;34m"
 /** Terminal reset sequence. */

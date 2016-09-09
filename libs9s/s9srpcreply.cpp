@@ -29,6 +29,9 @@
 #define WARNING
 #include "s9sdebug.h"
 
+/**
+ * \returns true if the reply states that the request status is 'ok'.
+ */
 bool
 S9sRpcReply::isOk() const
 {
@@ -38,6 +41,10 @@ S9sRpcReply::isOk() const
     return false;
 }
 
+/**
+ * \returns The error string sent by the controller in the reply if there is
+ *   indeed an error string.
+ */
 S9sString
 S9sRpcReply::errorString() const
 {
@@ -47,7 +54,10 @@ S9sRpcReply::errorString() const
     return S9sString();
 }
 
-/*
+/**
+ * \returns the job ID from the reply if the reply contains a job ID, returns -1
+ *   otherwise.
+ *
 {
     "cc_timestamp": 1472800942,
     "job": 
@@ -347,6 +357,9 @@ S9sRpcReply::printClusterListBrief()
     }
 }
 
+/**
+ *
+ */
 void 
 S9sRpcReply::printClusterListLong()
 {
@@ -354,7 +367,6 @@ S9sRpcReply::printClusterListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
 
-    printf("Total: %lu\n", theList.size());
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap      = theList[idx].toVariantMap();
@@ -380,8 +392,14 @@ S9sRpcReply::printClusterListLong()
         printf("%-12s ", STR(vendor + " " + version));
         printf("%s%s%s\n", nameStart, STR(clusterName), nameEnd);
     }
+    
+    printf("Total: %lu\n", theList.size());
 }
 
+/**
+ * Prints the node list from the reply if the reply contains a node list. The
+ * printed list is in "brief" format.
+ */
 void 
 S9sRpcReply::printNodeListBrief()
 {

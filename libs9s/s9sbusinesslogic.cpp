@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define DEBUG
+//#define DEBUG
 #include "s9sdebug.h"
         
 void 
@@ -37,6 +37,7 @@ S9sBusinessLogic::execute()
     S9sString    token = options->rpcToken();
     S9sRpcClient client(controller, port, token);
 
+    S9S_DEBUG("");
     if (options->isClusterOperation() && options->isListRequested())
     {
         executeClusterList(client);
@@ -78,6 +79,8 @@ S9sBusinessLogic::execute()
     } else if (options->isJobOperation() && options->isWaitRequested())
     {
         waitForJob(options->jobId(), client);
+    } else {
+        PRINT_ERROR("Unknown operation.");
     }
 }
 
@@ -88,6 +91,7 @@ S9sBusinessLogic::waitForJob(
 {
     S9sOptions  *options = S9sOptions::instance();
     
+    S9S_DEBUG("");
     if (options->isLogRequested())
         waitForJobWithLog(jobId, client);
     else
@@ -102,23 +106,30 @@ S9sBusinessLogic::executeClusterList(
     S9sRpcReply reply;
     bool        success;
 
+    S9S_DEBUG("");
     success = client.getClusters();
     if (success)
     {
         reply = client.reply();
 
+        S9S_DEBUG("client.reply(): %s", STR(client.reply().toString()));
         success = reply.isOk();
         if (success)
         {
+            S9S_DEBUG("Reply is OK.");
             reply.printClusterList();
         } else {
+            S9S_DEBUG("Reply is not OK.");
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
     } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
         
