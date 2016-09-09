@@ -56,7 +56,7 @@ class S9sRpcClient
                 bool                  uninstall);
 
     protected:
-        int executeRequest(
+        bool executeRequest(
                 const S9sString &uri,
                 const S9sString &payload);
 

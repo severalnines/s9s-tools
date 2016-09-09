@@ -112,7 +112,6 @@ S9sRpcClient::getClusters()
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    S9S_DEBUG("*** request: \n%s\n", STR(request.toString()));
     retcode = executeRequest(uri, request.toString());
 
     return retcode == 0;
@@ -120,7 +119,7 @@ S9sRpcClient::getClusters()
 
 /**
  * Sends a "getJobInstances" request, receives the reply. We use this RPC call
- * to get the job list (e.g. s9s job --lost).
+ * to get the job list (e.g. s9s job --list).
  */
 bool
 S9sRpcClient::getJobInstances(
@@ -128,7 +127,7 @@ S9sRpcClient::getJobInstances(
 {
     S9sString      uri;
     S9sVariantMap  request;
-    int            retcode;
+    bool           retval;
 
     uri.sprintf("/%d/job/", clusterId);
 
@@ -137,9 +136,9 @@ S9sRpcClient::getJobInstances(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
 
-    return retcode == 0;
+    return retval;
 }
 
 bool
@@ -149,7 +148,7 @@ S9sRpcClient::getJobInstance(
 {
     S9sString      uri;
     S9sVariantMap  request;
-    int            retcode;
+    bool           retval;
 
     uri.sprintf("/%d/job/", clusterId);
 
@@ -159,9 +158,9 @@ S9sRpcClient::getJobInstance(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
 
-    return retcode == 0;
+    return retval;
 }
 
 /**
@@ -183,7 +182,7 @@ S9sRpcClient::getJobLog(
 {
     S9sString      uri;
     S9sVariantMap  request;
-    int            retcode;
+    bool           retval;
 
     uri.sprintf("/%d/job/", clusterId);
 
@@ -200,9 +199,9 @@ S9sRpcClient::getJobLog(
     if (!m_priv->m_token.empty())
         request["token"]  = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
 
-    return retcode == 0;
+    return retval;
 
 }
 
@@ -218,7 +217,7 @@ S9sRpcClient::rollingRestart(
     S9sVariantMap  request;
     S9sVariantMap  job, jobSpec;
     S9sString      uri;
-    int            retcode;
+    bool           retval;
 
     uri.sprintf("/%d/job/", clusterId);
 
@@ -237,9 +236,9 @@ S9sRpcClient::rollingRestart(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
     
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
 
-    return retcode == 0;
+    return retval;
 }
 
 bool
@@ -254,7 +253,7 @@ S9sRpcClient::createGaleraCluster(
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri;
-    int            retcode;
+    bool           retval;
     
     uri = "/0/job/";
 
@@ -283,9 +282,9 @@ S9sRpcClient::createGaleraCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request.toString());
     
-    return retcode == 0;
+    return retval;
 }
 
 bool
@@ -300,7 +299,7 @@ S9sRpcClient::createMySqlReplication(
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri;
-    int            retcode;
+    bool           retval;
     
     uri = "/0/job/";
 
@@ -332,17 +331,14 @@ S9sRpcClient::createMySqlReplication(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retcode = executeRequest(uri, request.toString());
-
-    S9S_DEBUG("URI    : %s", STR(uri));
-    S9S_DEBUG("request: \n%s\n", STR(request.toString()));
-    return retcode == 0;
+    retval = executeRequest(uri, request.toString());
+    return retval;
 }
 
 /**
- * \returns 0 if everything is ok.
+ * \returns true if everything is ok, false on error.
  */
-int
+bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
         const S9sString &payload)
@@ -354,9 +350,9 @@ S9sRpcClient::executeRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    S9S_WARNING("*** socketFd: %d", socketFd);
     if (socketFd < 0)
-        return -1;
+        return false;
+
 
     header.sprintf(
         "POST %s HTTP/1.0\r\n"
@@ -374,15 +370,14 @@ S9sRpcClient::executeRequest(
         payload.length());
 
     /*
-     * Sending teh HTTP request header.
+     * Sending the HTTP request header.
      */
-    S9S_DEBUG("write: \n%s", STR(header));
     if (m_priv->writeSocket(socketFd, STR(header), header.length()) < 0)
     {
-        S9S_WARNING("Error writing socket %d: %m", socketFd);
-       
+        m_priv->m_errorString.sprintf("Error writing socket %d: %m", socketFd);
         m_priv->closeSocket(socketFd);
-        return -1;
+
+        return false;
     }
 
     /*
@@ -390,13 +385,14 @@ S9sRpcClient::executeRequest(
      */
     if (!payload.empty())
     {
-        S9S_DEBUG("write: \n%s", STR(payload));
         if (m_priv->writeSocket(socketFd, STR(payload), payload.length()) < 0)
         {
-            S9S_WARNING("Error writing socket %d: %m", socketFd);
+            m_priv->m_errorString.sprintf(
+                    "Error writing socket %d: %m", 
+                    socketFd);
        
             m_priv->closeSocket(socketFd);
-            return -1;
+            return false;
         }
     }
 
@@ -414,10 +410,8 @@ S9sRpcClient::executeRequest(
                 m_priv->m_buffer + m_priv->m_dataSize, 
                 READ_SIZE - 1);
 
-        S9S_DEBUG("*** readLength: %d", readLength);
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
-
     } while (readLength > 0);
 
     // Closing the buffer with a null terminating byte.
@@ -434,19 +428,18 @@ S9sRpcClient::executeRequest(
 
         if (tmp)
             m_priv->m_jsonReply = (tmp + 4);
-    
-        S9S_DEBUG("reply: \n%s\n", STR(m_priv->m_jsonReply));
     } else {
-        return -1;
+        m_priv->m_errorString.sprintf(
+                "Error writing socket %d: %m", 
+                socketFd);
+        return false;
     }
 
     if (!m_priv->m_reply.parse(STR(m_priv->m_jsonReply)))
     {
-        S9S_WARNING("Error parsing JSON reply.");
-        return -1;
-    } else {
-        S9S_DEBUG("JSON reply parsed.");
+        m_priv->m_errorString.sprintf("Error parsing JSON reply.");
+        return false;
     }
 
-    return 0;
+    return true;
 }
