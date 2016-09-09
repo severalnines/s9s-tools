@@ -81,12 +81,22 @@ S9sRpcClient::operator= (
 	return *this;
 }
 
+/**
+ * \returns the reply that received from the controller.
+ *
+ * The reply the controller sends is a JSON string which is parsed by the
+ * S9sRpcClient and presented here as an S9sVariantMap (S9sRpcReply that
+ * inherits S9sVariantMap to be more precise).
+ */
 const S9sRpcReply &
 S9sRpcClient::reply() const
 {
     return m_priv->m_reply;
 }
 
+/**
+ * \returns the human readable error string stored in the object.
+ */
 S9sString 
 S9sRpcClient::errorString() const
 {
@@ -142,6 +152,16 @@ S9sRpcClient::getJobInstances(
     return retval;
 }
 
+/**
+ * \param clusterId the ID of the cluster
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * This function sends a "getJobInstance" request to the controller and receives
+ * its reply. This request can be used to get the properties of one particular
+ * job.
+ */
 bool
 S9sRpcClient::getJobInstance(
         const int clusterId,
@@ -169,7 +189,8 @@ S9sRpcClient::getJobInstance(
  * \param jobId the ID of the job
  * \param limit the maximum number of log entries we are ready to process
  * \param offset the number of log entries to skip
- * \returns true if the request was succesfully sent and the reply was received
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
  *
  * This function will get the log entries in ascending order. This is because
  * the terminal normally used like that.
@@ -207,6 +228,10 @@ S9sRpcClient::getJobLog(
 }
 
 /**
+ * \param clusterId the ID of the cluster that will be restarted
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
  * Creates a job for "rolling restart" and receives the controller's answer for
  * the request. 
  */
@@ -221,7 +246,6 @@ S9sRpcClient::rollingRestart(
     bool           retval;
 
     uri.sprintf("/%d/job/", clusterId);
-
 
     jobSpec["command"]   = "rolling_restart";
 
@@ -242,6 +266,11 @@ S9sRpcClient::rollingRestart(
     return retval;
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ */
 bool
 S9sRpcClient::createGaleraCluster(
         const S9sVariantList &hostNames,
@@ -288,6 +317,10 @@ S9sRpcClient::createGaleraCluster(
     return retval;
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
 bool
 S9sRpcClient::createMySqlReplication(
         const S9sVariantList &hostNames,
@@ -337,6 +370,8 @@ S9sRpcClient::createMySqlReplication(
 }
 
 /**
+ * \param uri the file path part of the URL where we send the request
+ * \param payload the JSON request string
  * \returns true if everything is ok, false on error.
  */
 bool
