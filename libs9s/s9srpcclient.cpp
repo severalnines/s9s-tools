@@ -332,25 +332,26 @@ S9sRpcClient::createMySqlReplication(
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/0/job/";
     bool           retval;
     
-    uri = "/0/job/";
-
     // The job_data describing the cluster.
-    jobData["cluster_type"]    = "replication";
-    jobData["mysql_hostnames"] = hostNames;
-    jobData["master_address"]  = hostNames[0].toString();
-    jobData["vendor"]          = vendor;
-    jobData["mysql_version"]   = mySqlVersion;
+    jobData["cluster_type"]     = "replication";
+    jobData["mysql_hostnames"]  = hostNames;
+    jobData["master_address"]   = hostNames[0].toString();
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
-    jobData["type"]            = "mysql";
-    jobData["ssh_user"]        = osUserName;
-    jobData["repl_user"]       = options->dbAdminUserName();
-    jobData["repl_password"]   = options->dbAdminPassword();
-    
+    jobData["type"]             = "mysql";
+    jobData["ssh_user"]         = osUserName;
+    jobData["repl_user"]        = options->dbAdminUserName();
+    jobData["repl_password"]    = options->dbAdminPassword();
+   
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]     = options->osKeyFile();
+        jobData["ssh_key"]      = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]  = "create_cluster";

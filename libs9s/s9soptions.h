@@ -78,6 +78,7 @@ class S9sOptions
 
         S9sString rpcToken() const;
         int clusterId() const;
+        S9sString clusterName() const;
         int jobId() const;
 
         S9sString userName() const;

@@ -357,6 +357,20 @@ S9sOptions::clusterId() const
 }
 
 /**
+ * \returns the value set by the --cluster-name command line option.
+ */
+S9sString
+S9sOptions::clusterName() const
+{
+    S9sString retval;
+
+    if (m_options.contains("cluster_name"))
+        return m_options.at("cluster_name").toString();
+
+    return retval;
+}
+
+/**
  * \returns the job ID as it is set by the --job-id command line option.
  */
 int
@@ -872,6 +886,7 @@ S9sOptions::readOptionsCluster(
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
         { "cluster-id",       required_argument, 0, 'i' },
+        { "cluster-name",     required_argument, 0, 'n' },
         { "nodes",            required_argument, 0,  1  },
         { "vendor",           required_argument, 0,  2  },
         { "provider-version", required_argument, 0,  3  },
@@ -970,6 +985,10 @@ S9sOptions::readOptionsCluster(
             
             case 'i':
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 'n':
+                m_options["cluster_name"] = optarg;
                 break;
 
             case 1:
