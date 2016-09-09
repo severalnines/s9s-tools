@@ -245,12 +245,13 @@ S9sOptions::vendor() const
  *   command line option.
  */
 S9sString
-S9sOptions::providerVersion() const
+S9sOptions::providerVersion(
+        const S9sString &defaultValue) const
 {
     if (m_options.contains("provider_version"))
         return m_options.at("provider_version").toString();
 
-    return S9sString();
+    return defaultValue;
 }
 
 /**
@@ -708,6 +709,9 @@ S9sOptions::setMode(
     return retval;
 }
 
+/**
+ * Reads the command line options in "node" mode.
+ */
 bool
 S9sOptions::readOptionsNode(
         int    argc,
@@ -728,10 +732,13 @@ S9sOptions::readOptionsNode(
         { "print-json",       no_argument,       0, '3' },
         { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
+
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i' },
+
         { 0, 0, 0, 0 }
     };
 
-    //S9S_DEBUG("*** argc: %d", argc);
     optind = 0;
     opterr = 0;
     for (;;)
@@ -792,6 +799,10 @@ S9sOptions::readOptionsNode(
 
             case '3':
                 m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             default:

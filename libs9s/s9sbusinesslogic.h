@@ -32,12 +32,14 @@ class S9sBusinessLogic
         void waitForJobWithProgess(const int jobId, S9sRpcClient &client);
         void waitForJobWithLog(const int jobId, S9sRpcClient &client);
 
+        void executeClusterCreate(S9sRpcClient &client);
         void executeClusterList(S9sRpcClient &client);
+
         void executeNodeList(S9sRpcClient &client);
         void executeJobList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 
         void executeRollingRestart(S9sRpcClient &client);
-        void executeCreateCluster(S9sRpcClient &client);
+        void doExecuteCreateCluster(S9sRpcClient &client);
 };
 

@@ -43,26 +43,7 @@ S9sBusinessLogic::execute()
         executeClusterList(client);
     } else if (options->isClusterOperation() && options->isCreateRequested())
     {
-        if (options->clusterType() == "")
-        {
-            options->printError(
-                    "Cluster type is now set.\n"
-                    "Use the --cluster-type command line option to set it.");
-
-            options->setExitStatus(S9sOptions::BadOptions);
-        } else if (options->clusterType() == "galera")
-        {
-            executeCreateCluster(client);
-        } else if (options->clusterType() == "mysqlreplication")
-        {
-            executeCreateCluster(client);
-        } else {
-            options->printError(
-                    "Cluster type '%s' is not supported.",
-                    STR(options->clusterType()));
-
-            options->setExitStatus(S9sOptions::BadOptions);
-        }
+        executeClusterCreate(client);
     } else if (options->isClusterOperation() && 
             options->isRollingRestartRequested())
     {
@@ -98,6 +79,40 @@ S9sBusinessLogic::waitForJob(
         waitForJobWithProgess(jobId, client);
 }
 
+/**
+ * Execute the "cluster --create" requests.
+ */
+void
+S9sBusinessLogic::executeClusterCreate(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+        
+    if (options->clusterType() == "")
+    {
+        PRINT_ERROR(
+                 "Cluster type is not set.\n"
+                 "Use the --cluster-type command line option to set it.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+    } else if (options->clusterType() == "galera")
+    {
+        doExecuteCreateCluster(client);
+    } else if (options->clusterType() == "mysqlreplication")
+    {
+        doExecuteCreateCluster(client);
+    } else {
+        PRINT_ERROR(
+                "Cluster type '%s' is not supported.",
+                STR(options->clusterType()));
+
+        options->setExitStatus(S9sOptions::BadOptions);
+    }
+}
+
+/**
+ * Execute the "cluster --list" operation.
+ */
 void
 S9sBusinessLogic::executeClusterList(
         S9sRpcClient &client)
@@ -277,7 +292,7 @@ S9sBusinessLogic::executeRollingRestart(
 }
  */
 void
-S9sBusinessLogic::executeCreateCluster(
+S9sBusinessLogic::doExecuteCreateCluster(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
@@ -301,13 +316,10 @@ S9sBusinessLogic::executeCreateCluster(
         return;
     }
 
-    mySqlVersion = options->providerVersion();
-    if (mySqlVersion.empty())
-        mySqlVersion = "5.6";
+    mySqlVersion = options->providerVersion("5.6");
+    osUserName   = options->osUser();
+    vendor       = options->vendor();
 
-    osUserName = options->osUser();
-
-    vendor = options->vendor();
     if (vendor.empty())
     {
         options->printError(

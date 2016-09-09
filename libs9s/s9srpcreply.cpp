@@ -451,55 +451,89 @@ S9sRpcReply::printNodeListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
+    uint            maxVersionLength  = 0u;
+    S9sString       versionFormat;
+    int             clusterId = options->clusterId();
+    int             total = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
-        
+        int            id = theMap["cluster_id"].toInt();
+
+        total += hostList.size();
+
+        if (clusterId > 0 && clusterId != id)
+            continue;
+
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
+            S9sVariantMap hostMap  = hostList[idx2].toVariantMap();
             S9sString     hostName = hostMap["hostname"].toString();
-
+            S9sString     version  = hostMap["version"].toString();
+            
             if (hostName.length() > maxHostNameLength)
                 maxHostNameLength = hostName.length();
+
+            if (version.length() > maxVersionLength)
+                maxVersionLength = version.length();
         }
     }
 
     hostNameFormat.sprintf("%%s%%-%us%%s ", maxHostNameLength);
+    versionFormat.sprintf("%%-%us ", maxVersionLength);
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sString      clusterName = theMap["cluster_name"].toString();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
+        int            id = theMap["cluster_id"].toInt();
+        
+        if (clusterId > 0 && clusterId != id)
+            continue;
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
-            S9sString     hostName = hostMap["hostname"].toString();
-            S9sString     status = hostMap["hoststatus"].toString();
+            S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
+            S9sString     hostName  = hostMap["hostname"].toString();
+            S9sString     status    = hostMap["hoststatus"].toString();
             S9sString     className = hostMap["class_name"].toString();
             S9sString     nodeType  = hostMap["nodetype"].toString();
             S9sString     message   = hostMap["message"].toString();
             S9sString     version   = hostMap["version"].toString();
             bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
-            int port = hostMap["port"].toInt(-1);
+            int           port      = hostMap["port"].toInt(-1);
             const char   *nameStart = "";
             const char   *nameEnd   = "";
 
+            if (message.empty())
+                message = "-";
+
             if (syntaxHighlight)
             {
-                nameStart = XTERM_COLOR_GREEN;
-                nameEnd   = TERM_NORMAL;
+                if (status == "CmonHostRecovery" || 
+                        status == "CmonHostShutDown")
+                {
+                    nameStart = XTERM_COLOR_YELLOW;
+                    nameEnd   = TERM_NORMAL;
+                } else if (status == "CmonHostUnknown" ||
+                        status == "CmonHostOffLine")
+                {
+                    nameStart = XTERM_COLOR_RED;
+                    nameEnd   = TERM_NORMAL;
+                } else {
+                    nameStart = XTERM_COLOR_GREEN;
+                    nameEnd   = TERM_NORMAL;
+                }
             }
 
             printf("%s", STR(nodeTypeFlag(className, nodeType)));
             printf("%s", STR(nodeStateFlag(status)));
             printf("%c ", maintenance ? 'M' : '-');
 
-            printf("%-6s ", STR(version));
+            printf(STR(versionFormat), STR(version));
             printf("%s ", STR(clusterName));
 
             printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
@@ -513,10 +547,117 @@ S9sRpcReply::printNodeListLong()
             printf("%s\n", STR(message));
         }
     }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
+    
 }
 
+/**
+ * Prints the job list in the brief format. Well, a brief format for the jobs is
+ * still a long list, one job in every line.
+ */
 void 
 S9sRpcReply::printJobListBrief()
+{
+    S9sOptions     *options         = S9sOptions::instance();
+    S9sVariantList  theList         = operator[]("jobs").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             total           = operator[]("total").toInt();
+    unsigned int    userNameLength  = 0;
+    S9sString       userNameFormat;
+    unsigned int    statusLength  = 0;
+    S9sString       statusFormat;
+
+
+    //
+    // The width of certain columns are variable.
+    //
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap = theList[idx].toVariantMap();
+        S9sString     user   = theMap["user_name"].toString();
+        S9sString     status = theMap["status"].toString();
+
+        if (user.length() > userNameLength)
+            userNameLength = user.length();
+        
+        if (status.length() > statusLength)
+            statusLength = status.length();
+    }
+
+    userNameFormat.sprintf("%%-%us ", userNameLength);
+    statusFormat.sprintf("%%s%%-%ds%%s ", statusLength);
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        int            jobId  = theMap["job_id"].toInt();
+        S9sString      status = theMap["status"].toString();
+        S9sString      title  = theMap["title"].toString();
+        S9sString      user   = theMap["user_name"].toString();
+        S9sString      percent;
+        S9sDateTime    created;
+        S9sString      timeStamp;
+        const char    *stateColorStart = "";
+        const char    *stateColorEnd   = "";
+
+        // The title.
+        if (title.empty())
+            title = "Untitled Job";
+
+        // The user name or if it is not there the user ID.
+        if (user.empty())
+            user.sprintf("%d", theMap["user_id"].toInt());
+
+        // The progress.
+        if (theMap.contains("progress_percent"))
+        {
+            double value = theMap["progress_percent"].toDouble();
+
+            percent.sprintf("%3.0f%%", value);
+        } else if (status == "FINISHED") 
+        {
+            percent = "100%";
+        } else {
+            percent = "  0%";
+        }
+
+        // The timestamp.
+        created.parse(theMap["created"].toString());
+        timeStamp = created.toString(S9sDateTime::MySqlLogFileFormat);
+
+        if (syntaxHighlight)
+        {
+            if (status == "RUNNING" || status == "RUNNING_EXT")
+            {
+                stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "FINISHED")
+            {
+                stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "FAILED")
+            {
+                stateColorStart = XTERM_COLOR_RED;
+                stateColorEnd   = TERM_NORMAL;
+            }
+        }
+
+        printf("%5d ", jobId);
+        printf(STR(statusFormat), stateColorStart, STR(status), stateColorEnd);
+        printf(STR(userNameFormat), STR(user));
+        printf("%s ", STR(timeStamp));
+        printf("%s ", STR(percent));
+        printf("%s\n", STR(title));
+    }
+    
+    printf("Total: %d\n", total);
+}
+
+
+void 
+S9sRpcReply::printJobListLong()
 {
     S9sOptions     *options         = S9sOptions::instance();
     S9sVariantList  theList         = operator[]("jobs").toVariantList();
@@ -610,13 +751,6 @@ S9sRpcReply::printJobListBrief()
         printf("%s ", STR(percent));
         printf("%s\n", STR(title));
     }
-}
-
-
-void 
-S9sRpcReply::printJobListLong()
-{
-    printf("TBD\n");
 }
 
 void 

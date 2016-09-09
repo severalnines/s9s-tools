@@ -69,7 +69,7 @@ class S9sOptions
 
         S9sString vendor() const;
 
-        S9sString providerVersion() const;
+        S9sString providerVersion(const S9sString &defaultValue = "") const;
 
         S9sString osUser() const;
         S9sString osKeyFile() const;
