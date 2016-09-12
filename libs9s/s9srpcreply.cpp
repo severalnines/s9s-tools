@@ -411,7 +411,48 @@ S9sRpcReply::printNodeListBrief()
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             nPrinted = 0;
+    uint            maxHostNameLength = 0u;
+    S9sString       hostNameFormat;
+    int             clusterId = options->clusterId();
+    int             terminalWidth = options->terminalWidth();
+    int             nColumns;
+    int             column = 0;
+    
+    /*
+     * First run: some data collecting.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList hostList = theMap["hosts"].toVariantList();
+        int            id = theMap["cluster_id"].toInt();
 
+        if (clusterId > 0 && clusterId != id)
+            continue;
+
+        for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
+        {
+            S9sVariantMap hostMap  = hostList[idx2].toVariantMap();
+            S9sString     hostName = hostMap["hostname"].toString();
+            S9sString     version  = hostMap["version"].toString();
+            
+            if (hostName.length() > maxHostNameLength)
+                maxHostNameLength = hostName.length();
+        }
+    }
+
+    //S9S_WARNING("*** maxHostNameLength : %d", maxHostNameLength);
+    //S9S_WARNING("*** terminalWidth: %d", terminalWidth);
+    nColumns          = terminalWidth / (maxHostNameLength + 1);
+    //S9S_WARNING("*** nColumns     : %d", nColumns);
+    maxHostNameLength = terminalWidth / nColumns;
+    //S9S_WARNING("*** maxHostNameLength : %d", maxHostNameLength);
+
+    hostNameFormat.sprintf("%%s%%-%us%%s", maxHostNameLength);
+
+    /*
+     * Second run: actual printing.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -444,7 +485,15 @@ S9sRpcReply::printNodeListBrief()
                 }
             }
                     
-            printf("%s%s%s ", nameStart, STR(hostName), nameEnd);
+            printf(STR(hostNameFormat), 
+                    nameStart, STR(hostName), nameEnd);
+
+            column += maxHostNameLength;
+            if (column + (int) maxHostNameLength > terminalWidth)
+            {
+                printf("\n");
+                column = 0;
+            }
 
             ++nPrinted;
         }
@@ -469,6 +518,8 @@ S9sRpcReply::printNodeListLong()
     S9sString       versionFormat;
     int             clusterId = options->clusterId();
     int             total = 0;
+    int             terminalWidth = options->terminalWidth();
+    int             nColumns;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -540,6 +591,24 @@ S9sRpcReply::printNodeListLong()
                 } else {
                     nameStart = XTERM_COLOR_GREEN;
                     nameEnd   = TERM_NORMAL;
+                }
+            }
+
+            // Calculating how much space we have for the message.
+            nColumns  = 3 + 1;
+            nColumns += maxVersionLength + 1;
+            nColumns += clusterName.length() + 1; // FIXME: maxlength
+            nColumns += maxHostNameLength + 1;
+            nColumns += 4 + 1;
+
+            if (nColumns < terminalWidth)
+            {
+                int remaining = terminalWidth - nColumns;
+                
+                if (remaining < (int) message.length())
+                {
+                    message.resize(remaining - 1);
+                    message += "…";
                 }
             }
 
@@ -841,7 +910,7 @@ S9sRpcReply::nodeStateFlag(
     else if (state == "CmonHostOnline")
         return "o";
     else if (state == "CmonHostOffLine")
-        return "?";
+        return "l";
     else if (state == "CmonHostFailed")
         return "f";
     else if (state == "CmonHostRecovery")
