@@ -75,7 +75,6 @@ class S9sOptions
         S9sString dbAdminPassword();
         S9sString clusterType() const;
 
-
         S9sString rpcToken() const;
         int clusterId() const;
         S9sString clusterName() const;
@@ -88,7 +87,6 @@ class S9sOptions
         bool isClusterOperation() const;
         bool isJobOperation() const;
 
-
         bool isListRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
@@ -100,6 +98,8 @@ class S9sOptions
 
         bool useSyntaxHighlight() const;
 
+        int terminalWidth() const;
+        int terminalHeight() const;
         S9sString binaryName() const;
         S9sString errorString() const;
         

@@ -25,6 +25,7 @@
 #include "S9sFile"
 #include "S9sDir"
 
+#include <sys/ioctl.h>
 #include <stdio.h>
 #include <cstdlib>
 #include <getopt.h>
@@ -556,6 +557,34 @@ S9sOptions::useSyntaxHighlight() const
 
     return false;
 }
+
+int 
+S9sOptions::terminalWidth() const
+{
+    struct winsize win;
+    int            retcode;
+
+    retcode = ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+
+    if (retcode == 0)
+        return win.ws_col;
+
+    return 60;
+}
+
+int 
+S9sOptions::terminalHeight() const
+{
+    struct winsize win;
+    int            retcode;
+
+    retcode = ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+    if (retcode == 0)
+        return win.ws_row;
+
+    return 25;
+}
+
 
 /**
  * \returns the binary program name of the running application.

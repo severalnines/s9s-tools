@@ -563,8 +563,7 @@ S9sRpcReply::printNodeListLong()
     }
 
     if (!options->isBatchRequested())
-        printf("Total: %d\n", total);
-    
+        printf("Total: %d\n", total); 
 }
 
 /**
