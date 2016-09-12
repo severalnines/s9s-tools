@@ -22,3 +22,21 @@ wget http://lxc-webpanel.github.io/tools/install.sh -O - | sudo bash
 
 https://www.flockport.com/lxc-networking-guide/
 
+
+Public network:
+https://insights.ubuntu.com/2015/11/10/converting-eth0-to-br0-and-getting-all-your-lxc-or-lxd-onto-your-lan/
+
+
+Create a new container:
+-----------------------------------------------------------------------------
+lxc-copy -n ubuntu --newname=test1
+lxc-execute -n test1 -- /usr/sbin/useradd --create-home --shell=/bin/bash pipas
+cp -r /home/pipas/.ssh/ /var/lib/lxc/test1/rootfs/home/pipas/
+lxc-execute -n test1 -- chown -R pipas.pipas /home/pipas/.ssh
+
+echo "" >>/var/lib/lxc/test1/rootfs/etc/sudoers
+echo "pipas ALL=(ALL) NOPASSWD:ALL" >>/var/lib/lxc/test1/rootfs/etc/sudoers
+
+lxc-start -n test1
+lxc-ls -f
+

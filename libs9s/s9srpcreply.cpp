@@ -294,6 +294,9 @@ S9sRpcReply::printJobList()
         printJobListBrief();
 }
 
+/**
+ * Generic method that prints the reply as a node list.
+ */
 void 
 S9sRpcReply::printNodeList()
 {
@@ -358,7 +361,8 @@ S9sRpcReply::printClusterListBrief()
 }
 
 /**
- *
+ * This method will print the reply as a detailed cluster list (aka 
+ * "cluster --list --long").
  */
 void 
 S9sRpcReply::printClusterListLong()
@@ -419,18 +423,28 @@ S9sRpcReply::printNodeListBrief()
             S9sVariantMap hostMap = hostList[idx2].toVariantMap();
             S9sString     hostName = hostMap["hostname"].toString();
             S9sString     status = hostMap["hoststatus"].toString();
+            const char   *nameStart = "";
+            const char   *nameEnd   = "";
 
             if (syntaxHighlight)
             {
-                if (status == "CmonHostOnline")
-                    printf("%s%s%s ", TERM_GREEN, STR(hostName), TERM_NORMAL);
-                else if (status == "CmonHostRecovery")
-                    printf("%s%s%s ", TERM_YELLOW, STR(hostName), TERM_NORMAL);
-                else 
-                    printf("%s%s%s ", TERM_RED, STR(hostName), TERM_NORMAL);
-            } else {
-                printf("%s ", STR(hostName));
+                if (status == "CmonHostRecovery" || 
+                        status == "CmonHostShutDown")
+                {
+                    nameStart = XTERM_COLOR_YELLOW;
+                    nameEnd   = TERM_NORMAL;
+                } else if (status == "CmonHostUnknown" ||
+                        status == "CmonHostOffLine")
+                {
+                    nameStart = XTERM_COLOR_RED;
+                    nameEnd   = TERM_NORMAL;
+                } else {
+                    nameStart = XTERM_COLOR_GREEN;
+                    nameEnd   = TERM_NORMAL;
+                }
             }
+                    
+            printf("%s%s%s ", nameStart, STR(hostName), nameEnd);
 
             ++nPrinted;
         }

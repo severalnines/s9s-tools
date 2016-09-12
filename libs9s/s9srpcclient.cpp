@@ -294,18 +294,27 @@ S9sRpcClient::createGaleraCluster(
     jobData["mysql_version"]   = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
     jobData["ssh_user"]        = osUserName;
+    //jobData["repl_user"]        = options->dbAdminUserName();
+    jobData["mysql_password"]  = options->dbAdminPassword();
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+    
     if (!options->osKeyFile().empty())
         jobData["ssh_key"]     = options->osKeyFile();
 
+    // The jobspec describing the command.
     jobSpec["command"]  = "create_cluster";
     jobSpec["job_data"] = jobData;
 
+    // The job instance describing how the job will be executed.
     job["class_name"]    = "CmonJobInstance";
     job["title"]         = "Create Galera Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
     job["user_id"]       = options->userId();
 
+    // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
@@ -373,6 +382,7 @@ S9sRpcClient::createMySqlReplication(
         request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request.toString());
+
     return retval;
 }
 
