@@ -173,6 +173,8 @@ S9sRpcReply::progressLine(
 
         retval += progressBar(percent, syntaxHighlight);
     } else {
+        // XTERM_COLOR_LIGHT_GRAY
+        // TERM_NORMAL
         retval += "[----------] ";
     }
 
@@ -745,6 +747,7 @@ void
 S9sRpcReply::printJobListLong()
 {
     S9sOptions     *options         = S9sOptions::instance();
+    int             terminalWidth   = options->terminalWidth();
     S9sVariantList  theList         = operator[]("jobs").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             total           = operator[]("total").toInt();
@@ -780,8 +783,10 @@ S9sRpcReply::printJobListLong()
         int            jobId  = theMap["job_id"].toInt();
         S9sString      status = theMap["status"].toString();
         S9sString      title  = theMap["title"].toString();
+        S9sString      statusText = theMap["status_text"].toString();
         S9sString      user   = theMap["user_name"].toString();
-        S9sString      percent;
+        S9sString      bar;
+        double         percent;
         S9sDateTime    created;
         S9sString      timeStamp;
         const char    *stateColorStart = "";
@@ -798,14 +803,12 @@ S9sRpcReply::printJobListLong()
         // The progress.
         if (theMap.contains("progress_percent"))
         {
-            double value = theMap["progress_percent"].toDouble();
-
-            percent.sprintf("%3.0f%%", value);
+            percent = theMap["progress_percent"].toDouble();
         } else if (status == "FINISHED") 
         {
-            percent = "100%";
+            percent = 100.0;
         } else {
-            percent = "  0%";
+            percent = 0.0;
         }
 
         // The timestamp.
@@ -829,12 +832,39 @@ S9sRpcReply::printJobListLong()
             }
         }
 
-        printf("%5d ", jobId);
-        printf(STR(statusFormat), stateColorStart, STR(status), stateColorEnd);
-        printf(STR(userNameFormat), STR(user));
-        printf("%s ", STR(timeStamp));
-        printf("%s ", STR(percent));
-        printf("%s\n", STR(title));
+        for (int n = 0; n < terminalWidth; ++n)
+            printf("-");
+        printf("\n");
+
+        printf("%s%s%s\n", TERM_BOLD, STR(title), TERM_NORMAL);
+        printf("%s%s%s", XTERM_COLOR_LIGHT_GRAY, STR(statusText), TERM_NORMAL);
+
+        for (int n = statusText.length(); n < terminalWidth - 13; ++n)
+            printf(" ");
+
+        if (theMap.contains("progress_percent"))
+        {
+            percent = theMap["progress_percent"].toDouble();
+            bar = progressBar(percent, syntaxHighlight);
+        } else {
+            bar = "[----------]";
+
+            if (syntaxHighlight)
+                bar = XTERM_COLOR_LIGHT_GRAY + bar + TERM_NORMAL;
+        }
+
+        printf("%s", STR(bar));
+
+        //printf(STR(statusFormat), stateColorStart, STR(status), stateColorEnd);
+        //printf(STR(userNameFormat), STR(user));
+        //printf("%s ", STR(timeStamp));
+        //printf("%s ", STR(percent));
+        //printf("%5d ", jobId);
+        printf("\n");
+
+        S9S_UNUSED(jobId);
+        S9S_UNUSED(stateColorEnd);
+        S9S_UNUSED(stateColorStart);
     }
 }
 
