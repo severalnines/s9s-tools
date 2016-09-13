@@ -756,7 +756,6 @@ S9sRpcReply::printJobListLong()
     unsigned int    statusLength  = 0;
     S9sString       statusFormat;
 
-    printf("Total: %d\n", total);
 
     //
     // The width of certain columns are variable.
@@ -785,6 +784,7 @@ S9sRpcReply::printJobListLong()
         S9sString      title  = theMap["title"].toString();
         S9sString      statusText = theMap["status_text"].toString();
         S9sString      user   = theMap["user_name"].toString();
+        S9sString      hostName = theMap["ip_address"].toString();
         S9sString      bar;
         double         percent;
         S9sDateTime    created;
@@ -847,15 +847,35 @@ S9sRpcReply::printJobListLong()
             percent = theMap["progress_percent"].toDouble();
             bar = progressBar(percent, syntaxHighlight);
         } else {
-            bar = "[----------]";
-
-            if (syntaxHighlight)
-                bar = XTERM_COLOR_LIGHT_GRAY + bar + TERM_NORMAL;
+            bar = "            ";
         }
 
         printf("%s", STR(bar));
+        printf("\n");
 
-        //printf(STR(statusFormat), stateColorStart, STR(status), stateColorEnd);
+        printf("%sID:%s %s%d%s   ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, jobId, TERM_NORMAL);
+
+        printf("%sStatus:%s %s%s%s   ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                stateColorStart, STR(status), stateColorEnd);
+        
+        printf("%sUser:%s %s%s%s   ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, STR(user), TERM_NORMAL);
+
+        printf("%sHost:%s %s%s%s   ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, STR(hostName), TERM_NORMAL);
+        
+        printf("          ");
+        if (theMap.contains("progress_percent"))
+            printf("%6.2f%% ", percent);
+        else 
+            printf("        ");
+
+
         //printf(STR(userNameFormat), STR(user));
         //printf("%s ", STR(timeStamp));
         //printf("%s ", STR(percent));
@@ -866,6 +886,12 @@ S9sRpcReply::printJobListLong()
         S9S_UNUSED(stateColorEnd);
         S9S_UNUSED(stateColorStart);
     }
+        
+    for (int n = 0; n < terminalWidth; ++n)
+        printf("-");
+    printf("\n");
+    
+    printf("Total: %d\n", total);
 }
 
 S9sString 
