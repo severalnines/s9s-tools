@@ -25,6 +25,13 @@ will contact the controller and register a new job that will eventually create
 a new cluster. 
 
 .TP
+.B \-\-add\-node
+Adds a new node (SQL server) to the cluster or to be more precise creates a new
+job that will eventually add a new node to the cluster. The name (or IP 
+address) of the node should be specified using the \fB\-\-nodes\fR command 
+line option. 
+
+.TP
 .B \-\-rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
 line option will create a job that will restart all the nodes.

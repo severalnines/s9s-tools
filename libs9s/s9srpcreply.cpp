@@ -898,6 +898,8 @@ S9sRpcReply::html2ansi(
     s.replace(regexp1, XTERM_COLOR_ORANGE);
     s.replace(regexp2, XTERM_COLOR_ORANGE);
 
+    s.replace("<BR/>", "\n");
+    s.replace("<br/>", "\n");
 #endif
 }
 
