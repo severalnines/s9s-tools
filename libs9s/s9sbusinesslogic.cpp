@@ -410,7 +410,20 @@ S9sBusinessLogic::jobRegistered(
     
     if (success)
     {
-        jobRegistered(client);
+        if (success)
+        {
+            if (options->isWaitRequested() || options->isLogRequested())
+            {
+                waitForJob(reply.jobId(), client);
+            } else {
+                reply.printJobStarted();
+            }
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));

@@ -25,8 +25,8 @@
 #include "S9sDateTime"
 #include "S9sRegExp"
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 /**
@@ -129,7 +129,6 @@ S9sRpcReply::progressLine(
     S9sString     status;
     double        percent;
     bool          hasProgress;
-    int           nHash;
     S9sString     tmp;
 
     retval.clear();
@@ -172,23 +171,7 @@ S9sRpcReply::progressLine(
         if (status == "FINISHED")
             percent = 100.0;
 
-        nHash   = percent / 10;
-
-        retval += "[";
-
-        if (syntaxHighlight)
-            retval += XTERM_COLOR_BLUE;
-
-        for (int n = 1; n <= nHash; ++n)
-            retval += "█";
-
-        if (syntaxHighlight)
-            retval += TERM_NORMAL;
-
-        for (int n = nHash; n < 10; ++n)
-            retval += " ";
-
-        retval += "] ";
+        retval += progressBar(percent, syntaxHighlight);
     } else {
         retval += "[----------] ";
     }
@@ -853,6 +836,83 @@ S9sRpcReply::printJobListLong()
         printf("%s ", STR(percent));
         printf("%s\n", STR(title));
     }
+}
+
+S9sString 
+S9sRpcReply::progressBar(
+        double percent,
+        bool   syntaxHighlight)
+{
+    S9sString retval;
+    int       nBars;
+    int       remain;
+
+    if (percent < 0.0)
+        percent = 0.0;
+    else if (percent > 100.0)
+        percent = 100.0;
+
+    nBars   = percent / 10;
+    remain  = (int) percent % 10;
+    S9S_WARNING("*** remain: %d", remain);
+
+    retval += "[";
+
+    if (syntaxHighlight)
+        retval += XTERM_COLOR_BLUE;
+
+    for (int n = 1; n <= nBars; ++n)
+        retval += "█";
+
+    if (percent < 100.0)
+    {
+        switch (remain)
+        {
+            case 0:
+                retval += " ";
+                break;
+
+        	case 1:
+                retval += "▏";
+                break;
+
+        	case 2:
+                retval += "▎";
+                break;
+
+        	case 3:
+                retval += "▍";
+                break;
+
+        	case 4:
+                retval += "▌";
+                break;
+
+        	case 5:
+                retval += "▋";
+                break;
+
+        	case 6:
+        	case 7:
+                retval += "▊";
+                break;
+
+        	case 8:
+        	case 9:
+                retval += "▉";
+                break;
+        }
+    }
+
+    if (syntaxHighlight)
+        retval += TERM_NORMAL;
+
+    for (int n = nBars; n < 9; ++n)
+        retval += " ";
+
+    retval += "] ";
+
+    return retval;
 }
 
 void 
