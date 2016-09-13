@@ -510,27 +510,40 @@ void
 S9sRpcReply::printNodeListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       clusterNameFilter = options->clusterName();
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
     uint            maxVersionLength  = 0u;
     S9sString       versionFormat;
+    uint            maxClusterNameLength = 0u;
+    S9sString       clusterNameFormat;
     int             clusterId = options->clusterId();
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
 
+    /**
+     * First run-through: collecting some information.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
         int            id = theMap["cluster_id"].toInt();
-
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        
         total += hostList.size();
 
         if (clusterId > 0 && clusterId != id)
             continue;
+
+        if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
+            continue;
+
+        if (clusterName.length() > maxClusterNameLength)
+            maxClusterNameLength = clusterName.length();
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
@@ -548,7 +561,11 @@ S9sRpcReply::printNodeListLong()
 
     hostNameFormat.sprintf("%%s%%-%us%%s ", maxHostNameLength);
     versionFormat.sprintf("%%-%us ", maxVersionLength);
+    clusterNameFormat.sprintf("%%-%us ", maxClusterNameLength);
 
+    /*
+     * Second run: doing the actual printing.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -557,6 +574,9 @@ S9sRpcReply::printNodeListLong()
         int            id = theMap["cluster_id"].toInt();
         
         if (clusterId > 0 && clusterId != id)
+            continue;
+        
+        if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
             continue;
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
@@ -597,7 +617,7 @@ S9sRpcReply::printNodeListLong()
             // Calculating how much space we have for the message.
             nColumns  = 3 + 1;
             nColumns += maxVersionLength + 1;
-            nColumns += clusterName.length() + 1; // FIXME: maxlength
+            nColumns += maxClusterNameLength + 1;
             nColumns += maxHostNameLength + 1;
             nColumns += 4 + 1;
 
@@ -617,7 +637,7 @@ S9sRpcReply::printNodeListLong()
             printf("%c ", maintenance ? 'M' : '-');
 
             printf(STR(versionFormat), STR(version));
-            printf("%s ", STR(clusterName));
+            printf(STR(clusterNameFormat), STR(clusterName));
 
             printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
 
