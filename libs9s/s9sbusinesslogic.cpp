@@ -38,16 +38,23 @@ S9sBusinessLogic::execute()
     S9sRpcClient client(controller, port, token);
 
     S9S_DEBUG("");
-    if (options->isClusterOperation() && options->isListRequested())
+    if (options->isClusterOperation())
     {
-        executeClusterList(client);
-    } else if (options->isClusterOperation() && options->isCreateRequested())
-    {
-        executeClusterCreate(client);
-    } else if (options->isClusterOperation() && 
-            options->isRollingRestartRequested())
-    {
-        executeRollingRestart(client);
+        if (options->isListRequested())
+        {
+            executeClusterList(client);
+        } else if (options->isCreateRequested())
+        {
+            executeClusterCreate(client);
+        } else if (options->isRollingRestartRequested())
+        {
+            executeRollingRestart(client);
+        } else if (options->isAddNodeRequested())
+        {
+            executeAddNode(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isNodeOperation() && options->isListRequested())
     {
         executeNodeList(client);
@@ -107,6 +114,56 @@ S9sBusinessLogic::executeClusterCreate(
                 STR(options->clusterType()));
 
         options->setExitStatus(S9sOptions::BadOptions);
+    }
+}
+
+void
+S9sBusinessLogic::executeAddNode(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hostNames;
+    S9sRpcReply    reply;
+    bool           success;
+
+    hostNames = options->nodes();
+    if (hostNames.empty())
+    {
+        options->printError(
+                "Node list is empty while adding node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.addNode(hostNames);
+    if (success)
+    {
+        reply = client.reply();
+
+        success = reply.isOk();
+        if (success)
+        {
+
+            if (options->isWaitRequested() || options->isLogRequested())
+            {
+                waitForJob(reply.jobId(), client);
+            } else {
+                reply.printJobStarted();
+            }
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 

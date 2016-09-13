@@ -12,13 +12,17 @@ class S9sRpcClient
 {
     public:
         S9sRpcClient();
+
         S9sRpcClient(
                 const S9sString &hostName,
                 const int        port,
                 const S9sString &token);
+
         S9sRpcClient(const S9sRpcClient &orig);
 
+
         virtual ~S9sRpcClient();
+
 
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
     
@@ -54,6 +58,9 @@ class S9sRpcClient
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
+
+        bool addNode(
+                const S9sVariantList &hostNames);
 
     protected:
         bool executeRequest(

@@ -487,6 +487,17 @@ S9sOptions::isRollingRestartRequested() const
     return retval;
 }
 
+bool
+S9sOptions::isAddNodeRequested() const
+{
+    bool retval = false;
+    if (m_options.contains("add_node"))
+        retval = m_options.at("add_node").toBoolean();
+
+    return retval;
+}
+
+
 /**
  * \returns true if the --long command line option was provided.
  */
@@ -905,6 +916,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L' },
         { "create",           no_argument,       0, '5' },
         { "rolling-restart",  no_argument,       0, '6' },
+        { "add-node",         no_argument,       0,  8  },
 
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
@@ -975,8 +987,12 @@ S9sOptions::readOptionsCluster(
             
             case '6':
                 // --rolling-restart
-                S9S_WARNING("rolling restart");
                 m_options["rolling_restart"] = true;
+                break;
+
+            case 8:
+                // --add-node
+                m_options["add_node"] = true;
                 break;
 
             case '1':
