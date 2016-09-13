@@ -117,6 +117,10 @@ S9sBusinessLogic::executeClusterCreate(
     }
 }
 
+/**
+ * This method will register a new "addNode" job on the controller using the
+ * help of the S9sRpcClint class.
+ */
 void
 S9sBusinessLogic::executeAddNode(
         S9sRpcClient &client)
@@ -144,26 +148,12 @@ S9sBusinessLogic::executeAddNode(
     success = client.addNode(hostNames);
     if (success)
     {
-        reply = client.reply();
-
-        success = reply.isOk();
-        if (success)
-        {
-
-            if (options->isWaitRequested() || options->isLogRequested())
-            {
-                waitForJob(reply.jobId(), client);
-            } else {
-                reply.printJobStarted();
-            }
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        jobRegistered(client);
     } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 
@@ -178,20 +168,16 @@ S9sBusinessLogic::executeClusterList(
     S9sRpcReply reply;
     bool        success;
 
-    S9S_DEBUG("");
     success = client.getClusters();
     if (success)
     {
         reply = client.reply();
 
-        S9S_DEBUG("client.reply(): %s", STR(client.reply().toString()));
         success = reply.isOk();
         if (success)
         {
-            S9S_DEBUG("Reply is OK.");
             reply.printClusterList();
         } else {
-            S9S_DEBUG("Reply is not OK.");
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
             else
@@ -202,7 +188,7 @@ S9sBusinessLogic::executeClusterList(
             printf("%s\n", STR(reply.toString()));
         else
             PRINT_ERROR("%s", STR(client.errorString()));
-    }
+}
 }
         
 void 
@@ -230,7 +216,7 @@ S9sBusinessLogic::executeNodeList(
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-    }
+}
 }
 
 /**
@@ -262,7 +248,7 @@ S9sBusinessLogic::executeJobList(
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-    }    
+    } 
 }
         
 void 
@@ -293,7 +279,7 @@ S9sBusinessLogic::executeJobLog(
 
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-    }
+}
 }
 
 /**
@@ -311,26 +297,12 @@ S9sBusinessLogic::executeRollingRestart(
     success = client.rollingRestart(clusterId);
     if (success)
     {
-        reply = client.reply();
-
-        success = reply.isOk();
-        if (success)
-        {
-
-            if (options->isWaitRequested() || options->isLogRequested())
-            {
-                waitForJob(reply.jobId(), client);
-            } else {
-                reply.printJobStarted();
-            }
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        jobRegistered(client);
     } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 
@@ -407,29 +379,46 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
     if (success)
     {
-        reply = client.reply();
-
-        success = reply.isOk();
-        if (success)
-        {
-
-            if (options->isWaitRequested() || options->isLogRequested())
-            {
-                waitForJob(reply.jobId(), client);
-            } else {
-                reply.printJobStarted();
-            }
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        jobRegistered(client);
     } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
-        
+
+/**
+ * \param client The client that just created the new job with the reply in it.
+ *
+ * This method can be called when a new job is registered using the RPC client.
+ * This function will print the necessary messages to inform the user about the
+ * new job, wait for the job to ended if necessary, show the progress or the job
+ * messages if the command line options or settings suggests that should be
+ * done.
+ */
+void
+S9sBusinessLogic::jobRegistered(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    reply = client.reply();
+    success = reply.isOk();
+    
+    if (success)
+    {
+        jobRegistered(client);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 void 
 S9sBusinessLogic::waitForJobWithProgess(
         const int     jobId, 
