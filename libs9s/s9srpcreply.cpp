@@ -482,7 +482,7 @@ S9sRpcReply::printNodeListBrief()
     int             nPrinted = 0;
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
-    int             clusterId = options->clusterId();
+    //int             clusterId = options->clusterId();
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
     int             column = 0;
@@ -494,10 +494,10 @@ S9sRpcReply::printNodeListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
-        int            id = theMap["cluster_id"].toInt();
+        //int            id = theMap["cluster_id"].toInt();
 
-        if (clusterId > 0 && clusterId != id)
-            continue;
+        //if (clusterId > 0 && clusterId != id)
+        //    continue;
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
@@ -510,12 +510,8 @@ S9sRpcReply::printNodeListBrief()
         }
     }
 
-    //S9S_WARNING("*** maxHostNameLength : %d", maxHostNameLength);
-    //S9S_WARNING("*** terminalWidth: %d", terminalWidth);
     nColumns          = terminalWidth / (maxHostNameLength + 1);
-    //S9S_WARNING("*** nColumns     : %d", nColumns);
     maxHostNameLength = terminalWidth / nColumns;
-    //S9S_WARNING("*** maxHostNameLength : %d", maxHostNameLength);
 
     hostNameFormat.sprintf("%%s%%-%us%%s", maxHostNameLength);
 
@@ -591,7 +587,7 @@ S9sRpcReply::printNodeListLong()
     S9sString       versionFormat;
     uint            maxClusterNameLength = 0u;
     S9sString       clusterNameFormat;
-    int             clusterId = options->clusterId();
+    //int             clusterId = options->clusterId();
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
@@ -603,13 +599,13 @@ S9sRpcReply::printNodeListLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
-        int            id = theMap["cluster_id"].toInt();
+        //int            id = theMap["cluster_id"].toInt();
         S9sString      clusterName = theMap["cluster_name"].toString();
         
         total += hostList.size();
 
-        if (clusterId > 0 && clusterId != id)
-            continue;
+        //if (clusterId > 0 && clusterId != id)
+        //    continue;
 
         if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
             continue;
@@ -643,10 +639,10 @@ S9sRpcReply::printNodeListLong()
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sString      clusterName = theMap["cluster_name"].toString();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
-        int            id = theMap["cluster_id"].toInt();
+        //int            id = theMap["cluster_id"].toInt();
         
-        if (clusterId > 0 && clusterId != id)
-            continue;
+        //if (clusterId > 0 && clusterId != id)
+        //    continue;
         
         if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
             continue;

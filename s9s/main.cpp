@@ -54,10 +54,10 @@ main(int argc, char **argv)
     atexit(enable_cursor);
     signal(SIGINT, intHandler);
 
+    success = options->readOptions(&argc, argv);
     options->createConfigFiles();
     options->loadConfigFiles();
 
-    success = options->readOptions(&argc, argv);
     if (!success)
     {
         options->printError("Readoption failed.");
