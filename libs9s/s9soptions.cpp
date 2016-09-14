@@ -42,13 +42,22 @@ S9sOptions::S9sOptions() :
     m_operationMode(NoMode),
     m_exitStatus(EXIT_SUCCESS)
 {
+    S9sString   theString;
     const char *tmp;
 
     sm_instance = this;
 
     tmp = getenv("CMON_CONTROLLER");
     if (tmp)
+    {
         setController(tmp);
+    }
+
+    theString = getenv("CMON_CLUSTER_ID");
+    if (!theString.empty())
+    {
+        m_options["cluster_id"] = theString.toInt();
+    }
 }
 
 S9sOptions::~S9sOptions()
