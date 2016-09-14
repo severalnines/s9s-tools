@@ -262,6 +262,10 @@ S9sRpcReply::printJobLog()
 
 }
 
+/**
+ * Prints the job log in its short format. In this format only the messages are
+ * printed.
+ */
 void
 S9sRpcReply::printJobLogBrief()
 {
@@ -277,6 +281,9 @@ S9sRpcReply::printJobLogBrief()
     }
 }
 
+/**
+ * Prints the job log in its long format (aka "job --log --list").
+ */
 void
 S9sRpcReply::printJobLogLong()
 {
@@ -321,17 +328,22 @@ S9sRpcReply::printJobLogLong()
             }
         }
 
+        //printf("%s%s%s\n\n", TERM_BOLD, STR(message), TERM_NORMAL);
         printf("%s\n\n", STR(message));
 
-        printf("%sCreated:%s %s  ", 
+        printf("  %sCreated:%s %s%s%s  ", 
                 XTERM_COLOR_DARK_GRAY, 
                 TERM_NORMAL,
-                STR(created)); 
+                XTERM_COLOR_LIGHT_GRAY,
+                STR(created),
+                TERM_NORMAL); 
         
         printf("%sStatus:%s %s%s%s\n", 
                 XTERM_COLOR_DARK_GRAY, 
                 TERM_NORMAL,
-                stateColorStart, STR(status), stateColorEnd); 
+                stateColorStart, 
+                STR(status), 
+                stateColorEnd); 
 
 
         printf("%s\n", STR(line));
