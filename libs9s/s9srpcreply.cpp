@@ -742,7 +742,9 @@ S9sRpcReply::printJobListBrief()
     printf("Total: %d\n", total);
 }
 
-
+/**
+ * Prints the list of jobs in their detailed form.
+ */
 void 
 S9sRpcReply::printJobListLong()
 {
@@ -962,6 +964,14 @@ S9sRpcReply::printJobListLong()
     printf("Total: %d\n", total);
 }
 
+/**
+ * \param percent the percent (between 0.0 and 100.0) that is shown by the
+ *   progress bar.
+ * \param syntaxHighlight true to use ANSI terminal color sequences.
+ * \returns the string that looks like a progress bar.
+ *
+ * Creates a string that shows up a progress bar using UTF-8 characters.
+ */
 S9sString 
 S9sRpcReply::progressBar(
         double percent,
