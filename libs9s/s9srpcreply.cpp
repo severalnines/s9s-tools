@@ -756,7 +756,6 @@ S9sRpcReply::printJobListLong()
     unsigned int    statusLength  = 0;
     S9sString       statusFormat;
 
-
     //
     // The width of certain columns are variable.
     //
@@ -778,16 +777,19 @@ S9sRpcReply::printJobListLong()
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        int            jobId  = theMap["job_id"].toInt();
-        S9sString      status = theMap["status"].toString();
-        S9sString      title  = theMap["title"].toString();
+        S9sVariantMap  theMap     = theList[idx].toVariantMap();
+        int            jobId      = theMap["job_id"].toInt();
+        S9sString      status     = theMap["status"].toString();
+        S9sString      title      = theMap["title"].toString();
         S9sString      statusText = theMap["status_text"].toString();
-        S9sString      user   = theMap["user_name"].toString();
-        S9sString      hostName = theMap["ip_address"].toString();
+        S9sString      user       = theMap["user_name"].toString();
+        S9sString      hostName   = theMap["ip_address"].toString();
+        S9sString      created    = theMap["created"].toString();
+        S9sString      ended      = theMap["ended"].toString();
+        S9sString      started    = theMap["started"].toString();
+        S9sString      scheduled  = theMap["scheduled"].toString();
         S9sString      bar;
         double         percent;
-        S9sDateTime    created;
         S9sString      timeStamp;
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
@@ -811,10 +813,42 @@ S9sRpcReply::printJobListLong()
             percent = 0.0;
         }
 
-        // The timestamp.
-        created.parse(theMap["created"].toString());
-        timeStamp = created.toString(S9sDateTime::MySqlLogFileFormat);
+        /*
+         * The timestamps.
+         */
+        if (!created.empty())
+        {
+            S9sDateTime tmp;
 
+            tmp.parse(created);
+            created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+        }
+        
+        if (!scheduled.empty())
+        {
+            S9sDateTime tmp;
+
+            tmp.parse(scheduled);
+            scheduled = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+        }
+        
+        if (!started.empty())
+        {
+            S9sDateTime tmp;
+
+            tmp.parse(started);
+            started = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+        }
+        
+        if (!ended.empty())
+        {
+            S9sDateTime tmp;
+
+            tmp.parse(ended);
+            ended = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+        }
+
+        //
         if (syntaxHighlight)
         {
             if (status == "RUNNING" || status == "RUNNING_EXT")
@@ -837,7 +871,8 @@ S9sRpcReply::printJobListLong()
         printf("\n");
 
         printf("%s%s%s\n", TERM_BOLD, STR(title), TERM_NORMAL);
-        printf("%s%s%s", XTERM_COLOR_LIGHT_GRAY, STR(statusText), TERM_NORMAL);
+        //printf("%s%s%s", XTERM_COLOR_LIGHT_GRAY, STR(statusText), TERM_NORMAL);
+        printf("%s", STR(statusText));
 
         for (int n = statusText.length(); n < terminalWidth - 13; ++n)
             printf(" ");
@@ -853,23 +888,13 @@ S9sRpcReply::printJobListLong()
         printf("%s", STR(bar));
         printf("\n");
 
-        printf("%sID:%s %s%d%s   ", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                XTERM_COLOR_BLUE, jobId, TERM_NORMAL);
-
-        printf("%sStatus:%s %s%s%s   ", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                stateColorStart, STR(status), stateColorEnd);
         
-        printf("%sUser:%s %s%s%s   ", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                XTERM_COLOR_BLUE, STR(user), TERM_NORMAL);
+        /*
+         *
+         */
+        for (int n = 10; n < terminalWidth; ++n)
+            printf(" ");
 
-        printf("%sHost:%s %s%s%s   ", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                XTERM_COLOR_BLUE, STR(hostName), TERM_NORMAL);
-        
-        printf("          ");
         if (theMap.contains("progress_percent"))
             printf("%6.2f%% ", percent);
         else 
@@ -881,6 +906,49 @@ S9sRpcReply::printJobListLong()
         //printf("%s ", STR(percent));
         //printf("%5d ", jobId);
         printf("\n");
+        
+        // The dates...
+        printf("%sCreated   :%s %s%s%s    ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_LIGHT_GRAY, STR(created), TERM_NORMAL);
+
+        printf("%sID   :%s %s%-10d%s ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, jobId, TERM_NORMAL);
+
+        printf("%sStatus :%s %s%s%s ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                stateColorStart, STR(status), stateColorEnd);
+
+        printf("\n");
+
+        printf("%sStarted   :%s %s%s%s    ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_LIGHT_GRAY, STR(started), TERM_NORMAL);
+        
+        printf("%sUser :%s %s%-10s%s ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, STR(user), TERM_NORMAL);
+
+        printf("%sHost   :%s %s%s%s ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_BLUE, STR(hostName), TERM_NORMAL);
+        
+        printf("\n");
+
+
+
+        printf("%sEnded     :%s %s%s%s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_LIGHT_GRAY, STR(ended), TERM_NORMAL);
+        
+        if (!scheduled.empty())
+        {
+            printf("%sScheduled :%s %s%s%s\n", 
+                    XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                    XTERM_COLOR_LIGHT_GRAY, STR(scheduled), TERM_NORMAL);
+        }
+
 
         S9S_UNUSED(jobId);
         S9S_UNUSED(stateColorEnd);
