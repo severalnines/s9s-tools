@@ -345,16 +345,25 @@ S9sOptions::rpcToken() const
 }
 
 /**
- * \returns the cluster ID from the command line, 0 if the cluster id is not
- *   provided.
+ * \returns the cluster ID from the command line or the configuration or
+ *   environment 0 if the cluster id is not provided in either of these.
  */
 int
 S9sOptions::clusterId() const
 {
-    if (m_options.contains("cluster_id"))
-        return m_options.at("cluster_id").toInt();
+    int retval = 0;
 
-    return 0;
+    if (m_options.contains("cluster_id"))
+    {
+        retval = m_options.at("cluster_id").toInt();
+    } else {
+        S9sString stringVal = m_userConfig.variableValue("default_cluster_id");
+
+        if (!stringVal.empty())
+            retval = stringVal.toInt();
+    }
+
+    return retval;
 }
 
 /**

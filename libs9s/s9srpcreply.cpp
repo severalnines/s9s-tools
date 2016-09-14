@@ -248,21 +248,51 @@ void
 S9sRpcReply::printJobLog()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("messages").toVariantList();
 
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
         return;
+    } else if (options->isLongRequested())
+    {
+        printJobLogLong();
+    } else {
+        printJobLogBrief();
     }
+
+}
+
+void
+S9sRpcReply::printJobLogBrief()
+{
+    S9sVariantList  theList = operator[]("messages").toVariantList();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap = theList[idx].toVariantMap();
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sString     message = theMap["message_text"].toString();
 
         html2ansi(message);
         printf("%s\n", STR(message));
+    }
+}
+
+void
+S9sRpcReply::printJobLogLong()
+{
+    S9sVariantList  theList = operator[]("messages").toVariantList();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sString     message = theMap["message_text"].toString();
+        S9sString     status  = theMap["message_status"].toString();
+
+        html2ansi(message);
+
+        printf("%s\n", STR(status));
+        printf("%s\n", STR(message));
+        printf("----\n");
     }
 }
 
@@ -491,6 +521,9 @@ S9sRpcReply::printNodeListBrief()
     }
 }
 
+/**
+ * Prints the node list in its long format (aka "node --list --long).
+ */
 void 
 S9sRpcReply::printNodeListLong()
 {
