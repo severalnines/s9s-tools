@@ -26,9 +26,10 @@ class S9sString : public std::string
         S9sString(const char *str);
         S9sString(const std::string &str);
 
-        S9sString &operator= (const S9sString &rhs);
-        S9sString &operator= (const std::string &rhs);
-        S9sString &operator= (const char *rhs);
+        S9sString &operator=(const S9sString &rhs);
+        S9sString &operator=(const std::string &rhs);
+        S9sString &operator=(const char *rhs);
+        S9sString  operator*(const int rhs) const;
 
         inline bool contains(char c) const;
         inline bool contains(const char *s) const;
@@ -71,6 +72,9 @@ class S9sString : public std::string
 
         bool looksInteger() const;
         bool looksULongLong() const;
+
+        static const S9sString space;
+        static const S9sString dash;
 };
 
 typedef S9sString S9sFilePath;

@@ -280,19 +280,61 @@ S9sRpcReply::printJobLogBrief()
 void
 S9sRpcReply::printJobLogLong()
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("messages").toVariantList();
-
+    int             terminalWidth = options->terminalWidth();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       line = S9sString::dash * terminalWidth;
+    
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap  = theList[idx].toVariantMap();
-        S9sString     message = theMap["message_text"].toString();
-        S9sString     status  = theMap["message_status"].toString();
-
+        S9sVariantMap  theMap  = theList[idx].toVariantMap();
+        S9sString      message = theMap["message_text"].toString();
+        S9sString      status  = theMap["message_status"].toString();
+        S9sString      created    = theMap["created"].toString();
+        const char    *stateColorStart = "";
+        const char    *stateColorEnd   = "";
+  
         html2ansi(message);
+        if (!created.empty())
+        {
+            S9sDateTime tmp;
 
-        printf("%s\n", STR(status));
-        printf("%s\n", STR(message));
-        printf("----\n");
+            tmp.parse(created);
+            created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+        }
+        
+        if (syntaxHighlight)
+        {
+            if (status == "JOB_SUCCESS")
+            {
+                stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "JOB_WARNING")
+            {
+                stateColorStart = XTERM_COLOR_YELLOW;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "JOB_FAILED")
+            {
+                stateColorStart = XTERM_COLOR_RED;
+                stateColorEnd   = TERM_NORMAL;
+            }
+        }
+
+        printf("%s\n\n", STR(message));
+
+        printf("%sCreated:%s %s  ", 
+                XTERM_COLOR_DARK_GRAY, 
+                TERM_NORMAL,
+                STR(created)); 
+        
+        printf("%sStatus:%s %s%s%s\n", 
+                XTERM_COLOR_DARK_GRAY, 
+                TERM_NORMAL,
+                stateColorStart, STR(status), stateColorEnd); 
+
+
+        printf("%s\n", STR(line));
     }
 }
 

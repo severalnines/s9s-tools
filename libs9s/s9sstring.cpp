@@ -26,11 +26,11 @@
 #include <stdio.h>
 #include <algorithm>
 
-#if 0
-#include <regex>
-#endif
-
 #include "S9sRegExp"
+
+const S9sString S9sString::space = " ";
+const S9sString S9sString::dash  = "-";
+
 
 S9sString::S9sString() :
     std::string()
@@ -80,7 +80,7 @@ S9sString::operator= (
 }
 
 S9sString &
-S9sString::operator= (
+S9sString::operator=(
         const std::string &rhs)
 {
     if (this == &rhs)
@@ -89,6 +89,22 @@ S9sString::operator= (
     std::string::operator=(rhs);
     return *this;
 }
+
+S9sString 
+S9sString::operator*(
+        const int rhs) const
+{
+    S9sString retval;
+
+    if (rhs > 0)
+    {
+        for (int n = 0; n < rhs; ++n)
+            retval += *this;
+    }
+
+    return retval;
+}
+
 
 /**
  * \returns the variant list contains the parts of the original string.
