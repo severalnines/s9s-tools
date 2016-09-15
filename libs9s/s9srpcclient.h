@@ -59,8 +59,8 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
 
-        bool addNode(
-                const S9sVariantList &hostNames);
+        bool addNode(const S9sVariantList &hostNames);
+        bool removeNode(const S9sVariantList &hostNames);
 
     protected:
         bool executeRequest(

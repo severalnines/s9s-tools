@@ -509,12 +509,23 @@ bool
 S9sOptions::isAddNodeRequested() const
 {
     bool retval = false;
+
     if (m_options.contains("add_node"))
         retval = m_options.at("add_node").toBoolean();
 
     return retval;
 }
 
+bool
+S9sOptions::isRemoveNodeRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("remove_node"))
+        retval = m_options.at("remove_node").toBoolean();
+
+    return retval;
+}
 
 /**
  * \returns true if the --long command line option was provided.
@@ -935,6 +946,7 @@ S9sOptions::readOptionsCluster(
         { "create",           no_argument,       0, '5' },
         { "rolling-restart",  no_argument,       0, '6' },
         { "add-node",         no_argument,       0,  8  },
+        { "remove-node",      no_argument,       0,  9  },
 
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
@@ -1011,6 +1023,11 @@ S9sOptions::readOptionsCluster(
             case 8:
                 // --add-node
                 m_options["add_node"] = true;
+                break;
+            
+            case 9:
+                // --remove-node
+                m_options["remove_node"] = true;
                 break;
 
             case '1':

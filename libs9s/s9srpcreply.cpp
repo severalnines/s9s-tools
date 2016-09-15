@@ -1161,6 +1161,7 @@ S9sRpcReply::html2ansi(
     s.replace("<em style='color: #c0392b;'>",     XTERM_COLOR_8);
     s.replace("<em style='color: #0b33b5;'>",     XTERM_COLOR_BLUE);
     s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
+    s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
 
     //s.replace("", );
     s.replace("</em>",                        TERM_NORMAL);

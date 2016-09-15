@@ -92,6 +92,7 @@ class S9sOptions
         bool isCreateRequested() const;
         bool isRollingRestartRequested() const;
         bool isAddNodeRequested() const;
+        bool isRemoveNodeRequested() const;
 
         bool isLongRequested() const;
         bool isJsonRequested() const;

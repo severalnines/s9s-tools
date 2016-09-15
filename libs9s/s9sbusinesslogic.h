@@ -45,6 +45,7 @@ class S9sBusinessLogic
 
         void executeRollingRestart(S9sRpcClient &client);
         void executeAddNode(S9sRpcClient &client);
+        void executeRemoveNode(S9sRpcClient &client);
         void doExecuteCreateCluster(S9sRpcClient &client);
 };
 

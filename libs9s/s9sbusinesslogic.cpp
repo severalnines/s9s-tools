@@ -52,6 +52,9 @@ S9sBusinessLogic::execute()
         } else if (options->isAddNodeRequested())
         {
             executeAddNode(client);
+        } else if (options->isRemoveNodeRequested())
+        {
+            executeRemoveNode(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -146,6 +149,46 @@ S9sBusinessLogic::executeAddNode(
      * Running the request on the controller.
      */
     success = client.addNode(hostNames);
+    if (success)
+    {
+        jobRegistered(client);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+/**
+ * This method will register a new "removeNode" job on the controller using the
+ * help of the S9sRpcClint class.
+ */
+void
+S9sBusinessLogic::executeRemoveNode(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hostNames;
+    S9sRpcReply    reply;
+    bool           success;
+
+    hostNames = options->nodes();
+    if (hostNames.empty())
+    {
+        options->printError(
+                "Node list is empty while removing node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.removeNode(hostNames);
     if (success)
     {
         jobRegistered(client);
