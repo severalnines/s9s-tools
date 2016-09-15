@@ -193,6 +193,31 @@ S9sOptions::controller() const
     return retval;
 }
 
+bool
+S9sOptions::setPropertiesOption(
+        const S9sString &assignments)
+{
+    S9sVariantMap  theMap;
+    bool           success;
+
+    success = theMap.parseAssignments(assignments);
+    if (!success)
+        m_errorMessage.sprintf("failed to parse '%s'.", STR(assignments));
+    else
+        m_options["properties"] = theMap;
+
+    return success;
+}
+
+S9sVariantMap
+S9sOptions::propertiesOption() const
+{
+    if (m_options.contains("properties"))
+        return m_options.at("properties").toVariantMap();
+
+    return S9sVariantMap();
+}
+
 /**
  * \returns the controller port.
  */
@@ -461,6 +486,15 @@ S9sOptions::isListRequested() const
 {
     if (m_options.contains("list"))
         return m_options.at("list").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isSetRequested() const
+{
+    if (m_options.contains("set"))
+        return m_options.at("set").toBoolean();
 
     return false;
 }
@@ -829,20 +863,27 @@ S9sOptions::readOptionsNode(
     int           c;
     struct option long_options[] =
     {
+        // Generic Options
         { "help",             no_argument,       0, 'h' },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
-        { "list",             no_argument,       0, 'L' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, '3' },
-        { "config-file",      required_argument, 0, '1' },
         { "color",            optional_argument, 0, '2' },
+        { "config-file",      required_argument, 0, '1' },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L' },
+        { "set",              no_argument,       0,  1 },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
+
+        // 
+        { "properties",       required_argument, 0,  2  },
 
         { 0, 0, 0, 0 }
     };
@@ -891,7 +932,12 @@ S9sOptions::readOptionsNode(
                 break;
 
             case 'L': 
+                // --list
                 m_options["list"] = true;
+                break;
+
+            case 1:
+                m_options["set"]  = true;
                 break;
 
             case '1':
@@ -911,6 +957,11 @@ S9sOptions::readOptionsNode(
             
             case 'i':
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case 2:
+                // --properties=STRING
+                setPropertiesOption(optarg);
                 break;
 
             default:

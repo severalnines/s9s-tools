@@ -40,6 +40,8 @@ class S9sBusinessLogic
         void executeClusterList(S9sRpcClient &client);
 
         void executeNodeList(S9sRpcClient &client);
+        void executeNodeSet(S9sRpcClient &client);
+
         void executeJobList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 

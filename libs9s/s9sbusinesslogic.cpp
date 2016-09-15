@@ -58,9 +58,17 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
-    } else if (options->isNodeOperation() && options->isListRequested())
+    } else if (options->isNodeOperation())
     {
-        executeNodeList(client);
+        if (options->isListRequested())
+        {
+            executeNodeList(client);
+        } else if (options->isSetRequested())
+        {
+            executeNodeSet(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isJobOperation() && options->isListRequested())
     {
         executeJobList(client);
@@ -259,7 +267,14 @@ S9sBusinessLogic::executeNodeList(
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
+    }
 }
+
+void 
+S9sBusinessLogic::executeNodeSet(
+        S9sRpcClient &client)
+{
+    
 }
 
 /**

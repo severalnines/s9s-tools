@@ -62,6 +62,9 @@ class S9sOptions
         void setController(const S9sString &url);
         S9sString controller() const;
 
+        bool setPropertiesOption(const S9sString &assignments);
+        S9sVariantMap propertiesOption() const;
+
         int controllerPort() const;
 
         void setNodes(const S9sString &value);
@@ -88,6 +91,7 @@ class S9sOptions
         bool isJobOperation() const;
 
         bool isListRequested() const;
+        bool isSetRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
         bool isRollingRestartRequested() const;
