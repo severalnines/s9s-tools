@@ -34,7 +34,14 @@ class S9sRpcClient
          * the server.
          */
         bool getClusters();
+
+        bool setHost(
+                const int             clusterId,
+                const S9sVariantList &hostNames,
+                const S9sVariantMap  &properties);
+
         bool getJobInstances(const int clusterId);
+
         bool getJobInstance(const int clusterId, const int jobId);
         
         bool getJobLog(

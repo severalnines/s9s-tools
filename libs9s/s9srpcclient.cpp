@@ -128,6 +128,35 @@ S9sRpcClient::getClusters()
     return retval;
 }
 
+bool
+S9sRpcClient::setHost(
+        const int             clusterId,
+        const S9sVariantList &hostNames,
+        const S9sVariantMap  &properties)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+
+    uri.sprintf("/%d/stat");
+
+    if (hostNames.size() != 1u)
+    {
+        PRINT_ERROR("setHost is currently implemented only for one node.");
+        return false;
+    }
+
+    request["operation"]  = "setHost";
+    request["hostname"]   = hostNames[0].toString();
+    request["properties"] = properties;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+        
+    return executeRequest(uri, request.toString());
+}
+
+
 /**
  * Sends a "getJobInstances" request, receives the reply. We use this RPC call
  * to get the job list (e.g. s9s job --list).

@@ -274,7 +274,40 @@ void
 S9sBusinessLogic::executeNodeSet(
         S9sRpcClient &client)
 {
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   properties;
+    bool            success;
+    int             clusterId = options->clusterId();
+
+    hostNames = options->nodes();
+    if (hostNames.empty())
+    {
+        options->printError(
+                "Node list is empty while setting node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
     
+    properties = options->propertiesOption();
+    if (properties.empty())
+    {
+        options->printError(
+                "Properties not provided while setting node.\n"
+                "Use the --properties command line option to provide"
+                " properties."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    success = client.setHost(clusterId, hostNames, properties);
+    if (success)
+        printf("OK\n");
 }
 
 /**
