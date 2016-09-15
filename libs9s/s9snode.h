@@ -32,11 +32,17 @@ class S9sNode
 
         virtual ~S9sNode();
 
+        S9sNode &operator=(const S9sVariantMap &rhs);
+
+
         void setProperties(const S9sVariantMap &properties);
 
         S9sString className() const;
+        S9sString name() const;
         S9sString hostName() const;
 
+        S9sString alias() const;
+        
         bool hasPort();
         int port() const;
 

@@ -100,12 +100,13 @@ UtS9sNode::runTest(const char *testName)
     bool retval = true;
 
     PERFORM_TEST(testSetProperties,   retval);
+    PERFORM_TEST(testAssign,          retval);
 
     return retval;
 }
 
 /**
- * 
+ * Testing the S9sNode::setProperties() method. 
  */
 bool
 UtS9sNode::testSetProperties()
@@ -115,6 +116,30 @@ UtS9sNode::testSetProperties()
 
     S9S_VERIFY(theMap.parse(hostJson1));
     theNode.setProperties(theMap);
+
+    S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
+    S9S_COMPARE(theNode.port(),        3306);
+    S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
+    S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
+    S9S_COMPARE(theNode.nodeType(),   "galera");
+    S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
+    S9S_COMPARE(theNode.message(),    "Up and running.");
+    S9S_COMPARE(theNode.isMaintenanceAcrtive(), true);
+
+    return true;
+}
+
+/**
+ * Testing the S9sNode::operator=(const S9sVariantMap &) operator.
+ */
+bool
+UtS9sNode::testAssign()
+{
+    S9sVariantMap theMap;
+    S9sNode       theNode;
+
+    S9S_VERIFY(theMap.parse(hostJson1));
+    theNode = theMap;
 
     S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
     S9S_COMPARE(theNode.port(),        3306);

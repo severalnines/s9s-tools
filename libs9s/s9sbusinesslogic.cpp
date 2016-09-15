@@ -275,6 +275,7 @@ S9sBusinessLogic::executeNodeSet(
         S9sRpcClient &client)
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sRpcReply     reply;
     S9sVariantList  hostNames;
     S9sVariantMap   properties;
     bool            success;
@@ -306,8 +307,14 @@ S9sBusinessLogic::executeNodeSet(
     }
 
     success = client.setHost(clusterId, hostNames, properties);
-    if (success)
-        printf("OK\n");
+    if (options->isJsonRequested())
+    {
+        reply = client.reply();
+        printf("%s\n", STR(reply.toString()));
+    } else {
+        if (success)
+            printf("OK\n");
+    }
 }
 
 /**
@@ -326,7 +333,6 @@ S9sBusinessLogic::executeJobList(
     if (success)
     {
         reply = client.reply();
-
         success = reply.isOk();
         if (success)
         {

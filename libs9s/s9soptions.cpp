@@ -881,6 +881,7 @@ S9sOptions::readOptionsNode(
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
+        { "nodes",            required_argument, 0,  3  },
 
         // 
         { "properties",       required_argument, 0,  2  },
@@ -889,7 +890,7 @@ S9sOptions::readOptionsNode(
     };
 
     optind = 0;
-    opterr = 0;
+    //opterr = 0;
     for (;;)
     {
         int option_index = 0;
@@ -937,6 +938,7 @@ S9sOptions::readOptionsNode(
                 break;
 
             case 1:
+                // --set
                 m_options["set"]  = true;
                 break;
 
@@ -962,6 +964,11 @@ S9sOptions::readOptionsNode(
             case 2:
                 // --properties=STRING
                 setPropertiesOption(optarg);
+                break;
+            
+            case 3:
+                // --nodes=LIST
+                setNodes(optarg);
                 break;
 
             default:

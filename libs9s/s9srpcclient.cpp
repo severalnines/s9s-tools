@@ -137,7 +137,7 @@ S9sRpcClient::setHost(
     S9sString      uri;
     S9sVariantMap  request;
 
-    uri.sprintf("/%d/stat");
+    uri.sprintf("/%d/stat", clusterId);
 
     if (hostNames.size() != 1u)
     {
@@ -147,6 +147,8 @@ S9sRpcClient::setHost(
 
     request["operation"]  = "setHost";
     request["hostname"]   = hostNames[0].toString();
+    // FIXME: No way to handle ports.
+    request["port"]       = 3306;
     request["properties"] = properties;
     
     if (!m_priv->m_token.empty())

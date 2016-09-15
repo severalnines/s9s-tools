@@ -24,6 +24,7 @@
 #include "S9sOptions"
 #include "S9sDateTime"
 #include "S9sRegExp"
+#include "S9sNode"
 
 //#define DEBUG
 //#define WARNING
@@ -501,9 +502,10 @@ S9sRpcReply::printNodeListBrief()
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            S9sVariantMap hostMap  = hostList[idx2].toVariantMap();
-            S9sString     hostName = hostMap["hostname"].toString();
-            S9sString     version  = hostMap["version"].toString();
+            S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
+            S9sNode       node      = hostMap;
+            S9sString     hostName  = node.name();
+            S9sString     version   = hostMap["version"].toString();
             
             if (hostName.length() > maxHostNameLength)
                 maxHostNameLength = hostName.length();
@@ -526,9 +528,10 @@ S9sRpcReply::printNodeListBrief()
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            S9sVariantMap hostMap = hostList[idx2].toVariantMap();
-            S9sString     hostName = hostMap["hostname"].toString();
-            S9sString     status = hostMap["hoststatus"].toString();
+            S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
+            S9sNode       node      = hostMap;
+            S9sString     hostName  = node.name();
+            S9sString     status    = hostMap["hoststatus"].toString();
             const char   *nameStart = "";
             const char   *nameEnd   = "";
 
@@ -615,9 +618,10 @@ S9sRpcReply::printNodeListLong()
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
-            S9sVariantMap hostMap  = hostList[idx2].toVariantMap();
-            S9sString     hostName = hostMap["hostname"].toString();
-            S9sString     version  = hostMap["version"].toString();
+            S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
+            S9sNode       node      = hostMap;
+            S9sString     hostName  = node.name();
+            S9sString     version   = hostMap["version"].toString();
             
             if (hostName.length() > maxHostNameLength)
                 maxHostNameLength = hostName.length();
@@ -650,7 +654,8 @@ S9sRpcReply::printNodeListLong()
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
             S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
-            S9sString     hostName  = hostMap["hostname"].toString();
+            S9sNode       node      = hostMap;
+            S9sString     hostName  = node.name();
             S9sString     status    = hostMap["hoststatus"].toString();
             S9sString     className = hostMap["class_name"].toString();
             S9sString     nodeType  = hostMap["nodetype"].toString();

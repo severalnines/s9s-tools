@@ -37,6 +37,15 @@ S9sNode::~S9sNode()
 {
 }
 
+S9sNode &
+S9sNode::operator=(
+        const S9sVariantMap &rhs)
+{
+    setProperties(rhs);
+    
+    return *this;
+}
+
 void
 S9sNode::setProperties(
         const S9sVariantMap &properties)
@@ -54,10 +63,32 @@ S9sNode::className() const
 }
 
 S9sString
+S9sNode::name() const
+{
+    S9sString retval;
+
+    retval = alias();
+    if (retval.empty())
+        retval = hostName();
+
+    return retval;
+}
+
+
+S9sString
 S9sNode::hostName() const
 {
     if (m_properties.contains("hostname"))
         return m_properties.at("hostname").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::alias() const
+{
+    if (m_properties.contains("alias"))
+        return m_properties.at("alias").toString();
 
     return S9sString();
 }
