@@ -12,7 +12,9 @@
 #include "json_parser.h"
 #include "json_lexer.h"
 
-
+//#define DEBUG
+#define WARNING
+#include "s9sdebug.h"
 
 static const char dblQuot = '"';
 
@@ -64,12 +66,18 @@ S9sVariantMap::parse(
     return success;
 }
 
+/**
+ * Converts the variant map to a JSON string.
+ */
 S9sString
 S9sVariantMap::toString() const
 {
     return toString(0, *this);
 }
 
+/**
+ * Private function, part of the S9sVariantMap::toString() implemtation.
+ */
 S9sString
 S9sVariantMap::toString(
         int                  depth, 
@@ -99,6 +107,173 @@ S9sVariantMap::toString(
     return retval;
 }
 
+enum AssignmentState
+{
+    Start,
+    ReadName,
+    ReadOperator,
+    ReadValueSpace,
+    ReadValue,
+    ReadValueQuoted,
+    ReadFieldSep
+};
+
+/**
+ * This method implements a parser that will process strings like 
+ * "alias = somealias" or "alias = other; hostgrouppath = '/'". These seems to
+ * be useful to pass more complex command line strings.
+ */
+bool
+S9sVariantMap::parseAssignments(
+        const S9sString &input)
+{
+    AssignmentState state = Start;
+    S9sString       name;
+    S9sString       value;
+    int  n = 0;
+    char c;
+    bool retval = true;
+
+    clear();
+
+    for (;;)
+    {
+        c = input[n];
+        S9S_DEBUG("[%03d] '%c' in %s", n, c, STR(input));
+        S9S_DEBUG("      name: '%s' value: '%s'", STR(name), STR(value));
+
+        switch (state)
+        {
+            case Start:
+                S9S_DEBUG("Start");
+                if (c == '\0')
+                {
+                    return true;
+                } else if (c == '\"')
+                {
+                    // No quoting yet.
+                    return false;
+                } else if (c == ' ' || c == '\t')
+                {
+                    ++n;
+                } else {
+                    state = ReadName;
+                }
+                break;
+
+            case ReadName:
+                S9S_DEBUG("ReadName");
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == ' ' || c == '=' || c == ':') 
+                {
+                    state = ReadOperator;
+                } else {
+                    name += c;
+                    ++n;
+                }
+                break;
+
+            case ReadOperator:
+                S9S_DEBUG("ReadOperator");
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == '=' || c == ':')
+                {
+                    state = ReadValueSpace;
+                    ++n;
+                } else {
+                    ++n;
+                }
+                break;
+
+            case ReadValueSpace:
+                S9S_DEBUG("ReadValueSpace");
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == ' ' || c == '\t')
+                {
+                    ++n;
+                } else {
+                    state = ReadValue;
+                }
+                break;
+
+            case ReadValue:
+                S9S_DEBUG("ReadValue");
+                if (c == '\0')
+                {
+                    S9S_DEBUG("%s = %s", STR(name), STR(value));
+                    this->operator[](name) = value;
+                    return true;
+                } else if (c == ';' || c == ',')
+                {
+                    this->operator[](name) = value;
+                    name.clear();
+                    value.clear();
+
+                    state = Start;
+                    ++n;
+                } else if (c == '\'')
+                {
+                    ++n;
+                    state = ReadValueQuoted;
+                } else {
+                    value += c;
+                    ++n;
+                }
+                break;
+
+            case ReadValueQuoted:
+                S9S_DEBUG("ReadValueQuoted");
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == '\'')
+                {
+                    S9S_DEBUG("%s = %s", STR(name), STR(value));
+                    this->operator[](name) = value;
+                    name.clear();
+                    value.clear();
+                    ++n;
+
+                    state = ReadFieldSep;
+                } else {
+                    value += c;
+                    ++n;
+                }
+                break;
+
+            case ReadFieldSep:
+                S9S_DEBUG("ReadFieldSep");
+                if (c == '\0')
+                {
+                    return true;
+                } else if (c == ' ')
+                {
+                    ++n;
+                } else if (c == ';' || c == ',')
+                {
+                    ++n;
+                    state = Start;
+                } else {
+                    return false;
+                }
+                break;
+
+        }
+    }
+
+    return retval;
+}
+
+
+/**
+ * Private function, part of the S9sVariantMap::toString() implemtation.
+ */
 S9sString
 S9sVariantMap::toString (
         int                   depth,
@@ -121,6 +296,9 @@ S9sVariantMap::toString (
     return retval;
 }
 
+/**
+ * Private function, part of the S9sVariantMap::toString() implemtation.
+ */
 S9sString
 S9sVariantMap::toString (
         int               depth,
@@ -181,7 +359,9 @@ S9sVariantMap::toString (
     return retval;
 }
 
-
+/**
+ * Private function, part of the S9sVariantMap::toString() implemtation.
+ */
 S9sString
 S9sVariantMap::indent(
         int depth) const
@@ -194,6 +374,9 @@ S9sVariantMap::indent(
     return retval;
 }
 
+/**
+ * Private function, part of the S9sVariantMap::toString() implemtation.
+ */
 S9sString
 S9sVariantMap::quote(
         const S9sString &s) const

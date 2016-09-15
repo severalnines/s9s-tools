@@ -21,6 +21,7 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
 
         bool parse(const char *source);
         S9sString toString() const;
+        bool parseAssignments(const S9sString &input);
 
     private:
         S9sString toString(

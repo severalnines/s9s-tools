@@ -438,6 +438,9 @@ S9sRpcClient::addNode(
     return retval;
 }
 
+/**
+ * This function will create a "removeNode" job on the controller.
+ */
 bool
 S9sRpcClient::removeNode(
         const S9sVariantList &hostNames)

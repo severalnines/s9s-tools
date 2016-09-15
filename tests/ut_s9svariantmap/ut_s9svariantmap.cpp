@@ -49,6 +49,7 @@ UtS9sVariantMap::runTest(
     PERFORM_TEST(testParser03,      retval);
     PERFORM_TEST(testParser04,      retval);
     PERFORM_TEST(testParser05,      retval);
+    PERFORM_TEST(testAssignments01, retval);
 
     return retval;
 }
@@ -284,6 +285,30 @@ UtS9sVariantMap::testParser05()
     return true;
 }
 
+bool
+UtS9sVariantMap::testAssignments01()
+{
+    S9sVariantMap theMap;
+    bool          success;
+
+    success = theMap.parseAssignments("alias = somealias");
+    S9S_VERIFY(success);
+    S9S_COMPARE(theMap.size(), 1);
+    S9S_COMPARE(theMap["alias"], "somealias");
+    
+    success = theMap.parseAssignments("alias = other;");
+    S9S_VERIFY(success);
+    S9S_COMPARE(theMap.size(), 1);
+    S9S_COMPARE(theMap["alias"], "other");
+
+    success = theMap.parseAssignments("alias = other; hostgrouppath = '/'");
+    S9S_VERIFY(success);
+    S9S_COMPARE(theMap.size(), 2);
+    S9S_COMPARE(theMap["alias"], "other");
+    S9S_COMPARE(theMap["hostgrouppath"], "/");
+
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sVariantMap)
 
