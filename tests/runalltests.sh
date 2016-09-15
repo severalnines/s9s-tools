@@ -65,6 +65,7 @@ rm -f core tests/core
 
 runTest ut_library $@
 runTest ut_s9sstring $@
+runTest ut_s9snode $@
 runTest ut_s9svariant $@
 runTest ut_s9svariantmap $@
 runTest ut_s9sregexp $@

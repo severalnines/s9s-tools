@@ -57,6 +57,7 @@ AC_CONFIG_FILES(Makefile                          \
                 tests/Makefile                    \
                 tests/ut_library/Makefile         \
                 tests/ut_s9sstring/Makefile       \
+                tests/ut_s9snode/Makefile         \
                 tests/ut_s9svariant/Makefile      \
                 tests/ut_s9svariantmap/Makefile   \
                 tests/ut_s9sregexp/Makefile       \
