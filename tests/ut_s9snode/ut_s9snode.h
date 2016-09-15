@@ -27,6 +27,6 @@ class UtS9sNode : public S9sUnitTest
         virtual bool runTest(const char *testName = 0);
     
     protected:
-        bool testCreate();
+        bool testSetProperties();
 };
 

@@ -32,6 +32,20 @@ class S9sNode
 
         virtual ~S9sNode();
 
+        void setProperties(const S9sVariantMap &properties);
+
+        S9sString className() const;
+        S9sString hostName() const;
+
+        bool hasPort();
+        int port() const;
+
+        S9sString hostStatus() const;
+        S9sString nodeType() const;
+        S9sString version() const;
+        S9sString message() const;
+        bool isMaintenanceAcrtive() const;
+
     private:
         S9sVariantMap    m_properties;
 };

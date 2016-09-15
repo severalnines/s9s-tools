@@ -37,3 +37,88 @@ S9sNode::~S9sNode()
 {
 }
 
+void
+S9sNode::setProperties(
+        const S9sVariantMap &properties)
+{
+    m_properties = properties;
+}
+
+S9sString
+S9sNode::className() const
+{
+    if (m_properties.contains("class_name"))
+        return m_properties.at("class_name").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::hostName() const
+{
+    if (m_properties.contains("hostname"))
+        return m_properties.at("hostname").toString();
+
+    return S9sString();
+}
+
+bool
+S9sNode::hasPort()
+{
+    return m_properties.contains("port");
+}
+
+int
+S9sNode::port() const
+{
+    if (m_properties.contains("port"))
+        return m_properties.at("port").toInt();
+
+    return 0;
+}
+
+S9sString
+S9sNode::hostStatus() const
+{
+    if (m_properties.contains("hoststatus"))
+        return m_properties.at("hoststatus").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::nodeType() const
+{
+    if (m_properties.contains("nodetype"))
+        return m_properties.at("nodetype").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::version() const
+{
+    if (m_properties.contains("version"))
+        return m_properties.at("version").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::message() const
+{
+    if (m_properties.contains("message"))
+        return m_properties.at("message").toString();
+
+    return S9sString();
+}
+
+bool
+S9sNode::isMaintenanceAcrtive() const
+{
+    if (m_properties.contains("maintenance_mode_active"))
+        return m_properties.at("maintenance_mode_active").toBoolean();
+
+    return false;
+}
+
