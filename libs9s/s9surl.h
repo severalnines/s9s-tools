@@ -17,19 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "s9sunittest.h"
+#pragma once
 
-class UtS9sRegExp : public S9sUnitTest
+#include "S9sString"
+
+class S9sUrl
 {
     public:
-        UtS9sRegExp();
-        virtual ~UtS9sRegExp();
-        virtual bool runTest(const char *testName = 0);
-    
-    protected:
-        bool testCreate();
-        bool test01();
-        bool testMatched01();
+        S9sUrl(const S9sString &stringRep);
+
+    private:
+        S9sString    m_origString;
 };
-
-

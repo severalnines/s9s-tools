@@ -70,6 +70,7 @@ libs9s_a_SOURCES =            \
 	s9sdebug.cpp              \
 	s9sstring.cpp             \
 	s9sdatetime.cpp           \
+	s9surl.cpp                \
 	s9snode.cpp               \
 	s9svariant.cpp            \
 	s9svariantmap.cpp         \

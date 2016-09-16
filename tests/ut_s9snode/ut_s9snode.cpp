@@ -107,7 +107,7 @@ UtS9sNode::runTest(const char *testName)
 
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
-    PERFORM_TEST(testVariant,         retval);
+    PERFORM_TEST(testVariant01,       retval);
 
     return retval;
 }
@@ -160,8 +160,12 @@ UtS9sNode::testAssign()
     return true;
 }
 
+/**
+ * Here we put the node into a variant map, then we convert the variant map to a
+ * JSon string to see that it is fully integrated into the map.
+ */
 bool
-UtS9sNode::testVariant()
+UtS9sNode::testVariant01()
 {
     S9sVariantMap theMap;
     S9sNode       theNode(hostJson2);
