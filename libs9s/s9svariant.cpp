@@ -1,5 +1,21 @@
 /*
- * Copyright (C) 2011-2016 severalnines.com
+ * Severalnines Tools
+ * Copyright (C) 2016  Severalnines AB
+ *
+ * This file is part of s9s-tools.
+ *
+ * s9s-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Foobar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9svariant.h"
 #include "S9sVariantMap"
@@ -11,6 +27,8 @@
 #include <climits>
 #include <cmath>
 #include <limits> 
+
+#include "S9sNode"
 
 #define DEBUG
 #include "s9sdebug.h"
@@ -45,9 +63,19 @@ S9sVariant::S9sVariant(
         case Map:
             m_union.mapValue = new S9sVariantMap(*orig.m_union.mapValue);
             break;
+
+        case Node:
+            m_union.nodeValue = new S9sNode(*orig.m_union.nodeValue);
+            break;
     }
 }
 
+S9sVariant::S9sVariant(
+        const S9sNode &nodeValue) :
+    m_type (Node)
+{
+    m_union.nodeValue = new S9sNode(nodeValue);
+}
 
 S9sVariant::S9sVariant(
         const S9sVariantMap &mapValue) :
@@ -104,6 +132,10 @@ S9sVariant::operator= (
 
         case Map:
             m_union.mapValue = new S9sVariantMap(*rhs.m_union.mapValue);
+            break;
+
+        case Node:
+            m_union.nodeValue = new S9sNode(*rhs.m_union.nodeValue);
             break;
     }
     
@@ -213,6 +245,10 @@ S9sVariant::typeName() const
         case String:
             retval = "string";
             break;
+        
+        case Node:
+            retval = "node";
+            break;
 
         case List:
             retval = "list";
@@ -245,6 +281,9 @@ S9sVariant::toVariantMap() const
 
         case Map:
             return *m_union.mapValue;
+
+        case Node:
+            return m_union.nodeValue->toVariantMap();
     }
             
     return sm_emptyMap;
@@ -265,6 +304,7 @@ S9sVariant::toVariantList() const
         case Bool:
         case String:
         case Map:
+        case Node:
             return sm_emptyList;
 
         case List:
@@ -310,6 +350,7 @@ S9sVariant::toInt(
 
         case Map:
         case List:
+        case Node:
             return defaultValue;
     }
 
@@ -351,6 +392,7 @@ S9sVariant::toULongLong(
 
         case Map:
         case List:
+        case Node:
             // FIXME: This is not yet implemented.
             return defaultValue;
     }
@@ -373,6 +415,7 @@ S9sVariant::toDouble(
         case Map:
         case List:
         case Invalid:
+        case Node:
             // The default value is already there.
             break;
 
@@ -466,6 +509,7 @@ S9sVariant::toBoolean(
 
         case Map:
         case List:
+        case Node:
             return defaultValue;
     }
 
@@ -604,6 +648,11 @@ S9sVariant::clear()
         case List:
             delete m_union.listValue;
             m_union.listValue = NULL;
+            break;
+
+        case Node:
+            delete m_union.nodeValue;
+            m_union.nodeValue = NULL;
             break;
     }
 

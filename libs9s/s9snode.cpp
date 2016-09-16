@@ -46,6 +46,12 @@ S9sNode::operator=(
     return *this;
 }
 
+const S9sVariantMap &
+S9sNode::toVariantMap() const
+{
+    return m_properties;
+}
+
 void
 S9sNode::setProperties(
         const S9sVariantMap &properties)
