@@ -29,7 +29,9 @@ class UtS9sRpcClient : public S9sUnitTest
         virtual bool runTest(const char *testName = 0);
     
     protected:
-        bool test01();
+        bool testGetAllClusterInfo();
+        bool testSetHost();
+        bool testCreateGalera();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

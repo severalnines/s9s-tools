@@ -53,7 +53,7 @@ class S9sRpcClient
 
         bool setHost(
                 const int             clusterId,
-                const S9sVariantList &hostNames,
+                const S9sVariantList &hosts,
                 const S9sVariantMap  &properties);
 
         bool getJobInstances(const int clusterId);
@@ -69,7 +69,7 @@ class S9sRpcClient
         bool rollingRestart(const int clusterId);
 
         bool createGaleraCluster(
-                const S9sVariantList &hostNames,
+                const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,

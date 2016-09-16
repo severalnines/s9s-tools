@@ -43,7 +43,7 @@ class S9sNode
         S9sString hostName() const;
         S9sString alias() const;
         
-        bool hasPort();
+        bool hasPort() const;
         int port() const;
 
         S9sString hostStatus() const;

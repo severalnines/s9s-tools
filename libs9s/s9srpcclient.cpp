@@ -21,6 +21,7 @@
 #include "s9srpcclient_p.h"
 
 #include "S9sOptions"
+#include "S9sNode"
 
 #include <string.h>
 #include <stdio.h>
@@ -144,10 +145,16 @@ S9sRpcClient::getClusters()
     return retval;
 }
 
+/**
+ * \param clusterId The cluster where the request will be sent.
+ * \param hosts The list of hosts to change (currently only one host is
+ *   supported).
+ * \param properties The names and values of the host properties to change.
+ */
 bool
 S9sRpcClient::setHost(
         const int             clusterId,
-        const S9sVariantList &hostNames,
+        const S9sVariantList &hosts,
         const S9sVariantMap  &properties)
 {
     S9sString      uri;
@@ -155,17 +162,23 @@ S9sRpcClient::setHost(
 
     uri.sprintf("/%d/stat", clusterId);
 
-    if (hostNames.size() != 1u)
+    if (hosts.size() != 1u)
     {
         PRINT_ERROR("setHost is currently implemented only for one node.");
         return false;
     }
 
     request["operation"]  = "setHost";
-    request["hostname"]   = hostNames[0].toString();
-    // FIXME: No way to handle ports.
-    //request["port"]       = 3306;
     request["properties"] = properties;
+    if (hosts[0].isNode())
+    {
+        request["hostname"]   = hosts[0].toNode().hostName();
+
+        if (hosts[0].toNode().hasPort())
+            request["port"]   = hosts[0].toNode().port();
+    } else {
+        request["hostname"]   = hosts[0].toString();
+    }
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
@@ -320,19 +333,33 @@ S9sRpcClient::rollingRestart(
  */
 bool
 S9sRpcClient::createGaleraCluster(
-        const S9sVariantList &hostNames,
+        const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
         const S9sString      &mySqlVersion,
         bool                  uninstall)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
-    bool           retval;
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri;
+    bool            retval;
+    
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Galera cluster.");
+        return false;
+    }
     
     uri = "/0/job/";
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        if (hosts[idx].isNode())
+            hostNames << hosts[idx].toNode().hostName();
+        else
+            hostNames << hosts[idx];
+    }
 
     // The job_data describing the cluster.
     jobData["cluster_type"]    = "galera";

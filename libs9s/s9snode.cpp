@@ -145,7 +145,7 @@ S9sNode::alias() const
  * \returns true if the node has a port number set.
  */
 bool
-S9sNode::hasPort()
+S9sNode::hasPort() const
 {
     return m_properties.contains("port");
 }

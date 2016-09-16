@@ -35,6 +35,8 @@
 
 const S9sVariantMap  S9sVariant::sm_emptyMap;
 const S9sVariantList S9sVariant::sm_emptyList;
+static const S9sNode sm_emptyNode;
+
 
 S9sVariant::S9sVariant(
         const S9sVariant &orig)
@@ -261,6 +263,29 @@ S9sVariant::typeName() const
 
     return retval;
 }
+
+const S9sNode &
+S9sVariant::toNode() const
+{
+    switch (m_type)
+    {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+        case String:
+        case List:
+        case Map:
+            return sm_emptyNode;
+
+        case Node:
+            return *m_union.nodeValue;
+    }
+            
+    return sm_emptyNode;
+}
+
 
 /**
  * \returns the reference to the S9sVariantMap held in the S9sVariant.
