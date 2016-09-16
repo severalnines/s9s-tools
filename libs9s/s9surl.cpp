@@ -22,7 +22,7 @@
 #include "S9sRegExp"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sUrl::S9sUrl(
@@ -35,9 +35,10 @@ S9sUrl::S9sUrl(
 
     if (regexp == stringRep)
     {
-        S9S_WARNING("regexp[0] = '%s'", STR(regexp[0]));
-        S9S_WARNING("regexp[1] = '%s'", STR(regexp[1]));
-        S9S_WARNING("regexp[2] = '%s'", STR(regexp[2]));
+        //S9S_WARNING("regexp[0] = '%s'", STR(regexp[0]));
+        //S9S_WARNING("regexp[1] = '%s'", STR(regexp[1]));
+        //S9S_WARNING("regexp[2] = '%s'", STR(regexp[2]));
+
         m_hostName = regexp[1];
         m_port     = regexp[2].toInt();
         m_hasPort  = true;

@@ -46,8 +46,10 @@ S9sNode::S9sNode(
         S9sUrl url(stringRep);
 
         m_properties.clear();
-        // FIXME: Here we could interpret the representation in some other
-        // way.
+        m_properties["hostname"] = url.hostName();
+
+        if (url.hasPort())
+            m_properties["port"] = url.port();
     }
 }
 
