@@ -406,18 +406,34 @@ S9sRpcClient::createGaleraCluster(
  */
 bool
 S9sRpcClient::createMySqlReplication(
-        const S9sVariantList &hostNames,
+        const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
         const S9sString      &mySqlVersion,
         bool                  uninstall)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri = "/0/job/";
-    bool           retval;
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/0/job/";
+    bool            retval;
     
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Galera cluster.");
+        return false;
+    }
+    
+    uri = "/0/job/";
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        if (hosts[idx].isNode())
+            hostNames << hosts[idx].toNode().hostName();
+        else
+            hostNames << hosts[idx];
+    }
+
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "replication";
     jobData["mysql_hostnames"]  = hostNames;
