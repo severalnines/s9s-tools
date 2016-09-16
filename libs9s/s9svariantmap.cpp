@@ -342,6 +342,7 @@ S9sVariantMap::toString (
         }
 
         case Map:
+        case Node:
             retval += "\n";
             retval += toString(depth + 1, value.toVariantMap());
             break;

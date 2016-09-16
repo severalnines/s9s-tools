@@ -33,6 +33,20 @@ S9sNode::S9sNode(
 {
 }
 
+S9sNode::S9sNode(
+        const S9sString &stringRep)
+{
+    bool success;
+
+    success = m_properties.parse(STR(stringRep));
+    if (!success)
+    {
+        m_properties.clear();
+        // FIXME: Here we could interpret the representation in some other
+        // way.
+    }
+}
+
 S9sNode::~S9sNode()
 {
 }

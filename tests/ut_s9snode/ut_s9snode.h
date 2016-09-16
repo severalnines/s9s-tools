@@ -29,5 +29,6 @@ class UtS9sNode : public S9sUnitTest
     protected:
         bool testSetProperties();
         bool testAssign();
+        bool testVariant();
 };
 

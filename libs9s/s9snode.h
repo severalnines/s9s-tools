@@ -29,6 +29,7 @@ class S9sNode
     public:
         S9sNode();
         S9sNode(const S9sVariantMap &properties);
+        S9sNode(const S9sString &stringRep);
 
         virtual ~S9sNode();
 

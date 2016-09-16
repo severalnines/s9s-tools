@@ -23,7 +23,7 @@
 #include "S9sVariantMap"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 static const char *hostJson1 = 
@@ -85,6 +85,12 @@ static const char *hostJson1 =
 "}\n"
 ;
 
+static const char *hostJson2 = 
+"{\n"
+"    \"hostname\": \"192.168.1.189\",\n"
+"    \"port\": 3306\n"
+"}"
+;
 
 UtS9sNode::UtS9sNode()
 {
@@ -101,6 +107,7 @@ UtS9sNode::runTest(const char *testName)
 
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
+    PERFORM_TEST(testVariant,         retval);
 
     return retval;
 }
@@ -149,6 +156,24 @@ UtS9sNode::testAssign()
     S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
     S9S_COMPARE(theNode.message(),    "Up and running.");
     S9S_COMPARE(theNode.isMaintenanceAcrtive(), true);
+
+    return true;
+}
+
+bool
+UtS9sNode::testVariant()
+{
+    S9sVariantMap theMap;
+    S9sNode       theNode(hostJson2);
+    S9sString     jsonString;
+
+    theMap["node"] = theNode;
+    jsonString     = theMap.toString();
+
+    //S9S_WARNING("-> \n%s\n", STR(jsonString));
+    S9S_VERIFY(jsonString.contains("\"node\":"));
+    S9S_VERIFY(jsonString.contains("\"hostname\": \"192.168.1.189\""));
+    S9S_VERIFY(jsonString.contains("\"port\": 3306"));
 
     return true;
 }
