@@ -140,7 +140,7 @@ UtS9sNode::testSetProperties()
     S9S_COMPARE(theNode.nodeType(),   "galera");
     S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
     S9S_COMPARE(theNode.message(),    "Up and running.");
-    S9S_COMPARE(theNode.isMaintenanceAcrtive(), true);
+    S9S_COMPARE(theNode.isMaintenanceActive(), true);
 
     return true;
 }
@@ -164,7 +164,7 @@ UtS9sNode::testAssign()
     S9S_COMPARE(theNode.nodeType(),   "galera");
     S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
     S9S_COMPARE(theNode.message(),    "Up and running.");
-    S9S_COMPARE(theNode.isMaintenanceAcrtive(), true);
+    S9S_COMPARE(theNode.isMaintenanceActive(), true);
 
     return true;
 }

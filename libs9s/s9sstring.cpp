@@ -117,7 +117,8 @@ S9sString::operator*(
  * names) in a simple string.
  */
 S9sVariantList
-S9sString::split() const
+S9sString::split(
+        const char *ifs) const
 {
     S9sVariantList retval;
 
@@ -128,11 +129,11 @@ S9sString::split() const
     char *x = copy;
     char *dd;
 
-    dd = strtok(x, ";, ");
+    dd = strtok(x, ifs);
     while (dd != NULL)
     {
         retval.push_back(dd);
-        dd = strtok (NULL, ";, ");
+        dd = strtok(NULL, ifs);
     }
 
     free(copy);

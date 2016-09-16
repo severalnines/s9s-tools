@@ -35,6 +35,10 @@ S9sNode::S9sNode(
 {
 }
 
+/**
+ * \param stringRep The string representation of the host, either a JSon string
+ *   or an url (e.g. "192.168.1.100:3306".
+ */
 S9sNode::S9sNode(
         const S9sString &stringRep)
 {
@@ -79,6 +83,9 @@ S9sNode::setProperties(
     m_properties = properties;
 }
 
+/**
+ * \returns the "class_name" property Cmon uses to represent the object type.
+ */
 S9sString
 S9sNode::className() const
 {
@@ -88,6 +95,14 @@ S9sNode::className() const
     return S9sString();
 }
 
+/**
+ * \returns The name of the node that shall be used to represent it in user
+ *   output.
+ *
+ * The return value might be the alias, the host name or even the IP address.
+ * Currently this function is not fully implemented and it does not consider any
+ * settings.
+ */
 S9sString
 S9sNode::name() const
 {
@@ -100,7 +115,10 @@ S9sNode::name() const
     return retval;
 }
 
-
+/**
+ * \returns The host name, the name that used in the Cmon Configuration file to
+ *   register the node.
+ */
 S9sString
 S9sNode::hostName() const
 {
@@ -110,6 +128,10 @@ S9sNode::hostName() const
     return S9sString();
 }
 
+/**
+ * \returns The alias name (or nickname) of the node if there is one, returns
+ *   the empty string if not.
+ */
 S9sString
 S9sNode::alias() const
 {
@@ -119,12 +141,18 @@ S9sNode::alias() const
     return S9sString();
 }
 
+/**
+ * \returns true if the node has a port number set.
+ */
 bool
 S9sNode::hasPort()
 {
     return m_properties.contains("port");
 }
 
+/**
+ * \returns the port number for the node.
+ */
 int
 S9sNode::port() const
 {
@@ -134,6 +162,9 @@ S9sNode::port() const
     return 0;
 }
 
+/**
+ * \returns The host status as a string.
+ */
 S9sString
 S9sNode::hostStatus() const
 {
@@ -171,7 +202,7 @@ S9sNode::message() const
 }
 
 bool
-S9sNode::isMaintenanceAcrtive() const
+S9sNode::isMaintenanceActive() const
 {
     if (m_properties.contains("maintenance_mode_active"))
         return m_properties.at("maintenance_mode_active").toBoolean();

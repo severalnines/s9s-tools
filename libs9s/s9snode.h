@@ -41,7 +41,6 @@ class S9sNode
         S9sString className() const;
         S9sString name() const;
         S9sString hostName() const;
-
         S9sString alias() const;
         
         bool hasPort();
@@ -51,7 +50,7 @@ class S9sNode
         S9sString nodeType() const;
         S9sString version() const;
         S9sString message() const;
-        bool isMaintenanceAcrtive() const;
+        bool isMaintenanceActive() const;
 
     private:
         S9sVariantMap    m_properties;

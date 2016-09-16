@@ -53,7 +53,7 @@ class S9sString : public std::string
         void sprintf(const char *formatString, ...);
         void vsprintf(const char *formatString, va_list arguments);
 
-        S9sVariantList split() const;
+        S9sVariantList split(const char *ifs = ";, ") const;
 
         int toInt(const int defaultVal = 0) const;
         ulonglong toULongLong(const ulonglong defaultVal = 0ull) const;

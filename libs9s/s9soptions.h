@@ -19,6 +19,9 @@
  */
 #pragma once
 
+#define EXPERIMENTAL_CODE
+
+
 #include "S9sString"
 #include "S9sVariant"
 #include "S9sVariantMap"
