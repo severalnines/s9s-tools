@@ -52,4 +52,6 @@ tests/ut_s9svariantmap/ut_s9svariantmap
 tests/ut_s9soptions/ut_s9soptions
 tests/ut_s9sregexp/ut_s9sregexp
 tests/ut_s9sconfigfile/ut_s9sconfigfile
+tests/ut_s9snode/ut_s9snode
+tests/ut_s9srpcclient/ut_s9srpcclient
 y.tab.c
