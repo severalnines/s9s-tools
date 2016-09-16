@@ -88,6 +88,9 @@ UtS9sRpcClient::runTest(
     return retval;
 }
 
+/**
+ * Testing the getAllClusterInfo() call.
+ */
 bool
 UtS9sRpcClient::testGetAllClusterInfo()
 {
@@ -101,6 +104,9 @@ UtS9sRpcClient::testGetAllClusterInfo()
     return true;
 }
 
+/**
+ * Testing the setHost() call.
+ */
 bool
 UtS9sRpcClient::testSetHost()
 {
@@ -129,6 +135,9 @@ UtS9sRpcClient::testSetHost()
     return true;
 }
 
+/**
+ * Testing the createGaleraCluster() call.
+ */
 bool
 UtS9sRpcClient::testCreateGalera()
 {
@@ -161,6 +170,9 @@ UtS9sRpcClient::testCreateGalera()
     return true;
 }
 
+/**
+ * Testing the createMySqlReplication() call.
+ */
 bool
 UtS9sRpcClient::testCreateReplication()
 {
