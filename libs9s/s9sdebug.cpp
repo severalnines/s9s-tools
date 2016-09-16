@@ -28,12 +28,12 @@ s9s_print_message (
             break;
 
         case WarningMsg:
-            fprintf (stream, "%s%s%s: ", TERM_YELLOW, function, TERM_NORMAL);
+            fprintf (stream, "%s%s%s: ", TERM_RED, function, TERM_NORMAL);
             vfprintf (stream, formatstring, args);
             break;
         
         case SystemMsg:
-            fprintf (stream, "%s%s%s: ", TERM_YELLOW, function, TERM_NORMAL);
+            fprintf (stream, "%s%s%s: ", TERM_RED, function, TERM_NORMAL);
             vfprintf (stream, formatstring, args);
             break;
     }

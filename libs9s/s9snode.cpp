@@ -19,6 +19,8 @@
  */
 #include "s9snode.h"
 
+#include "S9sUrl"
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
@@ -41,6 +43,8 @@ S9sNode::S9sNode(
     success = m_properties.parse(STR(stringRep));
     if (!success)
     {
+        S9sUrl url(stringRep);
+
         m_properties.clear();
         // FIXME: Here we could interpret the representation in some other
         // way.

@@ -105,11 +105,20 @@ UtS9sNode::runTest(const char *testName)
 {
     bool retval = true;
 
+    PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
     PERFORM_TEST(testVariant01,       retval);
 
     return retval;
+}
+
+bool
+UtS9sNode::testCreate()
+{
+    S9sNode   node1("node1.eu:8080");
+
+    return true;
 }
 
 /**

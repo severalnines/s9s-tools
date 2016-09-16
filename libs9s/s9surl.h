@@ -25,7 +25,10 @@ class S9sUrl
 {
     public:
         S9sUrl(const S9sString &stringRep);
-
+        
     private:
         S9sString    m_origString;
+        S9sString    m_hostName;
+        int          m_port;
+        bool         m_hasPort;
 };
