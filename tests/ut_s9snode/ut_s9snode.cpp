@@ -117,6 +117,10 @@ bool
 UtS9sNode::testCreate()
 {
     S9sNode   node1("node1.eu:8080");
+    S9sNode   node2("http://node2.eu:8080");
+
+    S9S_COMPARE(node1.hostName(), "node1.eu");
+    S9S_COMPARE(node2.hostName(), "node2.eu");
 
     return true;
 }

@@ -21,7 +21,7 @@
 
 #include "S9sRegExp"
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -31,9 +31,21 @@ S9sUrl::S9sUrl(
     m_port(0),
     m_hasPort(false)
 {
+    S9sString  theString = stringRep;
+    S9sRegExp  protocolRegExp("(.+)://(.*)");
     S9sRegExp  regexp("([^:]+):([0-9]+)");
 
-    if (regexp == stringRep)
+    if (protocolRegExp == theString)
+    {
+        //S9S_WARNING("protocolRegExp[0] = '%s'", STR(protocolRegExp[0]));
+        //S9S_WARNING("protocolRegExp[1] = '%s'", STR(protocolRegExp[1]));
+        //S9S_WARNING("protocolRegExp[2] = '%s'", STR(protocolRegExp[2]));
+
+        m_protocol = protocolRegExp[1];
+        theString  = protocolRegExp[2];
+    }
+
+    if (regexp == theString)
     {
         //S9S_WARNING("regexp[0] = '%s'", STR(regexp[0]));
         //S9S_WARNING("regexp[1] = '%s'", STR(regexp[1]));
@@ -43,7 +55,7 @@ S9sUrl::S9sUrl(
         m_port     = regexp[2].toInt();
         m_hasPort  = true;
     } else {
-        m_hostName = stringRep;
+        m_hostName = theString;
     }
 
 }

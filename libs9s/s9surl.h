@@ -32,6 +32,7 @@ class S9sUrl
 
     private:
         S9sString    m_origString;
+        S9sString    m_protocol;
         S9sString    m_hostName;
         int          m_port;
         bool         m_hasPort;

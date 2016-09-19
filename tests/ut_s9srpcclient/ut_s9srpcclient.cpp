@@ -207,6 +207,9 @@ UtS9sRpcClient::testCreateReplication()
     return true;
 }
 
+/**
+ * Testing the createNdbCluster() method.
+ */
 bool
 UtS9sRpcClient::testCreateNdbCluster()
 {
