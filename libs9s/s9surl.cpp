@@ -25,6 +25,12 @@
 //#define WARNING
 #include "s9sdebug.h"
 
+S9sUrl::S9sUrl() :
+    m_port(0),
+    m_hasPort(false)
+{
+}
+
 S9sUrl::S9sUrl(
         const S9sString &stringRep) :
     m_origString(stringRep),

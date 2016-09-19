@@ -124,7 +124,21 @@ is not yet implemented.)
 
 .TP
 .BI \-\^\-nodes= NODELIST
-The list of nodes given by their hostnames or IP addresses.
+The list of nodes or hosts enumerated in a special string using a semicolon as
+field separator (e.g. "192.168.1.1;192.168.1.2"). 
+The strings in the node list are urls that can have the following protocols:
+
+.RS 7
+.TP
+.B mysql:// 
+The protocol for MySql servers. Use this string to specify MySql servers.
+.TP
+.B ndbd://
+Someone has to write this part.
+.TP
+.B ndb_mgmd://
+Someone has to write this part. The mgmd:// notation is also accepted.
+.RE
 
 .TP
 .BI \-\^\-vendor= VENDOR
@@ -143,7 +157,7 @@ on the remote hosts too.
 .TP
 .BI \-\^\-cluster-type= TYPENAME
 The name of the cluster type to be installed. Currently the following types are
-supported: galera, mysqlreplication.
+supported: galera, mysqlreplication, ndb (or ndbcluster).
 
 .TP
 .BI \-\^\-db\-admin= USERNAME

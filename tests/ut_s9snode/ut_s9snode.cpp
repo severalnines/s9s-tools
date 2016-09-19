@@ -113,14 +113,23 @@ UtS9sNode::runTest(const char *testName)
     return retval;
 }
 
+/**
+ * Creating nodes from simple (non JSon) strings and checking if the properties
+ * are set.
+ */
 bool
 UtS9sNode::testCreate()
 {
     S9sNode   node1("node1.eu:8080");
-    S9sNode   node2("http://node2.eu:8080");
+    S9sNode   node2("http://node2.eu:80");
 
+    S9S_COMPARE(node1.protocol(), "");
     S9S_COMPARE(node1.hostName(), "node1.eu");
+    S9S_COMPARE(node1.port(),      8080);
+
+    S9S_COMPARE(node2.protocol(), "http");
     S9S_COMPARE(node2.hostName(), "node2.eu");
+    S9S_COMPARE(node2.port(),      80);
 
     return true;
 }

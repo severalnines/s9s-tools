@@ -21,6 +21,7 @@
 
 #include "S9sRpcReply"
 #include "S9sOptions"
+#include "S9sNode"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -117,6 +118,9 @@ S9sBusinessLogic::executeClusterCreate(
     {
         doExecuteCreateCluster(client);
     } else if (options->clusterType() == "mysqlreplication")
+    {
+        doExecuteCreateCluster(client);
+    } else if (options->clusterType() == "ndb")
     {
         doExecuteCreateCluster(client);
     } else {
@@ -422,7 +426,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sVariantList hostNames;
+    S9sVariantList hosts;
     S9sString      osUserName;
     S9sString      vendor;
     S9sString      mySqlVersion;
@@ -430,8 +434,8 @@ S9sBusinessLogic::doExecuteCreateCluster(
     S9sRpcReply    reply;
     bool           success;
 
-    hostNames = options->nodes();
-    if (hostNames.empty())
+    hosts = options->nodes();
+    if (hosts.empty())
     {
         options->printError(
                 "Node list is empty while creating cluster.\n"
@@ -463,13 +467,43 @@ S9sBusinessLogic::doExecuteCreateCluster(
     if (options->clusterType() == "galera")
     {
         success = client.createGaleraCluster(
-                hostNames, osUserName, vendor, 
+                hosts, osUserName, vendor, 
                 mySqlVersion, uninstall);
     } else if (options->clusterType() == "mysqlreplication")
     {
         success = client.createMySqlReplication(
-                hostNames, osUserName, vendor, 
+                hosts, osUserName, vendor, 
                 mySqlVersion, uninstall);
+    } else if (options->clusterType() == "ndb" || 
+            options->clusterType() == "ndbcluster")
+    {
+        S9sVariantList mySqlHosts, mgmdHosts, ndbdHosts;
+
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode     node     = hosts[idx].toNode();
+            S9sString   protocol = node.protocol().toLower();
+
+            if (protocol == "ndbd")
+            {
+                ndbdHosts << node;
+            } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
+            {
+                mgmdHosts << node;
+            } else if (protocol == "mysql" || protocol.empty())
+            {
+                mySqlHosts << node;
+            } else {
+                PRINT_ERROR(
+                        "The protocol '%s' is not supported.", 
+                        STR(protocol));
+                return;
+            }
+        }
+
+        success = client.createNdbCluster(
+                mySqlHosts, mgmdHosts, ndbdHosts,
+                osUserName, vendor, mySqlVersion, uninstall);
     } else {
         success = false;
     }

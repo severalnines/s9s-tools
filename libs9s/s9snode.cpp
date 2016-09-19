@@ -47,13 +47,13 @@ S9sNode::S9sNode(
     success = m_properties.parse(STR(stringRep));
     if (!success)
     {
-        S9sUrl url(stringRep);
+        m_url = S9sUrl(stringRep);
 
         m_properties.clear();
-        m_properties["hostname"] = url.hostName();
+        m_properties["hostname"] = m_url.hostName();
 
-        if (url.hasPort())
-            m_properties["port"] = url.port();
+        if (m_url.hasPort())
+            m_properties["port"] = m_url.port();
     }
 }
 

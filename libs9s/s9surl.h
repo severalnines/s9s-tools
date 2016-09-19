@@ -21,11 +21,16 @@
 
 #include "S9sString"
 
+/**
+ * A simple class to parse URLs.
+ */
 class S9sUrl
 {
     public:
+        S9sUrl();
         S9sUrl(const S9sString &stringRep);
 
+        S9sString protocol() const { return m_protocol; };
         S9sString hostName() const { return m_hostName; };
         int port() const { return m_port; };
         bool hasPort() const { return m_hasPort; };

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sVariantMap"
+#include "S9sUrl"
 
 /**
  * A class that represents a node/host/server. 
@@ -38,6 +39,7 @@ class S9sNode
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
+        S9sString protocol() const { return m_url.protocol(); };
         S9sString className() const;
         S9sString name() const;
         S9sString hostName() const;
@@ -54,4 +56,5 @@ class S9sNode
 
     private:
         S9sVariantMap    m_properties;
+        S9sUrl           m_url;
 };
