@@ -21,7 +21,7 @@
 
 #include "S9sNode"
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -84,6 +84,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
+    PERFORM_TEST(testAddNode,             retval);
 
     return retval;
 }
@@ -204,6 +205,35 @@ UtS9sRpcClient::testCreateReplication()
                 "\"mysql_hostnames\": "
                 "[ \"192.168.1.191\", \"192.168.1.192\", \"192.168.1.193\" ]"));
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddNode()
+{
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          uri, payload;
+
+    hosts << S9sNode("192.168.1.191");
+    S9S_VERIFY(client.addNode(hosts));
+
+    uri     = client.uri(0u);
+    payload = client.payload(0u);
+
+    S9S_DEBUG("*** uri     : %s", STR(uri));
+    S9S_DEBUG("*** payload : %s", STR(payload));
+#if 0
+    S9S_COMPARE(uri, "/0/job/");
+    S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
+    S9S_VERIFY(payload.contains("\"cluster_type\": \"replication\""));
+    S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
+    S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
+    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
+    S9S_VERIFY(payload.contains(
+                "\"mysql_hostnames\": "
+                "[ \"192.168.1.191\", \"192.168.1.192\", \"192.168.1.193\" ]"));
+#endif
     return true;
 }
 

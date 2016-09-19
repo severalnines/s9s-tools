@@ -33,6 +33,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testSetHost();
         bool testCreateGalera();
         bool testCreateReplication();
+        bool testAddNode();
 };
 
 class S9sRpcClientTester : public S9sRpcClient
