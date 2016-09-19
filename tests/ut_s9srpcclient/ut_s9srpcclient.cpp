@@ -270,9 +270,10 @@ UtS9sRpcClient::testAddNode()
     S9sRpcClientTester client;
     S9sVariantList     hosts;
     S9sString          uri, payload;
+    int                clusterId = 1;
 
     hosts << S9sNode("192.168.1.191");
-    S9S_VERIFY(client.addNode(hosts));
+    S9S_VERIFY(client.addNode(clusterId, hosts));
 
     uri     = client.uri(0u);
     payload = client.payload(0u);
@@ -280,7 +281,7 @@ UtS9sRpcClient::testAddNode()
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
     
-    S9S_COMPARE(uri, "/0/job/");
+    S9S_COMPARE(uri, "/1/job/");
     S9S_VERIFY(payload.contains("\"command\": \"addnode\""));
     S9S_VERIFY(payload.contains("\"disable_firewall\": true"));
     S9S_VERIFY(payload.contains("\"disable_selinux\": true"));

@@ -562,14 +562,16 @@ S9sRpcClient::createNdbCluster(
 }
 
 /**
+ * \param hosts the hosts that is going to be added to the cluster
+ *
  * Creates a job that will add a new node to the cluster.
  */
 bool
 S9sRpcClient::addNode(
+        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri;
@@ -622,10 +624,10 @@ S9sRpcClient::addNode(
  */
 bool
 S9sRpcClient::removeNode(
+        const int             clusterId,
         const S9sVariantList &hostNames)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sString      hostName, title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;

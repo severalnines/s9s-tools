@@ -29,7 +29,10 @@ class S9sBusinessLogic
         void waitForJob(const int jobId, S9sRpcClient &client);
 
     protected:
-        virtual void jobRegistered(S9sRpcClient &client);
+        virtual void 
+            jobRegistered(
+                    S9sRpcClient &client,
+                    const int     clusterId);
 
 
     private:

@@ -26,7 +26,6 @@
 
 UtS9sUrl::UtS9sUrl()
 {
-    S9S_DEBUG("");
 }
 
 UtS9sUrl::~UtS9sUrl()

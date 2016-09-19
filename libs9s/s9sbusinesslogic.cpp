@@ -140,7 +140,8 @@ void
 S9sBusinessLogic::executeAddNode(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
     S9sVariantList hostNames;
     S9sRpcReply    reply;
     bool           success;
@@ -160,10 +161,10 @@ S9sBusinessLogic::executeAddNode(
     /*
      * Running the request on the controller.
      */
-    success = client.addNode(hostNames);
+    success = client.addNode(clusterId, hostNames);
     if (success)
     {
-        jobRegistered(client);
+        jobRegistered(client, clusterId);
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -181,6 +182,7 @@ S9sBusinessLogic::executeRemoveNode(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
+    int            clusterId = options->clusterId();
     S9sVariantList hostNames;
     S9sRpcReply    reply;
     bool           success;
@@ -200,10 +202,10 @@ S9sBusinessLogic::executeRemoveNode(
     /*
      * Running the request on the controller.
      */
-    success = client.removeNode(hostNames);
+    success = client.removeNode(clusterId, hostNames);
     if (success)
     {
-        jobRegistered(client);
+        jobRegistered(client, clusterId);
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -398,7 +400,7 @@ S9sBusinessLogic::executeRollingRestart(
     success = client.rollingRestart(clusterId);
     if (success)
     {
-        jobRegistered(client);
+        jobRegistered(client, clusterId);
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -510,7 +512,9 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
     if (success)
     {
-        jobRegistered(client);
+        // FIXME: this method happens to know that the request sent to the 0
+        // cluster, but this is not exactly robust like this.
+        jobRegistered(client, 0);
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -530,7 +534,8 @@ S9sBusinessLogic::doExecuteCreateCluster(
  */
 void
 S9sBusinessLogic::jobRegistered(
-        S9sRpcClient &client)
+        S9sRpcClient &client,
+        const int     clusterId)
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sRpcReply    reply;
