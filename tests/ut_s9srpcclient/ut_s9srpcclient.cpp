@@ -21,7 +21,7 @@
 
 #include "S9sNode"
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -258,6 +258,9 @@ UtS9sRpcClient::testCreateNdbCluster()
     return true;
 }
 
+/**
+ * This function tests the addNode() method of the RPC client.
+ */
 bool
 UtS9sRpcClient::testAddNode()
 {
@@ -273,17 +276,15 @@ UtS9sRpcClient::testAddNode()
 
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
-#if 0
+    
     S9S_COMPARE(uri, "/0/job/");
-    S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
-    S9S_VERIFY(payload.contains("\"cluster_type\": \"replication\""));
-    S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
-    S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
-    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
-    S9S_VERIFY(payload.contains(
-                "\"mysql_hostnames\": "
-                "[ \"192.168.1.191\", \"192.168.1.192\", \"192.168.1.193\" ]"));
-#endif
+    S9S_VERIFY(payload.contains("\"command\": \"addnode\""));
+    S9S_VERIFY(payload.contains("\"disable_firewall\": true"));
+    S9S_VERIFY(payload.contains("\"disable_selinux\": true"));
+    S9S_VERIFY(payload.contains("\"hostname\": \"192.168.1.191\""));
+    S9S_VERIFY(payload.contains("\"install_software\": true"));
+    //S9S_VERIFY(payload.contains("\"user_name\": \"pipas\""));
+
     return true;
 }
 
