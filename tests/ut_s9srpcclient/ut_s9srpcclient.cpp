@@ -33,9 +33,9 @@ S9sRpcClientTester::executeRequest(
         const S9sString &uri,
         const S9sString &payload)
 {
-    S9S_DEBUG("*** ");
-    S9S_DEBUG("*** uri     : %s", STR(uri));
-    S9S_DEBUG("*** payload : \n%s\n", STR(payload));
+    //S9S_DEBUG("*** ");
+    //S9S_DEBUG("*** uri     : %s", STR(uri));
+    //S9S_DEBUG("*** payload : \n%s\n", STR(payload));
 
     m_urls     << uri;
     m_payloads << payload;
@@ -84,6 +84,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
+    PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
 
     return retval;
@@ -179,10 +180,8 @@ UtS9sRpcClient::testCreateReplication()
 {
     S9sRpcClientTester client;
     S9sVariantList     hosts;
-    S9sVariantMap      properties;
     S9sString          uri, payload;
 
-    properties["name"] = "value";
     hosts << S9sNode("192.168.1.191");
     hosts << S9sNode("192.168.1.192");
     hosts << S9sNode("192.168.1.193");
@@ -204,6 +203,57 @@ UtS9sRpcClient::testCreateReplication()
     S9S_VERIFY(payload.contains(
                 "\"mysql_hostnames\": "
                 "[ \"192.168.1.191\", \"192.168.1.192\", \"192.168.1.193\" ]"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateNdbCluster()
+{
+    S9sRpcClientTester client;
+    S9sVariantList     mySqlHosts, mgmdHosts, ndbdHosts;
+    S9sString          uri, payload;
+
+    mySqlHosts << 
+        S9sNode("192.168.1.100") << 
+        S9sNode("192.168.1.101") <<
+        S9sNode("192.168.1.102");
+    
+    mgmdHosts << 
+        S9sNode("192.168.1.110") << 
+        S9sNode("192.168.1.111") <<
+        S9sNode("192.168.1.112");
+    
+    ndbdHosts << 
+        S9sNode("192.168.1.120") << 
+        S9sNode("192.168.1.121") <<
+        S9sNode("192.168.1.122");
+
+    S9S_VERIFY(client.createNdbCluster(
+                mySqlHosts, mgmdHosts, ndbdHosts,
+                "pip", "oracle", "5.6", true));
+
+    uri     = client.uri(0u);
+    payload = client.payload(0u);
+
+    //S9S_DEBUG("*** uri     : %s", STR(uri));
+    //S9S_DEBUG("*** payload : %s", STR(payload));
+    S9S_COMPARE(uri, "/0/job/");
+    S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
+    S9S_VERIFY(payload.contains("\"cluster_type\": \"mysqlcluster\""));
+    S9S_VERIFY(payload.contains("\"type\": \"mysql\""));
+    S9S_VERIFY(payload.contains("\"ssh_user\": \"pip\""));
+    S9S_VERIFY(payload.contains("\"vendor\": \"oracle\""));
+    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
+
+    S9S_VERIFY(payload.contains(
+                "\"mgmd_hostnames\": [ \"192.168.1.110\", \"192.168.1.111\","));
+
+    S9S_VERIFY(payload.contains(
+                "\"mysql_hostnames\": [ \"192.168.1.100\", \"192.168.1.101\""));
+
+    S9S_VERIFY(payload.contains(
+                "\"ndbd_hostnames\": [ \"192.168.1.120\", \"192.168.1.121\""));
 
     return true;
 }

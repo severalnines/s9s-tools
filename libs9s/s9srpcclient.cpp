@@ -487,7 +487,7 @@ S9sRpcClient::createNdbCluster(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
+    S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/0/job/";
@@ -495,12 +495,36 @@ S9sRpcClient::createNdbCluster(
     
     uri = "/0/job/";
     
+    for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
+    {
+        if (mySqlHosts[idx].isNode())
+            mySqlHostNames << mySqlHosts[idx].toNode().hostName();
+        else
+            mySqlHostNames << mySqlHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < mgmdHosts.size(); ++idx)
+    {
+        if (mgmdHosts[idx].isNode())
+            mgmdHostNames << mgmdHosts[idx].toNode().hostName();
+        else
+            mgmdHostNames << mgmdHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < ndbdHosts.size(); ++idx)
+    {
+        if (ndbdHosts[idx].isNode())
+            ndbdHostNames << ndbdHosts[idx].toNode().hostName();
+        else
+            ndbdHostNames << ndbdHosts[idx];
+    }
+    
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "mysqlcluster";
     jobData["type"]             = "mysql";
-    jobData["mysql_hostnames"]  = mySqlHosts;
-    jobData["mgmd_hostnames"]   = mgmdHosts;
-    jobData["ndbd_hostnames"]   = ndbdHosts;
+    jobData["mysql_hostnames"]  = mySqlHostNames;
+    jobData["mgmd_hostnames"]   = mgmdHostNames;
+    jobData["ndbd_hostnames"]   = ndbdHostNames;
     jobData["ssh_user"]         = osUserName;
     jobData["vendor"]           = vendor;
     jobData["mysql_version"]    = mySqlVersion;
