@@ -85,6 +85,11 @@ S9sBusinessLogic::execute()
     }
 }
 
+/**
+ * This method waits for the given job to be finished (or failed, or aborted)
+ * and will provide feedback in the form the user requested in the command 
+ * line (printing job messages or a progress bar).
+ */
 void 
 S9sBusinessLogic::waitForJob(
         const int       clusterId,
@@ -96,7 +101,7 @@ S9sBusinessLogic::waitForJob(
     S9S_DEBUG("");
     if (options->isLogRequested())
     {
-        waitForJobWithLog(jobId, client);
+        waitForJobWithLog(clusterId, jobId, client);
     } else {
         waitForJobWithProgess(clusterId, jobId, client);
     }
@@ -624,34 +629,34 @@ S9sBusinessLogic::waitForJobWithProgess(
     printf("\n");
 }
 
+/**
+ * \param clusterId The ID of the cluster that executes the job.
+ * \param jobId The ID of the job to monitor.
+ * \param client The client for the communication.
+ *
+ * This function will wait for the job to be finished and will continuously
+ * print the job messages.
+ */
 void 
 S9sBusinessLogic::waitForJobWithLog(
+        const int     clusterId,
         const int     jobId, 
         S9sRpcClient &client)
 {
-    S9sOptions   *options = S9sOptions::instance();
-    int           clusterId = options->clusterId();
     S9sVariantMap job;
     S9sRpcReply   reply;
     bool          success, finished;
     int           nLogsPrinted = 0;
     int           nEntries;
 
-    //printf("\n");
-    //printf("\033[?25l"); 
-
     for (;;)
     {
         success = client.getJobLog(clusterId, jobId, 300, nLogsPrinted);
-        if (success)
-        {
-            reply = client.reply();
-            success = reply.isOk();
-        }
-        
         if (!success)
             continue;
 
+        reply    = client.reply();
+        success  = reply.isOk();
         nEntries = reply["messages"].toVariantList().size();
         
         if (nEntries > 0)
@@ -672,6 +677,5 @@ S9sBusinessLogic::waitForJobWithLog(
         sleep(1);
     }
 
-    //printf("\033[?25h");
     printf("\n");
 }

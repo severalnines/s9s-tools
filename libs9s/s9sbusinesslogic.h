@@ -44,7 +44,10 @@ class S9sBusinessLogic
                 const int     jobId, 
                 S9sRpcClient &client);
 
-        void waitForJobWithLog(const int jobId, S9sRpcClient &client);
+        void waitForJobWithLog(
+                const int     clusterId,
+                const int     jobId, 
+                S9sRpcClient &client);
 
         void executeClusterCreate(S9sRpcClient &client);
         void executeClusterList(S9sRpcClient &client);
