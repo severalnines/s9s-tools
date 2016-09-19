@@ -76,13 +76,13 @@ class S9sRpcClient
                 bool                  uninstall);
 
         bool createMySqlReplication(
-                const S9sVariantList &hostNames,
+                const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
 
-        bool addNode(const S9sVariantList &hostNames);
+        bool addNode(const S9sVariantList &hosts);
         bool removeNode(const S9sVariantList &hostNames);
 
     protected:

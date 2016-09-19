@@ -481,7 +481,7 @@ S9sRpcClient::createMySqlReplication(
  */
 bool
 S9sRpcClient::addNode(
-        const S9sVariantList &hostNames)
+        const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
@@ -490,7 +490,7 @@ S9sRpcClient::addNode(
     S9sString      uri;
     bool           retval;
 
-    if (hostNames.size() != 1u)
+    if (hosts.size() != 1u)
     {
         PRINT_ERROR("addnode is currently implemented only for one node.");
         return false;
@@ -499,7 +499,11 @@ S9sRpcClient::addNode(
     uri.sprintf("/%d/job/", clusterId);
 
     // The job_data describing the cluster.
-    jobData["hostname"]         = hostNames[0].toString();
+    if (hosts[0].isNode())
+        jobData["hostname"] = hosts[0].toNode().hostName();
+    else 
+        jobData["hostname"] = hosts[0].toString();
+
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
