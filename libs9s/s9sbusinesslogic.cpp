@@ -32,10 +32,11 @@
 void 
 S9sBusinessLogic::execute()
 {
-    S9sOptions  *options = S9sOptions::instance();
+    S9sOptions  *options    = S9sOptions::instance();
     S9sString    controller = options->controller();
-    int          port = options->controllerPort();
-    S9sString    token = options->rpcToken();
+    int          port       = options->controllerPort();
+    S9sString    token      = options->rpcToken();
+    int          clusterId  = options->clusterId();
     S9sRpcClient client(controller, port, token);
 
     S9S_DEBUG("");
@@ -78,7 +79,7 @@ S9sBusinessLogic::execute()
         executeJobLog(client);
     } else if (options->isJobOperation() && options->isWaitRequested())
     {
-        waitForJob(options->jobId(), client);
+        waitForJob(clusterId, options->jobId(), client);
     } else {
         PRINT_ERROR("Unknown operation.");
     }
@@ -86,16 +87,19 @@ S9sBusinessLogic::execute()
 
 void 
 S9sBusinessLogic::waitForJob(
-        const int     jobId, 
-        S9sRpcClient &client)
+        const int       clusterId,
+        const int       jobId, 
+        S9sRpcClient   &client)
 {
     S9sOptions  *options = S9sOptions::instance();
     
     S9S_DEBUG("");
     if (options->isLogRequested())
+    {
         waitForJobWithLog(jobId, client);
-    else
-        waitForJobWithProgess(jobId, client);
+    } else {
+        waitForJobWithProgess(clusterId, jobId, client);
+    }
 }
 
 /**
@@ -550,7 +554,7 @@ S9sBusinessLogic::jobRegistered(
         {
             if (options->isWaitRequested() || options->isLogRequested())
             {
-                waitForJob(reply.jobId(), client);
+                waitForJob(clusterId, reply.jobId(), client);
             } else {
                 reply.printJobStarted();
             }
@@ -568,21 +572,23 @@ S9sBusinessLogic::jobRegistered(
     }
 }
 
+/**
+ * \param jobId The ID of the job to monitor with a progress bar.
+ * \param client The client for the communication.
+ *
+ * This method can be used to wait until a job is finished and print a progress
+ * report in the meantime.
+ */
 void 
 S9sBusinessLogic::waitForJobWithProgess(
+        const int     clusterId,
         const int     jobId, 
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
+    S9sOptions  *options         = S9sOptions::instance();
     bool         syntaxHighlight = options->useSyntaxHighlight();
-    int          clusterId = options->clusterId();
-    const char  *rotate[] = { "/", "-", "\\", "|" };
-    //const char  *rotate[] = { "˥", "˦", "˧", "˨", "˩" };
-    //const char  *rotate[] = { "⇐", "⇖", "⇑", "⇗", "⇒", "⇘", "⇓", "⇙" };
-    //const char   *rotate[] = { "◜ ", " ◝", " ◞", "◟ " };
-
-    int          rotateCycle = 0;
-
+    const char  *rotate[]        = { "/", "-", "\\", "|" };
+    int          rotateCycle     = 0;
     S9sRpcReply  reply;
     bool         success, finished;
     S9sString    progressLine;

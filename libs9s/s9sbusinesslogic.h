@@ -26,7 +26,10 @@ class S9sBusinessLogic
     public:
         void execute();
 
-        void waitForJob(const int jobId, S9sRpcClient &client);
+        void waitForJob(
+                const int     clusterId,
+                const int     jobId, 
+                S9sRpcClient &client);
 
     protected:
         virtual void 
@@ -36,7 +39,11 @@ class S9sBusinessLogic
 
 
     private:
-        void waitForJobWithProgess(const int jobId, S9sRpcClient &client);
+        void waitForJobWithProgess(
+                const int     clusterId,
+                const int     jobId, 
+                S9sRpcClient &client);
+
         void waitForJobWithLog(const int jobId, S9sRpcClient &client);
 
         void executeClusterCreate(S9sRpcClient &client);
