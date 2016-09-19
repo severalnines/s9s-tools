@@ -21,6 +21,10 @@
 
 #include "S9sRpcClient"
 
+/**
+ * A class that is able to execute whatever the user requested through the
+ * command line options.
+ */
 class S9sBusinessLogic
 {
     public:

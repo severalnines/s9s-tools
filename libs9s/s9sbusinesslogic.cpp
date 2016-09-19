@@ -28,7 +28,11 @@
 
 //#define DEBUG
 #include "s9sdebug.h"
-        
+
+/**
+ * This method will execute whatever is requested by the user in the command
+ * line.
+ */
 void 
 S9sBusinessLogic::execute()
 {
@@ -86,6 +90,10 @@ S9sBusinessLogic::execute()
 }
 
 /**
+ * \param client A client for the communication.
+ * \param jobId The ID of the job that we wait for.
+ * \param client A client for the communication.
+ *
  * This method waits for the given job to be finished (or failed, or aborted)
  * and will provide feedback in the form the user requested in the command 
  * line (printing job messages or a progress bar).
@@ -108,6 +116,8 @@ S9sBusinessLogic::waitForJob(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * Execute the "cluster --create" requests.
  */
 void
@@ -142,6 +152,8 @@ S9sBusinessLogic::executeClusterCreate(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * This method will register a new "addNode" job on the controller using the
  * help of the S9sRpcClint class.
  */
@@ -183,6 +195,8 @@ S9sBusinessLogic::executeAddNode(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * This method will register a new "removeNode" job on the controller using the
  * help of the S9sRpcClint class.
  */
@@ -224,6 +238,8 @@ S9sBusinessLogic::executeRemoveNode(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * Execute the "cluster --list" operation.
  */
 void
@@ -256,7 +272,11 @@ S9sBusinessLogic::executeClusterList(
             PRINT_ERROR("%s", STR(client.errorString()));
 }
 }
-        
+ 
+/**
+ * \param client A client for the communication.
+ *
+ */
 void 
 S9sBusinessLogic::executeNodeList(
         S9sRpcClient &client)
@@ -285,6 +305,10 @@ S9sBusinessLogic::executeNodeList(
     }
 }
 
+/**
+ * \param client A client for the communication.
+ *
+ */
 void 
 S9sBusinessLogic::executeNodeSet(
         S9sRpcClient &client)
@@ -333,6 +357,8 @@ S9sBusinessLogic::executeNodeSet(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * Executes the --list operation on the jobs thus providing a list of jobs.
  */
 void 
@@ -362,7 +388,13 @@ S9sBusinessLogic::executeJobList(
         PRINT_ERROR("%s", STR(client.errorString()));
     } 
 }
-        
+
+/**
+ * \param client A client for the communication.
+ * 
+ * This method will get the job messages from the controller and print them to
+ * the standard output.
+ */
 void 
 S9sBusinessLogic::executeJobLog(
         S9sRpcClient &client)
@@ -395,6 +427,8 @@ S9sBusinessLogic::executeJobLog(
 }
 
 /**
+ * \param client A client for the communication.
+ *
  * This method will start a rolling-restart job on the controller. 
  */
 void 
@@ -418,19 +452,11 @@ S9sBusinessLogic::executeRollingRestart(
     }
 }
 
-/*
-{
-    "command": "create_cluster",
-    "id": 0,
-    "job_data": 
-    {
-        "enable_mysql_uninstall": true,
-        "mysql_hostnames": [ "10.10.2.2", "10.10.2.3", "10.10.2.4" ],
-        "mysql_version": "5.6",
-        "ssh_user": "pipas",
-        "vendor": "codership"
-    }
-}
+/**
+ * \param client A client for the communication.
+ *
+ * This private function will execute the create cluster request that will
+ * register a job to create a new cluster.
  */
 void
 S9sBusinessLogic::doExecuteCreateCluster(
@@ -534,6 +560,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
 /**
  * \param client The client that just created the new job with the reply in it.
+ * \param clusterId The ID of the cluster that executes the job.
  *
  * This method can be called when a new job is registered using the RPC client.
  * This function will print the necessary messages to inform the user about the
