@@ -82,6 +82,15 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
 
+        bool createNdbCluster(
+                const S9sVariantList &mySqlHosts,
+                const S9sVariantList &mgmdHosts,
+                const S9sVariantList &ndbdHosts,
+                const S9sString      &osUserName, 
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
         bool addNode(const S9sVariantList &hosts);
         bool removeNode(const S9sVariantList &hostNames);
 

@@ -476,6 +476,67 @@ S9sRpcClient::createMySqlReplication(
     return retval;
 }
 
+bool
+S9sRpcClient::createNdbCluster(
+        const S9sVariantList &mySqlHosts,
+        const S9sVariantList &mgmdHosts,
+        const S9sVariantList &ndbdHosts,
+        const S9sString      &osUserName, 
+        const S9sString      &vendor,
+        const S9sString      &mySqlVersion,
+        bool                  uninstall)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/0/job/";
+    bool            retval;
+    
+    uri = "/0/job/";
+    
+    // The job_data describing the cluster.
+    jobData["cluster_type"]     = "mysqlcluster";
+    jobData["type"]             = "mysql";
+    jobData["mysql_hostnames"]  = mySqlHosts;
+    jobData["mgmd_hostnames"]   = mgmdHosts;
+    jobData["ndbd_hostnames"]   = ndbdHosts;
+    jobData["ssh_user"]         = osUserName;
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
+    jobData["disable_selinux"]  = true;
+    jobData["disable_firewall"] = true;
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"]      = options->osKeyFile();
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "create_cluster";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Create NDB Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+    //job["api_id"]        = -1;
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
 /**
  * Creates a job that will add a new node to the cluster.
  */
