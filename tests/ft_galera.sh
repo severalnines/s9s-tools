@@ -84,25 +84,22 @@ function testCreateCluster
 
     echo "Creating nodes..."
     nodeName=$(create_node)
-    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    nodes+="$nodeName;"
     
     nodeName=$(create_node)
-    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    nodes+="$nodeName;"
     
     nodeName=$(create_node)
-    nodes+="ndbd://$nodeName;"
+    nodes+="$nodeName"
     
-    nodeName=$(create_node)
-    nodes+="ndbd://$nodeName"
-
     echo "*** nodes: $nodes"
     $S9S cluster \
         --create \
-        --cluster-type=ndb \
+        --cluster-type=galera \
         --nodes="$nodes" \
-        --vendor=oracle \
+        --vendor=percona \
         --provider-version=5.6 \
-        --log
+        --wait
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"

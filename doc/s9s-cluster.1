@@ -26,10 +26,16 @@ a new cluster.
 
 .TP
 .B \-\-add\-node
-Adds a new node (SQL server) to the cluster or to be more precise creates a new
+Adds a new node (server) to the cluster or to be more precise creates a new
 job that will eventually add a new node to the cluster. The name (or IP 
 address) of the node should be specified using the \fB\-\-nodes\fR command 
-line option. 
+line option.
+
+.TP
+.B \-\-remove\-node 
+Removes a node from the cluster (creates a new job that will remove the node
+from the cluster). The name (or IP address) of the node should be specified 
+using the \fB\-\-nodes\fR command line option.
 
 .TP
 .B \-\-rolling-restart
