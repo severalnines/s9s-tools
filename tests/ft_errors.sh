@@ -72,6 +72,28 @@ function testHelp01
 {
     local exit_code
 
+    s9s 2>>$STDOUT_FILE >>$STDOUT_FILE
+    exit_code=$?
+
+    if [ "$VERBOSE" ]; then
+        cat $STDOUT_FILE
+        echo "*** exit_code: $exit_code"
+    fi
+
+    if [ $exit_code -ne 6 ]; then
+        failure "The exit code is $exit_code while no command line options"
+    fi
+
+    rm -f $STDOUT_FILE
+}
+
+#
+#
+#
+function testHelp02
+{
+    local exit_code
+
     s9s --help >>$STDOUT_FILE
     exit_code=$?
 
@@ -96,6 +118,7 @@ if [ "$1" ]; then
     runFunctionalTest "$1"
 else
     runFunctionalTest testHelp01
+    runFunctionalTest testHelp02
 fi
 
 endTests

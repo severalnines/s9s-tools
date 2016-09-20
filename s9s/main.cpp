@@ -60,13 +60,11 @@ main(int argc, char **argv)
 
     if (!success)
     {
-        options->printError("Readoption failed.");
         if (!options->errorString().empty())
         {
-            fprintf(stderr, "%s: %s\n\n", 
-                    STR(options->binaryName()),
-                    STR(options->errorString()));
-            fflush(stderr);
+            PRINT_ERROR("%s\n", STR(options->errorString()));
+        } else {
+            PRINT_ERROR("Error in command line options.");
         }
 
         goto finalize;
