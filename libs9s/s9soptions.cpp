@@ -32,7 +32,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -193,6 +193,13 @@ S9sOptions::controller() const
     return retval;
 }
 
+/**
+ * \param assignments The argument of the --properties command line option.
+ * \returns true if the format of the optarg is valid.
+ *
+ * This method is for registering the values received as the argument of the 
+ * --properties command line option (e.g. --properties=PROPERTIES). 
+ */
 bool
 S9sOptions::setPropertiesOption(
         const S9sString &assignments)

@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 
-STDOUT_FILE=ft_errors.log
+STDOUT_FILE=ft_errors_stdout
 
 #if [ ! -d data -a -d tests/data ]; then
 #    echo "Entering directory tests..."
@@ -70,7 +70,17 @@ fi
 #
 function test01
 {
-    AK=1
+    local exit_code
+
+    s9s --help >>$STDOUT_FILE
+    exit_code=$?
+
+    if [ "$VERBOSE" ]; then
+        cat $STDOUT_FILE
+        echo "*** exit_code: $exit_code"
+    fi
+
+
 }
 
 #
