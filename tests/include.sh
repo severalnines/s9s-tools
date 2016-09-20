@@ -3,6 +3,11 @@ FAILED="no"
 TEST_SUITE_NAME=""
 TEST_NAME=""
 
+if [ -x ../s9s/s9s ]; then
+    S9S="../s9s/s9s"
+fi
+
+
 #
 # This function should be called before the functional tests are executed.
 # Currently this only prints a message for the user, but this might change.

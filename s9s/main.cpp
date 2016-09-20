@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -55,11 +55,10 @@ main(int argc, char **argv)
     signal(SIGINT, intHandler);
 
     success = options->readOptions(&argc, argv);
-    options->createConfigFiles();
-    options->loadConfigFiles();
-
     if (!success)
     {
+        S9S_DEBUG("readOptions() failed");
+        S9S_DEBUG("*** exitStatus: %d", options->exitStatus());
         if (!options->errorString().empty())
         {
             PRINT_ERROR("%s\n", STR(options->errorString()));
@@ -69,6 +68,9 @@ main(int argc, char **argv)
 
         goto finalize;
     }
+    
+    options->createConfigFiles();
+    options->loadConfigFiles();
 
     PRINT_VERBOSE("Command line options processed.");
     if (options->isVerbose())
@@ -132,6 +134,7 @@ main(int argc, char **argv)
 finalize:
     exitStatus = options->exitStatus();
     PRINT_VERBOSE("Exiting with exitcode %d.", exitStatus);
+    S9S_DEBUG("Exiting with exitcode %d.", exitStatus);
 
     S9sOptions::uninit();
 

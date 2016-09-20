@@ -72,7 +72,7 @@ function testHelp01
 {
     local exit_code
 
-    s9s 2>>$STDOUT_FILE >>$STDOUT_FILE
+    $S9S 2>>$STDOUT_FILE >>$STDOUT_FILE
     exit_code=$?
 
     if [ "$VERBOSE" ]; then
@@ -94,7 +94,7 @@ function testHelp02
 {
     local exit_code
 
-    s9s --help >>$STDOUT_FILE
+    $S9S --help >>$STDOUT_FILE
     exit_code=$?
 
     if [ "$VERBOSE" ]; then

@@ -803,6 +803,7 @@ S9sOptions::readOptions(
     if (*argc < 2)
     {
         m_errorMessage = "Missing command line options.";
+        m_exitStatus   = BadOptions;
         return false;
     }
 
