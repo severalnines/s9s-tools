@@ -32,8 +32,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
@@ -881,8 +881,15 @@ S9sOptions::setMode(
     {
         // Ignored.
         // FIXME: maybe not the best way to do this.
+    } else if (!modeName.empty())
+    {
+        // There is a mode, but it is not supported or invalid.
+        m_errorMessage.sprintf("The '%s' is not a valid mode.", STR(modeName));
+        m_exitStatus = BadOptions;
+        retval = false;
     } else {
         m_errorMessage = "The first command line option must be the mode.";
+        m_exitStatus = BadOptions;
         retval = false;
     }
 

@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 

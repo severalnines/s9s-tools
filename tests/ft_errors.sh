@@ -91,7 +91,8 @@ function testHelp01
 }
 
 #
-#
+# This test will send one single --help command line option and check what the
+# result is. No error should be reported of course.
 #
 function testHelp02
 {
@@ -112,6 +113,31 @@ function testHelp02
     rm -f $STDOUT_FILE
 }
 
+
+#
+# This test will try to pass an invalid mode and check the response.
+#
+function testHelp03
+{
+    local exit_code
+
+    $S9S something 2>>$STDOUT_FILE >>$STDOUT_FILE
+    exit_code=$?
+
+    if [ "$VERBOSE" ]; then
+        cat $STDOUT_FILE
+        echo "*** exit_code: $exit_code"
+    fi
+
+    if [ $exit_code -ne 6 ]; then
+        failure "The exit code is $exit_code while no command line options"
+    fi
+
+    checkMessage "$STDOUT_FILE" "is not a valid mode"
+
+    rm -f $STDOUT_FILE
+}
+
 #
 # Running the requested tests.
 #
@@ -122,6 +148,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testHelp01
     runFunctionalTest testHelp02
+    runFunctionalTest testHelp03
 fi
 
 endTests
