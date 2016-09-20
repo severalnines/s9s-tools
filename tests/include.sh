@@ -116,3 +116,29 @@ function checkCoreFile
     done
 }
 
+#
+# $1: the file in which the output messages are stored.
+# $2: the message to find.
+#
+function checkMessage()
+{
+    local file="$1"
+    local message="$2"
+
+    if [ -z "$file" ]; then
+        failure "Internal error: checkMessage() has no file name"
+        return 1
+    fi
+
+    if [ -z "$message" ]; then
+        failure "Internal error: checkMessage() has no message"
+        return 1
+    fi
+
+    if grep -q "$message" "$file"; then
+        return 0
+    fi
+
+    failure "Text '$message' missing from output"
+    return 1
+}

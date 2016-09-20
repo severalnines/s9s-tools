@@ -66,7 +66,8 @@ fi
 #fi
 
 #
-#
+# This test script will run the s9s program without a single command line option
+# and checks if it gives the proper error response.
 #
 function testHelp01
 {
@@ -83,6 +84,8 @@ function testHelp01
     if [ $exit_code -ne 6 ]; then
         failure "The exit code is $exit_code while no command line options"
     fi
+
+    checkMessage "$STDOUT_FILE" "Missing command line options"
 
     rm -f $STDOUT_FILE
 }
