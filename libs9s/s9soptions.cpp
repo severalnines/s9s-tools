@@ -20,6 +20,7 @@
 #include "s9soptions.h"
 
 #include "config.h"
+#include "S9sNode"
 #include "S9sFile"
 #include "S9sRegExp"
 #include "S9sFile"
@@ -256,20 +257,16 @@ void
 S9sOptions::setNodes(
         const S9sString &value)
 {
-#ifdef EXPERIMENTAL_CODE
-    S9sVariantList nodes = value.split();
-#else
     S9sVariantList nodeStrings = value.split(";");
     S9sVariantList nodes;
 
-    for (idx = 0; idx < nodeStrings.size(); ++idx)
+    for (uint idx = 0; idx < nodeStrings.size(); ++idx)
     {
         S9sString nodeString = nodeStrings[idx].toString();
         S9sNode   node(nodeString.trim());
 
-        node << node;
+        nodes << node;
     }
-#endif
 
     m_options["nodes"] = nodes;
 }

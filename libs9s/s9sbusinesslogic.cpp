@@ -521,6 +521,10 @@ S9sBusinessLogic::doExecuteCreateCluster(
             S9sNode     node     = hosts[idx].toNode();
             S9sString   protocol = node.protocol().toLower();
 
+            S9S_DEBUG("*** idx      : %d", idx);
+            S9S_DEBUG("*** type     : %s", STR(hosts[idx].typeName()));
+            S9S_DEBUG("*** node     : %s", STR(node.hostName()));
+            S9S_DEBUG("*** protocol : %s", STR(protocol));
             if (protocol == "ndbd")
             {
                 ndbdHosts << node;
