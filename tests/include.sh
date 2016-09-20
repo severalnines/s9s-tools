@@ -1,6 +1,5 @@
 S9S=$(which s9s)
 FAILED="no"
-VERBOSE="no"
 TEST_SUITE_NAME=""
 TEST_NAME=""
 

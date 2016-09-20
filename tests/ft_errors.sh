@@ -1,8 +1,8 @@
 #! /bin/bash
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
-
 STDOUT_FILE=ft_errors_stdout
+VERBOSE=""
 
 #if [ ! -d data -a -d tests/data ]; then
 #    echo "Entering directory tests..."
@@ -68,7 +68,7 @@ fi
 #
 #
 #
-function test01
+function testHelp01
 {
     local exit_code
 
@@ -80,7 +80,11 @@ function test01
         echo "*** exit_code: $exit_code"
     fi
 
+    if [ $exit_code -ne 0 ]; then
+        failure "The exit code is $exit_code while receiving the --help option."
+    fi
 
+    rm -f $STDOUT_FILE
 }
 
 #
@@ -91,7 +95,7 @@ startTests
 if [ "$1" ]; then
     runFunctionalTest "$1"
 else
-    runFunctionalTest test01
+    runFunctionalTest testHelp01
 fi
 
 endTests

@@ -216,6 +216,9 @@ S9sOptions::setPropertiesOption(
     return success;
 }
 
+/**
+ * \returns The values from the --properties command line option in a map.
+ */
 S9sVariantMap
 S9sOptions::propertiesOption() const
 {
@@ -652,6 +655,9 @@ S9sOptions::useSyntaxHighlight() const
     return false;
 }
 
+/**
+ * \returns How many characters the terminal can show in one line.
+ */
 int 
 S9sOptions::terminalWidth() const
 {
@@ -666,6 +672,9 @@ S9sOptions::terminalWidth() const
     return 60;
 }
 
+/**
+ * \returns How many lines the terminal can show in one screen.
+ */
 int 
 S9sOptions::terminalHeight() const
 {
@@ -782,6 +791,7 @@ S9sOptions::readOptions(
 {
     bool retval = true;
 
+    S9S_DEBUG("");
     if (*argc < 1)
     {
         m_errorMessage = "Missing command line options.";
@@ -832,12 +842,18 @@ S9sOptions::readOptions(
 bool
 S9sOptions::executeInfoRequest()
 {
+    S9S_DEBUG("");
+
     if (m_options["print-version"].toBoolean())
     {
         printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
         printf("Copyright (C) 2016...\n");
         printf("\n");
         printf("Written by ...\n");
+        return true;
+    } else if (m_options.contains("help") && m_options["help"].toBoolean())
+    {
+        printf("Help text.\n");
         return true;
     }
 
@@ -925,6 +941,7 @@ S9sOptions::readOptionsNode(
         switch (c)
         {
             case 'h':
+                // -h, --help
                 m_options["help"] = true;
                 break;
 
