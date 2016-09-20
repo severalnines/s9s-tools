@@ -92,7 +92,7 @@ function testCreateCluster
     nodeName=$(create_node)
     nodes+="$nodeName"
     
-    echo "*** nodes: $nodes"
+    echo "Creating cluster"
     $S9S cluster \
         --create \
         --cluster-type=galera \
@@ -114,14 +114,32 @@ function testAddNode()
     local nodeName
     local exitCode
 
-    printVerbose "Creating nodes..."
+    printVerbose "Creating node..."
     nodeName=$(create_node)
     nodes+="$nodeName"
-    
+   
+    echo "Adding Node"
     $S9S cluster \
         --add-node \
         --cluster-id=1 \
         --nodes="$nodes" \
+        --wait
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+}
+
+#
+# This will perform a rolling restart on the cluster
+#
+function testRollingRestart()
+{
+    local exitCode
+
+    echo "Performing Rolling Restart"
+    $S9S cluster \
+        --rolling-restart \
+        --cluster-id=1 \
         --wait
     
     exitCode=$?
@@ -138,6 +156,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testRollingRestart
 fi
 
 endTests
