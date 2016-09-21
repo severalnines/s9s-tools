@@ -7,6 +7,9 @@ VERBOSE=""
 CONTAINER_SERVER="server1"
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
+# The IP of the node we added last. Empty if we did not.
+LAST_ADDED_NODE=""
+
 cd $MYDIR
 source include.sh
 
@@ -106,23 +109,42 @@ function testCreateCluster
 }
 
 #
-#
+# This test will add one new node to the cluster.
 #
 function testAddNode()
 {
     local nodes
-    local nodeName
     local exitCode
 
-    printVerbose "Creating node..."
-    nodeName=$(create_node)
-    nodes+="$nodeName"
-   
+    printVerbose "Creating Node..."
+    LAST_ADDED_NODE=$(create_node)
+    nodes+="$LAST_ADDED_NODE"
+
     echo "Adding Node"
     $S9S cluster \
         --add-node \
         --cluster-id=1 \
         --nodes="$nodes" \
+        --wait
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+}
+
+#
+# This test will remove the last added node.
+#
+function testRemoveNode()
+{
+    if [ -z "$LAST_ADDED_NODE" ]; then
+        printVerbose "Skipping test."
+    fi
+    
+    printVerbose "Removing Node"
+    $S9S cluster \
+        --remove-node \
+        --cluster-id=1 \
+        --nodes="$LAST_ADDED_NODE" \
         --wait
     
     exitCode=$?
