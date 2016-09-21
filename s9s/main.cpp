@@ -51,7 +51,6 @@ main(int argc, char **argv)
     bool        success, finished;
     int         exitStatus;
 
-    atexit(enable_cursor);
     signal(SIGINT, intHandler);
 
     success = options->readOptions(&argc, argv);
@@ -71,6 +70,9 @@ main(int argc, char **argv)
     
     options->createConfigFiles();
     options->loadConfigFiles();
+    
+    if (options->useSyntaxHighlight())
+        atexit(enable_cursor);
 
     PRINT_VERBOSE("Command line options processed.");
     if (options->isVerbose())

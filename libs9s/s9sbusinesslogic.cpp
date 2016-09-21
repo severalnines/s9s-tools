@@ -629,8 +629,9 @@ S9sBusinessLogic::waitForJobWithProgess(
     bool         success, finished;
     S9sString    progressLine;
 
-    //printf("\n");
-    printf("\033[?25l"); 
+    if (options->useSyntaxHighlight())
+        printf("\033[?25l"); 
+
     for (;;)
     {
         success = client.getJobInstance(clusterId, jobId);
@@ -656,7 +657,9 @@ S9sBusinessLogic::waitForJobWithProgess(
             break;
     }
 
-    printf("\033[?25h");
+    if (options->useSyntaxHighlight())
+        printf("\033[?25h");
+
     printf("\n");
 }
 
