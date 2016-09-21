@@ -111,6 +111,9 @@ function testCreateCluster
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating cluster."
+    fi
 }
 
 #

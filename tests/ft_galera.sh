@@ -102,12 +102,15 @@ function testCreateCluster
         --cluster-type=galera \
         --nodes="$nodes" \
         --vendor=percona \
-        --cluster_name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
         --wait
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating cluster."
+    fi
 }
 
 #
