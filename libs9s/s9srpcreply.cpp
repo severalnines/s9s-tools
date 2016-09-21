@@ -440,6 +440,7 @@ S9sRpcReply::printClusterListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sString       requestedName = options->clusterName();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -454,6 +455,9 @@ S9sRpcReply::printClusterListLong()
         const char   *nameStart   = "";
         const char   *nameEnd     = "";
 
+        if (!requestedName.empty() && requestedName != clusterName)
+            continue;
+
         if (syntaxHighlight)
         {
             nameStart = XTERM_COLOR_BLUE;
@@ -466,8 +470,9 @@ S9sRpcReply::printClusterListLong()
         printf("%-12s ", STR(vendor + " " + version));
         printf("%s%s%s\n", nameStart, STR(clusterName), nameEnd);
     }
-    
-    printf("Total: %lu\n", theList.size());
+   
+    if (!options->isBatchRequested())
+        printf("Total: %lu\n", theList.size());
 }
 
 /**

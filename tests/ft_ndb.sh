@@ -1,11 +1,13 @@
 #! /bin/bash
 MYNAME=$(basename $0)
+MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYNAME}_$$"
+CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # The IP of the node we added last. Empty if we did not.
@@ -78,6 +80,21 @@ function create_node()
 }
 
 #
+# $1: the name of the cluster
+#
+function find_cluster_id()
+{
+    local clusterName="$1"
+
+    s9s cluster \
+        --list \
+        --long \
+        --batch  \
+        --cluster-name="ft_galera.sh_39844" \
+    | awk '{print $1}'
+}
+
+#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster
@@ -113,6 +130,13 @@ function testCreateCluster
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+    fi
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid."
     fi
 }
 

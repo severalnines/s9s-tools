@@ -1,11 +1,13 @@
 #! /bin/bash
 MYNAME=$(basename $0)
+MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 CONTAINER_SERVER="server1"
-CLUSTER_NAME="${MYNAME}_$$"
+CLUSTER_NAME="${MYBASENAME}_$$"
+CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # The IP of the node we added last. Empty if we did not.
@@ -78,6 +80,21 @@ function create_node()
 }
 
 #
+# $1: the name of the cluster
+#
+function find_cluster_id()
+{
+    local clusterName="$1"
+
+    s9s cluster \
+        --list \
+        --long \
+        --batch  \
+        --cluster-name="$clusterName" \
+    | awk '{print $1}'
+}
+
+#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster
@@ -111,6 +128,13 @@ function testCreateCluster
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
     fi
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid."
+    fi
 }
 
 #
@@ -128,7 +152,7 @@ function testAddNode()
     echo "Adding Node"
     $S9S cluster \
         --add-node \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
         --wait
     
@@ -148,7 +172,7 @@ function testRemoveNode()
     printVerbose "Removing Node"
     $S9S cluster \
         --remove-node \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
         --wait
     
@@ -166,7 +190,7 @@ function testRollingRestart()
     echo "Performing Rolling Restart"
     $S9S cluster \
         --rolling-restart \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --wait
     
     exitCode=$?
