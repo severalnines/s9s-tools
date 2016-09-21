@@ -5,6 +5,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 CONTAINER_SERVER="server1"
+CLUSTER_NAME="${MYNAME}_$$"
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # The IP of the node we added last. Empty if we did not.
@@ -101,6 +102,7 @@ function testCreateCluster
         --cluster-type=galera \
         --nodes="$nodes" \
         --vendor=percona \
+        --cluster_name="$CLUSTER_NAME" \
         --provider-version=5.6 \
         --wait
 
@@ -178,6 +180,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
 fi
 

@@ -69,7 +69,7 @@ fi
 # This test script will run the s9s program without a single command line option
 # and checks if it gives the proper error response.
 #
-function testHelp01
+function test01()
 {
     local exit_code
 
@@ -94,7 +94,7 @@ function testHelp01
 # This test will send one single --help command line option and check what the
 # result is. No error should be reported of course.
 #
-function testHelp02
+function test02()
 {
     local exit_code
 
@@ -117,7 +117,7 @@ function testHelp02
 #
 # This test will try to pass an invalid mode and check the response.
 #
-function testHelp03
+function test03()
 {
     local exit_code
 
@@ -139,6 +139,32 @@ function testHelp03
 }
 
 #
+# This test checks what the exit code will be when using an invalid command line
+# option.
+#
+function test04()
+{
+    local exit_code
+
+    $S9S --cluster_name=ak 2>>$STDOUT_FILE >>$STDOUT_FILE
+    exit_code=$?
+
+    if [ "$VERBOSE" ]; then
+        cat $STDOUT_FILE
+        echo "*** exit_code: $exit_code"
+    fi
+    
+    # Redirect is not working.
+    if [ $exit_code -ne 6 ]; then
+        failure "The exit code is $exit_code while using invalid option."
+    fi
+    
+    checkMessage "$STDOUT_FILE" "unrecognized option"
+
+    rm -f $STDOUT_FILE
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -146,9 +172,10 @@ startTests
 if [ "$1" ]; then
     runFunctionalTest "$1"
 else
-    runFunctionalTest testHelp01
-    runFunctionalTest testHelp02
-    runFunctionalTest testHelp03
+    runFunctionalTest test01
+    runFunctionalTest test02
+    runFunctionalTest test03
+    runFunctionalTest test04
 fi
 
 endTests

@@ -1015,6 +1015,8 @@ S9sOptions::readOptionsNode(
                 break;
 
             default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
                 return false;
         }
     }
@@ -1198,6 +1200,8 @@ S9sOptions::readOptionsCluster(
                 break;
                 
             default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
                 return false;
         }
     }
@@ -1313,6 +1317,8 @@ S9sOptions::readOptionsJob(
                 break;
 
             default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
                 return false;
         }
     }
@@ -1358,6 +1364,8 @@ S9sOptions::readOptionsNoMode(
                 break;
 
             default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
                 return false;
         }
     }
