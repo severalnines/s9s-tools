@@ -1,0 +1,154 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.4"
+VERBOSE=""
+LOGFILE=""
+
+NEW_NAME="$1"
+OWNER=pipas
+
+#
+# $*: the error message
+#
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "$MYNAME($$) $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "$MYNAME($$) $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... [CONTAINER_NAME]...
+
+  $MYNAME - Stops and destroys containers.
+
+ -h, --help           Print this help and exit.
+ -v, --version        Print version information and exit.
+ --verbose            Print more messages.
+ --log-file=FILE      Store all the messages in the given file too.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+#
+# $1: the name of the new container.
+# $2: the name of the parent container.
+#
+function destroy_container()
+{
+    local container_name="$1"
+
+    if [ -z "$container_name" ]; then
+        printError "No container name, giving up."
+        return 1
+    fi
+
+    if [ ! -d "/var/lib/lxc/$container_name" ]; then
+        printError "The container '$container_name' does not exist."
+        return 1
+    fi
+
+    lxc-stop -n "$container_name"
+    lxc-destroy -n "$container_name"
+}
+
+#
+# Checking command line arguments.
+#
+if [ -z "$1" ]; then
+    printError "The arguments should be container name(s)."
+    exit 6
+fi
+
+#
+# Checking root privileges.
+#
+if [ "$EUID" -ne 0 ]; then 
+    printError "This script has to have root privileges."
+    exit 5
+fi
+
+#
+# Doing the job.
+#
+for container in $*; do
+    destroy_container $container
+done
+
+lxc-ls -f

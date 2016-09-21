@@ -1,0 +1,293 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.4"
+VERBOSE=""
+LOGFILE=""
+SERVER=""
+
+PARENT_NAME=ubuntu
+NEW_NAME="$1"
+OWNER=pipas
+
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# $*: the error message
+#
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "$MYNAME($$) $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "$MYNAME($$) $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... [CONTAINER_NAME]...
+
+  $MYNAME - Creates and starts containers.
+
+ -h, --help           Print this help and exit.
+ -v, --version        Print version information and exit.
+ --verbose            Print more messages.
+ --log-file=FILE      Store all the messages in the given file too.
+ --server=SERVER      Create the container on remote server.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,server:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+#
+# $*
+# Container names are either coming from the command line or are automatically
+# created.
+#
+function container_names()
+{
+    local number=1
+    local node_name
+
+    if [ "$1" ]; then
+        echo $*
+        return 0
+    fi
+
+    #
+    # Finding a new name for the new node.
+    #
+    while true; do
+        node_name=$(printf "node%03d" "$number")
+        if [ ! -d "/var/lib/lxc/$node_name" ]; then
+            echo "$node_name"
+            return 0
+        fi
+
+        if [ "$number" -gt 100 ]; then
+            printError "Could not find name for a new node."
+            return 1
+        fi
+
+        let number+=1
+    done
+}
+
+#
+# $1: the name of the new container.
+# $2: the name of the parent container.
+#
+function create_container()
+{
+    local new_name="$1"
+    local parent_name="$2"
+
+    if [ -z "$new_name" ]; then
+        printError "No name for the new container, giving up."
+        return 1
+    fi
+
+    if [ -d "/var/lib/lxc/$new_name" ]; then
+        printError "The container '$new_name' already exists."
+        return 1
+    fi
+
+    if [ ! -d "/var/lib/lxc/$parent_name" ]; then
+        if [ "$parent_name" == "ubuntu" ]; then
+            lxc-create \
+                -t download -n ubuntu \
+                -- \
+                --dist ubuntu --release xenial --arch amd64
+        fi
+    fi
+    
+    if [ ! -d "/var/lib/lxc/$parent_name" ]; then
+        printError "The parent container '$parent_name' does not exist."
+        return 1
+    fi
+
+    # 
+    # Creating the new container.
+    #
+    printVerbose "Creating container $new_name"
+    lxc-copy -n $parent_name --newname="$new_name"
+
+    #
+    # Creating the new user.
+    #
+    lxc-execute -n "$new_name" -- \
+        /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
+        2>/dev/null
+
+    #
+    # Copying the SSH keys.
+    #
+    cp -r "/home/$OWNER/.ssh/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
+    lxc-execute -n "$new_name" -- \
+        chown -R ${OWNER}.${OWNER} "/home/${OWNER}/.ssh" \
+        2>/dev/null
+
+    cp -r "/home/$OWNER/bin/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
+    lxc-execute -n "$new_name" -- \
+        chown -R ${OWNER}.${OWNER} "/home/${OWNER}/bin" \
+        2>/dev/null
+
+    #
+    # Adding to the sudoers.
+    #
+    echo "" >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
+    echo "pipas ALL=(ALL) NOPASSWD:ALL" \
+        >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
+
+    #
+    # Installing some packages.
+    #
+    #lxc-execute -n "$new_name" -- apt-get -y --force-yes update
+    #lxc-execute -n "$new_name" -- apt-get -y --force-yes upgrade
+    #lxc-execute -n "$new_name" -- apt-get -y --force-yes install xauth vim-gtk3
+
+    #
+    # Starting the new container, showing the list.
+    #
+    lxc-start -n "$new_name"
+
+    #
+    # 
+    #
+    sleep 5
+    lxc-info -n "$new_name" -i | awk '{print $2}'
+}
+
+#
+# Checking command line arguments.
+#
+EXTRA_OPTIONS=$*
+
+#if [ -z "$1" ]; then
+#    printError "The arguments should be container name(s)."
+#    exit 6
+#fi
+
+#
+# Checking root privileges.
+#
+if [ -z "$SERVER" ]; then
+    if [ "$EUID" -ne 0 ]; then 
+        printError "This script has to have root privileges."
+        exit 5
+    fi
+fi
+
+#
+# Doing the job.
+#
+if [ -z "$SERVER" ]; then
+    if [ "$VERSION_OPTION" ]; then
+        printVersionAndExit
+        exit 0
+    else
+        for container in $(container_names $*); do
+            create_container $container $PARENT_NAME
+        done
+    fi
+else
+    #
+    # We received the --server option and so we run the script on a remote
+    # server.
+    #
+    printVerbose "Executing on server '$SERVER'."
+    if [ "$VERBOSE" ]; then
+cat <<EOF
+    ssh $SERVER -- sudo $MYNAME $VERSION_OPTION $VERBOSE_OPTION $EXTRA_OPTIONS
+EOF
+    fi
+
+    ssh $SERVER -- \
+        sudo $MYNAME \
+            $VERSION_OPTION \
+            $VERBOSE_OPTION \
+            $EXTRA_OPTIONS
+fi
+
