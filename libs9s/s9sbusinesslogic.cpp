@@ -81,15 +81,20 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
-    } else if (options->isJobOperation() && options->isListRequested())
+    } else if (options->isJobOperation())
     {
-        executeJobList(client);
-    } else if (options->isJobOperation() && options->isLogRequested())
-    {
-        executeJobLog(client);
-    } else if (options->isJobOperation() && options->isWaitRequested())
-    {
-        waitForJob(clusterId, options->jobId(), client);
+        if (options->isListRequested())
+        {
+            executeJobList(client);
+        } else if (options->isLogRequested())
+        {
+            executeJobLog(client);
+        } else if (options->isWaitRequested())
+        {
+            waitForJob(clusterId, options->jobId(), client);
+        } else {
+            PRINT_ERROR("Unknown job operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }
