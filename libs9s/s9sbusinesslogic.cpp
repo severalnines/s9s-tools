@@ -458,7 +458,7 @@ S9sBusinessLogic::executeProcessList(
         if (success)
         {
             printf("\n%s\n", STR(reply.toString()));
-            //reply.printJobList();
+            reply.printProcessList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

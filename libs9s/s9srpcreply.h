@@ -35,7 +35,8 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterList();
         void printNodeList();
         void printJobList();
-
+        void printProcessList();
+        
     private:
         void printJobLogBrief();
         void printJobLogLong();

@@ -263,6 +263,30 @@ S9sRpcReply::printJobLog()
 
 }
 
+void
+S9sRpcReply::printProcessList()
+{
+    S9sVariantList  hostList = operator[]("data").toVariantList();
+
+    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    {
+        S9sString hostName = hostList[idx]["hostname"].toString();
+        S9sVariantList processes = hostList[idx]["processes"].toVariantList();
+    
+        for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
+        {
+            S9sVariantMap process = processes[idx1].toVariantMap();
+            S9sString     user =  process["user"].toString();
+            int           pid = process["pid"].toInt();
+            S9sString     executable = process["executable"].toString();
+
+            printf("%-6s %6d %12s %s\n", 
+                    STR(user), pid,
+                    STR(hostName), STR(executable));
+        }
+    }
+}
+
 /**
  * Prints the job log in its short format. In this format only the messages are
  * printed.

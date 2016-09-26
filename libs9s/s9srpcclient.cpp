@@ -198,7 +198,7 @@ S9sRpcClient::getRunningProcesses(
     uri.sprintf("/%d/proc/", clusterId);
 
     request["operation"] = "getRunningProcesses";
-    request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
 
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
