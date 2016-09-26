@@ -187,6 +187,30 @@ S9sRpcClient::setHost(
     return executeRequest(uri, request.toString());
 }
 
+bool 
+S9sRpcClient::getRunningProcesses(
+        const int clusterId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/%d/proc/", clusterId);
+
+    request["operation"] = "getRunningProcesses";
+    request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    S9S_DEBUG("uri     : %s", STR(uri));
+    S9S_DEBUG("request : %s", STR(request.toString()));
+    retval = executeRequest(uri, request.toString());
+    S9S_DEBUG("retval  : %s", retval ? "true" : "false");
+    S9S_DEBUG("error   : %s", STR(m_priv->m_errorString));
+
+    return retval;
+}
 
 /**
  * Sends a "getJobInstances" request, receives the reply. We use this RPC call
@@ -798,7 +822,6 @@ S9sRpcClient::executeRequest(
     if (socketFd < 0)
         return false;
 
-
     header.sprintf(
         "POST %s HTTP/1.0\r\n"
         "Host: %s:%d\r\n"
@@ -870,7 +893,7 @@ S9sRpcClient::executeRequest(
     m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);
     m_priv->m_buffer[m_priv->m_dataSize] = '\0';
     m_priv->m_dataSize += 1;
-            
+    S9S_DEBUG("reply: '%s'", m_priv->m_buffer); 
 
 
     // Closing the socket.

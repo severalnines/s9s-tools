@@ -56,6 +56,7 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sVariantMap  &properties);
 
+        bool getRunningProcesses(const int clusterId);
         bool getJobInstances(const int clusterId);
 
         bool getJobInstance(const int clusterId, const int jobId);

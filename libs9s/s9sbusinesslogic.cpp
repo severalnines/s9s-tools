@@ -95,6 +95,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown job operation.");
         }
+    } else if (options->isProcessOperation())
+    {
+        if (options->isListRequested())
+        {
+            executeProcessList(client);
+        } else {
+            PRINT_ERROR("Unknown process operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }
@@ -424,6 +432,41 @@ S9sBusinessLogic::executeNodeSet(
     } else {
         if (success)
             printf("OK\n");
+    }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ * Executes the --list operation on the processes thus providing a list of
+ * running processes.
+ */
+void 
+S9sBusinessLogic::executeProcessList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    int         clusterId = options->clusterId();
+    bool        success;
+
+    success = client.getRunningProcesses(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            printf("\n%s\n", STR(reply.toString()));
+            //reply.printJobList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 

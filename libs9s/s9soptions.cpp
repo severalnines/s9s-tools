@@ -917,6 +917,9 @@ S9sOptions::setMode(
     } else if (modeName == "job")
     {
         m_operationMode = Job;
+    } else if (modeName == "process")
+    {
+        m_operationMode = Process;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
