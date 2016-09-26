@@ -1078,8 +1078,8 @@ S9sOptions::readOptionsProcess(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, '3' },
-        { "color",            optional_argument, 0, '2' },
+        { "print-json",       no_argument,       0,  3 },
+        { "color",            optional_argument, 0,  2 },
         { "config-file",      required_argument, 0, '1' },
 
         // Main Option
@@ -1145,14 +1145,16 @@ S9sOptions::readOptionsProcess(
                 m_options["config-file"] = optarg;
                 break;
             
-            case '2':
+            case 2:
+                // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
                 break;
 
-            case '3':
+            case 3:
+                // --print-json
                 m_options["print_json"] = true;
                 break;
             
