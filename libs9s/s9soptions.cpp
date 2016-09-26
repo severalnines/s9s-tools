@@ -855,6 +855,10 @@ S9sOptions::readOptions(
         case Node:
             retval = readOptionsNode(*argc, argv);
             break;
+        
+        case Process:
+            retval = readOptionsProcess(*argc, argv);
+            break;
     }
 
     return retval;
@@ -1042,6 +1046,118 @@ S9sOptions::readOptionsNode(
             case 3:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Reads the command line options in the "process" mode.
+ */
+bool
+S9sOptions::readOptionsProcess(
+        int    argc,
+        char  *argv[])
+{
+    S9S_DEBUG("");
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0, '3' },
+        { "color",            optional_argument, 0, '2' },
+        { "config-file",      required_argument, 0, '1' },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L' },
+
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i' },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        //S9S_DEBUG("*** c : '%c'", c);
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                setController(optarg);
+                break;
+
+            case 'P':
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case '1':
+                m_options["config-file"] = optarg;
+                break;
+            
+            case '2':
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case '3':
+                m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             default:

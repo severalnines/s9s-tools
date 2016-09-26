@@ -682,6 +682,57 @@ S9sRpcClient::removeNode(
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).
  *
+ * This function will stop the cluster by creating a "stop_cluster" job.
+ */
+bool
+S9sRpcClient::stopCluster(
+        const int             clusterId)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      title;
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    bool           retval;
+    
+    uri.sprintf("/%d/job/", clusterId);
+    title = "Stopping Cluster";
+
+    // The job_data describing the cluster.
+    jobData["force"]               = false;
+    jobData["stop_timeout"]        = 1800;
+    jobData["maintenance_minutes"] = 0;
+    jobData["reason"]              = "Cluster is stopped.";
+    
+    // The jobspec describing the command.
+    jobSpec["command"]   = "stop_cluster";
+    jobSpec["job_data"]  = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = title;
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+    
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request was sent and the reply was received (even if the
+ *   reply is an error notification).
+ *
  * This function will create a "remove_cluster" job that will eventually drop
  * the cluster from the cmon controller.
  */

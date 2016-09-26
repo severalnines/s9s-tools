@@ -48,6 +48,7 @@ class S9sOptions
             Cluster,
             Node,
             Job,
+            Process,
         };
 
         enum ExitCodes
@@ -128,6 +129,7 @@ class S9sOptions
         bool readOptionsNode(int argc, char *argv[]);
         bool readOptionsCluster(int argc, char *argv[]);
         bool readOptionsJob(int argc, char *argv[]);
+        bool readOptionsProcess(int argc, char  *argv[]);
 
         bool setMode(const S9sString &modeName);
 

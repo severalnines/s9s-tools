@@ -61,6 +61,9 @@ S9sBusinessLogic::execute()
         } else if (options->isRemoveNodeRequested())
         {
             executeRemoveNode(client);
+        } else if (options->isStopRequested())
+        {
+            executeStopCluster(client);
         } else if (options->isDropRequested())
         {
             executeDropCluster(client);
@@ -229,6 +232,36 @@ S9sBusinessLogic::executeRemoveNode(
      * Running the request on the controller.
      */
     success = client.removeNode(clusterId, hostNames);
+    if (success)
+    {
+        jobRegistered(client, clusterId);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ * This method will register a new "stop_cluster" job on the controller 
+ * using the help of the S9sRpcClint class.
+ */
+void
+S9sBusinessLogic::executeStopCluster(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.stopCluster(clusterId);
     if (success)
     {
         jobRegistered(client, clusterId);

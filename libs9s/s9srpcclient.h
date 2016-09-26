@@ -99,6 +99,9 @@ class S9sRpcClient
                 const int             clusterId,
                 const S9sVariantList &hostNames);
 
+        bool stopCluster(
+                const int             clusterId);
+
         bool dropCluster(
                 const int             clusterId);
 
