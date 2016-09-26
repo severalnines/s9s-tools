@@ -581,6 +581,10 @@ S9sOptions::isRemoveNodeRequested() const
     return retval;
 }
 
+/**
+ * \returns true if the --drop command line option was provided when the program
+ *   was started.
+ */
 bool
 S9sOptions::isDropRequested() const
 {
@@ -592,6 +596,20 @@ S9sOptions::isDropRequested() const
     return retval;
 }
 
+/**
+ * \returns true if the --stop command line option was provided when the program
+ *   was started.
+ */
+bool
+S9sOptions::isStopRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("stop"))
+        retval = m_options.at("stop").toBoolean();
+
+    return retval;
+}
 
 /**
  * \returns true if the --long command line option was provided.
@@ -1063,6 +1081,7 @@ S9sOptions::readOptionsCluster(
         { "add-node",         no_argument,       0,  8  },
         { "remove-node",      no_argument,       0,  9  },
         { "drop",             no_argument,       0, 10  },
+        { "stop",             no_argument,       0, 11  },
 
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
@@ -1149,6 +1168,11 @@ S9sOptions::readOptionsCluster(
             case 10:
                 // --drop
                 m_options["drop"] = true;
+                break;
+            
+            case 11:
+                // --stop
+                m_options["stop"] = true;
                 break;
 
             case '1':

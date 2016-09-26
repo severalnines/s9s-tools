@@ -100,6 +100,7 @@ class S9sOptions
         bool isRollingRestartRequested() const;
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;
+        bool isStopRequested() const;
         bool isDropRequested() const;
 
         bool isLongRequested() const;
