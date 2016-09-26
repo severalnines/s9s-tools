@@ -498,6 +498,15 @@ S9sOptions::isJobOperation() const
 }
 
 /**
+ * \returns true if the main operation is "process".
+ */
+bool
+S9sOptions::isProcessOperation() const
+{
+    return m_operationMode == Process;
+}
+
+/**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.
  */
@@ -1080,7 +1089,7 @@ S9sOptions::readOptionsProcess(
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  3 },
         { "color",            optional_argument, 0,  2 },
-        { "config-file",      required_argument, 0, '1' },
+        { "config-file",      required_argument, 0,  1 },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
@@ -1112,22 +1121,27 @@ S9sOptions::readOptionsProcess(
                 break;
 
             case 'v':
+                // -v, --verbose
                 m_options["verbose"] = true;
                 break;
             
             case 'V':
+                // -V, --version
                 m_options["print-version"] = true;
                 break;
 
             case 'c':
+                // -c, --controller=URL
                 setController(optarg);
                 break;
 
             case 'P':
+                // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 't':
+                // -t, --token=RPC_TOKEN
                 m_options["rpc_token"] = optarg;
                 break;
             
@@ -1141,7 +1155,8 @@ S9sOptions::readOptionsProcess(
                 m_options["list"] = true;
                 break;
 
-            case '1':
+            case 1:
+                // --config-file=CONFIG
                 m_options["config-file"] = optarg;
                 break;
             
@@ -1159,6 +1174,7 @@ S9sOptions::readOptionsProcess(
                 break;
             
             case 'i':
+                // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
