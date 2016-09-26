@@ -263,10 +263,22 @@ S9sRpcReply::printJobLog()
 
 }
 
+bool 
+compareProcessByCpuUsage(
+        const S9sVariant &a,
+        const S9sVariant &b)
+{
+    S9sVariantMap aMap = a.toVariantMap();
+    S9sVariantMap bMap = b.toVariantMap();
+
+    return aMap["cpu_usage"].toDouble() > bMap["cpu_usage"].toDouble();
+}
+
 void
 S9sRpcReply::printProcessList()
 {
     S9sVariantList  hostList = operator[]("data").toVariantList();
+    S9sVariantList  processList;
 
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
@@ -276,14 +288,38 @@ S9sRpcReply::printProcessList()
         for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
         {
             S9sVariantMap process = processes[idx1].toVariantMap();
-            S9sString     user =  process["user"].toString();
-            int           pid = process["pid"].toInt();
-            S9sString     executable = process["executable"].toString();
 
-            printf("%-6s %6d %12s %s\n", 
-                    STR(user), pid,
-                    STR(hostName), STR(executable));
+            process["hostname"] = hostName;
+            processList << process;
         }
+    }
+    
+    sort(processList.begin(), processList.end(), compareProcessByCpuUsage);
+
+    // rss          resident set size
+    // vsz          virtual memory size
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process = processList[idx].toVariantMap();
+        S9sString     hostName = process["hostname"].toString();
+        S9sString     user = process["user"].toString();
+        int           pid = process["pid"].toInt();
+        S9sString     executable = process["executable"].toString();
+        double        cpuUsage = process["cpu_usage"].toDouble();
+        double        memUsage = process["mem_usage"].toDouble();
+        S9sString     state = process["state"].toString();
+        ulonglong     rss = process["res_mem"].toULongLong();
+        ulonglong     virtMem = process["virt_mem"].toULongLong();
+        int           priority = process["priority"].toInt();
+
+        rss     /= 1024;
+        virtMem /= 1024;
+        printf("%6d %8s %12s %4d %6.2f %6.2f %8llu %8llu %1s %s\n", 
+                pid, STR(user), STR(hostName), 
+                priority,
+                cpuUsage, memUsage,
+                virtMem, rss,
+                STR(state), STR(executable));
     }
 }
 
