@@ -581,6 +581,18 @@ S9sOptions::isRemoveNodeRequested() const
     return retval;
 }
 
+bool
+S9sOptions::isDropRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("drop"))
+        retval = m_options.at("drop").toBoolean();
+
+    return retval;
+}
+
+
 /**
  * \returns true if the --long command line option was provided.
  */
@@ -1050,6 +1062,7 @@ S9sOptions::readOptionsCluster(
         { "rolling-restart",  no_argument,       0, '6' },
         { "add-node",         no_argument,       0,  8  },
         { "remove-node",      no_argument,       0,  9  },
+        { "drop",             no_argument,       0, 10  },
 
         // Job Related Options
         { "wait",             no_argument,       0, '4' },
@@ -1131,6 +1144,11 @@ S9sOptions::readOptionsCluster(
             case 9:
                 // --remove-node
                 m_options["remove_node"] = true;
+                break;
+
+            case 10:
+                // --drop
+                m_options["drop"] = true;
                 break;
 
             case '1':
