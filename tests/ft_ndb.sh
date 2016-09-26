@@ -6,7 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 CONTAINER_SERVER="server1"
-CLUSTER_NAME="${MYNAME}_$$"
+CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
@@ -90,7 +90,7 @@ function find_cluster_id()
         --list \
         --long \
         --batch  \
-        --cluster-name="ft_galera.sh_39844" \
+        --cluster-name="$clusterName" \
     | awk '{print $1}'
 }
 
@@ -122,9 +122,9 @@ function testCreateCluster
         --cluster-type=ndb \
         --nodes="$nodes" \
         --vendor=oracle \
-        --cluster_name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
-        --log
+        --wait
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -155,7 +155,7 @@ function testAddNode()
     echo "Adding Node"
     $S9S cluster \
         --add-node \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
         --wait
     
@@ -175,7 +175,7 @@ function testRemoveNode()
     printVerbose "Removing Node"
     $S9S cluster \
         --remove-node \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
         --wait
     
@@ -193,7 +193,7 @@ function testRollingRestart()
     echo "Performing Rolling Restart"
     $S9S cluster \
         --rolling-restart \
-        --cluster-id=1 \
+        --cluster-id=$CLUSTER_ID \
         --wait
     
     exitCode=$?
