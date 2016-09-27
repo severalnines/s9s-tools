@@ -20,6 +20,8 @@
 #include "ut_s9soptions.h"
 
 #include "S9sOptions"
+#include "S9sNode"
+
 #include <cstdio>
 #include <cstring>
 
@@ -169,10 +171,10 @@ UtS9sOptions::testReadOptions03()
 
     nodes = options->nodes();
     S9S_COMPARE(nodes.size(), 4);
-    S9S_COMPARE(nodes[0], "10.10.2.2");
-    S9S_COMPARE(nodes[1], "10.10.2.3");
-    S9S_COMPARE(nodes[2], "10.10.2.4");
-    S9S_COMPARE(nodes[3], "10.10.2.5");
+    S9S_COMPARE(nodes[0].toNode().hostName(), "10.10.2.2");
+    S9S_COMPARE(nodes[1].toNode().hostName(), "10.10.2.3");
+    S9S_COMPARE(nodes[2].toNode().hostName(), "10.10.2.4");
+    S9S_COMPARE(nodes[3].toNode().hostName(), "10.10.2.5");
 
     S9sOptions::uninit();
     return true;
