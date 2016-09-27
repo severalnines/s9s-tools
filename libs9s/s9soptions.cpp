@@ -989,7 +989,6 @@ S9sOptions::readOptionsNode(
         if (c == -1)
             break;
 
-        //S9S_DEBUG("*** c : '%c'", c);
         switch (c)
         {
             case 'h':
@@ -1125,7 +1124,6 @@ S9sOptions::readOptionsProcess(
         if (c == -1)
             break;
 
-        //S9S_DEBUG("*** c : '%c'", c);
         switch (c)
         {
             case 'h':
@@ -1217,21 +1215,21 @@ S9sOptions::readOptionsCluster(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, '3' },
-        { "color",            optional_argument, 0, '2' },
-        { "config-file",      required_argument, 0, '1' },
+        { "print-json",       no_argument,       0, 15  },
+        { "color",            optional_argument, 0, 14  },
+        { "config-file",      required_argument, 0, 13  },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0, '5' },
-        { "rolling-restart",  no_argument,       0, '6' },
+        { "create",           no_argument,       0, 17  },
+        { "rolling-restart",  no_argument,       0, 12  },
         { "add-node",         no_argument,       0,  8  },
         { "remove-node",      no_argument,       0,  9  },
         { "drop",             no_argument,       0, 10  },
         { "stop",             no_argument,       0, 11  },
 
         // Job Related Options
-        { "wait",             no_argument,       0, '4' },
+        { "wait",             no_argument,       0, 16 },
         { "log",              no_argument,       0,  6 },
         { "batch",            no_argument,       0,  7 },
 
@@ -1266,38 +1264,46 @@ S9sOptions::readOptionsCluster(
         switch (c)
         {
             case 'h':
+                // -h, --help
                 m_options["help"] = true;
                 break;
 
             case 'v':
+                // -v, --verbose
                 m_options["verbose"] = true;
                 break;
             
             case 'V':
+                // -V, --version
                 m_options["print-version"] = true;
                 break;
 
             case 'c':
+                // -c, --controller=URL
                 setController(optarg);
                 break;
 
             case 'P':
+                // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 't':
+                // -t, --rpc-token=TOKEN
                 m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
+                // -l, --long
                 m_options["long"] = true;
                 break;
 
             case 'L': 
+                // -L, --list
                 m_options["list"] = true;
                 break;
             
-            case '6':
+            case 12:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
                 break;
@@ -1322,22 +1328,26 @@ S9sOptions::readOptionsCluster(
                 m_options["stop"] = true;
                 break;
 
-            case '1':
+            case 13:
+                // --config-file=FILE
                 m_options["config-file"] = optarg;
                 break;
 
-            case '2':
+            case 14:
+                // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
                 break;
 
-            case '3':
+            case 15:
+                // --print-json
                 m_options["print_json"] = true;
                 break;
             
-            case '4':
+            case 16:
+                // --wait
                 m_options["wait"] = true;
                 break;
 
@@ -1351,15 +1361,18 @@ S9sOptions::readOptionsCluster(
                 m_options["batch"] = true;
                 break;
             
-            case '5':
+            case 17:
+                // --create
                 m_options["create"] = true;
                 break;
             
             case 'i':
+                // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
             
             case 'n':
+                // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
 
