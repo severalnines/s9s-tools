@@ -1428,10 +1428,10 @@ S9sOptions::readOptionsJob(
         { "list",             no_argument,       0, 'L' },
         { "log",              no_argument,       0, 'G' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, '3' },
+        { "print-json",       no_argument,       0,  3 },
         { "wait",             no_argument,       0, '5' },
-        { "config-file",      required_argument, 0, '1' },
-        { "color",            optional_argument, 0, '2' },
+        { "config-file",      required_argument, 0,  1  },
+        { "color",            optional_argument, 0,  2  },
         { "cluster-id",       required_argument, 0, 'i' },
         { "job-id",           required_argument, 0, '4' },
 
@@ -1451,58 +1451,68 @@ S9sOptions::readOptionsJob(
         if (c == -1)
             break;
         
-        S9S_DEBUG("*** c : '%c'", c);
-
         switch (c)
         {
             case 'h':
+                // -h, --help
                 m_options["help"] = true;
                 break;
 
             case 'v':
+                // -v, --verbose
                 m_options["verbose"] = true;
                 break;
             
             case 'V':
+                // -V, --version
                 m_options["print-version"] = true;
                 break;
 
             case 'c':
+                // -c, --controller=URL
                 setController(optarg);
                 break;
 
             case 'P':
+                // -P, --controller-port
                 m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 't':
+                // -t, --rpc-token=TOKEN
                 m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
+                // -l, --long
                 m_options["long"] = true;
                 break;
 
             case 'L': 
+                // -L, --list
                 m_options["list"] = true;
                 break;
             
             case 'G': 
+                // -G, --log
                 m_options["log"] = true;
                 break;
 
-            case '1':
+            case 1:
+                // --config-file=FILE 
                 m_options["config-file"] = optarg;
                 break;
 
-            case '2':
+            case 2:
+                // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
                 break;
 
-            case '3':
+            case 3:
+                // --print-json
                 m_options["print_json"] = true;
                 break;
 
