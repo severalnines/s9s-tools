@@ -959,9 +959,9 @@ S9sOptions::readOptionsNode(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, '3' },
-        { "color",            optional_argument, 0, '2' },
-        { "config-file",      required_argument, 0, '1' },
+        { "print-json",       no_argument,       0,  6  },
+        { "color",            optional_argument, 0,  5  },
+        { "config-file",      required_argument, 0,  4  },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
@@ -998,26 +998,32 @@ S9sOptions::readOptionsNode(
                 break;
 
             case 'v':
+                // -v, --verbose
                 m_options["verbose"] = true;
                 break;
             
             case 'V':
+                // -V, --version
                 m_options["print-version"] = true;
                 break;
 
             case 'c':
+                // -c, --controller
                 setController(optarg);
                 break;
 
             case 'P':
+                // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 't':
+                // -t, --token
                 m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
+                // -l, --long
                 m_options["long"] = true;
                 break;
 
@@ -1031,22 +1037,26 @@ S9sOptions::readOptionsNode(
                 m_options["set"]  = true;
                 break;
 
-            case '1':
+            case 4:
+                // --config-file=FILE
                 m_options["config-file"] = optarg;
                 break;
             
-            case '2':
+            case 5:
+                // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
                 break;
 
-            case '3':
+            case 6:
+                // --print-json
                 m_options["print_json"] = true;
                 break;
             
             case 'i':
+                // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
