@@ -115,7 +115,7 @@ function find_cluster_id()
     if [ -z "$retval" ]; then
         printError "Cluster '$clusterName' was not found."
     else
-        printDebug "Cluster '$clusterName' was found with ID ${retval}."
+        printVerbose "Cluster '$clusterName' was found with ID ${retval}."
     fi
 
     echo $retval
