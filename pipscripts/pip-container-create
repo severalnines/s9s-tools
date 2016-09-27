@@ -6,11 +6,12 @@ VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
 SERVER=""
-
 PARENT_NAME=ubuntu
-NEW_NAME="$1"
 OWNER=pipas
 
+#
+# Prints the software version and exits.
+#
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
@@ -278,12 +279,6 @@ else
     # server.
     #
     printVerbose "Executing on server '$SERVER'."
-    if [ "$VERBOSE" ]; then
-cat <<EOF
-    ssh $SERVER -- sudo $MYNAME $VERSION_OPTION $VERBOSE_OPTION $EXTRA_OPTIONS
-EOF
-    fi
-
     ssh $SERVER -- \
         sudo $MYNAME \
             $VERSION_OPTION \

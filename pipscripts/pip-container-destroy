@@ -5,9 +5,18 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
+SERVER=""
 
 NEW_NAME="$1"
 OWNER=pipas
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
 
 #
 # $*: the error message
@@ -57,6 +66,7 @@ Usage:
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
+ --server=SERVER      Create the container on remote server.
 
 EOF
     exit 0
@@ -65,7 +75,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -83,16 +93,23 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
             ;;
 
         -v|--version)
             shift
-            printVersionAndExit
+            VERSION_OPTION="--version"
             ;;
 
         --log-file)
             shift
             LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
             shift
             ;;
 
@@ -107,8 +124,7 @@ while true; do
 done
 
 #
-# $1: the name of the new container.
-# $2: the name of the parent container.
+# $1: the name of the container to destroy.
 #
 function destroy_container()
 {
@@ -131,6 +147,8 @@ function destroy_container()
 #
 # Checking command line arguments.
 #
+EXTRA_OPTIONS=$*
+
 if [ -z "$1" ]; then
     printError "The arguments should be container name(s)."
     exit 6
@@ -147,8 +165,25 @@ fi
 #
 # Doing the job.
 #
-for container in $*; do
-    destroy_container $container
-done
+if [ -z "$SERVER" ]; then
+    if [ "$VERSION_OPTION" ]; then
+        printVersionAndExit
+        exit 0
+    else
+        for container in $*; do
+            destroy_container $container
+        done
+    fi
+else
+    #
+    # We received the --server option and so we run the script on a remote
+    # server.
+    #
+    printVerbose "Executing on server '$SERVER'."
+    ssh $SERVER -- \
+        sudo $MYNAME \
+            $VERSION_OPTION \
+            $VERBOSE_OPTION \
+            $EXTRA_OPTIONS
+fi
 
-lxc-ls -f
