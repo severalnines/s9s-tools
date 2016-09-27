@@ -3,6 +3,6 @@
 #
 
 install:
-	cp pip-*.sh /usr/lib
+	cp pip-* /usr/lib
 
 

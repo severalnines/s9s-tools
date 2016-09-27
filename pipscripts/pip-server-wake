@@ -103,27 +103,69 @@ while true; do
     esac
 done
 
+#
+# $1: the server name
+#
+# This function finds the MAC address for a given host. The MAC addresses should
+# be stored in '~/.pip/servers.mac' like this:
+#
+# server1;00:1a:a0:03:b3:b5
+# server2;00:1d:09:15:17:8a
+# storage01;00:1d:09:24:59:33
+#
+# Very primitive format, I did not want to spend much time developing it. 
+#
+function mac_for_server()
+{
+    local serverName="$1"
+    local line
+    local field1
+    local field2
+
+    for line in $(cat ~/.pip/servers.mac); do
+        line=$(echo "$line" | tr ';' ' ' | tr ',' ' ')
+        field1=$(echo "$line" | cut -d' ' -f1)
+        field2=$(echo "$line" | cut -d' ' -f2)
+
+        if [ "$field1" == "$serverName" ]; then
+            echo "$field2"
+            return 0
+        fi
+        #echo "*** line  : '$line'"
+        #echo "*** field1: '$field1'"
+        #echo "*** field2: '$field2'"
+    done
+}
+
 
 function wake_server ()
 {
     local hostname="$1"
+    local macAddress
 
     if [ -z "$hostname" ]; then
         return 1
     fi
 
-    if [ "$hostname" == "server1" ]; then
-        wakeonlan "00:1a:a0:03:b3:b5"
-    elif [ "$hostname" == "server2" ]; then
-        wakeonlan "00:1d:09:15:17:8a"
-    elif [ "$hostname" == "storage01" ]; then
-        wakeonlan "00:1d:09:24:59:33"
-    else
-        printError "Unknown host '$hostname'."
+    macAddress=$(mac_for_server "$hostname")
+    if [ -z "$macAddress" ]; then
+        printError "MAC address for $hostname was not found."
+        return 1
     fi
+
+    printVerbose "Waking server ${hostname} on ${macAddress}."
+    wakeonlan "$macAddress"
+    return 0
 }
 
+
+nthserver=0
 for hostname in $*; do 
+    if [ "$nthserver" -gt 0 ]; then
+        printVerbose "Waiting a while before waking the next server."
+        sleep 5
+    fi
+
     wake_server "$hostname"
-    sleep 5
+    let nthserver+=1
 done
