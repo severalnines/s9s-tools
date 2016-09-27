@@ -130,7 +130,7 @@ S9sBusinessLogic::waitForJob(
     {
         waitForJobWithLog(clusterId, jobId, client);
     } else {
-        waitForJobWithProgess(clusterId, jobId, client);
+        waitForJobWithProgress(clusterId, jobId, client);
     }
 }
 
@@ -732,7 +732,7 @@ S9sBusinessLogic::jobRegistered(
  * report in the meantime.
  */
 void 
-S9sBusinessLogic::waitForJobWithProgess(
+S9sBusinessLogic::waitForJobWithProgress(
         const int     clusterId,
         const int     jobId, 
         S9sRpcClient &client)
@@ -762,7 +762,12 @@ S9sBusinessLogic::waitForJobWithProgess(
 
         finished = reply.progressLine(progressLine, syntaxHighlight);
         printf("%s %s\033[K\r", rotate[rotateCycle], STR(progressLine));
+
+        if (reply.isJobFailed())
+            options->setExitStatus(S9sOptions::JobFailed);
+
         //printf("%s", STR(reply.toString()));
+
         fflush(stdout);
         sleep(1);
 
@@ -793,11 +798,12 @@ S9sBusinessLogic::waitForJobWithLog(
         const int     jobId, 
         S9sRpcClient &client)
 {
-    S9sVariantMap job;
-    S9sRpcReply   reply;
-    bool          success, finished;
-    int           nLogsPrinted = 0;
-    int           nEntries;
+    S9sOptions    *options         = S9sOptions::instance();
+    S9sVariantMap  job;
+    S9sRpcReply    reply;
+    bool           success, finished;
+    int            nLogsPrinted = 0;
+    int            nEntries;
 
     for (;;)
     {
@@ -815,6 +821,9 @@ S9sBusinessLogic::waitForJobWithLog(
         nLogsPrinted += nEntries;
 
         job = reply["job"].toVariantMap();
+        if (job["status"] == "FAILED")
+            options->setExitStatus(S9sOptions::JobFailed);
+
         finished = 
             job["status"] == "ABORTED"   ||
             job["status"] == "FINISHED"  ||

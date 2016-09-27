@@ -54,6 +54,7 @@ class S9sOptions
         enum ExitCodes
         {
             ExitOk       = 0,
+            JobFailed    = 1,
             BadOptions   = 6,
         };
 

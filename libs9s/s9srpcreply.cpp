@@ -96,6 +96,24 @@ S9sRpcReply::jobId() const
 }
 
 /**
+ * \returns true if the reply contains a job and that job's status is "FAILED"
+ */
+bool
+S9sRpcReply::isJobFailed() const
+{
+    S9sVariantMap job;
+    bool          retval = false;
+
+    if (!contains("job"))
+        return retval;
+
+    job = at("job").toVariantMap();
+    retval = job["status"].toString() == "FAILED";
+
+    return retval;
+}
+
+/**
  * \returns true if the job is finished (or aborted or failed) and so monitoring
  *   it should be aborted too.
  *

@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-
+LOG_OPTION="--wait"
 CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -24,6 +24,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  -h, --help      Print this help and exit.
  --verbose       Print more messages.
+ --log           Print the logs while waiting for the job to be ended.
 
 EOF
     exit 1
@@ -32,7 +33,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose" \
+        -l "help,verbose,log" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -50,6 +51,11 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            ;;
+
+        --log)
+            shift
+            LOG_OPTION="--log"
             ;;
 
         --)
@@ -121,7 +127,7 @@ function testCreateCluster
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
-        --wait
+        $LOG_OPTION
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -154,10 +160,13 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #
@@ -174,10 +183,13 @@ function testRemoveNode()
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #
@@ -191,10 +203,13 @@ function testRollingRestart()
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #

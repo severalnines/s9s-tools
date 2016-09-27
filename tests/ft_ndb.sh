@@ -161,6 +161,9 @@ function testAddNode()
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #
@@ -181,6 +184,9 @@ function testRemoveNode()
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #
@@ -198,6 +204,9 @@ function testRollingRestart()
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+    fi
 }
 
 #

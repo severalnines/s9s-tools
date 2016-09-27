@@ -43,7 +43,7 @@ class S9sBusinessLogic
 
 
     private:
-        void waitForJobWithProgess(
+        void waitForJobWithProgress(
                 const int     clusterId,
                 const int     jobId, 
                 S9sRpcClient &client);
