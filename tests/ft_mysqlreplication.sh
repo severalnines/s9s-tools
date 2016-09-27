@@ -16,6 +16,24 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source include.sh
 
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "$MYNAME($$) $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# Prints usage information and exits.
+#
 function printHelpAndExit()
 {
 cat << EOF
@@ -91,13 +109,17 @@ function create_node()
 function find_cluster_id()
 {
     local clusterName="$1"
+    local retval
 
-    s9s cluster \
-        --list \
-        --long \
-        --batch  \
-        --cluster-name="$clusterName" \
-    | awk '{print $1}'
+    retval=$(s9s cluster --list --long --batch --cluster-name="$clusterName" | awk '{print $1}')
+    if [ -z "$retval" ]; then
+        printError "Cluster '$clusterName' was not found."
+        printError "s9s cluster --list --long --batch --cluster-name=$clusterName | awk '{print $1}'"
+    else
+        printVerbose "Cluster '$clusterName' was found with ID ${retval}."
+    fi
+
+    echo $retval
 }
 
 #

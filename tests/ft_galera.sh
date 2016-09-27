@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-
+LOG_OPTION="--wait"
 CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -16,6 +16,24 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source include.sh
 
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "$MYNAME($$) $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# Prints usage information and exits.
+#
 function printHelpAndExit()
 {
 cat << EOF
@@ -24,6 +42,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  -h, --help      Print this help and exit.
  --verbose       Print more messages.
+ --log           Print the logs while waiting for the job to be ended.
 
 EOF
     exit 1
@@ -32,7 +51,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose" \
+        -l "help,verbose,log" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -50,6 +69,11 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            ;;
+
+        --log)
+            shift
+            LOG_OPTION="--log"
             ;;
 
         --)
@@ -85,13 +109,16 @@ function create_node()
 function find_cluster_id()
 {
     local clusterName="$1"
+    local retval
 
-    s9s cluster \
-        --list \
-        --long \
-        --batch  \
-        --cluster-name="$clusterName" \
-    | awk '{print $1}'
+    retval=$(s9s cluster --list --long --batch --cluster-name="$clusterName" | awk '{print $1}')
+    if [ -z "$retval" ]; then
+        printError "Cluster '$clusterName' was not found."
+    else
+        printDebug "Cluster '$clusterName' was found with ID ${retval}."
+    fi
+
+    echo $retval
 }
 
 #
@@ -121,7 +148,7 @@ function testCreateCluster
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
-        --wait
+        $LOG_OPTION
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -154,7 +181,7 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -177,7 +204,7 @@ function testRemoveNode()
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -197,7 +224,7 @@ function testRollingRestart()
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
