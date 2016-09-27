@@ -1419,21 +1419,26 @@ S9sOptions::readOptionsJob(
     int           c;
     struct option long_options[] =
     {
+        // Generic Options
         { "help",             no_argument,       0, 'h' },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-token",        required_argument, 0, 't' },
-        { "list",             no_argument,       0, 'L' },
-        { "log",              no_argument,       0, 'G' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  3 },
-        { "wait",             no_argument,       0, '5' },
+        { "print-json",       no_argument,       0,  3  },
         { "config-file",      required_argument, 0,  1  },
         { "color",            optional_argument, 0,  2  },
+
+        // Main Option
+        { "wait",             no_argument,       0,  5  },
+        { "log",              no_argument,       0, 'G' },
+        { "list",             no_argument,       0, 'L' },
+
+        // Job Related Options
         { "cluster-id",       required_argument, 0, 'i' },
-        { "job-id",           required_argument, 0, '4' },
+        { "job-id",           required_argument, 0,  4  },
 
         { 0, 0, 0, 0 }
     };
@@ -1516,15 +1521,18 @@ S9sOptions::readOptionsJob(
                 m_options["print_json"] = true;
                 break;
 
-            case '4':
+            case 4:
+                // --job-id=ID
                 m_options["job_id"] = atoi(optarg);
                 break;
 
-            case '5':
+            case 5:
+                // --wait
                 m_options["wait"] = true;
                 break;
 
             case 'i':
+                // --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
