@@ -7,8 +7,6 @@ VERBOSE=""
 LOGFILE=""
 SERVER=""
 
-NEW_NAME="$1"
-OWNER=pipas
 
 #
 # Prints the software version and exits.
