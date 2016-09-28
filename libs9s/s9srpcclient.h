@@ -92,6 +92,11 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
 
+        bool createPostgreSql(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                bool                  uninstall);
+
         bool addNode(
                 const int             clusterId,
                 const S9sVariantList &hosts);

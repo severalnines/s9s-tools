@@ -350,6 +350,38 @@ S9sRpcClient::rollingRestart(
     return retval;
 }
 
+#if 0
+{
+    "command": "create_cluster",
+    "job_data": 
+    {
+        "api_id": "1",
+        "cluster_type": "group_replication",
+        "create_local_repository": false,
+        "data_center": 0,
+        "disable_firewall": true,
+        "disable_selinux": true,
+        "enable_mysql_uninstall": true,
+        "generate_token": true,
+        "install_software": true,
+        "mysql_cnf_template": "my.cnf.repl57",
+        "mysql_datadir": "/var/lib/mysql",
+        "mysql_hostnames": [ "10.10.10.15" ],
+        "mysql_password": "password",
+        "mysql_port": "3306",
+        "mysql_version": "5.7",
+        "ssh_keyfile": "/home/sergey/.ssh/id_rsa",
+        "ssh_port": "22",
+        "ssh_user": "sergey",
+        "sudo_password": "",
+        "type": "mysql",
+        "use_internal_repos": false,
+        "user_id": 1,
+        "vendor": "oracle"
+    }
+}
+#endif
+
 /**
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
@@ -584,6 +616,62 @@ S9sRpcClient::createNdbCluster(
 
     return retval;
 }
+
+bool
+S9sRpcClient::createPostgreSql(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        bool                  uninstall)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri;
+    bool            retval;
+
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("PostgreSQL can only be created with one server in it.");
+        return false;
+    }
+
+    uri = "/0/job/";
+    // The job_data describing the cluster.
+    jobData["cluster_type"]    = "postgresql_single";
+    jobData["mysql_hostnames"] = hosts[0].toNode().hostName();
+    jobData["enable_uninstall"] = uninstall;
+    jobData["ssh_user"]        = osUserName;
+    //jobData["postgre_user"]        = options->dbAdminUserName();
+    //jobData["postgre_password"]  = options->dbAdminPassword();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]  = "create_cluster";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Create Galera Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+    
+    return retval;
+
+}
+
+        
 
 /**
  * \param hosts the hosts that is going to be added to the cluster
