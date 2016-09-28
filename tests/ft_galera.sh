@@ -108,17 +108,30 @@ function create_node()
 #
 function find_cluster_id()
 {
-    local clusterName="$1"
+    local name="$1"
     local retval
+    local nTry=0
 
-    retval=$(s9s cluster --list --long --batch --cluster-name="$clusterName" | awk '{print $1}')
-    if [ -z "$retval" ]; then
-        printError "Cluster '$clusterName' was not found."
-    else
-        printVerbose "Cluster '$clusterName' was found with ID ${retval}."
-    fi
+    while true; do
+        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
+        retval=$(echo "$retval" | awk '{print $1}')
 
-    echo $retval
+        if [ -z "$retval" ]; then
+            printError "Cluster '$name' was not found."
+            let nTry+=1
+
+            if [ "$nTry" -gt 10 ]; then
+                echo 0
+                break
+            else
+                sleep 3
+            fi
+        else
+            printVerbose "Cluster '$name' was found with ID ${retval}."
+            echo "$retval"
+            break
+        fi
+    done
 }
 
 #
@@ -186,7 +199,7 @@ function testAddNode()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -209,7 +222,7 @@ function testRemoveNode()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -229,7 +242,7 @@ function testRollingRestart()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 

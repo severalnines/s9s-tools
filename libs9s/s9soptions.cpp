@@ -1243,8 +1243,8 @@ S9sOptions::readOptionsCluster(
         { "provider-version", required_argument, 0,  3  },
         { "os-user",          required_argument, 0,  4  },
         { "cluster-type",     required_argument, 0,  5  },
-        { "db-admin",         required_argument, 0,  6  },
-        { "db-admin-passwd",  required_argument, 0,  7  },
+        { "db-admin",         required_argument, 0, 18  },
+        { "db-admin-passwd",  required_argument, 0, 19  },
 
         { 0, 0, 0, 0 }
     };
@@ -1399,6 +1399,16 @@ S9sOptions::readOptionsCluster(
             case 5:
                 // --cluster-type
                 m_options["cluster_type"] = optarg;
+                break;
+                
+            case 18:
+                // --db-admin=USERNAME
+                m_options["db_admin_user_name"] = optarg;
+                break;
+
+            case 19:
+                // --db-admin-passwd=PASSWD
+                m_options["db_admin_password"]  = optarg;
                 break;
                 
             default:

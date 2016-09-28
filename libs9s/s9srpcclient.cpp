@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -675,7 +675,7 @@ S9sRpcClient::createPostgreSql(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    //S9S_WARNING("-> %s", STR(request.toString()));
+    S9S_WARNING("-> %s", STR(request.toString()));
     retval = executeRequest(uri, request.toString());
     
     return retval;

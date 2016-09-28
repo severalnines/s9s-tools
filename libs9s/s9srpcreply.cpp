@@ -536,6 +536,10 @@ S9sRpcReply::printClusterListLong()
         if (!requestedName.empty() && requestedName != clusterName)
             continue;
 
+        // This should not happen!
+        if (clusterName.empty())
+            continue;
+
         if (syntaxHighlight)
         {
             nameStart = XTERM_COLOR_BLUE;

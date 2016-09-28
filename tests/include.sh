@@ -91,7 +91,7 @@ function isVerbose
 #
 function printVerbose 
 {
-    isVerbose && echo "$@"
+    isVerbose && echo "$@" >&2
 }
 
 #

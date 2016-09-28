@@ -108,17 +108,30 @@ function create_node()
 #
 function find_cluster_id()
 {
-    local clusterName="$1"
+    local name="$1"
     local retval
+    local nTry=0
 
-    retval=$(s9s cluster --list --long --batch --cluster-name="$clusterName" | awk '{print $1}')
-    if [ -z "$retval" ]; then
-        printError "Cluster '$clusterName' was not found."
-    else
-        printVerbose "Cluster '$clusterName' was found with ID ${retval}."
-    fi
+    while true; do
+        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
+        retval=$(echo "$retval" | awk '{print $1}')
 
-    echo $retval
+        if [ -z "$retval" ]; then
+            printError "Cluster '$name' was not found."
+            let nTry+=1
+
+            if [ "$nTry" -gt 10 ]; then
+                echo 0
+                break
+            else
+                sleep 3
+            fi
+        else
+            printVerbose "Cluster '$name' was found with ID ${retval}."
+            echo "$retval"
+            break
+        fi
+    done
 }
 
 #
@@ -150,11 +163,28 @@ function testCreateCluster
         failure "Exit code is not 0 while creating cluster."
     fi
 
+    #
+    #echo " -----------------------------------"
+    #echo " $S9S cluster --list --long --batch"
+    #$S9S cluster --list --long --batch
+    #
+    #echo " -----------------------------------"
+    #echo " $S9S cluster --list --long --batch --print-json"
+    #$S9S cluster --list --long --batch --print-json
+    #
+    #echo " -----------------------------------"
+    #echo " $S9S cluster --list --long --batch"
+    #$S9S cluster --list --long --batch
+    #
+    #echo " -----------------------------------"
+    #echo " $S9S cluster --list --long --batch --cluster-name=$CLUSTER_NAME"
+    #$S9S cluster --list --long --batch --cluster-name="$CLUSTER_NAME"
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
+    if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
-        failure "Cluster ID '$CLUSTER_ID' is invalid."
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 }
 
@@ -227,6 +257,11 @@ function testRollingRestart()
     fi
 }
 
+#CLUSTER_NAME=ft_postgresql_65293
+#CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+#echo "CLUSTER_ID = '$CLUSTER_ID'"
+#exit 0
+
 #
 # Running the requested tests.
 #
@@ -237,8 +272,8 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
-    runFunctionalTest testRemoveNode
-    runFunctionalTest testRollingRestart
+    #runFunctionalTest testRemoveNode
+    #runFunctionalTest testRollingRestart
 fi
 
 endTests
