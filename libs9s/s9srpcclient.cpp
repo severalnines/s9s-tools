@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -624,6 +624,7 @@ S9sRpcClient::createPostgreSql(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri;
@@ -636,24 +637,33 @@ S9sRpcClient::createPostgreSql(
     }
 
     uri = "/0/job/";
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        if (hosts[idx].isNode())
+            hostNames << hosts[idx].toNode().hostName();
+        else
+            hostNames << hosts[idx];
+    }
+
     // The job_data describing the cluster.
-    jobData["cluster_type"]    = "postgresql_single";
-    jobData["mysql_hostnames"] = hosts[0].toNode().hostName();
+    jobData["cluster_type"]     = "postgresql_single";
+    jobData["type"]             = "postgresql";
+    jobData["hostname"]         = hostNames[0];
     jobData["enable_uninstall"] = uninstall;
-    jobData["ssh_user"]        = osUserName;
-    //jobData["postgre_user"]        = options->dbAdminUserName();
-    //jobData["postgre_password"]  = options->dbAdminPassword();
+    jobData["ssh_user"]         = osUserName;
+    jobData["postgre_user"]     = options->dbAdminUserName();
+    jobData["postgre_password"] = options->dbAdminPassword();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
     // The jobspec describing the command.
-    jobSpec["command"]  = "create_cluster";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]   = "setup_server";
+    jobSpec["job_data"]  = jobData;
 
     // The job instance describing how the job will be executed.
     job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create Galera Cluster";
+    job["title"]         = "Setup PostgreSQL Server";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
     job["user_id"]       = options->userId();
@@ -665,10 +675,10 @@ S9sRpcClient::createPostgreSql(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
+    //S9S_WARNING("-> %s", STR(request.toString()));
     retval = executeRequest(uri, request.toString());
     
     return retval;
-
 }
 
         

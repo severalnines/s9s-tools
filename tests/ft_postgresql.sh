@@ -140,6 +140,8 @@ function testCreateCluster
         --cluster-type=postgresql \
         --nodes="$nodes" \
         --cluster-name="$CLUSTER_NAME" \
+        --db-admin="postmaster" \
+        --db-admin-passwd="passwd12" \
         $LOG_OPTION
 
     exitCode=$?
@@ -149,7 +151,7 @@ function testCreateCluster
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-    if [ "$CLUSTER_ID" -gt 0 ]; then
+    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid."
