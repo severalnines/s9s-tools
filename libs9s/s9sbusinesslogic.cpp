@@ -161,6 +161,9 @@ S9sBusinessLogic::executeClusterCreate(
     } else if (options->clusterType() == "ndb")
     {
         doExecuteCreateCluster(client);
+    } else if (options->clusterType() == "postgresql")
+    {
+        doExecuteCreateCluster(client);
     } else {
         PRINT_ERROR(
                 "Cluster type '%s' is not supported.",
@@ -603,7 +606,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
     osUserName   = options->osUser();
     vendor       = options->vendor();
 
-    if (vendor.empty())
+    if (vendor.empty() && options->clusterType() != "postgresql")
     {
         options->printError(
                 "The vendor name is unknown while creating a galera cluster.\n"
@@ -627,6 +630,10 @@ S9sBusinessLogic::doExecuteCreateCluster(
         success = client.createMySqlReplication(
                 hosts, osUserName, vendor, 
                 mySqlVersion, uninstall);
+    } else if (options->clusterType() == "postgresql")
+    {
+        success = client.createPostgreSql(
+                hosts, osUserName, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
