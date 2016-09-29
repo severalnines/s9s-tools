@@ -98,6 +98,9 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
+#
+# Creates and starts a new 
+#
 function create_node()
 {
     $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
@@ -117,7 +120,7 @@ function find_cluster_id()
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then
-            printError "Cluster '$name' was not found."
+            printVerbose "Cluster '$name' was not found."
             let nTry+=1
 
             if [ "$nTry" -gt 10 ]; then
@@ -147,7 +150,9 @@ function testCreateCluster
     nodeName=$(create_node)
     nodes+="$nodeName;"
     
-    echo "Creating cluster"
+    #
+    #
+    #
     $S9S cluster \
         --create \
         --cluster-type=postgresql \
@@ -200,7 +205,9 @@ function testAddNode()
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
 
-    echo "Adding Node"
+    #
+    #
+    #
     $S9S cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -210,7 +217,7 @@ function testAddNode()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -223,7 +230,9 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    printVerbose "Removing Node"
+    #
+    #
+    #
     $S9S cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
@@ -233,7 +242,7 @@ function testRemoveNode()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -244,7 +253,9 @@ function testRollingRestart()
 {
     local exitCode
 
-    echo "Performing Rolling Restart"
+    #
+    #
+    #
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
@@ -253,7 +264,29 @@ function testRollingRestart()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# Stopping the cluster.
+#
+function testStop()
+{
+    local exitCode
+
+    #
+    #
+    #
+    $S9S cluster \
+        --stop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -268,12 +301,15 @@ function testRollingRestart()
 startTests
 
 if [ "$1" ]; then
-    runFunctionalTest "$1"
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
+    runFunctionalTest testStop
 fi
 
 endTests

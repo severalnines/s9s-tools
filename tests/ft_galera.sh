@@ -120,7 +120,7 @@ function find_cluster_id()
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then
-            printError "Cluster '$name' was not found."
+            printVerbose "Cluster '$name' was not found."
             let nTry+=1
 
             if [ "$nTry" -gt 10 ]; then
@@ -178,7 +178,7 @@ function testCreateCluster
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
-        failure "Cluster ID '$CLUSTER_ID' is invalid."
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 }
 
