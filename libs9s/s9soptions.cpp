@@ -102,7 +102,7 @@ S9sOptions::createConfigFiles()
 
     userFile.fprintf("[global]\n");
     userFile.fprintf("# controller_host_name = localhost\n");
-    userFile.fprintf("# controller_port      = 9555\n");
+    userFile.fprintf("# controller_port      = 9500\n");
     userFile.fprintf("\n");
 
     userFile.fprintf("\n");
@@ -895,7 +895,64 @@ S9sOptions::executeInfoRequest()
         return true;
     } else if (m_options.contains("help") && m_options["help"].toBoolean())
     {
-        printf("Help text.\n");
+        printf(
+        "Usage:\n"
+        "  %s [COMMAND] [OPTION...]\n"
+        "\n"
+        "Generic options:\n"
+        " -h, --help                 Show help options\n" 
+        " -v, --verbose              Be verbose\n"
+        " -V, --version              Show version\n"
+        " -c, --controller HOST      The hostname/IP of the controller\n"
+        " -P, --controller-port INT  The port of the controller\n"
+        " -t, --rpc-token TOKEN      The RPC authentication token\n"
+        " -l, --long                 Long...\n"
+        " --print-json               Print-out the sent/received JSon-s\n"
+        " --config-file PATH         The config file path\n"
+        "\n"
+        "Long running task/job related options:\n"
+        " --wait                     Wait until job finishes\n"
+        " --log                      Print job log messages\n"
+        " --batch                    Batch mode\n"
+        "\n"
+        "Commands and specific options:\n"
+        "* cluster:\n"
+        " -L, --list                 List clusters\n"
+        " --create                   Create cluster\n"
+        " --rolling-restart          Restart the cluster\n"
+        " --add-node                 Add node to cluster\n"
+        " --remove-node              Remove node from cluster\n"
+        " --drop                     Drop/remove cluster\n"
+        " --stop                     Stop cluster\n"
+        " -i, --cluster-id INT       Cluster ID\n"
+        " -n, --cluster-name STRING  Cluster name\n"
+        " --nodes STRING             The list of nodes (; separated)\n"
+        " --vendor STRING            The vendor to be used\n"
+        " --provider-version STRING  DB provider version\n"
+        " --os-user STRING           The OS user to be used\n"
+        " --cluster-type STRING      The cluster type to be created\n"
+        " --db-admin STRING          The admin DB user\n"
+        " --db-admin-passwd STRING   The admin DB password\n"
+        "\n"
+        "* node:\n"
+        " -L, --list                 List the nodes\n"
+        " --set                      Update node(s)\n"
+        " -i, --cluster-id INT       Cluster ID\n"
+        " --nodes STRING             List of nodes\n"
+        " --properties STRING        Properties\n"
+        "\n"
+        "* job:\n"
+        " -G, --log                  Show job log\n"
+        " --wait                     Wait until job finishes\n"
+        " -L, --list                 List jobs\n"
+        " -i, --cluster-id INT       Cluster ID\n"
+        " --job-id INT               Job ID\n"
+        "\n"
+        "* process:\n"
+        " -L, --list                 List processes\n"
+        " -i, --cluster-id           Cluster ID\n"
+        "\n",
+        STR(m_myName));
         return true;
     }
 
