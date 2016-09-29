@@ -904,7 +904,7 @@ S9sOptions::executeInfoRequest()
         " -v, --verbose              Be verbose\n"
         " -V, --version              Show version\n"
         " -c, --controller HOST      The hostname/IP of the controller\n"
-        " -p, --controller-port INT  The port of the controller\n"
+        " -P, --controller-port INT  The port of the controller\n"
         " -t, --rpc-token TOKEN      The RPC authentication token\n"
         " -l, --long                 Long...\n"
         " --print-json               Print-out the sent/received JSon-s\n"
