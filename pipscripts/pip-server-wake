@@ -54,6 +54,7 @@ Usage:
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
+ --wait               Wait until the woke server is accepting SSH connections.
 
 EOF
     exit 0
@@ -62,7 +63,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,wait" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -91,6 +92,11 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
+            ;;
+
+        --wait)
+            shift
+            WAIT="true"
             ;;
 
         --)
@@ -207,6 +213,7 @@ function wake_server ()
 
 nthserver=0
 for hostname in $*; do 
+    # Not proper: we should know when the last actual wake happened.
     if [ "$nthserver" -gt 0 ]; then
         printVerbose "Waiting a while before waking the next server."
         sleep 5
@@ -215,3 +222,9 @@ for hostname in $*; do
     wake_server "$hostname"
     let nthserver+=1
 done
+
+if [ "$WAIT" ]; then
+    for hostname in $*; do 
+        wait_for_server_ssh "$hostname"
+    done
+fi

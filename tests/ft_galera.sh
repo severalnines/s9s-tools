@@ -246,6 +246,23 @@ function testRollingRestart()
     fi
 }
 
+function testStop()
+{
+    local exitCode
+
+    echo "Stop Cluster"
+    $S9S cluster \
+        --stop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -260,6 +277,7 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
+    runFunctionalTest testStop
 fi
 
 endTests
