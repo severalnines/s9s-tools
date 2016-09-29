@@ -252,7 +252,9 @@ function testRollingRestart()
 startTests
 
 if [ "$1" ]; then
-    runFunctionalTest "$1"
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
