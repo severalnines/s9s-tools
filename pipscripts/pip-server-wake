@@ -103,6 +103,46 @@ while true; do
     esac
 done
 
+
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local isOK
+
+    isOk=$(ssh -o ConnectTimeout=1 "$serverName" -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+#
+# $2: the server name
+#
+function wait_for_server_ssh()
+{
+    local serverName="$1"
+    local nTry=0
+
+    while true; do
+        if is_server_running_ssh "$serverName"; then
+            return 0
+        fi
+
+        if [ "$nTry" -gt 60 ]; then
+            printError "Server '$serverName' did not came alive."
+            return 1
+        fi
+
+        sleep 10
+        let nTry+=1
+    done
+}
+
 #
 # $1: the server name
 #
@@ -137,27 +177,33 @@ function mac_for_server()
     done
 }
 
-
+#
+# $1: the name of the server
+#
 function wake_server ()
 {
-    local hostname="$1"
+    local hostName="$1"
     local macAddress
 
-    if [ -z "$hostname" ]; then
+    if [ -z "$hostName" ]; then
         return 1
     fi
 
-    macAddress=$(mac_for_server "$hostname")
+    if is_server_running_ssh "$hostName"; then
+        printVerbose "Server '$hostName' is already running."
+        return 0
+    fi
+
+    macAddress=$(mac_for_server "$hostName")
     if [ -z "$macAddress" ]; then
-        printError "MAC address for $hostname was not found."
+        printError "MAC address for $hostName was not found."
         return 1
     fi
 
-    printVerbose "Waking server ${hostname} on ${macAddress}."
+    printVerbose "Waking server ${hostName} on ${macAddress}."
     wakeonlan "$macAddress"
     return 0
 }
-
 
 nthserver=0
 for hostname in $*; do 
