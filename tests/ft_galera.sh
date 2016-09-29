@@ -98,6 +98,9 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
+#
+# Creates and starts a new 
+#
 function create_node()
 {
     $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
@@ -153,7 +156,9 @@ function testCreateCluster
     nodeName=$(create_node)
     nodes+="$nodeName"
     
-    echo "Creating cluster"
+    #
+    #
+    #
     $S9S cluster \
         --create \
         --cluster-type=galera \
@@ -189,7 +194,9 @@ function testAddNode()
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
 
-    echo "Adding Node"
+    #
+    #
+    #
     $S9S cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -212,7 +219,9 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    printVerbose "Removing Node"
+    #
+    #
+    #
     $S9S cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
@@ -233,7 +242,9 @@ function testRollingRestart()
 {
     local exitCode
 
-    echo "Performing Rolling Restart"
+    #
+    #
+    #
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
@@ -246,11 +257,16 @@ function testRollingRestart()
     fi
 }
 
+#
+# Stopping the cluster.
+#
 function testStop()
 {
     local exitCode
 
-    echo "Stop Cluster"
+    #
+    #
+    #
     $S9S cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \

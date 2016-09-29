@@ -95,6 +95,21 @@ S9sRpcReply::jobId() const
     return retval;
 }
 
+S9sString
+S9sRpcReply::jobTitle() const
+{
+    S9sVariantMap job;
+    S9sString     retval;
+
+    if (!contains("job"))
+        return retval;
+
+    job = at("job").toVariantMap();
+    retval = job["title"].toString();
+
+    return retval;
+}
+
 /**
  * \returns true if the reply contains a job and that job's status is "FAILED"
  */

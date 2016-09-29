@@ -28,6 +28,7 @@ class S9sRpcReply : public S9sVariantMap
         S9sString errorString() const;
 
         int jobId() const;
+        S9sString jobTitle() const;
         bool isJobFailed() const;
         
         bool progressLine(S9sString &retval, bool syntaxHighlight);

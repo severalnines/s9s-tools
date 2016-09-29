@@ -751,12 +751,16 @@ S9sBusinessLogic::waitForJobWithProgress(
     S9sRpcReply  reply;
     bool         success, finished;
     S9sString    progressLine;
+    bool         titlePrinted = false;
 
     if (options->useSyntaxHighlight())
         printf("\033[?25l"); 
 
     for (;;)
     {
+        /*
+         *
+         */
         success = client.getJobInstance(clusterId, jobId);
         if (success)
         {
@@ -767,6 +771,18 @@ S9sBusinessLogic::waitForJobWithProgress(
         if (!success)
             continue;
 
+        /*
+         *
+         */
+        if (!titlePrinted && !reply.jobTitle().empty())
+        {
+            printf("%s\n", STR(reply.jobTitle()));
+            titlePrinted = true;
+        }
+
+        /*
+         *
+         */
         finished = reply.progressLine(progressLine, syntaxHighlight);
         printf("%s %s\033[K\r", rotate[rotateCycle], STR(progressLine));
 
