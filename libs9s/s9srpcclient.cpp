@@ -752,7 +752,7 @@ S9sRpcClient::addNode(
 bool
 S9sRpcClient::removeNode(
         const int             clusterId,
-        const S9sVariantList &hostNames)
+        const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      hostName, title;
@@ -761,14 +761,14 @@ S9sRpcClient::removeNode(
     S9sString      uri;
     bool           retval;
 
-    if (hostNames.size() != 1u)
+    if (hosts.size() != 1u)
     {
         PRINT_ERROR("removenode is currently implemented only for one node.");
         return false;
     }
     
     uri.sprintf("/%d/job/", clusterId);
-    hostName = hostNames[0].toString();
+    hostName = hosts[0].toNode().hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
     // The job_data describing the cluster.
@@ -919,6 +919,12 @@ S9sRpcClient::executeRequest(
 
     if (socketFd < 0)
         return false;
+        
+    /*
+     *
+     */
+    if (options->isJsonRequested() && options->isVerbose())
+        printf("Request: \n%s\n", STR(payload));
 
     header.sprintf(
         "POST %s HTTP/1.0\r\n"

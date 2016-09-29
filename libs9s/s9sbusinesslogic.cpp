@@ -785,8 +785,8 @@ S9sBusinessLogic::waitForJobWithProgress(
          */
         if (!titlePrinted && !reply.jobTitle().empty())
         {
-            const char titleBegin = "";
-            const char titleEnd   = "";
+            const char *titleBegin = "";
+            const char *titleEnd   = "";
 
             if (syntaxHighlight)
             {

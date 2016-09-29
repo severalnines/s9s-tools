@@ -278,6 +278,9 @@ S9sRpcReply::printJobStarted()
     }
 }
 
+/**
+ * Prints log messages if they are in the RPC reply.
+ */
 void
 S9sRpcReply::printJobLog()
 {
@@ -389,10 +392,10 @@ S9sRpcReply::printJobLogLong()
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = theList[idx].toVariantMap();
-        S9sString      message = theMap["message_text"].toString();
-        S9sString      status  = theMap["message_status"].toString();
-        S9sString      created    = theMap["created"].toString();
+        S9sVariantMap  theMap          = theList[idx].toVariantMap();
+        S9sString      message         = theMap["message_text"].toString();
+        S9sString      status          = theMap["message_status"].toString();
+        S9sString      created         = theMap["created"].toString();
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
   
