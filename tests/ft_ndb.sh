@@ -120,7 +120,7 @@ function find_cluster_id()
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then
-            printError "Cluster '$name' was not found."
+            printVerbose "Cluster '$name' was not found."
             let nTry+=1
 
             if [ "$nTry" -gt 10 ]; then
@@ -169,7 +169,7 @@ function testCreateCluster
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
-        --wait
+        $LOG_OPTION
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -181,7 +181,7 @@ function testCreateCluster
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
-        failure "Cluster ID '$CLUSTER_ID' is invalid."
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 }
 
@@ -204,12 +204,12 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        --wait
+        $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
     fi
 }
 

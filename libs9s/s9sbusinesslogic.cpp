@@ -752,14 +752,15 @@ S9sBusinessLogic::waitForJobWithProgress(
     bool         success, finished;
     S9sString    progressLine;
     bool         titlePrinted = false;
+    int          nFailures = 0;
 
-    if (options->useSyntaxHighlight())
+    if (syntaxHighlight)
         printf("\033[?25l"); 
 
     for (;;)
     {
         /*
-         *
+         * Getting the job instance from the controller.
          */
         success = client.getJobInstance(clusterId, jobId);
         if (success)
@@ -769,14 +770,35 @@ S9sBusinessLogic::waitForJobWithProgress(
         }
         
         if (!success)
+        {
+            ++nFailures;
+            if (nFailures > 60)
+                break;
+
             continue;
+        }
+
+        nFailures = 0;
 
         /*
-         *
+         * Printing the title if it is not yet printed.
          */
         if (!titlePrinted && !reply.jobTitle().empty())
         {
-            printf("%s\n", STR(reply.jobTitle()));
+            const char titleBegin = "";
+            const char titleEnd   = "";
+
+            if (syntaxHighlight)
+            {
+                titleBegin = TERM_BOLD;
+                titleEnd   = TERM_NORMAL;
+            }
+
+            printf("%s%s%s\n", 
+                    titleBegin,
+                    STR(reply.jobTitle()),
+                    titleEnd);
+
             titlePrinted = true;
         }
 
@@ -801,7 +823,7 @@ S9sBusinessLogic::waitForJobWithProgress(
             break;
     }
 
-    if (options->useSyntaxHighlight())
+    if (syntaxHighlight)
         printf("\033[?25h");
 
     printf("\n");
