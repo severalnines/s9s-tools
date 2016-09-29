@@ -928,7 +928,7 @@ S9sOptions::executeInfoRequest()
         " -n, --cluster-name STRING  Cluster name\n"
         " --nodes STRING             The list of nodes (; separated)\n"
         " --vendor STRING            The vendor to be used\n"
-        " --provider-version STRING  Galera provider version\n"
+        " --provider-version STRING  DB provider version\n"
         " --os-user STRING           The OS user to be used\n"
         " --cluster-type STRING      The cluster type to be created\n"
         " --db-admin STRING          The admin DB user\n"
