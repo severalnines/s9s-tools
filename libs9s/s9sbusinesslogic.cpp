@@ -375,7 +375,8 @@ S9sBusinessLogic::executeNodeList(
     reply = client.reply();
     printf("%s\n", STR(reply.toString()));
     #endif
-    
+   
+    #if 0
     //
     // A small test to get the cpu stats.
     //
@@ -383,6 +384,7 @@ S9sBusinessLogic::executeNodeList(
     reply = client.reply();
     reply.printCpuStat();
     //printf("%s\n", STR(reply.toString()));
+    #endif
 
     success = client.getClusters();
     if (success)

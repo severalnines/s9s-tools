@@ -1263,10 +1263,10 @@ S9sRpcReply::printCpuStat()
 
         printf("%%cpu%02d-%02d ", hostId, id);
         printf("%s%5.1f%s us,", numberStart, user, numberEnd);
-        printf("%5.1f sy,", sys);
-        printf("%5.1f id,", idle);
-        printf("%5.1f wa,", wait);
-        printf("%5.1f st, ", steal);
+        printf("%s%5.1f%s sy,", numberStart, sys, numberEnd);
+        printf("%s%5.1f%s id,", numberStart, idle, numberEnd);
+        printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
+        printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
         printf("%s\n", STR(model));
     }
 }
