@@ -367,9 +367,14 @@ S9sBusinessLogic::executeNodeList(
     S9sRpcReply reply;
     bool        success;
 
+    #if 0
+    //
+    // A small test to get the cpu info.
+    //
     client.getCpuInfo(options->clusterId());
     reply = client.reply();
     printf("%s\n", STR(reply.toString()));
+    #endif
 
     success = client.getClusters();
     if (success)
