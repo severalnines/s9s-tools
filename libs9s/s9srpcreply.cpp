@@ -588,7 +588,6 @@ S9sRpcReply::printNodeListBrief()
     int             nPrinted = 0;
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
-    //int             clusterId = options->clusterId();
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
     int             column = 0;
@@ -600,10 +599,6 @@ S9sRpcReply::printNodeListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hostList = theMap["hosts"].toVariantList();
-        //int            id = theMap["cluster_id"].toInt();
-
-        //if (clusterId > 0 && clusterId != id)
-        //    continue;
 
         for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
         {
@@ -715,7 +710,6 @@ S9sRpcReply::printNodeListLong()
     S9sString       versionFormat;
     uint            maxClusterNameLength = 0u;
     S9sString       clusterNameFormat;
-    //int             clusterId = options->clusterId();
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
@@ -727,13 +721,9 @@ S9sRpcReply::printNodeListLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList hosts = theMap["hosts"].toVariantList();
-        //int            id = theMap["cluster_id"].toInt();
         S9sString      clusterName = theMap["cluster_name"].toString();
         
         total += hosts.size();
-
-        //if (clusterId > 0 && clusterId != id)
-        //    continue;
 
         if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
             continue;
@@ -808,7 +798,7 @@ S9sRpcReply::printNodeListLong()
             }
         }
 
-        // Calculating how much space we have for the message.
+        // Calculating how much space we have for the message column.
         nColumns  = 3 + 1;
         nColumns += maxVersionLength + 1;
         nColumns += maxClusterNameLength + 1;
