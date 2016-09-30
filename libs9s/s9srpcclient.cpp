@@ -187,6 +187,68 @@ S9sRpcClient::setHost(
     return executeRequest(uri, request.toString());
 }
 
+/**
+ *
+{
+    "cc_timestamp": 1475217315,
+    "data": [ 
+    {
+        "class_name": "CmonCpuInfo",
+        "cpucores": 4,
+        "cpumaxmhz": 2.333e+06,
+        "cpumhz": 2000,
+        "cpumodel": "Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz",
+        "cputemp": 53,
+        "hostid": 1,
+        "physical_cpu_id": 0,
+        "siblings": 4,
+        "vendor": "GenuineIntel"
+    }, 
+    {
+        "class_name": "CmonCpuInfo",
+        "cpucores": 4,
+        "cpumaxmhz": 2.333e+06,
+        "cpumhz": 2000,
+        "cpumodel": "Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz",
+        "cputemp": 53,
+        "hostid": 4,
+        "physical_cpu_id": 1,
+        "siblings": 4,
+        "vendor": "GenuineIntel"
+    } ],
+    "requestStatus": "ok",
+    "total": 6
+}
+ */
+bool
+S9sRpcClient::getCpuInfo(
+        const int clusterId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/%d/stat/", clusterId);
+
+    request["operation"] = "getCpuPhysicalInfo";
+    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    S9S_DEBUG("uri     : %s", STR(uri));
+    S9S_DEBUG("request : %s", STR(request.toString()));
+    retval = executeRequest(uri, request.toString());
+    S9S_DEBUG("retval  : %s", retval ? "true" : "false");
+    S9S_DEBUG("error   : %s", STR(m_priv->m_errorString));
+
+    return retval;
+}
+
+/**
+ * A method to get the list of the running processes from all nodes of one
+ * particular cluster.
+ */
 bool 
 S9sRpcClient::getRunningProcesses(
         const int clusterId)
@@ -896,7 +958,6 @@ S9sRpcClient::dropCluster(
     retval = executeRequest(uri, request.toString());
 
     return retval;
-
 }
 
 /**
