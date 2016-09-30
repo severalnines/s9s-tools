@@ -764,98 +764,13 @@ S9sRpcReply::printNodeListLong()
     clusterNameFormat.sprintf("%%-%us ", maxClusterNameLength);
 
     /*
-     * Second run: doing the actual printing.
+     * Sorting the hosts.
      */
-#if 0
-    for (uint idx = 0; idx < theList.size(); ++idx)
-    {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        S9sString      clusterName = theMap["cluster_name"].toString();
-        S9sVariantList hostList = theMap["hosts"].toVariantList();
-        //int            id = theMap["cluster_id"].toInt();
-        
-        //if (clusterId > 0 && clusterId != id)
-        //    continue;
-        
-        if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
-            continue;
-
-        for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
-        {
-            S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
-            S9sNode       node      = hostMap;
-            S9sString     hostName  = node.name();
-            S9sString     status    = hostMap["hoststatus"].toString();
-            S9sString     className = hostMap["class_name"].toString();
-            S9sString     nodeType  = hostMap["nodetype"].toString();
-            S9sString     message   = hostMap["message"].toString();
-            S9sString     version   = hostMap["version"].toString();
-            bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
-            int           port      = hostMap["port"].toInt(-1);
-            const char   *nameStart = "";
-            const char   *nameEnd   = "";
-
-            if (message.empty())
-                message = "-";
-
-            if (syntaxHighlight)
-            {
-                if (status == "CmonHostRecovery" || 
-                        status == "CmonHostShutDown")
-                {
-                    nameStart = XTERM_COLOR_YELLOW;
-                    nameEnd   = TERM_NORMAL;
-                } else if (status == "CmonHostUnknown" ||
-                        status == "CmonHostOffLine")
-                {
-                    nameStart = XTERM_COLOR_RED;
-                    nameEnd   = TERM_NORMAL;
-                } else {
-                    nameStart = XTERM_COLOR_GREEN;
-                    nameEnd   = TERM_NORMAL;
-                }
-            }
-
-            // Calculating how much space we have for the message.
-            nColumns  = 3 + 1;
-            nColumns += maxVersionLength + 1;
-            nColumns += maxClusterNameLength + 1;
-            nColumns += maxHostNameLength + 1;
-            nColumns += 4 + 1;
-
-            if (nColumns < terminalWidth)
-            {
-                int remaining = terminalWidth - nColumns;
-                
-                if (remaining < (int) message.length())
-                {
-                    message.resize(remaining - 1);
-                    message += "…";
-                }
-            }
-
-            printf("%s", STR(nodeTypeFlag(className, nodeType)));
-            printf("%s", STR(nodeStateFlag(status)));
-            printf("%c ", maintenance ? 'M' : '-');
-
-            printf(STR(versionFormat), STR(version));
-            printf(STR(clusterNameFormat), STR(clusterName));
-
-            printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
-
-            if (port >= 0)
-                printf("%4d ", port);
-            else
-                printf("   - ");
-
-
-            printf("%s\n", STR(message));
-        }
-    }
-#else
-    
     sort(hostList.begin(), hostList.end(), compareHostMaps);
 
+    /*
+     * Second run: doing the actual printing.
+     */
     for (uint idx2 = 0; idx2 < hostList.size(); ++idx2)
     {
         S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
@@ -928,7 +843,7 @@ S9sRpcReply::printNodeListLong()
 
         printf("%s\n", STR(message));
     }
-#endif
+
     if (!options->isBatchRequested())
         printf("Total: %d\n", total); 
 }
