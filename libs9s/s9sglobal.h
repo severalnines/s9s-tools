@@ -28,3 +28,24 @@ namespace S9s
         MongoConfigSyntax = YamlSyntax
     };
 };
+
+/**
+ * This is the constant version of the foreach().
+ */
+template <typename T>
+class _ForeachContainer {
+public:
+    inline _ForeachContainer(const T& t) : 
+        c(t), brk(0), i(c.begin()), e(c.end()) 
+    { 
+    }
+    const T c;
+    int brk;
+    typename T::const_iterator i, e;
+};
+
+#define foreach(variable, container)                                \
+for (_ForeachContainer<__typeof__(container)> _container_(container); \
+     !_container_.brk && _container_.i != _container_.e;              \
+     __extension__  ({ ++_container_.brk; ++_container_.i; }))                       \
+    for (variable = _container_.i->second;; __extension__ ({--_container_.brk; break;}))

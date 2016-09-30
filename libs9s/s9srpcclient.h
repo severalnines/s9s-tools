@@ -57,6 +57,7 @@ class S9sRpcClient
                 const S9sVariantMap  &properties);
 
         bool getCpuInfo(const int clusterId);
+        bool getCpuStats(const int clusterId);
         bool getRunningProcesses(const int clusterId);
 
         bool getJobInstances(const int clusterId);

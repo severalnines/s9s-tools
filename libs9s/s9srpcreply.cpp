@@ -1158,6 +1158,120 @@ S9sRpcReply::printJobListLong()
 }
 
 /**
+ * Prints the job log in its short format. In this format only the messages are
+ * printed.
+ *
+
+{
+    "cc_timestamp": 1475228277,
+    "data": [ 
+    {
+        "busy": 0.0482585,
+        "cpuid": 7,
+        "cpumhz": 2000,
+        "cpumodelname": "Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz",
+        "cpuphysicalid": 1,
+        "cputemp": 55.5,
+        "created": 1475226759,
+        "hostid": 1,
+        "idle": 0.930115,
+        "interval": 122858,
+        "iowait": 0.0216267,
+        "loadavg1": 0.83,
+        "loadavg15": 0.26,
+        "loadavg5": 0.58,
+        "sampleends": 1475226879,
+        "samplekey": "CmonCpuStats-1-7",
+        "steal": 0,
+        "sys": 0.0213263,
+        "uptime": 314,
+        "user": 0.0269322
+    }, 
+    {
+        "busy": 0.0132064,
+        "cpuid": 7,
+        "cpumhz": 2000,
+        "cpumodelname": "Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz",
+        "cpuphysicalid": 1,
+        "cputemp": 54.5,
+        "created": 1475228200,
+        "hostid": 4,
+        "idle": 0.986709,
+        "interval": 120157,
+        "iowait": 8.42886e-05,
+        "loadavg1": 0.04,
+        "loadavg15": 0.17,
+        "loadavg5": 0.1,
+        "sampleends": 1475228261,
+        "samplekey": "CmonCpuStats-4-7",
+        "steal": 0,
+        "sys": 0.0100287,
+        "uptime": 1675,
+        "user": 0.00317769
+    } ],
+    "requestStatus": "ok",
+    "total": 392
+
+ */
+void
+S9sRpcReply::printCpuStat()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("data").toVariantList();
+    S9sVariantMap   listMap;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sString     key     = theMap["samplekey"].toString();
+        ulonglong     created = theMap["created"].toULongLong();
+
+        if (!listMap.contains(key))
+        {
+            listMap[key] = theMap;
+            continue;
+        }
+
+        if (listMap[key]["created"].toULongLong() < created)
+            listMap[key] = theMap;
+    }
+
+    foreach (const S9sVariant variant, listMap)
+    {
+        S9sVariantMap theMap  = variant.toVariantMap();
+        S9sString     model   = theMap["cpumodelname"].toString();
+        int           id      = theMap["cpuid"].toInt();
+        int           hostId  = theMap["hostid"].toInt();
+        S9sString     key     = theMap["samplekey"].toString();
+        double        user    = theMap["user"].toDouble() * 100.0;
+        double        sys     = theMap["sys"].toDouble()  * 100.0;
+        double        idle    = theMap["idle"].toDouble() * 100.0;
+        double        wait    = theMap["iowait"].toDouble() * 100.0;
+        double        steal   = theMap["steal"].toDouble() * 100.0;
+        const char    *numberStart = "";
+        const char    *numberEnd   = "";
+
+        while (model.contains("  "))
+            model.replace("  ", " ");
+
+        if (syntaxHighlight)
+        {
+            numberStart = TERM_BOLD;
+            numberEnd   = TERM_NORMAL;
+        }
+
+        printf("%%cpu%02d-%02d ", hostId, id);
+        printf("%s%5.1f%s us,", numberStart, user, numberEnd);
+        printf("%5.1f sy,", sys);
+        printf("%5.1f id,", idle);
+        printf("%5.1f wa,", wait);
+        printf("%5.1f st, ", steal);
+        printf("%s\n", STR(model));
+    }
+}
+
+/**
  * \param percent the percent (between 0.0 and 100.0) that is shown by the
  *   progress bar.
  * \param syntaxHighlight true to use ANSI terminal color sequences.
