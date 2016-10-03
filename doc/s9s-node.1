@@ -1,7 +1,7 @@
 .TH S9S 1 "August 29, 2016"
 
 .SH NAME
-s9s-cluster \- Command line client for the Severalnines Clustercontrol server.
+s9s-node \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
 .B s9s-cluster
 .RI [OPTION]...
@@ -17,40 +17,11 @@ following:
 
 .TP
 .B \-L, \-\-list
-List the clusters managed by the controller.
+List the nodes managed by the controller.
 
 .TP
-.B \-\-create
-Create a new cluster. When this command line option is provided the program
-will contact the controller and register a new job that will eventually create
-a new cluster. 
-
-.TP
-.B \-\-add\-node
-Adds a new node (server) to the cluster or to be more precise creates a new
-job that will eventually add a new node to the cluster. The name (or IP 
-address) of the node should be specified using the \fB\-\-nodes\fR command 
-line option.
-
-.TP
-.B \-\-remove\-node 
-Removes a node from the cluster (creates a new job that will remove the node
-from the cluster). The name (or IP address) of the node should be specified 
-using the \fB\-\-nodes\fR command line option.
-
-.TP
-.B \-\-rolling-restart
-Restart all nodes of the cluster by keeping the cluster alive. This command 
-line option will create a job that will restart all the nodes.
-
-.TP
-.B \-\-stop
-Creates and registers and a new job that will stop the cluster when executed.
-
-.TP
-.B \-\-drop
-Removes the cluster from the Cmon controller. The cluster remains operational,
-but the controller will no longer manage or monitor it.
+.B \-\-set
+Sets various properties of the specified node/host.
 
 .SS Generic Options
 
@@ -98,27 +69,17 @@ is
 .BR never ", " always ", or " auto .
 
 
+
 .\"
 .\"
 .\"
-.SS Job Related Options
+.SS Node Related Options
 
 .TP
-.B \-\-wait
-If the application created a job (e.g. to create a new cluster) and this command
-line option is provided it will wait until the job is executed. While waiting a
-progress bar will be shown unless the silent mode is set.
-
-.TP
-.B \-\-log
-If the application created a job (e.g. to create a new cluster) and this command
-line option is provided it will wait until the job is executed. While waiting
-the job logs will be shown unless the silent mode is set.
-
-.TP
-.B \-\-batch
-Print no messages. If the application created a job print only the job ID number
-and exit.
+.BI \-\^\-properties= ASSIGNMENT
+One or more assignments specifying property names and values. The assignment
+operator is the '=' character (e.g. --properties='alias="newname"'), multiple
+assignments are separated by the semicolon (';').
 
 .\"
 .\"
@@ -159,35 +120,6 @@ Someone has to write this part.
 Someone has to write this part. The mgmd:// notation is also accepted.
 .RE
 
-.TP
-.BI \-\^\-vendor= VENDOR
-The name of the vendor to be installed.
-
-.TP
-.BI \-\^\-provider-version= VERSION
-The version string of the software to be installed. 
-
-.TP
-.BI \-\^\-os-user= USERNAME
-The name of the remote user that is used to gain SSH access on the remote nodes.
-If this command line option is omitted the name of the local user will be used
-on the remote hosts too.
-
-.TP
-.BI \-\^\-cluster-type= TYPENAME
-The name of the cluster type to be installed. Currently the following types are
-supported: galera, mysqlreplication, ndb (or ndbcluster).
-
-.TP
-.BI \-\^\-db\-admin= USERNAME
-The user name of the database administrator (e.g. 'root').
-
-.TP
-.BI \-\^\-db-admin-passwd= PASSWORD
-The password of the datanase administrator. Passing the password through the
-command line is a security risk, so I will add other ways to store the password
-soon.
-
 .\"
 .\"
 .\"
@@ -210,14 +142,8 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-List the clusters managed by the controller:
+List the nodes managed by the controller:
 
 .nf
-# \fBs9s cluster --list --long --controller=localhost:9555 --color=always\fR
-.fi
-
-Creating a cluster:
-
-.nf
-# \fBs9s cluster \-\-create \-\-controller=localhost:9555 \-\-cluster-type=galera \-\-nodes="10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5" \-\-vendor=codership \-\-provider-version=5.6 \-\-os-user=pipas \-\-wait\fR
+# \fBs9s node --list --long --controller=localhost:9555 --color=always\fR
 .fi
