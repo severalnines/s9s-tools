@@ -646,6 +646,19 @@ S9sOptions::isJsonRequested() const
 }
 
 /**
+ * \returns true if the --top command line option was provided when starting the
+ *   program.
+ */
+bool
+S9sOptions::isTopRequested() const
+{
+    if (m_options.contains("top"))
+        return m_options.at("top").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the --wait command line option was used.
  */
 bool
@@ -1162,6 +1175,7 @@ S9sOptions::readOptionsProcess(
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
+        { "top",              no_argument,       0,  4 },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
@@ -1241,6 +1255,11 @@ S9sOptions::readOptionsProcess(
                 m_options["print_json"] = true;
                 break;
             
+            case 4:
+                // --top
+                m_options["top"] = true;
+                break;
+
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);

@@ -108,6 +108,7 @@ class S9sOptions
 
         bool isLongRequested() const;
         bool isJsonRequested() const;
+        bool isTopRequested() const;
         bool isWaitRequested() const;
         bool isBatchRequested() const;
 
