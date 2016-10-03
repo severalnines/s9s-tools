@@ -350,6 +350,10 @@ S9sOptions::osUser() const
     return retval;
 }
 
+/**
+ * \returns The file (on the controller) that will be used as SSH key while
+ *   authenticating on the nodes with SSH.
+ */
 S9sString
 S9sOptions::osKeyFile() const
 {
@@ -360,6 +364,10 @@ S9sOptions::osKeyFile() const
     return retval;
 }
 
+/**
+ * \returns The database administrator user name used when installing new
+ *   clusters.
+ */
 S9sString 
 S9sOptions::dbAdminUserName(
         const S9sString &defaultValue) const
@@ -374,6 +382,10 @@ S9sOptions::dbAdminUserName(
     return retval;
 }
 
+/**
+ * \returns The database administrator password used when installing new
+ *   clusters.
+ */
 S9sString 
 S9sOptions::dbAdminPassword()
 {
@@ -469,7 +481,11 @@ S9sOptions::userName() const
 {
     S9sString retval;
 
-    retval = getenv("USER");
+    retval = m_userConfig.variableValue("user_name");
+    
+    if (retval.empty())
+        retval = getenv("USER");
+
     return retval;
 }
 
@@ -534,6 +550,10 @@ S9sOptions::isListRequested() const
     return false;
 }
 
+/**
+ * \returns true if the "set" function is requested using the --set command line
+ *   option.
+ */
 bool
 S9sOptions::isSetRequested() const
 {
@@ -577,12 +597,17 @@ bool
 S9sOptions::isRollingRestartRequested() const
 {
     bool retval = false;
+
     if (m_options.contains("rolling_restart"))
         retval = m_options.at("rolling_restart").toBoolean();
 
     return retval;
 }
 
+/**
+ * \returns true if the add node operation was requested using the "--add-node"
+ *   command line option.
+ */
 bool
 S9sOptions::isAddNodeRequested() const
 {
@@ -594,6 +619,10 @@ S9sOptions::isAddNodeRequested() const
     return retval;
 }
 
+/**
+ * \returns true if the remove node oparation was requested using the
+ *   "--remove-node" command line option.
+ */
 bool
 S9sOptions::isRemoveNodeRequested() const
 {
@@ -848,6 +877,10 @@ S9sOptions::printError(
     fflush(stderr);
 }
 
+/**
+ * \returns true if everything was ok, false if there was some errors with the
+ *   command line options.
+ */
 bool
 S9sOptions::readOptions(
         int   *argc,
