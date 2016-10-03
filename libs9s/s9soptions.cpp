@@ -39,6 +39,9 @@
 
 S9sOptions *S9sOptions::sm_instance = 0;
 
+/**
+ * The constructor, nothing to see here.
+ */
 S9sOptions::S9sOptions() :
     m_operationMode(NoMode),
     m_exitStatus(EXIT_SUCCESS)
@@ -61,6 +64,9 @@ S9sOptions::S9sOptions() :
     }
 }
 
+/**
+ * The destructor of the singleton.
+ */
 S9sOptions::~S9sOptions()
 {
     sm_instance = NULL;
@@ -289,10 +295,15 @@ S9sOptions::nodes() const
 S9sString
 S9sOptions::vendor() const
 {
-    if (m_options.contains("vendor"))
-        return m_options.at("vendor").toString();
+    S9sString retval;
 
-    return S9sString();
+    if (m_options.contains("vendor"))
+        retval = m_options.at("vendor").toString();
+    else
+        retval = m_userConfig.variableValue("vendor");
+
+
+    return retval;
 }
 
 /**
@@ -303,10 +314,14 @@ S9sString
 S9sOptions::providerVersion(
         const S9sString &defaultValue) const
 {
-    if (m_options.contains("provider_version"))
-        return m_options.at("provider_version").toString();
+    S9sString retval = defaultValue;
 
-    return defaultValue;
+    if (m_options.contains("provider_version"))
+        retval = m_options.at("provider_version").toString();
+    else
+        retval = m_userConfig.variableValue("provider_version");
+
+    return retval;
 }
 
 /**

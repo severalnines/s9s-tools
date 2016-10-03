@@ -6,7 +6,34 @@ s9s.conf \- configuration file for the s9s command line tool
 .B /etc/s9s.conf
 .SH DESCRIPTION
 .TP
-\fBcontroller_host_name\fP The host name of the Cmon controller.
+\fBcontroller_host_name\fP 
+The host name of the Cmon controller.
 
 .TP
-\fBcontroller_port\fP The port where the controller is accepting requests.
+\fBcontroller_port\fP 
+The port where the controller is accepting requests.
+
+.TP
+\fBdefault_cluster_id\fP 
+The cluster ID that will be used when no cluster ID is provided in the command
+line (--cluster-id command line option).
+
+.TP
+\fBos_user\fP 
+The name of the user that will be used when authenticating on the nodes with
+SSH.
+
+.TP
+\fBos_key_file\fP 
+The file (on the controller) that will be used as SSH key while authenticating
+on the nodes with SSH.
+
+.TP
+\fBprovider_version\fP
+The version of the SQL software that will be installed when no value is set by
+the --provider-version command line option.
+
+.TP
+\fBvendor\fP 
+Database software vendor name to be used when installing new clusters.
+
