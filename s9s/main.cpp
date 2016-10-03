@@ -75,6 +75,7 @@ main(int argc, char **argv)
         atexit(enable_cursor);
 
     PRINT_VERBOSE("Command line options processed.");
+    #if 0
     if (options->isVerbose())
     {
         printf("%sXTERM_COLOR_RED%s\n", 
@@ -125,6 +126,7 @@ main(int argc, char **argv)
         printf("*** terminal width  : %d\n", options->terminalWidth());
         printf("*** terminal height : %d\n", options->terminalHeight());
     }
+    #endif
 
     finished = options->executeInfoRequest();
     if (finished)

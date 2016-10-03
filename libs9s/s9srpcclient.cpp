@@ -26,17 +26,27 @@
 #include <string.h>
 #include <stdio.h>
 
-//#define DEBUG
-//#define WARNING
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
 
+/**
+ * Default constructor.
+ */
 S9sRpcClient::S9sRpcClient() :
     m_priv(new S9sRpcClientPrivate)
 {
 }
 
+/**
+ * \param hostName the name if the host where the Cmon controller accepts
+ *   requests.
+ * \param port the port where the Cmon controller accepts requests.
+ * \param token a token to be used with the communication.
+ *
+ */
 S9sRpcClient::S9sRpcClient(
         const S9sString &hostName,
         const int        port,
@@ -62,7 +72,7 @@ S9sRpcClient::S9sRpcClient (
 }
 
 /**
- * 
+ * Normal destructor. 
  */
 S9sRpcClient::~S9sRpcClient()
 {
@@ -245,6 +255,13 @@ S9sRpcClient::getCpuInfo(
     return retval;
 }
 
+/**
+ * \param clusterId the ID of the cluster for which the CPU information will be
+ *   fetched.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
 bool
 S9sRpcClient::getCpuStats(
         const int clusterId)
@@ -273,6 +290,11 @@ S9sRpcClient::getCpuStats(
 
 
 /**
+ * \param clusterId the ID of the cluster for which the process information will
+ *   be fetched.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
  * A method to get the list of the running processes from all nodes of one
  * particular cluster.
  */
@@ -302,6 +324,11 @@ S9sRpcClient::getRunningProcesses(
 }
 
 /**
+ * \param clusterId the ID of the cluster for which the job instances will be
+ *   fetched.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ * 
  * Sends a "getJobInstances" request, receives the reply. We use this RPC call
  * to get the job list (e.g. s9s job --list).
  */
@@ -472,6 +499,8 @@ S9sRpcClient::rollingRestart(
 #endif
 
 /**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *
@@ -546,6 +575,8 @@ S9sRpcClient::createGaleraCluster(
 }
 
 /**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  */
@@ -621,6 +652,11 @@ S9sRpcClient::createMySqlReplication(
     return retval;
 }
 
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ *
+ */
 bool
 S9sRpcClient::createNdbCluster(
         const S9sVariantList &mySqlHosts,
@@ -706,6 +742,11 @@ S9sRpcClient::createNdbCluster(
     return retval;
 }
 
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ *
+ */
 bool
 S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
@@ -773,7 +814,8 @@ S9sRpcClient::createPostgreSql(
         
 
 /**
- * \param hosts the hosts that is going to be added to the cluster
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  *
  * Creates a job that will add a new node to the cluster.
  */
@@ -832,7 +874,8 @@ S9sRpcClient::addNode(
 
 /**
  * \param clusterId The ID of the cluster.
- * \param hostNames The names of the hosts to remove.
+ * \param hosts the hosts that will be removed from the cluster (variant list
+ *   with S9sNode elements).
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).
  *
@@ -1012,7 +1055,7 @@ S9sRpcClient::executeRequest(
      *
      */
     if (options->isJsonRequested() && options->isVerbose())
-        printf("Request: \n%s\n", STR(payload));
+        printf("Preparing to send request: \n%s\n", STR(payload));
 
     header.sprintf(
         "POST %s HTTP/1.0\r\n"
@@ -1058,7 +1101,7 @@ S9sRpcClient::executeRequest(
         } else {
             if (options->isJsonRequested() && options->isVerbose())
             {
-                printf("Request: \n%s\n", STR(payload));
+                printf("Sent request.");
             }
         }
     }
