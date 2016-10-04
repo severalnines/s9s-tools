@@ -762,8 +762,9 @@ S9sRpcReply::printNodeListLong()
     S9sString       hostNameFormat;
     uint            maxVersionLength  = 0u;
     S9sString       versionFormat;
-    uint            maxClusterNameLength = 0u;
-    S9sString       clusterNameFormat;
+   
+    S9sFormat       clusterNameFormat;
+
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
@@ -782,8 +783,7 @@ S9sRpcReply::printNodeListLong()
         if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
             continue;
 
-        if (clusterName.length() > maxClusterNameLength)
-            maxClusterNameLength = clusterName.length();
+        clusterNameFormat.widen(clusterName);
 
         for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
         {
@@ -805,7 +805,6 @@ S9sRpcReply::printNodeListLong()
 
     hostNameFormat.sprintf("%%s%%-%us%%s ", maxHostNameLength);
     versionFormat.sprintf("%%-%us ", maxVersionLength);
-    clusterNameFormat.sprintf("%%-%us ", maxClusterNameLength);
 
     /*
      * Sorting the hosts.
@@ -855,7 +854,7 @@ S9sRpcReply::printNodeListLong()
         // Calculating how much space we have for the message column.
         nColumns  = 3 + 1;
         nColumns += maxVersionLength + 1;
-        nColumns += maxClusterNameLength + 1;
+        nColumns += clusterNameFormat.realWidth();
         nColumns += maxHostNameLength + 1;
         nColumns += 4 + 1;
 
@@ -875,7 +874,7 @@ S9sRpcReply::printNodeListLong()
         printf("%c ", maintenance ? 'M' : '-');
 
         printf(STR(versionFormat), STR(version));
-        printf(STR(clusterNameFormat), STR(clusterName));
+        clusterNameFormat.printf(clusterName);
 
         printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
 
