@@ -20,13 +20,14 @@ class S9sRpcClientPrivate
         void clearBuffer();
         void ensureHasBuffer(size_t size);
 
-        int connectSocket();
-        void closeSocket(int socketFd);
-        ssize_t writeSocket(int socketFd, const char *data, size_t length);
-        ssize_t readSocket(int socketFd, char *buffer, size_t bufSize);
+        bool connect();
+        void close();
+        ssize_t write(const char *data, size_t length);
+        ssize_t read(char *buffer, size_t bufSize);
 
     private:
         int             m_referenceCounter;
+        int             m_socketFd;
         S9sString       m_hostName;
         int             m_port;
         S9sString       m_token;

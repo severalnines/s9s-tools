@@ -19,6 +19,7 @@
 
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_referenceCounter(1),
+    m_socketFd(-1),
     m_port(0),
     m_buffer(0),
     m_bufferSize(0),
@@ -28,6 +29,7 @@ S9sRpcClientPrivate::S9sRpcClientPrivate() :
 
 S9sRpcClientPrivate::~S9sRpcClientPrivate()
 {
+    close();
     clearBuffer();
 }
 
@@ -74,45 +76,50 @@ S9sRpcClientPrivate::clearBuffer()
 }
 
 /**
- * \returns The socketFd or -1 on error.
+ * \returns whether it connected successfully
  */
-int
-S9sRpcClientPrivate::connectSocket()
+bool
+S9sRpcClientPrivate::connect()
 {
     struct hostent *hp;
     struct timeval timeout;
     struct sockaddr_in server;
-    int    socketFd;
+
+    /*
+     * disconnect first if there is a previous connection
+     */
+    if (m_socketFd > 0)
+        close();
 
     if (m_hostName.empty())
     {
         m_errorString = "Controller host name is not set.";
-        return -1;
+        return false;
     }
 
     if (m_port <= 0)
     {
         m_errorString = "Controller port is not set.";
-        return -1;
+        return false;
     }
 
     PRINT_VERBOSE("Connecting to %s:%d...", STR(m_hostName), m_port);
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketFd == -1)
+    m_socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (m_socketFd == -1)
     {
         m_errorString.sprintf("Error creating socket: %m");
-        return -1; 
+        return false;
     }
 
     /*
-     * Limiting the connection.
-     * FIXME: Why do we need this?
+     * Setting up a read and write timeout values
+     * (otherwise it hangs on interrupted connection)
      */
     timeout.tv_sec  = 60;
     timeout.tv_usec = 0;
-    setsockopt (socketFd, SOL_SOCKET, SO_RCVTIMEO,
+    setsockopt (m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
                 (char*) &timeout, sizeof(timeout));
-    setsockopt (socketFd, SOL_SOCKET, SO_SNDTIMEO,
+    setsockopt (m_socketFd, SOL_SOCKET, SO_SNDTIMEO,
                 (char*) &timeout, sizeof(timeout));
 
     /*
@@ -122,56 +129,55 @@ S9sRpcClientPrivate::connectSocket()
     if (hp == NULL)
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
-        closeSocket(socketFd);
+        close();
         return -1;
     }
 
     /*
      * Connecting to the server.
+     * (TODO: IPv6)
      */
     memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;
     server.sin_port = htons(m_port);
 
-    if (connect(socketFd, (struct sockaddr *) &server, sizeof server) == -1)
+    if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server) == -1)
     {
         m_errorString.sprintf(
                 "Connect to %s:%d failed: %m.", 
                 STR(m_hostName), m_port);
       
-        closeSocket(socketFd);
+        close();
         return -1;
     }
 
     PRINT_VERBOSE("Connected.");
 
-    return socketFd;
+    return true;
 }
 
 void
-S9sRpcClientPrivate::closeSocket(
-        int socketFd)
+S9sRpcClientPrivate::close()
 {
-    if (socketFd < 0)
+    if (m_socketFd < 0)
         return;
 
-    ::shutdown(socketFd, SHUT_RDWR);
-    ::close(socketFd);
+    ::shutdown(m_socketFd, SHUT_RDWR);
+    ::close(m_socketFd);
 }
 
 /**
  * write safely to a socket
  */
 ssize_t
-S9sRpcClientPrivate::writeSocket(
-        int         socketFd, 
+S9sRpcClientPrivate::write(
         const char *data, 
         size_t      length)
 {
     ssize_t retval = -1;
 
     do {
-        retval = ::write(socketFd, data, length);
+        retval = ::write(m_socketFd, data, length);
     } while (retval == -1 && errno == EINTR);
 
     return retval;
@@ -181,16 +187,16 @@ S9sRpcClientPrivate::writeSocket(
  * read safely from a socket
  */
 ssize_t
-S9sRpcClientPrivate::readSocket(
-        int     socketFd, 
+S9sRpcClientPrivate::read(
         char   *buffer, 
         size_t  bufSize)
 {
     ssize_t retval = -1;
 
     do {
-        retval = read (socketFd, buffer, bufSize);
+        retval = ::read (m_socketFd, buffer, bufSize);
     } while (retval == -1 && errno == EINTR);
 
     return retval;
 }
+
