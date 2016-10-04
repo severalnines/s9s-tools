@@ -69,6 +69,7 @@ libs9s_a_SOURCES =            \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sstring.cpp             \
+	s9sformat.cpp             \
 	s9sdatetime.cpp           \
 	s9surl.cpp                \
 	s9snode.cpp               \

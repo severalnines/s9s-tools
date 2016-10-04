@@ -23,6 +23,7 @@
 
 #include "S9sOptions"
 #include "S9sDateTime"
+#include "S9sFormat"
 #include "S9sRegExp"
 #include "S9sNode"
 
@@ -538,7 +539,22 @@ S9sRpcReply::printClusterListLong()
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     S9sString       requestedName = options->clusterName();
     int             terminalWidth = options->terminalWidth();
+    S9sFormat       idFormat;
 
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap      = theList[idx].toVariantMap();
+        int           clusterId   = theMap["cluster_id"].toInt();
+
+        idFormat.widen(clusterId);
+    }
+
+    /*
+     * Second run: doing the actual printing.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap      = theList[idx].toVariantMap();
@@ -567,7 +583,7 @@ S9sRpcReply::printClusterListLong()
             nameEnd   = TERM_NORMAL;
         }
         
-        nColumns +=  5;
+        nColumns += idFormat.realWidth();
         nColumns +=  7;
         nColumns +=  9;
         nColumns += 12;
@@ -584,7 +600,7 @@ S9sRpcReply::printClusterListLong()
             }
         }
 
-        printf("%4d ", clusterId); 
+        idFormat.printf(clusterId); 
         printf("%6s ", STR(state));
         printf("%-8s ", STR(clusterType.toLower()));
         printf("%-12s ", STR(vendor + " " + version));
@@ -735,7 +751,7 @@ S9sRpcReply::printNodeListLong()
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
 
-    /**
+    /*
      * First run-through: collecting some information.
      */
     for (uint idx = 0; idx < theList.size(); ++idx)
