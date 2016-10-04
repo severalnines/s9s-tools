@@ -537,6 +537,7 @@ S9sRpcReply::printClusterListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     S9sString       requestedName = options->clusterName();
+    int             terminalWidth = options->terminalWidth();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -548,6 +549,8 @@ S9sRpcReply::printClusterListLong()
         S9sString     text        = theMap["status_text"].toString();
         S9sString     vendor      = theMap["vendor"].toString();
         S9sString     version     = theMap["version"].toString();
+        S9sString     statusText  = theMap["status_text"].toString();
+        int           nColumns    = 0;
         const char   *nameStart   = "";
         const char   *nameEnd     = "";
 
@@ -564,11 +567,29 @@ S9sRpcReply::printClusterListLong()
             nameEnd   = TERM_NORMAL;
         }
         
+        nColumns +=  5;
+        nColumns +=  7;
+        nColumns +=  9;
+        nColumns += 12;
+        nColumns += 10;
+
+        if (nColumns < terminalWidth)
+        {
+            int remaining = terminalWidth - nColumns;
+            
+            if (remaining < (int) statusText.length())
+            {
+                statusText.resize(remaining - 1);
+                statusText += "…";
+            }
+        }
+
         printf("%4d ", clusterId); 
         printf("%6s ", STR(state));
         printf("%-8s ", STR(clusterType.toLower()));
         printf("%-12s ", STR(vendor + " " + version));
-        printf("%s%s%s\n", nameStart, STR(clusterName), nameEnd);
+        printf("%s%s%s ", nameStart, STR(clusterName), nameEnd);
+        printf("%s\n", STR(statusText));
     }
    
     if (!options->isBatchRequested())

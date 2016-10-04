@@ -367,7 +367,7 @@ S9sBusinessLogic::executeNodeList(
     S9sRpcReply reply;
     bool        success;
 
-    #if 0
+    #if 1
     //
     // A small test to get the cpu info.
     //
@@ -376,7 +376,7 @@ S9sBusinessLogic::executeNodeList(
     printf("%s\n", STR(reply.toString()));
     #endif
    
-    #if 0
+    #if 1
     //
     // A small test to get the cpu stats.
     //
