@@ -23,8 +23,19 @@
 
 S9sFormat::S9sFormat() :
     m_width(0),
-    m_withFieldSeparator(true)
+    m_withFieldSeparator(true),
+    m_colorStart(0),
+    m_colorEnd(0)
 {
+}
+
+void
+S9sFormat::setColor(
+        const char *colorStart,
+        const char *colorEnd)
+{
+    m_colorStart = colorStart;
+    m_colorEnd   = colorEnd;
 }
 
 int
@@ -68,7 +79,10 @@ S9sFormat::printf(
 {
     S9sString formatString;
 
-    formatString.sprintf("%%%dd", m_width);
+    if (m_width > 0)
+        formatString.sprintf("%%%dd", m_width);
+    else
+        formatString.sprintf("%%d", m_width);
 
     if (m_withFieldSeparator)
         formatString += " ";
@@ -82,10 +96,19 @@ S9sFormat::printf(
 {
     S9sString formatString;
 
-    formatString.sprintf("%%-%ds", m_width);
+    if (m_width > 0)
+        formatString.sprintf("%%-%ds", m_width);
+    else
+        formatString = "%s";
 
     if (m_withFieldSeparator)
         formatString += " ";
 
+    if (m_colorStart != NULL)
+        ::printf("%s", m_colorStart);
+
     ::printf(STR(formatString), STR(value));
+
+    if (m_colorEnd != NULL)
+        ::printf("%s", m_colorEnd);
 }

@@ -26,6 +26,8 @@ class S9sFormat
     public:
         S9sFormat();
         
+        void setColor(const char *colorStart, const char *colorEnd);
+
         int realWidth() const;
 
         void widen(const S9sString &value);
@@ -35,6 +37,8 @@ class S9sFormat
         void printf(const S9sString &value) const;
 
     private:
-        int  m_width;
-        bool m_withFieldSeparator;
+        int         m_width;
+        bool        m_withFieldSeparator;
+        const char *m_colorStart;
+        const char *m_colorEnd;
 };
