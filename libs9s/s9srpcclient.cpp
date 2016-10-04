@@ -26,8 +26,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512

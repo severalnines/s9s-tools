@@ -32,6 +32,7 @@ class S9sFormat
         void widen(const int value);
 
         void printf(const int value) const;
+        void printf(const S9sString &value) const;
 
     private:
         int  m_width;

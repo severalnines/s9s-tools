@@ -76,3 +76,16 @@ S9sFormat::printf(
     ::printf(STR(formatString), value);
 }
 
+void
+S9sFormat::printf(
+        const S9sString &value) const
+{
+    S9sString formatString;
+
+    formatString.sprintf("%%-%ds", m_width);
+
+    if (m_withFieldSeparator)
+        formatString += " ";
+
+    ::printf(STR(formatString), STR(value));
+}

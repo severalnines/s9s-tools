@@ -540,7 +540,9 @@ S9sRpcReply::printClusterListLong()
     S9sString       requestedName = options->clusterName();
     int             terminalWidth = options->terminalWidth();
     S9sFormat       idFormat;
-
+    S9sFormat       stateFormat;
+    S9sFormat       typeFormat;
+    S9sFormat       versionFormat;
     /*
      * First run-through: collecting some information.
      */
@@ -548,8 +550,16 @@ S9sRpcReply::printClusterListLong()
     {
         S9sVariantMap theMap      = theList[idx].toVariantMap();
         int           clusterId   = theMap["cluster_id"].toInt();
+        S9sString     clusterType = theMap["cluster_type"].toString();
+        S9sString     state       = theMap["state"].toString();
+        S9sString     version     = 
+            theMap["vendor"].toString() + " " +
+            theMap["version"].toString();
 
         idFormat.widen(clusterId);
+        stateFormat.widen(state);
+        typeFormat.widen(clusterType);
+        versionFormat.widen(version);
     }
 
     /*
@@ -563,8 +573,9 @@ S9sRpcReply::printClusterListLong()
         S9sString     clusterType = theMap["cluster_type"].toString();
         S9sString     state       = theMap["state"].toString();
         S9sString     text        = theMap["status_text"].toString();
-        S9sString     vendor      = theMap["vendor"].toString();
-        S9sString     version     = theMap["version"].toString();
+        S9sString     version     = 
+            theMap["vendor"].toString() + " " +
+            theMap["version"].toString();
         S9sString     statusText  = theMap["status_text"].toString();
         int           nColumns    = 0;
         const char   *nameStart   = "";
@@ -584,14 +595,14 @@ S9sRpcReply::printClusterListLong()
         }
         
         nColumns += idFormat.realWidth();
-        nColumns +=  7;
-        nColumns +=  9;
-        nColumns += 12;
+        nColumns += stateFormat.realWidth();
+        nColumns += typeFormat.realWidth();
+        nColumns += versionFormat.realWidth();
         nColumns += 10;
 
         if (nColumns < terminalWidth)
         {
-            int remaining = terminalWidth - nColumns;
+            int remaining  = terminalWidth - nColumns;
             
             if (remaining < (int) statusText.length())
             {
@@ -601,9 +612,9 @@ S9sRpcReply::printClusterListLong()
         }
 
         idFormat.printf(clusterId); 
-        printf("%6s ", STR(state));
-        printf("%-8s ", STR(clusterType.toLower()));
-        printf("%-12s ", STR(vendor + " " + version));
+        stateFormat.printf(state);
+        typeFormat.printf(clusterType.toLower());
+        versionFormat.printf(version);
         printf("%s%s%s ", nameStart, STR(clusterName), nameEnd);
         printf("%s\n", STR(statusText));
     }
