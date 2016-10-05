@@ -1318,13 +1318,20 @@ S9sRpcReply::printCpuStat()
 void
 S9sRpcReply::printCpuStatLine1()
 {
-    S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sVariantList  theList = operator[]("data").toVariantList();
-    S9sVariantMap   listMap;
-    const char     *numberStart = "";
-    const char     *numberEnd   = "";
-    S9sVariantMap   keys;
+    S9sOptions      *options = S9sOptions::instance();
+    bool             syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList   theList = operator[]("data").toVariantList();
+    S9sVariantMap    listMap;
+    const char      *numberStart = "";
+    const char      *numberEnd   = "";
+    S9sVariantMap    keys;
+    S9sMap<int, int> hostIds;
+    double           user  = 0.0;
+    double           sys   = 0.0;
+    double           idle  = 0.0;
+    double           wait  = 0.0;
+    double           steal = 0.0;
+
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -1351,48 +1358,45 @@ S9sRpcReply::printCpuStatLine1()
 
     foreach (const S9sVariant variant, listMap)
     {
-        S9sVariantMap theMap  = variant.toVariantMap();
+        S9sVariantMap theMap    = variant.toVariantMap();
+        int           hostId    = theMap["hostid"].toInt();
+        double        thisUser  = theMap["user"].toDouble();
+        double        thisSys   = theMap["sys"].toDouble();
+        double        thisIdle  = theMap["idle"].toDouble();
+        double        thisWait  = theMap["iowait"].toDouble();
+        double        thisSteal = theMap["steal"].toDouble();
+        
+        //printf("-> \n%s\n", STR(theMap.toString()));
+        user  += thisUser;
+        sys   += thisSys;
+        idle  += thisIdle;
+        wait  += thisWait;
+        steal += thisSteal;
 
-        printf("-> \n%s\n", STR(theMap.toString()));
+        hostIds[hostId] = true;
     }
     
-    printf("Phys: %s%d%s", numberStart, (int)listMap.size(), numberEnd);
+    user  /= listMap.size();
+    sys   /= listMap.size();
+    idle  /= listMap.size();
+    wait  /= listMap.size();
+    steal /= listMap.size();
+
+    user  *= 100.0;
+    sys   *= 100.0;
+    idle  *= 100.0;
+    wait  *= 100.0;
+    steal *= 100.0;
+    
+    printf("%s%d%s hosts, ", numberStart, (int)hostIds.size(), numberEnd);
+    printf("%s%d%s cores,", numberStart, (int)listMap.size(), numberEnd);
+    printf("%s%5.1f%s us,",  numberStart, user, numberEnd);
+    printf("%s%5.1f%s sy,", numberStart, sys, numberEnd);
+    printf("%s%5.1f%s id,",  numberStart, idle, numberEnd);
+    printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
+    printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
+    
     printf("\n");
-
-#if 0
-    foreach (const S9sVariant variant, listMap)
-    {
-        S9sVariantMap theMap  = variant.toVariantMap();
-        S9sString     model   = theMap["cpumodelname"].toString();
-        int           id      = theMap["cpuid"].toInt();
-        int           hostId  = theMap["hostid"].toInt();
-        S9sString     key     = theMap["samplekey"].toString();
-        double        user    = theMap["user"].toDouble() * 100.0;
-        double        sys     = theMap["sys"].toDouble()  * 100.0;
-        double        idle    = theMap["idle"].toDouble() * 100.0;
-        double        wait    = theMap["iowait"].toDouble() * 100.0;
-        double        steal   = theMap["steal"].toDouble() * 100.0;
-        const char    *numberStart = "";
-        const char    *numberEnd   = "";
-
-        while (model.contains("  "))
-            model.replace("  ", " ");
-
-        if (syntaxHighlight)
-        {
-            numberStart = TERM_BOLD;
-            numberEnd   = TERM_NORMAL;
-        }
-
-        printf("%%cpu%02d-%02d ", hostId, id);
-        printf("%s%5.1f%s us,", numberStart, user, numberEnd);
-        printf("%s%5.1f%s sy,", numberStart, sys, numberEnd);
-        printf("%s%5.1f%s id,", numberStart, idle, numberEnd);
-        printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
-        printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
-        printf("%s\n", STR(model));
-    }
-#endif
 }
 
 
