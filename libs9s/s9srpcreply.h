@@ -40,6 +40,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobList();
         void printProcessList();
         void printCpuStat();
+        void printCpuStatLine1();
 
     private:
         void printJobLogBrief();

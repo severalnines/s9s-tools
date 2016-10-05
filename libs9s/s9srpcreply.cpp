@@ -758,11 +758,9 @@ S9sRpcReply::printNodeListLong()
     S9sString       clusterNameFilter = options->clusterName();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     S9sVariantList  hostList;
-    uint            maxHostNameLength = 0u;
-    S9sString       hostNameFormat;
-    uint            maxVersionLength  = 0u;
-    S9sString       versionFormat;
-   
+
+    S9sFormat       hostNameFormat;
+    S9sFormat       versionFormat;
     S9sFormat       clusterNameFormat;
 
     int             total = 0;
@@ -792,19 +790,13 @@ S9sRpcReply::printNodeListLong()
             S9sString     hostName  = node.name();
             S9sString     version   = hostMap["version"].toString();
             
-            if (hostName.length() > maxHostNameLength)
-                maxHostNameLength = hostName.length();
-
-            if (version.length() > maxVersionLength)
-                maxVersionLength = version.length();
+            hostNameFormat.widen(hostName);
+            versionFormat.widen(version);
         
             hostMap["cluster_name"] = clusterName;
             hostList << hostMap;
         }
     }
-
-    hostNameFormat.sprintf("%%s%%-%us%%s ", maxHostNameLength);
-    versionFormat.sprintf("%%-%us ", maxVersionLength);
 
     /*
      * Sorting the hosts.
@@ -827,8 +819,6 @@ S9sRpcReply::printNodeListLong()
         S9sString     clusterName = hostMap["cluster_name"].toString();
         bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
         int           port      = hostMap["port"].toInt(-1);
-        const char   *nameStart = "";
-        const char   *nameEnd   = "";
 
         if (message.empty())
             message = "-";
@@ -838,24 +828,21 @@ S9sRpcReply::printNodeListLong()
             if (status == "CmonHostRecovery" || 
                     status == "CmonHostShutDown")
             {
-                nameStart = XTERM_COLOR_YELLOW;
-                nameEnd   = TERM_NORMAL;
+                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
             } else if (status == "CmonHostUnknown" ||
                     status == "CmonHostOffLine")
             {
-                nameStart = XTERM_COLOR_RED;
-                nameEnd   = TERM_NORMAL;
+                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
             } else {
-                nameStart = XTERM_COLOR_GREEN;
-                nameEnd   = TERM_NORMAL;
+                hostNameFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
             }
         }
 
         // Calculating how much space we have for the message column.
         nColumns  = 3 + 1;
-        nColumns += maxVersionLength + 1;
+        nColumns += versionFormat.realWidth();
         nColumns += clusterNameFormat.realWidth();
-        nColumns += maxHostNameLength + 1;
+        nColumns += hostNameFormat.realWidth();
         nColumns += 4 + 1;
 
         if (nColumns < terminalWidth)
@@ -873,10 +860,9 @@ S9sRpcReply::printNodeListLong()
         printf("%s", STR(nodeStateFlag(status)));
         printf("%c ", maintenance ? 'M' : '-');
 
-        printf(STR(versionFormat), STR(version));
+        versionFormat.printf(version);
         clusterNameFormat.printf(clusterName);
-
-        printf(STR(hostNameFormat), nameStart, STR(hostName), nameEnd);
+        hostNameFormat.printf(hostName);
 
         if (port >= 0)
             printf("%4d ", port);
@@ -1328,6 +1314,87 @@ S9sRpcReply::printCpuStat()
         printf("%s\n", STR(model));
     }
 }
+
+void
+S9sRpcReply::printCpuStatLine1()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("data").toVariantList();
+    S9sVariantMap   listMap;
+    const char     *numberStart = "";
+    const char     *numberEnd   = "";
+    S9sVariantMap   keys;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sString     key     = theMap["samplekey"].toString();
+        ulonglong     created = theMap["created"].toULongLong();
+
+        if (!listMap.contains(key))
+        {
+            listMap[key] = theMap;
+            continue;
+        }
+
+        if (listMap[key]["created"].toULongLong() < created)
+            listMap[key] = theMap;
+    }
+
+    if (syntaxHighlight)
+    {
+        numberStart = TERM_BOLD;
+        numberEnd   = TERM_NORMAL;
+    }
+
+
+    foreach (const S9sVariant variant, listMap)
+    {
+        S9sVariantMap theMap  = variant.toVariantMap();
+
+        printf("-> \n%s\n", STR(theMap.toString()));
+    }
+    
+    printf("Phys: %s%d%s", numberStart, (int)listMap.size(), numberEnd);
+    printf("\n");
+
+#if 0
+    foreach (const S9sVariant variant, listMap)
+    {
+        S9sVariantMap theMap  = variant.toVariantMap();
+        S9sString     model   = theMap["cpumodelname"].toString();
+        int           id      = theMap["cpuid"].toInt();
+        int           hostId  = theMap["hostid"].toInt();
+        S9sString     key     = theMap["samplekey"].toString();
+        double        user    = theMap["user"].toDouble() * 100.0;
+        double        sys     = theMap["sys"].toDouble()  * 100.0;
+        double        idle    = theMap["idle"].toDouble() * 100.0;
+        double        wait    = theMap["iowait"].toDouble() * 100.0;
+        double        steal   = theMap["steal"].toDouble() * 100.0;
+        const char    *numberStart = "";
+        const char    *numberEnd   = "";
+
+        while (model.contains("  "))
+            model.replace("  ", " ");
+
+        if (syntaxHighlight)
+        {
+            numberStart = TERM_BOLD;
+            numberEnd   = TERM_NORMAL;
+        }
+
+        printf("%%cpu%02d-%02d ", hostId, id);
+        printf("%s%5.1f%s us,", numberStart, user, numberEnd);
+        printf("%s%5.1f%s sy,", numberStart, sys, numberEnd);
+        printf("%s%5.1f%s id,", numberStart, idle, numberEnd);
+        printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
+        printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
+        printf("%s\n", STR(model));
+    }
+#endif
+}
+
 
 /**
  * \param percent the percent (between 0.0 and 100.0) that is shown by the

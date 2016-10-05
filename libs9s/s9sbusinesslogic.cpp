@@ -100,6 +100,9 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeProcessList(client);
+        } else if (options->isTopRequested())
+        {
+            executeTop(client);
         } else {
             PRINT_ERROR("Unknown process operation.");
         }
@@ -367,24 +370,6 @@ S9sBusinessLogic::executeNodeList(
     S9sRpcReply reply;
     bool        success;
 
-    #if 0
-    //
-    // A small test to get the cpu info.
-    //
-    client.getCpuInfo(options->clusterId());
-    reply = client.reply();
-    printf("%s\n", STR(reply.toString()));
-    #endif
-   
-    #if 0
-    //
-    // A small test to get the cpu stats.
-    //
-    client.getCpuStats(options->clusterId());
-    reply = client.reply();
-    reply.printCpuStat();
-    //printf("%s\n", STR(reply.toString()));
-    #endif
 
     success = client.getClusters();
     if (success)
@@ -455,6 +440,33 @@ S9sBusinessLogic::executeNodeSet(
         if (success)
             printf("OK\n");
     }
+}
+
+void 
+S9sBusinessLogic::executeTop(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+
+    #if 0
+    //
+    // A small test to get the cpu info.
+    //
+    client.getCpuInfo(options->clusterId());
+    reply = client.reply();
+    printf("%s\n", STR(reply.toString()));
+    #endif
+   
+    #if 1
+    //
+    // A small test to get the cpu stats.
+    //
+    client.getCpuStats(options->clusterId());
+    reply = client.reply();
+    //printf("%s\n", STR(reply.toString()));
+    reply.printCpuStatLine1();
+    #endif   
 }
 
 /**
