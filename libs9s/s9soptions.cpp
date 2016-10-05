@@ -1353,9 +1353,9 @@ S9sOptions::readOptionsCluster(
         { "stop",             no_argument,       0, 11  },
 
         // Job Related Options
-        { "wait",             no_argument,       0, 16 },
-        { "log",              no_argument,       0,  6 },
-        { "batch",            no_argument,       0,  7 },
+        { "wait",             no_argument,       0, 16  },
+        { "log",              no_argument,       0, 'G' },
+        { "batch",            no_argument,       0,  7  },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
@@ -1475,8 +1475,8 @@ S9sOptions::readOptionsCluster(
                 m_options["wait"] = true;
                 break;
 
-            case 6:
-                // --log
+            case 'G':
+                // -G, --log
                 m_options["log"] = true;
                 break;
             
