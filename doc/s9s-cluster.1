@@ -210,14 +210,22 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-List the clusters managed by the controller:
+Here is an example showing how to create a new cluster:
+
+.nf
+# \fBs9s cluster --create --controller=localhost:9555 --cluster-type=galera --vendor=percona --nodes="192.168.1.104;192.168.1.107;192.168.1.108" --provider-version=5.6 --wait\fR
+.fi
+
+This command will create a new job on the controller to create a new cluster.
+Since the --wait command line option was provided it will wait until the job is
+finished, but the command line tool can be aborted before the job is finished,
+the job remains there and will be executed by the controller anyway. It is also
+possible to attach to the job using the job ID later or use the --log option to
+print the messages of the job.
+
+Another example simply lists the clusters managed by the controller:
 
 .nf
 # \fBs9s cluster --list --long --controller=localhost:9555 --color=always\fR
 .fi
 
-Creating a cluster:
-
-.nf
-# \fBs9s cluster \-\-create \-\-controller=localhost:9555 \-\-cluster-type=galera \-\-nodes="10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5" \-\-vendor=codership \-\-provider-version=5.6 \-\-os-user=pipas \-\-wait\fR
-.fi

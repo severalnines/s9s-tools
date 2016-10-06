@@ -157,7 +157,7 @@ function testCreateCluster
     nodes+="$nodeName"
     
     #
-    #
+    # Creating a Galera cluster.
     #
     $S9S cluster \
         --create \

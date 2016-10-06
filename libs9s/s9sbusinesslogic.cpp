@@ -481,7 +481,7 @@ S9sBusinessLogic::executeTop(
         //
         // The date.
         //
-        printf("s-s - %s \n", STR(dateString));
+        printf("s9s - %s \n", STR(dateString));
 
         //
         // Summary of CPU usage.
@@ -666,9 +666,9 @@ S9sBusinessLogic::doExecuteCreateCluster(
     if (hosts.empty())
     {
         options->printError(
-                "Node list is empty while creating cluster.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
+            "Node list is empty while creating cluster.\n"
+            "Use the --nodes command line option to provide the node list."
+            );
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;
@@ -681,9 +681,20 @@ S9sBusinessLogic::doExecuteCreateCluster(
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
         options->printError(
-                "The vendor name is unknown while creating a galera cluster.\n"
-                "Use the --vendor command line option to provide the vendor."
-                );
+            "The vendor name is unknown while creating a galera cluster.\n"
+            "Use the --vendor command line option to provide the vendor."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    if (mySqlVersion.empty())
+    {
+        options->printError(
+            "The SQL server version is unknown while creating a cluster.\n"
+            "Use the --provider-version command line option set it."
+            );
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;
