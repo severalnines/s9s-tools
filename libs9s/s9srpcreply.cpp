@@ -312,10 +312,12 @@ compareProcessByCpuUsage(
 }
 
 void
-S9sRpcReply::printProcessList()
+S9sRpcReply::printProcessList(
+        const int maxLines)
 {
     S9sVariantList  hostList = operator[]("data").toVariantList();
     S9sVariantList  processList;
+    int             lineCounter = 0;
 
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
@@ -351,12 +353,19 @@ S9sRpcReply::printProcessList()
 
         rss     /= 1024;
         virtMem /= 1024;
-        printf("%6d %8s %12s %4d %6.2f %6.2f %8llu %8llu %1s %s\n", 
+        printf("%6d %8s %12s %4d %6.2f %6.2f %8llu %8llu %1s %s", 
                 pid, STR(user), STR(hostName), 
                 priority,
                 cpuUsage, memUsage,
                 virtMem, rss,
                 STR(state), STR(executable));
+
+        lineCounter++;
+
+        if (maxLines > 0 && lineCounter >= maxLines)
+            break;
+
+        printf("\n");
     }
 }
 

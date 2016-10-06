@@ -38,7 +38,7 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterList();
         void printNodeList();
         void printJobList();
-        void printProcessList();
+        void printProcessList(const int maxLines = -1);
         void printCpuStat();
         void printCpuStatLine1();
 

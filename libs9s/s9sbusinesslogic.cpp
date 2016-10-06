@@ -447,6 +447,7 @@ S9sBusinessLogic::executeTop(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
+    int          clusterId = options->clusterId();
     S9sRpcReply reply;
 
     #if 0
@@ -457,16 +458,20 @@ S9sBusinessLogic::executeTop(
     reply = client.reply();
     printf("%s\n", STR(reply.toString()));
     #endif
-   
-    #if 1
-    //
-    // A small test to get the cpu stats.
-    //
-    client.getCpuStats(options->clusterId());
-    reply = client.reply();
-    //printf("%s\n", STR(reply.toString()));
-    reply.printCpuStatLine1();
-    #endif   
+
+    for (;;)
+    {
+        client.getCpuStats(clusterId);
+        reply = client.reply();
+        //printf("%s\n", STR(reply.toString()));
+        reply.printCpuStatLine1();
+
+        client.getRunningProcesses(clusterId);
+        reply = client.reply();
+        reply.printProcessList(options->terminalHeight() - 2);
+
+        sleep(1);
+    }
 }
 
 /**
