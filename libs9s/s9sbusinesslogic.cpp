@@ -480,7 +480,7 @@ S9sBusinessLogic::executeTop(
         //
         // The date.
         //
-        printf("%s \n", STR(dateString));
+        printf("s-s - %s \n", STR(dateString));
 
         //
         // Summary of CPU usage.
@@ -495,13 +495,15 @@ S9sBusinessLogic::executeTop(
         client.getMemoryStats(options->clusterId());
         reply = client.reply();
         reply.printMemoryStatLine1();
+        reply.printMemoryStatLine2();
+        printf("\n");
 
         //
         // List of processes.
         //
         client.getRunningProcesses(clusterId);
         reply = client.reply();
-        reply.printProcessList(options->terminalHeight() - 3);
+        reply.printProcessList(options->terminalHeight() - 5);
 
         sleep(3);
     }

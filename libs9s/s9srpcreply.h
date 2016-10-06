@@ -42,6 +42,7 @@ class S9sRpcReply : public S9sVariantMap
         void printCpuStat();
         void printCpuStatLine1();
         void printMemoryStatLine1();
+        void printMemoryStatLine2();
 
     private:
         void printJobLogBrief();

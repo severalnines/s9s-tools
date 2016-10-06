@@ -1411,17 +1411,52 @@ S9sRpcReply::printCpuStatLine1()
     printf("\n");
 }
 
-// total,    used, free,    buffers,    cached
-// ramtotal,       ramfree, rambuffers, ramcached
+/**
+ *
+    {
+        "class_name": "CmonMemoryStats",
+        "created": 1475746585,
+        "hostid": 3,
+        "interval": 35612,
+        "memoryutilization": 0.21689,
+        "pgpgin": 0,
+        "pgpgout": 208,
+        "pswpin": 0,
+        "pswpout": 0,
+        "rambuffers": 35971072,
+        "ramcached": 1982054400,
+        "ramfree": 1229369344,
+        "ramfreemin": 1229369344,
+        "ramtotal": 4146794496,
+        "sampleends": 1475746585,
+        "samplekey": "CmonMemoryStats-3",
+        "swapfree": 0,
+        "swaptotal": 0,
+        "swaputilization": 0
+    }, 
+ *
+ * total,    used, free,    buffers,    cached
+ * ramtotal,       ramfree, rambuffers, ramcached
+ */
 void
 S9sRpcReply::printMemoryStatLine1()
 {
-    S9sVariantList   theList    = operator[]("data").toVariantList();
-    ulonglong        sumTotal   = 0ull;
-    ulonglong        sumFree    = 0ull;
-    ulonglong        sumBuffers = 0ull;
-    ulonglong        sumCached  = 0ull;
-    S9sVariantMap    listMap;
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList    = operator[]("data").toVariantList();
+    double          sumTotal   = 0.0;
+    double          sumFree    = 0.0;
+    double          sumBuffers = 0.0;
+    double          sumCached  = 0.0;
+    S9sVariantMap   listMap;
+    const char     *numberStart = "";
+    const char     *numberEnd   = "";
+    
+    if (syntaxHighlight)
+    {
+        numberStart = TERM_BOLD;
+        numberEnd   = TERM_NORMAL;
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -1453,17 +1488,72 @@ S9sRpcReply::printMemoryStatLine1()
         sumCached  += cached;
     }
 
+    sumTotal   /= 1024 * 1024 * 1024.0;
+    sumFree    /= 1024 * 1024 * 1024.0;
+    sumBuffers /= 1024 * 1024 * 1024.0;
+    sumCached  /= 1024 * 1024 * 1024.0;
+
+    printf("GiB Mem : ");
+    printf("%s%.1f%s total, ",   numberStart, sumTotal, numberEnd);
+    printf("%s%.1f%s free, ",    numberStart, sumFree, numberEnd);
+    printf("%s%.1f%s used, ",    numberStart, sumTotal - (sumFree + sumBuffers + sumCached), numberEnd);
+    printf("%s%.1f%s buffers, ", numberStart, sumBuffers, numberEnd);
+    printf("%s%.1f%s cached",    numberStart, sumCached, numberEnd);
+
+    printf("\n");
+}
+
+void
+S9sRpcReply::printMemoryStatLine2()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList    = operator[]("data").toVariantList();
+    ulonglong       sumTotal   = 0ull;
+    ulonglong       sumFree    = 0ull;
+    S9sVariantMap   listMap;
+    const char     *numberStart = "";
+    const char     *numberEnd   = "";
+        
+    if (syntaxHighlight)
+    {
+        numberStart = TERM_BOLD;
+        numberEnd   = TERM_NORMAL;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sString     key     = theMap["samplekey"].toString();
+        ulonglong     created = theMap["created"].toULongLong();
+
+        if (!listMap.contains(key))
+        {
+            listMap[key] = theMap;
+            continue;
+        }
+
+        if (listMap[key]["created"].toULongLong() < created)
+            listMap[key] = theMap;
+    }
+    
+    foreach (const S9sVariant variant, listMap)
+    {
+        S9sVariantMap theMap    = variant.toVariantMap();
+        ulonglong     total     = theMap["swaptotal"].toULongLong();
+        ulonglong     free      = theMap["swapfree"].toULongLong();
+
+        sumTotal   += total;
+        sumFree    += free;
+    }
+
     sumTotal   /= 1024 * 1024 * 1024;
     sumFree    /= 1024 * 1024 * 1024;
-    sumBuffers /= 1024 * 1024 * 1024;
-    sumCached  /= 1024 * 1024 * 1024;
 
-    printf("GiB Mem: ");
-    printf("%llu total, ",   sumTotal);
-    printf("%llu used, ",    sumTotal - (sumFree + sumBuffers + sumCached));
-    printf("%llu free, ",    sumFree);
-    printf("%llu buffers, ", sumBuffers);
-    printf("%llu cached",  sumCached);
+    printf("GiB Swap: ");
+    printf("%s%llu%s total, ", numberStart, sumTotal, numberEnd);
+    printf("%s%llu%s used, ",  numberStart, sumTotal - sumFree, numberEnd);
+    printf("%s%llu%s free, ",  numberStart, sumFree, numberEnd);
 
     printf("\n");
 }
