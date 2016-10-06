@@ -1584,7 +1584,7 @@ S9sOptions::readOptionsJob(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLl", 
+                argc, argv, "hvc:P:t:VLlG", 
                 long_options, &option_index);
 
         if (c == -1)
