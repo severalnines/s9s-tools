@@ -360,6 +360,8 @@ S9sRpcReply::printProcessList(
                 virtMem, rss,
                 STR(state), STR(executable));
 
+        printf("\033[K");
+
         lineCounter++;
 
         if (maxLines > 0 && lineCounter >= maxLines)
@@ -410,6 +412,7 @@ S9sRpcReply::printJobLogLong()
         const char    *stateColorEnd   = "";
   
         html2ansi(message);
+
         if (!created.empty())
         {
             S9sDateTime tmp;
@@ -1408,6 +1411,62 @@ S9sRpcReply::printCpuStatLine1()
     printf("\n");
 }
 
+// total,    used, free,    buffers,    cached
+// ramtotal,       ramfree, rambuffers, ramcached
+void
+S9sRpcReply::printMemoryStatLine1()
+{
+    S9sVariantList   theList    = operator[]("data").toVariantList();
+    ulonglong        sumTotal   = 0ull;
+    ulonglong        sumFree    = 0ull;
+    ulonglong        sumBuffers = 0ull;
+    ulonglong        sumCached  = 0ull;
+    S9sVariantMap    listMap;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sString     key     = theMap["samplekey"].toString();
+        ulonglong     created = theMap["created"].toULongLong();
+
+        if (!listMap.contains(key))
+        {
+            listMap[key] = theMap;
+            continue;
+        }
+
+        if (listMap[key]["created"].toULongLong() < created)
+            listMap[key] = theMap;
+    }
+    
+    foreach (const S9sVariant variant, listMap)
+    {
+        S9sVariantMap theMap    = variant.toVariantMap();
+        ulonglong     total     = theMap["ramtotal"].toULongLong();
+        ulonglong     free      = theMap["ramfree"].toULongLong();
+        ulonglong     buffers   = theMap["rambuffers"].toULongLong();
+        ulonglong     cached    = theMap["ramcached"].toULongLong();
+
+        sumTotal   += total;
+        sumFree    += free;
+        sumBuffers += buffers;
+        sumCached  += cached;
+    }
+
+    sumTotal   /= 1024 * 1024 * 1024;
+    sumFree    /= 1024 * 1024 * 1024;
+    sumBuffers /= 1024 * 1024 * 1024;
+    sumCached  /= 1024 * 1024 * 1024;
+
+    printf("GiB Mem: ");
+    printf("%llu total, ",   sumTotal);
+    printf("%llu used, ",    sumTotal - (sumFree + sumBuffers + sumCached));
+    printf("%llu free, ",    sumFree);
+    printf("%llu buffers, ", sumBuffers);
+    printf("%llu cached",  sumCached);
+
+    printf("\n");
+}
 
 /**
  * \param percent the percent (between 0.0 and 100.0) that is shown by the

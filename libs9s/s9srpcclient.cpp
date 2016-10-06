@@ -274,20 +274,35 @@ S9sRpcClient::getCpuStats(
 
     request["operation"] = "statByName";
     request["name"]      = "cpustat";
-    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
 
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    S9S_DEBUG("uri     : %s", STR(uri));
-    S9S_DEBUG("request : %s", STR(request.toString()));
     retval = executeRequest(uri, request.toString());
-    S9S_DEBUG("retval  : %s", retval ? "true" : "false");
-    S9S_DEBUG("error   : %s", STR(m_priv->m_errorString));
-
+    
     return retval;
 }
 
+bool
+S9sRpcClient::getMemoryStats(
+        const int clusterId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/%d/stat/", clusterId);
+
+    request["operation"] = "statByName";
+    request["name"]      = "memorystat";
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+    
+    return retval;
+}
 
 /**
  * \param clusterId the ID of the cluster for which the process information will

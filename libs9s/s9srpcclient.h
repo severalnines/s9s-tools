@@ -58,6 +58,8 @@ class S9sRpcClient
 
         bool getCpuInfo(const int clusterId);
         bool getCpuStats(const int clusterId);
+        bool getMemoryStats(const int clusterId);
+
         bool getRunningProcesses(const int clusterId);
 
         bool getJobInstances(const int clusterId);

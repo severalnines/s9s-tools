@@ -41,6 +41,7 @@ class S9sRpcReply : public S9sVariantMap
         void printProcessList(const int maxLines = -1);
         void printCpuStat();
         void printCpuStatLine1();
+        void printMemoryStatLine1();
 
     private:
         void printJobLogBrief();

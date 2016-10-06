@@ -22,6 +22,7 @@
 #include "S9sRpcReply"
 #include "S9sOptions"
 #include "S9sNode"
+#include "S9sDateTime"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -458,21 +459,51 @@ S9sBusinessLogic::executeTop(
     reply = client.reply();
     printf("%s\n", STR(reply.toString()));
     #endif
+    
+    #if 0
+    //
+    // A small test to get the memory info.
+    //
+    client.getMemoryStats(options->clusterId());
+    reply = client.reply();
+    printf("%s\n", STR(reply.toString()));
+    reply.printMemoryStatLine1();
+    exit(0);
+    #endif
 
     for (;;)
     {
+        S9sDateTime date = S9sDateTime::currentDateTime();
+        S9sString   dateString = date.toString(S9sDateTime::LongTimeFormat);
         printf("\033[0;0H");
 
+        //
+        // The date.
+        //
+        printf("%s \n", STR(dateString));
+
+        //
+        // Summary of CPU usage.
+        //
         client.getCpuStats(clusterId);
         reply = client.reply();
-        //printf("%s\n", STR(reply.toString()));
         reply.printCpuStatLine1();
+   
+        //
+        // The memory summary.
+        //
+        client.getMemoryStats(options->clusterId());
+        reply = client.reply();
+        reply.printMemoryStatLine1();
 
+        //
+        // List of processes.
+        //
         client.getRunningProcesses(clusterId);
         reply = client.reply();
-        reply.printProcessList(options->terminalHeight() - 2);
+        reply.printProcessList(options->terminalHeight() - 3);
 
-        sleep(1);
+        sleep(3);
     }
 }
 
