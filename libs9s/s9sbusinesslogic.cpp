@@ -461,6 +461,8 @@ S9sBusinessLogic::executeTop(
 
     for (;;)
     {
+        printf("\033[0;0H");
+
         client.getCpuStats(clusterId);
         reply = client.reply();
         //printf("%s\n", STR(reply.toString()));
