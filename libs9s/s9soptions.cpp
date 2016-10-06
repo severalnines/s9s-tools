@@ -109,6 +109,7 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("[global]\n");
     userFile.fprintf("# controller_host_name = localhost\n");
     userFile.fprintf("# controller_port      = 9500\n");
+    userFile.fprintf("# rpc_tls              = false\n");
     userFile.fprintf("\n");
 
     userFile.fprintf("\n");
@@ -827,6 +828,19 @@ S9sOptions::isVerbose() const
 }
 
 /**
+ * \returns true if client must use TLS for controller RPC connections
+ */
+bool
+S9sOptions::useTls() const
+{
+    if (m_options.contains("rpc_tls"))
+        return m_options.at("rpc_tls").toBoolean();
+    else
+        return m_userConfig.variableValue("rpc_tls").toBoolean();
+
+    return false;
+}
+/**
  * \returns a human readable error description stored inside the object.
  */
 S9sString 
@@ -966,6 +980,7 @@ S9sOptions::executeInfoRequest()
         " -V, --version              Show version\n"
         " -c, --controller HOST      The hostname/IP of the controller\n"
         " -P, --controller-port INT  The port of the controller\n"
+        " --rpc-tls                  Use TLS encryption to controller\n"
         " -t, --rpc-token TOKEN      The RPC authentication token\n"
         " -l, --long                 Long...\n"
         " --print-json               Print-out the sent/received JSon-s\n"
@@ -1075,6 +1090,7 @@ S9sOptions::readOptionsNode(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  7  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  6  },
@@ -1171,6 +1187,11 @@ S9sOptions::readOptionsNode(
                 // --print-json
                 m_options["print_json"] = true;
                 break;
+
+            case 7:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
             
             case 'i':
                 // -i, --cluster-id=ID
@@ -1215,6 +1236,7 @@ S9sOptions::readOptionsProcess(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  5  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  3 },
@@ -1308,6 +1330,11 @@ S9sOptions::readOptionsProcess(
                 m_options["top"] = true;
                 break;
 
+            case 5:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
@@ -1337,6 +1364,7 @@ S9sOptions::readOptionsCluster(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  6  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0, 15  },
@@ -1525,6 +1553,11 @@ S9sOptions::readOptionsCluster(
                 m_options["cluster_type"] = optarg;
                 break;
                 
+            case 6:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
             case 18:
                 // --db-admin=USERNAME
                 m_options["db_admin_user_name"] = optarg;
@@ -1559,6 +1592,7 @@ S9sOptions::readOptionsJob(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  6  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  3  },
@@ -1665,6 +1699,11 @@ S9sOptions::readOptionsJob(
                 m_options["wait"] = true;
                 break;
 
+            case 6:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
             case 'i':
                 // --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
@@ -1726,3 +1765,4 @@ S9sOptions::readOptionsNoMode(
 
     return true;
 }
+

@@ -45,17 +45,20 @@ S9sRpcClient::S9sRpcClient() :
  *   requests.
  * \param port the port where the Cmon controller accepts requests.
  * \param token a token to be used with the communication.
+ * \param useTls if client must initiate TLS encryption to the server.
  *
  */
 S9sRpcClient::S9sRpcClient(
         const S9sString &hostName,
         const int        port,
-        const S9sString &token) :
+        const S9sString &token,
+        const bool       useTls) :
     m_priv(new S9sRpcClientPrivate)
 {
     m_priv->m_hostName = hostName;
     m_priv->m_port     = port;
     m_priv->m_token    = token;
+    m_priv->m_useTls   = useTls;
 }
 
 
@@ -1057,14 +1060,16 @@ S9sRpcClient::executeRequest(
 {
     S9sOptions  *options = S9sOptions::instance();    
     S9sString    header;
-    int          socketFd = m_priv->connectSocket();
     ssize_t      readLength;
    
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    if (socketFd < 0)
+    if (!m_priv->connect())
+    {
+        PRINT_VERBOSE ("Connection failed: %s", STR(m_priv->m_errorString));
         return false;
+    }
         
     /*
      *
@@ -1090,12 +1095,14 @@ S9sRpcClient::executeRequest(
     /*
      * Sending the HTTP request header.
      */
-    if (m_priv->writeSocket(socketFd, STR(header), header.length()) < 0)
+    if (m_priv->write(STR(header), header.length()) < 0)
     {
-        S9S_DEBUG("Error writing socket %d: %m", socketFd);
+        // we shall use m_priv->m_errorString TODO
+        S9S_DEBUG("Error writing socket: %m");
 
-        m_priv->m_errorString.sprintf("Error writing socket %d: %m", socketFd);
-        m_priv->closeSocket(socketFd);
+        // priv shall do this:
+        m_priv->m_errorString.sprintf("Error writing socket: %m");
+        m_priv->close();
 
         return false;
     }
@@ -1105,13 +1112,13 @@ S9sRpcClient::executeRequest(
      */
     if (!payload.empty())
     {
-        if (m_priv->writeSocket(socketFd, STR(payload), payload.length()) < 0)
+        if (m_priv->write(STR(payload), payload.length()) < 0)
         {
+            // we shall use m_priv->m_errorString TODO
             m_priv->m_errorString.sprintf(
-                    "Error writing socket %d: %m", 
-                    socketFd);
+                    "Error writing socket: %m");
        
-            m_priv->closeSocket(socketFd);
+            m_priv->close();
             return false;
         } else {
             if (options->isJsonRequested() && options->isVerbose())
@@ -1130,8 +1137,7 @@ S9sRpcClient::executeRequest(
     {
         m_priv->ensureHasBuffer(m_priv->m_dataSize + READ_SIZE);
 
-        readLength = m_priv->readSocket(
-                socketFd,
+        readLength = m_priv->read(
                 m_priv->m_buffer + m_priv->m_dataSize, 
                 READ_SIZE - 1);
 
@@ -1147,7 +1153,7 @@ S9sRpcClient::executeRequest(
 
 
     // Closing the socket.
-    m_priv->closeSocket(socketFd);
+    m_priv->close();
     
     if (m_priv->m_dataSize > 1)
     {
@@ -1161,8 +1167,8 @@ S9sRpcClient::executeRequest(
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
-        m_priv->m_errorString.sprintf(
-                "Error reading socket %d: %m", socketFd);
+        // priv shall do this on failure
+        m_priv->m_errorString.sprintf("Error reading socket: %m");
         return false;
     }
 

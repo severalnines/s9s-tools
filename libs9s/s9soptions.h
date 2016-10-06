@@ -91,6 +91,8 @@ class S9sOptions
         S9sString userName() const;
         int userId() const;
 
+        bool useTls() const;
+
         bool isNodeOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
