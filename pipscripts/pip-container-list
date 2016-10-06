@@ -2,13 +2,17 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.4"
+VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
 
-
-
-
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
 
 #
 # $*: the error message
