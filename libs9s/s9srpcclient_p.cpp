@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <errno.h>
+#include <cerrno>
 
 #include "S9sOptions"
 
@@ -21,9 +21,12 @@ S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_referenceCounter(1),
     m_socketFd(-1),
     m_port(0),
+    m_useTls(false),
     m_buffer(0),
     m_bufferSize(0),
-    m_dataSize(0)
+    m_dataSize(0),
+    m_sslContext(0),
+    m_ssl(0)
 {
 }
 
@@ -130,7 +133,7 @@ S9sRpcClientPrivate::connect()
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
         close();
-        return -1;
+        return false;
     }
 
     /*
@@ -148,10 +151,64 @@ S9sRpcClientPrivate::connect()
                 STR(m_hostName), m_port);
       
         close();
-        return -1;
+        return false;
     }
 
     PRINT_VERBOSE("Connected.");
+
+    if (m_useTls)
+    {
+        PRINT_VERBOSE ("Initiate TLS...");
+
+        static bool openSslInitialized;
+        if (!openSslInitialized)
+        {
+            openSslInitialized = true;
+            SSL_load_error_strings ();
+            SSL_library_init ();
+        }
+
+        #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+        m_sslContext = SSL_CTX_new(TLS_client_method());
+        #else
+        m_sslContext = SSL_CTX_new(SSLv23_client_method());
+        #endif
+
+        if (!m_sslContext)
+        {
+            m_errorString = "Couldn't create SSL context.";
+            close();
+            return false;
+        }
+
+        SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_NONE, NULL);
+        SSL_CTX_set_options(m_sslContext,
+                SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+        SSL_CTX_set_mode(m_sslContext, SSL_MODE_AUTO_RETRY);
+
+        m_ssl = SSL_new(m_sslContext);
+
+        if (!m_ssl)
+        {
+            m_errorString = "Couldn't create SSL.";
+            close();
+            return false;
+        }
+
+        SSL_set_fd(m_ssl, m_socketFd);
+        SSL_set_connect_state(m_ssl);
+        SSL_set_tlsext_host_name(m_ssl, STR(m_hostName));
+
+        if (SSL_connect(m_ssl) <= 0 || SSL_do_handshake(m_ssl) <= 0)
+        {
+            m_errorString = "SSL handshake failed.";
+            close();
+            return false;
+        }
+
+        PRINT_VERBOSE("TLS handshake finished (version: %s, cipher: %s).",
+            SSL_get_version(m_ssl), SSL_get_cipher(m_ssl));
+    }
 
     return true;
 }
@@ -161,6 +218,19 @@ S9sRpcClientPrivate::close()
 {
     if (m_socketFd < 0)
         return;
+
+    if (m_ssl)
+    {
+        SSL_shutdown(m_ssl);
+        SSL_free(m_ssl);
+        m_ssl = 0;
+    }
+
+    if (m_sslContext)
+    {
+        SSL_CTX_free(m_sslContext);
+        m_sslContext = 0;
+    }
 
     ::shutdown(m_socketFd, SHUT_RDWR);
     ::close(m_socketFd);
@@ -175,6 +245,9 @@ S9sRpcClientPrivate::write(
         size_t      length)
 {
     ssize_t retval = -1;
+
+    if (m_ssl)
+        return SSL_write(m_ssl, data, length);
 
     do {
         retval = ::write(m_socketFd, data, length);
@@ -192,6 +265,9 @@ S9sRpcClientPrivate::read(
         size_t  bufSize)
 {
     ssize_t retval = -1;
+
+    if (m_ssl)
+        return SSL_read(m_ssl, buffer, bufSize);
 
     do {
         retval = ::read (m_socketFd, buffer, bufSize);

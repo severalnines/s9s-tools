@@ -41,7 +41,8 @@ S9sBusinessLogic::execute()
     int          port       = options->controllerPort();
     S9sString    token      = options->rpcToken();
     int          clusterId  = options->clusterId();
-    S9sRpcClient client(controller, port, token);
+    bool         useTls     = options->useTls();
+    S9sRpcClient client(controller, port, token, useTls);
 
     S9S_DEBUG("");
     if (options->isClusterOperation())

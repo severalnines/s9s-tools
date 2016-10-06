@@ -3,7 +3,9 @@
  */
 #pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <openssl/ssl.h>
+
 #include "S9sString"
 #include "S9sRpcReply"
 
@@ -30,6 +32,7 @@ class S9sRpcClientPrivate
         int             m_socketFd;
         S9sString       m_hostName;
         int             m_port;
+        bool            m_useTls;
         S9sString       m_token;
         S9sString       m_errorString;
         S9sString       m_jsonReply;
@@ -37,6 +40,9 @@ class S9sRpcClientPrivate
         char           *m_buffer;
         size_t          m_bufferSize;
         size_t          m_dataSize;
+        SSL_CTX        *m_sslContext;
+        SSL            *m_ssl;
 
         friend class S9sRpcClient;
 };
+

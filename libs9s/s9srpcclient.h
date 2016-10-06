@@ -32,7 +32,8 @@ class S9sRpcClient
         S9sRpcClient(
                 const S9sString &hostName,
                 const int        port,
-                const S9sString &token);
+                const S9sString &token,
+                const bool       useTls);
 
         S9sRpcClient(const S9sRpcClient &orig);
 
