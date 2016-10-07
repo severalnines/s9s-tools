@@ -1,0 +1,109 @@
+.TH S9S 1 "August 29, 2016"
+
+.SH NAME
+s9s-node \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-cluster
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-L, \-\-list
+List the nodes managed by the controller.
+
+.TP
+.B \-\-top
+Continue showing the processes that use the most CPU resources in any given
+cluster.
+
+.SS Generic Options
+
+.TP
+.B \-h, \-\-help
+Print the help message and exist.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The port is also accepted as part of the
+hostname.
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
+The RPC token to be used when authenticating on the Cmon Controller.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.\"
+.\"
+.\"
+.SS Cluster Related Options
+
+.TP
+.BI \-i " INTEGER" "\fR,\fP \-\^\-cluster-id=" INTEGER
+If the operation related to an existing cluster this option can be used to
+control which cluster will be manipulated. If the operation creates a new
+cluster the cluster ID is assigned automatically, so this option can't be used.
+
+.TP
+.BI \-n " NAME" "\fR,\fP \-\^\-cluster-name=" NAME
+Sets the cluster name. If the operation creates a new cluster this will be the
+name of the new cluster. (Usage of this option for selecting an existing cluster
+is not yet implemented.)
+
+.\"
+.\"
+.\"
+.SH ENVIRONMENT
+The s9s application will read and consider the following environment variables:
+.TP 5 
+CMON_CONTROLLER
+The host name and optionally the port number of the controller that will be
+contacted. This also can be set using the \fB\-\-controller\fR command line
+option.
+
+.TP 5
+CMON_CLUSTER_ID
+The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
+command line option.
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+List the nodes managed by the controller:
+
+.nf
+# \fBs9s process --top --cluster-id=1\fR
+.fi
