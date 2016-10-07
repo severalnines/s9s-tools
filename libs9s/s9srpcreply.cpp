@@ -129,6 +129,16 @@ S9sRpcReply::isJobFailed() const
     return retval;
 }
 
+
+S9sString
+S9sRpcReply::clusterName(
+        const int clusterId)
+{
+    S9sVariantMap theMap = clusterMap(clusterId);
+
+    return theMap["cluster_name"].toString();
+}
+
 /**
  * \returns true if the job is finished (or aborted or failed) and so monitoring
  *   it should be aborted too.
@@ -1662,6 +1672,27 @@ S9sRpcReply::progressBar(
         retval += " ";
 
     retval += "] ";
+
+    return retval;
+}
+
+S9sVariantMap
+S9sRpcReply::clusterMap(
+        const int clusterId)
+{
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantMap   retval;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap      = theList[idx].toVariantMap();
+
+        if (theMap["cluster_id"].toInt() != clusterId)
+            continue;
+
+        retval = theMap;
+        break;
+    }
 
     return retval;
 }

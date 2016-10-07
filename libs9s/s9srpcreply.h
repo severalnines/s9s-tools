@@ -30,7 +30,9 @@ class S9sRpcReply : public S9sVariantMap
         int jobId() const;
         S9sString jobTitle() const;
         bool isJobFailed() const;
-        
+
+        S9sString clusterName(const int clusterId);
+
         bool progressLine(S9sString &retval, bool syntaxHighlight);
 
         void printJobStarted();
@@ -44,6 +46,9 @@ class S9sRpcReply : public S9sVariantMap
         void printMemoryStatLine1();
         void printMemoryStatLine2();
 
+    protected:
+        S9sVariantMap clusterMap(const int clusterId);
+        
     private:
         void printJobLogBrief();
         void printJobLogLong();

@@ -156,7 +156,7 @@ S9sRpcClient::getCluster(
         request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request.toString());
-
+    //printf("-->\n%s\n", STR(reply().toString()));
     return retval;
 }
 
