@@ -129,7 +129,13 @@ class S9sOptions
         static void printVerbose(const char *formatString, ...);
         static void printError(const char *formatString, ...);
 
+        void printHelp();
+
     private:
+        void printHelpGeneric();
+        void printHelpCluster();
+        void printHelpNode();
+
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
         bool readOptionsCluster(int argc, char *argv[]);
@@ -140,7 +146,7 @@ class S9sOptions
 
         S9sOptions();
         ~S9sOptions();
-        
+
         static S9sOptions *sm_instance;
 
     private:
