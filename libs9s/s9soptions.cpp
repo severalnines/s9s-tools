@@ -140,6 +140,10 @@ S9sOptions::loadConfigFiles()
     m_userConfig   = S9sConfigFile();
     m_systemConfig = S9sConfigFile();
 
+    /*
+     * If the user specified a config file name in the command line we load that
+     * config file and nothing else.
+     */
     if (!configFile().empty())
     {
         S9sString content;
