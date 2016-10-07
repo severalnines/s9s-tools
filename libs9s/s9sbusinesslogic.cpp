@@ -493,7 +493,7 @@ S9sBusinessLogic::executeTop(
         S9sString   tmp;
 
         //
-        // The date.
+        // The cluster information.
         //
         success = client.getCluster(clusterId);
         reply = client.reply();

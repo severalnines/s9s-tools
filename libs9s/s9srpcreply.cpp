@@ -333,14 +333,18 @@ void
 S9sRpcReply::printProcessList(
         const int maxLines)
 {
+    S9sOptions     *options = S9sOptions::instance();
+    int             terminalWidth = options->terminalWidth();
+    int             columns;
     S9sVariantList  hostList = operator[]("data").toVariantList();
     S9sVariantList  processList;
     S9sFormat       hostFormat;
     S9sFormat       userFormat;
     S9sFormat       pidFormat;
+    S9sFormat       priorityFormat;
 
     /*
-     *
+     * Go through the data and collect information.
      */
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
@@ -359,7 +363,7 @@ S9sRpcReply::printProcessList(
     sort(processList.begin(), processList.end(), compareProcessByCpuUsage);
 
     /*
-     *
+     * Again, now collecting format information.
      */
     for (uint idx = 0u; idx < processList.size(); ++idx)
     {
@@ -367,6 +371,7 @@ S9sRpcReply::printProcessList(
         int           pid        = process["pid"].toInt();
         S9sString     user       = process["user"].toString();
         S9sString     hostName   = process["hostname"].toString();
+        int           priority   = process["priority"].toInt();
 
         if (maxLines > 0 && (int) idx >= maxLines)
             break;
@@ -374,7 +379,29 @@ S9sRpcReply::printProcessList(
         pidFormat.widen(pid);
         userFormat.widen(user);
         hostFormat.widen(hostName);
+        priorityFormat.widen(priority);
     }
+
+    /*
+     * The header.
+     */
+    columns  = terminalWidth;
+    columns -= pidFormat.realWidth();
+    columns -= userFormat.realWidth();
+    columns -= hostFormat.realWidth();
+    columns -= priorityFormat.realWidth();
+    columns -= 45;
+
+    printf("%s", TERM_INVERSE);
+    
+    pidFormat.printf("PID");
+    userFormat.printf("USER");
+    hostFormat.printf("HOST");
+    priorityFormat.printf("PR");
+    printf("%s", " VIRT      RES    S   %CPU   %MEM COMMAND    ");
+    printf("%s", STR(S9sString::space * columns));
+    printf("%s", TERM_NORMAL);
+    printf("\n");
 
     // rss          resident set size
     // vsz          virtual memory size
@@ -398,14 +425,18 @@ S9sRpcReply::printProcessList(
         pidFormat.printf(pid);
         userFormat.printf(user);
         hostFormat.printf(hostName);
-        
-        printf("%4d %6.2f %6.2f %8llu %8llu %1s %s", 
-                priority, cpuUsage, memUsage, virtMem, rss,
-                STR(state), STR(executable));
+        priorityFormat.printf(priority);
 
-        printf("\033[K");
+        printf("%8llu ", virtMem);
+        printf("%8llu ", rss);
+        printf("%1s ", STR(state));
+        printf("%6.2f ", cpuUsage);
+        printf("%6.2f ", memUsage); 
+        printf("%s", STR(executable));
 
-        if (maxLines > 0 && (int) idx >= maxLines)
+        printf(TERM_ERASE_EOL);
+
+        if (maxLines > 0 && (int) idx + 1 >= maxLines)
             break;
 
         printf("\n");

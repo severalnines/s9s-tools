@@ -118,6 +118,9 @@ typedef enum S9sMessageLevel
 #  define TERM_NORMAL  "\033[0;39m"
 /** Turns the terminal to bold. */
 #  define TERM_BOLD    "\033[1m"
+
+#  define TERM_INVERSE "\033[7m"
+
 /** Turns underline in the terminal. */
 #  define TERM_UNDERLINE    "\033[4m"
 /** Dark red. */
