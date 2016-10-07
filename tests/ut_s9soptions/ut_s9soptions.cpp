@@ -25,8 +25,8 @@
 #include <cstdio>
 #include <cstring>
 
-//#define DEBUG
-//#define WARNING
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 UtS9sOptions::UtS9sOptions()
@@ -47,6 +47,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testReadOptions02, retval);
     PERFORM_TEST(testReadOptions03, retval);
+    PERFORM_TEST(testReadOptions04, retval);
 
     return retval;
 }
@@ -175,6 +176,32 @@ UtS9sOptions::testReadOptions03()
     S9S_COMPARE(nodes[1].toNode().hostName(), "10.10.2.3");
     S9S_COMPARE(nodes[2].toNode().hostName(), "10.10.2.4");
     S9S_COMPARE(nodes[3].toNode().hostName(), "10.10.2.5");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testReadOptions04()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool  success;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "--config-file", "/home/johan/.s9s/s9s.conf", 
+        "job", "--list", "-t", "THE_TOKEN", NULL 
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),     "s9s");
+    S9S_COMPARE(options->m_operationMode,  S9sOptions::Job);
+    S9S_COMPARE(options->configFile(),     "/home/johan/.s9s/s9s.conf");
+    S9S_COMPARE(options->rpcToken(),       "THE_TOKEN");
+    S9S_VERIFY(options->isListRequested());
 
     S9sOptions::uninit();
     return true;

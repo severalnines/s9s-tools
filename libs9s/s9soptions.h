@@ -67,6 +67,8 @@ class S9sOptions
         void setController(const S9sString &url);
         S9sString controller() const;
 
+        S9sString configFile() const;
+        
         bool setPropertiesOption(const S9sString &assignments);
         S9sVariantMap propertiesOption() const;
 

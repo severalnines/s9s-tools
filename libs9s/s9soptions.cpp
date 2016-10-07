@@ -140,6 +140,32 @@ S9sOptions::loadConfigFiles()
     m_userConfig   = S9sConfigFile();
     m_systemConfig = S9sConfigFile();
 
+    if (!configFile().empty())
+    {
+        S9sString content;
+
+        userConfig = S9sFile(configFile());
+
+        if (!userConfig.exists())
+        {
+            PRINT_ERROR("The file '%s' does not exists.", STR(configFile()));
+            return false;
+        }
+
+        success = m_userConfig.parse(STR(content));
+        if (!success)
+        {
+            printError(
+                    "Error parsing configuration file '%s': %s",
+                    STR(configFile()),
+                    STR(m_userConfig.errorString()));
+
+            return false;
+        }
+
+        return true;
+    }
+
     /*
      * Loading the user's own config file if it exists.
      */
@@ -151,7 +177,7 @@ S9sOptions::loadConfigFiles()
         success = userConfig.readTxtFile(content);
         if (!success)
         {
-            printError(
+            PRINT_ERROR(
                     "Error reading user configuration file: %s",
                     STR(userConfig.errorString()));
 
@@ -240,6 +266,17 @@ S9sOptions::controller() const
         if (retval.empty())
             retval = m_systemConfig.variableValue("controller_host_name");
     }
+
+    return retval;
+}
+
+S9sString
+S9sOptions::configFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("config_file"))
+        retval = m_options.at("config_file").toString();
 
     return retval;
 }
@@ -1000,7 +1037,7 @@ S9sOptions::readOptions(
     bool retval = true;
 
     S9S_DEBUG("");
-    if (*argc < 1)
+    if (*argc < 2)
     {
         m_errorMessage = "Missing command line options.";
         m_exitStatus   = BadOptions;
@@ -1015,9 +1052,27 @@ S9sOptions::readOptions(
         return false;
     }
 
-    retval = setMode(argv[1]);
-    if (!retval)
-        return retval;
+    /*
+     * A heuristics to find the mode name. Should be the first, but anyway, we
+     * try fo find it anyway.
+     */
+    for (int n = 1; n < *argc; ++n)
+    {
+        if (argv[n] == NULL)
+            break;
+
+        if (argv[n][0] == '-')
+            continue;
+        
+        if (argv[n][0] == '/')
+            continue;
+
+        retval = setMode(argv[n]);
+        if (!retval)
+            return retval;
+
+        break;
+    }
 
     switch (m_operationMode)
     {
@@ -1079,7 +1134,8 @@ S9sOptions::setMode(
         const S9sString &modeName)
 {
     bool retval = true;
-    
+   
+    S9S_DEBUG("*** modeName: '%s'", STR(modeName));
     if (modeName == "cluster") 
     {
         m_operationMode = Cluster;
@@ -1716,7 +1772,7 @@ S9sOptions::readOptionsCluster(
 
             case 13:
                 // --config-file=FILE
-                m_options["config-file"] = optarg;
+                m_options["config_file"] = optarg;
                 break;
 
             case 14:
@@ -1907,7 +1963,7 @@ S9sOptions::readOptionsJob(
 
             case 1:
                 // --config-file=FILE 
-                m_options["config-file"] = optarg;
+                m_options["config_file"] = optarg;
                 break;
 
             case 2:
