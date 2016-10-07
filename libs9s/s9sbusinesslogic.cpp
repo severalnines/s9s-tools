@@ -542,7 +542,7 @@ S9sBusinessLogic::executeTop(
         reply = client.reply();
         reply.printProcessList(options->terminalHeight() - 6);
 
-        sleep(3);
+        sleep(options->updateFreq());
     }
 
     if (!success)

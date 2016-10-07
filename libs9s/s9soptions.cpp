@@ -91,6 +91,10 @@ S9sOptions::uninit()
     }
 }
 
+/**
+ * The idea is that we create a configuration file template if the config file
+ * does not exists. The template then can be used to create a config file.
+ */
 void
 S9sOptions::createConfigFiles()
 {
@@ -507,6 +511,28 @@ S9sOptions::clusterId() const
     }
 
     return retval;
+}
+
+int
+S9sOptions::updateFreq() const
+{
+    S9sString retval;
+
+    if (m_options.contains("update_freq"))
+    {
+        retval = m_options.at("update_freq").toString();
+    } else {
+        retval = m_userConfig.variableValue("update_freq");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("update_freq");
+    }
+
+    if (retval.empty())
+        return 3;
+
+    //S9S_DEBUG("-> %d", retval.toInt());
+    return retval.toInt();
 }
 
 /**
@@ -1440,6 +1466,8 @@ S9sOptions::readOptionsProcess(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
 
+        { "update-freq",      required_argument, 0,  6  },
+
         { 0, 0, 0, 0 }
     };
 
@@ -1528,6 +1556,19 @@ S9sOptions::readOptionsProcess(
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case 6:
+                // --update-freq
+                m_options["update_freq"] = atoi(optarg);
+                if (m_options["update_freq"].toInt() < 1)
+                {
+                    m_errorMessage = 
+                        "Invalid value for the --update-freq option.";
+                
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
                 break;
 
             default:
