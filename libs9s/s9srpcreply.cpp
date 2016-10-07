@@ -129,7 +129,6 @@ S9sRpcReply::isJobFailed() const
     return retval;
 }
 
-
 S9sString
 S9sRpcReply::clusterName(
         const int clusterId)
@@ -137,6 +136,15 @@ S9sRpcReply::clusterName(
     S9sVariantMap theMap = clusterMap(clusterId);
 
     return theMap["cluster_name"].toString();
+}
+
+S9sString
+S9sRpcReply::clusterStatusText(
+        const int clusterId)
+{
+    S9sVariantMap theMap = clusterMap(clusterId);
+
+    return theMap["status_text"].toString();
 }
 
 /**
@@ -1676,6 +1684,10 @@ S9sRpcReply::progressBar(
     return retval;
 }
 
+/**
+ * \returns The map about the given cluster or an empty map if the reply has no
+ *   cluster description in it.
+ */
 S9sVariantMap
 S9sRpcReply::clusterMap(
         const int clusterId)

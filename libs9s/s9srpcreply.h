@@ -32,6 +32,7 @@ class S9sRpcReply : public S9sVariantMap
         bool isJobFailed() const;
 
         S9sString clusterName(const int clusterId);
+        S9sString clusterStatusText(const int clusterId);
 
         bool progressLine(S9sString &retval, bool syntaxHighlight);
 

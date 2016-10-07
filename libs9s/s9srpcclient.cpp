@@ -157,6 +157,7 @@ S9sRpcClient::getCluster(
 
     retval = executeRequest(uri, request.toString());
     //printf("-->\n%s\n", STR(reply().toString()));
+    //exit (0);
     return retval;
 }
 
