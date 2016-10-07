@@ -32,6 +32,10 @@
 #  define STR(_thestring) ((_thestring).c_str())
 #endif
 
+#ifndef STR_BOOL
+#  define STR_BOOL(_thebool) (_thebool ? "true" : "false")
+#endif
+
 class S9sRegExp;
 class S9sVariantList;
 

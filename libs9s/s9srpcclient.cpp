@@ -138,6 +138,34 @@ S9sRpcClient::errorString() const
  * reply.
  */
 bool
+S9sRpcClient::getCluster(
+        int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/0/clusters/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]  = "getAllClusterInfo";
+    request["with_hosts"] = true;
+    request["cluster_id"] = clusterId;
+    request["user"]           = options->userName();
+    //job["user_id"]        = options->userId();
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
+
+/**
+ * The method that sends the "getAllClusterInfo" RPC request and reads the
+ * reply.
+ */
+bool
 S9sRpcClient::getClusters()
 {
     S9sOptions    *options = S9sOptions::instance();

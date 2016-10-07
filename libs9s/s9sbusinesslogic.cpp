@@ -444,13 +444,24 @@ S9sBusinessLogic::executeNodeSet(
     }
 }
 
+/**
+ * This method provides a continuous display of one specific cluster that is
+ * similar to the "top" utility.
+ */
 void 
 S9sBusinessLogic::executeTop(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
     int          clusterId = options->clusterId();
-    S9sRpcReply reply;
+    S9sRpcReply  reply;
+    bool         success = true;
+
+    if (clusterId <= 0)
+    {
+        PRINT_ERROR("The cluster ID is invalid while executing 'top'.");
+        return;
+    }
 
     #if 0
     //
@@ -476,11 +487,16 @@ S9sBusinessLogic::executeTop(
     {
         S9sDateTime date = S9sDateTime::currentDateTime();
         S9sString   dateString = date.toString(S9sDateTime::LongTimeFormat);
-        printf("\033[0;0H");
 
         //
         // The date.
         //
+        success = client.getCluster(clusterId);
+        reply = client.reply();
+        if (!success)
+            break;
+
+        printf("\033[0;0H");
         printf("s9s - %s \n", STR(dateString));
 
         //
@@ -488,12 +504,13 @@ S9sBusinessLogic::executeTop(
         //
         client.getCpuStats(clusterId);
         reply = client.reply();
+
         reply.printCpuStatLine1();
    
         //
         // The memory summary.
         //
-        client.getMemoryStats(options->clusterId());
+        client.getMemoryStats(clusterId);
         reply = client.reply();
         reply.printMemoryStatLine1();
         reply.printMemoryStatLine2();
@@ -507,6 +524,11 @@ S9sBusinessLogic::executeTop(
         reply.printProcessList(options->terminalHeight() - 6);
 
         sleep(3);
+    }
+
+    if (!success)
+    {
+        PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 
