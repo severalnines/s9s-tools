@@ -504,7 +504,7 @@ S9sBusinessLogic::executeTop(
         //
         client.getRunningProcesses(clusterId);
         reply = client.reply();
-        reply.printProcessList(options->terminalHeight() - 5);
+        reply.printProcessList(options->terminalHeight() - 6);
 
         sleep(3);
     }

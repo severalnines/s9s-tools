@@ -5,10 +5,12 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
+
+# This is the name of the server that will hold the linux containers.
+CONTAINER_SERVER="core1"
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""

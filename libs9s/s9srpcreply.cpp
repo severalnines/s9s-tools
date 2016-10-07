@@ -317,8 +317,13 @@ S9sRpcReply::printProcessList(
 {
     S9sVariantList  hostList = operator[]("data").toVariantList();
     S9sVariantList  processList;
-    int             lineCounter = 0;
+    S9sFormat       hostFormat;
+    S9sFormat       userFormat;
+    S9sFormat       pidFormat;
 
+    /*
+     *
+     */
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
         S9sString hostName = hostList[idx]["hostname"].toString();
@@ -335,36 +340,54 @@ S9sRpcReply::printProcessList(
     
     sort(processList.begin(), processList.end(), compareProcessByCpuUsage);
 
+    /*
+     *
+     */
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     user       = process["user"].toString();
+        S9sString     hostName   = process["hostname"].toString();
+
+        if (maxLines > 0 && (int) idx >= maxLines)
+            break;
+
+        pidFormat.widen(pid);
+        userFormat.widen(user);
+        hostFormat.widen(hostName);
+    }
+
     // rss          resident set size
     // vsz          virtual memory size
     for (uint idx = 0u; idx < processList.size(); ++idx)
     {
-        S9sVariantMap process = processList[idx].toVariantMap();
-        S9sString     hostName = process["hostname"].toString();
-        S9sString     user = process["user"].toString();
-        int           pid = process["pid"].toInt();
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     hostName   = process["hostname"].toString();
+        S9sString     user       = process["user"].toString();
         S9sString     executable = process["executable"].toString();
-        double        cpuUsage = process["cpu_usage"].toDouble();
-        double        memUsage = process["mem_usage"].toDouble();
-        S9sString     state = process["state"].toString();
-        ulonglong     rss = process["res_mem"].toULongLong();
-        ulonglong     virtMem = process["virt_mem"].toULongLong();
-        int           priority = process["priority"].toInt();
+        double        cpuUsage   = process["cpu_usage"].toDouble();
+        double        memUsage   = process["mem_usage"].toDouble();
+        S9sString     state      = process["state"].toString();
+        ulonglong     rss        = process["res_mem"].toULongLong();
+        ulonglong     virtMem    = process["virt_mem"].toULongLong();
+        int           priority   = process["priority"].toInt();
 
         rss     /= 1024;
         virtMem /= 1024;
-        printf("%6d %8s %12s %4d %6.2f %6.2f %8llu %8llu %1s %s", 
-                pid, STR(user), STR(hostName), 
-                priority,
-                cpuUsage, memUsage,
-                virtMem, rss,
+
+        pidFormat.printf(pid);
+        userFormat.printf(user);
+        hostFormat.printf(hostName);
+        
+        printf("%4d %6.2f %6.2f %8llu %8llu %1s %s", 
+                priority, cpuUsage, memUsage, virtMem, rss,
                 STR(state), STR(executable));
 
         printf("\033[K");
 
-        lineCounter++;
-
-        if (maxLines > 0 && lineCounter >= maxLines)
+        if (maxLines > 0 && (int) idx >= maxLines)
             break;
 
         printf("\n");
