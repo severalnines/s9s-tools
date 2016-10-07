@@ -80,81 +80,59 @@ typedef enum S9sMessageLevel
 /** Protector macro, dosygen complains about it if there is no documentation. */
 #define S9SDEBUG_H
 
-//#define DEBUG_SUPPRESS_COLOR
-#ifdef DEBUG_SUPPRESS_COLOR
-#  define TERM_RED     ""
-#  define TERM_YELLOW  ""
-#  define TERM_GREEN   ""
-#  define TERM_BLUE    ""
-#  define TERM_NORMAL  ""
-#  define TERM_BOLD    ""
-#  define TERM_UNDERLINE    ""
-#  define XTERM_COLOR_1 ""
-#  define XTERM_COLOR_2 ""
-#  define XTERM_COLOR_3 ""
-#  define XTERM_COLOR_4 ""
-#  define XTERM_COLOR_5 ""
-#  define XTERM_COLOR_6 ""
-#  define XTERM_COLOR_7 ""
-#  define XTERM_COLOR_8 ""
-#  define XTERM_COLOR_9 ""
-#  define XTERM_COLOR_10 ""
-#  define XTERM_COLOR_11 ""
-#  define XTERM_COLOR_12 ""
-#  define XTERM_COLOR_13 ""
-#  define XTERM_COLOR_14 ""
-#  define XTERM_COLOR_15 ""
-#  define XTERM_COLOR_16 ""
-#else 
+
+/** Clear until the end of line.*/
+#define TERM_ERASE_EOL "\033[K"
+/** Clear the entire screen.*/
+#define TERM_CLEAR_SCREEN "\033[2J"
 /** Yellow terminal color sequence. */
-#  define TERM_RED  "\033[1;31m" 
+#define TERM_RED  "\033[1;31m" 
 /** Red terminal color sequence. */
-#  define TERM_YELLOW     "\033[1;33m" 
+#define TERM_YELLOW     "\033[1;33m" 
 /** Green terminal color sequence. */
-#  define TERM_GREEN   "\033[1;32m"
+#define TERM_GREEN   "\033[1;32m"
 /** Blue terminal color sequence. */
-#  define TERM_BLUE    "\033[1;34m"
+#define TERM_BLUE    "\033[1;34m"
 /** Terminal reset sequence. */
-#  define TERM_NORMAL  "\033[0;39m"
+#define TERM_NORMAL  "\033[0;39m"
 /** Turns the terminal to bold. */
-#  define TERM_BOLD    "\033[1m"
-
-#  define TERM_INVERSE "\033[7m"
-
+#define TERM_BOLD    "\033[1m"
+/** Inverse color terminal sequence.*/
+#define TERM_INVERSE "\033[7m"
 /** Turns underline in the terminal. */
-#  define TERM_UNDERLINE    "\033[4m"
+#define TERM_UNDERLINE    "\033[4m"
 /** Dark red. */
-#  define XTERM_COLOR_1 "\033[38;5;1m"
+#define XTERM_COLOR_1 "\033[38;5;1m"
 /** Dark green. */
-#  define XTERM_COLOR_2 "\033[38;5;2m"
+#define XTERM_COLOR_2 "\033[38;5;2m"
 /** Dark orange. */
-#  define XTERM_COLOR_3 "\033[38;5;3m"
+#define XTERM_COLOR_3 "\033[38;5;3m"
 /** Dark blue. */
-#  define XTERM_COLOR_4 "\033[38;5;4m"
+#define XTERM_COLOR_4 "\033[38;5;4m"
 /** Brown. */
-#  define XTERM_COLOR_5 "\033[38;5;5m"
+#define XTERM_COLOR_5 "\033[38;5;5m"
 /** Greenish blue. */
-#  define XTERM_COLOR_6 "\033[38;5;6m"
+#define XTERM_COLOR_6 "\033[38;5;6m"
 /** Dark grey. */
-#  define XTERM_COLOR_7 "\033[38;5;8m"
+#define XTERM_COLOR_7 "\033[38;5;8m"
 /** Red color. */
-#  define XTERM_COLOR_8 "\033[38;5;9m"
+#define XTERM_COLOR_8 "\033[38;5;9m"
 /** Green color. */
-#  define XTERM_COLOR_9 "\033[38;5;10m"
+#define XTERM_COLOR_9 "\033[38;5;10m"
 /** Blue color. */
-#  define XTERM_COLOR_10 "\033[38;5;12m"
+#define XTERM_COLOR_10 "\033[38;5;12m"
 /** Light brown color. */
-#  define XTERM_COLOR_11 "\033[38;5;13m"
+#define XTERM_COLOR_11 "\033[38;5;13m"
 /** Light blue color. */
-#  define XTERM_COLOR_12 "\033[38;5;14m"
+#define XTERM_COLOR_12 "\033[38;5;14m"
 /** Terminal custom color. */
-#  define XTERM_COLOR_13 "\033[38;5;17m"
+#define XTERM_COLOR_13 "\033[38;5;17m"
 /** Clear dark blue terminal color sequence. */
-#  define XTERM_COLOR_14 "\033[38;5;21m"
+#define XTERM_COLOR_14 "\033[38;5;21m"
 /** Blackish blue terminal color sequence. */
-#  define XTERM_COLOR_15 "\033[38;5;19m"
+#define XTERM_COLOR_15 "\033[38;5;19m"
 /** Neon color terminal color sequence. */
-#  define XTERM_COLOR_16 "\033[38;5;93m"
+#define XTERM_COLOR_16 "\033[38;5;93m"
 
 #define XTERM_COLOR_RED          "\033[0;31m"
 #define XTERM_COLOR_GREEN        "\033[0;32m"
@@ -171,9 +149,6 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_LIGHT_PURPLE "\033[1;35m"
 #define XTERM_COLOR_LIGHT_CYAN   "\033[1;36m"
 #define XTERM_COLOR_WHITE        "\033[1;37m"
-
-
-#endif
 
 void 
 s9s_print_message (

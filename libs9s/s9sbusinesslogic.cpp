@@ -484,6 +484,7 @@ S9sBusinessLogic::executeTop(
     exit(0);
     #endif
 
+    printf("%s", TERM_CLEAR_SCREEN);
     for (;;)
     {
         S9sDateTime date = S9sDateTime::currentDateTime();
