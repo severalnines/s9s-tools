@@ -122,14 +122,23 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("\n");
 }
 
+/**
+ * \returns false if there was any error with the configuration file(s), true if
+ *   everything went well (even if there are no configuration files).
+ */
 bool
 S9sOptions::loadConfigFiles()
 {
     S9sFile userConfig("~/.s9s/s9s.conf");
+    S9sFile systemConfig("/etc/s9s.conf");
     bool    success;
 
-    m_userConfig = S9sConfigFile();
+    m_userConfig   = S9sConfigFile();
+    m_systemConfig = S9sConfigFile();
 
+    /*
+     * Loading the user's own config file if it exists.
+     */
     if (userConfig.exists())
     {
         S9sString content;
@@ -154,8 +163,35 @@ S9sOptions::loadConfigFiles()
 
             return false;
         }
-    } else {
-        S9S_DEBUG("User config does not exist.");
+    }
+    
+    /*
+     * The system configuration.
+     */
+    if (systemConfig.exists())
+    {
+        S9sString content;
+
+        S9S_DEBUG("System config exists.");
+        success = systemConfig.readTxtFile(content);
+        if (!success)
+        {
+            printError(
+                    "Error reading system configuration file: %s",
+                    STR(systemConfig.errorString()));
+
+            return false;
+        }
+
+        success = m_systemConfig.parse(STR(content));
+        if (!success)
+        {
+            printError(
+                    "Error parsing system configuration file: %s",
+                    STR(m_systemConfig.errorString()));
+
+            return false;
+        }
     }
 
     return true;
@@ -196,6 +232,9 @@ S9sOptions::controller() const
         retval = m_options.at("controller").toString();
     } else {
         retval = m_userConfig.variableValue("controller_host_name");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("controller_host_name");
     }
 
     return retval;
@@ -249,6 +288,9 @@ S9sOptions::controllerPort() const
         retval = m_options.at("controller_port").toInt();
     } else {
         retval = m_userConfig.variableValue("controller_port").toInt();
+
+        if (retval == 0)
+            retval = m_systemConfig.variableValue("controller_port").toInt();
     }
 
     return retval;
@@ -299,9 +341,14 @@ S9sOptions::vendor() const
     S9sString retval;
 
     if (m_options.contains("vendor"))
+    {
         retval = m_options.at("vendor").toString();
-    else
+    } else {
         retval = m_userConfig.variableValue("vendor");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("vendor");
+    }
 
 
     return retval;
@@ -318,9 +365,14 @@ S9sOptions::providerVersion(
     S9sString retval = defaultValue;
 
     if (m_options.contains("provider_version"))
+    {
         retval = m_options.at("provider_version").toString();
-    else
+    } else {
         retval = m_userConfig.variableValue("provider_version");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("provider_version");
+    }
 
     return retval;
 }
@@ -343,6 +395,9 @@ S9sOptions::osUser() const
         retval = m_options.at("os_user").toString();
     } else {
         retval = m_userConfig.variableValue("os_user");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("os_user");
     }
 
     if (retval.empty())
@@ -361,6 +416,9 @@ S9sOptions::osKeyFile() const
     S9sString retval;
 
     retval = m_userConfig.variableValue("os_key_file");
+
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("os_key_file");
 
     return retval;
 }
@@ -441,6 +499,9 @@ S9sOptions::clusterId() const
     } else {
         S9sString stringVal = m_userConfig.variableValue("default_cluster_id");
 
+        if (stringVal.empty())
+            stringVal = m_systemConfig.variableValue("default_cluster_id");
+
         if (!stringVal.empty())
             retval = stringVal.toInt();
     }
@@ -484,6 +545,9 @@ S9sOptions::userName() const
 
     retval = m_userConfig.variableValue("user_name");
     
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("user_name");
+ 
     if (retval.empty())
         retval = getenv("USER");
 
@@ -833,12 +897,19 @@ S9sOptions::isVerbose() const
 bool
 S9sOptions::useTls() const
 {
-    if (m_options.contains("rpc_tls"))
-        return m_options.at("rpc_tls").toBoolean();
-    else
-        return m_userConfig.variableValue("rpc_tls").toBoolean();
+    S9sString retval;
 
-    return false;
+    if (m_options.contains("rpc_tls"))
+    {
+        retval = m_options.at("rpc_tls").toString();
+    } else {
+        retval = m_userConfig.variableValue("rpc_tls");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("rpc_tls");
+    }
+
+    return retval.toBoolean();
 }
 /**
  * \returns a human readable error description stored inside the object.

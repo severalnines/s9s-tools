@@ -156,6 +156,7 @@ class S9sOptions
         S9sString          m_errorMessage;
         S9sVariantMap      m_options;
         S9sConfigFile      m_userConfig;
+        S9sConfigFile      m_systemConfig;
 
     friend class UtS9sOptions;
 };
