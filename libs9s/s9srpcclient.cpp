@@ -941,6 +941,53 @@ S9sRpcClient::addNode(
     return retval;
 }
 
+bool
+S9sRpcClient::addHaProxy(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    bool           retval;
+
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("addHaProxy is currently implemented only for one node.");
+        return false;
+    }
+
+    uri.sprintf("/%d/job/", clusterId);
+    
+    // The job_data describing the cluster.
+    jobData["action"] = "setupHaProxy";
+    jobData["haproxy_address"] = hosts[0].toNode().hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]  = "haproxy";
+    jobSpec["job_data"] = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Add HaProxy to Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+    //job["api_id"]        = -1;
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
 /**
  * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be removed from the cluster (variant list

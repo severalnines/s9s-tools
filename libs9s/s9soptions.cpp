@@ -274,6 +274,10 @@ S9sOptions::controller() const
     return retval;
 }
 
+/**
+ * \returns The value of the --config-file command line option or teh empty
+ *   string if
+ */
 S9sString
 S9sOptions::configFile() const
 {

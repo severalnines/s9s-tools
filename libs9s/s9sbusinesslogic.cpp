@@ -191,12 +191,13 @@ S9sBusinessLogic::executeAddNode(
 {
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
-    S9sVariantList hostNames;
+    S9sVariantList hosts;
     S9sRpcReply    reply;
+    bool           hasHaproxy = false;
     bool           success;
 
-    hostNames = options->nodes();
-    if (hostNames.empty())
+    hosts = options->nodes();
+    if (hosts.empty())
     {
         options->printError(
                 "Node list is empty while adding node.\n"
@@ -207,10 +208,20 @@ S9sBusinessLogic::executeAddNode(
         return;
     }
 
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        if (hosts[0].toNode().protocol().toLower() == "haproxy")
+            hasHaproxy = true;
+    }
+
     /*
      * Running the request on the controller.
      */
-    success = client.addNode(clusterId, hostNames);
+    if (hasHaproxy)
+        success = client.addHaProxy(clusterId, hosts);
+    else
+        success = client.addNode(clusterId, hosts);
+
     if (success)
     {
         jobRegistered(client, clusterId);
