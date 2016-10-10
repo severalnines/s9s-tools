@@ -23,6 +23,7 @@
 #include "S9sOptions"
 #include "S9sNode"
 #include "S9sDateTime"
+#include "S9sTopUi"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -452,19 +453,7 @@ void
 S9sBusinessLogic::executeTop(
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
-    int          clusterId = options->clusterId();
-    S9sString    clusterName, clusterStatusText;
-    S9sRpcReply  reply;
-    bool         success = true;
-
-    if (clusterId <= 0)
-    {
-        PRINT_ERROR("The cluster ID is invalid while executing 'top'.");
-        return;
-    }
-
-    #if 1
+    #if 0
     //
     // A small test to get the cpu info.
     //
@@ -473,7 +462,7 @@ S9sBusinessLogic::executeTop(
     printf("%s\n", STR(reply.toString()));
     #endif
     
-    #if 1
+    #if 0
     //
     // A small test to get the cpu info.
     //
@@ -483,7 +472,7 @@ S9sBusinessLogic::executeTop(
     exit(0);
     #endif
     
-    #if 1
+    #if 0
     //
     // A small test to get the memory info.
     //
@@ -494,71 +483,9 @@ S9sBusinessLogic::executeTop(
     exit(0);
     #endif
 
-    printf("%s", TERM_CLEAR_SCREEN);
-    for (;;)
-    {
-        S9sDateTime date = S9sDateTime::currentDateTime();
-        S9sString   dateString = date.toString(S9sDateTime::LongTimeFormat);
-        int         terminalWidth = options->terminalWidth();
-        int         columns;
-        S9sString   tmp;
+    S9sTopUi ui;
 
-        //
-        // The cluster information.
-        //
-        success = client.getCluster(clusterId);
-        reply = client.reply();
-        if (!success)
-            break;
-
-        clusterName = reply.clusterName(clusterId);
-        clusterStatusText = reply.clusterStatusText(clusterId);
-        
-        columns  = terminalWidth;
-        columns -= clusterName.length();
-        columns -= clusterStatusText.length();
-        columns -= 12;
-        
-        tmp = S9sString::space * columns;
-
-        printf("\033[0;0H");
-        //printf("columns: %d\n", columns);
-        printf("%s - %s ", STR(clusterName), STR(dateString));
-        printf("%s", STR(tmp));
-        printf("%s", STR(clusterStatusText));
-        printf("\n");
-
-        //
-        // Summary of CPU usage.
-        //
-        client.getCpuStats(clusterId);
-        reply = client.reply();
-
-        reply.printCpuStatLine1();
-   
-        //
-        // The memory summary.
-        //
-        client.getMemoryStats(clusterId);
-        reply = client.reply();
-        reply.printMemoryStatLine1();
-        reply.printMemoryStatLine2();
-        printf("\n");
-
-        //
-        // List of processes.
-        //
-        client.getRunningProcesses(clusterId);
-        reply = client.reply();
-        reply.printProcessList(options->terminalHeight() - 6);
-
-        sleep(options->updateFreq());
-    }
-
-    if (!success)
-    {
-        PRINT_ERROR("%s", STR(client.errorString()));
-    }
+    ui.executeTop(client);
 }
 
 /**
