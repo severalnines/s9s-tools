@@ -19,6 +19,8 @@
  */
 #pragma once
 
+#include <termios.h>
+
 class S9sRpcClient;
 
 class S9sTopUi
@@ -31,6 +33,12 @@ class S9sTopUi
 
     private:
         bool executeTopOnce(S9sRpcClient &client);
+
+        int kbhit();
+        void set_conio_terminal_mode();
+        int getch();
+        
+    private:
 };
 
 

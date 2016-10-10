@@ -25,9 +25,13 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
-//#define DEBUG
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
+        
+struct termios orig_termios;
 
 S9sTopUi::S9sTopUi()
 {
@@ -78,6 +82,20 @@ S9sTopUi::executeTopOnce(
     int          terminalWidth = options->terminalWidth();
     int          columns;
     S9sString    tmp;
+
+    //
+    //
+    //
+#if 0
+    if (kbhit())
+    {
+        int key = getch();
+
+        S9S_DEBUG("*** key = %c", key);
+        if (key == 'q' || key == 'Q')
+            return false;
+    }
+#endif
 
     //
     // The cluster information.
