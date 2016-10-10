@@ -464,7 +464,7 @@ S9sBusinessLogic::executeTop(
         return;
     }
 
-    #if 0
+    #if 1
     //
     // A small test to get the cpu info.
     //
@@ -473,7 +473,17 @@ S9sBusinessLogic::executeTop(
     printf("%s\n", STR(reply.toString()));
     #endif
     
-    #if 0
+    #if 1
+    //
+    // A small test to get the cpu info.
+    //
+    client.getCpuStats(options->clusterId());
+    reply = client.reply();
+    printf("%s\n", STR(reply.toString()));
+    exit(0);
+    #endif
+    
+    #if 1
     //
     // A small test to get the memory info.
     //

@@ -293,6 +293,28 @@ S9sRpcClient::getCpuInfo(
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
+    {
+        "busy": 0.0664384,
+        "cpuid": 2,
+        "cpumhz": 2661.57,
+        "cpumodelname": "Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz",
+        "cpuphysicalid": 0,
+        "cputemp": 0,
+        "created": 1476084629,
+        "hostid": 3,
+        "idle": 0.930993,
+        "interval": 59486,
+        "iowait": 0.00256849,
+        "loadavg1": 0.26,
+        "loadavg15": 0.18,
+        "loadavg5": 0.28,
+        "sampleends": 1476084629,
+        "samplekey": "CmonCpuStats-3-2",
+        "steal": 0,
+        "sys": 0.0438356,
+        "uptime": 993.05,
+        "user": 0.0226027
+    }
  */
 bool
 S9sRpcClient::getCpuStats(
