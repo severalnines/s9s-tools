@@ -23,6 +23,9 @@
 
 class S9sRpcClient;
 
+/*
+ * http://stackoverflow.com/questions/905060/non-blocking-getch-ncurses
+ */
 class S9sTopUi
 {
     public:
@@ -33,12 +36,6 @@ class S9sTopUi
 
     private:
         bool executeTopOnce(S9sRpcClient &client);
-
-        int kbhit();
-        void set_conio_terminal_mode();
-        int getch();
-        
-    private:
 };
 
 

@@ -5,7 +5,6 @@ AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])
 
 AM_CONFIG_HEADER(config.h)
-#AM_PROG_LIBTOOL
 AC_CONFIG_MACRO_DIR([m4])
 AC_PREFIX_DEFAULT(/usr)
 
@@ -36,10 +35,14 @@ AC_FUNC_REALLOC
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([strdup strtol strcmp strncmp])
 
-# for TLS/SSL
+
+# 
+# Checking for libraries.
+#
 AC_CHECK_HEADERS([openssl/crypto.h openssl/tls1.h])
 AC_CHECK_LIB(crypto,EVP_EncryptUpdate)
 AC_CHECK_LIB(ssl,SSL_connect)
+#AC_CHECK_LIB(ncurses, initscr)
 
 AC_ARG_ENABLE([gcov],
   [AS_HELP_STRING([--enable-gcov],
