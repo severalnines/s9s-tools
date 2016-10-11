@@ -218,9 +218,11 @@ S9sBusinessLogic::executeAddNode(
      * Running the request on the controller.
      */
     if (hasHaproxy)
+    {
         success = client.addHaProxy(clusterId, hosts);
-    else
+    } else {
         success = client.addNode(clusterId, hosts);
+    }
 
     if (success)
     {

@@ -197,7 +197,7 @@ function testAddNode()
     nodes+="$LAST_ADDED_NODE"
 
     #
-    #
+    # Adding a node to the cluster.
     #
     $S9S cluster \
         --add-node \
@@ -211,6 +211,12 @@ function testAddNode()
         failure "The exit code is ${exitCode}"
     fi
 }
+
+#
+# Adding HaProxy can be done like this:
+#   s9s cluster --add-node --log --cluster-id=1 --nodes="haproxy://192.168.1.137;192.168.1.104;192.168.1.134;192.168.1.135"
+# not very intuitive...
+#
 
 #
 # This test will remove the last added node.

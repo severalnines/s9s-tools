@@ -950,20 +950,69 @@ S9sRpcClient::addHaProxy(
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri;
+    S9sVariantList haProxyNodes;
+    S9sVariantList otherNodes;
     bool           retval;
+    S9sString      nodeAddresses;
 
-    if (hosts.size() != 1u)
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
-        PRINT_ERROR("addHaProxy is currently implemented only for one node.");
+        S9sNode   node;
+        S9sString protocol;
+
+        node     = hosts[idx].toNode();
+        protocol = node.protocol().toLower();
+
+        S9S_DEBUG("*** protocol: '%s'", STR(protocol));
+        if (protocol == "haproxy")
+            haProxyNodes << node;
+        else 
+            otherNodes << node;
+    }
+
+    if (haProxyNodes.size() != 1u)
+    {
+        PRINT_ERROR(
+                "To add a HaProxy one needs to specify exactly"
+                " one HaProxy node.");
+
+        return false;
+    }
+
+    if (otherNodes.size() < 1u)
+    {
+        PRINT_ERROR(
+                "To add a HaProxy node one needs to specify the other nodes"
+                " too.");
+
         return false;
     }
 
     uri.sprintf("/%d/job/", clusterId);
     
     // The job_data describing the cluster.
-    jobData["action"] = "setupHaProxy";
-    jobData["haproxy_address"] = hosts[0].toNode().hostName();
+    jobData["action"]          = "setupHaProxy";
+    jobData["haproxy_address"] = haProxyNodes[0].toNode().hostName();
     
+    for (uint idx = 0u; idx < otherNodes.size(); ++idx)
+    {
+        int       port;
+        S9sNode   node;
+        S9sString tmp;
+
+        node = otherNodes[idx].toNode();
+        port = node.hasPort() ? node.port() : 3306;
+
+        tmp.sprintf("%s:%d:%s", STR(node.hostName()), port, "active");
+
+        if (!nodeAddresses.empty())
+            nodeAddresses += ";";
+
+        nodeAddresses += tmp;
+    }
+
+    jobData["node_addresses"] = nodeAddresses;
+
     // The jobspec describing the command.
     jobSpec["command"]  = "haproxy";
     jobSpec["job_data"] = jobData;
