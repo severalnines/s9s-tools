@@ -193,13 +193,14 @@ S9sBusinessLogic::executeAddNode(
     int            clusterId = options->clusterId();
     S9sVariantList hosts;
     S9sRpcReply    reply;
-    bool           hasHaproxy = false;
+    bool           hasHaproxy  = false;
+    bool           hasProxySql = false;
     bool           success;
 
     hosts = options->nodes();
     if (hosts.empty())
     {
-        options->printError(
+        PRINT_ERROR(
                 "Node list is empty while adding node.\n"
                 "Use the --nodes command line option to provide the node list."
                 );
@@ -210,14 +211,28 @@ S9sBusinessLogic::executeAddNode(
 
     for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
-        if (hosts[0].toNode().protocol().toLower() == "haproxy")
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol == "haproxy")
             hasHaproxy = true;
+        else if (protocol == "proxysql")
+            hasProxySql = true;
     }
 
     /*
      * Running the request on the controller.
      */
-    if (hasHaproxy)
+    if (hasHaproxy && hasProxySql) 
+    {
+        PRINT_ERROR(
+                "It is not possible to add a HaProxy and a ProxySql node "
+                "in one call.");
+
+        return;
+    } else if (hasProxySql)
+    {
+        success = client.addProxySql(clusterId, hosts);
+    } else if (hasHaproxy)
     {
         success = client.addHaProxy(clusterId, hosts);
     } else {
