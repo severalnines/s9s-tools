@@ -963,7 +963,6 @@ S9sRpcClient::addHaProxy(
         node     = hosts[idx].toNode();
         protocol = node.protocol().toLower();
 
-        S9S_DEBUG("*** protocol: '%s'", STR(protocol));
         if (protocol == "haproxy")
             haProxyNodes << node;
         else 
@@ -1020,6 +1019,82 @@ S9sRpcClient::addHaProxy(
     // The job instance describing how the job will be executed.
     job["class_name"]    = "CmonJobInstance";
     job["title"]         = "Add HaProxy to Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+    //job["api_id"]        = -1;
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
+bool
+S9sRpcClient::addProxySql(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    S9sVariantList proxyNodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+    S9sString      nodeAddresses;
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode   node;
+        S9sString protocol;
+
+        node     = hosts[idx].toNode();
+        protocol = node.protocol().toLower();
+
+        if (protocol == "proxysql")
+            proxyNodes << node;
+        else 
+            otherNodes << node;
+    }
+
+    if (proxyNodes.size() != 1u)
+    {
+        PRINT_ERROR(
+                "To add a ProxySql one needs to specify exactly"
+                " one ProxySql node.");
+
+        return false;
+    }
+
+    if (otherNodes.size() > 1u)
+    {
+        PRINT_ERROR(
+                "Specifying extra nodes when adding ProxySql is not"
+                " supported.");
+
+        return false;
+    }
+
+    uri.sprintf("/%d/job/", clusterId);
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setupProxySql";
+    jobData["hostname"] = proxyNodes[0].toNode().hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]  = "proxysql";
+    jobSpec["job_data"] = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Add ProxySQL to Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
     job["user_id"]       = options->userId();
