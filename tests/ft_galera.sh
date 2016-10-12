@@ -213,10 +213,63 @@ function testAddNode()
 }
 
 #
-# Adding HaProxy can be done like this:
-#   s9s cluster --add-node --log --cluster-id=1 --nodes="haproxy://192.168.1.137;192.168.1.104;192.168.1.134;192.168.1.135"
-# not very intuitive...
+# This test will add a proxy sql node.
 #
+function testAddProxySql()
+{
+    local node
+    local nodes
+    local exitCode
+
+    printVerbose "Creating Node..."
+    node=$(create_node)
+    nodes+="proxySql://$node"
+
+    #
+    # Adding a node to the cluster.
+    #
+    $S9S cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+
+#
+# This test will add a HaProxy node.
+#
+function testAddHaProxy()
+{
+    local node
+    local nodes
+    local exitCode
+    
+    printVerbose "Creating Node..."
+    node=$(create_node)
+    nodes+="haProxy://$node"
+
+    #
+    # Adding a node to the cluster.
+    #
+    $S9S cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
 
 #
 # This test will remove the last added node.
@@ -228,7 +281,7 @@ function testRemoveNode()
     fi
     
     #
-    #
+    # Removing the last added node.
     #
     $S9S cluster \
         --remove-node \
@@ -251,7 +304,7 @@ function testRollingRestart()
     local exitCode
 
     #
-    #
+    # Calling for a rolling restart.
     #
     $S9S cluster \
         --rolling-restart \
@@ -299,6 +352,8 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testAddProxySql
+    runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop

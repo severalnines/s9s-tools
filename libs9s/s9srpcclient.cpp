@@ -978,15 +978,6 @@ S9sRpcClient::addHaProxy(
         return false;
     }
 
-    if (otherNodes.size() < 1u)
-    {
-        PRINT_ERROR(
-                "To add a HaProxy node one needs to specify the other nodes"
-                " too.");
-
-        return false;
-    }
-
     uri.sprintf("/%d/job/", clusterId);
     
     // The job_data describing the cluster.
@@ -1010,7 +1001,8 @@ S9sRpcClient::addHaProxy(
         nodeAddresses += tmp;
     }
 
-    jobData["node_addresses"] = nodeAddresses;
+    if (!nodeAddresses.empty())
+        jobData["node_addresses"] = nodeAddresses;
 
     // The jobspec describing the command.
     jobSpec["command"]  = "haproxy";
