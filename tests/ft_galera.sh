@@ -148,6 +148,7 @@ function testCreateCluster
     local nodeName
     local exitCode
 
+    pip-say "The test to create Galera cluster is starting now."
     echo "Creating nodes..."
     nodeName=$(create_node)
     nodes+="$nodeName;"
@@ -221,6 +222,7 @@ function testAddProxySql()
     local nodes
     local exitCode
 
+    pip-say "The test to add ProxySQL node is starting now."
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="proxySql://$node"
@@ -251,6 +253,7 @@ function testAddHaProxy()
     local nodes
     local exitCode
     
+    pip-say "The test to add HaProxy node is starting now."
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="haProxy://$node"

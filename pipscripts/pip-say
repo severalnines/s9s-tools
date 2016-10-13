@@ -148,3 +148,7 @@ else
             $EXTRA_OPTIONS
 fi
 
+#
+# I just want to notice the message before the caller continues to do things.
+#
+sleep 3
