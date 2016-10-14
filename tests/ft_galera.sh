@@ -149,7 +149,6 @@ function testCreateCluster
     local exitCode
 
     pip-say "The test to create Galera cluster is starting now."
-    echo "Creating nodes..."
     nodeName=$(create_node)
     nodes+="$nodeName;"
     

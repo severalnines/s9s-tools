@@ -118,7 +118,7 @@ function is_server_running_ssh()
     local serverName="$1"
     local isOK
 
-    isOk=$(ssh -o ConnectTimeout=1 "$serverName" -- echo OK)
+    isOk=$(ssh -o ConnectTimeout=1 "$serverName" 2>/dev/null -- echo OK)
     if [ "$isOk" == "OK" ]; then
         return 0
     fi
@@ -129,6 +129,9 @@ function is_server_running_ssh()
 #
 # $2: the server name
 #
+# Waits until the server is accepting SSH connections. There is also a timeout
+# implemented here.
+#
 function wait_for_server_ssh()
 {
     local serverName="$1"
@@ -136,9 +139,11 @@ function wait_for_server_ssh()
 
     while true; do
         if is_server_running_ssh "$serverName"; then
+            echo "started"
             return 0
         fi
 
+        # 60 x 10 = 10 minutes
         if [ "$nTry" -gt 60 ]; then
             printError "Server '$serverName' did not came alive."
             return 1
@@ -177,9 +182,6 @@ function mac_for_server()
             echo "$field2"
             return 0
         fi
-        #echo "*** line  : '$line'"
-        #echo "*** field1: '$field1'"
-        #echo "*** field2: '$field2'"
     done
 }
 

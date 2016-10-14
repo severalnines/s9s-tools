@@ -775,13 +775,13 @@ S9sRpcReply::printNodeListBrief()
 
             if (syntaxHighlight)
             {
-                if (status == "CmonHostRecovery" || 
-                        status == "CmonHostShutDown")
+                if (status == "CmonHostRecovery")
                 {
                     nameStart = XTERM_COLOR_YELLOW;
                     nameEnd   = TERM_NORMAL;
                 } else if (status == "CmonHostUnknown" ||
-                        status == "CmonHostOffLine")
+                        status == "CmonHostOffLine" ||
+                        status == "CmonHostShutDown")
                 {
                     nameStart = XTERM_COLOR_RED;
                     nameEnd   = TERM_NORMAL;
@@ -909,14 +909,14 @@ S9sRpcReply::printNodeListLong()
 
         if (syntaxHighlight)
         {
-            if (status == "CmonHostRecovery" || 
-                    status == "CmonHostShutDown")
+            if (status == "CmonHostRecovery")
             {
                 hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
             } else if (status == "CmonHostUnknown" ||
-                    status == "CmonHostOffLine")
+                    status == "CmonHostOffLine" || 
+                    status == "CmonHostShutDown")
             {
-                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
+                hostNameFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
             } else {
                 hostNameFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
             }

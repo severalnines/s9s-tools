@@ -104,7 +104,7 @@ while true; do
 done
 
 
-function wake_server ()
+function shut_down_server ()
 {
     local hostname="$1"
 
@@ -112,17 +112,9 @@ function wake_server ()
         return 1
     fi
 
-    if [ "$hostname" == "server1" ]; then
-        ssh "$hostname" -- sudo poweroff
-    elif [ "$hostname" == "server2" ]; then
-        ssh "$hostname" -- sudo poweroff
-    elif [ "$hostname" == "storage01" ]; then
-        ssh "$hostname" -- sudo poweroff
-    else
-        printError "Unknown host '$hostname'."
-    fi
+    ssh "$hostname" -- sudo poweroff
 }
 
 for hostname in $*; do 
-    wake_server "$hostname"
+    shut_down_server "$hostname"
 done

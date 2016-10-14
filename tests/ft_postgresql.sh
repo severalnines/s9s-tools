@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="server1"
+CONTAINER_SERVER="core1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -146,12 +146,12 @@ function testCreateCluster
     local nodeName
     local exitCode
 
-    echo "Creating nodes..."
+    pip-say "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
     
     #
-    #
+    # Creating a PostgreSQL cluster.
     #
     $S9S cluster \
         --create \
@@ -160,6 +160,7 @@ function testCreateCluster
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
+        --provider-version="9.3" \
         $LOG_OPTION
 
     exitCode=$?
@@ -167,23 +168,6 @@ function testCreateCluster
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
     fi
-
-    #
-    #echo " -----------------------------------"
-    #echo " $S9S cluster --list --long --batch"
-    #$S9S cluster --list --long --batch
-    #
-    #echo " -----------------------------------"
-    #echo " $S9S cluster --list --long --batch --print-json"
-    #$S9S cluster --list --long --batch --print-json
-    #
-    #echo " -----------------------------------"
-    #echo " $S9S cluster --list --long --batch"
-    #$S9S cluster --list --long --batch
-    #
-    #echo " -----------------------------------"
-    #echo " $S9S cluster --list --long --batch --cluster-name=$CLUSTER_NAME"
-    #$S9S cluster --list --long --batch --cluster-name="$CLUSTER_NAME"
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -207,6 +191,66 @@ function testAddNode()
 
     #
     #
+    #
+    $S9S cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This test will add a proxy sql node.
+#
+function testAddProxySql()
+{
+    local node
+    local nodes
+    local exitCode
+
+    pip-say "The test to add ProxySQL node is starting now."
+    printVerbose "Creating Node..."
+    node=$(create_node)
+    nodes+="proxySql://$node"
+
+    #
+    # Adding a node to the cluster.
+    #
+    $S9S cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This test will add a HaProxy node.
+#
+function testAddHaProxy()
+{
+    local node
+    local nodes
+    local exitCode
+    
+    pip-say "The test to add HaProxy node is starting now."
+    printVerbose "Creating Node..."
+    node=$(create_node)
+    nodes+="haProxy://$node"
+
+    #
+    # Adding a node to the cluster.
     #
     $S9S cluster \
         --add-node \
@@ -307,6 +351,8 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testAddProxySql
+    runFunctionalTest testAddHaProxy
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
     runFunctionalTest testStop
