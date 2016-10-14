@@ -191,7 +191,7 @@ S9sRpcReply::progressLine(
 
     // The job id.
     jobId = job["job_id"].toInt();
-    tmp.sprintf("Job %d ", jobId);
+    tmp.sprintf("Job %2d ", jobId);
     retval += tmp;
 
     // The status

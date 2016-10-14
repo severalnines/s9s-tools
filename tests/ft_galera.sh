@@ -193,6 +193,7 @@ function testAddNode()
     local nodes
     local exitCode
 
+    pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
@@ -283,6 +284,8 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
+    pip-say "The test to remove node is starting now."
+    
     #
     # Removing the last added node.
     #
@@ -305,6 +308,8 @@ function testRemoveNode()
 function testRollingRestart()
 {
     local exitCode
+    
+    pip-say "The test of rolling restart is starting now."
 
     #
     # Calling for a rolling restart.
@@ -327,6 +332,8 @@ function testRollingRestart()
 function testStop()
 {
     local exitCode
+
+    pip-say "The test to stop cluster is starting now."
 
     #
     #
