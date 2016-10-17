@@ -115,6 +115,10 @@ class S9sRpcClient
                 const int             clusterId,
                 const S9sVariantList &hosts);
 
+        bool addMaxScale(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
         bool removeNode(
                 const int             clusterId,
                 const S9sVariantList &hosts);

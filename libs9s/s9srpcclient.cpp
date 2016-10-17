@@ -959,8 +959,8 @@ S9sRpcClient::addHaProxy(
     S9sString      uri;
     S9sVariantList haProxyNodes;
     S9sVariantList otherNodes;
-    bool           retval;
     S9sString      nodeAddresses;
+    bool           retval;
 
     S9sNode::selectByProtocol(hosts, haProxyNodes, otherNodes, "haproxy");
 
@@ -1041,7 +1041,6 @@ S9sRpcClient::addProxySql(
     S9sVariantList proxyNodes;
     S9sVariantList otherNodes;
     bool           retval;
-    S9sString      nodeAddresses;
 
     S9sNode::selectByProtocol(hosts, proxyNodes, otherNodes, "proxysql");
 
@@ -1093,6 +1092,86 @@ S9sRpcClient::addProxySql(
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * A function to create a job that will add a proxysql host to the cluster.
+ */
+bool
+S9sRpcClient::addMaxScale(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    S9sVariantList maxScaleNodes;
+    S9sVariantList otherNodes;
+    S9sString      nodeAddresses;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, maxScaleNodes, otherNodes, "maxscale");
+
+    if (maxScaleNodes.size() != 1u)
+    {
+        PRINT_ERROR(
+                "To add a MaxScale one needs to specify exactly"
+                " one MaxScale node.");
+
+        return false;
+    }
+
+    uri.sprintf("/%d/job/", clusterId);
+
+    for (uint idx = 0u; idx < otherNodes.size(); ++idx)
+    {
+        int       port;
+        S9sNode   node;
+        S9sString tmp;
+
+        node = otherNodes[idx].toNode();
+        port = node.hasPort() ? node.port() : 3306;
+
+        tmp.sprintf("%s:%d", STR(node.hostName()), port);
+
+        if (!nodeAddresses.empty())
+            nodeAddresses += ";";
+
+        nodeAddresses += tmp;
+    }
+
+    if (!nodeAddresses.empty())
+        jobData["node_addresses"] = nodeAddresses;
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setupMaxScale";
+    jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]  = "maxscale";
+    jobSpec["job_data"] = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Add MaxScale to Cluster";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+    //job["api_id"]        = -1;
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
 /**
  * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be removed from the cluster (variant list
