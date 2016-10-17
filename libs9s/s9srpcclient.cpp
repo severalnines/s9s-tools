@@ -1147,7 +1147,9 @@ S9sRpcClient::addMaxScale(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
-    jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
+    // FIXME: Onc it is this, then that.
+    //jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
+    jobData["server_address"] = maxScaleNodes[0].toNode().hostName();
     
     // The jobspec describing the command.
     jobSpec["command"]  = "maxscale";
