@@ -885,6 +885,8 @@ S9sRpcClient::createPostgreSql(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
  *
  * Creates a job that will add a new node to the cluster.
  */
@@ -941,6 +943,11 @@ S9sRpcClient::addNode(
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
 bool
 S9sRpcClient::addHaProxy(
         const int             clusterId,
@@ -955,19 +962,7 @@ S9sRpcClient::addHaProxy(
     bool           retval;
     S9sString      nodeAddresses;
 
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
-    {
-        S9sNode   node;
-        S9sString protocol;
-
-        node     = hosts[idx].toNode();
-        protocol = node.protocol().toLower();
-
-        if (protocol == "haproxy")
-            haProxyNodes << node;
-        else 
-            otherNodes << node;
-    }
+    S9sNode::selectByProtocol(hosts, haProxyNodes, otherNodes, "haproxy");
 
     if (haProxyNodes.size() != 1u)
     {
@@ -1028,6 +1023,12 @@ S9sRpcClient::addHaProxy(
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * A function to create a job that will add a proxysql host to the cluster.
+ */
 bool
 S9sRpcClient::addProxySql(
         const int             clusterId,
@@ -1042,19 +1043,7 @@ S9sRpcClient::addProxySql(
     bool           retval;
     S9sString      nodeAddresses;
 
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
-    {
-        S9sNode   node;
-        S9sString protocol;
-
-        node     = hosts[idx].toNode();
-        protocol = node.protocol().toLower();
-
-        if (protocol == "proxysql")
-            proxyNodes << node;
-        else 
-            otherNodes << node;
-    }
+    S9sNode::selectByProtocol(hosts, proxyNodes, otherNodes, "proxysql");
 
     if (proxyNodes.size() != 1u)
     {

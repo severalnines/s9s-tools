@@ -54,6 +54,13 @@ class S9sNode
         S9sString message() const;
         bool isMaintenanceActive() const;
 
+        static void 
+            selectByProtocol(
+                    const S9sVariantList &theList,
+                    S9sVariantList       &matchedNodes,
+                    S9sVariantList       &otherNodes,
+                    const S9sString      &protocol);
+
     private:
         S9sVariantMap    m_properties;
         S9sUrl           m_url;

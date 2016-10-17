@@ -201,6 +201,9 @@ S9sNode::message() const
     return S9sString();
 }
 
+/**
+ * \returns true if the maintenance mode is active for the given node.
+ */
 bool
 S9sNode::isMaintenanceActive() const
 {
@@ -210,3 +213,35 @@ S9sNode::isMaintenanceActive() const
     return false;
 }
 
+/**
+ * \param theList List of S9sNode objects to select from.
+ * \param matchedNodes The list where the matching nodes will be placed.
+ * \param otherNodes The list where non-matching nodes are placed.
+ * \param protocol The protocol to select.
+ *
+ * This function goes through a list of nodes and selects those that have
+ * matching protocol.
+ */
+void
+S9sNode::selectByProtocol(
+        const S9sVariantList &theList,
+        S9sVariantList       &matchedNodes,
+        S9sVariantList       &otherNodes,
+        const S9sString      &protocol)
+{
+    S9sString protocolToFind = protocol.toLower();
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        S9sNode   node;
+        S9sString protocol;
+
+        node     = theList[idx].toNode();
+        protocol = node.protocol().toLower();
+
+        if (protocol == protocolToFind)
+            matchedNodes << node;
+        else 
+            otherNodes << node;
+    }
+}
