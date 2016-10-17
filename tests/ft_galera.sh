@@ -275,36 +275,6 @@ function testAddHaProxy()
 }
 
 #
-# This test will add a MaxScale node.
-#
-function testAddMaxScale()
-{
-    local node
-    local nodes
-    local exitCode
-    
-    pip-say "The test to add MaxScale node is starting now."
-    printVerbose "Creating Node..."
-    node=$(create_node)
-    nodes+="maxScale://$node"
-
-    #
-    # Adding a node to the cluster.
-    #
-    $S9S cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
 # This test will remove the last added node.
 #
 function testRemoveNode()
@@ -393,7 +363,6 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddHaProxy
-    runFunctionalTest testAddMaxScale
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop
