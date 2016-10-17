@@ -195,6 +195,7 @@ S9sBusinessLogic::executeAddNode(
     S9sRpcReply    reply;
     bool           hasHaproxy  = false;
     bool           hasProxySql = false;
+    bool           hasMaxScale = false;
     bool           success;
 
     hosts = options->nodes();
@@ -217,6 +218,8 @@ S9sBusinessLogic::executeAddNode(
             hasHaproxy = true;
         else if (protocol == "proxysql")
             hasProxySql = true;
+        else if (protocol == "maxscale")
+            hasMaxScale = true;
     }
 
     /*
@@ -229,12 +232,29 @@ S9sBusinessLogic::executeAddNode(
                 "in one call.");
 
         return;
+    } else if (hasHaproxy && hasMaxScale)
+    {
+        PRINT_ERROR(
+                "It is not possible to add a HaProxy and a MaxScale node "
+                "in one call.");
+
+        return;
+    } else if (hasProxySql && hasMaxScale)
+    {
+        PRINT_ERROR(
+                "It is not possible to add a ProxySql and a MaxScale node "
+                "in one call.");
+
+        return;
     } else if (hasProxySql)
     {
         success = client.addProxySql(clusterId, hosts);
     } else if (hasHaproxy)
     {
         success = client.addHaProxy(clusterId, hosts);
+    } else if (hasMaxScale)
+    {
+        success = client.addMaxScale(clusterId, hosts);
     } else {
         success = client.addNode(clusterId, hosts);
     }
