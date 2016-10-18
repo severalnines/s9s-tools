@@ -5,10 +5,12 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="core1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
+
+# This is the name of the server that will hold the linux containers.
+CONTAINER_SERVER="core1"
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -185,12 +187,13 @@ function testAddNode()
     local nodes
     local exitCode
 
+    pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
 
     #
-    #
+    # Adding a node to the cluster.
     #
     $S9S cluster \
         --add-node \
@@ -235,6 +238,7 @@ function testAddProxySql()
     fi
 }
 
+
 #
 # This test will add a HaProxy node.
 #
@@ -274,8 +278,10 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
+    pip-say "The test to remove node is starting now."
+    
     #
-    #
+    # Removing the last added node.
     #
     $S9S cluster \
         --remove-node \
@@ -296,9 +302,11 @@ function testRemoveNode()
 function testRollingRestart()
 {
     local exitCode
+    
+    pip-say "The test of rolling restart is starting now."
 
     #
-    #
+    # Calling for a rolling restart.
     #
     $S9S cluster \
         --rolling-restart \
@@ -319,8 +327,10 @@ function testStop()
 {
     local exitCode
 
+    pip-say "The test to stop cluster is starting now."
+
     #
-    #
+    # Stopping the cluster.
     #
     $S9S cluster \
         --stop \
@@ -334,11 +344,6 @@ function testStop()
     fi
 }
 
-#CLUSTER_NAME=ft_postgresql_65293
-#CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-#echo "CLUSTER_ID = '$CLUSTER_ID'"
-#exit 0
-
 #
 # Running the requested tests.
 #
@@ -351,8 +356,8 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
-    runFunctionalTest testAddProxySql
-    runFunctionalTest testAddHaProxy
+    #runFunctionalTest testAddProxySql
+    #runFunctionalTest testAddHaProxy
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
     runFunctionalTest testStop
