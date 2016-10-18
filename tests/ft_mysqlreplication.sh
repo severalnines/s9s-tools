@@ -5,10 +5,12 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
+
+# This is the name of the server that will hold the linux containers.
+CONTAINER_SERVER="core1"
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -146,7 +148,7 @@ function testCreateCluster
     local nodeName
     local exitCode
 
-    echo "Creating nodes..."
+    pip-say "The test to create MySQL replication cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
     
@@ -157,7 +159,7 @@ function testCreateCluster
     nodes+="$nodeName"
     
     #
-    #
+    # Creating a MySQL replication cluster.
     #
     $S9S cluster \
         --create \
@@ -190,11 +192,13 @@ function testAddNode()
     local nodes
     local exitCode
 
+    pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
 
     #
+    # Adding a node to the cluster.
     #
     #
     $S9S cluster \
@@ -219,8 +223,10 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
+    pip-say "The test to remove node is starting now."
+    
     #
-    #
+    # Removing the last added node.
     #
     $S9S cluster \
         --remove-node \
@@ -241,9 +247,11 @@ function testRemoveNode()
 function testRollingRestart()
 {
     local exitCode
+    
+    pip-say "The test of rolling restart is starting now."
 
     #
-    #
+    # Calling for a rolling restart.
     #
     $S9S cluster \
         --rolling-restart \
@@ -264,8 +272,10 @@ function testStop()
 {
     local exitCode
 
+    pip-say "The test to stop cluster is starting now."
+
     #
-    #
+    # Stopping the cluster.
     #
     $S9S cluster \
         --stop \

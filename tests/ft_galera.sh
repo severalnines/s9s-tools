@@ -335,7 +335,7 @@ function testStop()
     pip-say "The test to stop cluster is starting now."
 
     #
-    #
+    # Stopping the cluster.
     #
     $S9S cluster \
         --stop \
