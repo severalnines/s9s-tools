@@ -48,6 +48,7 @@ class S9sOptions
             Cluster,
             Node,
             Job,
+            Backup,
             Process,
         };
 
@@ -142,6 +143,7 @@ class S9sOptions
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
+        bool readOptionsBackup(int argc, char *argv[]);
         bool readOptionsCluster(int argc, char *argv[]);
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);

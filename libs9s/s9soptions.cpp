@@ -40,7 +40,7 @@
 S9sOptions *S9sOptions::sm_instance = 0;
 
 /**
- * The constructor, nothing to see here.
+ * The default constructor, nothing to see here.
  */
 S9sOptions::S9sOptions() :
     m_operationMode(NoMode),
@@ -72,6 +72,9 @@ S9sOptions::~S9sOptions()
     sm_instance = NULL;
 }
 
+/**
+ * The usual instance() function or the singleton.
+ */
 S9sOptions *
 S9sOptions::instance()
 {
@@ -81,6 +84,10 @@ S9sOptions::instance()
     return sm_instance;
 }
 
+/**
+ * This method should be called before exiting the application to destroy the
+ * singleton instance.
+ */
 void 
 S9sOptions::uninit()
 {
@@ -243,7 +250,6 @@ S9sOptions::setController(
 {
     S9sRegExp regexp;
  
-    S9S_DEBUG("*** url: '%s'", STR(url));
     regexp = "(.+):([0-9]+)";
     if (regexp == url)
     {
@@ -1099,7 +1105,11 @@ S9sOptions::readOptions(
         case Node:
             retval = readOptionsNode(*argc, argv);
             break;
-        
+
+        case Backup:
+            retval = readOptionsBackup(*argc, argv);
+            break;
+ 
         case Process:
             retval = readOptionsProcess(*argc, argv);
             break;
@@ -1156,6 +1166,9 @@ S9sOptions::setMode(
     } else if (modeName == "process")
     {
         m_operationMode = Process;
+    } else if (modeName == "backup")
+    {
+        m_operationMode = Backup;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -1194,6 +1207,7 @@ S9sOptions::printHelp()
 
         case Job:
         case Process:
+        case Backup:
             printHelpGeneric();
     }
 }
@@ -1486,6 +1500,131 @@ S9sOptions::readOptionsNode(
             case 3:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Reads the command line options in "node" mode.
+ */
+bool
+S9sOptions::readOptionsBackup(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  7  },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0,  6  },
+        { "color",            optional_argument, 0,  5  },
+        { "config-file",      required_argument, 0,  4  },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L' },
+
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i' },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                // -t, --token
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case 4:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
+            
+            case 5:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 6:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case 7:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             default:
