@@ -35,6 +35,7 @@ class S9sFile
        
         S9sFile &operator=(const S9sFile &rhs);
 
+        S9sString path() const;
         bool exists() const;
         void close();
         bool readTxtFile(S9sString &content);

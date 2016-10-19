@@ -25,6 +25,7 @@
 #include "S9sRegExp"
 #include "S9sFile"
 #include "S9sDir"
+#include "s9srsakey.h"
 
 #include <sys/ioctl.h>
 #include <stdio.h>
@@ -2302,7 +2303,8 @@ S9sOptions::privateKeyPath() const
 
     if (authKey.empty())
     {
-        // Q: generate/use a default key if none specified/exists?
+        // lets use this keyfile path as a default one
+        authKey = "~/.s9s/s9scli.key";
     }
 
     return authKey;
