@@ -12,7 +12,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
 
-# The IP of the node we added last. Empty if we did not.
+FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
@@ -151,6 +151,7 @@ function testCreateCluster
     pip-say "The test to create Galera cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    FIRST_ADDED_NODE=$nodeName
     
     nodeName=$(create_node)
     nodes+="$nodeName;"
@@ -324,6 +325,32 @@ function testRollingRestart()
         failure "The exit code is ${exitCode}"
     fi
 }
+
+#
+# This will perform a rolling restart on the cluster
+#
+function testCreateBackup()
+{
+    local exitCode
+    
+    pip-say "The test to create a backup is starting."
+
+    #
+    # Calling for a rolling restart.
+    #
+    $S9S backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
 
 #
 # Stopping the cluster.
