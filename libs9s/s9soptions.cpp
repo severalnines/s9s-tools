@@ -62,6 +62,7 @@ enum S9sOptionType
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
+    OptionStop
 };
 
 /**
@@ -1900,7 +1901,7 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0, 17  },
+        { "create",           no_argument,       0, OptionCreate  },
         { "rolling-restart",  no_argument,       0, 12  },
         { "add-node",         no_argument,       0, OptionAddNode },
         { "remove-node",      no_argument,       0, OptionRemoveNode },
