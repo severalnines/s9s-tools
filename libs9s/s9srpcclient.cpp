@@ -1337,7 +1337,8 @@ S9sRpcClient::createBackup(
         const S9sVariantList &hosts)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sString       backupMethod;
+    S9sString       backupMethod = options->backupMethod();
+    S9sString       backupDir = options->backupDir();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri;

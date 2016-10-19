@@ -39,6 +39,16 @@
 
 S9sOptions *S9sOptions::sm_instance = 0;
 
+enum S9sOptionType
+{
+    OptionRpcTls     = 1,
+    OptionPrintJson,
+    OptionColor,
+    OptionConfigFile,
+    OptionTop,
+    OptionUpdateFreq
+};
+
 /**
  * The default constructor, nothing to see here.
  */
@@ -640,6 +650,30 @@ S9sOptions::userId() const
     int retval;
 
     retval = (int) getuid();
+    return retval;
+}
+
+S9sString
+S9sOptions::backupDir() const
+{
+    S9sString  retval;
+
+    retval = m_userConfig.variableValue("backup_directory");
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("backup_directory");
+
+    return retval;
+}
+
+S9sString
+S9sOptions::backupMethod() const
+{
+    S9sString  retval;
+
+    retval = m_userConfig.variableValue("backup_method");
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("backup_method");
+
     return retval;
 }
 
@@ -1696,21 +1730,21 @@ S9sOptions::readOptionsProcess(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  5  },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  3 },
-        { "color",            optional_argument, 0,  2 },
-        { "config-file",      required_argument, 0,  1 },
+        { "print-json",       no_argument,       0,  OptionPrintJson },
+        { "color",            optional_argument, 0,  OptionColor },
+        { "config-file",      required_argument, 0,  OptionConfigFile },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
-        { "top",              no_argument,       0,  4 },
+        { "top",              no_argument,       0,  OptionTop },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
 
-        { "update-freq",      required_argument, 0,  6  },
+        { "update-freq",      required_argument, 0,  OptionUpdateFreq },
 
         { 0, 0, 0, 0 }
     };
@@ -1769,12 +1803,12 @@ S9sOptions::readOptionsProcess(
                 m_options["list"] = true;
                 break;
 
-            case 1:
+            case OptionConfigFile:
                 // --config-file=CONFIG
                 m_options["config-file"] = optarg;
                 break;
             
-            case 2:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -1782,17 +1816,17 @@ S9sOptions::readOptionsProcess(
                     m_options["color"] = "always";
                 break;
 
-            case 3:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
             
-            case 4:
+            case OptionTop:
                 // --top
                 m_options["top"] = true;
                 break;
 
-            case 5:
+            case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
@@ -1802,7 +1836,7 @@ S9sOptions::readOptionsProcess(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
-            case 6:
+            case OptionUpdateFreq:
                 // --update-freq
                 m_options["update_freq"] = atoi(optarg);
                 if (m_options["update_freq"].toInt() < 1)

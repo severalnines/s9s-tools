@@ -96,6 +96,10 @@ class S9sOptions
         S9sString userName() const;
         int userId() const;
 
+        S9sString backupDir() const;
+        S9sString backupMethod() const;
+
+
         bool useTls() const;
 
         bool isNodeOperation() const;
