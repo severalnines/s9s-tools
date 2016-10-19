@@ -22,9 +22,10 @@
 
 #include "S9sOptions"
 #include "S9sNode"
+#include "S9sRsaKey"
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 //#define DEBUG
 #define WARNING
@@ -137,11 +138,19 @@ bool
 S9sRpcClient::authenticate()
 {
     S9sOptions    *options = S9sOptions::instance();
+    S9sRsaKey      rsa;
     S9sString      uri = "/0/auth";
     S9sVariantMap  request;
     bool           retval;
 
     S9sString      privKeyPath = options->privateKeyPath();
+    if (! rsa.loadKeyFromFile(privKeyPath))
+    {
+        m_priv->m_errorString.sprintf (
+                "Could not load user private key: %s",
+                STR(privKeyPath));
+        return false;
+    }
 
     /*
      * First request, 'login'
@@ -156,11 +165,15 @@ S9sRpcClient::authenticate()
 
     S9sRpcReply loginReply = reply();
 
+    S9sString signature;
     S9sString challenge = loginReply["challenge"].toString();
+
+    // create an RSA-SHA256 signature using user's privkey
+    rsa.signRsaSha256(challenge, signature);
 
     request = S9sVariantMap();
     request["operation"]    = "response";
-    request["signature"]    = "TODO: challenge signature";
+    request["signature"]    = signature;
 
     retval = executeRequest(uri, request.toString());
     if (!retval)
