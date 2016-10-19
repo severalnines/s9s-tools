@@ -7,6 +7,19 @@ s9s.conf \- configuration file for the s9s command line tool
 .B /etc/s9s.conf
 .SH DESCRIPTION
 .TP
+\fBbackup_directory\fP 
+The directory where the created backup files will be placed on the target host.
+If this value is not specified the cluster configuration \fBBACKUPDIR\fP is
+going to be used. If the cluster has no configuration either the backup will
+fail.
+
+.TP
+\fBbackup_method\fP 
+Defines what software will be used to create the backup. Valid values are 
+\fBauto\fP, \fBmysqldump\fP, \fBxtrabackup\fP... well, I am not sure, this is
+again not properly documented. :(
+
+.TP
 \fBcontroller_host_name\fP 
 The host name of the Cmon controller.
 
