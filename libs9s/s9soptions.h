@@ -95,6 +95,9 @@ class S9sOptions
         S9sString userName() const;
         int userId() const;
 
+        S9sString authUsername() const;
+        S9sString privateKeyPath() const;
+
         bool useTls() const;
 
         bool isNodeOperation() const;

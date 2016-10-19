@@ -133,6 +133,47 @@ S9sRpcClient::errorString() const
     return m_priv->m_errorString;
 }
 
+bool
+S9sRpcClient::authenticate()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/0/auth";
+    S9sVariantMap  request;
+    bool           retval;
+
+    S9sString      privKeyPath = options->privateKeyPath();
+
+    /*
+     * First request, 'login'
+     */
+    request = S9sVariantMap();
+    request["operation"]    = "login";
+    request["username"]     = options->authUsername();
+
+    retval = executeRequest(uri, request.toString());
+    if (!retval)
+        return false;
+
+    S9sRpcReply loginReply = reply();
+
+    S9sString challenge = loginReply["challenge"].toString();
+
+    request = S9sVariantMap();
+    request["operation"]    = "response";
+    request["signature"]    = "TODO: challenge signature";
+
+    retval = executeRequest(uri, request.toString());
+    if (!retval)
+        return false;
+
+    /*
+     * if reply doesn't contain an error
+     * and we are ok, auth succeed
+     */
+    m_priv->m_errorString = reply().errorString ();
+    return reply().isOk();
+}
+
 /**
  * The method that sends the "getAllClusterInfo" RPC request and reads the
  * reply.
