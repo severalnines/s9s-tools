@@ -545,6 +545,26 @@ S9sRpcReply::printJobList()
         printJobListBrief();
 }
 
+void 
+S9sRpcReply::printBackupList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+
+#if 0
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printJobListLong();
+    else
+        printJobListBrief();
+#endif
+
+}
+
+
 /**
  * Generic method that prints the reply as a node list.
  */

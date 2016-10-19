@@ -65,6 +65,8 @@ class S9sRpcClient
         bool getRunningProcesses(const int clusterId);
 
         bool getJobInstances(const int clusterId);
+        bool getBackups(const int clusterId);
+
         bool getJobInstance(const int clusterId, const int jobId);
         
         bool getJobLog(

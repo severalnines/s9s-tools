@@ -46,7 +46,22 @@ enum S9sOptionType
     OptionColor,
     OptionConfigFile,
     OptionTop,
-    OptionUpdateFreq
+    OptionUpdateFreq,
+    OptionBatch,
+    OptionNodes,
+    OptionAddNode,
+    OptionRemoveNode,
+    OptionJobId,
+    OptionSet,
+    OptionDrop,
+    OptionOsUser,
+    OptionProviderVersion,
+    OptionProperties,
+    OptionVendor,
+    OptionCreate,
+    OptionDbAdmin,
+    OptionDbAdminPassword,
+    OptionClusterType,
 };
 
 /**
@@ -1427,11 +1442,11 @@ S9sOptions::readOptionsNode(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  7  },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  6  },
-        { "color",            optional_argument, 0,  5  },
+        { "print-json",       no_argument,       0, OptionPrintJson  },
+        { "color",            optional_argument, 0, OptionColor  },
         { "config-file",      required_argument, 0,  4  },
 
         // Main Option
@@ -1440,10 +1455,10 @@ S9sOptions::readOptionsNode(
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
-        { "nodes",            required_argument, 0,  3  },
+        { "nodes",            required_argument, 0, OptionNodes },
 
         // Node options. 
-        { "properties",       required_argument, 0,  2  },
+        { "properties",       required_argument, 0, OptionProperties },
 
         { 0, 0, 0, 0 }
     };
@@ -1502,7 +1517,7 @@ S9sOptions::readOptionsNode(
                 m_options["list"] = true;
                 break;
 
-            case 1:
+            case OptionSet:
                 // --set
                 m_options["set"]  = true;
                 break;
@@ -1512,7 +1527,7 @@ S9sOptions::readOptionsNode(
                 m_options["config-file"] = optarg;
                 break;
             
-            case 5:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -1520,12 +1535,12 @@ S9sOptions::readOptionsNode(
                     m_options["color"] = "always";
                 break;
 
-            case 6:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
 
-            case 7:
+            case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
@@ -1535,12 +1550,12 @@ S9sOptions::readOptionsNode(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
-            case 2:
+            case OptionProperties:
                 // --properties=STRING
                 setPropertiesOption(optarg);
                 break;
             
-            case 3:
+            case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
                 break;
@@ -1572,25 +1587,25 @@ S9sOptions::readOptionsBackup(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  7  },
+        { "rpc-tls",          no_argument,       0,  OptionRpcTls  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  6  },
-        { "color",            optional_argument, 0,  5  },
+        { "print-json",       no_argument,       0,  OptionPrintJson  },
+        { "color",            optional_argument, 0,  OptionColor      },
         { "config-file",      required_argument, 0,  4  },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0, 17  },
+        { "create",           no_argument,       0,  OptionCreate     },
         
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
         { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0,  7  },
+        { "batch",            no_argument,       0, OptionBatch },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
-        { "nodes",            required_argument, 0,  3  },
+        { "nodes",            required_argument, 0,  OptionNodes  },
 
         { 0, 0, 0, 0 }
     };
@@ -1659,12 +1674,12 @@ S9sOptions::readOptionsBackup(
                 m_options["log"] = true;
                 break;
             
-            case 19:
+            case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
                 break;
             
-            case 17:
+            case OptionCreate:
                 // --create
                 m_options["create"] = true;
                 break;
@@ -1674,7 +1689,7 @@ S9sOptions::readOptionsBackup(
                 m_options["config-file"] = optarg;
                 break;
             
-            case 5:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -1682,12 +1697,12 @@ S9sOptions::readOptionsBackup(
                     m_options["color"] = "always";
                 break;
 
-            case 6:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
 
-            case 7:
+            case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
@@ -1697,7 +1712,7 @@ S9sOptions::readOptionsBackup(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
             
-            case 3:
+            case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
                 break;
@@ -1876,39 +1891,39 @@ S9sOptions::readOptionsCluster(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  6  },
+        { "rpc-tls",          no_argument,       0,  OptionRpcTls },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, 15  },
-        { "color",            optional_argument, 0, 14  },
-        { "config-file",      required_argument, 0, 13  },
+        { "print-json",       no_argument,       0, OptionPrintJson },
+        { "color",            optional_argument, 0, OptionColor  },
+        { "config-file",      required_argument, 0, OptionConfigFile  },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
         { "create",           no_argument,       0, 17  },
         { "rolling-restart",  no_argument,       0, 12  },
-        { "add-node",         no_argument,       0,  8  },
-        { "remove-node",      no_argument,       0,  9  },
-        { "drop",             no_argument,       0, 10  },
+        { "add-node",         no_argument,       0, OptionAddNode },
+        { "remove-node",      no_argument,       0, OptionRemoveNode },
+        { "drop",             no_argument,       0, OptionDrop  },
         { "stop",             no_argument,       0, 11  },
 
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
         { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0, 19  },
+        { "batch",            no_argument,       0, OptionBatch  },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
         { "cluster-id",       required_argument, 0, 'i' },
         { "cluster-name",     required_argument, 0, 'n' },
-        { "nodes",            required_argument, 0,  1  },
-        { "vendor",           required_argument, 0,  2  },
-        { "provider-version", required_argument, 0,  3  },
-        { "os-user",          required_argument, 0,  4  },
-        { "cluster-type",     required_argument, 0,  5  },
-        { "db-admin",         required_argument, 0, 18  },
-        { "db-admin-passwd",  required_argument, 0, 19  },
+        { "nodes",            required_argument, 0,  OptionNodes },
+        { "vendor",           required_argument, 0, OptionVendor  },
+        { "provider-version", required_argument, 0, OptionProviderVersion },
+        { "os-user",          required_argument, 0, OptionOsUser  },
+        { "cluster-type",     required_argument, 0, OptionClusterType },
+        { "db-admin",         required_argument, 0, OptionDbAdmin },
+        { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
 
         { 0, 0, 0, 0 }
     };
@@ -1972,17 +1987,17 @@ S9sOptions::readOptionsCluster(
                 m_options["rolling_restart"] = true;
                 break;
 
-            case 8:
+            case OptionAddNode:
                 // --add-node
                 m_options["add_node"] = true;
                 break;
             
-            case 9:
+            case OptionRemoveNode:
                 // --remove-node
                 m_options["remove_node"] = true;
                 break;
 
-            case 10:
+            case OptionDrop:
                 // --drop
                 m_options["drop"] = true;
                 break;
@@ -1992,12 +2007,12 @@ S9sOptions::readOptionsCluster(
                 m_options["stop"] = true;
                 break;
 
-            case 13:
+            case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config_file"] = optarg;
                 break;
 
-            case 14:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -2005,7 +2020,7 @@ S9sOptions::readOptionsCluster(
                     m_options["color"] = "always";
                 break;
 
-            case 15:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
@@ -2020,12 +2035,12 @@ S9sOptions::readOptionsCluster(
                 m_options["log"] = true;
                 break;
             
-            case 7:
+            case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
                 break;
             
-            case 17:
+            case OptionCreate:
                 // --create
                 m_options["create"] = true;
                 break;
@@ -2040,42 +2055,42 @@ S9sOptions::readOptionsCluster(
                 m_options["cluster_name"] = optarg;
                 break;
 
-            case 1:
+            case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
                 break;
 
-            case 2:
+            case OptionVendor:
                 // --vendor=STRING
                 m_options["vendor"] = optarg;
                 break;
 
-            case 3:
+            case OptionProviderVersion:
                 // --provider-version=STRING
                 m_options["provider_version"] = optarg;
                 break;
 
-            case 4:
+            case OptionOsUser:
                 // --os-user
                 m_options["os_user"] = optarg;
                 break;
 
-            case 5:
+            case OptionClusterType:
                 // --cluster-type
                 m_options["cluster_type"] = optarg;
                 break;
                 
-            case 6:
+            case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
 
-            case 18:
+            case OptionDbAdmin:
                 // --db-admin=USERNAME
                 m_options["db_admin_user_name"] = optarg;
                 break;
 
-            case 19:
+            case OptionDbAdminPassword:
                 // --db-admin-passwd=PASSWD
                 m_options["db_admin_password"]  = optarg;
                 break;
@@ -2107,9 +2122,9 @@ S9sOptions::readOptionsJob(
         { "rpc-tls",          no_argument,       0,  6  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  3  },
-        { "config-file",      required_argument, 0,  1  },
-        { "color",            optional_argument, 0,  2  },
+        { "print-json",       no_argument,       0,  OptionPrintJson  },
+        { "config-file",      required_argument, 0,  OptionConfigFile },
+        { "color",            optional_argument, 0,  OptionColor },
 
         // Main Option
         { "wait",             no_argument,       0,  5  },
@@ -2118,7 +2133,7 @@ S9sOptions::readOptionsJob(
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i' },
-        { "job-id",           required_argument, 0,  4  },
+        { "job-id",           required_argument, 0, OptionJobId  },
 
         { 0, 0, 0, 0 }
     };
@@ -2183,12 +2198,12 @@ S9sOptions::readOptionsJob(
                 m_options["log"] = true;
                 break;
 
-            case 1:
+            case OptionConfigFile:
                 // --config-file=FILE 
                 m_options["config_file"] = optarg;
                 break;
 
-            case 2:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -2196,12 +2211,12 @@ S9sOptions::readOptionsJob(
                     m_options["color"] = "always";
                 break;
 
-            case 3:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
 
-            case 4:
+            case OptionJobId:
                 // --job-id=ID
                 m_options["job_id"] = atoi(optarg);
                 break;

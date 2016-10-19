@@ -100,7 +100,10 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isBackupOperation())
     {
-        if (options->isCreateRequested())
+        if (options->isListRequested())
+        {
+            executeBackupList(client);
+        } else if (options->isCreateRequested())
         {
             executeCreateBackup(client);
         } else {
@@ -604,6 +607,38 @@ S9sBusinessLogic::executeProcessList(
         PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
+
+void 
+S9sBusinessLogic::executeBackupList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getBackups(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printBackupList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 
 /**
  * \param client A client for the communication.

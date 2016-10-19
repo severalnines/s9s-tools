@@ -421,6 +421,27 @@ S9sRpcClient::getJobInstances(
     return retval;
 }
 
+bool
+S9sRpcClient::getBackups(
+        const int clusterId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/%d/backup/", clusterId);
+
+    request["operation"] = "listBackups";
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
+
 /**
  * \param clusterId the ID of the cluster
  * \param jobId the ID of the job
