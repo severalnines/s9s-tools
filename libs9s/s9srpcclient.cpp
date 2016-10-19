@@ -191,7 +191,6 @@ S9sRpcClient::getCluster(
     request["with_hosts"] = true;
     request["cluster_id"] = clusterId;
     request["user"]           = options->userName();
-    //job["user_id"]        = options->userId();
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
@@ -218,7 +217,6 @@ S9sRpcClient::getClusters()
     request["operation"]  = "getAllClusterInfo";
     request["with_hosts"] = true;
     request["user"]           = options->userName();
-    //job["user_id"]        = options->userId();
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
@@ -563,7 +561,6 @@ S9sRpcClient::rollingRestart(
     job["title"]         = "Rolling Restart";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -670,7 +667,6 @@ S9sRpcClient::createGaleraCluster(
     job["title"]         = "Create Galera Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
 
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
@@ -747,7 +743,6 @@ S9sRpcClient::createMySqlReplication(
     job["title"]         = "Create MySQL Replication Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -837,7 +832,6 @@ S9sRpcClient::createNdbCluster(
     job["title"]         = "Create NDB Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -906,7 +900,6 @@ S9sRpcClient::createPostgreSql(
     job["title"]         = "Setup PostgreSQL Server";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
 
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
@@ -968,7 +961,6 @@ S9sRpcClient::addNode(
     job["title"]         = "Add Node to Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -1048,7 +1040,6 @@ S9sRpcClient::addHaProxy(
     job["title"]         = "Add HaProxy to Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -1117,7 +1108,6 @@ S9sRpcClient::addProxySql(
     job["title"]         = "Add ProxySQL to Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -1200,7 +1190,6 @@ S9sRpcClient::addMaxScale(
     job["title"]         = "Add MaxScale to Cluster";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -1258,7 +1247,6 @@ S9sRpcClient::removeNode(
     job["title"]         = title;
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     //job["api_id"]        = -1;
 
     // The request describing we want to register a job instance.
@@ -1309,7 +1297,6 @@ S9sRpcClient::stopCluster(
     job["title"]         = title;
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
@@ -1358,7 +1345,6 @@ S9sRpcClient::dropCluster(
     job["title"]         = title;
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
     
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
@@ -1408,7 +1394,6 @@ S9sRpcClient::createBackup(
     job["title"]         = "Create Backup";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
-    job["user_id"]       = options->userId();
 
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";

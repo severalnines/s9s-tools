@@ -642,19 +642,6 @@ S9sOptions::userName() const
     return retval;
 }
 
-/**
- * FIXME: there is no command line option for this.
- * XXX: We must not leak local user ID-s, remove this
- */
-int
-S9sOptions::userId() const
-{
-    int retval;
-
-    retval = (int) getuid();
-    return retval;
-}
-
 S9sString
 S9sOptions::backupDir() const
 {

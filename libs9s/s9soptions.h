@@ -94,8 +94,6 @@ class S9sOptions
         int jobId() const;
 
         S9sString userName() const;
-        int userId() const;
-
 
         S9sString authUsername() const;
         S9sString privateKeyPath() const;
