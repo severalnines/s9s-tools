@@ -63,6 +63,9 @@ class S9sRpcReply : public S9sVariantMap
         
         void printJobListBrief();
         void printJobListLong();
+        
+        void printBackupListBrief();
+        void printBackupListLong();
 
         static S9sString progressBar(double percent, bool syntaxHighlight);
         void html2ansi(S9sString &s);

@@ -553,15 +553,12 @@ S9sRpcReply::printBackupList()
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
 
-#if 0
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (options->isLongRequested())
-        printJobListLong();
+        printBackupListLong();
     else
-        printJobListBrief();
-#endif
-
+        printBackupListBrief();
 }
 
 
@@ -1416,6 +1413,92 @@ S9sRpcReply::printCpuStat()
         printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
         printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
         printf("%s\n", STR(model));
+    }
+}
+
+/**
+ */
+void 
+S9sRpcReply::printBackupListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("data").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
+
+    /*
+     * 
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap  = theList[idx].toVariantMap();
+        S9sVariantList backups = theMap["backup"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        {
+            S9sVariantMap  backup  = backups[idx2].toVariantMap();
+            S9sVariantList files   = backup["files"].toVariantList();
+
+            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
+            {
+                S9sVariantMap file = files[idx1].toVariantMap();
+                S9sString     path = file["path"].toString();
+
+                if (syntaxHighlight)
+                {
+                    colorBegin = XTERM_COLOR_RED;
+                    colorEnd   = TERM_NORMAL;
+                } else {
+                    colorBegin = "";
+                    colorEnd   = "";
+                }
+
+                printf("%s%s%s\n", colorBegin, STR(path), colorEnd);
+            }
+        }
+    }
+}
+
+void 
+S9sRpcReply::printBackupListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("data").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
+
+    /*
+     * 
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap  = theList[idx].toVariantMap();
+        S9sVariantList backups = theMap["backup"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        {
+            S9sVariantMap  backup  = backups[idx2].toVariantMap();
+            S9sVariantList files   = backup["files"].toVariantList();
+
+            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
+            {
+                S9sVariantMap file = files[idx1].toVariantMap();
+                S9sString     path = file["path"].toString();
+
+                if (syntaxHighlight)
+                {
+                    colorBegin = XTERM_COLOR_RED;
+                    colorEnd   = TERM_NORMAL;
+                } else {
+                    colorBegin = "";
+                    colorEnd   = "";
+                }
+
+                printf("%s%s%s\n", colorBegin, STR(path), colorEnd);
+            }
+        }
     }
 }
 
