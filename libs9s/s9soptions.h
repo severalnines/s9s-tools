@@ -101,6 +101,7 @@ class S9sOptions
         bool isNodeOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
+        bool isBackupOperation() const;
         bool isProcessOperation() const;
 
         bool isListRequested() const;

@@ -671,6 +671,15 @@ S9sOptions::isJobOperation() const
 }
 
 /**
+ * \returns true if the main operation is "backup".
+ */
+bool
+S9sOptions::isBackupOperation() const
+{
+    return m_operationMode == Backup;
+}
+
+/**
  * \returns true if the main operation is "process".
  */
 bool
@@ -1538,9 +1547,16 @@ S9sOptions::readOptionsBackup(
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
+        { "create",           no_argument,       0, 17  },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, 16  },
+        { "log",              no_argument,       0, 'G' },
+        { "batch",            no_argument,       0,  7  },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
+        { "nodes",            required_argument, 0,  3  },
 
         { 0, 0, 0, 0 }
     };
@@ -1598,6 +1614,26 @@ S9sOptions::readOptionsBackup(
                 // --list
                 m_options["list"] = true;
                 break;
+            
+            case 16:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case 19:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case 17:
+                // --create
+                m_options["create"] = true;
+                break;
 
             case 4:
                 // --config-file=FILE
@@ -1625,6 +1661,11 @@ S9sOptions::readOptionsBackup(
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 3:
+                // --nodes=LIST
+                setNodes(optarg);
                 break;
 
             default:
@@ -1820,7 +1861,7 @@ S9sOptions::readOptionsCluster(
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
         { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0,  7  },
+        { "batch",            no_argument,       0, 19  },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql

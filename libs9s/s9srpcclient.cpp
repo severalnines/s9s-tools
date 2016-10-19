@@ -1333,7 +1333,8 @@ S9sRpcClient::dropCluster(
 
 bool
 S9sRpcClient::createBackup(
-        const S9sString      &hostName)
+        const int             clusterId,
+        const S9sVariantList &hosts)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sString       backupMethod;
@@ -1342,11 +1343,19 @@ S9sRpcClient::createBackup(
     S9sString       uri;
     bool            retval;
 
-    uri = "/0/job/";
+    uri.sprintf("/%d/job/", clusterId);
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To create a new backup one node must be specified.");
+
+        return false;
+    }
 
     // The job_data describing how the backup will be created.
-    jobData["hostname"]         = hostName;
+    jobData["hostname"]         = hosts[0].toNode().hostName();
     jobData["backup_method"]    = backupMethod;
+    jobData["backupdir"]        = "/tmp";
 
     // The jobspec describing the command.
     jobSpec["command"]   = "backup";

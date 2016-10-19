@@ -130,7 +130,8 @@ class S9sRpcClient
                 const int             clusterId);
 
         bool createBackup(
-                const S9sString      &hostName);
+                const int             clusterId,
+                const S9sVariantList &hosts);
         
     protected:
         virtual bool 
