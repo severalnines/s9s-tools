@@ -91,6 +91,8 @@ libs9s_a_SOURCES =            \
 	s9srpcclient.cpp          \
 	s9sbusinesslogic.cpp      \
 	s9stopui.cpp              \
+	s9srsakey.cpp			  \
+	s9srsakey_p.cpp			  \
 	s9sconfigfile.cpp         \
 	s9sconfigfile_p.cpp
 

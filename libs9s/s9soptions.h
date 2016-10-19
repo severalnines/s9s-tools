@@ -94,11 +94,12 @@ class S9sOptions
         int jobId() const;
 
         S9sString userName() const;
-        int userId() const;
+
+        S9sString authUsername() const;
+        S9sString privateKeyPath() const;
 
         S9sString backupDir() const;
         S9sString backupMethod() const;
-
 
         bool useTls() const;
 

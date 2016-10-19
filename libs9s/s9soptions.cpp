@@ -25,6 +25,7 @@
 #include "S9sRegExp"
 #include "S9sFile"
 #include "S9sDir"
+#include "s9srsakey.h"
 
 #include <sys/ioctl.h>
 #include <stdio.h>
@@ -640,6 +641,7 @@ S9sOptions::jobId() const
 
 /**
  * FIXME: there is no command line option for this.
+ * XXX: where this is used?
  */
 S9sString 
 S9sOptions::userName() const
@@ -654,18 +656,6 @@ S9sOptions::userName() const
     if (retval.empty())
         retval = getenv("USER");
 
-    return retval;
-}
-
-/**
- * FIXME: there is no command line option for this.
- */
-int
-S9sOptions::userId() const
-{
-    int retval;
-
-    retval = (int) getuid();
     return retval;
 }
 
@@ -2292,5 +2282,47 @@ S9sOptions::readOptionsNoMode(
     }
 
     return true;
+}
+
+S9sString
+S9sOptions::authUsername() const
+{
+    if (m_options.contains("auth_user"))
+        return m_options.at("auth_user").toString();
+
+    S9sString authUser;
+    
+    authUser = m_userConfig.variableValue("auth_user");
+
+    if (authUser.empty())
+        authUser =  m_systemConfig.variableValue("auth_user");
+
+    // the default, fallback value
+    if (authUser.empty())
+        authUser = "s9s@client";
+
+    return authUser;
+}
+
+S9sString
+S9sOptions::privateKeyPath() const
+{
+    if (m_options.contains("auth_key"))
+        return m_options.at("auth_key").toString();
+
+    S9sString authKey;
+    
+    authKey = m_userConfig.variableValue("auth_key");
+
+    if (authKey.empty())
+        authKey =  m_systemConfig.variableValue("auth_key");
+
+    if (authKey.empty())
+    {
+        // lets use this keyfile path as a default one
+        authKey = "~/.s9s/s9scli.key";
+    }
+
+    return authKey;
 }
 

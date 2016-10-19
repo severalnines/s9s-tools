@@ -126,6 +126,16 @@ S9sFile::operator= (
 }
 
 /**
+ * Returns the full path of the specified file.
+ * (the ./ and ~/ are substituted)
+ */
+S9sString
+S9sFile::path() const
+{
+    return m_priv->m_path;
+}
+
+/**
  * \returns true if a file exists as any directory entry (file, directory,
  *   character special file, anything)
  */
