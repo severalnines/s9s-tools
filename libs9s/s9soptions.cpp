@@ -39,8 +39,18 @@
 
 S9sOptions *S9sOptions::sm_instance = 0;
 
+enum S9sOptionType
+{
+    OptionRpcTls     = 1,
+    OptionPrintJson,
+    OptionColor,
+    OptionConfigFile,
+    OptionTop,
+    OptionUpdateFreq
+};
+
 /**
- * The constructor, nothing to see here.
+ * The default constructor, nothing to see here.
  */
 S9sOptions::S9sOptions() :
     m_operationMode(NoMode),
@@ -72,6 +82,9 @@ S9sOptions::~S9sOptions()
     sm_instance = NULL;
 }
 
+/**
+ * The usual instance() function or the singleton.
+ */
 S9sOptions *
 S9sOptions::instance()
 {
@@ -81,6 +94,10 @@ S9sOptions::instance()
     return sm_instance;
 }
 
+/**
+ * This method should be called before exiting the application to destroy the
+ * singleton instance.
+ */
 void 
 S9sOptions::uninit()
 {
@@ -243,7 +260,6 @@ S9sOptions::setController(
 {
     S9sRegExp regexp;
  
-    S9S_DEBUG("*** url: '%s'", STR(url));
     regexp = "(.+):([0-9]+)";
     if (regexp == url)
     {
@@ -639,6 +655,30 @@ S9sOptions::userId() const
     return retval;
 }
 
+S9sString
+S9sOptions::backupDir() const
+{
+    S9sString  retval;
+
+    retval = m_userConfig.variableValue("backup_directory");
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("backup_directory");
+
+    return retval;
+}
+
+S9sString
+S9sOptions::backupMethod() const
+{
+    S9sString  retval;
+
+    retval = m_userConfig.variableValue("backup_method");
+    if (retval.empty())
+        retval = m_systemConfig.variableValue("backup_method");
+
+    return retval;
+}
+
 /**
  * \returns true if the main operation is "node".
  */
@@ -664,6 +704,15 @@ bool
 S9sOptions::isJobOperation() const
 {
     return m_operationMode == Job;
+}
+
+/**
+ * \returns true if the main operation is "backup".
+ */
+bool
+S9sOptions::isBackupOperation() const
+{
+    return m_operationMode == Backup;
 }
 
 /**
@@ -1101,7 +1150,11 @@ S9sOptions::readOptions(
         case Node:
             retval = readOptionsNode(*argc, argv);
             break;
-        
+
+        case Backup:
+            retval = readOptionsBackup(*argc, argv);
+            break;
+ 
         case Process:
             retval = readOptionsProcess(*argc, argv);
             break;
@@ -1158,6 +1211,9 @@ S9sOptions::setMode(
     } else if (modeName == "process")
     {
         m_operationMode = Process;
+    } else if (modeName == "backup")
+    {
+        m_operationMode = Backup;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -1196,6 +1252,7 @@ S9sOptions::printHelp()
 
         case Job:
         case Process:
+        case Backup:
             printHelpGeneric();
     }
 }
@@ -1501,6 +1558,163 @@ S9sOptions::readOptionsNode(
 }
 
 /**
+ * Reads the command line options in "node" mode.
+ */
+bool
+S9sOptions::readOptionsBackup(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0,  7  },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0,  6  },
+        { "color",            optional_argument, 0,  5  },
+        { "config-file",      required_argument, 0,  4  },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L' },
+        { "create",           no_argument,       0, 17  },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, 16  },
+        { "log",              no_argument,       0, 'G' },
+        { "batch",            no_argument,       0,  7  },
+
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i' },
+        { "nodes",            required_argument, 0,  3  },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                // -t, --token
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+            
+            case 16:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case 19:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case 17:
+                // --create
+                m_options["create"] = true;
+                break;
+
+            case 4:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
+            
+            case 5:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 6:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case 7:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 3:
+                // --nodes=LIST
+                setNodes(optarg);
+                break;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * Reads the command line options in the "process" mode.
  */
 bool
@@ -1518,21 +1732,21 @@ S9sOptions::readOptionsProcess(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  5  },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  3 },
-        { "color",            optional_argument, 0,  2 },
-        { "config-file",      required_argument, 0,  1 },
+        { "print-json",       no_argument,       0,  OptionPrintJson },
+        { "color",            optional_argument, 0,  OptionColor },
+        { "config-file",      required_argument, 0,  OptionConfigFile },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
-        { "top",              no_argument,       0,  4 },
+        { "top",              no_argument,       0,  OptionTop },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
 
-        { "update-freq",      required_argument, 0,  6  },
+        { "update-freq",      required_argument, 0,  OptionUpdateFreq },
 
         { 0, 0, 0, 0 }
     };
@@ -1591,12 +1805,12 @@ S9sOptions::readOptionsProcess(
                 m_options["list"] = true;
                 break;
 
-            case 1:
+            case OptionConfigFile:
                 // --config-file=CONFIG
                 m_options["config-file"] = optarg;
                 break;
             
-            case 2:
+            case OptionColor:
                 // --color=COLOR
                 if (optarg)
                     m_options["color"] = optarg;
@@ -1604,17 +1818,17 @@ S9sOptions::readOptionsProcess(
                     m_options["color"] = "always";
                 break;
 
-            case 3:
+            case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
                 break;
             
-            case 4:
+            case OptionTop:
                 // --top
                 m_options["top"] = true;
                 break;
 
-            case 5:
+            case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
@@ -1624,7 +1838,7 @@ S9sOptions::readOptionsProcess(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
-            case 6:
+            case OptionUpdateFreq:
                 // --update-freq
                 m_options["update_freq"] = atoi(optarg);
                 if (m_options["update_freq"].toInt() < 1)
@@ -1683,7 +1897,7 @@ S9sOptions::readOptionsCluster(
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
         { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0,  7  },
+        { "batch",            no_argument,       0, 19  },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql

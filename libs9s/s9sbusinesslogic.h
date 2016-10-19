@@ -71,5 +71,7 @@ class S9sBusinessLogic
         void executeStopCluster(S9sRpcClient &client);
         void executeDropCluster(S9sRpcClient &client);
         void doExecuteCreateCluster(S9sRpcClient &client);
+
+        void executeCreateBackup(S9sRpcClient &client);
 };
 

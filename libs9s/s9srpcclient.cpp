@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -921,7 +921,6 @@ S9sRpcClient::createPostgreSql(
     return retval;
 }
 
-        
 
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
@@ -1373,6 +1372,57 @@ S9sRpcClient::dropCluster(
     return retval;
 }
 
+bool
+S9sRpcClient::createBackup(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sString       backupMethod = options->backupMethod();
+    S9sString       backupDir = options->backupDir();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri;
+    bool            retval;
+
+    uri.sprintf("/%d/job/", clusterId);
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To create a new backup one node must be specified.");
+
+        return false;
+    }
+
+    // The job_data describing how the backup will be created.
+    jobData["hostname"]         = hosts[0].toNode().hostName();
+    jobData["backup_method"]    = backupMethod;
+    jobData["backupdir"]        = "/tmp";
+
+    // The jobspec describing the command.
+    jobSpec["command"]   = "backup";
+    jobSpec["job_data"]  = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = "Create Backup";
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    job["user_id"]       = options->userId();
+
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+    
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    S9S_WARNING("-> %s", STR(request.toString()));
+    retval = executeRequest(uri, request.toString());
+    
+    return retval;
+}
+        
 /**
  * \param uri the file path part of the URL where we send the request
  * \param payload the JSON request string

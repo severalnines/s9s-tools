@@ -48,6 +48,7 @@ class S9sOptions
             Cluster,
             Node,
             Job,
+            Backup,
             Process,
         };
 
@@ -95,14 +96,19 @@ class S9sOptions
         S9sString userName() const;
         int userId() const;
 
+
         S9sString authUsername() const;
         S9sString privateKeyPath() const;
+
+        S9sString backupDir() const;
+        S9sString backupMethod() const;
 
         bool useTls() const;
 
         bool isNodeOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
+        bool isBackupOperation() const;
         bool isProcessOperation() const;
 
         bool isListRequested() const;
@@ -145,6 +151,7 @@ class S9sOptions
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
+        bool readOptionsBackup(int argc, char *argv[]);
         bool readOptionsCluster(int argc, char *argv[]);
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);

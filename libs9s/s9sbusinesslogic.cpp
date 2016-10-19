@@ -98,6 +98,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown job operation.");
         }
+    } else if (options->isBackupOperation())
+    {
+        if (options->isCreateRequested())
+        {
+            executeCreateBackup(client);
+        } else {
+            PRINT_ERROR("Unknown job operation.");
+        }
     } else if (options->isProcessOperation())
     {
         if (options->isListRequested())
@@ -493,6 +501,30 @@ S9sBusinessLogic::executeNodeSet(
     }
 }
 
+void
+S9sBusinessLogic::executeCreateBackup(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.createBackup(clusterId, options->nodes());
+    if (success)
+    {
+        jobRegistered(client, clusterId);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 /**
  * This method provides a continuous display of one specific cluster that is
  * similar to the "top" utility.
@@ -547,8 +579,8 @@ S9sBusinessLogic::executeProcessList(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
-    S9sRpcReply reply;
     int         clusterId = options->clusterId();
+    S9sRpcReply reply;
     bool        success;
 
     success = client.getRunningProcesses(clusterId);

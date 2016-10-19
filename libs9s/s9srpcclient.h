@@ -131,6 +131,10 @@ class S9sRpcClient
         bool dropCluster(
                 const int             clusterId);
 
+        bool createBackup(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+        
     protected:
         virtual bool 
             executeRequest(
