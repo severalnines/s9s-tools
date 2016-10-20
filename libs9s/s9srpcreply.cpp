@@ -171,12 +171,36 @@ S9sRpcReply::clusterStatusText(
     },
     "requestStatus": "ok"
 }
+
+    "cc_timestamp": 1476944158,
+    "job": 
+    {
+        "can_be_aborted": false,
+        "can_be_deleted": false,
+        "class_name": "CmonJobInstance",
+        "cluster_id": 0,
+        "created": "2016-10-20T06:15:36.000Z",
+        "exit_code": 0,
+        "has_progress": true,
+        "job_id": 1,
+        "job_spec": "{\n    \"command\": \"create_cluster\",\n    \"job_data\": \n    {\n        \"cluster_name\": \"ft_galera_58604\",\n        \"cluster_type\": \"galera\",\n        \"enable_mysql_uninstall\": true,\n        \"mysql_hostnames\": [ \"192.168.1.104\", \"192.168.1.181\", \"192.168.1.182\" ],\n        \"mysql_password\": \"\",\n        \"mysql_version\": \"5.6\",\n        \"ssh_user\": \"pipas\",\n        \"vendor\": \"percona\"\n    }\n}",
+        "progress_percent": 6,
+        "started": "2016-10-20T06:15:39.000Z",
+        "status": "RUNNING",
+        "status_text": "Setting up 192.168.1.104",
+        "title": "Create Galera Cluster",
+        "user_id": 0,
+        "user_name": "pipas"
+    },
+    "requestStatus": "ok"
+}
 */
 bool 
 S9sRpcReply::progressLine(
         S9sString &retval,
         bool       syntaxHighlight)
 {
+    //printf("%s", STR(toString()));
     S9sVariantMap job = operator[]("job").toVariantMap();
     int           jobId;
     S9sString     status;
@@ -225,6 +249,9 @@ S9sRpcReply::progressLine(
             percent = 100.0;
 
         retval += progressBar(percent, syntaxHighlight);
+    } else if (status == "RUNNING")
+    {
+        retval += progressBar(syntaxHighlight);
     } else {
         // XTERM_COLOR_LIGHT_GRAY
         // TERM_NORMAL
@@ -1818,6 +1845,43 @@ S9sRpcReply::progressBar(
     return retval;
 }
 
+S9sString 
+S9sRpcReply::progressBar(
+        bool   syntaxHighlight)
+{
+    S9sString retval;
+    int       timeCycle = time(NULL) % 20;
+    int       position;
+
+    if (timeCycle < 10)
+        position = timeCycle;
+    else
+        position = 19 - timeCycle;
+
+    //retval.sprintf("%3d %3d", timeCycle, position);
+
+    retval += "[";
+
+    // Left spaces.
+    for (int n = 0; n < position; ++n)
+        retval += " ";
+
+    // The one bar.
+    if (syntaxHighlight)
+        retval += XTERM_COLOR_BLUE;
+
+    retval += "█";
+
+    if (syntaxHighlight)
+        retval += TERM_NORMAL;
+
+    for (int n = position + 1; n < 10; ++n)
+        retval += " ";
+
+    retval += "] ";
+
+    return retval;
+}
 /**
  * \returns The map about the given cluster or an empty map if the reply has no
  *   cluster description in it.

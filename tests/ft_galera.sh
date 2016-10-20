@@ -341,7 +341,7 @@ function testCreateBackup()
     $S9S backup \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE
+        --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?

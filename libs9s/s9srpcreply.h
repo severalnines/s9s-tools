@@ -48,6 +48,9 @@ class S9sRpcReply : public S9sVariantMap
         void printMemoryStatLine1();
         void printMemoryStatLine2();
 
+        static S9sString progressBar(double percent, bool syntaxHighlight);
+        static S9sString progressBar(bool syntaxHighlight);
+
     protected:
         S9sVariantMap clusterMap(const int clusterId);
         
@@ -67,7 +70,7 @@ class S9sRpcReply : public S9sVariantMap
         void printBackupListBrief();
         void printBackupListLong();
 
-        static S9sString progressBar(double percent, bool syntaxHighlight);
+
         void html2ansi(S9sString &s);
 
         S9sString 

@@ -26,6 +26,9 @@
 #include <stdio.h>
 #include <signal.h>
 
+#include <unistd.h>
+#include <S9sRpcReply>
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
@@ -50,6 +53,16 @@ main(int argc, char **argv)
     S9sBusinessLogic businessLogic;
     bool        success, finished;
     int         exitStatus;
+
+    #if 0
+    for (;;)
+    {
+        S9sString progress = S9sRpcReply::progressBar(true);
+        printf("-> %s\n", STR(progress));
+
+        sleep(1);
+    }
+    #endif
 
     signal(SIGINT, intHandler);
 
