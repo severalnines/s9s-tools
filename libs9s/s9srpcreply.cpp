@@ -200,7 +200,6 @@ S9sRpcReply::progressLine(
         S9sString &retval,
         bool       syntaxHighlight)
 {
-    //printf("%s", STR(toString()));
     S9sVariantMap job = operator[]("job").toVariantMap();
     int           jobId;
     S9sString     status;
@@ -1449,7 +1448,7 @@ void
 S9sRpcReply::printBackupListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("data").toVariantList();
+    S9sVariantList  dataList = operator[]("data").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
@@ -1457,9 +1456,9 @@ S9sRpcReply::printBackupListBrief()
     /*
      * 
      */
-    for (uint idx = 0; idx < theList.size(); ++idx)
+    for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = theList[idx].toVariantMap();
+        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
         S9sVariantList backups = theMap["backup"].toVariantList();
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
@@ -1491,7 +1490,7 @@ void
 S9sRpcReply::printBackupListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("data").toVariantList();
+    S9sVariantList  dataList = operator[]("data").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
@@ -1499,10 +1498,11 @@ S9sRpcReply::printBackupListLong()
     /*
      * 
      */
-    for (uint idx = 0; idx < theList.size(); ++idx)
+    for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = theList[idx].toVariantMap();
+        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
         S9sVariantList backups = theMap["backup"].toVariantList();
+        S9sString      hostName = theMap["backup_host"].toString();
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1523,7 +1523,9 @@ S9sRpcReply::printBackupListLong()
                     colorEnd   = "";
                 }
 
-                printf("%s%s%s\n", colorBegin, STR(path), colorEnd);
+                printf("%s ", STR(hostName));
+                printf("%s%s%s", colorBegin, STR(path), colorEnd);
+                printf("\n");
             }
         }
     }
