@@ -144,6 +144,14 @@ S9sRpcClient::authenticate()
     bool           retval;
 
     S9sString      privKeyPath = options->privateKeyPath();
+
+    if (privKeyPath.empty())
+    {
+        m_priv->m_errorString =
+                "Private key not specified, authentication is not possible.";
+        return false;
+    }
+
     if (! rsa.loadKeyFromFile(privKeyPath))
     {
         m_priv->m_errorString.sprintf (
@@ -1474,16 +1482,18 @@ S9sRpcClient::executeRequest(
     header.sprintf(
         "POST %s HTTP/1.0\r\n"
         "Host: %s:%d\r\n"
-        "User-Agent: cmonjsclient/1.0\r\n"
+        "User-Agent: s9s-tools/1.0\r\n"
         "Connection: close\r\n"
         "Accept: application/json\r\n"
         "Transfer-Encoding: identity\r\n"
+        "%s"
         "Content-Type: application/json\r\n"
         "Content-Length: %u\r\n"
         "\r\n",
-        STR(uri), 
-        STR(m_priv->m_hostName), 
-        m_priv->m_port, 
+        STR(uri),
+        STR(m_priv->m_hostName),
+        m_priv->m_port,
+        STR(m_priv->cookieHeaders()),
         payload.length());
 
     /*
@@ -1551,6 +1561,9 @@ S9sRpcClient::executeRequest(
     
     if (m_priv->m_dataSize > 1)
     {
+        // Lets parse the cookie/HTTP session info from server reply
+        m_priv->parseHeaders();
+
         char *tmp = strstr(m_priv->m_buffer, "\r\n\r\n");
 
         if (tmp)

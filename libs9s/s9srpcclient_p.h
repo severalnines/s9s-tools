@@ -8,6 +8,7 @@
 
 #include "S9sString"
 #include "S9sRpcReply"
+#include "S9sVariantMap"
 
 class S9sRpcClientPrivate
 {
@@ -27,6 +28,9 @@ class S9sRpcClientPrivate
         ssize_t write(const char *data, size_t length);
         ssize_t read(char *buffer, size_t bufSize);
 
+        void parseHeaders();
+        S9sString cookieHeaders() const;
+
     private:
         int             m_referenceCounter;
         int             m_socketFd;
@@ -42,6 +46,7 @@ class S9sRpcClientPrivate
         size_t          m_dataSize;
         SSL_CTX        *m_sslContext;
         SSL            *m_ssl;
+        S9sVariantMap   m_cookies;
 
         friend class S9sRpcClient;
 };

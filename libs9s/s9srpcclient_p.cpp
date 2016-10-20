@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <cerrno>
 
+#include "S9sRegExp"
 #include "S9sOptions"
 
 //#define DEBUG
@@ -274,5 +275,57 @@ S9sRpcClientPrivate::read(
     } while (retval == -1 && errno == EINTR);
 
     return retval;
+}
+
+/**
+ * A bit higher level method, to parse out the cookies
+ * (HTTP session data) from the read data (m_buffer)
+ */
+void
+S9sRpcClientPrivate::parseHeaders()
+{
+    if (! m_buffer || m_dataSize < 12)
+        return;
+
+    S9sRegExp regexp ("Set-Cookie: ([^=]*)=([^,;\r\n]*)");
+    regexp.setIgnoreCase(true);
+
+    S9sString buffer;
+    buffer.assign(m_buffer, m_dataSize);
+
+    int lastIdx = 0;
+    while (lastIdx < (int) buffer.size() && 
+           regexp == buffer.substr(lastIdx))
+    {
+        m_cookies[regexp[1]] = regexp[2];
+        lastIdx += regexp.firstIndex()+1;
+    }
+}
+
+/**
+ * The HTTP cookie header lines must be sent on HTTP requests to the server
+ */
+S9sString
+S9sRpcClientPrivate::cookieHeaders() const
+{
+    if (m_cookies.empty())
+        return "";
+
+    S9sString cookieHeader = "Cookie: ";
+
+    S9sVariantMap::const_iterator it;
+    for (it = m_cookies.begin(); it != m_cookies.end(); ++it)
+    {
+        if (cookieHeader != "Cookie: ")
+            cookieHeader += "; ";
+
+        S9sString keyVal;
+        keyVal.sprintf("%s=%s", STR(it->first), STR(it->second.toString()));
+
+        cookieHeader += keyVal;
+    }
+
+    cookieHeader += "\r\n";
+    return cookieHeader;
 }
 

@@ -2317,12 +2317,6 @@ S9sOptions::privateKeyPath() const
     if (authKey.empty())
         authKey =  m_systemConfig.variableValue("auth_key");
 
-    if (authKey.empty())
-    {
-        // lets use this keyfile path as a default one
-        authKey = "~/.s9s/s9scli.key";
-    }
-
     return authKey;
 }
 

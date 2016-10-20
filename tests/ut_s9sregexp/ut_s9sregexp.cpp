@@ -24,6 +24,7 @@
 
 #include "S9sRegExp"
 #include "s9sregexp_p.h"
+#include "S9sVariantMap"
 
 //#define DEBUG
 //#define WARNING
@@ -46,6 +47,7 @@ UtS9sRegExp::runTest(const char *testName)
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(test01,            retval);
     PERFORM_TEST(testMatched01,     retval);
+    PERFORM_TEST(testSetCookie,     retval);
 
     return retval;
 }
@@ -119,6 +121,49 @@ UtS9sRegExp::testMatched01()
 
     S9S_VERIFY(regexp == "n:4200");
     S9S_COMPARE(regexp[1], "4200");
+
+    return true;
+}
+
+/**
+ * A small/basic test to test the regexp used
+ * for HTTP Set-Cookie header matching
+ */
+bool
+UtS9sRegExp::testSetCookie()
+{
+    bool success;
+    S9sRegExp regexp ("Set-Cookie: ([^=]*)=([^,;\r\n]*)");
+    regexp.setIgnoreCase(true);
+
+    S9sString test1 = "Set-Cookie: mykey=myvalue\r\n";
+    success = (regexp == test1);
+    S9S_VERIFY(success);
+    S9S_COMPARE(regexp[1], "mykey");
+    S9S_COMPARE(regexp[2], "myvalue");
+    
+    S9sString test2 = "set-cookie: mykey=myvalue2; secure\r\n";
+    success = (regexp == test2);
+    S9S_VERIFY(success);
+    S9S_COMPARE(regexp[1], "mykey");
+    S9S_COMPARE(regexp[2], "myvalue2");
+
+    S9sString fullTest1 =
+            "200 OK\r\n"
+            "Set-Cookie: cookie1=123\r\n"
+            "set-cookie: cookie2=value; secure\r\n";
+    S9sVariantMap cookies;
+    int lastIdx = 0;
+    while (regexp == fullTest1.substr(lastIdx))
+    {
+        cookies[regexp[1]] = regexp[2];
+        S9S_DEBUG("key: '%s', value: '%s'",
+                STR(regexp[1]), STR(regexp[2]));
+        lastIdx += regexp.firstIndex()+1;
+    }
+    S9S_COMPARE(cookies.size(), 2);
+    S9S_COMPARE(cookies["cookie1"].toString(), "123");
+    S9S_COMPARE(cookies["cookie2"].toString(), "value");
 
     return true;
 }
