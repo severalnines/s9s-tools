@@ -3,6 +3,6 @@
 #
 
 install:
-	cp pip-* /usr/bin
+	install -m0755 pip-* $(DESTDIR)/usr/bin
 
 
