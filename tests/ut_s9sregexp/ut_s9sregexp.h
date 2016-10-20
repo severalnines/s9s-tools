@@ -30,6 +30,7 @@ class UtS9sRegExp : public S9sUnitTest
         bool testCreate();
         bool test01();
         bool testMatched01();
+        bool testSetCookie();
 };
 
 
