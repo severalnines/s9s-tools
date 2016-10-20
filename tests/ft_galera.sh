@@ -392,6 +392,7 @@ else
     runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
+    runFunctionalTest testCreateBackup
     runFunctionalTest testStop
 fi
 
