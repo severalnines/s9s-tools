@@ -144,6 +144,14 @@ S9sRpcClient::authenticate()
     bool           retval;
 
     S9sString      privKeyPath = options->privateKeyPath();
+
+    if (privKeyPath.empty())
+    {
+        m_priv->m_errorString =
+                "Private key not specified, authentication is not possible.";
+        return false;
+    }
+
     if (! rsa.loadKeyFromFile(privKeyPath))
     {
         m_priv->m_errorString.sprintf (
