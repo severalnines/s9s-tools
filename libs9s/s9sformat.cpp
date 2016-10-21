@@ -26,6 +26,12 @@
 #define WARNING
 #include "s9sdebug.h"
 
+#define KILO (1024.0)
+#define MEGA (1024.0 * 1024.0)
+#define GIGA (1024.0 * 1024.0 * 1024.0)
+#define TERA (1024.0 * 1024.0 * 1024.0 * 1024.0)
+#define PETA (1024.0 * 1024.0 * 1024.0 * 1024.0 * 1024)
+
 S9sFormat::S9sFormat() :
     m_width(0),
     m_withFieldSeparator(true),
@@ -179,10 +185,51 @@ S9sFormat::toSizeString(
         if (dValue < 1024.0)
         {
             retval.sprintf("%.0f", dValue);
+
+            return retval;
+        } else if (dValue < MEGA)
+        {
+            retval.sprintf("%.1fK", dValue / KILO);
+
+            if (retval.length() > 4)
+                retval.sprintf("%.0fK", dValue / KILO);
+
+            return retval;
+        } else if (dValue < GIGA)
+        {
+            retval.sprintf("%.1fM", dValue / MEGA);
+
+            if (retval.length() > 4)
+                retval.sprintf("%.0fM", dValue / MEGA);
+
+            return retval;
+        } else if (dValue < TERA)
+        {
+            retval.sprintf("%.1fG", dValue / GIGA);
+
+            if (retval.length() > 4)
+                retval.sprintf("%.0fG", dValue / GIGA);
+
+            return retval;
+        } else if (dValue < PETA)
+        {
+            retval.sprintf("%.1fT", dValue / TERA);
+
+            if (retval.length() > 4)
+                retval.sprintf("%.0fT", dValue / TERA);
+
+            return retval;
+        
+        } else {
+            retval.sprintf("%.1fP", dValue / PETA);
+
+            if (retval.length() > 4)
+                retval.sprintf("%.0fP", dValue / PETA);
+
             return retval;
         }
 
-        retval.sprintf("%.1fK", dValue / 1024.0);
+        retval.sprintf("%.0f", dValue);
         return retval;
     }
 

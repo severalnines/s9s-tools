@@ -379,9 +379,14 @@ UtS9sString::testSizeString()
 
     options->setHumanReadable();
 
-    S9S_COMPARE(S9sFormat::toSizeString(0ull),       "0");
-    S9S_COMPARE(S9sFormat::toSizeString(949ull),     "949");
-    S9S_COMPARE(S9sFormat::toSizeString(1024ull),    "1.0K");
+    S9S_COMPARE(S9sFormat::toSizeString(0ull),        "0");
+    S9S_COMPARE(S9sFormat::toSizeString(949ull),      "949");
+    S9S_COMPARE(S9sFormat::toSizeString(1024ull),     "1.0K");
+    S9S_COMPARE(S9sFormat::toSizeString(10240ull),    "10K");
+    S9S_COMPARE(S9sFormat::toSizeString(102400ull),   "100K");
+    S9S_COMPARE(S9sFormat::toSizeString(1024 * 1024), "1.0M");
+    S9S_COMPARE(S9sFormat::toSizeString(1024 * 1024 * 1024), "1.0G");
+    S9S_COMPARE(S9sFormat::toSizeString(1024ull * 1024 * 1024 * 1024), "1.0T");
 
     return true;
 }
