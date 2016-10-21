@@ -222,7 +222,7 @@ S9sRpcReply::progressLine(
     tmp.sprintf("%-10s ", STR(status));
     if (syntaxHighlight)
     {
-        if (status == "RUNNING" || status == "FINISHED")
+        if (status.startsWith("RUNNING") || status == "FINISHED")
             retval += XTERM_COLOR_GREEN;
         else if (status == "FAILED" || status == "ABORTED")
             retval += XTERM_COLOR_RED;
@@ -248,7 +248,7 @@ S9sRpcReply::progressLine(
             percent = 100.0;
 
         retval += progressBar(percent, syntaxHighlight);
-    } else if (status == "RUNNING")
+    } else if (status.startsWith("RUNNING"))
     {
         retval += progressBar(syntaxHighlight);
     } else {
@@ -1080,7 +1080,7 @@ S9sRpcReply::printJobListBrief()
 
         if (syntaxHighlight)
         {
-            if (status == "RUNNING" || status == "RUNNING_EXT")
+            if (status.startsWith("RUNNING"))
             {
                 stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;
@@ -1217,7 +1217,7 @@ S9sRpcReply::printJobListLong()
         //
         if (syntaxHighlight)
         {
-            if (status == "RUNNING" || status == "RUNNING_EXT")
+            if (status.startsWith("RUNNING"))
             {
                 stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;

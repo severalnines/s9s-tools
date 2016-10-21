@@ -167,6 +167,12 @@ S9sFormat::printf(
         ::printf("%s", m_colorEnd);
 }
 
+/**
+ * Takes a value and converts it as a byte measuring value. If the 
+ * -h, --human-readable command line option is not provided simply the number is
+ *  is printed into the string. If the option is provided a short, human
+ *  readable version will be printed (e.g. 100K or 1.1G).
+ */
 S9sString
 S9sFormat::toSizeString(
         const ulonglong value)

@@ -1,7 +1,7 @@
 .TH S9S 1 "August 29, 2016"
 
 .SH NAME
-s9s-node \- Command line client for the Severalnines Clustercontrol server.
+s9s-backup \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
 .B s9s-cluster
 .RI [OPTION]...
@@ -17,12 +17,11 @@ following:
 
 .TP
 .B \-L, \-\-list
-List the nodes managed by the controller.
+List the backups known for the controller.
 
 .TP
-.B \-\-top
-Continue showing the processes that use the most CPU resources in any given
-cluster.
+.B \-\-create
+Create a new backup.
 
 .SS Generic Options
 
@@ -44,12 +43,22 @@ The host name of the Cmon Controller. The port is also accepted as part of the
 hostname.
 
 .TP
+.B \-h, \-\-human-readable
+Print the sizes of files in human readable format.
+
+.TP
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
 The port where the Cmon Controller is waiting for connections.
 
 .TP
 .BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
 The RPC token to be used when authenticating on the Cmon Controller.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
 
 .TP
 .B \-\-print-json
@@ -62,6 +71,29 @@ Turn on and off the syntax highlighting of the output. The supported values for
 .I WHEN
 is
 .BR never ", " always ", or " auto .
+
+
+.\"
+.\"
+.\"
+.SS Job Related Options
+
+.TP
+.B \-\-wait
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided it will wait until the job is executed. While waiting a
+progress bar will be shown unless the silent mode is set.
+
+.TP
+.B \-\-log
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided it will wait until the job is executed. While waiting
+the job logs will be shown unless the silent mode is set.
+
+.TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit.
 
 .\"
 .\"
@@ -80,14 +112,11 @@ Sets the cluster name. If the operation creates a new cluster this will be the
 name of the new cluster. (Usage of this option for selecting an existing cluster
 is not yet implemented.)
 
-.\"
-.\"
-.\"
-.SS Process List Related Options
-
 .TP
-.BI \-\-update-freq= INTEGER
-Update frequency for screen refresh in seconds.
+.BI \-\^\-nodes= NODELIST
+The list of nodes or hosts enumerated in a special string using a semicolon as
+field separator (e.g. "192.168.1.1;192.168.1.2"). 
+The strings in the node list are urls that can have the following protocols:
 
 .\"
 .\"
@@ -111,8 +140,15 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-List the nodes managed by the controller:
+Here is an example showing how to create a new cluster:
 
 .nf
-# \fBs9s process --top --cluster-id=1\fR
+# \fBs9s backup --create --nodes=192.168.1.199 --cluster-id=1 --wait\fR
 .fi
+
+Another example simply lists the backup files:
+
+.nf
+# \fBs9s backup --list --cluster-id=1 --long -h\fR
+.fi
+

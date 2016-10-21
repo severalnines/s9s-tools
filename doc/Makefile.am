@@ -4,6 +4,7 @@ man_MANS =           \
 	s9s-cluster.1    \
 	s9s-node.1       \
 	s9s-process.1    \
+	s9s-backup.1     \
 	s9s.conf.5
 
 EXTRA_DIST = $(man_MANS)
