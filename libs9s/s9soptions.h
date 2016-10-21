@@ -134,6 +134,8 @@ class S9sOptions
         bool humanReadable() const;
         void setHumanReadable(const bool value = true);
 
+        S9sString timeStyle() const;
+
         int terminalWidth() const;
         int terminalHeight() const;
         S9sString binaryName() const;

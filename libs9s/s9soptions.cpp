@@ -961,6 +961,18 @@ S9sOptions::humanReadable() const
     return retval;
 }
 
+
+S9sString 
+S9sOptions::timeStyle() const
+{
+    S9sString retval;
+
+    if (m_options.contains("time_style"))
+        retval = m_options.at("time_style").toString();
+
+    return retval;
+}
+
 void
 S9sOptions::setHumanReadable(
         const bool value)
