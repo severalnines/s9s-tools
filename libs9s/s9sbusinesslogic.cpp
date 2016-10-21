@@ -19,6 +19,7 @@
  */
 #include "s9sbusinesslogic.h"
 
+#include "S9sStringList"
 #include "S9sRpcReply"
 #include "S9sOptions"
 #include "S9sNode"
@@ -1162,26 +1163,55 @@ S9sBusinessLogic::executeUser(
         if (controller.empty())
             controller = "127.0.0.1";
 
-        S9sString sshCommand;
-        sshCommand.sprintf (
-                "ssh -tt "
-                "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
-                "-oBatchMode=yes -oPasswordAuthentication=no -oConnectTimeout=30 "
-                " '%s' "
-                "'echo \"{\\\"username\\\":\\\"%s\\\", \\\"pubkey\\\": \\\"%s\\\"}\" "
-                "| sudo -n tee /var/lib/cmon/usermgmt.fifo'",
-                STR(controller),
-                STR(userName),
-                STR(pubKeyStr));
+        S9sStringList fifos;
+        // this one is used by unit/functional tests
+        fifos << "/tmp/cmon_test/usermgmt.fifo";
+        // and in real cmon daemon
+        fifos << "/var/lib/cmon/usermgmt.fifo";
 
-        int exitCode = ::system (STR(sshCommand));
-        if (exitCode != 0)
+        bool oneSucceed = false;
+        int exitCode = 0;
+        S9sString sshCommand;
+
+        for (uint idx = 0; idx < fifos.size(); ++idx)
         {
-            PRINT_ERROR ("SSH command exited with non-zero status: %d\n%s",
-                exitCode, STR(sshCommand));
+            sshCommand.sprintf (
+                    "ssh -tt "
+                    "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
+                    "-oBatchMode=yes -oPasswordAuthentication=no -oConnectTimeout=30 "
+                    " '%s' "
+                    "'echo \"{\\\"username\\\":\\\"%s\\\", \\\"pubkey\\\": \\\"%s\\\"}\" "
+                    "| sudo -n tee %s >/dev/null'",
+                    STR(controller),
+                    STR(userName),
+                    STR(pubKeyStr),
+                    STR(fifos.at(idx)));
+
+            if (options->isVerbose())
+            {
+                printf ("Tried to grant on %s:%s, exitCode=%d.\n",
+                    STR(controller), STR(fifos.at(idx)), exitCode);
+            }
+
+            exitCode = ::system (STR(sshCommand));
+            oneSucceed |= (exitCode == 0);
+
+            if (exitCode != 0)
+            {
+                errorString.sprintf (
+                    "SSH command exited with non-zero status: %d\n%s",
+                    exitCode, STR(sshCommand));
+            }
+        }
+
+        if (! oneSucceed)
+        {
+            PRINT_ERROR ("%s", STR(errorString));
             options->setExitStatus(S9sOptions::JobFailed);
             return;
         }
+
+        // if any of them succeed, lets consider it as success
     }
 }
 
