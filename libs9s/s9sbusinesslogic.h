@@ -53,6 +53,8 @@ class S9sBusinessLogic
                 const int     jobId, 
                 S9sRpcClient &client);
 
+        void executeUser(S9sRpcClient &client);
+
         void executeClusterCreate(S9sRpcClient &client);
         void executeClusterList(S9sRpcClient &client);
 

@@ -216,12 +216,13 @@ S9sRsaKeyPrivate::signRsaSha256(
 
     // write the signature into the Base64 encoder
     BIO_write (base64, sigstr, siglen);
+    (void) BIO_flush (base64);
     delete[] sigstr;
 
     BUF_MEM *bioMem = 0;
     BIO_get_mem_ptr(base64, &bioMem);
     // push the data into signature
-    signature = std::string(bioMem->data, bioMem->length-1);
+    signature = std::string(bioMem->data, bioMem->length);
 
     // cleanup
     BIO_free_all(base64);

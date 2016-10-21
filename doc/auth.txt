@@ -1,0 +1,66 @@
+
+Key-pair based authentication
+
+NOTE: this authentication method is experimental, but in long term
+will replace the current RPC token based one
+
+* S9s CLI authentication related options and behavior
+
+Important: for now if you specify -t, --rpc-token=TOKEN then
+token will be used instead of key based auhentication.
+
+** Steps needs to be done for key-pair based authentication
+
+  1) Generate a key for a user (it is advised to use the same username which is
+  used on Frontend, so later on you can manage your pubkeys there like in
+  github)
+
+  $ s9s user --username=myfancyuser@domain.tld --generate-key
+
+  The generated 2048 RSAbit key-pair will be saved to ~/.s9s/USERNAME.[pub|key].
+  NOTE this command will save the username into ~/.s9s/s9s.conf ([global],
+  auth_user) for later use.
+
+  2) Grant/create the user on controller and upload the public key.
+
+  For this step you must have SSH access (and sudo/superuser privileges) to the
+  controller node (where cmon daemon runs.)
+
+  $ s9s user --verbose --grant-user --controller=CONTROLLER_ADDR:9500
+
+  NOTE: these two steps (1) and 2)) can be done in one command like:
+
+  $ s9s user --username=myfancyuser@domain.tld --generate-key \
+        --grant-user --controller=CONTROLLER_ADDR:9500
+
+  Alternatively)
+
+  If this is not possible (SSH .. etc), you should copy the pubkey into a
+  pendrive, bring it to controller plugin, then gain superuser access there
+  and grant/create your RPC user manually, for now it will goes like:
+
+  echo "{\"username\":\"kedazo@severalnines.com\", \"pubkey\": \"$(cat ./user.pubkey)\"}" \
+  > /var/lib/cmon/usermgmt.fifo
+
+** Other method to generate an RSA key and configure the s9s client:
+  
+  You can use the OpenSSL command line to generate an RSA keypair
+  # generating the private key
+  # (keep this in secure place, do not transfer over network)
+  $ openssl genpkey -algorithm RSA -out user.privkey -pkeyopt rsa_keygen_bits:2048
+  # then extract its public key part into a separate file (can be shared.. etc)
+  $ openssl rsa -pubout -in user.privkey -out user.pubkey
+
+  Then add your username and the path to the key in ~/.s9s/s9s.conf into
+  [global] section:
+  auth_user=cmonusername@domain.tld
+  auth_key=~/my/path/to/private.key
+
+  Then you should also grant this key on controller which is desribed above.
+
+** After user granted
+
+ After this grant has created and your ~/.s9s/s9s.conf has the auth_user,
+ then user will be authenticated to controller before every RPC call.
+
+TODO: improve this doc.. etc

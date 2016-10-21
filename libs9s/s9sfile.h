@@ -39,6 +39,7 @@ class S9sFile
         bool exists() const;
         void close();
         bool readTxtFile(S9sString &content);
+        bool writeTxtFile(const S9sString &content);
         bool fprintf(const char *formatString, ...);
 
         S9sString errorString() const;
@@ -68,6 +69,11 @@ class S9sFile
                 void   *buffer, 
                 size_t  bufferSize);
         
+        ssize_t safeWrite(
+                int     fileDescriptor, 
+                void   *buffer, 
+                size_t  bufferSize);
+
     protected: 
         S9sFilePrivate    *m_priv;
 };

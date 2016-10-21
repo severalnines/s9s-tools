@@ -1186,13 +1186,28 @@ S9sConfigFile::operator= (
 
 	return *this;
 }
-        
+
 bool 
 S9sConfigFile::save(
         S9sString &errorString)
 {
-    errorString = "not implemented";
-    return false;
+    if (m_priv->filename.empty())
+    {
+        errorString = "No filename has specified.";
+        return false;
+    }
+
+    S9sString content;
+    build(content);
+
+    S9sFile file(m_priv->filename);
+    if (! file.writeTxtFile(content))
+    {
+        errorString = file.errorString();
+        return false;
+    }
+
+    return true;
 }
 
 /**

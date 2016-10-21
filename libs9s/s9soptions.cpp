@@ -713,6 +713,15 @@ S9sOptions::isProcessOperation() const
 }
 
 /**
+ * \returns true if the main operation is "user".
+ */
+bool
+S9sOptions::isUserOperation() const
+{
+    return m_operationMode == User;
+}
+
+/**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.
  */
@@ -1146,6 +1155,10 @@ S9sOptions::readOptions(
         case Process:
             retval = readOptionsProcess(*argc, argv);
             break;
+
+        case User:
+            retval = readOptionsUser(*argc, argv);
+            break;
     }
 
     return retval;
@@ -1202,6 +1215,9 @@ S9sOptions::setMode(
     } else if (modeName == "backup")
     {
         m_operationMode = Backup;
+    } else if (modeName == "user")
+    {
+        m_operationMode = User;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -1242,6 +1258,11 @@ S9sOptions::printHelp()
         case Process:
         case Backup:
             printHelpGeneric();
+            break;
+
+        case User:
+            printHelpUser();
+            break;
     }
 }
 
@@ -1305,6 +1326,38 @@ S9sOptions::printHelpGeneric()
 "* process:\n"
 " -L, --list                 List processes\n"
 " -i, --cluster-id           Cluster ID\n"
+"\n"
+"* user:\n"
+"  -u, --username=USERNAME   The username to be used for authentication.\n"
+"  -g, --generate-key        Generate an RSA keypair for the user.\n"
+"  -G, --grant-user          Grant the user on controller (SSH/sudo needed).\n"
+"\n",
+STR(m_myName));
+}
+
+void
+S9sOptions::printHelpUser()
+{
+    printf(
+"Usage:\n"
+"  %s user [OPTION...]\n"
+"\n"
+
+"Generic Options\n"
+"  -h, --help                   Show help message and exit.\n" 
+"  -v, --verbose                Print more messages.\n"
+"  -V, --version                Show version and exit.\n"
+"  -c, --controller=URL         The hostname/IP of the controller.\n"
+"  -P, --controller-port=NUMBER The port of the controller.\n"
+"  --rpc-tls                    Use TLS encryption for the controller.\n"
+"  --print-json                 Print the sent/received JSon messages.\n"
+"  --config-file=PATH           Load the configuration from the file.\n"
+"\n"
+
+"User options\n"
+"  -u, --username=USERNAME      The username to be used for authentication.\n"
+"  -g, --generate-key           Generate an RSA keypair for the user.\n"
+"  -G, --grant-user             Grant the user on controller (SSH/sudo needed).\n"
 "\n",
 STR(m_myName));
 }
@@ -1850,6 +1903,135 @@ S9sOptions::readOptionsProcess(
 }
 
 /**
+ * Reads the command line options in the "user" mode.
+ */
+bool
+S9sOptions::readOptionsUser(
+        int    argc,
+        char  *argv[])
+{
+    S9S_DEBUG("");
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h' },
+        { "verbose",          no_argument,       0, 'v' },
+        { "version",          no_argument,       0, 'V' },
+        { "controller",       required_argument, 0, 'c' },
+        { "controller-port",  required_argument, 0, 'P' },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls },
+        { "rpc-token",        required_argument, 0, 't' },
+        { "long",             no_argument,       0, 'l' },
+        { "print-json",       no_argument,       0,  OptionPrintJson },
+        { "color",            optional_argument, 0,  OptionColor },
+        { "config-file",      required_argument, 0,  OptionConfigFile },
+
+        { "generate-key",     no_argument,       0, 'g' }, 
+        { "username",         required_argument, 0, 'u' }, 
+        { "grant-user",       no_argument,       0, 'G' },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                // -t, --token=RPC_TOKEN
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+            case 'u':
+                // --username
+                m_options["auth_user"] = S9sString(optarg);
+                break;
+
+            case 'g':
+                // --generate-key
+                m_options["generate_key"] = true;
+                break;
+
+            case 'G':
+                // --grant-user
+                m_options["grant_user"] = true;
+                break;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * Reads the command line options in cluster mode.
  */
 bool
@@ -2281,10 +2463,6 @@ S9sOptions::authUsername() const
     if (authUser.empty())
         authUser =  m_systemConfig.variableValue("auth_user");
 
-    // the default, fallback value
-    if (authUser.empty())
-        authUser = "s9s@client";
-
     return authUser;
 }
 
@@ -2301,6 +2479,27 @@ S9sOptions::privateKeyPath() const
     if (authKey.empty())
         authKey =  m_systemConfig.variableValue("auth_key");
 
+    if (authKey.empty() && !authUsername().empty())
+        authKey.sprintf("~/.s9s/%s.key", STR(authUsername()));
+
     return authKey;
+}
+
+bool
+S9sOptions::isGenerateKeyRequested() const
+{
+    if (m_options.contains("generate_key"))
+        return m_options.at("generate_key").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isGrantUserRequest() const
+{
+    if (m_options.contains("grant_user"))
+        return m_options.at("grant_user").toBoolean();
+
+    return false;
 }
 

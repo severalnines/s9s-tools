@@ -50,6 +50,7 @@ class S9sOptions
             Job,
             Backup,
             Process,
+            User,
         };
 
         enum ExitCodes
@@ -108,6 +109,10 @@ class S9sOptions
         bool isJobOperation() const;
         bool isBackupOperation() const;
         bool isProcessOperation() const;
+        bool isUserOperation() const;
+
+        bool isGenerateKeyRequested() const;
+        bool isGrantUserRequest() const;
 
         bool isListRequested() const;
         bool isSetRequested() const;
@@ -146,6 +151,7 @@ class S9sOptions
         void printHelpGeneric();
         void printHelpCluster();
         void printHelpNode();
+        void printHelpUser();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
@@ -153,6 +159,7 @@ class S9sOptions
         bool readOptionsCluster(int argc, char *argv[]);
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);
+        bool readOptionsUser(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);
 
