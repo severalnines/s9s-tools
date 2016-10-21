@@ -107,7 +107,7 @@ S9sBusinessLogic::execute()
         {
             executeCreateBackup(client);
         } else {
-            PRINT_ERROR("Unknown job operation.");
+            PRINT_ERROR("Unknown backup operation.");
         }
     } else if (options->isProcessOperation())
     {

@@ -21,24 +21,34 @@
 
 #include "S9sString"
 
+/**
+ * A helper class to produce uniform but variable width column tables on the
+ * terminal and/or standard output.
+ */
 class S9sFormat 
 {
     public:
         S9sFormat();
         
         void setColor(const char *colorStart, const char *colorEnd);
+        void setRightJustify(const bool value);
 
         int realWidth() const;
 
         void widen(const S9sString &value);
         void widen(const int value);
+        void widen(const ulonglong value);
 
         void printf(const int value) const;
+        void printf(const ulonglong value) const;
         void printf(const S9sString &value) const;
+
+        static S9sString toSizeString(const ulonglong value);
 
     private:
         int         m_width;
         bool        m_withFieldSeparator;
         const char *m_colorStart;
         const char *m_colorEnd;
+        bool        m_rightJustify;
 };

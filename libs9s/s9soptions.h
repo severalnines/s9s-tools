@@ -126,6 +126,7 @@ class S9sOptions
         bool isBatchRequested() const;
 
         bool useSyntaxHighlight() const;
+        bool humanReadable() const;
 
         int terminalWidth() const;
         int terminalHeight() const;

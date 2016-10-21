@@ -20,13 +20,26 @@
 #include "s9sformat.h"
 
 #include <stdio.h>
+#include "S9sOptions"
+
+#define DEBUG
+//#define WARNING
+#include "s9sdebug.h"
 
 S9sFormat::S9sFormat() :
     m_width(0),
     m_withFieldSeparator(true),
     m_colorStart(0),
-    m_colorEnd(0)
+    m_colorEnd(0),
+    m_rightJustify(true)
 {
+}
+
+void
+S9sFormat::setRightJustify(
+        const bool value)
+{
+    m_rightJustify = value;
 }
 
 void
@@ -73,6 +86,19 @@ S9sFormat::widen(
     widen(tmp);
 }
 
+/**
+ * If necessary makes the format wider to accomodate the given value.
+ */
+void
+S9sFormat::widen(
+        const ulonglong value)
+{
+    S9sString tmp;
+
+    tmp.sprintf("%llu", value);
+    widen(tmp);
+}
+
 void
 S9sFormat::printf(
         const int value) const
@@ -92,14 +118,36 @@ S9sFormat::printf(
 
 void
 S9sFormat::printf(
+        const ulonglong value) const
+{
+    S9sString formatString;
+
+    if (m_width > 0)
+        formatString.sprintf("%%%dllu", m_width);
+    else
+        formatString.sprintf("%%llu", m_width);
+
+    if (m_withFieldSeparator)
+        formatString += " ";
+
+    ::printf(STR(formatString), value);
+}
+
+void
+S9sFormat::printf(
         const S9sString &value) const
 {
     S9sString formatString;
 
     if (m_width > 0)
-        formatString.sprintf("%%-%ds", m_width);
-    else
+    {
+        if (m_rightJustify)
+            formatString.sprintf("%%%ds", m_width);
+        else
+            formatString.sprintf("%%-%ds", m_width);
+    } else {
         formatString = "%s";
+    }
 
     if (m_withFieldSeparator)
         formatString += " ";
@@ -111,4 +159,32 @@ S9sFormat::printf(
 
     if (m_colorEnd != NULL)
         ::printf("%s", m_colorEnd);
+}
+
+S9sString
+S9sFormat::toSizeString(
+        const ulonglong value)
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        humanReadable = options->humanReadable();
+    S9sString   retval;
+
+    //
+    if (!humanReadable)
+    {
+        retval.sprintf("%llu", value);
+    } else {
+        double dValue = value;
+
+        if (dValue < 1024.0)
+        {
+            retval.sprintf("%.0f", dValue);
+            return retval;
+        }
+
+        retval.sprintf("%.1fK", dValue / 2014.0);
+        return retval;
+    }
+
+    return retval;
 }

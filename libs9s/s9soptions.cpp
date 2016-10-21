@@ -63,7 +63,8 @@ enum S9sOptionType
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
-    OptionStop
+    OptionStop,
+    OptionHelp,
 };
 
 /**
@@ -939,6 +940,17 @@ S9sOptions::useSyntaxHighlight() const
     return false;
 }
 
+bool
+S9sOptions::humanReadable() const
+{
+    bool retval = false;
+
+    if (m_options.contains("human_readable"))
+        retval = m_options.at("human_readable").toBoolean();
+
+    return retval;
+}
+
 /**
  * \returns How many characters the terminal can show in one line.
  */
@@ -1428,7 +1440,7 @@ S9sOptions::readOptionsNode(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
+        { "help",             no_argument,       0, OptionHelp },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
@@ -1468,8 +1480,8 @@ S9sOptions::readOptionsNode(
 
         switch (c)
         {
-            case 'h':
-                // -h, --help
+            case OptionHelp:
+                // --help
                 m_options["help"] = true;
                 break;
 
@@ -1573,7 +1585,7 @@ S9sOptions::readOptionsBackup(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
+        { "help",             no_argument,       0, OptionHelp },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
@@ -1583,6 +1595,7 @@ S9sOptions::readOptionsBackup(
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  OptionPrintJson  },
         { "color",            optional_argument, 0,  OptionColor      },
+        { "human-readable",   no_argument,       0, 'h' },
         { "config-file",      required_argument, 0,  4  },
 
         // Main Option
@@ -1615,8 +1628,8 @@ S9sOptions::readOptionsBackup(
 
         switch (c)
         {
-            case 'h':
-                // -h, --help
+            case OptionHelp:
+                // --help
                 m_options["help"] = true;
                 break;
 
@@ -1688,6 +1701,11 @@ S9sOptions::readOptionsBackup(
                     m_options["color"] = "always";
                 break;
 
+            case 'h':
+                S9S_WARNING("HUMAN READABLE");
+                m_options["human_readable"] = true;
+                break;
+
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
@@ -1731,7 +1749,7 @@ S9sOptions::readOptionsProcess(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
+        { "help",             no_argument,       0, OptionHelp },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
@@ -1769,8 +1787,8 @@ S9sOptions::readOptionsProcess(
 
         switch (c)
         {
-            case 'h':
-                // -h, --help
+            case OptionHelp:
+                // --help
                 m_options["help"] = true;
                 break;
 
@@ -1877,7 +1895,7 @@ S9sOptions::readOptionsCluster(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
+        { "help",             no_argument,       0, OptionHelp },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
@@ -1933,8 +1951,8 @@ S9sOptions::readOptionsCluster(
 
         switch (c)
         {
-            case 'h':
-                // -h, --help
+            case OptionHelp:
+                // --help
                 m_options["help"] = true;
                 break;
 
@@ -2105,7 +2123,7 @@ S9sOptions::readOptionsJob(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
+        { "help",             no_argument,       0, OptionHelp },
         { "verbose",          no_argument,       0, 'v' },
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
@@ -2144,8 +2162,8 @@ S9sOptions::readOptionsJob(
         
         switch (c)
         {
-            case 'h':
-                // -h, --help
+            case OptionHelp:
+                // --help
                 m_options["help"] = true;
                 break;
 
@@ -2246,7 +2264,7 @@ S9sOptions::readOptionsNoMode(
     int           c;
     struct option long_options[] =
     {
-        { "help",          no_argument,       0, 'h' },
+        { "help",          no_argument,       0, OptionHelp },
         { "verbose",       no_argument,       0, 'v' },
         { "version",       no_argument,       0, 'V' },
         { 0, 0, 0, 0 }
@@ -2262,7 +2280,7 @@ S9sOptions::readOptionsNoMode(
 
         switch (c)
         {
-            case 'h':
+            case OptionHelp:
                 m_options["help"] = true;
                 break;
 
