@@ -24,6 +24,8 @@
 #include <cstring>
 
 #include "S9sVariantList"
+#include "S9sFormat"
+#include "S9sOptions"
 
 //#define DEBUG
 #include "s9sdebug.h"
@@ -54,6 +56,7 @@ UtS9sString::runTest(const char *testName)
     PERFORM_TEST(testContains,      retval);
     PERFORM_TEST(testEscape,        retval);
     PERFORM_TEST(testSplit,         retval);
+    PERFORM_TEST(testSizeString,    retval);
 
     return retval;
 }
@@ -365,6 +368,20 @@ UtS9sString::testSplit()
     S9S_COMPARE(list[0], "one");
     S9S_COMPARE(list[1], "two");
     S9S_COMPARE(list[2], "three");
+
+    return true;
+}
+
+bool
+UtS9sString::testSizeString()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    options->setHumanReadable();
+
+    S9S_COMPARE(S9sFormat::toSizeString(0ull),       "0");
+    S9S_COMPARE(S9sFormat::toSizeString(949ull),     "949");
+    S9S_COMPARE(S9sFormat::toSizeString(1024ull),    "1.0K");
 
     return true;
 }

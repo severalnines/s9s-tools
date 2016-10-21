@@ -23,7 +23,7 @@
 #include "S9sOptions"
 
 #define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sFormat::S9sFormat() :
@@ -182,7 +182,7 @@ S9sFormat::toSizeString(
             return retval;
         }
 
-        retval.sprintf("%.1fK", dValue / 2014.0);
+        retval.sprintf("%.1fK", dValue / 1024.0);
         return retval;
     }
 

@@ -127,6 +127,7 @@ class S9sOptions
 
         bool useSyntaxHighlight() const;
         bool humanReadable() const;
+        void setHumanReadable(const bool value = true);
 
         int terminalWidth() const;
         int terminalHeight() const;

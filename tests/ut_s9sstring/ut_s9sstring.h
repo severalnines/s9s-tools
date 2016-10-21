@@ -39,5 +39,6 @@ class UtS9sString : public S9sUnitTest
         bool testContains();
         bool testEscape();
         bool testSplit();
+        bool testSizeString();
 };
 

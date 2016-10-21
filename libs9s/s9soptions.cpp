@@ -951,6 +951,14 @@ S9sOptions::humanReadable() const
     return retval;
 }
 
+void
+S9sOptions::setHumanReadable(
+        const bool value)
+{
+    m_options["human_readable"] = value;
+}
+
+
 /**
  * \returns How many characters the terminal can show in one line.
  */
