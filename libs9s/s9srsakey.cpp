@@ -87,8 +87,7 @@ S9sRsaKey::signRsaSha256(
         const S9sString     &input,
         S9sString           &signature)
 {
-    // TODO
-    return false;
+    return m_priv->signRsaSha256(input, signature);
 }
 
 bool

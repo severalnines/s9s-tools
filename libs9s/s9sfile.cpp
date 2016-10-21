@@ -208,6 +208,48 @@ S9sFile::readTxtFile(
     return retval;
 }
 
+bool
+S9sFile::writeTxtFile(
+        const S9sString   &content)
+{
+	mode_t   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+	int      fileDescriptor;
+	ssize_t  nBytes;
+	int      errorCode;
+
+	fileDescriptor = open(STR(m_priv->m_path),
+			O_WRONLY | O_CREAT | O_TRUNC, mode);
+	if (fileDescriptor < 0)
+	{
+		m_priv->m_errorString.sprintf(
+				"Error opening '%s' for writing: %m",
+				STR(m_priv->m_path));
+		return false;
+	}
+
+	nBytes = safeWrite(fileDescriptor,
+		(void*) STR(content), content.size());
+	if (nBytes < (ssize_t) content.size())
+	{
+		m_priv->m_errorString.sprintf(
+				"Error writing file '%s': %m",
+				STR(m_priv->m_path));
+		::close(fileDescriptor);
+		return false;
+	}
+
+	errorCode = ::close(fileDescriptor);
+	if (errorCode != 0)
+	{
+		m_priv->m_errorString.sprintf(
+				"Error closing file '%s': %m",
+				STR(m_priv->m_path));
+		return false;
+	}
+
+	return true;
+}
+
 /**
  * Prints formatted string into a file. Pretty easy to create and fill text
  * files using this function.
@@ -419,3 +461,23 @@ S9sFile::safeRead (
 
     return retval;
 }
+
+/**
+ * Same as write(3), but this repeats the request if it was interrupted by a
+ * signal.
+ */
+ssize_t
+S9sFile::safeWrite (
+    int     fileDescriptor, 
+    void   *buffer, 
+    size_t  bufferSize)
+{
+    ssize_t retval;
+  
+    do {
+        retval = ::write(fileDescriptor, buffer, bufferSize);
+    } while (retval == -1 && errno == EINTR);
+
+    return retval;
+}
+

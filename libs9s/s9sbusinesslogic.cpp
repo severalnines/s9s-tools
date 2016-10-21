@@ -19,11 +19,14 @@
  */
 #include "s9sbusinesslogic.h"
 
+#include "S9sStringList"
 #include "S9sRpcReply"
 #include "S9sOptions"
 #include "S9sNode"
 #include "S9sDateTime"
 #include "S9sTopUi"
+#include "S9sFile"
+#include "S9sRsaKey"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,6 +48,27 @@ S9sBusinessLogic::execute()
     int          clusterId  = options->clusterId();
     bool         useTls     = options->useTls();
     S9sRpcClient client(controller, port, token, useTls);
+
+    /*
+     * Special exceptions
+     * - we don't need to auth for 'user' operation
+     * - if token specified, we use that instead of auth (for now)
+     */
+    if (!options->isUserOperation() || !options->rpcToken().empty())
+    {
+        // and we shall try to auth only if we have username & key
+        if (! options->authUsername().empty () &&
+            ! options->privateKeyPath().empty ())
+        {
+            if (! client.authenticate())
+            {
+                PRINT_ERROR(
+                        "Authentication failed: %s",
+                        STR(client.errorString()));
+                // continuing, server replies a nice error
+            }
+        }
+    }
 
     S9S_DEBUG("");
     if (options->isClusterOperation())
@@ -120,6 +144,9 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown process operation.");
         }
+    } else if (options->isUserOperation())
+    {
+        executeUser(client);
     } else {
         PRINT_ERROR("Unknown operation.");
     }
@@ -1059,3 +1086,167 @@ S9sBusinessLogic::waitForJobWithLog(
 
     printf("\n");
 }
+
+void
+S9sBusinessLogic::executeUser(
+        S9sRpcClient        &client)
+{
+    S9sString    errorString;
+    S9sOptions  *options = S9sOptions::instance();
+    S9sString    userName = options->authUsername();
+
+    if (userName.empty())
+    {
+        PRINT_ERROR(
+                 "User name is not set.\n"
+                 "Use the --username command line option to set it.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+    }
+
+    // Now make sure that we save the
+    // specified username into the user config file
+    S9sConfigFile config;
+    config.setFileName("~/.s9s/s9s.conf");
+
+    if (options->isVerbose())
+    {
+        printf("Saving auth_user=%s into %s\n",
+                STR(userName), STR(config.fileName()));
+    }
+
+    if (! config.parseSourceFile())
+    {
+        PRINT_ERROR("Couldn't parse %s: %s",
+                STR(config.fileName()), STR(config.errorString()));
+        return;
+    }
+
+    if (config.hasVariable("global", "auth_user"))
+        config.changeVariable("global", "auth_user", userName);
+    else if (config.hasVariable("", "auth_user"))
+        config.changeVariable("auth_user", userName);
+    else
+        config.addVariable("global", "auth_user", userName);
+
+    if (! config.save(errorString))
+    {
+        PRINT_ERROR("Could not update user config: %s", STR(errorString));
+        // continue or abort ?
+    }
+
+    S9sString keyFilePath = options->privateKeyPath();
+
+    if (options->isGenerateKeyRequested())
+    {
+        // check if key exists and is valid, otherwise generate a new key-pair
+        S9sRsaKey key;
+        if (key.loadKeyFromFile(keyFilePath) && key.isValid())
+        {
+            if (options->isVerbose()) {
+                printf ("Keyfile '%s' exists and valid.\n", STR(keyFilePath));
+            }
+        }
+        else
+        {
+            if (options->isVerbose()) {
+                printf ("Generating an RSA key-pair (%s).\n", STR(keyFilePath));
+            }
+            S9sString pubKeyPath = keyFilePath;
+            pubKeyPath.replace(".key","");
+            pubKeyPath += ".pub";
+
+            if (! key.generateKeyPair() ||
+                ! key.saveKeys(keyFilePath, pubKeyPath, errorString))
+            {
+                if (errorString.empty())
+                    errorString = "RSA key generation failure.";
+
+                PRINT_ERROR("Key generation failed: %s", STR(errorString));
+            }
+        }
+    }
+
+    S9sRsaKey rsaKey;
+    if (! rsaKey.loadKeyFromFile(keyFilePath) || ! rsaKey.isValid())
+    {
+        PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(keyFilePath));
+        options->setExitStatus(S9sOptions::JobFailed);
+        return;
+    }
+
+    if (options->isGrantUserRequest())
+    {
+        // There must be a better way to determine this
+        S9sString pubKeyPath = keyFilePath;
+        pubKeyPath.replace(".key","");
+        pubKeyPath += ".pub";
+
+        S9sFile pubKeyFile (pubKeyPath);
+        S9sString pubKeyStr;
+        if (! pubKeyFile.readTxtFile(pubKeyStr) || pubKeyStr.empty())
+        {
+            // Private key exists and valid, but
+            PRINT_ERROR("Couldn't load public key (%s): %s",
+                STR(pubKeyPath), STR(pubKeyFile.errorString()));
+
+            options->setExitStatus(S9sOptions::JobFailed);
+            return;
+        }
+
+        S9sString controller = options->controller();
+        if (controller.empty())
+            controller = "127.0.0.1";
+
+        S9sStringList fifos;
+        // this one is used by unit/functional tests
+        fifos << "/tmp/cmon_test/usermgmt.fifo";
+        // and in real cmon daemon
+        fifos << "/var/lib/cmon/usermgmt.fifo";
+
+        bool oneSucceed = false;
+        int exitCode = 0;
+        S9sString sshCommand;
+
+        for (uint idx = 0; idx < fifos.size(); ++idx)
+        {
+            sshCommand.sprintf (
+                    "ssh -tt "
+                    "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
+                    "-oBatchMode=yes -oPasswordAuthentication=no -oConnectTimeout=30 "
+                    " '%s' "
+                    "'echo \"{\\\"username\\\":\\\"%s\\\", \\\"pubkey\\\": \\\"%s\\\"}\" "
+                    "| sudo -n tee %s >/dev/null'",
+                    STR(controller),
+                    STR(userName),
+                    STR(pubKeyStr),
+                    STR(fifos.at(idx)));
+
+            if (options->isVerbose())
+            {
+                printf ("Tried to grant on %s:%s, exitCode=%d.\n",
+                    STR(controller), STR(fifos.at(idx)), exitCode);
+            }
+
+            exitCode = ::system (STR(sshCommand));
+            oneSucceed |= (exitCode == 0);
+
+            if (exitCode != 0)
+            {
+                errorString.sprintf (
+                    "SSH command exited with non-zero status: %d\n%s",
+                    exitCode, STR(sshCommand));
+            }
+        }
+
+        if (! oneSucceed)
+        {
+            PRINT_ERROR ("%s", STR(errorString));
+            options->setExitStatus(S9sOptions::JobFailed);
+            return;
+        }
+
+        // if any of them succeed, lets consider it as success
+    }
+}
+

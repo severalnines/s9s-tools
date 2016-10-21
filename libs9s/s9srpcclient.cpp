@@ -1527,7 +1527,7 @@ S9sRpcClient::executeRequest(
         } else {
             if (options->isJsonRequested() && options->isVerbose())
             {
-                printf("Sent request.");
+                printf("Sent request.\n");
             }
         }
     }
