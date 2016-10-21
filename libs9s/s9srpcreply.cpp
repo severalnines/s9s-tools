@@ -1513,6 +1513,7 @@ S9sRpcReply::printBackupListLong()
             {
                 S9sVariantMap file = files[idx1].toVariantMap();
                 S9sString     path = file["path"].toString();
+                ulonglong     size = file["size"].toULongLong();
 
                 if (syntaxHighlight)
                 {
@@ -1524,6 +1525,7 @@ S9sRpcReply::printBackupListLong()
                 }
 
                 printf("%s ", STR(hostName));
+                printf("%llu ", size);
                 printf("%s%s%s", colorBegin, STR(path), colorEnd);
                 printf("\n");
             }
