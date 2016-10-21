@@ -65,6 +65,7 @@ enum S9sOptionType
     OptionClusterType,
     OptionStop,
     OptionHelp,
+    OptionTimeStyle,
 };
 
 /**
@@ -1651,12 +1652,14 @@ S9sOptions::readOptionsBackup(
         { "version",          no_argument,       0, 'V' },
         { "controller",       required_argument, 0, 'c' },
         { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  OptionRpcTls  },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  OptionPrintJson  },
-        { "color",            optional_argument, 0,  OptionColor      },
+        { "print-json",       no_argument,       0, OptionPrintJson  },
+        { "color",            optional_argument, 0, OptionColor      },
         { "human-readable",   no_argument,       0, 'h' },
+        { "time-style",       required_argument, 0, OptionTimeStyle  },
+
         { "config-file",      required_argument, 0,  4  },
 
         // Main Option
@@ -1763,8 +1766,11 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case 'h':
-                S9S_WARNING("HUMAN READABLE");
                 m_options["human_readable"] = true;
+                break;
+
+            case OptionTimeStyle:
+                m_options["time_style"] = optarg;
                 break;
 
             case OptionPrintJson:
