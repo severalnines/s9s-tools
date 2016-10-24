@@ -18,6 +18,8 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source include.sh
 
+
+
 #
 # Prints an error message to the standard error. The text will not mixed up with
 # the data that is printed to the standard output.
@@ -89,6 +91,8 @@ if [ -z "$S9S" ]; then
     echo "The s9s program is not installed."
     exit 7
 fi
+
+CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 #if [ ! -d data -a -d tests/data ]; then
 #    echo "Entering directory tests..."
@@ -327,7 +331,7 @@ function testRollingRestart()
 }
 
 #
-# This will perform a rolling restart on the cluster
+# This will create a backup.
 #
 function testCreateBackup()
 {
@@ -350,6 +354,36 @@ function testCreateBackup()
         failure "The exit code is ${exitCode}"
     fi
 }
+
+#
+# This will restore a backup. 
+#
+function testRestoreBackup()
+{
+    local exitCode
+    local backupId
+
+    pip-say "The test to restore a backup is starting."
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        awk '{print $1}')
+
+    #
+    # Calling for a rolling restart.
+    #
+    $S9S backup \
+        --restore \
+        --cluster-id=$CLUSTER_ID \
+        --backup-id=$backupId \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
 
 
 #
@@ -393,6 +427,7 @@ else
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup
+    runFunctionalTest testRestoreBackup
     runFunctionalTest testStop
 fi
 
