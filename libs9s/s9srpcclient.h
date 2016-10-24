@@ -141,6 +141,9 @@ class S9sRpcClient
 
         bool stopCluster(
                 const int             clusterId);
+        
+        bool startCluster(
+                const int             clusterId);
 
         bool dropCluster(
                 const int             clusterId);

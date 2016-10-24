@@ -91,6 +91,9 @@ S9sBusinessLogic::execute()
         } else if (options->isStopRequested())
         {
             executeStopCluster(client);
+        } else if (options->isStartRequested())
+        {
+            executeStartCluster(client);
         } else if (options->isDropRequested())
         {
             executeDropCluster(client);
@@ -373,6 +376,30 @@ S9sBusinessLogic::executeStopCluster(
      * Running the request on the controller.
      */
     success = client.stopCluster(clusterId);
+    if (success)
+    {
+        jobRegistered(client, clusterId);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeStartCluster(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.startCluster(clusterId);
     if (success)
     {
         jobRegistered(client, clusterId);

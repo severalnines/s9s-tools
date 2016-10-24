@@ -1329,8 +1329,49 @@ S9sRpcClient::stopCluster(
     retval = executeRequest(uri, request.toString());
 
     return retval;
-
 }
+
+bool
+S9sRpcClient::startCluster(
+        const int             clusterId)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      title;
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri;
+    bool           retval;
+    
+    uri.sprintf("/%d/job/", clusterId);
+    title = "Starting Cluster";
+
+    // The job_data describing the cluster.
+    jobData["force"]               = false;
+    jobData["stop_timeout"]        = 1800;
+    jobData["auto_select"]         = true;
+    
+    // The jobspec describing the command.
+    jobSpec["command"]   = "bootstrap_cluster";
+    jobSpec["job_data"]  = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]    = "CmonJobInstance";
+    job["title"]         = title;
+    job["job_spec"]      = jobSpec;
+    job["user_name"]     = options->userName();
+    
+    // The request describing we want to register a job instance.
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    if (!m_priv->m_token.empty())
+        request["token"] = m_priv->m_token;
+
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
 
 /**
  * \param clusterId The ID of the cluster.
@@ -1379,6 +1420,9 @@ S9sRpcClient::dropCluster(
     return retval;
 }
 
+/**
+ * Places a job that will create a new backup.
+ */
 bool
 S9sRpcClient::createBackup(
         const int             clusterId,

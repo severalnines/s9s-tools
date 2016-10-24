@@ -124,6 +124,7 @@ class S9sOptions
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;
+        bool isStartRequested() const;
         bool isDropRequested() const;
 
         bool isLongRequested() const;

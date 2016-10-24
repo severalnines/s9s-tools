@@ -64,6 +64,7 @@ enum S9sOptionType
     OptionDbAdminPassword,
     OptionClusterType,
     OptionStop,
+    OptionStart,
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
@@ -889,6 +890,21 @@ S9sOptions::isStopRequested() const
 
     if (m_options.contains("stop"))
         retval = m_options.at("stop").toBoolean();
+
+    return retval;
+}
+
+/**
+ * \returns true if the --start command line option was provided when the
+ * program was started.
+ */
+bool
+S9sOptions::isStartRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("start"))
+        retval = m_options.at("start").toBoolean();
 
     return retval;
 }
@@ -2155,13 +2171,14 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, OptionConfigFile  },
 
         // Main Option
-        { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0, OptionCreate  },
-        { "rolling-restart",  no_argument,       0, 12  },
-        { "add-node",         no_argument,       0, OptionAddNode },
+        { "list",             no_argument,       0, 'L'              },
+        { "create",           no_argument,       0, OptionCreate     },
+        { "rolling-restart",  no_argument,       0, 12               },
+        { "add-node",         no_argument,       0, OptionAddNode    },
         { "remove-node",      no_argument,       0, OptionRemoveNode },
-        { "drop",             no_argument,       0, OptionDrop  },
-        { "stop",             no_argument,       0, 11  },
+        { "drop",             no_argument,       0, OptionDrop       },
+        { "stop",             no_argument,       0, OptionStop       },
+        { "start",            no_argument,       0, OptionStart      },
 
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
@@ -2258,9 +2275,14 @@ S9sOptions::readOptionsCluster(
                 m_options["drop"] = true;
                 break;
             
-            case 11:
+            case OptionStop:
                 // --stop
                 m_options["stop"] = true;
+                break;
+            
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
                 break;
 
             case OptionConfigFile:
