@@ -67,6 +67,18 @@ class S9sRpcClient
         bool getRunningProcesses(const int clusterId);
 
         bool getJobInstances(const int clusterId);
+        
+        /*
+         * Backup related methods.
+         */
+        bool createBackup(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
+        bool restoreBackup(
+                const int             clusterId,
+                const int             backupId);
+        
         bool getBackups(const int clusterId);
 
         bool getJobInstance(const int clusterId, const int jobId);
@@ -133,10 +145,6 @@ class S9sRpcClient
         bool dropCluster(
                 const int             clusterId);
 
-        bool createBackup(
-                const int             clusterId,
-                const S9sVariantList &hosts);
-        
     protected:
         virtual bool 
             executeRequest(
