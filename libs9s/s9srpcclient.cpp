@@ -1346,12 +1346,12 @@ S9sRpcClient::startCluster(
     title = "Starting Cluster";
 
     // The job_data describing the cluster.
-    jobData["force"]               = false;
-    jobData["stop_timeout"]        = 1800;
-    jobData["auto_select"]         = true;
+    //jobData["force"]               = false;
+    //jobData["stop_timeout"]        = 1800;
+    //jobData["auto_select"]         = true;
     
     // The jobspec describing the command.
-    jobSpec["command"]   = "bootstrap_cluster";
+    jobSpec["command"]   = "start_cluster";
     jobSpec["job_data"]  = jobData;
 
     // The job instance describing how the job will be executed.

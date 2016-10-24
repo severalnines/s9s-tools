@@ -384,8 +384,6 @@ function testRestoreBackup()
     fi
 }
 
-
-
 #
 # Stopping the cluster.
 #
@@ -393,13 +391,37 @@ function testStop()
 {
     local exitCode
 
-    pip-say "The test to stop cluster is starting now."
+    pip-say "The test to stop the cluster is starting now."
 
     #
     # Stopping the cluster.
     #
     $S9S cluster \
         --stop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# Starting the cluster.
+#
+function testStart()
+{
+    local exitCode
+
+    pip-say "The test to start the cluster is starting now."
+
+    #
+    # Stopping the cluster.
+    #
+    $S9S cluster \
+        --start \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
@@ -429,6 +451,7 @@ else
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
     runFunctionalTest testStop
+    runFunctionalTest testStart
 fi
 
 endTests
