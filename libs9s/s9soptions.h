@@ -89,6 +89,7 @@ class S9sOptions
 
         S9sString rpcToken() const;
         int clusterId() const;
+        int backupId() const;
         int updateFreq() const;
 
         S9sString clusterName() const;
@@ -118,6 +119,7 @@ class S9sOptions
         bool isSetRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
+        bool isRestoreRequested() const;
         bool isRollingRestartRequested() const;
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;

@@ -66,6 +66,9 @@ enum S9sOptionType
     OptionStop,
     OptionHelp,
     OptionTimeStyle,
+    OptionWait,
+    OptionRestore,
+    OptionBackupId,
 };
 
 /**
@@ -594,6 +597,17 @@ S9sOptions::clusterId() const
 }
 
 int
+S9sOptions::backupId() const
+{
+    int retval = 0;
+
+    if (m_options.contains("cluster_id"))
+        retval = m_options.at("cluster_id").toInt();
+
+    return retval;
+}
+
+int
 S9sOptions::updateFreq() const
 {
     S9sString retval;
@@ -787,6 +801,19 @@ S9sOptions::isCreateRequested() const
 {
     if (m_options.contains("create"))
         return m_options.at("create").toBoolean();
+
+    return false;
+}
+
+/**
+ * \returns true if the --restore command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isRestoreRequested() const
+{
+    if (m_options.contains("restore"))
+        return m_options.at("restore").toBoolean();
 
     return false;
 }
@@ -1672,20 +1699,22 @@ S9sOptions::readOptionsBackup(
         { "human-readable",   no_argument,       0, 'h' },
         { "time-style",       required_argument, 0, OptionTimeStyle  },
 
-        { "config-file",      required_argument, 0,  4  },
+        { "config-file",      required_argument, 0,  OptionConfigFile },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
         { "create",           no_argument,       0,  OptionCreate     },
+        { "restore",          no_argument,       0,  OptionRestore    },
         
         // Job Related Options
-        { "wait",             no_argument,       0, 16  },
+        { "wait",             no_argument,       0, OptionWait  },
         { "log",              no_argument,       0, 'G' },
         { "batch",            no_argument,       0, OptionBatch },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
-        { "nodes",            required_argument, 0,  OptionNodes  },
+        { "backup-id",        required_argument, 0, OptionBackupId    },
+        { "nodes",            required_argument, 0,  OptionNodes      },
 
         { 0, 0, 0, 0 }
     };
@@ -1744,7 +1773,7 @@ S9sOptions::readOptionsBackup(
                 m_options["list"] = true;
                 break;
             
-            case 16:
+            case OptionWait:
                 // --wait
                 m_options["wait"] = true;
                 break;
@@ -1764,7 +1793,12 @@ S9sOptions::readOptionsBackup(
                 m_options["create"] = true;
                 break;
 
-            case 4:
+            case OptionRestore:
+                // --restore
+                m_options["restore"] = true;
+                break;
+
+            case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
                 break;
@@ -1803,6 +1837,11 @@ S9sOptions::readOptionsBackup(
             case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+
+            case OptionBackupId:
+                // --backup-id=BACKUPID
+                m_options["backup_id"] = atoi(optarg);
                 break;
 
             default:
