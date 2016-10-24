@@ -1384,9 +1384,9 @@ S9sRpcClient::createBackup(
         const int             clusterId,
         const S9sVariantList &hosts)
 {
-    S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options      = S9sOptions::instance();
     S9sString       backupMethod = options->backupMethod();
-    S9sString       backupDir = options->backupDir();
+    S9sString       backupDir    = options->backupDir();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri;
@@ -1403,8 +1403,9 @@ S9sRpcClient::createBackup(
 
     // The job_data describing how the backup will be created.
     jobData["hostname"]         = hosts[0].toNode().hostName();
-    jobData["backup_method"]    = backupMethod;
     jobData["backupdir"]        = "/tmp";
+    if (!backupMethod.empty())
+        jobData["backup_method"]    = backupMethod;
 
     // The jobspec describing the command.
     jobSpec["command"]   = "backup";
@@ -1443,7 +1444,7 @@ S9sRpcClient::restoreBackup(
     uri.sprintf("/%d/job/", clusterId);
     
     // The job_data describing how the backup will be created.
-    jobData["backup_id"]        = backupId;
+    jobData["backupid"]        = backupId;
     jobData["bootstrap"]        = true;
 
     // The jobspec describing the command.

@@ -130,6 +130,9 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateRequested())
         {
             executeCreateBackup(client);
+        } else if (options->isRestoreRequested())
+        {
+            executeRestoreBackup(client);
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
@@ -544,6 +547,31 @@ S9sBusinessLogic::executeCreateBackup(
      * Running the request on the controller.
      */
     success = client.createBackup(clusterId, options->nodes());
+    if (success)
+    {
+        jobRegistered(client, clusterId);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeRestoreBackup(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    int            backupId  = options->backupId();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.restoreBackup(clusterId, backupId);
     if (success)
     {
         jobRegistered(client, clusterId);

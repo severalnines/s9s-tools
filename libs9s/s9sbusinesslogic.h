@@ -76,5 +76,6 @@ class S9sBusinessLogic
         void doExecuteCreateCluster(S9sRpcClient &client);
 
         void executeCreateBackup(S9sRpcClient &client);
+        void executeRestoreBackup(S9sRpcClient &client);
 };
 
