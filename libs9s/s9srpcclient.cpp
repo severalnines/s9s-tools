@@ -27,7 +27,7 @@
 #include <cstring>
 #include <cstdio>
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -1431,6 +1431,7 @@ S9sRpcClient::createBackup(
     S9sOptions     *options      = S9sOptions::instance();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
+    S9sString       schedule     = options->schedule();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri;
@@ -1467,6 +1468,9 @@ S9sRpcClient::createBackup(
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
+
+    if (!schedule.empty())
+        request["schedule"] = schedule;
 
     retval = executeRequest(uri, request.toString());
     S9S_WARNING("->\n%s\n", STR(request.toString()));
