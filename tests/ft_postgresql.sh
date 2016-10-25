@@ -345,6 +345,30 @@ function testStop()
 }
 
 #
+# Starting the cluster.
+#
+function testStart()
+{
+    local exitCode
+
+    pip-say "The test to start the cluster is starting now."
+
+    #
+    # Starting the cluster.
+    #
+    $S9S cluster \
+        --start \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -361,6 +385,7 @@ else
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
     runFunctionalTest testStop
+    runFunctionalTest testStart
 fi
 
 endTests
