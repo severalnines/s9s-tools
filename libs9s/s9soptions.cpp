@@ -70,6 +70,7 @@ enum S9sOptionType
     OptionWait,
     OptionRestore,
     OptionBackupId,
+    OptionSchedule,
 };
 
 /**
@@ -570,6 +571,25 @@ S9sOptions::rpcToken() const
         return m_options.at("rpc_token").toString();
 
     return S9sString();
+}
+
+S9sString
+S9sOptions::schedule() const
+{
+    S9sString retval;
+
+    if (m_options.contains("schedule"))
+        retval = m_options.at("schedule").toString();
+
+    return retval;
+}
+
+bool
+S9sOptions::setSchedule(
+        const S9sString &value)
+{
+    m_options["schedule"] = value;
+    return true;
 }
 
 /**
@@ -1714,7 +1734,6 @@ S9sOptions::readOptionsBackup(
         { "color",            optional_argument, 0, OptionColor      },
         { "human-readable",   no_argument,       0, 'h' },
         { "time-style",       required_argument, 0, OptionTimeStyle  },
-
         { "config-file",      required_argument, 0,  OptionConfigFile },
 
         // Main Option
@@ -1730,7 +1749,8 @@ S9sOptions::readOptionsBackup(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
         { "backup-id",        required_argument, 0, OptionBackupId    },
-        { "nodes",            required_argument, 0,  OptionNodes      },
+        { "nodes",            required_argument, 0, OptionNodes       },
+        { "schedule",         required_argument, 0, OptionSchedule    },
 
         { 0, 0, 0, 0 }
     };
@@ -1853,6 +1873,11 @@ S9sOptions::readOptionsBackup(
             case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+
+            case OptionSchedule:
+                // --schedule=STRING
+                setSchedule(optarg);
                 break;
 
             case OptionBackupId:

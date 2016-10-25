@@ -418,7 +418,7 @@ function testStart()
     pip-say "The test to start the cluster is starting now."
 
     #
-    # Stopping the cluster.
+    # Starting the cluster.
     #
     $S9S cluster \
         --start \

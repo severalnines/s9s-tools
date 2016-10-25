@@ -27,7 +27,7 @@
 #include <cstring>
 #include <cstdio>
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -1469,7 +1469,7 @@ S9sRpcClient::createBackup(
         request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request.toString());
-    
+    S9S_WARNING("->\n%s\n", STR(request.toString()));
     return retval;
 }
 

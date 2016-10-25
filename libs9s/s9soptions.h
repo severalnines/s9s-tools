@@ -86,8 +86,11 @@ class S9sOptions
         S9sString dbAdminUserName(const S9sString &defaultValue = "") const;
         S9sString dbAdminPassword();
         S9sString clusterType() const;
-
         S9sString rpcToken() const;
+        
+        S9sString schedule() const;
+        bool setSchedule(const S9sString &value);
+
         int clusterId() const;
         int backupId() const;
         int updateFreq() const;
