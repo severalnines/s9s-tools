@@ -6,7 +6,18 @@ VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
 CONTAINER=""
+SERVER=""
 
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# $*: the error message
 #
 # Prints an error message to the standard error. The text will not mixed up with
 # the data that is printed to the standard output.
@@ -46,12 +57,13 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]... [CONTAINER_NAME]...
 
-  $MYNAME - .
+  $MYNAME - Creates archives of containers.
 
  -h, --help           Print this help and exit.
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
+ --server=SERVER      Create the container on remote server.
 
 EOF
     exit 0
@@ -60,7 +72,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -78,16 +90,23 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
             ;;
 
         -v|--version)
             shift
-            printVersionAndExit
+            VERSION_OPTION="--version"
             ;;
 
         --log-file)
             shift
             LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
             shift
             ;;
 
@@ -112,12 +131,48 @@ if [ -z "$CONTAINER" ]; then
     exit 6
 fi
 
-if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
-    printError "Container not found."
-    exit 6
+#
+# Checking command line arguments.
+#
+EXTRA_OPTIONS=$*
+
+#
+# Checking root privileges.
+#
+if [ -z "$SERVER" ]; then
+    if [ "$EUID" -ne 0 ]; then 
+        printError "This script has to have root privileges."
+        exit 5
+    fi
 fi
 
-TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
-cd /var/lib/lxc
-tar --numeric-owner -czvf "$TAR_FILE_NAME" "$CONTAINER"
+#
+# Doing the job.
+#
+if [ -z "$SERVER" ]; then
+    if [ "$VERSION_OPTION" ]; then
+        printVersionAndExit
+        exit 0
+    else
+        if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
+            printError "Container not found."
+            exit 6
+        fi
+
+        TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
+        cd /var/lib/lxc
+        tar --numeric-owner -czf "$TAR_FILE_NAME" "$CONTAINER"
+    fi
+else
+    #
+    # We received the --server option and so we run the script on a remote
+    # server.
+    #
+    printVerbose "Executing on server '$SERVER'."
+    ssh $SERVER -- \
+        sudo $MYNAME \
+            $VERSION_OPTION \
+            $VERBOSE_OPTION \
+            $EXTRA_OPTIONS
+fi
 
