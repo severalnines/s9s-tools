@@ -6,7 +6,8 @@ VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
 CONTAINER=""
-SERVER=""
+SOURCE_SERVER=""
+TARGET_SERVER=""
 
 #
 # Prints the software version and exits.
@@ -63,7 +64,8 @@ Usage:
  -v, --version          Print version information and exit.
  --verbose              Print more messages.
  --log-file=FILE        Store all the messages in the given file too.
- --server=SERVER        Create the container on remote server.
+ --source-server=SERVER The server to copy from.
+ --target-server=SERVER The server to copy to.
 
 EOF
     exit 0
@@ -72,7 +74,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:" \
+        -l "help,verbose,version,log-file:,source-server:,target-server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -104,9 +106,17 @@ while true; do
             shift
             ;;
 
-        --server)
+        --source-server)
             shift
-            SERVER="$1"
+            SOURCE_SERVER="$1"
+            SOURCE_SERVER_OPTION="--source-server=$SOURCE_SERVER"
+            shift
+            ;;
+        
+        --target-server)
+            shift
+            TARGET_SERVER="$1"
+            TARGET_SERVER_OPTION="--target-server=$TARGET_SERVER"
             shift
             ;;
 
@@ -120,8 +130,8 @@ while true; do
     esac
 done
 
-
 CONTAINER="$1"
+EXTRA_OPTIONS="$*"
 
 #
 # Checking the command line options.
@@ -132,47 +142,32 @@ if [ -z "$CONTAINER" ]; then
 fi
 
 #
-# Checking command line arguments.
-#
-EXTRA_OPTIONS=$*
-
-#
-# Checking root privileges.
-#
-if [ -z "$SERVER" ]; then
-    if [ "$EUID" -ne 0 ]; then 
-        printError "This script has to have root privileges."
-        exit 5
-    fi
-fi
-
-#
 # Doing the job.
 #
-if [ -z "$SERVER" ]; then
-    if [ "$VERSION_OPTION" ]; then
-        printVersionAndExit
-        exit 0
-    else
-        if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
-            printError "Container not found."
-            exit 6
-        fi
-
-        TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
-        cd /var/lib/lxc
-        tar --numeric-owner -czf "$TAR_FILE_NAME" "$CONTAINER"
-    fi
+if [ "$SOURCE_SERVER" ]; then
+    ssh $SOURCE_SERVER -- \
+        $MYNAME \
+        $VERSION_OPTION \
+        $VERBOSE_OPTION \
+        $TARGET_SERVER_OPTION \
+        $EXTRA_OPTIONS 
 else
-    #
-    # We received the --server option and so we run the script on a remote
-    # server.
-    #
-    printVerbose "Executing on server '$SERVER'."
-    ssh $SERVER -- \
-        sudo $MYNAME \
-            $VERSION_OPTION \
-            $VERBOSE_OPTION \
-            $EXTRA_OPTIONS
-fi
+    tar_file_name="/var/tmp/pip_container_move_$$.tar.gz"
+    source_dir="/var/lib/lxc/$CONTAINER"
 
+    #if [ ! -d "$CONTAINER" ]; then
+    #    printError "Can not find container '$CONTAINER'."
+    #    exit 1
+    #fi
+
+    sudo lxc-stop -n "$CONTAINER" >/dev/null 2>/dev/null
+    sudo tar --numeric-owner -czf "$tar_file_name" "$source_dir" 2>/dev/null
+    scp "$tar_file_name" $TARGET_SERVER:/var/tmp
+    sudo rm -f "$tar_file_name"
+
+    ssh $TARGET_SERVER -- \
+        sudo tar xzf "$tar_file_name" -C /
+    
+    ssh $TARGET_SERVER -- \
+        sudo rm -f "$tar_file_name"
+fi
