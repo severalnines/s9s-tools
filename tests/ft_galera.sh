@@ -10,7 +10,7 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER="server2"
 
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
