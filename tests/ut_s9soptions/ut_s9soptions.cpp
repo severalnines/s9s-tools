@@ -44,6 +44,7 @@ UtS9sOptions::runTest(const char *testName)
     bool retval = true;
 
     PERFORM_TEST(testCreate,        retval);
+    PERFORM_TEST(testController,    retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testReadOptions02, retval);
     PERFORM_TEST(testReadOptions03, retval);
@@ -66,6 +67,44 @@ UtS9sOptions::testCreate()
 
     return true;
 }
+
+bool
+UtS9sOptions::testController()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    S9S_COMPARE(options->controllerHostName(), "");
+    S9S_COMPARE(options->controllerPort(),     0);
+    
+    options->setController("localhost");
+    S9S_COMPARE(options->controllerHostName(), "localhost");
+    S9S_COMPARE(options->controllerPort(),     0);
+
+    options->setController("localhost:9556");
+    S9S_COMPARE(options->controllerHostName(), "localhost");
+    S9S_COMPARE(options->controllerPort(),     9556);
+    
+    options->setController("127.0.0.1");
+    S9S_COMPARE(options->controllerHostName(), "127.0.0.1");
+    S9S_COMPARE(options->controllerPort(),     9556);
+
+    options->setController("127.0.0.1:9556");
+    S9S_COMPARE(options->controllerHostName(), "127.0.0.1");
+    S9S_COMPARE(options->controllerPort(),     9556);
+
+    options->setController("http://localhost:80");
+    S9S_COMPARE(options->controllerProtocol(), "http");
+    S9S_COMPARE(options->controllerHostName(), "localhost");
+    S9S_COMPARE(options->controllerPort(),     80);
+    
+    options->setController("https://127.0.0.1:8080");
+    S9S_COMPARE(options->controllerProtocol(), "https");
+    S9S_COMPARE(options->controllerHostName(), "127.0.0.1");
+    S9S_COMPARE(options->controllerPort(),     8080);
+
+    return true;
+}
+
 
 /**
  * Checking the readOptions() method with some command line options.

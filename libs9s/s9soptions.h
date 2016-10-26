@@ -67,8 +67,9 @@ class S9sOptions
         bool loadConfigFiles();
 
         void setController(const S9sString &url);
-        S9sString controllerHostName() const;
-        int controllerPort() const;
+        S9sString controllerHostName();
+        int controllerPort();
+        S9sString controllerProtocol();
 
         S9sString configFile() const;
         
@@ -106,7 +107,7 @@ class S9sOptions
         S9sString backupDir() const;
         S9sString backupMethod() const;
 
-        bool useTls() const;
+        bool useTls();
 
         bool isNodeOperation() const;
         bool isClusterOperation() const;
@@ -158,6 +159,8 @@ class S9sOptions
         void printHelp();
 
     private:
+        void checkController();
+
         void printHelpGeneric();
         void printHelpCluster();
         void printHelpNode();

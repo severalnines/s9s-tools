@@ -284,6 +284,18 @@ S9sOptions::setController(
 {
     S9sString myUrl = url;
     S9sRegExp regexp;
+
+    S9S_DEBUG("*** myUrl  : '%s'", STR(myUrl));
+    regexp = "([a-zA-Z]+):\\/\\/(.+)";
+    if (regexp == myUrl)
+    {
+        S9S_DEBUG("MATCH1 '%s', '%s'", 
+                STR(regexp[1]), 
+                STR(regexp[2]));
+
+        m_options["controller_protocol"] = regexp[1];
+        myUrl = regexp[2];
+    }
  
     regexp = "(.+):([0-9]+)";
     if (regexp == myUrl)
@@ -295,13 +307,31 @@ S9sOptions::setController(
     }
 }
 
+void
+S9sOptions::checkController()
+{
+    if (m_options.contains("controller"))
+        return;
+
+    S9sString tmp;
+
+    tmp = m_userConfig.variableValue("controller");
+    if (tmp.empty())
+        tmp = m_systemConfig.variableValue("controller");
+
+    if (!tmp.empty())
+        setController(tmp);
+}
+
 /**
  * \returns the controller hostname.
  */
 S9sString
-S9sOptions::controllerHostName() const
+S9sOptions::controllerHostName()
 {
     S9sString  retval;
+
+    checkController();
     if (m_options.contains("controller"))
     {
         retval = m_options.at("controller").toString();
@@ -315,14 +345,34 @@ S9sOptions::controllerHostName() const
     return retval;
 }
 
+S9sString
+S9sOptions::controllerProtocol()
+{
+    S9sString  retval;
+    
+    checkController();
+    if (m_options.contains("controller_protocol"))
+    {
+        retval = m_options.at("controller_protocol").toString();
+    } else {
+        retval = m_userConfig.variableValue("controller_protocol");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("controller_protocol");
+    }
+
+    return retval;
+}
+
 /**
  * \returns the controller port.
  */
 int
-S9sOptions::controllerPort() const
+S9sOptions::controllerPort()
 {
     int retval = 0;
 
+    checkController();
     if (m_options.contains("controller_port"))
     {
         retval = m_options.at("controller_port").toInt();
@@ -1141,9 +1191,12 @@ S9sOptions::isVerbose() const
  * \returns true if client must use TLS for controller RPC connections
  */
 bool
-S9sOptions::useTls() const
+S9sOptions::useTls()
 {
     S9sString retval;
+
+    if (controllerProtocol() == "https")
+        return true;
 
     if (m_options.contains("rpc_tls"))
     {

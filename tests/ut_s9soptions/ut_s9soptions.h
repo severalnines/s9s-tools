@@ -28,6 +28,7 @@ class UtS9sOptions : public S9sUnitTest
     
     protected:
         bool testCreate();
+        bool testController();
         bool testReadOptions01();
         bool testReadOptions02();
         bool testReadOptions03();
