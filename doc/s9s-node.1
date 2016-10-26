@@ -38,9 +38,9 @@ Print more messages than normally.
 Print version information and exit.
 
 .TP
-.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
-The host name of the Cmon Controller. The port is also accepted as part of the
-hostname.
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
 
 .TP
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
