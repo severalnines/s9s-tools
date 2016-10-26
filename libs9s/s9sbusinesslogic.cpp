@@ -42,7 +42,7 @@ void
 S9sBusinessLogic::execute()
 {
     S9sOptions  *options    = S9sOptions::instance();
-    S9sString    controller = options->controller();
+    S9sString    controller = options->controllerHostName();
     int          port       = options->controllerPort();
     S9sString    token      = options->rpcToken();
     int          clusterId  = options->clusterId();
@@ -1257,7 +1257,7 @@ S9sBusinessLogic::executeUser(
             return;
         }
 
-        S9sString controller = options->controller();
+        S9sString controller = options->controllerHostName();
         if (controller.empty())
             controller = "127.0.0.1";
 
@@ -1273,7 +1273,7 @@ S9sBusinessLogic::executeUser(
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
-            sshCommand.sprintf (
+            sshCommand.sprintf(
                     "ssh -tt "
                     "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
                     "-oBatchMode=yes -oPasswordAuthentication=no -oConnectTimeout=30 "
@@ -1285,11 +1285,10 @@ S9sBusinessLogic::executeUser(
                     STR(pubKeyStr),
                     STR(fifos.at(idx)));
 
-            if (options->isVerbose())
-            {
-                printf ("Tried to grant on %s:%s, exitCode=%d.\n",
-                    STR(controller), STR(fifos.at(idx)), exitCode);
-            }
+            PRINT_VERBOSE("Tried to grant on %s:%s, exitCode=%d.\n",
+                    STR(controller), 
+                    STR(fifos.at(idx)), 
+                    exitCode);
 
             exitCode = ::system (STR(sshCommand));
             oneSucceed |= (exitCode == 0);
@@ -1304,12 +1303,12 @@ S9sBusinessLogic::executeUser(
 
         if (!oneSucceed)
         {
-            PRINT_ERROR ("%s", STR(errorString));
+            PRINT_ERROR("%s", STR(errorString));
             options->setExitStatus(S9sOptions::JobFailed);
+
             return;
         }
 
         // if any of them succeed, lets consider it as success
     }
 }
-

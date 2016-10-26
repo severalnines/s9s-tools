@@ -67,14 +67,14 @@ class S9sOptions
         bool loadConfigFiles();
 
         void setController(const S9sString &url);
-        S9sString controller() const;
+        S9sString controllerHostName() const;
+        int controllerPort() const;
 
         S9sString configFile() const;
         
         bool setPropertiesOption(const S9sString &assignments);
         S9sVariantMap propertiesOption() const;
 
-        int controllerPort() const;
 
         void setNodes(const S9sString &value);
         S9sVariantList nodes() const;

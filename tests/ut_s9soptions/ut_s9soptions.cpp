@@ -87,11 +87,11 @@ UtS9sOptions::testReadOptions01()
     success = options->readOptions(&argc, (char**)argv);
     S9S_VERIFY(success);
     
-    S9S_COMPARE(options->binaryName(),     "s9s");
-    S9S_COMPARE(options->m_operationMode,  S9sOptions::Node);
-    S9S_COMPARE(options->controller(),     "localhost");
-    S9S_COMPARE(options->controllerPort(), 9555);
-    S9S_COMPARE(options->rpcToken(),       "the_token");
+    S9S_COMPARE(options->binaryName(),          "s9s");
+    S9S_COMPARE(options->m_operationMode,       S9sOptions::Node);
+    S9S_COMPARE(options->controllerHostName(),  "localhost");
+    S9S_COMPARE(options->controllerPort(),      9555);
+    S9S_COMPARE(options->rpcToken(),            "the_token");
     S9S_VERIFY(options->isListRequested());
     S9S_VERIFY(options->isVerbose());
     S9S_VERIFY(options->useSyntaxHighlight());
@@ -120,11 +120,11 @@ UtS9sOptions::testReadOptions02()
     success = options->readOptions(&argc, (char**)argv);
     S9S_VERIFY(success);
     
-    S9S_COMPARE(options->binaryName(),     "s9s");
-    S9S_COMPARE(options->m_operationMode,  S9sOptions::Job);
-    S9S_COMPARE(options->controller(),     "localhost");
-    S9S_COMPARE(options->controllerPort(), 9555);
-    S9S_COMPARE(options->rpcToken(),       "the_token");
+    S9S_COMPARE(options->binaryName(),          "s9s");
+    S9S_COMPARE(options->m_operationMode,       S9sOptions::Job);
+    S9S_COMPARE(options->controllerHostName(),  "localhost");
+    S9S_COMPARE(options->controllerPort(),      9555);
+    S9S_COMPARE(options->rpcToken(),            "the_token");
     S9S_VERIFY(options->isListRequested());
     S9S_VERIFY(options->isVerbose());
     S9S_VERIFY(options->useSyntaxHighlight());
@@ -156,15 +156,15 @@ UtS9sOptions::testReadOptions03()
     success = options->readOptions(&argc, (char**)argv);
     S9S_VERIFY(success);
     
-    S9S_COMPARE(options->binaryName(),      "s9s");
-    S9S_COMPARE(options->m_operationMode,   S9sOptions::Cluster);
-    S9S_COMPARE(options->controller(),      "localhost");
-    S9S_COMPARE(options->controllerPort(),  9555);
-    S9S_COMPARE(options->rpcToken(),        "the_token");
-    S9S_COMPARE(options->clusterType(),     "galera");
-    S9S_COMPARE(options->vendor(),          "codership");
-    S9S_COMPARE(options->providerVersion(), "5.6");
-    S9S_COMPARE(options->osUser(),          "14j");
+    S9S_COMPARE(options->binaryName(),           "s9s");
+    S9S_COMPARE(options->m_operationMode,        S9sOptions::Cluster);
+    S9S_COMPARE(options->controllerHostName(),   "localhost");
+    S9S_COMPARE(options->controllerPort(),       9555);
+    S9S_COMPARE(options->rpcToken(),             "the_token");
+    S9S_COMPARE(options->clusterType(),          "galera");
+    S9S_COMPARE(options->vendor(),               "codership");
+    S9S_COMPARE(options->providerVersion(),      "5.6");
+    S9S_COMPARE(options->osUser(),               "14j");
 
     S9S_VERIFY(options->isWaitRequested());
     S9S_VERIFY(!options->isListRequested());

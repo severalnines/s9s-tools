@@ -1666,9 +1666,11 @@ S9sRpcClient::executeRequest(
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
-        // priv shall do this on failure
         m_priv->m_errorString.sprintf(
-                "Error reading socket: %m");
+                "Error reading socket (%s:%d TLS: %s): %m",
+                STR(m_priv->m_hostName), m_priv->m_port,
+                m_priv->m_useTls ? "yes" : "no");
+
         return false;
     }
 

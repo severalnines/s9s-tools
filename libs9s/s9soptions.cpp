@@ -282,15 +282,16 @@ void
 S9sOptions::setController(
         const S9sString &url)
 {
+    S9sString myUrl = url;
     S9sRegExp regexp;
  
     regexp = "(.+):([0-9]+)";
-    if (regexp == url)
+    if (regexp == myUrl)
     {
         m_options["controller"]      = regexp[1];
         m_options["controller_port"] = regexp[2].toInt();
     } else {
-        m_options["controller"] = url;
+        m_options["controller"] = myUrl;
     }
 }
 
@@ -298,7 +299,7 @@ S9sOptions::setController(
  * \returns the controller hostname.
  */
 S9sString
-S9sOptions::controller() const
+S9sOptions::controllerHostName() const
 {
     S9sString  retval;
     if (m_options.contains("controller"))
@@ -313,6 +314,28 @@ S9sOptions::controller() const
 
     return retval;
 }
+
+/**
+ * \returns the controller port.
+ */
+int
+S9sOptions::controllerPort() const
+{
+    int retval = 0;
+
+    if (m_options.contains("controller_port"))
+    {
+        retval = m_options.at("controller_port").toInt();
+    } else {
+        retval = m_userConfig.variableValue("controller_port").toInt();
+
+        if (retval == 0)
+            retval = m_systemConfig.variableValue("controller_port").toInt();
+    }
+
+    return retval;
+}
+
 
 /**
  * \returns The value of the --config-file command line option or teh empty
@@ -362,27 +385,6 @@ S9sOptions::propertiesOption() const
         return m_options.at("properties").toVariantMap();
 
     return S9sVariantMap();
-}
-
-/**
- * \returns the controller port.
- */
-int
-S9sOptions::controllerPort() const
-{
-    int retval = 0;
-
-    if (m_options.contains("controller_port"))
-    {
-        retval = m_options.at("controller_port").toInt();
-    } else {
-        retval = m_userConfig.variableValue("controller_port").toInt();
-
-        if (retval == 0)
-            retval = m_systemConfig.variableValue("controller_port").toInt();
-    }
-
-    return retval;
 }
 
 /**
