@@ -1422,6 +1422,9 @@ S9sRpcClient::dropCluster(
 
 /**
  * Places a job that will create a new backup.
+ *
+ * Using this function to place a scheduled backup is not working because it is
+ * incompatible with the backend.
  */
 bool
 S9sRpcClient::createBackup(
