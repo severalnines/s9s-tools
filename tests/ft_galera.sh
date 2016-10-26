@@ -143,6 +143,14 @@ function find_cluster_id()
     done
 }
 
+function grant_user()
+{
+    $S9S user \
+        --cmon-user=$USER \
+        --generate-key \
+        --grant-user
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -436,6 +444,7 @@ function testStart()
 # Running the requested tests.
 #
 startTests
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do

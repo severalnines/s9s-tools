@@ -137,12 +137,12 @@ S9sRpcClient::errorString() const
 bool
 S9sRpcClient::authenticate()
 {
+    S9S_DEBUG("");
     S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/0/auth";
     S9sVariantMap  request;
     bool           retval;
-
     S9sString      privKeyPath = options->privateKeyPath();
 
     if (privKeyPath.empty())
@@ -165,7 +165,7 @@ S9sRpcClient::authenticate()
      */
     request = S9sVariantMap();
     request["operation"]    = "login";
-    request["username"]     = options->authUsername();
+    request["username"]     = options->userName();
 
     retval = executeRequest(uri, request.toString());
     if (!retval)
@@ -1667,7 +1667,8 @@ S9sRpcClient::executeRequest(
         }
     } else {
         // priv shall do this on failure
-        m_priv->m_errorString.sprintf("Error reading socket: %m");
+        m_priv->m_errorString.sprintf(
+                "Error reading socket: %m");
         return false;
     }
 

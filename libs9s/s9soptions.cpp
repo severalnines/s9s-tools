@@ -677,20 +677,33 @@ S9sOptions::jobId() const
 }
 
 /**
- * FIXME: there is no command line option for this.
- * XXX: where this is used?
+ * \param tryLocalUserToo if the user name could not be determined use the local
+ *   OS user (getenv("USER")) instead.
+ * \returns The Cmon user name used to authenticate the user on the Cmon system.
+ *
+ * This method returns the username on the Cmon backend (the Cmon user) that
+ * will be used to authenticate the user on the Cmon system and identify
+ * everything the user does (like job owner, cluster owner and so on).
+ *
+ * The command line option that belongs to this property is the --user.
  */
 S9sString 
-S9sOptions::userName() const
+S9sOptions::userName(
+        const bool tryLocalUserToo) const
 {
     S9sString retval;
 
-    retval = m_userConfig.variableValue("user_name");
-    
-    if (retval.empty())
-        retval = m_systemConfig.variableValue("user_name");
- 
-    if (retval.empty())
+    if (m_options.contains("cmon_user"))
+    {
+        retval = m_options.at("cmon_user").toString();
+    } else {
+        retval = m_userConfig.variableValue("cmon_user");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("cmon_user");
+    }
+
+    if (retval.empty() && tryLocalUserToo)
         retval = getenv("USER");
 
     return retval;
@@ -1440,7 +1453,7 @@ S9sOptions::printHelpGeneric()
 " -i, --cluster-id           Cluster ID\n"
 "\n"
 "* user:\n"
-"  -u, --username=USERNAME   The username to be used for authentication.\n"
+"  -u, --cmon-user=USERNAME  The username on the Cmon system.\n"
 "  -g, --generate-key        Generate an RSA keypair for the user.\n"
 "  -G, --grant-user          Grant the user on controller (SSH/sudo needed).\n"
 "\n",
@@ -2068,7 +2081,7 @@ S9sOptions::readOptionsUser(
         { "config-file",      required_argument, 0,  OptionConfigFile },
 
         { "generate-key",     no_argument,       0, 'g' }, 
-        { "username",         required_argument, 0, 'u' }, 
+        { "cmon-user",        required_argument, 0, 'u' }, 
         { "grant-user",       no_argument,       0, 'G' },
 
         { 0, 0, 0, 0 }
@@ -2147,8 +2160,8 @@ S9sOptions::readOptionsUser(
                 break;
 
             case 'u':
-                // --username
-                m_options["auth_user"] = S9sString(optarg);
+                // --cmon-user
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'g':
@@ -2596,21 +2609,24 @@ S9sOptions::readOptionsNoMode(
     return true;
 }
 
+#if 0
 S9sString
 S9sOptions::authUsername() const
 {
-    if (m_options.contains("auth_user"))
-        return m_options.at("auth_user").toString();
-
     S9sString authUser;
-    
-    authUser = m_userConfig.variableValue("auth_user");
 
+    if (m_options.contains("auth_user"))
+    {
+        return m_options.at("auth_user").toString();
+    }
+
+    authUser = m_userConfig.variableValue("auth_user");
     if (authUser.empty())
         authUser =  m_systemConfig.variableValue("auth_user");
 
     return authUser;
 }
+#endif
 
 S9sString
 S9sOptions::privateKeyPath() const
@@ -2625,8 +2641,8 @@ S9sOptions::privateKeyPath() const
     if (authKey.empty())
         authKey =  m_systemConfig.variableValue("auth_key");
 
-    if (authKey.empty() && !authUsername().empty())
-        authKey.sprintf("~/.s9s/%s.key", STR(authUsername()));
+    if (authKey.empty() && !userName().empty())
+        authKey.sprintf("~/.s9s/%s.key", STR(userName()));
 
     return authKey;
 }

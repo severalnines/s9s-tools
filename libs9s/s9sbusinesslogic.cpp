@@ -52,15 +52,17 @@ S9sBusinessLogic::execute()
     /*
      * Special exceptions
      * - we don't need to auth for 'user' operation
-     * - if token specified, we use that instead of auth (for now)
+     * - if token specified, we use that instead of auth (for now).
      */
     if (!options->isUserOperation() || !options->rpcToken().empty())
     {
+        S9sString userName = options->userName();
+        S9sString keyPath  = options->privateKeyPath();
+
         // and we shall try to auth only if we have username & key
-        if (! options->authUsername().empty () &&
-            ! options->privateKeyPath().empty ())
+        if (!userName.empty() && !keyPath.empty())
         {
-            if (! client.authenticate())
+            if (!client.authenticate())
             {
                 PRINT_ERROR(
                         "Authentication failed: %s",
@@ -1147,8 +1149,9 @@ S9sBusinessLogic::executeUser(
         S9sRpcClient        &client)
 {
     S9sString    errorString;
-    S9sOptions  *options = S9sOptions::instance();
-    S9sString    userName = options->authUsername();
+    S9sOptions  *options  = S9sOptions::instance();
+    S9sString    userName = options->userName();
+    S9sString    keyFilePath;
 
     if (userName.empty())
     {
@@ -1159,60 +1162,65 @@ S9sBusinessLogic::executeUser(
         options->setExitStatus(S9sOptions::BadOptions);
     }
 
-    // Now make sure that we save the
-    // specified username into the user config file
+    // Now make sure that we save the specified username into the user config
+    // file
     S9sConfigFile config;
     config.setFileName("~/.s9s/s9s.conf");
 
-    if (options->isVerbose())
-    {
-        printf("Saving auth_user=%s into %s\n",
-                STR(userName), STR(config.fileName()));
-    }
+    PRINT_VERBOSE(
+            "Saving cmon_user=%s into %s\n",
+            STR(userName), STR(config.fileName()));
 
-    if (! config.parseSourceFile())
+    if (!config.parseSourceFile())
     {
         PRINT_ERROR("Couldn't parse %s: %s",
                 STR(config.fileName()), STR(config.errorString()));
         return;
     }
 
-    if (config.hasVariable("global", "auth_user"))
-        config.changeVariable("global", "auth_user", userName);
-    else if (config.hasVariable("", "auth_user"))
-        config.changeVariable("auth_user", userName);
-    else
-        config.addVariable("global", "auth_user", userName);
-
-    if (! config.save(errorString))
+    if (config.hasVariable("global", "cmon_user"))
     {
-        PRINT_ERROR("Could not update user config: %s", STR(errorString));
-        // continue or abort ?
+        config.changeVariable("global", "cmon_user", userName);
+    } else if (config.hasVariable("", "cmon_user"))
+    {
+        config.changeVariable("cmon_user", userName);
+    } else {
+        config.addVariable("global", "cmon_user", userName);
     }
 
-    S9sString keyFilePath = options->privateKeyPath();
+    if (!config.save(errorString))
+    {
+        PRINT_ERROR(
+                "Could not update user configuration file: %s", 
+                STR(errorString));
+        
+        return;
+    }
 
+    keyFilePath = options->privateKeyPath();
     if (options->isGenerateKeyRequested())
     {
         // check if key exists and is valid, otherwise generate a new key-pair
         S9sRsaKey key;
+
         if (key.loadKeyFromFile(keyFilePath) && key.isValid())
         {
-            if (options->isVerbose()) {
-                printf ("Keyfile '%s' exists and valid.\n", STR(keyFilePath));
-            }
-        }
-        else
-        {
-            if (options->isVerbose()) {
-                printf ("Generating an RSA key-pair (%s).\n", STR(keyFilePath));
-            }
-            S9sString pubKeyPath = keyFilePath;
-            pubKeyPath.replace(".key","");
+            PRINT_VERBOSE(
+                    "Keyfile '%s' exists and valid.\n", 
+                    STR(keyFilePath));
+        } else {
+            S9sString pubKeyPath;
+
+            PRINT_VERBOSE(
+                    "Generating an RSA key-pair (%s).\n", 
+                    STR(keyFilePath));
+
+            pubKeyPath = keyFilePath;
+            pubKeyPath.replace(".key", "");
             pubKeyPath += ".pub";
 
-            if (! key.generateKeyPair() ||
-                ! key.saveKeys(keyFilePath, pubKeyPath, errorString))
+            if (!key.generateKeyPair() ||
+                !key.saveKeys(keyFilePath, pubKeyPath, errorString))
             {
                 if (errorString.empty())
                     errorString = "RSA key generation failure.";
@@ -1223,7 +1231,7 @@ S9sBusinessLogic::executeUser(
     }
 
     S9sRsaKey rsaKey;
-    if (! rsaKey.loadKeyFromFile(keyFilePath) || ! rsaKey.isValid())
+    if (!rsaKey.loadKeyFromFile(keyFilePath) || !rsaKey.isValid())
     {
         PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(keyFilePath));
         options->setExitStatus(S9sOptions::JobFailed);
@@ -1234,12 +1242,12 @@ S9sBusinessLogic::executeUser(
     {
         // There must be a better way to determine this
         S9sString pubKeyPath = keyFilePath;
-        pubKeyPath.replace(".key","");
+        pubKeyPath.replace(".key", "");
         pubKeyPath += ".pub";
 
         S9sFile pubKeyFile (pubKeyPath);
         S9sString pubKeyStr;
-        if (! pubKeyFile.readTxtFile(pubKeyStr) || pubKeyStr.empty())
+        if (!pubKeyFile.readTxtFile(pubKeyStr) || pubKeyStr.empty())
         {
             // Private key exists and valid, but
             PRINT_ERROR("Couldn't load public key (%s): %s",
@@ -1294,7 +1302,7 @@ S9sBusinessLogic::executeUser(
             }
         }
 
-        if (! oneSucceed)
+        if (!oneSucceed)
         {
             PRINT_ERROR ("%s", STR(errorString));
             options->setExitStatus(S9sOptions::JobFailed);

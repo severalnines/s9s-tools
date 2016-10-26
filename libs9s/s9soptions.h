@@ -98,9 +98,9 @@ class S9sOptions
         S9sString clusterName() const;
         int jobId() const;
 
-        S9sString userName() const;
+        S9sString userName( const bool tryLocalUserToo = false) const;
 
-        S9sString authUsername() const;
+        //S9sString authUsername() const;
         S9sString privateKeyPath() const;
 
         S9sString backupDir() const;
