@@ -137,10 +137,9 @@ S9sRpcClient::errorString() const
 bool
 S9sRpcClient::authenticate()
 {
-    S9S_DEBUG("");
     S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
-    S9sString      uri = "/0/auth";
+    S9sString      uri = "/v2/auth";
     S9sVariantMap  request;
     bool           retval;
     S9sString      privKeyPath = options->privateKeyPath();
@@ -152,7 +151,7 @@ S9sRpcClient::authenticate()
         return false;
     }
 
-    if (! rsa.loadKeyFromFile(privKeyPath))
+    if (!rsa.loadKeyFromFile(privKeyPath))
     {
         m_priv->m_errorString.sprintf (
                 "Could not load user private key: %s",
@@ -188,8 +187,7 @@ S9sRpcClient::authenticate()
         return false;
 
     /*
-     * if reply doesn't contain an error
-     * and we are ok, auth succeed
+     * If reply doesn't contain an error and we are ok, auth succeed
      */
     m_priv->m_errorString = reply().errorString ();
     return reply().isOk();
@@ -224,6 +222,9 @@ S9sRpcClient::getCluster(
 
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
  * The method that sends the "getAllClusterInfo" RPC request and reads the
  * reply.
  */
@@ -231,7 +232,7 @@ bool
 S9sRpcClient::getClusters()
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/0/clusters/";
+    S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
