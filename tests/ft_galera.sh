@@ -18,8 +18,6 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source include.sh
 
-
-
 #
 # Prints an error message to the standard error. The text will not mixed up with
 # the data that is printed to the standard output.

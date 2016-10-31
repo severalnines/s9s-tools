@@ -454,7 +454,7 @@ S9sBusinessLogic::executePing(
     S9sRpcReply  reply;
     bool         success;
 
-again:
+//again:
     success = client.ping();
     if (success)
     {
@@ -485,8 +485,8 @@ again:
         options->setExitStatus(S9sOptions::Failed);
     }
 
-    usleep(500000);
-    goto again;
+    //usleep(500000);
+    //goto again;
 }
 
 /**
