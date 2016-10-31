@@ -148,9 +148,9 @@ S9sFormat::printf(
     if (m_width > 0)
     {
         if (m_rightJustify)
-            formatString.sprintf("%%%ds", m_width);
-        else
             formatString.sprintf("%%-%ds", m_width);
+        else
+            formatString.sprintf("%%%ds", m_width);
     } else {
         formatString = "%s";
     }
