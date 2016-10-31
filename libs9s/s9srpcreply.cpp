@@ -365,6 +365,48 @@ S9sRpcReply::printJobLog()
 
 }
 
+void
+S9sRpcReply::printPing()
+{
+    S9sString requestStatus;
+    S9sString requestCreated, replyReceived;
+
+    if (contains("requestStatus"))
+        requestStatus = at("requestStatus").toString().toUpper();
+    else if (contains("request_status"))
+        requestStatus = at("request_status").toString().toUpper();
+    else 
+        requestStatus = "UNKNOWN";
+
+    if (contains("request_created"))
+        requestCreated = at("request_created").toString();
+
+    if (contains("reply_received"))
+        replyReceived  = at("reply_received").toString();
+
+    printf("PING ");
+    printf("%s ", STR(requestStatus));
+
+    if (!requestCreated.empty() && !replyReceived.empty())
+    {
+        S9sDateTime start, end;
+
+        if (start.parse(requestCreated) && end.parse(replyReceived))
+        {
+            double millisec = S9sDateTime::milliseconds(end, start);
+
+            printf("%.3f ms", millisec);
+            #if 0
+            printf("\n");
+            printf("%s\n", STR(requestCreated));
+            printf("%s\n", STR(replyReceived));
+            #endif
+        }
+    }
+
+    printf("\n");
+}
+
 bool 
 compareProcessByCpuUsage(
         const S9sVariant &a,

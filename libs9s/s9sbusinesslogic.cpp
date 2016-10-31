@@ -454,6 +454,7 @@ S9sBusinessLogic::executePing(
     S9sRpcReply  reply;
     bool         success;
 
+again:
     success = client.ping();
     if (success)
     {
@@ -463,10 +464,10 @@ S9sBusinessLogic::executePing(
         if (success)
         {
             // well, nothing now
-            //reply.printClusterList();
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
-
+            else
+                reply.printPing();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
@@ -483,6 +484,9 @@ S9sBusinessLogic::executePing(
             
         options->setExitStatus(S9sOptions::Failed);
     }
+
+    usleep(500000);
+    goto again;
 }
 
 /**

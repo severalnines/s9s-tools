@@ -1333,3 +1333,24 @@ S9sDateTime::parseIso8601(
     return true;
 }
 
+double
+S9sDateTime::milliseconds(
+        const S9sDateTime &time1,
+        const S9sDateTime &time2)
+{
+    double retval;
+    double millisec;
+
+    retval = 
+        (double) time1.m_timeSpec.tv_sec -
+        (double) time2.m_timeSpec.tv_sec;
+
+    millisec = 
+        (double) time1.m_timeSpec.tv_nsec - 
+        (double) time2.m_timeSpec.tv_nsec;
+
+    millisec /= 1000000.0;
+
+    return retval * 1000.0 + millisec;
+}
+

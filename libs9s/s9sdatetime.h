@@ -153,6 +153,11 @@ class S9sDateTime
 
         static bool parseIso8601(const S9sString &input, double &value);
 
+        static double 
+            milliseconds(
+                    const S9sDateTime &time1, 
+                    const S9sDateTime &time2);
+
     private:
         struct timespec m_timeSpec;
 };
