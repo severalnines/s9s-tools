@@ -54,6 +54,7 @@ class S9sRpcClient
          */
         bool getClusters();
         bool getCluster(int clusterId);
+        bool ping();
 
         bool setHost(
                 const int             clusterId,

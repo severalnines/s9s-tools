@@ -75,7 +75,10 @@ S9sBusinessLogic::execute()
     S9S_DEBUG("");
     if (options->isClusterOperation())
     {
-        if (options->isListRequested())
+        if (options->isPingRequested())
+        {
+            executePing(client);
+        } else if (options->isListRequested())
         {
             executeClusterList(client);
         } else if (options->isCreateRequested())
@@ -443,6 +446,45 @@ S9sBusinessLogic::executeDropCluster(
     }
 }
 
+void
+S9sBusinessLogic::executePing(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply  reply;
+    bool         success;
+
+    success = client.ping();
+    if (success)
+    {
+        reply = client.reply();
+
+        success = reply.isOk();
+        if (success)
+        {
+            // well, nothing now
+            //reply.printClusterList();
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+
+            options->setExitStatus(S9sOptions::Failed);
+        }
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+            
+        options->setExitStatus(S9sOptions::Failed);
+    }
+}
+
 /**
  * \param client A client for the communication.
  *
@@ -476,7 +518,7 @@ S9sBusinessLogic::executeClusterList(
             printf("%s\n", STR(reply.toString()));
         else
             PRINT_ERROR("%s", STR(client.errorString()));
-}
+    }
 }
  
 /**
@@ -1240,6 +1282,8 @@ S9sBusinessLogic::executeUser(
 
     if (options->isGrantUserRequest())
     {
+        S9sStringList fifos;
+
         // There must be a better way to determine this
         S9sString pubKeyPath = keyFilePath;
         pubKeyPath.replace(".key", "");
@@ -1261,8 +1305,8 @@ S9sBusinessLogic::executeUser(
         if (controller.empty())
             controller = "127.0.0.1";
 
-        S9sStringList fifos;
         // this one is used by unit/functional tests
+        if (S9sFile("/tmp/cmon_test/usermgmt.fifo").exists())
         fifos << "/tmp/cmon_test/usermgmt.fifo";
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
@@ -1273,6 +1317,12 @@ S9sBusinessLogic::executeUser(
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
+            S9sString path = fifos.at(idx);
+            S9sFile   file(path);
+
+            if (!file.exists())
+                continue;
+
             sshCommand.sprintf(
                     "ssh -tt "
                     "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
@@ -1283,11 +1333,11 @@ S9sBusinessLogic::executeUser(
                     STR(controller),
                     STR(userName),
                     STR(pubKeyStr),
-                    STR(fifos.at(idx)));
+                    STR(path));
 
             PRINT_VERBOSE("Tried to grant on %s:%s, exitCode=%d.\n",
                     STR(controller), 
-                    STR(fifos.at(idx)), 
+                    STR(path), 
                     exitCode);
 
             exitCode = ::system (STR(sshCommand));

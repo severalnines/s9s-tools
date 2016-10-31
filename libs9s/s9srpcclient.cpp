@@ -23,6 +23,7 @@
 #include "S9sOptions"
 #include "S9sNode"
 #include "S9sRsaKey"
+#include "S9sDateTime"
 
 #include <cstring>
 #include <cstdio>
@@ -238,11 +239,30 @@ S9sRpcClient::getClusters()
 
     request["operation"]  = "getAllClusterInfo";
     request["with_hosts"] = true;
-    request["user"]           = options->userName();
+    request["user"]       = options->userName();
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
+    retval = executeRequest(uri, request.toString());
+
+    return retval;
+}
+
+bool
+S9sRpcClient::ping()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sDateTime    now = S9sDateTime::currentDateTime();
+    S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]       = "ping";
+    request["request_created"] = timeString;
+    request["user"]            = options->userName();
+    
     retval = executeRequest(uri, request.toString());
 
     return retval;

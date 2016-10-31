@@ -57,6 +57,7 @@ class S9sBusinessLogic
 
         void executeClusterCreate(S9sRpcClient &client);
         void executeClusterList(S9sRpcClient &client);
+        void executePing(S9sRpcClient &client);
 
         void executeNodeList(S9sRpcClient &client);
         void executeNodeSet(S9sRpcClient &client);

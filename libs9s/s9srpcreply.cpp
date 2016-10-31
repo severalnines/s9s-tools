@@ -37,8 +37,11 @@
 bool
 S9sRpcReply::isOk() const
 {
+    // One is for RPC 1.0, the other is for RPC 2.0
     if (contains("requestStatus"))
         return at("requestStatus").toString().toLower() == "ok";
+    else if (contains("request_status"))
+        return at("request_status").toString().toLower() == "ok";
 
     return false;
 }
@@ -50,8 +53,11 @@ S9sRpcReply::isOk() const
 S9sString
 S9sRpcReply::errorString() const
 {
+    // One for RPC 1.0, the other is for RPC 2.0
     if (contains("errorString"))
         return at("errorString").toString();
+    else if (contains("error_string"))
+        return at("error_string").toString();
 
     return S9sString();
 }
@@ -293,7 +299,6 @@ S9sRpcReply::printJobStarted()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            isBatch = options->isBatchRequested();
-    S9sString       status = operator[]("requestStatus").toString();
     int             id;
 
     if (options->isJsonRequested())
@@ -302,7 +307,7 @@ S9sRpcReply::printJobStarted()
         return;
     }
 
-    if (status == "ok")
+    if (isOk())
     {
         S9sVariantMap job = operator[]("job").toVariantMap();;
 

@@ -71,6 +71,7 @@ enum S9sOptionType
     OptionRestore,
     OptionBackupId,
     OptionSchedule,
+    OptionPing,
 };
 
 /**
@@ -887,6 +888,15 @@ S9sOptions::isCreateRequested() const
 {
     if (m_options.contains("create"))
         return m_options.at("create").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isPingRequested() const
+{
+    if (m_options.contains("ping"))
+        return m_options.at("ping").toBoolean();
 
     return false;
 }
@@ -2264,6 +2274,7 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, OptionConfigFile  },
 
         // Main Option
+        { "ping",             no_argument,       0, OptionPing       },
         { "list",             no_argument,       0, 'L'              },
         { "create",           no_argument,       0, OptionCreate     },
         { "rolling-restart",  no_argument,       0, 12               },
@@ -2409,6 +2420,11 @@ S9sOptions::readOptionsCluster(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionPing:
+                // --ping
+                m_options["ping"] = true;
                 break;
             
             case OptionCreate:

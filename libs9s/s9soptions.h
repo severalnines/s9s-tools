@@ -57,6 +57,7 @@ class S9sOptions
         {
             ExitOk       = 0,
             JobFailed    = 1,
+            Failed       = 2,
             BadOptions   = 6,
         };
 
@@ -123,6 +124,7 @@ class S9sOptions
         bool isSetRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
+        bool isPingRequested() const;
         bool isRestoreRequested() const;
         bool isRollingRestartRequested() const;
         bool isAddNodeRequested() const;

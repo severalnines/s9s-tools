@@ -145,16 +145,41 @@ function find_cluster_id()
 
 function grant_user()
 {
+    echo "Granting..."
     $S9S user \
         --cmon-user=$USER \
         --generate-key \
-        --grant-user
+        --grant-user \
+        --verbose
+    echo "Done..."
+}
+
+#
+#
+#
+function testPing()
+{
+    pip-say "Pinging controller."
+
+    #
+    # Pinging. 
+    #
+    $S9S cluster --ping 
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while pinging controller."
+        pip-say "The controller is off line. Further testing is not possible."
+    else
+        pip-say "The controller is on line."
+    fi
 }
 
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster
+function testCreateCluster()
 {
     local nodes
     local nodeName
@@ -451,6 +476,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql

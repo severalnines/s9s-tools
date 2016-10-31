@@ -5,7 +5,7 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
 VERBOSE=""
 LOGFILE=""
-SERVER=""
+SERVER="192.168.1.104"
 
 #
 # Prints the software version and exits.
@@ -63,7 +63,7 @@ Usage:
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
- --server=SERVER      Create the container on remote server.
+ --server=SERVER      Receive messages from this MQTT server.
 
 EOF
     exit 0
@@ -120,71 +120,49 @@ while true; do
     esac
 done
 
-function emit_config_file()
+
+input=tts/say
+
+clean="output input cmds";p="/var/tmp/say_server_backpipe";pid=$(cat pidfile)
+
+function ctrl_c() 
 {
-    local file_name="$HOME/.pip/say.conf"
-
-    printVerbose "Creating '$file_name'."
-
-    mkdir -p "$(dirname $file_name)" 2>/dev/null
-    cat <<EOF >$file_name
-#
-#
-#
-#MQTT_SERVER="192.168.1.104"
-#MQTT_TOPIC="tts/say"
-EOF
+    echo "Cleaning up..."
+    rm -f $p; rm "$clean"; kill $pid 2>/dev/null
+    if [[ "$?" -eq "0" ]]; then
+        echo "Exit success";exit 0
+    else
+        exit 1
+    fi
 }
 
-#
-# Checking command line arguments.
-#
-EXTRA_OPTIONS=$*
+function listen()
+{
+    echo "listen"
 
-#
-# The configuration.
-#
-if [ ! -f "$HOME/.pip/say.conf" ]; then
-    emit_config_file
-else
-    source "$HOME/.pip/say.conf"
-fi
+    ([ ! -p "$p" ]) && mkfifo $p
+    (mosquitto_sub -h $SERVER -t $input >$p 2>/dev/null) &
+    #echo "$!" >pidfile
 
-if [ "$MQTT_SERVER" -a "$MQTT_TOPIC" ]; then
-    MOSQUITTO=$(which mosquitto_pub)
-    if [ "$MOSQUITTO" ]; then
-        printVerbose "Sending with MQTT server '$MQTT_SERVER'."
-        mosquitto_pub -t "$MQTT_TOPIC" -h "$MQTT_SERVER" -m "$EXTRA_OPTIONS"
-        exit 0
-    else
-        printError "The mosquitto_pub program was not found."
-    fi
-fi
+    while read line <$p; do
+        echo "$line"
+        echo "$line" | festival --tts
+        #echo $line > cmds
+        #if grep -q "quit" cmds; then
+        #    (rm -f $p;rm $clean;kill $pid) 2>/dev/null
+        #    break
+        #else
+        #    (bash cmds | tee out) && mosquitto_pub -h $host -t output -f out;>out
+        #fi
+done
+}
 
-#
-# Doing the job.
-#
-if [ -z "$SERVER" ]; then
-    if [ "$VERSION_OPTION" ]; then
-        printVersionAndExit
-        exit 0
-    else
-        echo $EXTRA_OPTIONS | festival --tts
-    fi
-else
-    #
-    # We received the --server option and so we run the script on a remote
-    # server.
-    #
-    printVerbose "Executing on server '$SERVER'."
-    ssh $SERVER -- \
-        sudo $MYNAME \
-            $VERSION_OPTION \
-            $VERBOSE_OPTION \
-            $EXTRA_OPTIONS
-fi
+function usage()
+{
+    echo "    Mqtt-Exec Listener Via Bash"
+    echo "  Usage: $0 <mqtt server>"
+    echo "  Subscripe to topic \"output\", publish to topic \"input\""
+}
 
-#
-# I just want to notice the message before the caller continues to do things.
-#
-# sleep 3
+trap ctrl_c INT
+listen
