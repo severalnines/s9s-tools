@@ -278,24 +278,24 @@ S9sRpcClientPrivate::read(
 }
 
 /**
- * A bit higher level method, to parse out the cookies
- * (HTTP session data) from the read data (m_buffer)
+ * A bit higher level method, to parse out the cookies (HTTP session data) from
+ * the read data (m_buffer)
  */
 void
 S9sRpcClientPrivate::parseHeaders()
 {
-    if (! m_buffer || m_dataSize < 12)
+    if (!m_buffer || m_dataSize < 12)
         return;
 
-    S9sRegExp regexp ("Set-Cookie: ([^=]*)=([^,;\r\n]*)");
+    S9sRegExp regexp("Set-Cookie: ([^=]*)=([^,;\r\n]*)");
     regexp.setIgnoreCase(true);
 
     S9sString buffer;
+
     buffer.assign(m_buffer, m_dataSize);
 
     int lastIdx = 0;
-    while (lastIdx < (int) buffer.size() && 
-           regexp == buffer.substr(lastIdx))
+    while (lastIdx < (int) buffer.size() && regexp == buffer.substr(lastIdx))
     {
         m_cookies[regexp[1]] = regexp[2];
         lastIdx += regexp.firstIndex()+1;

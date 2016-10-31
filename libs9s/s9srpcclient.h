@@ -150,8 +150,13 @@ class S9sRpcClient
                 const int             clusterId);
 
     protected:
-        virtual bool 
+        virtual bool
             executeRequest(
+                const S9sString &uri,
+                S9sVariantMap   &request);
+
+        virtual bool 
+            doExecuteRequest(
                 const S9sString &uri,
                 const S9sString &payload);
 

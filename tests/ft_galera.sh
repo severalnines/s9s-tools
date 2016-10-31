@@ -150,7 +150,6 @@ function grant_user()
         --cmon-user=$USER \
         --generate-key \
         --grant-user \
-        --verbose
     echo "Done..."
 }
 

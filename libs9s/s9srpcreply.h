@@ -25,6 +25,7 @@ class S9sRpcReply : public S9sVariantMap
 {
     public:
         bool isOk() const;
+        bool isAuthRequired() const;
         S9sString errorString() const;
 
         int jobId() const;

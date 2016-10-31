@@ -1046,15 +1046,16 @@ S9sBusinessLogic::waitForJobWithProgress(
         const int     jobId, 
         S9sRpcClient &client)
 {
-    S9sOptions  *options         = S9sOptions::instance();
-    bool         syntaxHighlight = options->useSyntaxHighlight();
-    const char  *rotate[]        = { "/", "-", "\\", "|" };
-    int          rotateCycle     = 0;
-    S9sRpcReply  reply;
-    bool         success, finished;
-    S9sString    progressLine;
-    bool         titlePrinted = false;
-    int          nFailures = 0;
+    S9sOptions    *options         = S9sOptions::instance();
+    bool           syntaxHighlight = options->useSyntaxHighlight();
+    const char    *rotate[]        = { "/", "-", "\\", "|" };
+    int            rotateCycle     = 0;
+    S9sRpcReply    reply;
+    bool           success, finished;
+    S9sString      progressLine;
+    bool           titlePrinted = false;
+    int            nFailures = 0;
+    int            nAuthentications = 0;
 
     if (syntaxHighlight)
         printf("\033[?25l"); 
@@ -1067,14 +1068,29 @@ S9sBusinessLogic::waitForJobWithProgress(
         success = client.getJobInstance(clusterId, jobId);
         if (success)
         {
-            reply = client.reply();
-            success = reply.isOk();
+            reply     = client.reply();
+            success   = reply.isOk();
+
+            if (reply.isAuthRequired())
+            {
+                if (nAuthentications > 3)
+                    break;
+
+                success = client.authenticate();
+                ++nAuthentications;
+            } else {
+                nAuthentications = 0;
+            }
         }
         
-        if (!success)
+        if (success)
         {
+            nFailures = 0;
+        } else {
+            PRINT_ERROR("%s", STR(reply.errorString()));
+            printf("\n\n%s\n", STR(reply.toString()));
             ++nFailures;
-            if (nFailures > 60)
+            if (nFailures > 3)
                 break;
 
             continue;
@@ -1151,17 +1167,43 @@ S9sBusinessLogic::waitForJobWithLog(
     bool           success, finished;
     int            nLogsPrinted = 0;
     int            nEntries;
+    int            nFailures = 0;
+    int            nAuthentications = 0;
 
     for (;;)
     {
         success = client.getJobLog(clusterId, jobId, 300, nLogsPrinted);
-        if (!success)
-            continue;
+        if (success)
+        {
+            reply     = client.reply();
+            success   = reply.isOk();
 
-        reply    = client.reply();
-        success  = reply.isOk();
+            if (reply.isAuthRequired())
+            {
+                if (nAuthentications > 3)
+                    break;
+
+                success = client.authenticate();
+                ++nAuthentications;
+            } else {
+                nAuthentications = 0;
+            }
+        }
+
+        if (success)
+        { 
+            nFailures = 0;
+        } else {
+            PRINT_ERROR("%s", STR(reply.errorString()));
+            printf("\n\n%s\n", STR(reply.toString()));
+            ++nFailures;
+            if (nFailures > 3)
+                break;
+
+            continue;
+        }
+
         nEntries = reply["messages"].toVariantList().size();
-        
         if (nEntries > 0)
             reply.printJobLog();
 

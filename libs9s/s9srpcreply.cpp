@@ -47,6 +47,22 @@ S9sRpcReply::isOk() const
 }
 
 /**
+ * \returns true if the reply states that authentication is required.
+ */
+bool
+S9sRpcReply::isAuthRequired() const
+{
+    // One is for RPC 1.0, the other is for RPC 2.0
+    if (contains("requestStatus"))
+        return at("requestStatus").toString().toLower() == "authrequired";
+    else if (contains("request_status"))
+        return at("request_status").toString().toLower() == "authrequired";
+
+    return false;
+}
+
+
+/**
  * \returns The error string sent by the controller in the reply if there is
  *   indeed an error string.
  */

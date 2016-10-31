@@ -167,7 +167,7 @@ S9sRpcClient::authenticate()
     request["operation"]    = "login";
     request["username"]     = options->userName();
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     if (!retval)
         return false;
 
@@ -183,7 +183,7 @@ S9sRpcClient::authenticate()
     request["operation"]    = "response";
     request["signature"]    = signature;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     if (!retval)
         return false;
 
@@ -215,7 +215,7 @@ S9sRpcClient::getCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     //printf("-->\n%s\n", STR(reply().toString()));
     //exit (0);
     return retval;
@@ -244,7 +244,7 @@ S9sRpcClient::getClusters()
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -263,7 +263,7 @@ S9sRpcClient::ping()
     request["request_created"] = timeString;
     request["user"]            = options->userName();
     
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -307,7 +307,7 @@ S9sRpcClient::setHost(
         request["token"] = m_priv->m_token;
 
         
-    return executeRequest(uri, request.toString());
+    return executeRequest(uri, request);
 }
 
 /**
@@ -359,11 +359,7 @@ S9sRpcClient::getCpuInfo(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    S9S_DEBUG("uri     : %s", STR(uri));
-    S9S_DEBUG("request : %s", STR(request.toString()));
-    retval = executeRequest(uri, request.toString());
-    S9S_DEBUG("retval  : %s", retval ? "true" : "false");
-    S9S_DEBUG("error   : %s", STR(m_priv->m_errorString));
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -413,7 +409,7 @@ S9sRpcClient::getCpuStats(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     
     return retval;
 }
@@ -434,7 +430,7 @@ S9sRpcClient::getMemoryStats(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     
     return retval;
 }
@@ -464,11 +460,7 @@ S9sRpcClient::getRunningProcesses(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    S9S_DEBUG("uri     : %s", STR(uri));
-    S9S_DEBUG("request : %s", STR(request.toString()));
-    retval = executeRequest(uri, request.toString());
-    S9S_DEBUG("retval  : %s", retval ? "true" : "false");
-    S9S_DEBUG("error   : %s", STR(m_priv->m_errorString));
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -497,7 +489,7 @@ S9sRpcClient::getJobInstances(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -529,7 +521,7 @@ S9sRpcClient::getJobInstance(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -571,7 +563,7 @@ S9sRpcClient::getJobLog(
     if (!m_priv->m_token.empty())
         request["token"]  = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 
@@ -610,7 +602,7 @@ S9sRpcClient::rollingRestart(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
     
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -717,7 +709,7 @@ S9sRpcClient::createGaleraCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     
     return retval;
 }
@@ -794,7 +786,7 @@ S9sRpcClient::createMySqlReplication(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -883,7 +875,7 @@ S9sRpcClient::createNdbCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -950,8 +942,7 @@ S9sRpcClient::createPostgreSql(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    S9S_WARNING("-> %s", STR(request.toString()));
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     
     return retval;
 }
@@ -1012,7 +1003,7 @@ S9sRpcClient::addNode(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1091,7 +1082,7 @@ S9sRpcClient::addHaProxy(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1159,7 +1150,7 @@ S9sRpcClient::addProxySql(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1241,7 +1232,7 @@ S9sRpcClient::addMaxScale(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1298,7 +1289,7 @@ S9sRpcClient::removeNode(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1347,7 +1338,7 @@ S9sRpcClient::stopCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1388,7 +1379,7 @@ S9sRpcClient::startCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1436,7 +1427,7 @@ S9sRpcClient::dropCluster(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
@@ -1496,8 +1487,8 @@ S9sRpcClient::createBackup(
     if (!schedule.empty())
         request["schedule"] = schedule;
 
-    retval = executeRequest(uri, request.toString());
-    S9S_WARNING("->\n%s\n", STR(request.toString()));
+    retval = executeRequest(uri, request);
+
     return retval;
 }
 
@@ -1536,7 +1527,7 @@ S9sRpcClient::restoreBackup(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
     
     return retval;
 }
@@ -1556,24 +1547,39 @@ S9sRpcClient::getBackups(
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
-    retval = executeRequest(uri, request.toString());
+    retval = executeRequest(uri, request);
 
     return retval;
 }
 
+/**
+ * 
+ */
+bool
+S9sRpcClient::executeRequest(
+        const S9sString &uri,
+        S9sVariantMap   &request)
+{
+    S9sDateTime    now = S9sDateTime::currentDateTime();
+    S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
 
-        
+    request["request_created"] = timeString;
+
+    return doExecuteRequest(uri, request.toString());
+}
+
 /**
  * \param uri the file path part of the URL where we send the request
  * \param payload the JSON request string
  * \returns true if everything is ok, false on error.
  */
 bool
-S9sRpcClient::executeRequest(
+S9sRpcClient::doExecuteRequest(
         const S9sString &uri,
         const S9sString &payload)
 {
     S9sOptions  *options = S9sOptions::instance();    
+    S9sDateTime  replyReceived;
     S9sString    header;
     ssize_t      readLength;
    
@@ -1648,6 +1654,8 @@ S9sRpcClient::executeRequest(
     /*
      * Reading the reply from the server.
      */
+    replyReceived = S9sDateTime::currentDateTime();
+
     m_priv->clearBuffer();
     readLength = 0;
     do
@@ -1700,6 +1708,9 @@ S9sRpcClient::executeRequest(
         PRINT_ERROR("Error parsing JSON reply.");
         m_priv->m_errorString.sprintf("Error parsing JSON reply.");
         return false;
+    } else {
+        m_priv->m_reply["reply_received"] = 
+            replyReceived.toString(S9sDateTime::TzDateTimeFormat);
     }
 
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
