@@ -451,10 +451,11 @@ S9sBusinessLogic::executePing(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
+    bool         continuous = options->isWaitRequested();
     S9sRpcReply  reply;
     bool         success;
 
-//again:
+again:
     success = client.ping();
     if (success)
     {
@@ -485,8 +486,11 @@ S9sBusinessLogic::executePing(
         options->setExitStatus(S9sOptions::Failed);
     }
 
-    //usleep(500000);
-    //goto again;
+    if (continuous)
+    {
+        usleep(500000);
+        goto again;
+    }
 }
 
 /**
