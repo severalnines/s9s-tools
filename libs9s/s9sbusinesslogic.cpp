@@ -1333,9 +1333,10 @@ S9sBusinessLogic::executeUser(
     if (options->isGrantUserRequest())
     {
         S9sStringList fifos;
+        S9sString     pubKeyPath;
 
         // There must be a better way to determine this
-        S9sString pubKeyPath = keyFilePath;
+        pubKeyPath = keyFilePath;
         pubKeyPath.replace(".key", "");
         pubKeyPath += ".pub";
 
@@ -1357,7 +1358,8 @@ S9sBusinessLogic::executeUser(
 
         // this one is used by unit/functional tests
         if (S9sFile("/tmp/cmon_test/usermgmt.fifo").exists())
-        fifos << "/tmp/cmon_test/usermgmt.fifo";
+            fifos << "/tmp/cmon_test/usermgmt.fifo";
+
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
@@ -1370,8 +1372,15 @@ S9sBusinessLogic::executeUser(
             S9sString path = fifos.at(idx);
             S9sFile   file(path);
 
+            #if 0
             if (!file.exists())
+            {
+                PRINT_VERBOSE(
+                        "Controller was not found on '%s',",
+                        STR(path));
                 continue;
+            }
+            #endif
 
             sshCommand.sprintf(
                     "ssh -tt "
@@ -1390,7 +1399,7 @@ S9sBusinessLogic::executeUser(
                     STR(path), 
                     exitCode);
 
-            exitCode = ::system (STR(sshCommand));
+            exitCode    = ::system(STR(sshCommand));
             oneSucceed |= (exitCode == 0);
 
             if (exitCode != 0)
@@ -1408,7 +1417,5 @@ S9sBusinessLogic::executeUser(
 
             return;
         }
-
-        // if any of them succeed, lets consider it as success
     }
 }

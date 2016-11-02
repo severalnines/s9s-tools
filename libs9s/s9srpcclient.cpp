@@ -210,7 +210,7 @@ S9sRpcClient::getCluster(
     request["operation"]  = "getAllClusterInfo";
     request["with_hosts"] = true;
     request["cluster_id"] = clusterId;
-    request["user"]           = options->userName();
+    request["user"]       = options->userName();
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
