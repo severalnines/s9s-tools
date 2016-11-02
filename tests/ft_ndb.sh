@@ -5,10 +5,12 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="server1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
+
+# This is the name of the server that will hold the linux containers.
+CONTAINER_SERVER="core1"
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -88,6 +90,8 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
+CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+
 #if [ ! -d data -a -d tests/data ]; then
 #    echo "Entering directory tests..."
 #    cd tests
@@ -137,16 +141,48 @@ function find_cluster_id()
     done
 }
 
+function grant_user()
+{
+    echo "Granting..."
+    $S9S user \
+        --cmon-user=$USER \
+        --generate-key \
+        --grant-user \
+    echo "Done..."
+}
+
+#
+#
+#
+function testPing()
+{
+    pip-say "Pinging controller."
+
+    #
+    # Pinging. 
+    #
+    $S9S cluster --ping 
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while pinging controller."
+        pip-say "The controller is off line. Further testing is not possible."
+    else
+        pip-say "The controller is on line."
+    fi
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster
+function testCreateCluster()
 {
     local nodes
     local nodeName
     local exitCode
 
-    echo "Creating nodes..."
+    pip-say "The test to create NDB cluster is starting now."
     nodeName=$(create_node)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
     
@@ -193,12 +229,13 @@ function testAddNode()
     local nodes
     local exitCode
 
+    pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
 
     #
-    #
+    # Adding a node to the cluster.
     #
     $S9S cluster \
         --add-node \
@@ -222,8 +259,10 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
+    pip-say "The test to remove node is starting now."
+    
     #
-    #
+    # Removing the last added node.
     #
     $S9S cluster \
         --remove-node \
@@ -244,9 +283,11 @@ function testRemoveNode()
 function testRollingRestart()
 {
     local exitCode
+    
+    pip-say "The test of rolling restart is starting now."
 
     #
-    #
+    # Calling for a rolling restart.
     #
     $S9S cluster \
         --rolling-restart \
@@ -267,8 +308,10 @@ function testStop()
 {
     local exitCode
 
+    pip-say "The test to stop cluster is starting now."
+
     #
-    #
+    # Stopping the cluster.
     #
     $S9S cluster \
         --stop \
@@ -286,12 +329,14 @@ function testStop()
 # Running the requested tests.
 #
 startTests
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode

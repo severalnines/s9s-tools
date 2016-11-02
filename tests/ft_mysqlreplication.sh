@@ -90,6 +90,8 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
+CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+
 #if [ ! -d data -a -d tests/data ]; then
 #    echo "Entering directory tests..."
 #    cd tests
@@ -139,10 +141,42 @@ function find_cluster_id()
     done
 }
 
+function grant_user()
+{
+    echo "Granting..."
+    $S9S user \
+        --cmon-user=$USER \
+        --generate-key \
+        --grant-user \
+    echo "Done..."
+}
+
+#
+#
+#
+function testPing()
+{
+    pip-say "Pinging controller."
+
+    #
+    # Pinging. 
+    #
+    $S9S cluster --ping 
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while pinging controller."
+        pip-say "The controller is off line. Further testing is not possible."
+    else
+        pip-say "The controller is on line."
+    fi
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster
+function testCreateCluster()
 {
     local nodes
     local nodeName
@@ -317,12 +351,14 @@ function testStart()
 # Running the requested tests.
 #
 startTests
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode
