@@ -329,12 +329,9 @@ S9sVariantMap::toString (
                 if (std::isnan (dblval)) 
                 {
                     retval += m_enableSpecialNums ? "NaN" : "0.0";
-                } else if (std::isinf (dblval) > 0) 
+                } else if (std::isinf (dblval))
                 {
                     retval += m_enableSpecialNums ? "Infinity" : "0.0";
-                } else if (std::isinf (dblval) < 0) 
-                {
-                    retval += m_enableSpecialNums ? "-Infinity" : "0.0";
                 } else {
                     retval += value.toString();
                 }
