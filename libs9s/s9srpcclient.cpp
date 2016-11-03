@@ -32,6 +32,7 @@
 //#define WARNING
 #include "s9sdebug.h"
 
+#define COMPILE_NEW_RPC
 #define READ_SIZE 512
 
 /**
@@ -607,38 +608,6 @@ S9sRpcClient::rollingRestart(
     return retval;
 }
 
-#if 0
-{
-    "command": "create_cluster",
-    "job_data": 
-    {
-        "api_id": "1",
-        "cluster_type": "group_replication",
-        "create_local_repository": false,
-        "data_center": 0,
-        "disable_firewall": true,
-        "disable_selinux": true,
-        "enable_mysql_uninstall": true,
-        "generate_token": true,
-        "install_software": true,
-        "mysql_cnf_template": "my.cnf.repl57",
-        "mysql_datadir": "/var/lib/mysql",
-        "mysql_hostnames": [ "10.10.10.15" ],
-        "mysql_password": "password",
-        "mysql_port": "3306",
-        "mysql_version": "5.7",
-        "ssh_keyfile": "/home/sergey/.ssh/id_rsa",
-        "ssh_port": "22",
-        "ssh_user": "sergey",
-        "sudo_password": "",
-        "type": "mysql",
-        "use_internal_repos": false,
-        "user_id": 1,
-        "vendor": "oracle"
-    }
-}
-#endif
-
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -667,7 +636,12 @@ S9sRpcClient::createGaleraCluster(
         return false;
     }
     
+    #ifdef COMPILE_NEW_RPC
+    uri = "/v2/jobs/";
+    #else
     uri = "/0/job/";
+    #endif
+
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         if (hosts[idx].isNode())
@@ -690,21 +664,22 @@ S9sRpcClient::createGaleraCluster(
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]     = options->osKeyFile();
+        jobData["ssh_key"] = options->osKeyFile();
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "create_cluster";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "create_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create Galera Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Galera Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["cluster_id"] = 0;
+    request["job"]        = job;
     
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
