@@ -1382,7 +1382,19 @@ S9sBusinessLogic::executeUser(
             }
             #endif
 
-            sshCommand.sprintf(
+            if ( controller == "localhost" ||
+                 controller == "127.0.0.1")
+            {
+                sshCommand.sprintf(
+                    "echo \"{\\\"username\\\":\\\"%s\\\", \\\"pubkey\\\": \\\"%s\\\"}\" "
+                    "| sudo -n tee %s >/dev/null",
+                    STR(userName),
+                    STR(pubKeyStr),
+                    STR(path));
+            }
+            else
+            {
+                sshCommand.sprintf(
                     "ssh -tt "
                     "-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no "
                     "-oBatchMode=yes -oPasswordAuthentication=no -oConnectTimeout=30 "
@@ -1393,6 +1405,7 @@ S9sBusinessLogic::executeUser(
                     STR(userName),
                     STR(pubKeyStr),
                     STR(path));
+            }
 
             PRINT_VERBOSE("Tried to grant on %s:%s, exitCode=%d.\n",
                     STR(controller), 
