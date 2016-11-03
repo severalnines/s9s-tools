@@ -255,7 +255,7 @@ S9sRpcClient::ping()
     S9sOptions    *options = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
-    S9sString      uri = "/v2/clusters/";
+    S9sString      uri = "/v2";
     S9sVariantMap  request;
     bool           retval;
 
@@ -1532,6 +1532,11 @@ S9sRpcClient::restoreBackup(
     return retval;
 }
 
+/**
+ * \param clusterId The cluster to read or <= 0 to read all the clusters
+ *
+ * The method that gets the list of backups from the server.
+ */
 bool
 S9sRpcClient::getBackups(
         const int clusterId)
@@ -1540,12 +1545,12 @@ S9sRpcClient::getBackups(
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/backup/", clusterId);
+    uri = "/v2/backup/";
 
-    request["operation"] = "listBackups";
+    request["operation"] = "getBackups";
 
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    if (clusterId > 0)
+        request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 

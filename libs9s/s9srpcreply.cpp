@@ -1506,15 +1506,22 @@ S9sRpcReply::printCpuStat()
 }
 
 /**
+ * Prints the list of backups in its brief format.
  */
 void 
 S9sRpcReply::printBackupListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  dataList = operator[]("data").toVariantList();
+    S9sVariantList  dataList;
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
+
+    // One is RPC 1.0, the other is 2.0.
+    if (contains("data"))
+        dataList = operator[]("data").toVariantList();
+    else if (contains("backup_records"))
+        dataList = operator[]("backup_records").toVariantList();
 
     /*
      * 
@@ -1553,11 +1560,17 @@ void
 S9sRpcReply::printBackupListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  dataList = operator[]("data").toVariantList();
+    S9sVariantList  dataList;
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormat       sizeFormat, hostNameFormat, idFormat;
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
+    
+    // One is RPC 1.0, the other is 2.0.
+    if (contains("data"))
+        dataList = operator[]("data").toVariantList();
+    else if (contains("backup_records"))
+        dataList = operator[]("backup_records").toVariantList();
    
     sizeFormat.setRightJustify(true);
 
@@ -1644,6 +1657,13 @@ S9sRpcReply::printBackupListLong()
                 printf("\n");
             }
         }
+    }
+
+    if (!options->isBatchRequested() && contains("total"))
+    {
+        int total = operator[]("total").toInt();
+
+        printf("Total %d\n", total);
     }
 }
 
