@@ -64,6 +64,9 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC visibility push(hidden)
 #endif
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 
 #define YY_INPUT(buffer, returnvalue, maxsize) \
 	(returnvalue = yyextra->yyinput(buffer, maxsize))

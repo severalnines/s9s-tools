@@ -303,7 +303,13 @@ S9sFile::errorString() const
 S9sFilePath 
 S9sFile::currentWorkingDirectory()
 {
+#ifdef _GNU_SOURCE
     char        *buffer = get_current_dir_name();
+#else
+    size_t sz = 0;
+    char * buffer = getcwd(NULL, sz);
+#endif
+
     S9sFilePath  retval = buffer;
 
     if (buffer)
