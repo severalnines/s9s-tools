@@ -588,20 +588,32 @@ S9sRpcClient::rollingRestart(
     S9sString      uri;
     bool           retval;
 
+    #ifdef COMPILE_NEW_RPC
+    uri = "/v2/jobs/";
+    #else
     uri.sprintf("/%d/job/", clusterId);
+    #endif
 
-    jobSpec["command"]   = "rolling_restart";
+    jobSpec["command"]    = "rolling_restart";
 
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Rolling Restart";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Rolling Restart";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-    
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+     
+    #ifdef COMPILE_NEW_RPC
+    request["cluster_id"] = clusterId;
+    #else
     if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+        request["token"]  = m_priv->m_token;
+    #endif
     
     retval = executeRequest(uri, request);
 
@@ -675,15 +687,20 @@ S9sRpcClient::createGaleraCluster(
     job["title"]          = "Create Galera Cluster";
     job["job_spec"]       = jobSpec;
     job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["cluster_id"] = 0;
     request["job"]        = job;
     
+    #ifdef COMPILE_NEW_RPC
+    #else
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
-
+    #endif
+    
     retval = executeRequest(uri, request);
     
     return retval;

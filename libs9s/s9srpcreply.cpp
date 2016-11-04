@@ -1337,7 +1337,7 @@ S9sRpcReply::printJobListLong()
         printf("\n");
         
         // The dates...
-        printf("%sCreated   :%s %s%s%s    ", 
+        printf("%sCreated   :%s %s%19s%s    ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 XTERM_COLOR_LIGHT_GRAY, STR(created), TERM_NORMAL);
 
@@ -1351,7 +1351,7 @@ S9sRpcReply::printJobListLong()
 
         printf("\n");
 
-        printf("%sStarted   :%s %s%s%s    ", 
+        printf("%sStarted   :%s %s%19s%s    ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 XTERM_COLOR_LIGHT_GRAY, STR(started), TERM_NORMAL);
         
@@ -1367,13 +1367,13 @@ S9sRpcReply::printJobListLong()
 
 
 
-        printf("%sEnded     :%s %s%s%s\n", 
+        printf("%sEnded     :%s %s%19s%s\n", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 XTERM_COLOR_LIGHT_GRAY, STR(ended), TERM_NORMAL);
         
         if (!scheduled.empty())
         {
-            printf("%sScheduled :%s %s%s%s\n", 
+            printf("%sScheduled :%s %s%19s%s\n", 
                     XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                     XTERM_COLOR_LIGHT_GRAY, STR(scheduled), TERM_NORMAL);
         }
