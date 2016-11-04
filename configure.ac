@@ -39,9 +39,9 @@ AC_CHECK_FUNCS([strdup strtol strcmp strncmp])
 # 
 # Checking for libraries.
 #
-AC_CHECK_HEADERS([openssl/crypto.h openssl/tls1.h])
-AC_CHECK_LIB(crypto,EVP_EncryptUpdate)
-AC_CHECK_LIB(ssl,SSL_connect)
+AC_CHECK_HEADERS([openssl/crypto.h],,AC_MSG_ERROR("Missing OpenSSL headers"))
+AC_CHECK_LIB(crypto,EVP_EncryptUpdate,,AC_MSG_ERROR("libcrypto library not found."))
+AC_CHECK_LIB(ssl,SSL_connect,,AC_MSG_ERROR("libssl library not found."))
 #AC_CHECK_LIB(ncurses, initscr)
 
 AC_ARG_ENABLE([gcov],
