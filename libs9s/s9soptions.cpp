@@ -1547,7 +1547,7 @@ S9sOptions::printHelpUser()
 "\n"
 
 "User options\n"
-"  -u, --username=USERNAME      The username to be used for authentication.\n"
+"  -u, --cmon-user=USERNAME     The username on the Cmon system.\n"
 "  -g, --generate-key           Generate an RSA keypair for the user.\n"
 "  -G, --grant-user             Grant the user on controller (SSH/sudo needed).\n"
 "\n",
