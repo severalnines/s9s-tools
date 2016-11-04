@@ -15,11 +15,11 @@ token will be used instead of key based auhentication.
   used on Frontend, so later on you can manage your pubkeys there like in
   github)
 
-  $ s9s user --username=myfancyuser@domain.tld --generate-key
+  $ s9s user --cmon-user=myfancyuser@domain.tld --generate-key
 
   The generated 2048 RSAbit key-pair will be saved to ~/.s9s/USERNAME.[pub|key].
   NOTE this command will save the username into ~/.s9s/s9s.conf ([global],
-  auth_user) for later use.
+  cmon_user) for later use.
 
   2) Grant/create the user on controller and upload the public key.
 
@@ -30,7 +30,7 @@ token will be used instead of key based auhentication.
 
   NOTE: these two steps (1) and 2)) can be done in one command like:
 
-  $ s9s user --username=myfancyuser@domain.tld --generate-key \
+  $ s9s user --cmon-user=myfancyuser@domain.tld --generate-key \
         --grant-user --controller=CONTROLLER_ADDR:9500
 
   Alternatively)
@@ -53,7 +53,7 @@ token will be used instead of key based auhentication.
 
   Then add your username and the path to the key in ~/.s9s/s9s.conf into
   [global] section:
-  auth_user=cmonusername@domain.tld
+  cmon_user=cmonusername@domain.tld
   auth_key=~/my/path/to/private.key
 
   Then you should also grant this key on controller which is desribed above.
