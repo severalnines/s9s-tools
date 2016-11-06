@@ -91,8 +91,9 @@ class S9sOptions
         S9sString rpcToken() const;
         
         S9sString schedule() const;
+#if 0
         bool setSchedule(const S9sString &value);
-
+#endif
         int clusterId() const;
         int backupId() const;
         int updateFreq() const;

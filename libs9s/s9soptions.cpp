@@ -637,6 +637,7 @@ S9sOptions::schedule() const
     return retval;
 }
 
+#if 0
 bool
 S9sOptions::setSchedule(
         const S9sString &value)
@@ -644,6 +645,7 @@ S9sOptions::setSchedule(
     m_options["schedule"] = value;
     return true;
 }
+#endif
 
 /**
  * \returns the cluster ID from the command line or the configuration or
@@ -1954,8 +1956,8 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case OptionSchedule:
-                // --schedule=STRING
-                setSchedule(optarg);
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
                 break;
 
             case OptionBackupId:
@@ -2287,7 +2289,9 @@ S9sOptions::readOptionsCluster(
         // Job Related Options
         { "wait",             no_argument,       0, 16  },
         { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0, OptionBatch  },
+        { "batch",            no_argument,       0, OptionBatch      },
+        { "schedule",         required_argument, 0, OptionSchedule   },
+
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
@@ -2421,7 +2425,12 @@ S9sOptions::readOptionsCluster(
                 // --batch
                 m_options["batch"] = true;
                 break;
-            
+           
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+
             case OptionPing:
                 // --ping
                 m_options["ping"] = true;

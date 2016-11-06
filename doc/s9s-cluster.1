@@ -124,6 +124,12 @@ the job logs will be shown unless the silent mode is set.
 Print no messages. If the application created a job print only the job ID number
 and exit.
 
+.TP
+.BI \-\^\-schedule= DATETIME
+The job will not be executed now but it is scheduled to execute later. The
+datetime string is sent to the backend, so all the formats are supported that is
+supported by the controller.
+
 .\"
 .\"
 .\"
@@ -233,3 +239,8 @@ Another example simply lists the clusters managed by the controller:
 # \fBs9s cluster --list --long --controller=localhost:9555 --color=always\fR
 .fi
 
+Schedule a rolling restart of the cluster 20 minutes from now:
+
+.nf
+# \fBs9s cluster --rolling-restart --cluster-id=1 --schedule="$(date -d 'now + 20 min')"
+.fi

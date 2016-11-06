@@ -1019,25 +1019,17 @@ S9sBusinessLogic::jobRegistered(
     
     if (success)
     {
-        if (success)
+        if (options->isWaitRequested() || options->isLogRequested())
         {
-            if (options->isWaitRequested() || options->isLogRequested())
-            {
-                waitForJob(clusterId, reply.jobId(), client);
-            } else {
-                reply.printJobStarted();
-            }
+            waitForJob(clusterId, reply.jobId(), client);
         } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
+            reply.printJobStarted();
         }
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
-            PRINT_ERROR("%s", STR(client.errorString()));
+            PRINT_ERROR("%s", STR(reply.errorString()));
     }
 }
 

@@ -422,7 +422,7 @@ successive_again:
 S9sString
 S9sDateTime::toString() const
 {
-    return toString(LogFileFormat);
+    return toString(TzDateTimeFormat);
 }
 
 /**
