@@ -5,19 +5,27 @@
 AM_CPPFLAGS  = -Wall -Werror -fno-strict-aliasing
 AM_CPPFLAGS += -Wno-deprecated-declarations
 AM_CPPFLAGS += -fPIC -pipe
-
+MY_LDFLAGS = -Wl,--whole-archive libs9s.a -Wl,--no-whole-archive
 lib_LIBRARIES = libs9s.a
 
 #
 # Create a shared library (for faster linking)
 #
 libs9s.so: libs9s.a $(libs9s_a_OBJECTS)
+if !DARWIN
 	@echo "  CXXLD    $@"
 	@$(CXX) $(AM_CPPFLAGS) -shared \
 			-Wl,--whole-archive libs9s.a -Wl,--no-whole-archive -o $@
 
+else
+	@echo "  CXXLD    $@"
+	@$(CXX) $(AM_CPPFLAGS) -shared \
+			-Wl,-all_load libs9s.a  -L/usr/local/opt/openssl/lib/  -lcrypto -lssl -o $@
+endif
+
 all-local: libs9s.so
 	-@echo "Creating shared-objects."
+
 
 install-exec-hook: libs9s.so
 	-@echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) libs9s.so '$(DESTDIR)$(libdir)'"

@@ -53,6 +53,23 @@ AM_CONDITIONAL([COND_GCOV],[test '!' "$enable_gcov" = no])
 
 GIT_VERSION=$([LANG=C git log -1 --pretty=format:%H])
 AC_DEFINE_UNQUOTED([GIT_VERSION], ["$GIT_VERSION"], [The git version hash])
+
+
+# Check for running on Darwin
+AC_MSG_CHECKING([Checking if running on Darwin])
+UNAME=`uname -s`
+if test "x$UNAME" = "xDarwin"; then
+  AC_DEFINE([IS_DARWIN], [1], [Set to 1 when running on Darwin - Mac OSX])
+  AC_MSG_RESULT(yes)
+  AC_SUBST([libsuffix],[".dylib"])
+  is_darwin=true
+else
+  AC_MSG_RESULT(no)
+  AC_SUBST([libsuffix],[".so"])
+  is_darwin=false
+fi
+AM_CONDITIONAL([DARWIN], [test x$is_darwin = xtrue])
+
 AC_SUBST(GIT_VERSION)
 
 #

@@ -34,7 +34,7 @@
 #include "s9sdebug.h"
 
 const S9sVariantMap  S9sVariant::sm_emptyMap;
-const S9sVariantList S9sVariant::sm_emptyList;
+const S9sVariantList S9sVariant::sm_emptyList = S9sVariantList();
 static const S9sNode sm_emptyNode;
 
 
