@@ -81,6 +81,7 @@ class S9sRpcClient
                 const int             backupId);
         
         bool getBackups(const int clusterId);
+        bool getUsers();
 
         bool getJobInstance(const int clusterId, const int jobId);
         

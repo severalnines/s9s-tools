@@ -1499,6 +1499,26 @@ S9sRpcClient::getBackups(
 }
 
 /**
+ * The method that gets the list of users from the server.
+ */
+bool
+S9sRpcClient::getUsers()
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri = "/v2/user/";
+
+    request["operation"] = "getUsers";
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+/**
  * 
  */
 bool
