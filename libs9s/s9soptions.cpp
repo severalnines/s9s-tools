@@ -1665,20 +1665,20 @@ S9sOptions::readOptionsNode(
         { "rpc-tls",          no_argument,       0, OptionRpcTls  },
         { "rpc-token",        required_argument, 0, 't' },
         { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, OptionPrintJson  },
-        { "color",            optional_argument, 0, OptionColor  },
-        { "config-file",      required_argument, 0,  4  },
+        { "print-json",       no_argument,       0, OptionPrintJson   },
+        { "color",            optional_argument, 0, OptionColor       },
+        { "config-file",      required_argument, 0,  4                },
 
         // Main Option
-        { "list",             no_argument,       0, 'L' },
-        { "set",              no_argument,       0,  1 },
+        { "list",             no_argument,       0, 'L'               },
+        { "set",              no_argument,       0,  OptionSet        },
 
         // Cluster information
-        { "cluster-id",       required_argument, 0, 'i' },
-        { "nodes",            required_argument, 0, OptionNodes },
+        { "cluster-id",       required_argument, 0, 'i'               },
+        { "nodes",            required_argument, 0, OptionNodes       },
 
         // Node options. 
-        { "properties",       required_argument, 0, OptionProperties },
+        { "properties",       required_argument, 0, OptionProperties  },
 
         { 0, 0, 0, 0 }
     };
@@ -2135,21 +2135,24 @@ S9sOptions::readOptionsUser(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h' },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls },
-        { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  OptionPrintJson },
-        { "color",            optional_argument, 0,  OptionColor },
-        { "config-file",      required_argument, 0,  OptionConfigFile },
+        { "help",             no_argument,       0, 'h'              },
+        { "verbose",          no_argument,       0, 'v'              },
+        { "version",          no_argument,       0, 'V'              },
+        { "controller",       required_argument, 0, 'c'              },
+        { "controller-port",  required_argument, 0, 'P'              },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls     },
+        { "rpc-token",        required_argument, 0, 't'              },
+        { "long",             no_argument,       0, 'l'              },
+        { "print-json",       no_argument,       0, OptionPrintJson  },
+        { "color",            optional_argument, 0, OptionColor      },
+        { "config-file",      required_argument, 0, OptionConfigFile },
 
-        { "generate-key",     no_argument,       0, 'g' }, 
-        { "cmon-user",        required_argument, 0, 'u' }, 
-        { "grant-user",       no_argument,       0, 'G' },
+        // Main Option
+        { "generate-key",     no_argument,       0, 'g'              }, 
+        { "cmon-user",        required_argument, 0, 'u'              }, 
+        { "grant-user",       no_argument,       0, 'G'              },
+        { "list",             no_argument,       0, 'L'              },
+        { "set",              no_argument,       0, OptionSet        },
 
         { 0, 0, 0, 0 }
     };
@@ -2239,6 +2242,16 @@ S9sOptions::readOptionsUser(
             case 'G':
                 // --grant-user
                 m_options["grant_user"] = true;
+                break;
+            
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case OptionSet:
+                // --set
+                m_options["set"]  = true;
                 break;
 
             default:
@@ -2688,25 +2701,6 @@ S9sOptions::readOptionsNoMode(
 
     return true;
 }
-
-#if 0
-S9sString
-S9sOptions::authUsername() const
-{
-    S9sString authUser;
-
-    if (m_options.contains("auth_user"))
-    {
-        return m_options.at("auth_user").toString();
-    }
-
-    authUser = m_userConfig.variableValue("auth_user");
-    if (authUser.empty())
-        authUser =  m_systemConfig.variableValue("auth_user");
-
-    return authUser;
-}
-#endif
 
 S9sString
 S9sOptions::privateKeyPath() const

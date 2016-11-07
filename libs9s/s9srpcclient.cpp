@@ -32,8 +32,8 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-#define COMPILE_NEW_RPC
 #define READ_SIZE 512
+//#define USE_NEW_RPC
 
 /**
  * Default constructor.
@@ -234,7 +234,12 @@ bool
 S9sRpcClient::getClusters()
 {
     S9sOptions    *options = S9sOptions::instance();
+    #ifdef USE_NEW_RPC
     S9sString      uri = "/v2/clusters/";
+    #else
+    S9sString      uri = "/0/clusters/";
+    #endif
+
     S9sVariantMap  request;
     bool           retval;
 
@@ -585,14 +590,8 @@ S9sRpcClient::rollingRestart(
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
-
-    #ifdef COMPILE_NEW_RPC
-    uri = "/v2/jobs/";
-    #else
-    uri.sprintf("/%d/job/", clusterId);
-    #endif
 
     jobSpec["command"]    = "rolling_restart";
 
@@ -602,18 +601,12 @@ S9sRpcClient::rollingRestart(
     job["job_spec"]       = jobSpec;
     job["user_name"]      = options->userName();
     if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
+        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-     
-    #ifdef COMPILE_NEW_RPC
     request["cluster_id"] = clusterId;
-    #else
-    if (!m_priv->m_token.empty())
-        request["token"]  = m_priv->m_token;
-    #endif
     
     retval = executeRequest(uri, request);
 
@@ -639,7 +632,7 @@ S9sRpcClient::createGaleraCluster(
     S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri;
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
     
     if (hosts.size() < 1u)
@@ -648,11 +641,7 @@ S9sRpcClient::createGaleraCluster(
         return false;
     }
     
-    #ifdef COMPILE_NEW_RPC
     uri = "/v2/jobs/";
-    #else
-    uri = "/0/job/";
-    #endif
 
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
@@ -688,18 +677,12 @@ S9sRpcClient::createGaleraCluster(
     job["job_spec"]       = jobSpec;
     job["user_name"]      = options->userName();
     if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
+        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["cluster_id"] = 0;
     request["job"]        = job;
-    
-    #ifdef COMPILE_NEW_RPC
-    #else
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-    #endif
     
     retval = executeRequest(uri, request);
     
@@ -724,7 +707,7 @@ S9sRpcClient::createMySqlReplication(
     S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri = "/0/job/";
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
     
     if (hosts.size() < 1u)
@@ -733,7 +716,6 @@ S9sRpcClient::createMySqlReplication(
         return false;
     }
     
-    uri = "/0/job/";
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         if (hosts[idx].isNode())
@@ -761,23 +743,20 @@ S9sRpcClient::createMySqlReplication(
         jobData["ssh_key"]      = options->osKeyFile();
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "create_cluster";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "create_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create MySQL Replication Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create MySQL Replication Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -802,10 +781,8 @@ S9sRpcClient::createNdbCluster(
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri = "/0/job/";
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
-    
-    uri = "/0/job/";
     
     for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
     {
@@ -847,26 +824,25 @@ S9sRpcClient::createNdbCluster(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_key"] = options->osKeyFile();
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "create_cluster";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "create_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create NDB Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create NDB Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -887,7 +863,7 @@ S9sRpcClient::createPostgreSql(
     S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri;
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
 
     if (hosts.size() != 1u)
@@ -896,7 +872,6 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
-    uri = "/0/job/";
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         if (hosts[idx].isNode())
@@ -926,14 +901,13 @@ S9sRpcClient::createPostgreSql(
     job["title"]         = "Setup PostgreSQL Server";
     job["job_spec"]      = jobSpec;
     job["user_name"]     = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
     
     return retval;
@@ -956,7 +930,7 @@ S9sRpcClient::addNode(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
 
     if (hosts.size() != 1u)
@@ -965,8 +939,6 @@ S9sRpcClient::addNode(
         return false;
     }
     
-    uri.sprintf("/%d/job/", clusterId);
-
     // The job_data describing the cluster.
     if (hosts[0].isNode())
         jobData["hostname"] = hosts[0].toNode().hostName();
@@ -978,23 +950,22 @@ S9sRpcClient::addNode(
     jobData["disable_selinux"]  = true;
    
     // The jobspec describing the command.
-    jobSpec["command"]  = "addnode";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "addnode";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Add Node to Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -1013,7 +984,7 @@ S9sRpcClient::addHaProxy(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     S9sVariantList haProxyNodes;
     S9sVariantList otherNodes;
     S9sString      nodeAddresses;
@@ -1030,8 +1001,6 @@ S9sRpcClient::addHaProxy(
         return false;
     }
 
-    uri.sprintf("/%d/job/", clusterId);
-    
     // The job_data describing the cluster.
     jobData["action"]          = "setupHaProxy";
     jobData["haproxy_address"] = haProxyNodes[0].toNode().hostName();
@@ -1057,22 +1026,21 @@ S9sRpcClient::addHaProxy(
         jobData["node_addresses"] = nodeAddresses;
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "haproxy";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "haproxy";
+    jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Add HaProxy to Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add HaProxy to Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1093,7 +1061,7 @@ S9sRpcClient::addProxySql(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     S9sVariantList proxyNodes;
     S9sVariantList otherNodes;
     bool           retval;
@@ -1118,29 +1086,26 @@ S9sRpcClient::addProxySql(
         return false;
     }
 
-    uri.sprintf("/%d/job/", clusterId);
-    
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
     jobData["hostname"] = proxyNodes[0].toNode().hostName();
     
     // The jobspec describing the command.
-    jobSpec["command"]  = "proxysql";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "proxysql";
+    jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Add ProxySQL to Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add ProxySQL to Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1161,7 +1126,7 @@ S9sRpcClient::addMaxScale(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     S9sVariantList maxScaleNodes;
     S9sVariantList otherNodes;
     S9sString      nodeAddresses;
@@ -1177,8 +1142,6 @@ S9sRpcClient::addMaxScale(
 
         return false;
     }
-
-    uri.sprintf("/%d/job/", clusterId);
 
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
@@ -1207,22 +1170,21 @@ S9sRpcClient::addMaxScale(
     jobData["server_address"] = maxScaleNodes[0].toNode().hostName();
     
     // The jobspec describing the command.
-    jobSpec["command"]  = "maxscale";
-    jobSpec["job_data"] = jobData;
-    
+    jobSpec["command"]    = "maxscale";
+    jobSpec["job_data"]   = jobData;
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
+
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Add MaxScale to Cluster";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add MaxScale to Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1246,7 +1208,7 @@ S9sRpcClient::removeNode(
     S9sString      hostName, title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
 
     if (hosts.size() != 1u)
@@ -1255,7 +1217,6 @@ S9sRpcClient::removeNode(
         return false;
     }
     
-    uri.sprintf("/%d/job/", clusterId);
     hostName = hosts[0].toNode().hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
@@ -1264,23 +1225,22 @@ S9sRpcClient::removeNode(
     //jobData["port"]             =
    
     // The jobspec describing the command.
-    jobSpec["command"]  = "removenode";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "removenode";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = title;
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    //job["api_id"]        = -1;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -1301,10 +1261,9 @@ S9sRpcClient::stopCluster(
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    uri.sprintf("/%d/job/", clusterId);
     title = "Stopping Cluster";
 
     // The job_data describing the cluster.
@@ -1314,21 +1273,21 @@ S9sRpcClient::stopCluster(
     jobData["reason"]              = "Cluster is stopped.";
     
     // The jobspec describing the command.
-    jobSpec["command"]   = "stop_cluster";
-    jobSpec["job_data"]  = jobData;
+    jobSpec["command"]    = "stop_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = title;
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    
-    // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule();
 
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1343,10 +1302,9 @@ S9sRpcClient::startCluster(
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    uri.sprintf("/%d/job/", clusterId);
     title = "Starting Cluster";
 
     // The job_data describing the cluster.
@@ -1355,27 +1313,26 @@ S9sRpcClient::startCluster(
     //jobData["auto_select"]         = true;
     
     // The jobspec describing the command.
-    jobSpec["command"]   = "start_cluster";
-    jobSpec["job_data"]  = jobData;
+    jobSpec["command"]    = "start_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = title;
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    
-    // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
 
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
     return retval;
 }
-
 
 /**
  * \param clusterId The ID of the cluster.
@@ -1393,31 +1350,30 @@ S9sRpcClient::dropCluster(
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    uri.sprintf("/%d/job/", clusterId);
     title = "Remove Cluster";
 
     // The job_data describing the cluster.
-    jobData["clusterid"]       = clusterId;
+    jobData["clusterid"]  = clusterId;
     
     // The jobspec describing the command.
-    jobSpec["command"]  = "remove_node";
-    jobSpec["job_data"] = jobData;
+    jobSpec["command"]    = "remove_node";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = title;
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    
-    // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
 
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1441,11 +1397,9 @@ S9sRpcClient::createBackup(
     S9sString       schedule     = options->schedule();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri;
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
 
-    uri.sprintf("/%d/job/", clusterId);
-    
     if (hosts.size() != 1u)
     {
         PRINT_ERROR("To create a new backup one node must be specified.");
@@ -1457,27 +1411,24 @@ S9sRpcClient::createBackup(
     jobData["hostname"]         = hosts[0].toNode().hostName();
     jobData["backupdir"]        = "/tmp";
     if (!backupMethod.empty())
-        jobData["backup_method"]    = backupMethod;
+        jobData["backup_method"] = backupMethod;
 
     // The jobspec describing the command.
-    jobSpec["command"]   = "backup";
-    jobSpec["job_data"]  = jobData;
+    jobSpec["command"]    = "backup";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Create Backup";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Backup";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-    
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
-    if (!schedule.empty())
-        request["schedule"] = schedule;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -1493,32 +1444,30 @@ S9sRpcClient::restoreBackup(
     S9sString       backupMethod = options->backupMethod();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
-    S9sString       uri;
+    S9sString       uri = "/v2/jobs/";
     bool            retval;
 
-    uri.sprintf("/%d/job/", clusterId);
-    
     // The job_data describing how the backup will be created.
-    jobData["backupid"]        = backupId;
-    jobData["bootstrap"]        = true;
+    jobData["backupid"]   = backupId;
+    jobData["bootstrap"]  = true;
 
     // The jobspec describing the command.
-    jobSpec["command"]   = "restore_backup";
-    jobSpec["job_data"]  = jobData;
+    jobSpec["command"]    = "restore_backup";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Restore Backup";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Restore Backup";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
     
     return retval;
