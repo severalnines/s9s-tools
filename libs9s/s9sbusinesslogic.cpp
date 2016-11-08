@@ -50,12 +50,15 @@ S9sBusinessLogic::execute()
     S9sRpcClient client(controller, port, token, useTls);
 
     /*
-     * Special exceptions
-     * - we don't need to auth for 'user' operation
-     * - if token specified, we use that instead of auth (for now).
+     * Here is a fucked up version and a version that I try to clean up.
      */
-    if (!options->isUserOperation() || !options->rpcToken().empty())
+    //if (!options->isUserOperation() || !options->rpcToken().empty())
+    if (options->isUserOperation() && !options->isListRequested())
     {
+        PRINT_VERBOSE("No authentication required");
+        // No authentication required.
+    } else {
+        PRINT_VERBOSE("Authenticating.");
         S9sString userName = options->userName();
         S9sString keyPath  = options->privateKeyPath();
 
@@ -157,7 +160,12 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isUserOperation())
     {
-        executeUser(client);
+        if (options->isListRequested())
+        {
+            executeUserList(client);
+        } else {
+            executeUser(client);
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }
@@ -773,6 +781,35 @@ S9sBusinessLogic::executeBackupList(
     }
 }
 
+void 
+S9sBusinessLogic::executeUserList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getUsers();
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printUserList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
 
 /**
  * \param client A client for the communication.

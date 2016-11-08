@@ -65,6 +65,7 @@ class S9sBusinessLogic
         void executeTop(S9sRpcClient &client);
         void executeProcessList(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
+        void executeUserList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);

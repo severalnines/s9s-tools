@@ -1508,7 +1508,7 @@ S9sRpcClient::getUsers()
     S9sVariantMap  request;
     bool           retval;
 
-    uri = "/v2/user/";
+    uri = "/v2/users/";
 
     request["operation"] = "getUsers";
 

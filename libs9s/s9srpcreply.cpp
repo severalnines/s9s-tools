@@ -1686,162 +1686,83 @@ S9sRpcReply::printBackupListLong()
 void 
 S9sRpcReply::printUserListBrief()
 {
-#if 0
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  dataList;
+    S9sVariantList  userList = operator[]("users").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
 
-    // One is RPC 1.0, the other is 2.0.
-    if (contains("data"))
-        dataList = operator[]("data").toVariantList();
-    else if (contains("backup_records"))
-        dataList = operator[]("backup_records").toVariantList();
+    userList = operator[]("users").toVariantList();
 
     /*
      * 
      */
-    for (uint idx = 0; idx < dataList.size(); ++idx)
+    for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
-        S9sVariantList backups = theMap["backup"].toVariantList();
+        S9sVariantMap  userMap  = userList[idx].toVariantMap();
+        S9sString      userName = userMap["user_name"].toString();
 
-        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        if (syntaxHighlight)
         {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
-
-            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
-            {
-                S9sVariantMap file = files[idx1].toVariantMap();
-                S9sString     path = file["path"].toString();
-
-                if (syntaxHighlight)
-                {
-                    colorBegin = XTERM_COLOR_RED;
-                    colorEnd   = TERM_NORMAL;
-                } else {
-                    colorBegin = "";
-                    colorEnd   = "";
-                }
-
-                printf("%s%s%s\n", colorBegin, STR(path), colorEnd);
-            }
+            colorBegin = XTERM_COLOR_ORANGE;
+            colorEnd   = TERM_NORMAL;
+        } else {
+            colorBegin = "";
+            colorEnd   = "";
         }
+
+        printf("%s%s%s\n", colorBegin, STR(userName), colorEnd);
     }
-    #endif
 }
 
 void 
 S9sRpcReply::printUserListLong()
 {
-    S9sOptions     *options = S9sOptions::instance();
-#if 0
-    S9sVariantList  dataList;
+    S9sOptions     *options  = S9sOptions::instance();
+    S9sVariantList  userList = operator[]("users").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sFormat       sizeFormat, hostNameFormat, idFormat;
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
+    S9sFormat       idFormat;
+    S9sFormat       userNameFormat;
+
+    userList = operator[]("users").toVariantList();
     
-    // One is RPC 1.0, the other is 2.0.
-    if (contains("data"))
-        dataList = operator[]("data").toVariantList();
-    else if (contains("backup_records"))
-        dataList = operator[]("backup_records").toVariantList();
-   
-    sizeFormat.setRightJustify(true);
-
-    /*
-     * Collecting some information.
-     */
-    for (uint idx = 0; idx < dataList.size(); ++idx)
+    for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
-        S9sVariantList backups = theMap["backup"].toVariantList();
-        S9sString      hostName = theMap["backup_host"].toString();
-        int            id       = theMap["id"].toInt();
+        S9sVariantMap  userMap  = userList[idx].toVariantMap();
+        S9sString      userName = userMap["user_name"].toString();
+        int            userId   = userMap["user_id"].toInt();
 
-        hostNameFormat.widen(hostName);
-
-        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
-        {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
-
-            idFormat.widen(id);
-
-            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
-            {
-                S9sVariantMap file = files[idx1].toVariantMap();
-                S9sString     path = file["path"].toString();
-                ulonglong     size = file["size"].toULongLong();
-                S9sString     sizeString;
-
-                sizeString = S9sFormat::toSizeString(size);
-
-                sizeFormat.widen(sizeString);
-            }
-        }
+        userNameFormat.widen(userName);
+        idFormat.widen(userId);
     }
 
     /*
      * 
      */
-    for (uint idx = 0; idx < dataList.size(); ++idx)
+    for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  theMap   = dataList[idx].toVariantMap();
-        S9sVariantList backups  = theMap["backup"].toVariantList();
-        S9sString      hostName = theMap["backup_host"].toString();
-        int            id       = theMap["id"].toInt();
-        S9sString      status   = theMap["status"].toString().toUpper();
+        S9sVariantMap  userMap  = userList[idx].toVariantMap();
+        S9sString      userName = userMap["user_name"].toString();
+        int            userId   = userMap["user_id"].toInt();
 
-        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        if (syntaxHighlight)
         {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
-
-            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
-            {
-                S9sVariantMap file = files[idx1].toVariantMap();
-                S9sString     path = file["path"].toString();
-                ulonglong     size = file["size"].toULongLong();
-                S9sString     sizeString;
-                S9sString     createdString = file["created"].toString();
-                S9sDateTime   created;
-
-                created.parse(createdString);
-                createdString = created.toString(
-                        S9sDateTime::MySqlLogFileFormat);
-
-                sizeString = S9sFormat::toSizeString(size);
-
-
-                if (syntaxHighlight)
-                {
-                    colorBegin = XTERM_COLOR_RED;
-                    colorEnd   = TERM_NORMAL;
-                } else {
-                    colorBegin = "";
-                    colorEnd   = "";
-                }
-
-                idFormat.printf(id);
-                printf("%s ", STR(status));
-                hostNameFormat.printf(hostName);
-                printf("%s ", STR(createdString));
-                sizeFormat.printf(sizeString);
-                printf("%s%s%s", colorBegin, STR(path), colorEnd);
-                printf("\n");
-            }
+            colorBegin = XTERM_COLOR_ORANGE;
+            colorEnd   = TERM_NORMAL;
+        } else {
+            colorBegin = "";
+            colorEnd   = "";
         }
-    }
-    #endif
-    if (!options->isBatchRequested() && contains("total"))
-    {
-        int total = operator[]("total").toInt();
 
-        printf("Total %d\n", total);
+        idFormat.printf(userId);
+
+        printf("%s", colorBegin);
+        userNameFormat.printf(userName);
+        printf("%s", colorEnd);
+
+        printf("\n");
     }
 }
 
