@@ -1743,9 +1743,28 @@ S9sRpcReply::printUserListLong()
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  userMap  = userList[idx].toVariantMap();
-        S9sString      userName = userMap["user_name"].toString();
-        int            userId   = userMap["user_id"].toInt();
+        S9sVariantMap  userMap   = userList[idx].toVariantMap();
+        S9sString      userName  = userMap["user_name"].toString();
+        int            userId    = userMap["user_id"].toInt();
+        S9sString      firstName = userMap["first_name"].toString();
+        S9sString      lastName  = userMap["last_name"].toString();
+        S9sString      fullName;
+
+        if (!firstName.empty())
+        {
+            if (!fullName.empty())
+                fullName += " ";
+
+            fullName += firstName;
+        }
+
+        if (!lastName.empty())
+        {
+            if (!fullName.empty())
+                fullName += " ";
+
+            fullName += lastName;
+        }
 
         if (syntaxHighlight)
         {
@@ -1762,6 +1781,7 @@ S9sRpcReply::printUserListLong()
         userNameFormat.printf(userName);
         printf("%s", colorEnd);
 
+        printf("%s", STR(fullName));
         printf("\n");
     }
 }

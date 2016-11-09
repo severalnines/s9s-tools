@@ -675,13 +675,12 @@ S9sRpcClient::createGaleraCluster(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Galera Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+    //job["user_name"]      = options->userName();
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
-    request["cluster_id"] = 0;
     request["job"]        = job;
     
     retval = executeRequest(uri, request);
