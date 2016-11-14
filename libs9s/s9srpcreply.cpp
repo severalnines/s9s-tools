@@ -749,6 +749,7 @@ S9sRpcReply::printClusterListLong()
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
     S9sFormat       versionFormat;
+    S9sFormat       ownerFormat;
     S9sFormat       nameFormat;
 
     /*
@@ -756,17 +757,20 @@ S9sRpcReply::printClusterListLong()
      */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap      = theList[idx].toVariantMap();
-        S9sString     clusterName = theMap["cluster_name"].toString();
-        int           clusterId   = theMap["cluster_id"].toInt();
-        S9sString     clusterType = theMap["cluster_type"].toString();
-        S9sString     state       = theMap["state"].toString();
+        S9sVariantMap clusterMap  = theList[idx].toVariantMap();
+        S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
+        S9sString     ownerName   = ownerMap["user_name"].toString();
+        S9sString     clusterName = clusterMap["cluster_name"].toString();
+        int           clusterId   = clusterMap["cluster_id"].toInt();
+        S9sString     clusterType = clusterMap["cluster_type"].toString();
+        S9sString     state       = clusterMap["state"].toString();
         S9sString     version     = 
-            theMap["vendor"].toString() + " " +
-            theMap["version"].toString();
+            clusterMap["vendor"].toString() + " " +
+            clusterMap["version"].toString();
 
         idFormat.widen(clusterId);
         nameFormat.widen(clusterName);
+        ownerFormat.widen(ownerName);
         stateFormat.widen(state);
         typeFormat.widen(clusterType);
         versionFormat.widen(version);
@@ -777,19 +781,19 @@ S9sRpcReply::printClusterListLong()
      */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap      = theList[idx].toVariantMap();
-        S9sString     clusterName = theMap["cluster_name"].toString();
-        int           clusterId   = theMap["cluster_id"].toInt();
-        S9sString     clusterType = theMap["cluster_type"].toString();
-        S9sString     state       = theMap["state"].toString();
-        S9sString     text        = theMap["status_text"].toString();
-        S9sString     version     = 
-            theMap["vendor"].toString() + " " +
-            theMap["version"].toString();
-        S9sString     statusText  = theMap["status_text"].toString();
+        S9sVariantMap clusterMap  = theList[idx].toVariantMap();
+        S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
+        S9sString     ownerName   = ownerMap["user_name"].toString();
+        S9sString     clusterName = clusterMap["cluster_name"].toString();
+        int           clusterId   = clusterMap["cluster_id"].toInt();
+        S9sString     clusterType = clusterMap["cluster_type"].toString();
+        S9sString     state       = clusterMap["state"].toString();
+        S9sString     text        = clusterMap["status_text"].toString();
+        S9sString     statusText  = clusterMap["status_text"].toString();
         int           nColumns    = 0;
-        //const char   *nameStart   = "";
-        //const char   *nameEnd     = "";
+        S9sString     version     = 
+            clusterMap["vendor"].toString() + " " +
+            clusterMap["version"].toString();
 
         if (!requestedName.empty() && requestedName != clusterName)
             continue;
@@ -810,6 +814,7 @@ S9sRpcReply::printClusterListLong()
         nColumns += stateFormat.realWidth();
         nColumns += typeFormat.realWidth();
         nColumns += versionFormat.realWidth();
+        nColumns += ownerFormat.realWidth();
         nColumns += nameFormat.realWidth();
 
         if (nColumns < terminalWidth)
@@ -827,6 +832,7 @@ S9sRpcReply::printClusterListLong()
         stateFormat.printf(state);
         typeFormat.printf(clusterType.toLower());
         versionFormat.printf(version);
+        ownerFormat.printf(ownerName);
         nameFormat.printf(clusterName);
         printf("%s\n", STR(statusText));
     }
