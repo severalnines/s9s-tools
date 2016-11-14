@@ -152,6 +152,10 @@ fi
 
 
   load=$(uptime | awk '{print $12}' | tr ',' '.')
+  if [ -z "$load" ]; then
+        load=$(uptime | awk '{print $11}' | tr ',' '.')
+  fi
+
   load_topic="server/$(hostname)/load"
   printVerbose "--host $MQTT_SERVER --port MQTT_PORT --topic $load_topic --message=$load"
   mosquitto_pub \
