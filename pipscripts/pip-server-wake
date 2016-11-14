@@ -253,7 +253,7 @@ else
     is_server_running_ssh $*
     retcode="$?"
 
-    printVerbose "Exiting with '$retcode'."
+    printVerbose "Exiting with '$retcode' on '$*'."
 fi
     
 exit $retcode
