@@ -57,13 +57,13 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]... [CONTAINER_NAME]...
 
-  $MYNAME - Creates and starts containers.
+  $MYNAME - Monitors various system properties and reports them.
 
  -h, --help           Print this help and exit.
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
- --server=SERVER      Receive messages from this MQTT server.
+ --server=SERVER      MQTT broker server.
 
 EOF
     exit 0
@@ -120,48 +120,43 @@ while true; do
     esac
 done
 
-input=tts/say
-pipe="/var/tmp/say_server_backpipe";
-pidfile="/var/tmp/say_server.pid"
-
-function ctrl_c() 
+function mqtt_config_file()
 {
-    local pid=$(cat "$pidfile")
+    local file_name="$HOME/.pip/mqtt.conf"
 
-    echo "Cleaning up..."
-    echo "Removing '$pipe'."
-    rm -f $pipe; 
+    if [ ! -f "$file_name" ]; then
+        printVerbose "Creating '$file_name'."
 
-    echo "Killing PID ${pid}..."
-    kill $pid 2>/dev/null
-
-    if [[ "$?" -eq "0" ]]; then
-        echo "Exit success";exit 0
-    else
-        exit 1
+        mkdir -p "$(dirname $file_name)" 2>/dev/null
+cat <<EOF >$file_name
+#
+#
+#
+MQTT_SERVER="192.168.1.104"
+MQTT_PORT=1883
+EOF
     fi
+
+    echo "$file_name"
 }
 
-function listen()
-{
-    echo "listen"
 
-    ([ ! -p "$pipe" ]) && mkfifo $pipe
-    (mosquitto_sub -h $SERVER -t $input >$pipe 2>/dev/null) &
-    echo "$!" > "$pidfile"
-    echo "Pid is $(cat $pidfile)"
+CONFIG_FILE=$(mqtt_config_file)
+if [ ! -f "$CONFIG_FILE" ]; then
+    printError "Config file '$CONFIG_FILE' not found."
+    exit 5
+else
+    printVerbose "Loading config file '$CONFIG_FILE'."
+    source "$CONFIG_FILE"
+fi
 
-    while read line <$pipe; do
-        echo "$line"
-        if [ "$line" == "play keyok" ]; then
-            play \
-                /home/pipas/Desktop/star-trek-sounds/keyok1.mp3 \
-                >/dev/null 2>/dev/null &
-        else
-            echo "$line" | festival --tts &
-        fi
-    done
-}
 
-trap ctrl_c INT
-listen
+  load=$(uptime | awk '{print $12}' | tr ',' '.')
+  load_topic="server/$(hostname)/load"
+  printVerbose "--host $MQTT_SERVER --port MQTT_PORT --topic $load_topic --message=$load"
+  mosquitto_pub \
+      --host $MQTT_SERVER \
+      --port $MQTT_PORT \
+      --topic $load_topic \
+      --message "$load"
+
