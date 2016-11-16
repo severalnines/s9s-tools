@@ -150,17 +150,45 @@ else
     source "$CONFIG_FILE"
 fi
 
+#
+# Sends the load of the local computer to the mqtt broker.
+#
+function local_load_to_mqtt()
+{
+    local load
+    local load_topic
 
-  load=$(uptime | awk '{print $12}' | tr ',' '.')
-  if [ -z "$load" ]; then
-        load=$(uptime | awk '{print $11}' | tr ',' '.')
-  fi
+    load=$(uptime | awk '{print $12}' | tr ',' '.')
+    [ -z "$load" ] && load=$(uptime | awk '{print $11}' | tr ',' '.')
+    [ -z "$load" ] && load=$(uptime | awk '{print $10}' | tr ',' '.')
 
-  load_topic="server/$(hostname)/load"
-  printVerbose "--host $MQTT_SERVER --port MQTT_PORT --topic $load_topic --message=$load"
-  mosquitto_pub \
-      --host $MQTT_SERVER \
-      --port $MQTT_PORT \
-      --topic $load_topic \
-      --message "$load"
 
+    load_topic="server/$(hostname)/load"
+    mosquitto_pub \
+        --host $MQTT_SERVER \
+        --port $MQTT_PORT \
+        --topic $load_topic \
+        --message "$load"
+}
+
+function local_free_disk_to_mqtt()
+{
+    local free
+    local free_topic
+
+    free=$(df /home | tail -n 1 | awk '{print $4}')
+    free_topic="server/$(hostname)/free_disk"
+
+    let free/=1024
+    let free/=1024
+
+    mosquitto_pub \
+        --host $MQTT_SERVER \
+        --port $MQTT_PORT \
+        --topic $free_topic \
+        --message "$free"
+}
+
+
+local_load_to_mqtt
+local_free_disk_to_mqtt

@@ -19,21 +19,6 @@ cd $MYDIR
 source include.sh
 
 #
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$MYNAME($$) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
 # Prints usage information and exits.
 #
 function printHelpAndExit()
@@ -144,10 +129,8 @@ function find_cluster_id()
 function grant_user()
 {
     echo "Granting..."
-    $S9S user \
-        --cmon-user=$USER \
-        --generate-key \
-        --grant-user \
+    $S9S user --cmon-user=$USER --generate-key --grant-user
+
     echo "Done..."
 }
 
