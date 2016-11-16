@@ -72,6 +72,10 @@ enum S9sOptionType
     OptionBackupId,
     OptionSchedule,
     OptionPing,
+    OptionGroup,
+    OptionCreateGroup,
+    OptionFirstName,
+    OptionLastName,
 };
 
 /**
@@ -2135,24 +2139,29 @@ S9sOptions::readOptionsUser(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'              },
-        { "verbose",          no_argument,       0, 'v'              },
-        { "version",          no_argument,       0, 'V'              },
-        { "controller",       required_argument, 0, 'c'              },
-        { "controller-port",  required_argument, 0, 'P'              },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls     },
-        { "rpc-token",        required_argument, 0, 't'              },
-        { "long",             no_argument,       0, 'l'              },
-        { "print-json",       no_argument,       0, OptionPrintJson  },
-        { "color",            optional_argument, 0, OptionColor      },
-        { "config-file",      required_argument, 0, OptionConfigFile },
+        { "help",             no_argument,       0, 'h'               },
+        { "verbose",          no_argument,       0, 'v'               },
+        { "version",          no_argument,       0, 'V'               },
+        { "controller",       required_argument, 0, 'c'               },
+        { "controller-port",  required_argument, 0, 'P'               },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
+        { "rpc-token",        required_argument, 0, 't'               },
+        { "long",             no_argument,       0, 'l'               },
+        { "print-json",       no_argument,       0, OptionPrintJson   },
+        { "color",            optional_argument, 0, OptionColor       },
+        { "config-file",      required_argument, 0, OptionConfigFile  },
 
         // Main Option
-        { "generate-key",     no_argument,       0, 'g'              }, 
-        { "cmon-user",        required_argument, 0, 'u'              }, 
-        { "grant-user",       no_argument,       0, 'G'              },
-        { "list",             no_argument,       0, 'L'              },
-        { "set",              no_argument,       0, OptionSet        },
+        { "generate-key",     no_argument,       0, 'g'               }, 
+        { "cmon-user",        required_argument, 0, 'u'               }, 
+        { "grant-user",       no_argument,       0, 'G'               },
+        { "list",             no_argument,       0, 'L'               },
+        { "set",              no_argument,       0, OptionSet         },
+        
+        { "group",            required_argument, 0, OptionGroup       },
+        { "create-group",     no_argument,       0, OptionCreateGroup },
+        { "first-name",       required_argument, 0, OptionFirstName   },
+        { "last-name",        required_argument, 0, OptionLastName    },
 
         { 0, 0, 0, 0 }
     };
@@ -2252,6 +2261,26 @@ S9sOptions::readOptionsUser(
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
+                break;
+            
+            case OptionGroup:
+                // --group=GROUPNAME
+                m_options["group"] = optarg;
+                break;
+            
+            case OptionCreateGroup:
+                // --create-group
+                m_options["create_group"] = true;
+                break;
+            
+            case OptionFirstName:
+                // --first-name=FIRSTNAME
+                m_options["first_name"] = optarg;
+                break;
+            
+            case OptionLastName:
+                // --last-name=FIRSTNAME
+                m_options["last_name"] = optarg;
                 break;
 
             default:
@@ -2737,5 +2766,41 @@ S9sOptions::isGrantUserRequest() const
         return m_options.at("grant_user").toBoolean();
 
     return false;
+}
+
+S9sString
+S9sOptions::group() const
+{
+    if (m_options.contains("group"))
+        return m_options.at("group").toString();
+
+    return S9sString();
+}
+
+bool
+S9sOptions::createGroup() const
+{
+    if (m_options.contains("create_group"))
+        return m_options.at("create_group").toBoolean();
+
+    return false;
+}
+
+S9sString
+S9sOptions::lastName() const
+{
+    if (m_options.contains("last_name"))
+        return m_options.at("last_name").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sOptions::firstName() const
+{
+    if (m_options.contains("first_name"))
+        return m_options.at("first_name").toString();
+
+    return S9sString();
 }
 

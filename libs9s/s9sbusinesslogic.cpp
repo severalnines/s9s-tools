@@ -1403,9 +1403,21 @@ S9sBusinessLogic::executeUser(
             S9sString     path = fifos.at(idx);
             S9sFile       file(path);
 
+            // 
+            // Building up a request for the user creation.
+            //
             request["user_name"] = userName;
             request["pubkey"]    = pubKeyStr;
             
+            if (!options->firstName().empty())
+                request["first_name"] = options->firstName();
+            
+            if (!options->lastName().empty())
+                request["last_name"] = options->lastName();
+            
+            if (!options->group().empty())
+                request["group"] = options->group();
+
             escapedJson = request.toString().escape();
             if (options->isJsonRequested())
                 printf("Request: %s\n", STR(request.toString()));

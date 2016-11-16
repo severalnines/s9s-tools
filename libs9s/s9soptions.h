@@ -120,6 +120,10 @@ class S9sOptions
 
         bool isGenerateKeyRequested() const;
         bool isGrantUserRequest() const;
+        S9sString group() const;
+        bool createGroup() const;
+        S9sString lastName() const;
+        S9sString firstName() const;
 
         bool isListRequested() const;
         bool isSetRequested() const;
