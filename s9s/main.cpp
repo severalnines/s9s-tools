@@ -88,7 +88,7 @@ main(int argc, char **argv)
         atexit(enable_cursor);
 
     PRINT_VERBOSE("Command line options processed.");
-    #if 1
+    #if 0
     if (options->isVerbose())
     {
         printf("%sXTERM_COLOR_RED%s\n", 

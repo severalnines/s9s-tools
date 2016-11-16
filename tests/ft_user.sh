@@ -29,6 +29,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  -h, --help      Print this help and exit.
  --verbose       Print more messages.
+ --print-json    Print the JSON messages sent and received.
  --log           Print the logs while waiting for the job to be ended.
 
 EOF
@@ -37,7 +38,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log" \
+        -l "help,verbose,print-json,log" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -55,11 +56,17 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            OPTION_VERBOSE="--verbose"
             ;;
 
         --log)
             shift
             LOG_OPTION="--log"
+            ;;
+
+        --print-json)
+            shift
+            OPTION_PRINT_JSON="--print-json"
             ;;
 
         --)
@@ -86,7 +93,10 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    $S9S cluster \
+        --ping \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -98,6 +108,24 @@ function testPing()
     fi
 }
 
+function testGrantUser()
+{
+    echo "Granting..."
+    $S9S user \
+        --cmon-user=$USER \
+        --generate-key \
+        --grant-user \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating cluster."
+    fi
+}
+
+
 #
 # Running the requested tests.
 #
@@ -108,7 +136,8 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
+    #runFunctionalTest testPing
+    runFunctionalTest testGrantUser
 fi
 
 endTests

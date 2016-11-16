@@ -1289,8 +1289,9 @@ S9sBusinessLogic::executeUser(
     config.setFileName("~/.s9s/s9s.conf");
 
     PRINT_VERBOSE(
-            "Saving cmon_user=%s into %s\n",
-            STR(userName), STR(config.fileName()));
+            "Saving Cmon user '%s' into config file at %s.",
+            STR(userName), 
+            STR(config.fileName()));
 
     if (!config.parseSourceFile())
     {
@@ -1326,15 +1327,11 @@ S9sBusinessLogic::executeUser(
 
         if (key.loadKeyFromFile(keyFilePath) && key.isValid())
         {
-            PRINT_VERBOSE(
-                    "Keyfile '%s' exists and valid.\n", 
-                    STR(keyFilePath));
+            PRINT_VERBOSE("Keyfile '%s' exists and valid.", STR(keyFilePath));
         } else {
             S9sString pubKeyPath;
 
-            PRINT_VERBOSE(
-                    "Generating an RSA key-pair (%s).\n", 
-                    STR(keyFilePath));
+            PRINT_VERBOSE("Generating an RSA key-pair (%s).", STR(keyFilePath));
 
             pubKeyPath = keyFilePath;
             pubKeyPath.replace(".key", "");
@@ -1359,6 +1356,9 @@ S9sBusinessLogic::executeUser(
         return;
     }
 
+    /*
+     * Granting.
+     */
     if (options->isGrantUserRequest())
     {
         S9sStringList fifos;
@@ -1398,30 +1398,26 @@ S9sBusinessLogic::executeUser(
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
-            S9sString path = fifos.at(idx);
-            S9sFile   file(path);
+            S9sVariantMap request;
+            S9sString     escapedJson;
+            S9sString     path = fifos.at(idx);
+            S9sFile       file(path);
 
-            #if 0
-            if (!file.exists())
-            {
-                PRINT_VERBOSE(
-                        "Controller was not found on '%s',",
-                        STR(path));
-                continue;
-            }
-            #endif
+            request["user_name"] = userName;
+            request["pubkey"]    = pubKeyStr;
+            
+            escapedJson = request.toString().escape();
+            if (options->isJsonRequested())
+                printf("Request: %s\n", STR(request.toString()));
+            
+            PRINT_VERBOSE("escapedJson: \n%s", STR(escapedJson));
 
-            if ( controller == "localhost" ||
-                 controller == "127.0.0.1")
+            if (controller == "localhost" || controller == "127.0.0.1")
             {
                 sshCommand.sprintf(
-                    "echo \"{"
-                    " \\\"username\\\":\\\"%s\\\","
-                    " \\\"pubkey\\\": \\\"%s\\\"}\" "
-                    "| sudo -n tee %s >/dev/null",
-                    STR(userName),
-                    STR(pubKeyStr),
-                    STR(path));
+                    "echo \"%s\" "
+                    "| sudo -n tee %s 2>/dev/null >/dev/null",
+                    STR(escapedJson), STR(path));
             } else {
                 sshCommand.sprintf(
                     "ssh -tt "
@@ -1431,20 +1427,17 @@ S9sBusinessLogic::executeUser(
                     "-oPasswordAuthentication=no "
                     "-oConnectTimeout=30 "
                     " '%s' "
-                    "'echo \"{"
-                    " \\\"username\\\":\\\"%s\\\","
-                    " \\\"pubkey\\\": \\\"%s\\\"}\" "
-                    "| sudo -n tee %s >/dev/null'",
+                    "'echo \"%s\" "
+                    "| sudo -n tee %s 2>/dev/null >/dev/null'",
                     STR(controller),
-                    STR(userName),
-                    STR(pubKeyStr),
+                    STR(escapedJson),
                     STR(path));
             }
 
-            PRINT_VERBOSE("Tried to grant on %s:%s, exitCode=%d.\n",
-                    STR(controller), 
-                    STR(path), 
-                    exitCode);
+            PRINT_VERBOSE("Command: \n%s", STR(sshCommand));
+            PRINT_VERBOSE(
+                    "Tried to grant on %s:%s, exitCode=%d.",
+                    STR(controller), STR(path), exitCode);
 
             exitCode    = ::system(STR(sshCommand));
             oneSucceed |= (exitCode == 0);
@@ -1463,6 +1456,10 @@ S9sBusinessLogic::executeUser(
             options->setExitStatus(S9sOptions::JobFailed);
 
             return;
+        } else {
+            fprintf(stderr, "Grant user '%s' succeeded.\n", 
+                    STR(userName));
+            fflush(stderr);
         }
     }
 }
