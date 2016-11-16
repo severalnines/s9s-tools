@@ -2157,7 +2157,8 @@ S9sOptions::readOptionsUser(
         { "grant-user",       no_argument,       0, 'G'               },
         { "list",             no_argument,       0, 'L'               },
         { "set",              no_argument,       0, OptionSet         },
-        
+       
+        // Options about the user.
         { "group",            required_argument, 0, OptionGroup       },
         { "create-group",     no_argument,       0, OptionCreateGroup },
         { "first-name",       required_argument, 0, OptionFirstName   },
