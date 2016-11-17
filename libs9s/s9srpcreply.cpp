@@ -749,7 +749,7 @@ S9sRpcReply::printClusterListLong()
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
     S9sFormat       versionFormat;
-    S9sFormat       ownerFormat;
+    S9sFormat       ownerFormat, groupFormat;
     S9sFormat       nameFormat;
 
     /*
@@ -760,6 +760,8 @@ S9sRpcReply::printClusterListLong()
         S9sVariantMap clusterMap  = theList[idx].toVariantMap();
         S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
         S9sString     ownerName   = ownerMap["user_name"].toString();
+        S9sVariantMap groupMap    = clusterMap["group"].toVariantMap();
+        S9sString     groupName   = groupMap["group_name"].toString();
         S9sString     clusterName = clusterMap["cluster_name"].toString();
         int           clusterId   = clusterMap["cluster_id"].toInt();
         S9sString     clusterType = clusterMap["cluster_type"].toString();
@@ -768,9 +770,15 @@ S9sRpcReply::printClusterListLong()
             clusterMap["vendor"].toString() + " " +
             clusterMap["version"].toString();
 
+        if (groupName.empty())
+            groupName = "0";
+
+        S9S_DEBUG("*** groupName: '%s'", STR(groupName));
+
         idFormat.widen(clusterId);
         nameFormat.widen(clusterName);
         ownerFormat.widen(ownerName);
+        groupFormat.widen(groupName);
         stateFormat.widen(state);
         typeFormat.widen(clusterType);
         versionFormat.widen(version);
@@ -784,6 +792,8 @@ S9sRpcReply::printClusterListLong()
         S9sVariantMap clusterMap  = theList[idx].toVariantMap();
         S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
         S9sString     ownerName   = ownerMap["user_name"].toString();
+        S9sVariantMap groupMap    = clusterMap["group"].toVariantMap();
+        S9sString     groupName   = groupMap["group_name"].toString();
         S9sString     clusterName = clusterMap["cluster_name"].toString();
         int           clusterId   = clusterMap["cluster_id"].toInt();
         S9sString     clusterType = clusterMap["cluster_type"].toString();
@@ -794,6 +804,9 @@ S9sRpcReply::printClusterListLong()
         S9sString     version     = 
             clusterMap["vendor"].toString() + " " +
             clusterMap["version"].toString();
+        
+        if (groupName.empty())
+            groupName = "0";
 
         if (!requestedName.empty() && requestedName != clusterName)
             continue;
@@ -813,8 +826,9 @@ S9sRpcReply::printClusterListLong()
         nColumns += idFormat.realWidth();
         nColumns += stateFormat.realWidth();
         nColumns += typeFormat.realWidth();
-        nColumns += versionFormat.realWidth();
+        //nColumns += versionFormat.realWidth();
         nColumns += ownerFormat.realWidth();
+        nColumns += groupFormat.realWidth();
         nColumns += nameFormat.realWidth();
 
         if (nColumns < terminalWidth)
@@ -831,8 +845,16 @@ S9sRpcReply::printClusterListLong()
         idFormat.printf(clusterId); 
         stateFormat.printf(state);
         typeFormat.printf(clusterType.toLower());
-        versionFormat.printf(version);
+        //versionFormat.printf(version);
+        
+        printf("%s", userColorBegin());
         ownerFormat.printf(ownerName);
+        printf("%s", userColorEnd());
+
+        printf("%s", groupColorBegin(groupName));
+        groupFormat.printf(groupName);
+        printf("%s", userColorEnd());
+
         nameFormat.printf(clusterName);
         printf("%s\n", STR(statusText));
     }
@@ -1736,7 +1758,10 @@ S9sRpcReply::printUserListLong()
     S9sFormat       groupNamesFormat;
 
     userList = operator[]("users").toVariantList();
-    
+   
+    /*
+     * Going through first and collecting some informations.
+     */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
         S9sVariantMap  userMap    = userList[idx].toVariantMap();
@@ -1765,7 +1790,7 @@ S9sRpcReply::printUserListLong()
     }
 
     /*
-     * 
+     * Going through again and printing.
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
@@ -1777,8 +1802,10 @@ S9sRpcReply::printUserListLong()
         S9sString      lastName   = userMap["last_name"].toString();
         S9sString      fullName;
         S9sString      groupNames; 
-        
+       
+        //
         // Concatenating the group names into one string.
+        //
         for (uint idx = 0u; idx < groupList.size(); ++idx)
         {
             S9sVariantMap groupMap  = groupList[idx].toVariantMap();
@@ -2313,5 +2340,55 @@ S9sRpcReply::nodeStateFlag(
         return "-";
 
     return "?";
+}
+
+bool
+S9sRpcReply::useSyntaxHighLight() const
+{
+    S9sOptions *options = S9sOptions::instance();
+   
+    return options->useSyntaxHighlight();
+}
+
+const char *
+S9sRpcReply::userColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_ORANGE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::userColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::groupColorBegin(
+        const S9sString &groupName) const
+{
+    if (useSyntaxHighLight())
+    {
+        if (groupName == "0")
+            return XTERM_COLOR_RED;
+        else
+            return XTERM_COLOR_CYAN;
+    }
+
+    return "";
+}
+
+const char *
+S9sRpcReply::groupColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
 }
 

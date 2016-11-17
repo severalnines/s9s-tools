@@ -76,7 +76,6 @@ class S9sRpcReply : public S9sVariantMap
         void printUserListBrief();
         void printUserListLong();
 
-
         void html2ansi(S9sString &s);
 
         S9sString 
@@ -87,5 +86,12 @@ class S9sRpcReply : public S9sVariantMap
         S9sString 
             nodeStateFlag(
                 const S9sString &state);
+
+        bool useSyntaxHighLight() const;
+        const char *groupColorBegin(const S9sString &groupName) const;
+        const char *groupColorEnd() const;
+        
+        const char *userColorBegin() const;
+        const char *userColorEnd() const;
 };
 
