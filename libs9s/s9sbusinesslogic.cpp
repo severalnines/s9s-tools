@@ -62,16 +62,41 @@ S9sBusinessLogic::execute()
         S9sString userName = options->userName();
         S9sString keyPath  = options->privateKeyPath();
 
-        // and we shall try to auth only if we have username & key
-        if (!userName.empty() && !keyPath.empty())
+        if (userName.empty())
         {
-            if (!client.authenticate())
+            PRINT_ERROR("No user name not set.");
+            options->setExitStatus(S9sOptions::BadOptions);
+            return;
+        }
+
+        if (keyPath.empty())
+        {
+            PRINT_ERROR("No key file name not set.");
+            options->setExitStatus(S9sOptions::BadOptions);
+            return;
+        }
+
+        if (!client.authenticate())
+        {
+
+            if (options->isJsonRequested())
             {
-                PRINT_ERROR(
-                        "Authentication failed: %s",
-                        STR(client.errorString()));
-                // continuing, server replies a nice error
+                printf("%s\n", STR(client.reply().toString()));
+            } else {
+                S9sString errorString = client.errorString();
+
+                if (errorString.empty())
+                    errorString = client.reply().errorString();
+
+                if (errorString.empty())
+                    errorString = "Access denied.";
+
+                PRINT_ERROR("Authentication failed: %s", STR(errorString));
             }
+
+            // continuing, server replies a nice error
+            options->setExitStatus(S9sOptions::AccessDenied);
+            return;
         }
     }
 

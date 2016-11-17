@@ -58,6 +58,7 @@ class S9sOptions
             ExitOk       = 0,
             JobFailed    = 1,
             Failed       = 2,
+            AccessDenied = 3,
             BadOptions   = 6,
         };
 

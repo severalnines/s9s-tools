@@ -741,8 +741,8 @@ void
 S9sRpcReply::printClusterListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       requestedName = options->clusterName();
     int             terminalWidth = options->terminalWidth();
     S9sFormat       idFormat;
@@ -760,7 +760,7 @@ S9sRpcReply::printClusterListLong()
         S9sVariantMap clusterMap  = theList[idx].toVariantMap();
         S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
         S9sString     ownerName   = ownerMap["user_name"].toString();
-        S9sVariantMap groupMap    = clusterMap["group"].toVariantMap();
+        S9sVariantMap groupMap    = clusterMap["group_owner"].toVariantMap();
         S9sString     groupName   = groupMap["group_name"].toString();
         S9sString     clusterName = clusterMap["cluster_name"].toString();
         int           clusterId   = clusterMap["cluster_id"].toInt();
@@ -792,7 +792,7 @@ S9sRpcReply::printClusterListLong()
         S9sVariantMap clusterMap  = theList[idx].toVariantMap();
         S9sVariantMap ownerMap    = clusterMap["owner"].toVariantMap();
         S9sString     ownerName   = ownerMap["user_name"].toString();
-        S9sVariantMap groupMap    = clusterMap["group"].toVariantMap();
+        S9sVariantMap groupMap    = clusterMap["group_owner"].toVariantMap();
         S9sString     groupName   = groupMap["group_name"].toString();
         S9sString     clusterName = clusterMap["cluster_name"].toString();
         int           clusterId   = clusterMap["cluster_id"].toInt();
@@ -814,15 +814,7 @@ S9sRpcReply::printClusterListLong()
         // This should not happen!
         if (clusterName.empty())
             continue;
-        
-        if (syntaxHighlight)
-        {
-            if (state == "STARTED")
-                nameFormat.setColor(XTERM_COLOR_BLUE, TERM_NORMAL);
-            else
-                nameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
-        }
- 
+
         nColumns += idFormat.realWidth();
         nColumns += stateFormat.realWidth();
         nColumns += typeFormat.realWidth();
@@ -841,6 +833,16 @@ S9sRpcReply::printClusterListLong()
                 statusText += "…";
             }
         }
+        
+        if (syntaxHighlight)
+        {
+            if (state == "STARTED")
+                stateFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
+            else if (state == "FAILED")
+                stateFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
+            else
+                stateFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
+        }
 
         idFormat.printf(clusterId); 
         stateFormat.printf(state);
@@ -854,8 +856,11 @@ S9sRpcReply::printClusterListLong()
         printf("%s", groupColorBegin(groupName));
         groupFormat.printf(groupName);
         printf("%s", userColorEnd());
-
+        
+        printf("%s", clusterColorBegin());
         nameFormat.printf(clusterName);
+        printf("%s", clusterColorEnd());
+
         printf("%s\n", STR(statusText));
     }
    
@@ -1095,7 +1100,11 @@ S9sRpcReply::printNodeListLong()
         printf("%c ", maintenance ? 'M' : '-');
 
         versionFormat.printf(version);
+
+        printf("%s", clusterColorBegin());
         clusterNameFormat.printf(clusterName);
+        printf("%s", clusterColorEnd());
+
         hostNameFormat.printf(hostName);
 
         if (port >= 0)
@@ -2349,6 +2358,25 @@ S9sRpcReply::useSyntaxHighLight() const
    
     return options->useSyntaxHighlight();
 }
+
+const char *
+S9sRpcReply::clusterColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_BLUE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::clusterColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
 
 const char *
 S9sRpcReply::userColorBegin() const
