@@ -1872,6 +1872,9 @@ S9sRpcReply::printUserListLong()
         printf("%s", STR(fullName));
         printf("\n");
     }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", operator[]("total").toInt());
 }
 
 void

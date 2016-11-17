@@ -2150,6 +2150,7 @@ S9sOptions::readOptionsUser(
         { "print-json",       no_argument,       0, OptionPrintJson   },
         { "color",            optional_argument, 0, OptionColor       },
         { "config-file",      required_argument, 0, OptionConfigFile  },
+        { "batch",            no_argument,       0, OptionBatch       },
 
         // Main Option
         { "generate-key",     no_argument,       0, 'g'               }, 
@@ -2219,6 +2220,11 @@ S9sOptions::readOptionsUser(
             case OptionConfigFile:
                 // --config-file=CONFIG
                 m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
                 break;
             
             case OptionColor:
