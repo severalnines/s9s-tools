@@ -76,6 +76,7 @@ enum S9sOptionType
     OptionCreateGroup,
     OptionFirstName,
     OptionLastName,
+    OptionTitle,
 };
 
 /**
@@ -2164,6 +2165,7 @@ S9sOptions::readOptionsUser(
         { "create-group",     no_argument,       0, OptionCreateGroup },
         { "first-name",       required_argument, 0, OptionFirstName   },
         { "last-name",        required_argument, 0, OptionLastName    },
+        { "title",            required_argument, 0, OptionTitle       },
 
         { 0, 0, 0, 0 }
     };
@@ -2288,6 +2290,11 @@ S9sOptions::readOptionsUser(
             case OptionLastName:
                 // --last-name=FIRSTNAME
                 m_options["last_name"] = optarg;
+                break;
+            
+            case OptionTitle:
+                // --title=TITLE
+                m_options["title"] = optarg;
                 break;
 
             default:
@@ -2766,6 +2773,9 @@ S9sOptions::isGenerateKeyRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --grant-user command line option is requested.
+ */
 bool
 S9sOptions::isGrantUserRequest() const
 {
@@ -2791,6 +2801,15 @@ S9sOptions::createGroup() const
         return m_options.at("create_group").toBoolean();
 
     return false;
+}
+
+S9sString
+S9sOptions::title() const
+{
+    if (m_options.contains("title"))
+        return m_options.at("title").toString();
+
+    return S9sString();
 }
 
 S9sString

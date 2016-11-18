@@ -141,7 +141,8 @@ function testGrantUser()
         --generate-key \
         --grant-user \
         $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE
+        $OPTION_VERBOSE \
+        --batch
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -152,15 +153,126 @@ function testGrantUser()
     #
     # Let's add some users so that we have something to work on.
     #
-    $S9S user --cmon-user="sisko"  --first-name="Benjamin" --last-name="Sisko"   --grant-user --generate-key
-    $S9S user --cmon-user="odo"    --first-name="Odo"      --last-name=""        --grant-user --generate-key
-    $S9S user --cmon-user="jake"   --first-name="Jake"     --last-name="Sisko"   --grant-user --generate-key
-    $S9S user --cmon-user="bashir" --first-name="Julian"   --last-name="Bashir"  --grant-user --generate-key
-    $S9S user --cmon-user="chief"  --first-name="Miles"    --last-name="O'Brien" --grant-user --generate-key
-    $S9S user --cmon-user="nerys"  --first-name="Kira"     --last-name="Neris"   --grant-user --generate-key
-    $S9S user --cmon-user="quark"  --first-name="Quark"    --last-name=""        --grant-user --generate-key
-    $S9S user --cmon-user="jadzia" --first-name="Jadzia"   --last-name="Dax"     --grant-user --generate-key
-    $S9S user --cmon-user="worf"   --first-name="Worf"     --last-name=""        --grant-user --generate-key
+    $S9S user \
+        --cmon-user="sisko" \
+        --title="Captain" \
+        --first-name="Benjamin" \
+        --last-name="Sisko"   \
+        --grant-user \
+        --generate-key \
+        --batch
+      
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="odo" \
+        --first-name="Odo" \
+        --last-name="" \
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user --cmon-user="jake"\
+        --first-name="Jake"\
+        --last-name="Sisko"\
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="bashir" \
+        --title="Dr." \
+        --first-name="Julian" \
+        --last-name="Bashir" \
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user --cmon-user="chief" \
+        --title="Chief" \
+        --first-name="Miles" \
+        --last-name="O'Brien" \
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="nerys"  \
+        --title="Major" \
+        --first-name="Kira" \
+        --last-name="Neris" \
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="quark" \
+        --first-name="Quark" \
+        --last-name=""\
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="jadzia" \
+        --title="Lt." \
+        --first-name="Jadzia" \
+        --last-name="Dax"\
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --cmon-user="worf"\
+        --title="Lt." \
+        --first-name="Worf" \
+        --last-name="" \
+        --grant-user \
+        --generate-key \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
 }
 
 #

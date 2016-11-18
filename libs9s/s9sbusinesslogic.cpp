@@ -53,7 +53,7 @@ S9sBusinessLogic::execute()
      * Here is a fucked up version and a version that I try to clean up.
      */
     //if (!options->isUserOperation() || !options->rpcToken().empty())
-    if (options->isUserOperation() && !options->isListRequested())
+    if (options->isUserOperation() && options->isGrantUserRequest())
     {
         PRINT_VERBOSE("No authentication required");
         // No authentication required.
@@ -1303,7 +1303,7 @@ S9sBusinessLogic::executeUser(
     {
         PRINT_ERROR(
                  "User name is not set.\n"
-                 "Use the --username command line option to set it.");
+                 "Use the --cmon-user command line option to set it.");
 
         options->setExitStatus(S9sOptions::BadOptions);
     }
@@ -1386,6 +1386,9 @@ S9sBusinessLogic::executeUser(
      */
     if (options->isGrantUserRequest())
     {
+        bool          oneSucceed = false;
+        int           exitCode = 0;
+        S9sString     sshCommand;
         S9sStringList fifos;
         S9sString     pubKeyPath;
 
@@ -1417,9 +1420,6 @@ S9sBusinessLogic::executeUser(
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
-        bool oneSucceed = false;
-        int exitCode = 0;
-        S9sString sshCommand;
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
@@ -1433,6 +1433,9 @@ S9sBusinessLogic::executeUser(
             //
             request["user_name"] = userName;
             request["pubkey"]    = pubKeyStr;
+            
+            if (!options->title().empty())
+                request["title"] = options->title();
             
             if (!options->firstName().empty())
                 request["first_name"] = options->firstName();
@@ -1494,9 +1497,14 @@ S9sBusinessLogic::executeUser(
 
             return;
         } else {
-            fprintf(stderr, "Grant user '%s' succeeded.\n", 
-                    STR(userName));
-            fflush(stderr);
+            if (!options->isBatchRequested())
+            {
+                fprintf(stderr, 
+                        "Grant user '%s' succeeded.\n", 
+                        STR(userName));
+
+                fflush(stderr);
+            }
         }
     }
 }

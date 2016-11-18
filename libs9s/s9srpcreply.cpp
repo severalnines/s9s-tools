@@ -1807,6 +1807,7 @@ S9sRpcReply::printUserListLong()
         S9sVariantList groupList  = userMap["groups"].toVariantList();
         S9sString      userName   = userMap["user_name"].toString();
         int            userId     = userMap["user_id"].toInt();
+        S9sString      title      = userMap["title"].toString();
         S9sString      firstName  = userMap["first_name"].toString();
         S9sString      lastName   = userMap["last_name"].toString();
         S9sString      fullName;
@@ -1832,6 +1833,14 @@ S9sRpcReply::printUserListLong()
         /*
          * Concatenating the real-world names.
          */
+        if (!title.empty())
+        {
+            if (!fullName.empty())
+                fullName += " ";
+
+            fullName += title;
+        }
+
         if (!firstName.empty())
         {
             if (!fullName.empty())

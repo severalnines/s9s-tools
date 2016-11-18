@@ -125,6 +125,7 @@ class S9sOptions
         bool createGroup() const;
         S9sString lastName() const;
         S9sString firstName() const;
+        S9sString title() const;
 
         bool isListRequested() const;
         bool isSetRequested() const;
