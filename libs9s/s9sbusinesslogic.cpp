@@ -1446,6 +1446,9 @@ S9sBusinessLogic::executeUser(
             if (!options->group().empty())
                 request["group"] = options->group();
 
+            if (options->createGroup())
+                request["create_group"] = true;
+
             escapedJson = request.toString().escape();
             if (options->isJsonRequested())
                 printf("Request: %s\n", STR(request.toString()));

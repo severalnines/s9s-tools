@@ -2785,6 +2785,10 @@ S9sOptions::isGrantUserRequest() const
     return false;
 }
 
+/**
+ * \returns The value of provided by the --group command line option or the
+ *   empty string if no such an option is used.
+ */
 S9sString
 S9sOptions::group() const
 {
@@ -2794,6 +2798,9 @@ S9sOptions::group() const
     return S9sString();
 }
 
+/**
+ * \returns True if the --create-group command line option is used.
+ */
 bool
 S9sOptions::createGroup() const
 {

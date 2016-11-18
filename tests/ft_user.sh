@@ -160,6 +160,8 @@ function testGrantUser()
         --last-name="Sisko"   \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
       
     exitCode=$?
@@ -173,6 +175,8 @@ function testGrantUser()
         --last-name="" \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -185,6 +189,8 @@ function testGrantUser()
         --last-name="Sisko"\
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -199,6 +205,8 @@ function testGrantUser()
         --last-name="Bashir" \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -212,6 +220,8 @@ function testGrantUser()
         --last-name="O'Brien" \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -226,6 +236,8 @@ function testGrantUser()
         --last-name="Neris" \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -239,6 +251,8 @@ function testGrantUser()
         --last-name=""\
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -253,6 +267,8 @@ function testGrantUser()
         --last-name="Dax"\
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -267,6 +283,8 @@ function testGrantUser()
         --last-name="" \
         --grant-user \
         --generate-key \
+        --group=ds9 \
+        --create-group \
         --batch
     
     exitCode=$?
@@ -351,6 +369,24 @@ function testSystemUsers()
 }
 
 #
+# Testing what happens when a creation of a new user fails.
+#
+function testFailNoGroup()
+{
+    #
+    # Yes, this is a problem, we can't get an error message back from the pipe.
+    # The group here does not exists and we did not request the creation of the
+    # group, so this will fail, but we still get the AOK back from the program.
+    #
+    $S9S user \
+        --cmon-user=kirk \
+        --title="Captain" \
+        --grant-user \
+        --generate-key \
+        --group=nosuchgroup
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -363,6 +399,7 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
     runFunctionalTest testSystemUsers
+    runFunctionalTest testFailNoGroup
 fi
 
 endTests
