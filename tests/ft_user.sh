@@ -399,7 +399,7 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
     runFunctionalTest testSystemUsers
-    runFunctionalTest testFailNoGroup
+    #runFunctionalTest testFailNoGroup
 fi
 
 endTests
