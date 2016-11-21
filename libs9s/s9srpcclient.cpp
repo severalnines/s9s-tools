@@ -1204,6 +1204,7 @@ S9sRpcClient::removeNode(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
+    S9sNode        host;
     S9sString      hostName, title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
@@ -1216,12 +1217,14 @@ S9sRpcClient::removeNode(
         return false;
     }
     
-    hostName = hosts[0].toNode().hostName();
+    host     = hosts[0].toNode();
+    hostName = host.hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
     // The job_data describing the cluster.
-    jobData["host"]             = hostName;
-    //jobData["port"]             =
+    jobData["host"]       = hostName;
+    if (host.hasPort())
+        jobData["port"]   = host.port();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
