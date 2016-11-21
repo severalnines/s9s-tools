@@ -262,6 +262,62 @@ function testAddProxySql()
 }
 
 #
+# This test will first add a HaProxy node, then remove from the cluster. The
+# idea behind this test is that the remove-node call should be identify the node
+# using the IP address if there are multiple nodes with the same IP (one galera
+# node and one haproxy node on the same host this time).
+#
+function testAddRemoveHaProxy()
+{
+    local node
+    local nodes
+    local exitCode
+    
+    pip-say "The test to add and remove HaProxy node is starting now."
+    printVerbose "Creating Node..."
+    #node=$(create_node)
+    node=$(\
+        $S9S node --list --long --batch | \
+        grep ^g | \
+        tail -n1 | \
+        awk '{print $4}')
+
+    #
+    # Adding a node to the cluster.
+    #
+    $S9S cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="haProxy://$node" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+   
+    $S9S node --list --long --color=always
+
+    #
+    # Remove a node to the cluster.
+    #
+    $S9S cluster \
+        --remove-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$node:9600" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    $S9S node --list --long --color=always
+}
+
+#
 # This test will add a HaProxy node.
 #
 function testAddHaProxy()
@@ -291,52 +347,6 @@ function testAddHaProxy()
     fi
 }
 
-#
-# This test will add a HaProxy node, then it will remove.
-#
-function testAddRemoveHaProxy()
-{
-    local node
-    local nodes
-    local exitCode
-    
-    pip-say "The test to add and remove HaProxy node is starting now."
-    printVerbose "Creating Node..."
-    node=$(create_node)
-    nodes+="haProxy://$node"
-
-    #
-    # Adding a node to the cluster.
-    #
-    $S9S cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-   
-    $S9S node --list --long --color=always
-
-    #
-    # Remove a node to the cluster.
-    #
-    $S9S cluster \
-        --remove-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
 
 #
 # This test will remove the last added node.
@@ -506,8 +516,8 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
-    runFunctionalTest testAddHaProxy
     runFunctionalTest testAddRemoveHaProxy
+    runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup

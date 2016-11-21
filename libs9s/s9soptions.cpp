@@ -1086,6 +1086,9 @@ S9sOptions::useSyntaxHighlight() const
 
     if (configValue.toLower() == "auto")
     {
+        if (isBatchRequested())
+            return false;
+
         return isatty(fileno(stdout)) ? true : false;
     } else if (configValue.toLower() == "always")
     {
@@ -1669,10 +1672,11 @@ S9sOptions::readOptionsNode(
         { "controller-port",  required_argument, 0, 'P' },
         { "rpc-tls",          no_argument,       0, OptionRpcTls  },
         { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
+        { "long",             no_argument,       0, 'l'               },
         { "print-json",       no_argument,       0, OptionPrintJson   },
         { "color",            optional_argument, 0, OptionColor       },
         { "config-file",      required_argument, 0,  4                },
+        { "batch",            no_argument,       0, OptionBatch       },
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
@@ -1752,6 +1756,11 @@ S9sOptions::readOptionsNode(
                 m_options["config-file"] = optarg;
                 break;
             
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
             case OptionColor:
                 // --color=COLOR
                 if (optarg)
@@ -1818,7 +1827,7 @@ S9sOptions::readOptionsBackup(
         { "print-json",       no_argument,       0, OptionPrintJson  },
         { "color",            optional_argument, 0, OptionColor      },
         { "human-readable",   no_argument,       0, 'h' },
-        { "time-style",       required_argument, 0, OptionTimeStyle  },
+        { "time-style",       required_argument, 0, OptionTimeStyle   },
         { "config-file",      required_argument, 0,  OptionConfigFile },
 
         // Main Option
@@ -1827,9 +1836,9 @@ S9sOptions::readOptionsBackup(
         { "restore",          no_argument,       0,  OptionRestore    },
         
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait  },
-        { "log",              no_argument,       0, 'G' },
-        { "batch",            no_argument,       0, OptionBatch },
+        { "wait",             no_argument,       0, OptionWait        },
+        { "log",              no_argument,       0, 'G'               },
+        { "batch",            no_argument,       0, OptionBatch       },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
