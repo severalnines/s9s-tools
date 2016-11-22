@@ -122,11 +122,50 @@ while true; do
 done
 
 #
+# $1: the ip address to find
+#
+function find_name_for_ip()
+{
+    local ipToFind="$1"
+    local lines
+    local line
+    local name
+    local ip
+
+    OIFS=$IFS; IFS=$'\n'; lines=($(lxc-ls -f)); IFS=$OIFS
+    
+    for line in "${lines[@]}"; do 
+        name=$(echo $line | awk '{print $1}')
+        ip=$(echo $line | awk '{print $5}')
+
+        if [ -z "$name" -o -z "$ip" ]; then
+            continue
+        fi
+
+        if [ "$name" == "NAME" -a "$ip" == "IPV4" ]; then
+            continue
+        fi
+
+        if [ "$ip" == "-" ]; then
+            continue
+        fi
+
+        #printf "name: %-20s ip: %-20s\n" "$name" "$ip" >&2
+        if [ "$ip" == "$ipToFind" ]; then
+            echo "$name"
+            break
+        fi
+    done
+}
+
+
+#
 # $1: the name of the container to destroy.
 #
 function destroy_container()
 {
     local container_name="$1"
+    local real_name
 
     if [ -z "$container_name" ]; then
         printError "No container name, giving up."
@@ -134,6 +173,14 @@ function destroy_container()
     fi
 
     if [ ! -d "/var/lib/lxc/$container_name" ]; then
+        real_name=$(find_name_for_ip "$container_name")
+        echo "*** real_name: $real_name"
+
+        if [ -d "/var/lib/lxc/$real_name" ]; then
+            destroy_container "$real_name"
+            return $?
+        fi
+
         printError "The container '$container_name' does not exist."
         return 1
     fi
