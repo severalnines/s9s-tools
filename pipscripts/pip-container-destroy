@@ -56,7 +56,7 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... [CONTAINER_NAME]...
+  $MYNAME [OPTION]... [CONTAINER]...
 
   $MYNAME - Stops and destroys containers.
 
@@ -65,6 +65,8 @@ Usage:
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
  --server=SERVER      Create the container on remote server.
+
+ The container might be a container name or the IP address for a container.
 
 EOF
     exit 0
@@ -202,7 +204,7 @@ fi
 #
 # Checking root privileges.
 #
-if [ "$EUID" -ne 0 ]; then 
+if [ -z "$SERVER" -a "$EUID" -ne 0 ]; then 
     printError "This script has to have root privileges."
     exit 5
 fi
