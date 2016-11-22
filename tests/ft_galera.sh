@@ -8,6 +8,7 @@ LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
+ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
@@ -92,7 +93,16 @@ fi
 #
 function create_node()
 {
-    $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
+    local ip
+
+    ip=$($PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER)
+    echo $ip
+
+    if [ "$ALL_CREATED_IPS" ]; then
+        ALL_CREATED_IPS+=" "
+    fi
+
+    ALL_CREATED_IPS+=$ip
 }
 
 #
@@ -501,6 +511,11 @@ function testStart()
     fi
 }
 
+function testDestroyNodes()
+{
+    pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
+}
+
 #
 # Running the requested tests.
 #
@@ -524,6 +539,7 @@ else
     runFunctionalTest testRestoreBackup
     runFunctionalTest testStop
     runFunctionalTest testStart
+    runFunctionalTest testDestroyNodes
 fi
 
 endTests
