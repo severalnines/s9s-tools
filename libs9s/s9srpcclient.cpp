@@ -512,14 +512,13 @@ S9sRpcClient::getJobInstances(
  */
 bool
 S9sRpcClient::getJobInstance(
-        const int clusterId,
         const int jobId)
 {
     S9sString      uri;
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/job/", clusterId);
+    uri.sprintf("/v2/jobs/");
 
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
@@ -545,7 +544,6 @@ S9sRpcClient::getJobInstance(
  */
 bool
 S9sRpcClient::getJobLog(
-        const int clusterId,
         const int jobId,
         const int limit,
         const int offset)
@@ -554,7 +552,7 @@ S9sRpcClient::getJobLog(
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/job/", clusterId);
+    uri.sprintf("/v2/jobs/");
 
     // Building the request.
     request["operation"]  = "getJobLog";

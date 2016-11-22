@@ -881,11 +881,10 @@ S9sBusinessLogic::executeJobLog(
 {
     S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
-    int         clusterId = options->clusterId();
     int         jobId     = options->jobId();
     bool        success;
 
-    success = client.getJobLog(clusterId, jobId);
+    success = client.getJobLog(jobId);
     if (success)
     {
         reply = client.reply();
@@ -1127,7 +1126,7 @@ S9sBusinessLogic::waitForJobWithProgress(
         /*
          * Getting the job instance from the controller.
          */
-        success = client.getJobInstance(clusterId, jobId);
+        success = client.getJobInstance(jobId);
         if (success)
         {
             reply     = client.reply();
@@ -1234,7 +1233,7 @@ S9sBusinessLogic::waitForJobWithLog(
 
     for (;;)
     {
-        success = client.getJobLog(clusterId, jobId, 300, nLogsPrinted);
+        success = client.getJobLog(jobId, 300, nLogsPrinted);
         if (success)
         {
             reply     = client.reply();
