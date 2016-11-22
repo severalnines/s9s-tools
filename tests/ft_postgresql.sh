@@ -105,7 +105,7 @@ function create_node()
         ALL_CREATED_IPS+=" "
     fi
 
-    ALL_CREATED_IPS+=$ip
+    ALL_CREATED_IPS+="$ip"
 }
 
 #
@@ -141,10 +141,8 @@ function find_cluster_id()
 
 function grant_user()
 {
-    echo "Granting..."
-    $S9S user --cmon-user=$USER --generate-key --grant-user
-
-    echo "Done..."
+    $S9S user --cmon-user=$USER --generate-key --grant-user \
+        >/dev/null 2>/dev/null
 }
 
 #
@@ -428,6 +426,7 @@ function testDrop()
 function testDestroyNodes()
 {
     pip-say "The test is now destroying the nodes."
+    echo "*** ALL_CREATED_IPS : $ALL_CREATED_IPS"
     pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
 }
 
