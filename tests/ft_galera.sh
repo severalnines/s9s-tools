@@ -7,12 +7,12 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-PIP_CONTAINER_CREATE=$(which "pip-container-create")
 ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
 
+# The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
@@ -28,9 +28,10 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help      Print this help and exit.
- --verbose       Print more messages.
- --log           Print the logs while waiting for the job to be ended.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --log            Print the logs while waiting for the job to be ended.
+ --server=SERVER  The name of the server that will hold the containers.
 
 EOF
     exit 1
@@ -39,7 +40,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log" \
+        -l "help,verbose,log,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -64,6 +65,12 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -78,11 +85,7 @@ fi
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-#if [ ! -d data -a -d tests/data ]; then
-#    echo "Entering directory tests..."
-#    cd tests
-#fi
-if [ -z "$PIP_CONTAINER_CREATE" ]; then
+if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
@@ -95,7 +98,7 @@ function create_node()
 {
     local ip
 
-    ip=$($PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER)
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
 
     if [ "$ALL_CREATED_IPS" ]; then
@@ -357,7 +360,6 @@ function testAddHaProxy()
     fi
 }
 
-
 #
 # This test will remove the last added node.
 #
@@ -513,6 +515,7 @@ function testStart()
 
 function testDestroyNodes()
 {
+    pip-say "The test is now destroying the nodes."
     pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
 }
 

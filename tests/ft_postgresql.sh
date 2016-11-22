@@ -7,31 +7,17 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-PIP_CONTAINER_CREATE=$(which "pip-container-create")
+ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
 
-# The IP of the node we added last. Empty if we did not.
+# The IP of the node we added first and last. Empty if we did not.
+FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
-
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$MYNAME($$) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
 
 #
 # Prints usage information and exits.
@@ -42,9 +28,10 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help      Print this help and exit.
- --verbose       Print more messages.
- --log           Print the logs while waiting for the job to be ended.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --log            Print the logs while waiting for the job to be ended.
+ --server=SERVER  The name of the server that will hold the containers.
 
 EOF
     exit 1
@@ -53,7 +40,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log" \
+        -l "help,verbose,log,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -78,6 +65,12 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -92,11 +85,7 @@ fi
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-#if [ ! -d data -a -d tests/data ]; then
-#    echo "Entering directory tests..."
-#    cd tests
-#fi
-if [ -z "$PIP_CONTAINER_CREATE" ]; then
+if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
@@ -107,7 +96,16 @@ fi
 #
 function create_node()
 {
-    $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
+    local ip
+
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    echo $ip
+
+    if [ "$ALL_CREATED_IPS" ]; then
+        ALL_CREATED_IPS+=" "
+    fi
+
+    ALL_CREATED_IPS+=$ip
 }
 
 #
@@ -144,10 +142,8 @@ function find_cluster_id()
 function grant_user()
 {
     echo "Granting..."
-    $S9S user \
-        --cmon-user=$USER \
-        --generate-key \
-        --grant-user \
+    $S9S user --cmon-user=$USER --generate-key --grant-user
+
     echo "Done..."
 }
 
@@ -361,7 +357,7 @@ function testStop()
 {
     local exitCode
 
-    pip-say "The test to stop cluster is starting now."
+    pip-say "The test to stop the cluster is starting now."
 
     #
     # Stopping the cluster.
@@ -403,6 +399,40 @@ function testStart()
 }
 
 #
+# Dropping the cluster from the controller.
+#
+function testDrop()
+{
+    local exitCode
+
+    pip-say "The test to drop the cluster is starting now."
+
+    #
+    # Starting the cluster.
+    #
+    $S9S cluster \
+        --drop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This will destroy the containers we created.
+#
+function testDestroyNodes()
+{
+    pip-say "The test is now destroying the nodes."
+    pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
+}
+
+
+#
 # Running the requested tests.
 #
 startTests
@@ -422,6 +452,8 @@ else
     #runFunctionalTest testRollingRestart
     runFunctionalTest testStop
     runFunctionalTest testStart
+    runFunctionalTest testDrop
+    runFunctionalTest testDestroyNodes
 fi
 
 endTests
