@@ -100,12 +100,6 @@ function create_node()
 
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
-
-    if [ "$ALL_CREATED_IPS" ]; then
-        ALL_CREATED_IPS+=" "
-    fi
-
-    ALL_CREATED_IPS+=$ip
 }
 
 #
@@ -182,12 +176,15 @@ function testCreateCluster()
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a Galera cluster.
@@ -227,6 +224,7 @@ function testAddNode()
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
+    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
     # Adding a node to the cluster.
@@ -287,8 +285,6 @@ function testAddRemoveHaProxy()
     local exitCode
     
     pip-say "The test to add and remove HaProxy node is starting now."
-    printVerbose "Creating Node..."
-    #node=$(create_node)
     node=$(\
         $S9S node --list --long --batch | \
         grep ^g | \
@@ -343,6 +339,7 @@ function testAddHaProxy()
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="haProxy://$node"
+    ALL_CREATED_IPS+=" $node"
 
     #
     # Adding a node to the cluster.

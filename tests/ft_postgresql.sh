@@ -172,8 +172,8 @@ function testCreateCluster()
 
     pip-say "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node)
-    ALL_CREATED_IPS+=" $nodeName"
     nodes+="$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a PostgreSQL cluster.
@@ -214,6 +214,7 @@ function testAddNode()
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
+    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
     # Adding a node to the cluster.
@@ -275,6 +276,7 @@ function testAddHaProxy()
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="haProxy://$node"
+    ALL_CREATED_IPS+=" $node"
 
     #
     # Adding a node to the cluster.
@@ -421,10 +423,8 @@ function testDrop()
 function testDestroyNodes()
 {
     pip-say "The test is now destroying the nodes."
-    echo "*** ALL_CREATED_IPS : $ALL_CREATED_IPS"
     pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
 }
-
 
 #
 # Running the requested tests.

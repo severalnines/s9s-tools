@@ -176,7 +176,6 @@ function destroy_container()
 
     if [ ! -d "/var/lib/lxc/$container_name" ]; then
         real_name=$(find_name_for_ip "$container_name")
-        echo "*** real_name: $real_name"
 
         if [ -d "/var/lib/lxc/$real_name" ]; then
             destroy_container "$real_name"
