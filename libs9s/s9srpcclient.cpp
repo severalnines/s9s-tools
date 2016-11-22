@@ -1361,7 +1361,7 @@ S9sRpcClient::dropCluster(
     jobData["clusterid"]  = clusterId;
     
     // The jobspec describing the command.
-    jobSpec["command"]    = "remove_node";
+    jobSpec["command"]    = "remove_cluster";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
