@@ -100,12 +100,6 @@ function create_node()
 
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
-
-    if [ "$ALL_CREATED_IPS" ]; then
-        ALL_CREATED_IPS+=" "
-    fi
-
-    ALL_CREATED_IPS+="$ip"
 }
 
 #
@@ -178,6 +172,7 @@ function testCreateCluster()
 
     pip-say "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node)
+    ALL_CREATED_IPS+=" $nodeName"
     nodes+="$nodeName;"
     
     #
