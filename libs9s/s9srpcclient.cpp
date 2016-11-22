@@ -1355,7 +1355,7 @@ S9sRpcClient::dropCluster(
     
     title = "Remove Cluster";
 
-    // The job_data describing the cluster.
+    // The job_data describing the cluster that will be deleted.
     jobData["clusterid"]  = clusterId;
     
     // The jobspec describing the command.
@@ -1373,7 +1373,7 @@ S9sRpcClient::dropCluster(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
+    request["cluster_id"] = 0;
 
     retval = executeRequest(uri, request);
 
