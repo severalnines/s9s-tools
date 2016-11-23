@@ -439,13 +439,20 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
-    runFunctionalTest testAddNode
+    # Not implemented in CmonAbstractPostgreSqlCluster.
+    # runFunctionalTest testAddNode
     #runFunctionalTest testAddProxySql
+    
     #runFunctionalTest testAddHaProxy
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
-    runFunctionalTest testStop
-    runFunctionalTest testStart
+    
+    # Not implemented.
+    #runFunctionalTest testStop
+
+    # Not implemented.
+    #runFunctionalTest testStart
+
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
 fi
