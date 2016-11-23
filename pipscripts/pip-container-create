@@ -44,7 +44,7 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
-        echo -e "$MYNAME($$) $*" >&2
+        echo -e "$*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
@@ -154,6 +154,55 @@ function container_names()
         let number+=1
     done
 }
+
+function choose_server()
+{
+    local server
+    local this_number
+    local min_number
+    local min_server
+    local retval=0
+
+    for server in $(echo $SERVER | tr ',' ' '); do
+        this_number=$(\
+            ssh -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=quiet \
+                $server -- sudo lxc-ls  --running -f | wc -l)
+
+        # The header line. :(
+        let this_number-=1
+        printVerbose "$this_number $server"
+
+        if [ -z "$min_server" ]; then
+            printVerbose "First $server"
+            min_server="$server"
+            min_number="$this_number"
+        elif [ $this_number -lt $min_number ]; then
+            printVerbose "Smaller $server"
+            min_server="$server"
+            min_number="$this_number"
+        fi
+    done
+
+    if [ "$min_server" ]; then
+        printVerbose "*** min_server: $min_server"
+        echo "$min_server"
+    fi
+}
+
+function number_of_servers()
+{
+    local server
+    local retval=0
+
+    for server in $(echo $SERVER | tr ',' ' '); do
+        let retval+=1
+    done
+
+    echo $retval;
+}
+
 
 #
 # $1: the name of the new container.
@@ -287,11 +336,25 @@ else
     # We received the --server option and so we run the script on a remote
     # server.
     #
-    printVerbose "Executing on server '$SERVER'."
-    ssh $SERVER -- \
-        sudo $MYNAME \
-            $VERSION_OPTION \
-            $VERBOSE_OPTION \
-            $EXTRA_OPTIONS
+    if [ $(number_of_servers) -gt 1 ]; then
+        chosen_server=$(choose_server)
+        printVerbose "Multiple servers... chose '$chosen_server'..."
+    else
+        chosen_server="$SERVER"
+    fi
+
+    if [ "$chosen_server" ]; then
+        printVerbose "Executing on server '$chosen_server'."
+        ssh -o UserKnownHostsFile=/dev/null \
+            -o StrictHostKeyChecking=no \
+            -o LogLevel=quiet \
+            $chosen_server -- \
+            sudo $MYNAME \
+                $VERSION_OPTION \
+                $VERBOSE_OPTION \
+                $EXTRA_OPTIONS
+    else
+        printError "No server found."
+    fi
 fi
 

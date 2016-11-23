@@ -100,6 +100,8 @@ function create_node()
 
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
+
+    sleep 5
 }
 
 #
@@ -135,10 +137,7 @@ function find_cluster_id()
 
 function grant_user()
 {
-    echo "Granting..."
     $S9S user --cmon-user=$USER --generate-key --grant-user
-
-    echo "Done..."
 }
 
 #

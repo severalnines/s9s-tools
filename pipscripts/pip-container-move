@@ -27,7 +27,7 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "$MYNAME($$) $*" >&2
+    echo -e "$*" >&2
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
