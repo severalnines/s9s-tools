@@ -149,6 +149,12 @@ class S9sRpcClient
         bool dropCluster(
                 const int             clusterId);
 
+        bool createMaintenance(
+                const S9sVariantList &hosts,
+                const S9sString      &start,
+                const S9sString      &end,
+                const S9sString      &reason);
+
     protected:
         virtual bool
             executeRequest(

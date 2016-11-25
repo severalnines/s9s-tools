@@ -154,6 +154,10 @@ class S9sOptions
 
         S9sString timeStyle() const;
 
+        S9sString start() const;
+        S9sString end() const;
+        S9sString reason() const;
+
         int terminalWidth() const;
         int terminalHeight() const;
         S9sString binaryName() const;

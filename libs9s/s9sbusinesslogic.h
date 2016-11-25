@@ -80,5 +80,8 @@ class S9sBusinessLogic
 
         void executeCreateBackup(S9sRpcClient &client);
         void executeRestoreBackup(S9sRpcClient &client);
+        
+        void executeMaintenanceCreate(S9sRpcClient &client);
+        void executeMaintenanceList(S9sRpcClient &client);
 };
 

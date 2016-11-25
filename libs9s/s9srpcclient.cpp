@@ -461,8 +461,7 @@ S9sRpcClient::getRunningProcesses(
     uri.sprintf("/%d/proc/", clusterId);
 
     request["operation"] = "getRunningProcesses";
-    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
-
+    
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
 
@@ -1683,3 +1682,33 @@ S9sRpcClient::doExecuteRequest(
     return true;
 }
 
+        
+bool 
+S9sRpcClient::createMaintenance(
+        const S9sVariantList &hosts,
+        const S9sString      &start,
+        const S9sString      &end,
+        const S9sString      &reason)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR("Currently exactly one hostname has to provided.");
+        return false;
+    }
+    
+    request["operation"] = "addMaintenance";
+    request["hostname"]  = hosts[0].toNode().hostName();
+    request["initiate"]  = start;
+    request["deadline"]  = end;
+    request["reason"]    = reason;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}

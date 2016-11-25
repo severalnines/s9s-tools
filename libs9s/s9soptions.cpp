@@ -503,6 +503,34 @@ S9sOptions::vendor() const
     return retval;
 }
 
+S9sString
+S9sOptions::start() const
+{
+    if (m_options.contains("start"))
+        return m_options.at("start").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sOptions::end() const
+{
+    if (m_options.contains("end"))
+        return m_options.at("end").toString();
+
+    return S9sString();
+}
+
+
+S9sString
+S9sOptions::reason() const
+{
+    if (m_options.contains("reason"))
+        return m_options.at("reason").toString();
+
+    return S9sString();
+}
+
 /**
  * \returns the provider version string as it is set by the --provider-version
  *   command line option.
@@ -2363,6 +2391,7 @@ S9sOptions::readOptionsMaintenance(
         { "create",           no_argument,       0, OptionCreate      },
        
         // Options about the maintenance period.
+        { "nodes",            required_argument, 0, OptionNodes       },
         { "start",            required_argument, 0, OptionStart       },
         { "end",              required_argument, 0, OptionEnd         },
         { "reason",           required_argument, 0, OptionReason      },
@@ -2450,6 +2479,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionNodes:
+                // --nodes=LIST
+                setNodes(optarg);
                 break;
 
             case OptionStart:
