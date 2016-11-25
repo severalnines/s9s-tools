@@ -850,6 +850,15 @@ S9sOptions::isUserOperation() const
 }
 
 /**
+ * \returns true if the main operation is "maintenance".
+ */
+bool
+S9sOptions::isMaintenanceOperation() const
+{
+    return m_operationMode == Maintenance;
+}
+
+/**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.
  */

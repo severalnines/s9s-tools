@@ -119,6 +119,7 @@ class S9sOptions
         bool isBackupOperation() const;
         bool isProcessOperation() const;
         bool isUserOperation() const;
+        bool isMaintenanceOperation() const;
 
         bool isGenerateKeyRequested() const;
         bool isGrantUserRequest() const;
