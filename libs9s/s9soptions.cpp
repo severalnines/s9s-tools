@@ -64,7 +64,6 @@ enum S9sOptionType
     OptionDbAdminPassword,
     OptionClusterType,
     OptionStop,
-    OptionStart,
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
@@ -77,6 +76,9 @@ enum S9sOptionType
     OptionFirstName,
     OptionLastName,
     OptionTitle,
+    OptionStart,
+    OptionEnd,
+    OptionReason
 };
 
 /**
@@ -1359,6 +1361,10 @@ S9sOptions::readOptions(
         case User:
             retval = readOptionsUser(*argc, argv);
             break;
+        
+        case Maintenance:
+            retval = readOptionsMaintenance(*argc, argv);
+            break;
     }
 
     return retval;
@@ -1415,6 +1421,9 @@ S9sOptions::setMode(
     } else if (modeName == "backup")
     {
         m_operationMode = Backup;
+    } else if (modeName == "maintenance" || modeName == "maint")
+    {
+        m_operationMode = Maintenance;
     } else if (modeName == "user")
     {
         m_operationMode = User;
@@ -1457,6 +1466,7 @@ S9sOptions::printHelp()
         case Job:
         case Process:
         case Backup:
+        case Maintenance:
             printHelpGeneric();
             break;
 
@@ -2304,6 +2314,148 @@ S9sOptions::readOptionsUser(
             case OptionTitle:
                 // --title=TITLE
                 m_options["title"] = optarg;
+                break;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::readOptionsMaintenance(
+        int    argc,
+        char  *argv[])
+{
+    S9S_DEBUG("");
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h'               },
+        { "verbose",          no_argument,       0, 'v'               },
+        { "version",          no_argument,       0, 'V'               },
+        { "controller",       required_argument, 0, 'c'               },
+        { "controller-port",  required_argument, 0, 'P'               },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
+        { "rpc-token",        required_argument, 0, 't'               },
+        { "long",             no_argument,       0, 'l'               },
+        { "print-json",       no_argument,       0, OptionPrintJson   },
+        { "color",            optional_argument, 0, OptionColor       },
+        { "config-file",      required_argument, 0, OptionConfigFile  },
+        { "batch",            no_argument,       0, OptionBatch       },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L'               },
+        { "create",           no_argument,       0, OptionCreate      },
+       
+        // Options about the maintenance period.
+        { "start",            required_argument, 0, OptionStart       },
+        { "end",              required_argument, 0, OptionEnd         },
+        { "reason",           required_argument, 0, OptionReason      },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                // -t, --token=RPC_TOKEN
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+            
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+
+            case OptionStart:
+                // --start=DATE
+                m_options["start"] = optarg;
+                break;
+
+            case OptionEnd:
+                // --end=DATE
+                m_options["end"] = optarg;
+                break;
+            
+            case OptionReason:
+                // --reason=DATE
+                m_options["reason"] = optarg;
                 break;
 
             default:

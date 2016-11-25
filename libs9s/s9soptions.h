@@ -51,6 +51,7 @@ class S9sOptions
             Backup,
             Process,
             User,
+            Maintenance
         };
 
         enum ExitCodes
@@ -182,6 +183,7 @@ class S9sOptions
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);
         bool readOptionsUser(int argc, char *argv[]);
+        bool readOptionsMaintenance(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);
 
