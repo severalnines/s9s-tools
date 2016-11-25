@@ -11,6 +11,11 @@
 #include <string.h>
 #include <getopt.h>
 #include <math.h>
+#include <locale.h>
+
+#ifndef _GNU_SOURCE
+#include <libgen.h>
+#endif
 
 #define TERM_CLEAR_RIGHT "\033[0K"
 #define g_option_syntax_highlight true
@@ -35,6 +40,12 @@ S9sUnitTest::S9sUnitTest() :
     m_updateExamples(false),
     m_noHalt(false)
 {
+    /**
+     * Mac OSX requires this "usage" 
+     * of these otherwise unused member variables
+     */ 
+    m_sendMails=false;
+    m_keepDatabase = false;
 }
 
 S9sUnitTest::~S9sUnitTest()

@@ -44,10 +44,10 @@ class S9sRpcClientTester : public S9sRpcClient
         S9sString payload(const uint index) const;
 
     protected:
-        virtual bool 
+       virtual bool 
             executeRequest(
                 const S9sString &uri,
-                const S9sString &payload);
+                S9sVariantMap &payload);
 
     private:
         S9sVariantList    m_urls;

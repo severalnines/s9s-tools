@@ -31,7 +31,7 @@
 bool 
 S9sRpcClientTester::executeRequest(
         const S9sString &uri,
-        const S9sString &payload)
+        S9sVariantMap &payload)
 {
     //S9S_DEBUG("*** ");
     //S9S_DEBUG("*** uri     : %s", STR(uri));

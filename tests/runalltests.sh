@@ -3,6 +3,7 @@ STOP_ON_FAILURE="no"
 stopOnCrash="yes"
 nFailedTests=0
 hadSignal=""
+export DYLD_LIBRARY_PATH=/Users/johan/Documents/s9s-tools/libs9s/:$DYLD_LIBRARY_PATH
 
 # http://www.gnu.org/software/libc/manual/html_node/Heap-Consistency-Checking.html#Heap-Consistency-Checking
 # on malloc issues: 2, abort is called immediately
