@@ -471,6 +471,18 @@ S9sDateTime::toString(
                     lt->tm_hour, lt->tm_min, lt->tm_sec);
             break;
 
+        case CompactFormat:
+            if (isToday())
+            {
+                retval.sprintf("%02d:%02d:%02d",
+                        lt->tm_hour, lt->tm_min, lt->tm_sec);
+            } else {
+                retval.sprintf("%04d-%02d-%02d %02d:%02d:%02d",
+                        lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+                        lt->tm_hour, lt->tm_min, lt->tm_sec);
+            }
+            break;
+
         case MySqlShortLogFormat:
             retval.sprintf("%2d%02d%02d %2d:%02d:%02d",
                     lt->tm_year - 100, lt->tm_mon + 1, lt->tm_mday,
@@ -1354,3 +1366,13 @@ S9sDateTime::milliseconds(
     return retval * 1000.0 + millisec;
 }
 
+bool
+S9sDateTime::isToday() const
+{
+    S9sDateTime today = S9sDateTime::currentDateTime();
+
+    return 
+        today.year()  == year() &&
+        today.month() == month() &&
+        today.day()   == day();
+}

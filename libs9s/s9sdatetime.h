@@ -52,6 +52,8 @@ class S9sDateTime
             LogFileFormat,
             /** Format used in MySQL logs, e.g. "2014-03-17 10:15:12" */
             MySqlLogFileFormat,
+            /** Either "2014-03-17 10:15:12" or "10:15:12". */
+            CompactFormat,
             /** MySQL uses this in log files, e.g "140415  0:44:42" */
             MySqlShortLogFormat,
             /** Format used in MySQL logs, e.g. "2014-03-17" */
@@ -157,6 +159,8 @@ class S9sDateTime
             milliseconds(
                     const S9sDateTime &time1, 
                     const S9sDateTime &time2);
+
+        bool isToday() const;
 
     private:
         struct timespec m_timeSpec;
