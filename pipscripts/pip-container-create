@@ -5,7 +5,7 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
-SERVER=""
+SERVER="core1"
 PARENT_NAME=ubuntu
 OWNER=pipas
 

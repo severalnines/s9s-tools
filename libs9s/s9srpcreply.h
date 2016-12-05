@@ -44,6 +44,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobList();
         void printBackupList();
         void printUserList();
+        void printMaintenanceList();
         void printPing();
         void printProcessList(const int maxLines = -1);
         void printCpuStat();
@@ -75,6 +76,9 @@ class S9sRpcReply : public S9sVariantMap
         
         void printUserListBrief();
         void printUserListLong();
+        
+        void printMaintenanceListBrief();
+        void printMaintenanceListLong();
 
         void html2ansi(S9sString &s);
 

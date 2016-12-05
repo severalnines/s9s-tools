@@ -145,7 +145,7 @@ function wait_for_server_ssh()
 
     while true; do
         if is_server_running_ssh "$serverName"; then
-            echo "started"
+            echo "Server '$serverName' is started."
             return 0
         fi
 

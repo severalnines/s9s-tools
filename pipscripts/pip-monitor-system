@@ -2,10 +2,16 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.1"
+VERSION="0.0.2"
 VERBOSE=""
 LOGFILE=""
-SERVER="192.168.1.104"
+OPTION_LIST_PROPERTIES=""
+OPTION_PROPERTIES=""
+HOST=""
+REMOTE_USER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+
+export LC_ALL=C
 
 #
 # Prints the software version and exits.
@@ -13,6 +19,7 @@ SERVER="192.168.1.104"
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
+    exit 0
 }
 
 #
@@ -55,7 +62,7 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... [CONTAINER_NAME]...
+  $MYNAME [OPTION]... 
 
   $MYNAME - Monitors various system properties and reports them.
 
@@ -63,7 +70,13 @@ Usage:
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
- --server=SERVER      MQTT broker server.
+ --remote-host=HOST   The host to monitor. Default is the localhost.
+ --remote-user=USER   The user name used on the remote host.
+ --properties=LIST    Set the properties that will be monitored.
+ --list-properties    List the available properties.
+
+EXAMPLES:
+  ./pip-monitor-system --remote-host=216.18.199.114 --remote-user=laszlo --properties=load
 
 EOF
     exit 0
@@ -72,7 +85,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:" \
+        -l "help,verbose,version,log-file:,remote-host:,remote-user:,\
+properties:,list-properties" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -104,10 +118,27 @@ while true; do
             shift
             ;;
 
-        --server)
+        --remote-host)
             shift
-            SERVER="$1"
+            HOST="$1"
             shift
+            ;;
+
+        --remote-user)
+            shift
+            REMOTE_USER="$1"
+            shift
+            ;;
+
+        --properties)
+            shift
+            OPTION_PROPERTIES="$1"
+            shift
+            ;;
+
+        --list-properties)
+            shift
+            OPTION_LIST_PROPERTIES="true"
             ;;
 
         --)
@@ -140,7 +171,6 @@ EOF
     echo "$file_name"
 }
 
-
 CONFIG_FILE=$(mqtt_config_file)
 if [ ! -f "$CONFIG_FILE" ]; then
     printError "Config file '$CONFIG_FILE' not found."
@@ -157,13 +187,29 @@ function local_load_to_mqtt()
 {
     local load
     local load_topic
+    local host_name=$(hostname)
+    local account
 
-    load=$(uptime | awk '{print $12}' | tr ',' '.')
-    [ -z "$load" ] && load=$(uptime | awk '{print $11}' | tr ',' '.')
-    [ -z "$load" ] && load=$(uptime | awk '{print $10}' | tr ',' '.')
+    if [ "$HOST" ]; then
+        host_name=$HOST
 
+        if [ "$REMOTE_USER" ]; then
+            account="${REMOTE_USER}@${HOST}"
+        else
+            account="${HOST}"
+        fi
 
-    load_topic="server/$(hostname)/load"
+        load=$($SSH $account -- uptime | awk '{print $12}')
+        [ -z "$load" ] && load=$($SSH $account -- uptime | awk '{print $11}')
+        [ -z "$load" ] && load=$($SSH $account -- uptime | awk '{print $10}')
+    else
+        load=$(uptime | awk '{print $12}')
+        [ -z "$load" ] && load=$(uptime | awk '{print $11}')
+        [ -z "$load" ] && load=$(uptime | awk '{print $10}')
+    fi
+
+    load_topic="server/$host_name/load"
+    printVerbose "mgtt://${MQTT_SERVER}:${MQTT_PORT}/${load_topic}?${load}"
     mosquitto_pub \
         --host $MQTT_SERVER \
         --port $MQTT_PORT \
@@ -189,6 +235,26 @@ function local_free_disk_to_mqtt()
         --message "$free"
 }
 
+printVerbose "OPTION_LIST_PROPERTIES  : $OPTION_LIST_PROPERTIES"
+printVerbose "OPTION_PROPERTIES       : $OPTION_PROPERTIES"
+if [ $VERSION_OPTION ]; then
+    printVersionAndExit
+elif [ "$OPTION_LIST_PROPERTIES" ]; then
+    echo "load"
+    echo "free_disk"
+elif [ "$OPTION_PROPERTIES" ]; then
+    for property in $(echo "$OPTION_PROPERTIES" | tr ',' ' ' | tr ';' ' '); do
+        case "$property" in 
+            load)
+                local_load_to_mqtt
+                ;;
 
-local_load_to_mqtt
-local_free_disk_to_mqtt
+            free_disk)
+                local_free_disk_to_mqtt
+                ;;
+        esac
+    done
+else
+    local_load_to_mqtt
+    local_free_disk_to_mqtt
+fi

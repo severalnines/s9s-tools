@@ -1682,7 +1682,6 @@ S9sRpcClient::doExecuteRequest(
     return true;
 }
 
-        
 bool 
 S9sRpcClient::createMaintenance(
         const S9sVariantList &hosts,
@@ -1708,6 +1707,26 @@ S9sRpcClient::createMaintenance(
     request["deadline"]  = end;
     request["reason"]    = reason;
 
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * Get the maintenance periods from the server.
+ */
+bool
+S9sRpcClient::getMaintenance()
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    request["operation"] = "getMaintenance";
+    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+    
     retval = executeRequest(uri, request);
 
     return retval;

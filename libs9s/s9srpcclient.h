@@ -155,6 +155,8 @@ class S9sRpcClient
                 const S9sString      &end,
                 const S9sString      &reason);
 
+        bool getMaintenance();
+
     protected:
         virtual bool
             executeRequest(

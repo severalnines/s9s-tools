@@ -1556,12 +1556,11 @@ void
 S9sBusinessLogic::executeMaintenanceList(
         S9sRpcClient &client)
 {
-#if 0
     S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
     bool        success;
 
-    success = client.getUsers();
+    success = client.getMaintenance();
     if (success)
     {
         reply = client.reply();
@@ -1571,7 +1570,7 @@ S9sBusinessLogic::executeMaintenanceList(
             if (options->isJsonRequested())
                 printf("\n%s\n", STR(reply.toString()));
             else
-                reply.printUserList();
+                reply.printMaintenanceList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));
@@ -1581,5 +1580,4 @@ S9sBusinessLogic::executeMaintenanceList(
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
-#endif
 }
