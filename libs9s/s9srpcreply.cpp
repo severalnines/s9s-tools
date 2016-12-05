@@ -1774,8 +1774,35 @@ S9sRpcReply::printMaintenanceListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  recordList;
+    S9sFormat       ownerFormat, startFormat, endFormat;
 
     recordList = operator[]("maintenance_records").toVariantList();
+
+    for (uint idx = 0; idx < recordList.size(); ++idx)
+    {
+        S9sVariantMap  record   = recordList[idx].toVariantMap();
+        S9sVariantList periods = record["maintenance_periods"].toVariantList();
+        S9sString      hostName = record["hostname"].toString();
+       
+        for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
+        {
+            S9sVariantMap period = periods[idx1].toVariantMap();
+            S9sString     userName = period["username"].toString();
+            S9sDateTime   start, end;
+            S9sString     startString, endString;
+
+            start.parse(period["initiate"].toString());
+            end.parse(period["deadline"].toString());
+            startString = start.toString(S9sDateTime::CompactFormat);
+            endString   = end.toString(S9sDateTime::CompactFormat);
+
+            ownerFormat.widen(userName);
+            startFormat.widen(startString);
+            endFormat.widen(endString);
+        }
+    }
+
+
     for (uint idx = 0; idx < recordList.size(); ++idx)
     {
         S9sVariantMap  record   = recordList[idx].toVariantMap();
@@ -1803,11 +1830,11 @@ S9sRpcReply::printMaintenanceListLong()
             printf("%s ", STR(uuid));
 
             printf("%s", userColorBegin());
-            printf("%s ", STR(userName));
+            ownerFormat.printf(userName);
             printf("%s", userColorEnd());
 
-            printf("%s ", STR(startString));
-            printf("%s ", STR(endString));
+            startFormat.printf(startString);
+            endFormat.printf(endString);
 
             printf("%s ", STR(hostName));
             printf("%s ", STR(reason));
