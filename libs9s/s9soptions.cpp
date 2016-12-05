@@ -79,7 +79,8 @@ enum S9sOptionType
     OptionTitle,
     OptionStart,
     OptionEnd,
-    OptionReason
+    OptionReason,
+    OptionDateFormat,
 };
 
 /**
@@ -2399,6 +2400,7 @@ S9sOptions::readOptionsMaintenance(
         { "color",            optional_argument, 0, OptionColor       },
         { "config-file",      required_argument, 0, OptionConfigFile  },
         { "batch",            no_argument,       0, OptionBatch       },
+        { "date-format",      required_argument, 0, OptionDateFormat  },
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
@@ -2470,6 +2472,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+
+            case OptionDateFormat:
+                // --date-format=FORMAT
+                m_options["date_format"] = optarg;
                 break;
             
             case OptionColor:

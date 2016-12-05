@@ -1826,8 +1826,8 @@ S9sRpcReply::printMaintenanceListLong()
 
             start.parse(period["initiate"].toString());
             end.parse(period["deadline"].toString());
-            startString = start.toString(S9sDateTime::CompactFormat);
-            endString   = end.toString(S9sDateTime::CompactFormat);
+            startString = options->formatDateTime(start);
+            endString   = options->formatDateTime(end);
 
             uuid = uuid.substr(0, 7);
 
