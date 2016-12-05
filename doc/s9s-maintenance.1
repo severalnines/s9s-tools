@@ -1,0 +1,131 @@
+.TH S9S 1 "August 29, 2016"
+
+.SH NAME
+s9s-backup \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-cluster
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-L, \-\-list
+List the registered maintenance periods from the ClusterControl controller. 
+
+.TP
+.B \-\-create
+Ccreate a new maintenance period.
+
+.SS Generic Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.TP
+.BR \-\^\-date-format =\fIFORMATSTRING\fP "]
+Set the date and time format for the output of the program. The format string 
+is as it is specified for the strftime() standard C library function.
+
+.\"
+.\"
+.\"
+.SS Options Related to the Maintenance
+
+.TP
+.BI \-\^\-nodes= NODE
+The node for which the maintenance period will be registered. 
+
+.TP
+.BI \-\^\-start= DATETIME
+A string representation of the date and time when the maintenance period will
+start.
+
+.TP
+.BI \-\^\-end= DATETIME
+A string representation of the date and time when the maintenance period will
+end.
+
+.TP
+.BI \-\^\-reason= STRING
+A short, human readable string descibing why the maintenance period is created.
+This will help the users to understand what happens.
+
+.\"
+.\"
+.\"
+.SH ENVIRONMENT
+The s9s application will read and consider the following environment variables:
+.TP 5 
+CMON_CONTROLLER
+The host name and optionally the port number of the controller that will be
+contacted. This also can be set using the \fB\-\-controller\fR command line
+option.
+
+.TP 5
+CMON_CLUSTER_ID
+The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
+command line option.
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+Here is an example that shows how to create a new maintenance period for a given
+host.
+
+.nf
+# \fBs9s maintenance --create --nodes=192.168.1.121 --start="$(date -d 'now + 1 day' '+%Y-%m-%d %H:%M:%S')" --end="$(date -d 'now + 1 day + 1 hour' '+%Y-%m-%d %H:%M:%S')" --reason="Upgrading software."\fR
+.fi
+
+The next line will show all the maintenance periods printing only the date (and
+not the date and time) for the start and end of the periods.
+
+.nf
+# \fBs9s maintenance --list --long --date-format="%F"\fR
+.fi
+
