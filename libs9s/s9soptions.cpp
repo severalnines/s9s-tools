@@ -26,6 +26,7 @@
 #include "S9sFile"
 #include "S9sDir"
 #include "s9srsakey.h"
+#include "S9sDateTime"
 
 #include <sys/ioctl.h>
 #include <stdio.h>
@@ -647,6 +648,19 @@ S9sOptions::clusterType() const
         return m_options.at("cluster_type").toString().toLower();
 
     return S9sString();
+}
+
+S9sString
+S9sOptions::formatDateTime(
+        S9sDateTime value)
+{
+    if (m_options.contains("date_format"))
+    {
+        return value.toString(m_options.at("date_format").toString());
+    }
+
+    // The default date&time format.
+    return value.toString(S9sDateTime::CompactFormat);
 }
 
 /**

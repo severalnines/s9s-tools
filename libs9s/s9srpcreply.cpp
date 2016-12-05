@@ -1778,6 +1778,9 @@ S9sRpcReply::printMaintenanceListLong()
 
     recordList = operator[]("maintenance_records").toVariantList();
 
+    /*
+     * First run, we collect some information.
+     */
     for (uint idx = 0; idx < recordList.size(); ++idx)
     {
         S9sVariantMap  record   = recordList[idx].toVariantMap();
@@ -1793,8 +1796,8 @@ S9sRpcReply::printMaintenanceListLong()
 
             start.parse(period["initiate"].toString());
             end.parse(period["deadline"].toString());
-            startString = start.toString(S9sDateTime::CompactFormat);
-            endString   = end.toString(S9sDateTime::CompactFormat);
+            startString = options->formatDateTime(start);
+            endString   = options->formatDateTime(end);
 
             ownerFormat.widen(userName);
             startFormat.widen(startString);
@@ -1802,7 +1805,9 @@ S9sRpcReply::printMaintenanceListLong()
         }
     }
 
-
+    /*
+     * Second run, we print.
+     */
     for (uint idx = 0; idx < recordList.size(); ++idx)
     {
         S9sVariantMap  record   = recordList[idx].toVariantMap();
@@ -1842,137 +1847,6 @@ S9sRpcReply::printMaintenanceListLong()
         }
     }
 
-#if 0
-    S9sOptions     *options  = S9sOptions::instance();
-    S9sVariantList  userList = operator[]("users").toVariantList();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    const char     *colorBegin = "";
-    const char     *colorEnd   = "";
-    const char     *groupColorBegin = "";
-    const char     *groupColorEnd   = "";
-    S9sFormat       idFormat;
-    S9sFormat       userNameFormat;
-    S9sFormat       groupNamesFormat;
-
-    userList = operator[]("users").toVariantList();
-   
-    /*
-     * Going through first and collecting some informations.
-     */
-    for (uint idx = 0; idx < userList.size(); ++idx)
-    {
-        S9sVariantMap  userMap    = userList[idx].toVariantMap();
-        S9sVariantList groupList  = userMap["groups"].toVariantList();
-        S9sString      userName   = userMap["user_name"].toString();
-        int            userId     = userMap["user_id"].toInt();
-        S9sString      groupNames; 
-
-        for (uint idx = 0u; idx < groupList.size(); ++idx)
-        {
-            S9sVariantMap groupMap  = groupList[idx].toVariantMap();
-            S9sString     groupName = groupMap["group_name"].toString();
-
-            if (!groupNames.empty())
-                groupNames += ",";
-
-            groupNames += groupName;
-        }
-
-        if (groupNames.empty())
-            groupNames = "-";
-
-        userNameFormat.widen(userName);
-        idFormat.widen(userId);
-        groupNamesFormat.widen(groupNames);
-    }
-
-    /*
-     * Going through again and printing.
-     */
-    for (uint idx = 0; idx < userList.size(); ++idx)
-    {
-        S9sVariantMap  userMap    = userList[idx].toVariantMap();
-        S9sVariantList groupList  = userMap["groups"].toVariantList();
-        S9sString      userName   = userMap["user_name"].toString();
-        int            userId     = userMap["user_id"].toInt();
-        S9sString      title      = userMap["title"].toString();
-        S9sString      firstName  = userMap["first_name"].toString();
-        S9sString      lastName   = userMap["last_name"].toString();
-        S9sString      fullName;
-        S9sString      groupNames; 
-       
-        //
-        // Concatenating the group names into one string.
-        //
-        for (uint idx = 0u; idx < groupList.size(); ++idx)
-        {
-            S9sVariantMap groupMap  = groupList[idx].toVariantMap();
-            S9sString     groupName = groupMap["group_name"].toString();
-
-            if (!groupNames.empty())
-                groupNames += ",";
-
-            groupNames += groupName;
-        }
-        
-        if (groupNames.empty())
-            groupNames = "-";
-
-        /*
-         * Concatenating the real-world names.
-         */
-        if (!title.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += title;
-        }
-
-        if (!firstName.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += firstName;
-        }
-
-        if (!lastName.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += lastName;
-        }
-
-        if (fullName.empty())
-            fullName = "-";
-
-        if (syntaxHighlight)
-        {
-            colorBegin      = XTERM_COLOR_ORANGE;
-            colorEnd        = TERM_NORMAL;
-            groupColorBegin = XTERM_COLOR_CYAN;
-            groupColorEnd   = TERM_NORMAL;
-        }
-
-        idFormat.printf(userId);
-
-        printf("%s", colorBegin);
-        userNameFormat.printf(userName);
-        printf("%s", colorEnd);
-        
-        printf("%s", groupColorBegin);
-        groupNamesFormat.printf(groupNames);
-        printf("%s", groupColorEnd);
-
-        printf("%s", STR(fullName));
-        printf("\n");
-    }
-    
-    if (!options->isBatchRequested())
-        printf("Total: %d\n", operator[]("total").toInt());
-#endif
     if (!options->isBatchRequested())
         printf("Total: %d\n", operator[]("total").toInt());
 }

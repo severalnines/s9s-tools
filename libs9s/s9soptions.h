@@ -27,6 +27,8 @@
 #include "S9sVariantMap"
 #include "S9sConfigFile"
 
+class S9sDateTime;
+
 #define PRINT_VERBOSE(...) \
     S9sOptions::printVerbose(__VA_ARGS__)
 
@@ -91,6 +93,7 @@ class S9sOptions
         S9sString dbAdminPassword();
         S9sString clusterType() const;
         S9sString rpcToken() const;
+        S9sString formatDateTime(S9sDateTime value);
         
         S9sString schedule() const;
 #if 0
