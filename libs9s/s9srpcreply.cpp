@@ -1772,6 +1772,44 @@ S9sRpcReply::printMaintenanceListBrief()
 void 
 S9sRpcReply::printMaintenanceListLong()
 {
+    S9sVariantList recordList;
+
+    recordList = operator[]("maintenance_records").toVariantList();
+    for (uint idx = 0; idx < recordList.size(); ++idx)
+    {
+        S9sVariantMap  record   = recordList[idx].toVariantMap();
+        S9sVariantList periods = record["maintenance_periods"].toVariantList();
+        S9sString      hostName = record["hostname"].toString();
+       
+        for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
+        {
+            S9sVariantMap period = periods[idx1].toVariantMap();
+            S9sString     userName = period["username"].toString();
+            S9sString     reason   = period["reason"].toString();
+            S9sDateTime   start, end;
+            S9sString     startString, endString;
+            bool          isActive = period["is_active"].toBoolean();
+
+            start.parse(period["initiate"].toString());
+            end.parse(period["deadline"].toString());
+            startString = start.toString(S9sDateTime::MySqlLogFileFormat);
+            endString   = end.toString(S9sDateTime::MySqlLogFileFormat);
+
+            printf("%c ", isActive ? 'A' : '-');
+
+            printf("%s", userColorBegin());
+            printf("%s ", STR(userName));
+            printf("%s", userColorEnd());
+
+            printf("%s ", STR(startString));
+            printf("%s ", STR(endString));
+
+            printf("%s ", STR(hostName));
+            printf("%s ", STR(reason));
+            printf("\n");
+        }
+    }
+
 #if 0
     S9sOptions     *options  = S9sOptions::instance();
     S9sVariantList  userList = operator[]("users").toVariantList();
