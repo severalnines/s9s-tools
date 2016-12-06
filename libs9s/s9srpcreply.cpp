@@ -1774,7 +1774,7 @@ S9sRpcReply::printMaintenanceListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  recordList;
-    S9sFormat       ownerFormat, startFormat, endFormat;
+    S9sFormat       ownerFormat, groupOwnerFormat, startFormat, endFormat;
 
     recordList = operator[]("maintenance_records").toVariantList();
 
@@ -1789,8 +1789,9 @@ S9sRpcReply::printMaintenanceListLong()
        
         for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
-            S9sVariantMap period = periods[idx1].toVariantMap();
-            S9sString     userName = period["username"].toString();
+            S9sVariantMap period    = periods[idx1].toVariantMap();
+            S9sString     userName  = period["username"].toString();
+            S9sString     groupName = period["groupname"].toString();
             S9sDateTime   start, end;
             S9sString     startString, endString;
 
@@ -1800,6 +1801,7 @@ S9sRpcReply::printMaintenanceListLong()
             endString   = options->formatDateTime(end);
 
             ownerFormat.widen(userName);
+            groupOwnerFormat.widen(groupName);
             startFormat.widen(startString);
             endFormat.widen(endString);
         }
@@ -1817,9 +1819,10 @@ S9sRpcReply::printMaintenanceListLong()
         for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
             S9sVariantMap period = periods[idx1].toVariantMap();
-            S9sString     userName = period["username"].toString();
-            S9sString     reason   = period["reason"].toString();
-            S9sString     uuid     = period["UUID"].toString();
+            S9sString     userName  = period["username"].toString();
+            S9sString     groupName = period["groupname"].toString();
+            S9sString     reason    = period["reason"].toString();
+            S9sString     uuid      = period["UUID"].toString();
             S9sDateTime   start, end;
             S9sString     startString, endString;
             bool          isActive = period["is_active"].toBoolean();
@@ -1837,6 +1840,8 @@ S9sRpcReply::printMaintenanceListLong()
             printf("%s", userColorBegin());
             ownerFormat.printf(userName);
             printf("%s", userColorEnd());
+            
+            groupOwnerFormat.printf(groupName);
 
             startFormat.printf(startString);
             endFormat.printf(endString);
