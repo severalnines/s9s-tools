@@ -81,6 +81,7 @@ enum S9sOptionType
     OptionEnd,
     OptionReason,
     OptionDateFormat,
+    OptionFullUuid,
 };
 
 /**
@@ -653,7 +654,7 @@ S9sOptions::clusterType() const
 
 S9sString
 S9sOptions::formatDateTime(
-        S9sDateTime value)
+        S9sDateTime value) const
 {
     if (m_options.contains("date_format"))
     {
@@ -662,6 +663,15 @@ S9sOptions::formatDateTime(
 
     // The default date&time format.
     return value.toString(S9sDateTime::CompactFormat);
+}
+
+bool
+S9sOptions::fullUuid() const
+{
+    if (m_options.contains("full_uuid"))
+        return m_options.at("full_uuid").toBoolean();
+
+    return false;
 }
 
 /**
@@ -2401,6 +2411,7 @@ S9sOptions::readOptionsMaintenance(
         { "config-file",      required_argument, 0, OptionConfigFile  },
         { "batch",            no_argument,       0, OptionBatch       },
         { "date-format",      required_argument, 0, OptionDateFormat  },
+        { "full-uuid",        no_argument,       0, OptionFullUuid    },
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
@@ -2477,6 +2488,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionDateFormat:
                 // --date-format=FORMAT
                 m_options["date_format"] = optarg;
+                break;
+
+            case OptionFullUuid:
+                // --full-uuid
+                m_options["full_uuid"] = true;
                 break;
             
             case OptionColor:

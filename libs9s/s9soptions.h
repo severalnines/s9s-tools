@@ -93,7 +93,9 @@ class S9sOptions
         S9sString dbAdminPassword();
         S9sString clusterType() const;
         S9sString rpcToken() const;
-        S9sString formatDateTime(S9sDateTime value);
+        S9sString formatDateTime(S9sDateTime value) const;
+        bool fullUuid() const;
+
         
         S9sString schedule() const;
 #if 0

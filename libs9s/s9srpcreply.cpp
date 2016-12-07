@@ -1832,7 +1832,8 @@ S9sRpcReply::printMaintenanceListLong()
             startString = options->formatDateTime(start);
             endString   = options->formatDateTime(end);
 
-            uuid = uuid.substr(0, 7);
+            if (!options->fullUuid())
+                uuid = uuid.substr(0, 7);
 
             printf("%c ", isActive ? 'A' : '-');
             printf("%s ", STR(uuid));
