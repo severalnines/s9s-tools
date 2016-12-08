@@ -1712,6 +1712,33 @@ S9sRpcClient::createMaintenance(
     return retval;
 }
 
+bool
+S9sRpcClient::deleteMaintenance(
+        const S9sString &uuid)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    if (uuid.empty())
+    {
+        PRINT_ERROR("Missing UUID.");
+        PRINT_ERROR("Use the --uuid command line option to provide the UUID.");
+        return false;
+    }
+    
+    request["operation"] = "removeMaintenance";
+    request["UUID"]      = uuid;
+
+    //request["hostname"]  = hosts[0].toNode().hostName();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 /**
  * Get the maintenance periods from the server.
  */

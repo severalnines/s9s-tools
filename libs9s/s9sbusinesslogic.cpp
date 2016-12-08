@@ -199,6 +199,9 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateRequested())
         {
             executeMaintenanceCreate(client);
+        } else if (options->isDeleteRequested())
+        {
+            executeMaintenanceDelete(client);
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
         }
@@ -1537,6 +1540,33 @@ S9sBusinessLogic::executeMaintenanceCreate(
             options->nodes(), options->start(), options->end(),
             options->reason());
 
+    reply   = client.reply();
+    if (success)
+    {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else 
+            PRINT_ERROR(STR(reply.errorString()));
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeMaintenanceDelete(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.deleteMaintenance(options->uuid());
     reply   = client.reply();
     if (success)
     {

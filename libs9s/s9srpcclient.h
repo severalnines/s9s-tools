@@ -155,6 +155,9 @@ class S9sRpcClient
                 const S9sString      &end,
                 const S9sString      &reason);
 
+        bool deleteMaintenance(
+                const S9sString      &uuid);
+
         bool getMaintenance();
 
     protected:
