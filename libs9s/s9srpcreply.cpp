@@ -1738,35 +1738,22 @@ S9sRpcReply::printBackupListLong()
 void 
 S9sRpcReply::printMaintenanceListBrief()
 {
-#if 0
-    S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  userList = operator[]("users").toVariantList();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    const char     *colorBegin = "";
-    const char     *colorEnd   = "";
-
-    userList = operator[]("users").toVariantList();
-
-    /*
-     * 
-     */
-    for (uint idx = 0; idx < userList.size(); ++idx)
+    S9sVariantList  recordList;
+    
+    recordList = operator[]("maintenance_records").toVariantList();
+    for (uint idx = 0; idx < recordList.size(); ++idx)
     {
-        S9sVariantMap  userMap  = userList[idx].toVariantMap();
-        S9sString      userName = userMap["user_name"].toString();
+        S9sVariantMap  record  = recordList[idx].toVariantMap();
+        S9sVariantList periods = record["maintenance_periods"].toVariantList();
 
-        if (syntaxHighlight)
+        for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
-            colorBegin = XTERM_COLOR_ORANGE;
-            colorEnd   = TERM_NORMAL;
-        } else {
-            colorBegin = "";
-            colorEnd   = "";
-        }
+            S9sVariantMap period = periods[idx1].toVariantMap();
+            S9sString     uuid      = period["UUID"].toString();
 
-        printf("%s%s%s\n", colorBegin, STR(userName), colorEnd);
+            printf("%s\n", STR(uuid));
+        }
     }
-#endif
 }
 
 void 
