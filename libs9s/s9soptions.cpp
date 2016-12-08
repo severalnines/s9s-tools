@@ -61,6 +61,7 @@ enum S9sOptionType
     OptionProperties,
     OptionVendor,
     OptionCreate,
+    OptionDelete,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -959,6 +960,19 @@ S9sOptions::isCreateRequested() const
 {
     if (m_options.contains("create"))
         return m_options.at("create").toBoolean();
+
+    return false;
+}
+
+/**
+ * \returns true if the --delete command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isDeleteRequested() const
+{
+    if (m_options.contains("delete"))
+        return m_options.at("delete").toBoolean();
 
     return false;
 }
@@ -2416,6 +2430,7 @@ S9sOptions::readOptionsMaintenance(
         // Main Option
         { "list",             no_argument,       0, 'L'               },
         { "create",           no_argument,       0, OptionCreate      },
+        { "delete",           no_argument,       0, OptionDelete      },
        
         // Options about the maintenance period.
         { "nodes",            required_argument, 0, OptionNodes       },
@@ -2516,6 +2531,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
                 break;
             
             case OptionNodes:

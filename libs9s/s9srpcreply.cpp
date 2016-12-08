@@ -1842,7 +1842,9 @@ S9sRpcReply::printMaintenanceListLong()
             ownerFormat.printf(userName);
             printf("%s", userColorEnd());
             
+            printf("%s", groupColorBegin(groupName));
             groupOwnerFormat.printf(groupName);
+            printf("%s", groupColorEnd());
 
             startFormat.printf(startString);
             endFormat.printf(endString);
