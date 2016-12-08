@@ -163,6 +163,7 @@ class S9sOptions
         S9sString start() const;
         S9sString end() const;
         S9sString reason() const;
+        S9sString uuid() const;
 
         int terminalWidth() const;
         int terminalHeight() const;

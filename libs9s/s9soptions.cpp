@@ -81,6 +81,7 @@ enum S9sOptionType
     OptionStart,
     OptionEnd,
     OptionReason,
+    OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
 };
@@ -531,6 +532,15 @@ S9sOptions::reason() const
 {
     if (m_options.contains("reason"))
         return m_options.at("reason").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sOptions::uuid() const
+{
+    if (m_options.contains("uuid"))
+        return m_options.at("uuid").toString();
 
     return S9sString();
 }
@@ -2437,6 +2447,7 @@ S9sOptions::readOptionsMaintenance(
         { "start",            required_argument, 0, OptionStart       },
         { "end",              required_argument, 0, OptionEnd         },
         { "reason",           required_argument, 0, OptionReason      },
+        { "uuid",             required_argument, 0, OptionUuid        },
 
         { 0, 0, 0, 0 }
     };
@@ -2556,6 +2567,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionReason:
                 // --reason=DATE
                 m_options["reason"] = optarg;
+                break;
+
+            case OptionUuid:
+                // --uuid=UUID
+                m_options["uuid"] = optarg;
                 break;
 
             default:
