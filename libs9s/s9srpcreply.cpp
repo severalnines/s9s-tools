@@ -1812,8 +1812,13 @@ S9sRpcReply::printMaintenanceListLong()
     {
         S9sVariantMap  record   = recordList[idx].toVariantMap();
         S9sVariantList periods = record["maintenance_periods"].toVariantList();
-        S9sString      hostName = record["hostname"].toString();
-       
+        bool           isHostMaintenance = record.contains("hostname");
+        bool           isClusterMaintenance = record.contains("cluster_id");
+        S9sString      hostName;
+
+        if (isHostMaintenance)
+            hostName = record["hostname"].toString();
+
         for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
             S9sVariantMap period = periods[idx1].toVariantMap();
@@ -1833,7 +1838,14 @@ S9sRpcReply::printMaintenanceListLong()
             if (!options->fullUuid())
                 uuid = uuid.substr(0, 7);
 
-            printf("%c ", isActive ? 'A' : '-');
+            printf("%c", isActive ? 'A' : '-');
+            if (isHostMaintenance)
+                printf("h ");
+            else if (isClusterMaintenance)
+                printf("c ");
+            else 
+                printf("- ");
+                
             printf("%s ", STR(uuid));
 
             printf("%s", userColorBegin());
