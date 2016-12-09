@@ -78,6 +78,17 @@ S9sRpcReply::errorString() const
     return S9sString();
 }
 
+S9sString
+S9sRpcReply::uuid() const
+{
+    // One for RPC 1.0, the other is for RPC 2.0
+    if (contains("UUID"))
+        return at("UUID").toString();
+
+    return S9sString();
+}
+
+
 /**
  * \returns the job ID from the reply if the reply contains a job ID, returns -1
  *   otherwise.

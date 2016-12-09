@@ -102,6 +102,7 @@ class S9sOptions
         bool setSchedule(const S9sString &value);
 #endif
         int clusterId() const;
+        bool hasClusterIdOption() const;
         int backupId() const;
         int updateFreq() const;
 

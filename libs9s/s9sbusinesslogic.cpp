@@ -1536,17 +1536,27 @@ S9sBusinessLogic::executeMaintenanceCreate(
     /*
      * Running the request on the controller.
      */
-    success = client.createMaintenance(
-            options->nodes(), options->start(), options->end(),
-            options->reason());
+    if (options->hasClusterIdOption())
+    {
+        success = client.createMaintenance(
+                options->clusterId(), options->start(), options->end(),
+                options->reason());
+    } else {
+        success = client.createMaintenance(
+                options->nodes(), options->start(), options->end(),
+                options->reason());
+    }
 
     reply   = client.reply();
     if (success)
     {
         if (options->isJsonRequested())
+        {
             printf("%s\n", STR(reply.toString()));
-        else 
-            PRINT_ERROR(STR(reply.errorString()));
+        } else if (!options->isBatchRequested()) 
+        {
+            printf("%s\n", STR(reply.uuid()));
+        }
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -1571,9 +1581,12 @@ S9sBusinessLogic::executeMaintenanceDelete(
     if (success)
     {
         if (options->isJsonRequested())
+        {
             printf("%s\n", STR(reply.toString()));
-        else 
-            PRINT_ERROR(STR(reply.errorString()));
+        } else if (!options->isBatchRequested()) 
+        {
+            printf("Deleted.\n");
+        }
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));

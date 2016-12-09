@@ -1712,6 +1712,30 @@ S9sRpcClient::createMaintenance(
     return retval;
 }
 
+bool 
+S9sRpcClient::createMaintenance(
+        const int            &clusterId,
+        const S9sString      &start,
+        const S9sString      &end,
+        const S9sString      &reason)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    request["operation"]  = "addMaintenance";
+    request["cluster_id"] = clusterId;
+    request["initiate"]   = start;
+    request["deadline"]   = end;
+    request["reason"]     = reason;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 bool
 S9sRpcClient::deleteMaintenance(
         const S9sString &uuid)

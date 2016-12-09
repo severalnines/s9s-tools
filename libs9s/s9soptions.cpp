@@ -743,13 +743,19 @@ S9sOptions::clusterId() const
     return retval;
 }
 
+bool
+S9sOptions::hasClusterIdOption() const
+{
+    return m_options.contains("cluster_id");
+}
+
 int
 S9sOptions::backupId() const
 {
     int retval = 0;
 
-    if (m_options.contains("cluster_id"))
-        retval = m_options.at("cluster_id").toInt();
+    if (m_options.contains("backup_id"))
+        retval = m_options.at("backup_id").toInt();
 
     return retval;
 }
@@ -2443,6 +2449,7 @@ S9sOptions::readOptionsMaintenance(
         { "delete",           no_argument,       0, OptionDelete      },
        
         // Options about the maintenance period.
+        { "cluster-id",       required_argument, 0, 'i'               },
         { "nodes",            required_argument, 0, OptionNodes       },
         { "start",            required_argument, 0, OptionStart       },
         { "end",              required_argument, 0, OptionEnd         },
@@ -2552,6 +2559,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionNodes:
                 // --nodes=LIST
                 setNodes(optarg);
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
                 break;
 
             case OptionStart:
