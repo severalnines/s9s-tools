@@ -149,7 +149,103 @@ function testGrantUser()
         failure "Exit code is not 0 while granting user."
         return 1
     fi
+}
 
+#
+# This test will check the system users, users that should be available on every
+# system.
+#
+function testSystemUsers()
+{
+    local text
+    local row
+    local column
+    local required
+
+    # This command 
+    $S9S user --list --long 
+    # should produce somethink like this:
+    # 1 system admins System User
+    # 2 nobody nobody -
+    # 3 pipas  users  -
+    # 
+    text=$($S9S user --list --long --batch --color=never)
+
+    row=1
+    column=1
+    cell=$(index_table "$text" $row $column)
+    required="1"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    row=1
+    column=2
+    cell=$(index_table "$text" $row $column)
+    required="system"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+    
+    row=1
+    column=3
+    cell=$(index_table "$text" $row $column)
+    required="admins"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+    
+    row=2
+    column=1
+    cell=$(index_table "$text" $row $column)
+    required="2"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+    
+    row=2
+    column=2
+    cell=$(index_table "$text" $row $column)
+    required="nobody"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+    
+    row=2
+    column=3
+    cell=$(index_table "$text" $row $column)
+    required="nobody"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+}
+
+#
+# Testing what happens when a creation of a new user fails.
+#
+function testFailNoGroup()
+{
+    #
+    # Yes, this is a problem, we can't get an error message back from the pipe.
+    # The group here does not exists and we did not request the creation of the
+    # group, so this will fail, but we still get the AOK back from the program.
+    #
+    $S9S user \
+        --cmon-user=kirk \
+        --title="Captain" \
+        --grant-user \
+        --generate-key \
+        --group=nosuchgroup
+}
+
+function testCreateUsers()
+{
     #
     # Let's add some users so that we have something to work on.
     #
@@ -291,99 +387,8 @@ function testGrantUser()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
     fi
-}
 
-#
-# This test will check the system users, users that should be available on every
-# system.
-#
-function testSystemUsers()
-{
-    local text
-    local row
-    local column
-    local required
-
-    # This command 
-    $S9S user --list --long 
-    # should produce somethink like this:
-    # 1 system admins System User
-    # 2 nobody nobody -
-    # 3 pipas  users  -
-    # 
-    text=$($S9S user --list --long --batch --color=never)
-
-    row=1
-    column=1
-    cell=$(index_table "$text" $row $column)
-    required="1"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-
-    row=1
-    column=2
-    cell=$(index_table "$text" $row $column)
-    required="system"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-    
-    row=1
-    column=3
-    cell=$(index_table "$text" $row $column)
-    required="admins"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-    
-    row=2
-    column=1
-    cell=$(index_table "$text" $row $column)
-    required="2"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-    
-    row=2
-    column=2
-    cell=$(index_table "$text" $row $column)
-    required="nobody"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-    
-    row=2
-    column=3
-    cell=$(index_table "$text" $row $column)
-    required="nobody"
-    if [ "$cell" != "$required" ]; then
-        failure "The cell at $row,$column should be '$required', it is '$cell'"
-        return 1
-    fi
-}
-
-#
-# Testing what happens when a creation of a new user fails.
-#
-function testFailNoGroup()
-{
-    #
-    # Yes, this is a problem, we can't get an error message back from the pipe.
-    # The group here does not exists and we did not request the creation of the
-    # group, so this will fail, but we still get the AOK back from the program.
-    #
-    $S9S user \
-        --cmon-user=kirk \
-        --title="Captain" \
-        --grant-user \
-        --generate-key \
-        --group=nosuchgroup
+    s9s user --list --long
 }
 
 #
@@ -399,6 +404,7 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
     runFunctionalTest testSystemUsers
+    runFunctionalTest testCreateUsers
     #runFunctionalTest testFailNoGroup
 fi
 
