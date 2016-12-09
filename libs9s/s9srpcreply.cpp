@@ -1815,9 +1815,17 @@ S9sRpcReply::printMaintenanceListLong()
         bool           isHostMaintenance = record.contains("hostname");
         bool           isClusterMaintenance = record.contains("cluster_id");
         S9sString      hostName;
+        S9sString      clusterName;
+        S9sVariantMap  clusterMap;
 
         if (isHostMaintenance)
+        {
             hostName = record["hostname"].toString();
+        } else if (isClusterMaintenance)
+        {
+            clusterMap  = record["cluster"].toVariantMap();
+            clusterName = clusterMap["cluster_name"].toString();
+        }
 
         for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
@@ -1859,7 +1867,15 @@ S9sRpcReply::printMaintenanceListLong()
             startFormat.printf(startString);
             endFormat.printf(endString);
 
-            printf("%s ", STR(hostName));
+            if (isHostMaintenance)
+            {
+                printf("%s ", STR(hostName));
+            } else {
+                printf("%s", clusterColorBegin());
+                printf("%s ", STR(clusterName));
+                printf("%s", groupColorEnd());
+            }
+
             printf("%s ", STR(reason));
             printf("\n");
         }
