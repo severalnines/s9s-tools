@@ -2,12 +2,13 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.4"
+VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
 CONTAINER=""
 SOURCE_SERVER=""
 TARGET_SERVER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 #
 # Prints the software version and exits.
@@ -15,6 +16,7 @@ TARGET_SERVER=""
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
+    exit 0
 }
 
 #
@@ -66,6 +68,9 @@ Usage:
  --log-file=FILE        Store all the messages in the given file too.
  --source-server=SERVER The server to copy from.
  --target-server=SERVER The server to copy to.
+
+EXAMPLE
+  pip-container-move --source-server=core1 --target-server=host01 mqtt 
 
 EOF
     exit 0
@@ -133,6 +138,10 @@ done
 CONTAINER="$1"
 EXTRA_OPTIONS="$*"
 
+if [ "$VERSION_OPTION" ]; then
+    printVersionAndExit
+fi
+
 #
 # Checking the command line options.
 #
@@ -145,7 +154,7 @@ fi
 # Doing the job.
 #
 if [ "$SOURCE_SERVER" ]; then
-    ssh $SOURCE_SERVER -- \
+    $SSH $SOURCE_SERVER -- \
         $MYNAME \
         $VERSION_OPTION \
         $VERBOSE_OPTION \
@@ -159,15 +168,23 @@ else
     #    printError "Can not find container '$CONTAINER'."
     #    exit 1
     #fi
-
+    echo "Stopping the container..."
     sudo lxc-stop -n "$CONTAINER" >/dev/null 2>/dev/null
+
+    echo "Creating archive..."
     sudo tar --numeric-owner -czf "$tar_file_name" "$source_dir" 2>/dev/null
-    scp "$tar_file_name" $TARGET_SERVER:/var/tmp
+
+    #lxc-start --name $CONTAINER
+    
+
+    echo "Moving archive file..."
+    scp "$tar_file_name" $TARGET_SERVER:/var/tmp 2>/dev/null
     sudo rm -f "$tar_file_name"
 
-    ssh $TARGET_SERVER -- \
-        sudo tar xzf "$tar_file_name" -C /
+    echo "Uncompressing archive..."
+    $SSH $TARGET_SERVER 2>/dev/null -- \
+        sudo tar xzf "$tar_file_name" -C / 2>/dev/null
     
-    ssh $TARGET_SERVER -- \
-        sudo rm -f "$tar_file_name"
+    $SSH $TARGET_SERVER 2>/dev/null -- \
+        sudo rm -f "$tar_file_name" 2>/dev/null
 fi

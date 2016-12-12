@@ -66,6 +66,10 @@ Usage:
  --log-file=FILE      Store all the messages in the given file too.
  --server=SERVER      Create the container on remote server.
 
+EXAMPLE
+
+ pip-container-create --server=host01
+
 EOF
     exit 0
 }
