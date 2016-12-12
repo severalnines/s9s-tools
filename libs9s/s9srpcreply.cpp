@@ -1767,6 +1767,10 @@ S9sRpcReply::printMaintenanceListBrief()
     }
 }
 
+/**
+ * Prints the maintenance list in the long format, one maintenance period in
+ * every line.
+ */
 void 
 S9sRpcReply::printMaintenanceListLong()
 {

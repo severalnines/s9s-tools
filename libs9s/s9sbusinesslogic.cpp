@@ -1311,6 +1311,7 @@ S9sBusinessLogic::executeUser(
     S9sOptions  *options  = S9sOptions::instance();
     S9sString    userName = options->userName();
     S9sString    keyFilePath;
+    S9sConfigFile config;
 
     if (userName.empty())
     {
@@ -1319,13 +1320,14 @@ S9sBusinessLogic::executeUser(
                  "Use the --cmon-user command line option to set it.");
 
         options->setExitStatus(S9sOptions::BadOptions);
+        return;
     }
 
-    // Now make sure that we save the specified username into the user config
-    // file
-    S9sConfigFile config;
+    /*
+     * Now make sure that we save the specified username into the user config
+     * file
+     */
     config.setFileName("~/.s9s/s9s.conf");
-
     PRINT_VERBOSE(
             "Saving Cmon user '%s' into config file at %s.",
             STR(userName), 
@@ -1357,6 +1359,11 @@ S9sBusinessLogic::executeUser(
         return;
     }
 
+    /*
+     *
+     */
+    S9sRsaKey rsaKey;
+
     keyFilePath = options->privateKeyPath();
     if (options->isGenerateKeyRequested())
     {
@@ -1386,7 +1393,6 @@ S9sBusinessLogic::executeUser(
         }
     }
 
-    S9sRsaKey rsaKey;
     if (!rsaKey.loadKeyFromFile(keyFilePath) || !rsaKey.isValid())
     {
         PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(keyFilePath));
