@@ -107,6 +107,10 @@ function create_node()
     local ip
 
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    if [ -z "$ip" ]; then
+        echo "Failed to create container." >&2
+    fi
+
     echo $ip
 }
 
