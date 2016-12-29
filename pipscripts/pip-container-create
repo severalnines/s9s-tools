@@ -350,19 +350,7 @@ else
 
     if [ "$chosen_server" ]; then
         printVerbose "Executing on server '$chosen_server'."
-        REPLY=$($SSH $SERVER -- hostname)
-        echo "REPLY=$REPLY"
 
-        cat <<EOF
-        ssh -o UserKnownHostsFile=/dev/null \
-            -o StrictHostKeyChecking=no \
-            -o LogLevel=quiet \
-            $chosen_server -- \
-            sudo $MYNAME \
-                $VERSION_OPTION \
-                $VERBOSE_OPTION \
-                $EXTRA_OPTIONS
-EOF
         ssh -o UserKnownHostsFile=/dev/null \
             -o StrictHostKeyChecking=no \
             -o LogLevel=quiet \
