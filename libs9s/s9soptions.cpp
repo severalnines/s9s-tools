@@ -2267,7 +2267,7 @@ S9sOptions::readOptionsUser(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:P:t:Vgu:", 
                 long_options, &option_index);
 
         if (c == -1)
