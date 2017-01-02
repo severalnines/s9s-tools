@@ -531,7 +531,6 @@ S9sRpcClient::getJobInstance(
 }
 
 /**
- * \param clusterId the ID of the cluster that owns the job
  * \param jobId the ID of the job
  * \param limit the maximum number of log entries we are ready to process
  * \param offset the number of log entries to skip
@@ -917,6 +916,7 @@ S9sRpcClient::createPostgreSql(
 
 
 /**
+ * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
  * \returns true if the request sent and a return is received (even if the reply
@@ -974,6 +974,7 @@ S9sRpcClient::addNode(
 }
 
 /**
+ * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
@@ -1050,6 +1051,7 @@ S9sRpcClient::addHaProxy(
 }
 
 /**
+ * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
@@ -1069,7 +1071,6 @@ S9sRpcClient::addProxySql(
     bool           retval;
 
     S9sNode::selectByProtocol(hosts, proxyNodes, otherNodes, "proxysql");
-
     if (proxyNodes.size() != 1u)
     {
         PRINT_ERROR(
@@ -1115,6 +1116,7 @@ S9sRpcClient::addProxySql(
 }
 
 /**
+ * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
