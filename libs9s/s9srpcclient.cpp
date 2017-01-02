@@ -241,9 +241,6 @@ S9sRpcClient::getClusters()
     request["with_hosts"] = true;
     request["user"]       = options->userName();
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
 
     return retval;
