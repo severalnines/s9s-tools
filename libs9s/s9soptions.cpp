@@ -1598,7 +1598,7 @@ S9sOptions::printHelpGeneric()
 "  --config-file=PATH         Set the configuration file.\n"
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
-"\n"
+"\n",
 STR(m_myName));
 }
 
