@@ -1576,13 +1576,13 @@ S9sOptions::printHelpGeneric()
 "  %s [COMMAND] [OPTION...]\n"
 "\n"
 "Where command is:\n"
-"  backup  - to view, create and restore database backups.\n"
+"   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
-"  job     - to view jobs.\n"
-"  maint   - to view and manupilate maintenance periods.\n"
-"  node    - to handle nodes.\n"
+"      job - to view jobs.\n"
+"    maint - to view and manupilate maintenance periods.\n"
+"     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
-"  user    - to manage users.\n"
+"     user - to manage users.\n"
 "\n"
 "Generic options:\n"
 "  -h, --help                 Show help message and exit.\n" 
@@ -1593,40 +1593,34 @@ S9sOptions::printHelpGeneric()
 "  --rpc-tls                  Use TLS encryption to controller.\n"
 "  -t, --rpc-token=TOKEN      The RPC authentication token (deprecated).\n"
 "\n"
+"Formatting:\n"
 "  -l, --long                 Print the detailed list.\n"
 "  --print-json               Print the sent/received JSon messages.\n"
 "  --config-file=PATH         Set the configuration file.\n"
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
-"\n",
-STR(m_myName));
+"\n", STR(m_myName));
 }
 
 void
 S9sOptions::printHelpUser()
 {
+    printHelpGeneric();
+
     printf(
-"Usage:\n"
-"  %s user [OPTION...]\n"
+"Options for the \"user\" command:\n"
+"  --list                     List the users.\n"
+"  -G, --grant-user           Grant the user on controller (SSH/sudo needed).\n"
+""
 "\n"
-
-"Generic Options\n"
-"  -h, --help                   Show help message and exit.\n" 
-"  -v, --verbose                Print more messages.\n"
-"  -V, --version                Show version and exit.\n"
-"  -c, --controller=URL         The hostname/IP of the controller.\n"
-"  -P, --controller-port=NUMBER The port of the controller.\n"
-"  --rpc-tls                    Use TLS encryption for the controller.\n"
-"  --print-json                 Print the sent/received JSon messages.\n"
-"  --config-file=PATH           Load the configuration from the file.\n"
-"\n"
-
-"User options\n"
-"  -u, --cmon-user=USERNAME     The username on the Cmon system.\n"
-"  -g, --generate-key           Generate an RSA keypair for the user.\n"
-"  -G, --grant-user             Grant the user on controller (SSH/sudo needed).\n"
-"\n",
-STR(m_myName));
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -g, --generate-key         Generate an RSA keypair for the user.\n"
+"  --group=GROUP_NAME         The primary group for the new user.\n"
+"  --create-group             Create the group if it doesn't exist.\n"
+"  --first-name=NAME          The first name of the user.\n"
+"  --last-name=NAME           The last name of the user.\n"
+"  --title=TITLE              The prefix title for the user.\n"
+"\n");
 }
 
 void 
@@ -2087,7 +2081,6 @@ S9sOptions::readOptionsProcess(
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
-
         { "update-freq",      required_argument, 0,  OptionUpdateFreq },
 
         { 0, 0, 0, 0 }
