@@ -128,7 +128,6 @@ class S9sOptions
         bool isMaintenanceOperation() const;
 
         bool isGenerateKeyRequested() const;
-        bool isGrantUserRequest() const;
         S9sString group() const;
         bool createGroup() const;
         S9sString lastName() const;

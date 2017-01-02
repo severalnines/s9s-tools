@@ -145,9 +145,10 @@ function grant_user()
 {
     echo "Granting..."
     $S9S user \
+        --create \
         --cmon-user=$USER \
-        --generate-key \
-        --grant-user \
+        --generate-key 
+
     echo "Done..."
 }
 

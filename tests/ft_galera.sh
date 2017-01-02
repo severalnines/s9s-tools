@@ -137,7 +137,7 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --cmon-user=$USER --generate-key --grant-user
+    $S9S user --create --cmon-user=$USER --generate-key
 }
 
 #

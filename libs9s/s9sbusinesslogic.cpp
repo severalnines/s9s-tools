@@ -53,7 +53,7 @@ S9sBusinessLogic::execute()
      * Here is a fucked up version and a version that I try to clean up.
      */
     //if (!options->isUserOperation() || !options->rpcToken().empty())
-    if (options->isUserOperation() && options->isGrantUserRequest())
+    if (options->isUserOperation() && options->isCreateRequested())
     {
         PRINT_VERBOSE("No authentication required");
         // No authentication required.
@@ -1403,7 +1403,7 @@ S9sBusinessLogic::executeUser(
     /*
      * Granting.
      */
-    if (options->isGrantUserRequest())
+    if (options->isCreateRequested())
     {
         bool          oneSucceed = false;
         int           exitCode = 0;

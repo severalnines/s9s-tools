@@ -137,9 +137,9 @@ function testPing()
 function testGrantUser()
 {
     $S9S user \
+        --create \
         --cmon-user=$USER \
         --generate-key \
-        --grant-user \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch
@@ -237,9 +237,9 @@ function testFailNoGroup()
     # group, so this will fail, but we still get the AOK back from the program.
     #
     $S9S user \
+        --create \
         --cmon-user=kirk \
         --title="Captain" \
-        --grant-user \
         --generate-key \
         --group=nosuchgroup
 }
@@ -250,11 +250,11 @@ function testCreateUsers()
     # Let's add some users so that we have something to work on.
     #
     $S9S user \
+        --create \
         --cmon-user="sisko" \
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -266,24 +266,10 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
         --cmon-user="odo" \
         --first-name="Odo" \
         --last-name="" \
-        --grant-user \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    $S9S user --cmon-user="jake"\
-        --first-name="Jake"\
-        --last-name="Sisko"\
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -295,26 +281,26 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
+        --cmon-user="jake"\
+        --first-name="Jake"\
+        --last-name="Sisko"\
+        --generate-key \
+        --group=ds9 \
+        --create-group \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --create \
         --cmon-user="bashir" \
         --title="Dr." \
         --first-name="Julian" \
         --last-name="Bashir" \
-        --grant-user \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    $S9S user --cmon-user="chief" \
-        --title="Chief" \
-        --first-name="Miles" \
-        --last-name="O'Brien" \
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -326,11 +312,27 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
+        --cmon-user="chief" \
+        --title="Chief" \
+        --first-name="Miles" \
+        --last-name="O'Brien" \
+        --generate-key \
+        --group=ds9 \
+        --create-group \
+        --batch
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user"
+    fi
+
+    $S9S user \
+        --create \
         --cmon-user="nerys"  \
         --title="Major" \
         --first-name="Kira" \
         --last-name="Neris" \
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -342,10 +344,10 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
         --cmon-user="quark" \
         --first-name="Quark" \
         --last-name=""\
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -357,11 +359,11 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
         --cmon-user="jadzia" \
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -373,11 +375,11 @@ function testCreateUsers()
     fi
 
     $S9S user \
+        --create \
         --cmon-user="worf"\
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
-        --grant-user \
         --generate-key \
         --group=ds9 \
         --create-group \

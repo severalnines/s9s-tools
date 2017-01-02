@@ -1610,7 +1610,7 @@ S9sOptions::printHelpUser()
     printf(
 "Options for the \"user\" command:\n"
 "  --list                     List the users.\n"
-"  -G, --grant-user           Grant the user on controller (SSH/sudo needed).\n"
+"  --create                   Create a new Cmon user.\n"
 ""
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
@@ -2225,8 +2225,8 @@ S9sOptions::readOptionsUser(
         // Main Option
         { "generate-key",     no_argument,       0, 'g'               }, 
         { "cmon-user",        required_argument, 0, 'u'               }, 
-        { "grant-user",       no_argument,       0, 'G'               },
         { "list",             no_argument,       0, 'L'               },
+        { "create",           no_argument,       0, OptionCreate      },
         { "set",              no_argument,       0, OptionSet         },
        
         // Options about the user.
@@ -2326,10 +2326,11 @@ S9sOptions::readOptionsUser(
                 m_options["generate_key"] = true;
                 break;
 
-            case 'G':
-                // --grant-user
-                m_options["grant_user"] = true;
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
                 break;
+
             
             case 'L': 
                 // --list
@@ -3016,18 +3017,6 @@ S9sOptions::isGenerateKeyRequested() const
 {
     if (m_options.contains("generate_key"))
         return m_options.at("generate_key").toBoolean();
-
-    return false;
-}
-
-/**
- * \returns true if the --grant-user command line option is requested.
- */
-bool
-S9sOptions::isGrantUserRequest() const
-{
-    if (m_options.contains("grant_user"))
-        return m_options.at("grant_user").toBoolean();
 
     return false;
 }
