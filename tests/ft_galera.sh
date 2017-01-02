@@ -100,8 +100,6 @@ function create_node()
 
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
-    
-    ALL_CREATED_IPS+=" $node"
 
     sleep 5
 }
@@ -177,12 +175,15 @@ function testCreateCluster()
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a Galera cluster.
@@ -222,6 +223,7 @@ function testAddNode()
     printVerbose "Creating Node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
+    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
     # Adding a node to the cluster.
@@ -250,8 +252,9 @@ function testAddProxySql()
 
     pip-say "The test to add ProxySQL node is starting now."
     printVerbose "Creating Node..."
-    node=$(create_node)
-    nodes+="proxySql://$node"
+    nodeName=$(create_node)
+    nodes+="proxySql://$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Adding a node to the cluster.
@@ -336,6 +339,7 @@ function testAddHaProxy()
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="haProxy://$node"
+    ALL_CREATED_IPS+=" $node"
 
     #
     # Adding a node to the cluster.

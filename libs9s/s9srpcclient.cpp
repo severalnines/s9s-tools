@@ -847,6 +847,10 @@ S9sRpcClient::createNdbCluster(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \param uninstall true if uninstalling the existing software is allowed.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
  *
  */
 bool
@@ -864,7 +868,9 @@ S9sRpcClient::createPostgreSql(
 
     if (hosts.size() != 1u)
     {
-        PRINT_ERROR("PostgreSQL can only be created with one server in it.");
+        PRINT_ERROR(
+                "Creating a PostgreSQL cluster currently only possible "
+                "with one server in it.");
         return false;
     }
 
