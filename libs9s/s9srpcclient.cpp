@@ -612,6 +612,10 @@ S9sRpcClient::rollingRestart(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \param vendor the name of the database vendor to install.
+ * \param mySqlVersion the MySql version to install.
+ * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *
@@ -687,6 +691,10 @@ S9sRpcClient::createGaleraCluster(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \param vendor the name of the database vendor to install.
+ * \param mySqlVersion the MySql version to install. 
+ * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  */
