@@ -33,7 +33,6 @@
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
-//#define USE_NEW_RPC
 
 /**
  * Default constructor.
@@ -196,15 +195,19 @@ S9sRpcClient::authenticate()
 }
 
 /**
+ * \param clusterId The ID of the cluster for which the information is
+ *   requested.
+ *
  * The method that sends the "getAllClusterInfo" RPC request and reads the
- * reply.
+ * reply. This function requests for information about only one cluster
+ * referenced by the cluster ID.
  */
 bool
 S9sRpcClient::getCluster(
         int clusterId)
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/0/clusters/";
+    S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
@@ -213,12 +216,8 @@ S9sRpcClient::getCluster(
     request["cluster_id"] = clusterId;
     request["user"]       = options->userName();
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
     retval = executeRequest(uri, request);
-    //printf("-->\n%s\n", STR(reply().toString()));
-    //exit (0);
+    
     return retval;
 }
 
@@ -234,12 +233,7 @@ bool
 S9sRpcClient::getClusters()
 {
     S9sOptions    *options = S9sOptions::instance();
-    #ifdef USE_NEW_RPC
     S9sString      uri = "/v2/clusters/";
-    #else
-    S9sString      uri = "/0/clusters/";
-    #endif
-
     S9sVariantMap  request;
     bool           retval;
 
