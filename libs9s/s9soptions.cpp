@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <cctype>
 
 //#define DEBUG
 //#define WARNING
@@ -1857,6 +1858,13 @@ S9sOptions::readOptionsNode(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2042,6 +2050,13 @@ S9sOptions::readOptionsBackup(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2188,6 +2203,13 @@ S9sOptions::readOptionsProcess(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2369,6 +2391,13 @@ S9sOptions::readOptionsUser(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2547,6 +2576,13 @@ S9sOptions::readOptionsMaintenance(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2797,6 +2833,13 @@ S9sOptions::readOptionsCluster(
                 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2938,6 +2981,13 @@ S9sOptions::readOptionsJob(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
@@ -2985,6 +3035,13 @@ S9sOptions::readOptionsNoMode(
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
                 m_exitStatus = BadOptions;
                 return false;
         }
