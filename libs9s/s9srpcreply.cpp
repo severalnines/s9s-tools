@@ -774,7 +774,6 @@ S9sRpcReply::printClusterListLong()
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
-    S9sFormat       versionFormat;
     S9sFormat       ownerFormat, groupFormat;
     S9sFormat       nameFormat;
 
@@ -807,7 +806,6 @@ S9sRpcReply::printClusterListLong()
         groupFormat.widen(groupName);
         stateFormat.widen(state);
         typeFormat.widen(clusterType);
-        versionFormat.widen(version);
     }
 
     /*
@@ -844,7 +842,6 @@ S9sRpcReply::printClusterListLong()
         nColumns += idFormat.realWidth();
         nColumns += stateFormat.realWidth();
         nColumns += typeFormat.realWidth();
-        //nColumns += versionFormat.realWidth();
         nColumns += ownerFormat.realWidth();
         nColumns += groupFormat.realWidth();
         nColumns += nameFormat.realWidth();
@@ -864,7 +861,7 @@ S9sRpcReply::printClusterListLong()
         {
             if (state == "STARTED")
                 stateFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
-            else if (state == "FAILED")
+            else if (state == "FAILED" || state == "FAILURE")
                 stateFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
             else
                 stateFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
@@ -873,7 +870,6 @@ S9sRpcReply::printClusterListLong()
         idFormat.printf(clusterId); 
         stateFormat.printf(state);
         typeFormat.printf(clusterType.toLower());
-        //versionFormat.printf(version);
         
         printf("%s", userColorBegin());
         ownerFormat.printf(ownerName);
@@ -1927,6 +1923,7 @@ S9sRpcReply::printUserListLong()
 {
     S9sOptions     *options  = S9sOptions::instance();
     S9sVariantList  userList = operator[]("users").toVariantList();
+    int             authUserId = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
@@ -2039,6 +2036,11 @@ S9sRpcReply::printUserListLong()
         }
 
         idFormat.printf(userId);
+
+        if (userId == authUserId)
+            printf("A ");
+        else
+            printf("- ");
 
         printf("%s", colorBegin);
         userNameFormat.printf(userName);
