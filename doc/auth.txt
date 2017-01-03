@@ -26,12 +26,12 @@ token will be used instead of key based auhentication.
   For this step you must have SSH access (and sudo/superuser privileges) to the
   controller node (where cmon daemon runs.)
 
-  $ s9s user --verbose --grant-user --controller=CONTROLLER_ADDR:9500
+  $ s9s user --verbose --create --controller=https://CONTROLLER_ADDR:9501
 
   NOTE: these two steps (1) and 2)) can be done in one command like:
 
   $ s9s user --cmon-user=myfancyuser@domain.tld --generate-key \
-        --grant-user --controller=CONTROLLER_ADDR:9500
+        --create --controller=https://CONTROLLER_ADDR:9501
 
   Alternatively)
 
