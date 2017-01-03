@@ -20,7 +20,7 @@ following:
 List the users registered for the ClusterControl controller. 
 
 .TP
-.B \-\-grant-user
+.B \-\-create
 Register a new user or update an existing user on the controller and grant
 access to the ClusterControl system.
 
@@ -116,7 +116,7 @@ acess to the system using a public SSL key that is created (if it is not yet
 created):
 
 .nf
-# \fBs9s user --grant-user --generate-key --cmon-user=john --first-name="John" --last-name="Doe" --group=admins\fR
+# \fBs9s user --create --generate-key --cmon-user=john --first-name="John" --last-name="Doe" --group=admins\fR
 .fi
 
 

@@ -1557,10 +1557,19 @@ S9sOptions::printHelp()
             break;
 
         case Job:
+            printHelpJob();
+            break;
+
         case Process:
+            printHelpProcess();
+            break;
+
         case Backup:
+            printHelpBackup();
+            break;
+
         case Maintenance:
-            printHelpGeneric();
+            printHelpMaintenance();
             break;
 
         case User:
@@ -1574,9 +1583,9 @@ S9sOptions::printHelpGeneric()
 {
     printf(
 "Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"  %s COMMAND [OPTION...]\n"
 "\n"
-"Where command is:\n"
+"Where COMMAND is:\n"
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -1600,7 +1609,81 @@ S9sOptions::printHelpGeneric()
 "  --config-file=PATH         Set the configuration file.\n"
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
+"\n"
+"Job related options:\n"
+"  --wait                     Wait until the job ends.\n"
+"  --log                      Wait and monitor job messages.\n"
+"  --schedule=DATE&TIME       Run the job at the specified time.\n"
 "\n", STR(m_myName));
+}
+
+void
+S9sOptions::printHelpJob()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"job\" command:\n"
+"  --list                     List the jobs.\n"
+"\n"
+"  --job-id=ID                The ID of the job.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpProcess()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"process\" command:\n"
+"  --list                     List the processes.\n"
+"  --top                      Continuosly print top processes.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster to show.\n"
+"  --update-freq=SECS         The screen update frequency.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpBackup()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"backup\" command:\n"
+"  --list                     List the backups.\n"
+"  --create                   Create a new backup.\n"
+"  --restore                  Restore an existing backup.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --backup-id=ID             The ID of the backup.\n"
+"  --nodes=NODELIST           The list of nodes inved in the backup.\n"
+    );
+}
+
+void
+S9sOptions::printHelpMaintenance()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"maintenance\" command:\n"
+"  --list                     List the maintenance period.\n"
+"  --create                   Create a new maintenance period.\n"
+"  --delete                   Delete a maintenance period.\n"
+"\n"
+"  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"  --nodes=NODELIST           The nodes for the node maintenances.\n"
+"  --full-uuid                Print the full UUID.\n"
+"  --start=DATE&TIME          The start of the maintenance period.\n"
+"  --end=DATE&TIME            The end of the maintenance period.\n"
+"  --reason=STRING            The reason for the maintenance.\n"
+"  --uuid=UUID                The UUID to identify the maintenance period.\n"
+"\n"
+    );
 }
 
 void
@@ -1627,92 +1710,46 @@ S9sOptions::printHelpUser()
 void 
 S9sOptions::printHelpCluster()
 {
+    printHelpGeneric();
+
     printf(
-"Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"Options for the \"cluster\" command:\n"
+"  --list                     List the users.\n"
+"  --create                   Create and install a new cluster.\n"
+"  --ping                     Check the connection to the controller.\n"
+"  --rolling-restart          Restart the nodes without stopping the cluster.\n"
+"  --add-node                 Add a new node to the cluster.\n"
+"  --remove-node              Remove a node from the cluster.\n"
+"  --drop                     Drop cluster from the controller.\n"
+"  --stop                     Stop the cluster.\n"
+"  --start                    Start the cluster.\n"
 "\n"
-
-"Generic Options\n"
-"  -h, --help                   Show help message and exit.\n" 
-"  -v, --verbose                Print more messages.\n"
-"  -V, --version                Show version and exit.\n"
-"  -c, --controller=URL         The hostname/IP of the controller.\n"
-"  -P, --controller-port=NUMBER The port of the controller.\n"
-"  --rpc-tls                    Use TLS encryption for the controller.\n"
-"  -t, --rpc-token=TOKEN        The RPC authentication token.\n"
-"  -l, --long                   Print detailed list.\n"
-"  --print-json                 Print the sent/received JSon messages.\n"
-"  --config-file=PATH           Load the configuration from the file.\n"
-"\n"
-
-"Main Options\n"
-"  -L, --list                   List clusters.\n"
-"  --create                     Create cluster.\n"
-"  --rolling-restart            Restart the cluster.\n"
-"  --add-node                   Add node to cluster.\n"
-"  --remove-node                Remove node from cluster.\n"
-"  --drop                       Drop/remove cluster from the controller.\n"
-"  --stop                       Stop the cluster.\n"
-
-"\n"
-"Long Options\n"
-"  --wait                     Wait until the job is finished.\n"
-"  --log                      Print job log messages.\n"
-"  --batch                    Batch mode, less messages.\n"
-"\n"
-
-"Cluster Options\n"
-"  -i, --cluster-id=INT       Cluster ID.\n"
-"  -n, --cluster-name=STRING  Cluster name.\n"
-"  --nodes=STRING             The list of nodes (; separated).\n"
-"  --vendor=STRING            The database vendor to be used.\n"
-"  --provider-version=STRING  DB provider version (e.g. MySQL version).\n"
-"  --os-user=STRING           The OS user to be used.\n"
-"  --cluster-type=STRING      The cluster type to be created.\n"
-"  --db-admin=STRING          The admin DB user.\n"
-"  --db-admin-passwd=STRING   The admin DB password.\n"
-"\n",
-STR(m_myName));
+"  --cluster-id=ID            The ID of the cluster to manipulate.\n"
+"  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
+"  --nodes=NODE_LIST          List of nodes to work with.\n"
+"  --vendor=VENDOR            The name of the software vendor.\n"
+"  --provider-version=VER     The version of the software.\n"
+"  --os-user=USERNAME         The name of the user for the SSH commands.\n"
+"  --cluster-type=TYPE        The type of the cluster to install.\n"
+"  --db-adnim=USERNAME        The database admin user name.\n"
+"  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
+"\n");
 }
 
 void 
 S9sOptions::printHelpNode()
 {
+    printHelpGeneric();
+
     printf(
-"Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"Options for the \"node\" command:\n"
+"  --list                     List the jobs found on the controller.\n"
+"  --set                      Change the properties of a node.\n"
 "\n"
-
-"Generic Options\n"
-"  -h, --help                   Show help message and exit.\n" 
-"  -v, --verbose                Print more messages.\n"
-"  -V, --version                Show version and exit.\n"
-"  -c, --controller=URL         The hostname/IP of the controller.\n"
-"  -P, --controller-port=NUMBER The port of the controller.\n"
-"  --rpc-tls                    Use TLS encryption for the controller.\n"
-"  -t, --rpc-token=TOKEN        The RPC authentication token.\n"
-"  -l, --long                   Print detailed list.\n"
-"  --print-json                 Print the sent/received JSon messages.\n"
-"  --config-file=PATH           Load the configuration from the file.\n"
-"\n"
-
-"Main Options\n"
-"  -L, --list                   List clusters.\n"
-"  --set                        Set node properties.\n"
-
-"\n"
-"Long Options\n"
-"  --wait                     Wait until the job is finished.\n"
-"  --log                      Print job log messages.\n"
-"  --batch                    Batch mode, less messages.\n"
-"\n"
-
-"Node & Cluster Options\n"
-"  -i, --cluster-id=INT       Cluster ID.\n"
-"  --nodes=STRING             The list of nodes (; separated).\n"
-"  --properties=ASSIGNMENTS   Property names and values.\n"
-"\n",
-STR(m_myName));
+"  --cluster-id=ID            The ID of the cluster in which the node is.\n"
+"  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
+"  --properties=ASSIGNMENTS   The names and values of the properties to change.\n"
+"\n");
 }
 
 /**
@@ -2411,7 +2448,6 @@ S9sOptions::readOptionsMaintenance(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
