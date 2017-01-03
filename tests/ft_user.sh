@@ -181,7 +181,7 @@ function testSystemUsers()
     fi
 
     row=1
-    column=2
+    column=3
     cell=$(index_table "$text" $row $column)
     required="system"
     if [ "$cell" != "$required" ]; then
@@ -190,7 +190,7 @@ function testSystemUsers()
     fi
     
     row=1
-    column=3
+    column=4
     cell=$(index_table "$text" $row $column)
     required="admins"
     if [ "$cell" != "$required" ]; then
@@ -208,7 +208,7 @@ function testSystemUsers()
     fi
     
     row=2
-    column=2
+    column=3
     cell=$(index_table "$text" $row $column)
     required="nobody"
     if [ "$cell" != "$required" ]; then
@@ -217,7 +217,7 @@ function testSystemUsers()
     fi
     
     row=2
-    column=3
+    column=4
     cell=$(index_table "$text" $row $column)
     required="nobody"
     if [ "$cell" != "$required" ]; then
@@ -332,7 +332,7 @@ function testCreateUsers()
         --cmon-user="nerys"  \
         --title="Major" \
         --first-name="Kira" \
-        --last-name="Neris" \
+        --last-name="Nerys" \
         --generate-key \
         --group=ds9 \
         --create-group \
