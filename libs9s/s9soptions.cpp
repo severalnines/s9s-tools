@@ -1627,52 +1627,17 @@ S9sOptions::printHelpUser()
 void 
 S9sOptions::printHelpCluster()
 {
+    printHelpGeneric();
     printf(
-"Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"Options for the \"cluster\" command:\n"
+"  --list                     List the users.\n"
+"  --create                   Create and install a new cluster.\n"
+"  --ping                     Check the connection to the controller.\n"
+"  --rolling-restart          Restart the nodes without stopping the cluster.\n"
+"  --add-node                 Add a new node to the cluster.\n"
+"  --remove-node              Remove a node from the cluster.\n"
 "\n"
-
-"Generic Options\n"
-"  -h, --help                   Show help message and exit.\n" 
-"  -v, --verbose                Print more messages.\n"
-"  -V, --version                Show version and exit.\n"
-"  -c, --controller=URL         The hostname/IP of the controller.\n"
-"  -P, --controller-port=NUMBER The port of the controller.\n"
-"  --rpc-tls                    Use TLS encryption for the controller.\n"
-"  -t, --rpc-token=TOKEN        The RPC authentication token.\n"
-"  -l, --long                   Print detailed list.\n"
-"  --print-json                 Print the sent/received JSon messages.\n"
-"  --config-file=PATH           Load the configuration from the file.\n"
-"\n"
-
-"Main Options\n"
-"  -L, --list                   List clusters.\n"
-"  --create                     Create cluster.\n"
-"  --rolling-restart            Restart the cluster.\n"
-"  --add-node                   Add node to cluster.\n"
-"  --remove-node                Remove node from cluster.\n"
-"  --drop                       Drop/remove cluster from the controller.\n"
-"  --stop                       Stop the cluster.\n"
-
-"\n"
-"Long Options\n"
-"  --wait                     Wait until the job is finished.\n"
-"  --log                      Print job log messages.\n"
-"  --batch                    Batch mode, less messages.\n"
-"\n"
-
-"Cluster Options\n"
-"  -i, --cluster-id=INT       Cluster ID.\n"
-"  -n, --cluster-name=STRING  Cluster name.\n"
-"  --nodes=STRING             The list of nodes (; separated).\n"
-"  --vendor=STRING            The database vendor to be used.\n"
-"  --provider-version=STRING  DB provider version (e.g. MySQL version).\n"
-"  --os-user=STRING           The OS user to be used.\n"
-"  --cluster-type=STRING      The cluster type to be created.\n"
-"  --db-admin=STRING          The admin DB user.\n"
-"  --db-admin-passwd=STRING   The admin DB password.\n"
-"\n",
-STR(m_myName));
+"\n");
 }
 
 void 
