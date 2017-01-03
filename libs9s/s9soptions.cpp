@@ -1654,7 +1654,13 @@ S9sOptions::printHelpBackup()
 
     printf(
 "Options for the \"backup\" command:\n"
-"  --list                     List the users.\n"
+"  --list                     List the backups.\n"
+"  --create                   Create a new backup.\n"
+"  --restore                  Restore an existing backup.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --backup-id=ID             The ID of the backup.\n"
+"  --nodes=NODELIST           The list of nodes inved in the backup.\n"
     );
 }
 
@@ -1665,7 +1671,18 @@ S9sOptions::printHelpMaintenance()
 
     printf(
 "Options for the \"maintenance\" command:\n"
-"  --list                     List the users.\n"
+"  --list                     List the maintenance period.\n"
+"  --create                   Create a new maintenance period.\n"
+"  --delete                   Delete a maintenance period.\n"
+"\n"
+"  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"  --nodes=NODELIST           The nodes for the node maintenances.\n"
+"  --full-uuid                Print the full UUID.\n"
+"  --start=DATE&TIME          The start of the maintenance period.\n"
+"  --end=DATE&TIME            The end of the maintenance period.\n"
+"  --reason=STRING            The reason for the maintenance.\n"
+"  --uuid=UUID                The UUID to identify the maintenance period.\n"
+"\n"
     );
 }
 
@@ -2431,7 +2448,6 @@ S9sOptions::readOptionsMaintenance(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
