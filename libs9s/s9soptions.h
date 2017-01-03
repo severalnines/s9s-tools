@@ -187,6 +187,10 @@ class S9sOptions
         void printHelpCluster();
         void printHelpNode();
         void printHelpUser();
+        void printHelpJob();
+        void printHelpProcess();
+        void printHelpBackup();
+        void printHelpMaintenance();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);

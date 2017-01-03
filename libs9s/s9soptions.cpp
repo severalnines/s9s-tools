@@ -1557,10 +1557,19 @@ S9sOptions::printHelp()
             break;
 
         case Job:
+            printHelpJob();
+            break;
+
         case Process:
+            printHelpProcess();
+            break;
+
         case Backup:
+            printHelpBackup();
+            break;
+
         case Maintenance:
-            printHelpGeneric();
+            printHelpMaintenance();
             break;
 
         case User:
@@ -1609,6 +1618,58 @@ S9sOptions::printHelpGeneric()
 }
 
 void
+S9sOptions::printHelpJob()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"job\" command:\n"
+"  --list                     List the jobs.\n"
+"\n"
+"  --job-id=ID                The ID of the job.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpProcess()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"process\" command:\n"
+"  --list                     List the processes.\n"
+"  --top                      Continuosly print top processes.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster to show.\n"
+"  --update-freq=SECS         The screen update frequency.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpBackup()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"backup\" command:\n"
+"  --list                     List the users.\n"
+    );
+}
+
+void
+S9sOptions::printHelpMaintenance()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"maintenance\" command:\n"
+"  --list                     List the users.\n"
+    );
+}
+
+void
 S9sOptions::printHelpUser()
 {
     printHelpGeneric();
@@ -1633,6 +1694,7 @@ void
 S9sOptions::printHelpCluster()
 {
     printHelpGeneric();
+
     printf(
 "Options for the \"cluster\" command:\n"
 "  --list                     List the users.\n"
