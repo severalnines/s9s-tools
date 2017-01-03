@@ -1600,6 +1600,11 @@ S9sOptions::printHelpGeneric()
 "  --config-file=PATH         Set the configuration file.\n"
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
+"\n"
+"Job related options:\n"
+"  --wait                     Wait until the job ends.\n"
+"  --log                      Wait and monitor job messages.\n"
+"  --schedule=DATE&TIME       Run the job at the specified time.\n"
 "\n", STR(m_myName));
 }
 
@@ -1636,7 +1641,19 @@ S9sOptions::printHelpCluster()
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --add-node                 Add a new node to the cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
+"  --drop                     Drop cluster from the controller.\n"
+"  --stop                     Stop the cluster.\n"
+"  --start                    Start the cluster.\n"
 "\n"
+"  --cluster-id=ID            The ID of the cluster to manipulate.\n"
+"  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
+"  --nodes=NODE_LIST          List of nodes to work with.\n"
+"  --vendor=VENDOR            The name of the software vendor.\n"
+"  --provider-version=VER     The version of the software.\n"
+"  --os-user=USERNAME         The name of the user for the SSH commands.\n"
+"  --cluster-type=TYPE        The type of the cluster to install.\n"
+"  --db-adnim=USERNAME        The database admin user name.\n"
+"  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
 "\n");
 }
 
