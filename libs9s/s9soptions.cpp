@@ -1574,9 +1574,9 @@ S9sOptions::printHelpGeneric()
 {
     printf(
 "Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"  %s COMMAND [OPTION...]\n"
 "\n"
-"Where command is:\n"
+"Where COMMAND is:\n"
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -1660,41 +1660,17 @@ S9sOptions::printHelpCluster()
 void 
 S9sOptions::printHelpNode()
 {
+    printHelpGeneric();
+
     printf(
-"Usage:\n"
-"  %s [COMMAND] [OPTION...]\n"
+"Options for the \"node\" command:\n"
+"  --list                     List the jobs found on the controller.\n"
+"  --set                      Change the properties of a node.\n"
 "\n"
-
-"Generic Options\n"
-"  -h, --help                   Show help message and exit.\n" 
-"  -v, --verbose                Print more messages.\n"
-"  -V, --version                Show version and exit.\n"
-"  -c, --controller=URL         The hostname/IP of the controller.\n"
-"  -P, --controller-port=NUMBER The port of the controller.\n"
-"  --rpc-tls                    Use TLS encryption for the controller.\n"
-"  -t, --rpc-token=TOKEN        The RPC authentication token.\n"
-"  -l, --long                   Print detailed list.\n"
-"  --print-json                 Print the sent/received JSon messages.\n"
-"  --config-file=PATH           Load the configuration from the file.\n"
-"\n"
-
-"Main Options\n"
-"  -L, --list                   List clusters.\n"
-"  --set                        Set node properties.\n"
-
-"\n"
-"Long Options\n"
-"  --wait                     Wait until the job is finished.\n"
-"  --log                      Print job log messages.\n"
-"  --batch                    Batch mode, less messages.\n"
-"\n"
-
-"Node & Cluster Options\n"
-"  -i, --cluster-id=INT       Cluster ID.\n"
-"  --nodes=STRING             The list of nodes (; separated).\n"
-"  --properties=ASSIGNMENTS   Property names and values.\n"
-"\n",
-STR(m_myName));
+"  --cluster-id=ID            The ID of the cluster in which the node is.\n"
+"  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
+"  --properties=ASSIGNMENTS   The names and values of the properties to change.\n"
+"\n");
 }
 
 /**
