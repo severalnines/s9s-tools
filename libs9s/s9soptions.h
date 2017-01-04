@@ -154,6 +154,7 @@ class S9sOptions
         bool isTopRequested() const;
         bool isWaitRequested() const;
         bool isBatchRequested() const;
+        bool isStringMatchExtraArguments(const S9sString &theString) const;
 
         bool useSyntaxHighlight() const;
         bool humanReadable() const;
@@ -210,13 +211,14 @@ class S9sOptions
         static S9sOptions *sm_instance;
 
     private:
-        S9sFileName        m_myName;
-        OperationMode      m_operationMode;
-        int                m_exitStatus;
-        S9sString          m_errorMessage;
-        S9sVariantMap      m_options;
-        S9sConfigFile      m_userConfig;
-        S9sConfigFile      m_systemConfig;
+        S9sFileName          m_myName;
+        OperationMode        m_operationMode;
+        int                  m_exitStatus;
+        S9sString            m_errorMessage;
+        S9sVariantMap        m_options;
+        S9sConfigFile        m_userConfig;
+        S9sConfigFile        m_systemConfig;
+        S9sVector<S9sString> m_extraArguments;
 
     friend class UtS9sOptions;
 };

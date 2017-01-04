@@ -1913,6 +1913,12 @@ S9sRpcReply::printUserListBrief()
         if (whoAmIRequested && userId != authUserId)
             continue;
 
+        if (!options->isStringMatchExtraArguments(userName))
+            continue;
+
+        /*
+         * Syntax highlight.
+         */
         if (syntaxHighlight)
         {
             colorBegin = XTERM_COLOR_ORANGE;
@@ -1956,9 +1962,18 @@ S9sRpcReply::printUserListLong()
         int            userId     = userMap["user_id"].toInt();
         S9sString      groupNames; 
 
+        /*
+         * Filtering.
+         */
         if (whoAmIRequested && userId != authUserId)
             continue;
+        
+        if (!options->isStringMatchExtraArguments(userName))
+            continue;
 
+        /*
+         * Groups.
+         */
         for (uint idx = 0u; idx < groupList.size(); ++idx)
         {
             S9sVariantMap groupMap  = groupList[idx].toVariantMap();
@@ -1997,6 +2012,9 @@ S9sRpcReply::printUserListLong()
         // Filtering.
         //
         if (whoAmIRequested && userId != authUserId)
+            continue;
+        
+        if (!options->isStringMatchExtraArguments(userName))
             continue;
 
         //

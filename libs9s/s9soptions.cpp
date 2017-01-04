@@ -35,9 +35,10 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <cctype>
+#include <fnmatch.h>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
@@ -1178,6 +1179,24 @@ S9sOptions::isBatchRequested() const
 {
     if (m_options.contains("batch"))
         return m_options.at("batch").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::isStringMatchExtraArguments(
+        const S9sString &theString) const
+{
+    if (m_extraArguments.empty())
+        return true;
+
+    for (uint idx = 0u; idx < m_extraArguments.size(); ++idx)
+    {
+        const S9sString &pattern = m_extraArguments[idx];
+
+        if (fnmatch(STR(pattern), STR(theString), FNM_EXTMATCH) == 0)
+            return true;
+    }
 
     return false;
 }
@@ -2458,6 +2477,15 @@ S9sOptions::readOptionsUser(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+
+    // 
+    // The first extra argument is 'user', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
     }
 
     return true;
