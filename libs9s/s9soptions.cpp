@@ -1183,6 +1183,10 @@ S9sOptions::isBatchRequested() const
     return false;
 }
 
+/**
+ * \returns true if the passed string matches the extra command line arguments
+ *   (the command line arguments found after the last command line options).
+ */
 bool
 S9sOptions::isStringMatchExtraArguments(
         const S9sString &theString) const
