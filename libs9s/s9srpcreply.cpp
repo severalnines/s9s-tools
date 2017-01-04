@@ -1890,7 +1890,9 @@ S9sRpcReply::printUserListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  userList = operator[]("users").toVariantList();
+    int             authUserId = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    bool            whoAmIRequested = options->isWhoAmIRequested();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
 
@@ -1901,8 +1903,15 @@ S9sRpcReply::printUserListBrief()
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  userMap  = userList[idx].toVariantMap();
-        S9sString      userName = userMap["user_name"].toString();
+        S9sVariantMap  userMap    = userList[idx].toVariantMap();
+        S9sString      userName   = userMap["user_name"].toString();
+        int            userId     = userMap["user_id"].toInt();
+        
+        //
+        // Filtering.
+        //
+        if (whoAmIRequested && userId != authUserId)
+            continue;
 
         if (syntaxHighlight)
         {
@@ -1924,6 +1933,7 @@ S9sRpcReply::printUserListLong()
     S9sOptions     *options  = S9sOptions::instance();
     S9sVariantList  userList = operator[]("users").toVariantList();
     int             authUserId = operator[]("request_user_id").toInt();
+    bool            whoAmIRequested = options->isWhoAmIRequested();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
@@ -1945,6 +1955,9 @@ S9sRpcReply::printUserListLong()
         S9sString      userName   = userMap["user_name"].toString();
         int            userId     = userMap["user_id"].toInt();
         S9sString      groupNames; 
+
+        if (whoAmIRequested && userId != authUserId)
+            continue;
 
         for (uint idx = 0u; idx < groupList.size(); ++idx)
         {
@@ -1980,6 +1993,12 @@ S9sRpcReply::printUserListLong()
         S9sString      fullName;
         S9sString      groupNames; 
        
+        //
+        // Filtering.
+        //
+        if (whoAmIRequested && userId != authUserId)
+            continue;
+
         //
         // Concatenating the group names into one string.
         //

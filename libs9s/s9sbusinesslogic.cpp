@@ -185,7 +185,7 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isUserOperation())
     {
-        if (options->isListRequested())
+        if (options->isListRequested() || options->isWhoAmIRequested())
         {
             executeUserList(client);
         } else {
@@ -821,7 +821,8 @@ S9sBusinessLogic::executeBackupList(
 }
 
 /**
- *
+ * This function will execute the listing of the users that can be requested by
+ * the --list and --whoami command line options.
  */
 void 
 S9sBusinessLogic::executeUserList(
