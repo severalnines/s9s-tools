@@ -135,6 +135,7 @@ class S9sOptions
         S9sString title() const;
 
         bool isListRequested() const;
+        bool isWhoAmIRequested() const;
         bool isSetRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;

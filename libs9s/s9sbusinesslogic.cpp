@@ -820,6 +820,9 @@ S9sBusinessLogic::executeBackupList(
     }
 }
 
+/**
+ *
+ */
 void 
 S9sBusinessLogic::executeUserList(
         S9sRpcClient &client)

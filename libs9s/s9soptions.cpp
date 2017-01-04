@@ -85,6 +85,7 @@ enum S9sOptionType
     OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
+    OptionWhoAmI,
 };
 
 /**
@@ -943,6 +944,19 @@ S9sOptions::isListRequested() const
 }
 
 /**
+ * \returns true if the "whoami" function is requested by providing the 
+ * --whoami command line option.
+ */
+bool
+S9sOptions::isWhoAmIRequested() const
+{
+    if (m_options.contains("whoami"))
+        return m_options.at("whoami").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the "set" function is requested using the --set command line
  *   option.
  */
@@ -1694,6 +1708,7 @@ S9sOptions::printHelpUser()
     printf(
 "Options for the \"user\" command:\n"
 "  --list                     List the users.\n"
+"  --whoami                   List the current user only.\n"
 "  --create                   Create a new Cmon user.\n"
 ""
 "\n"
@@ -2285,6 +2300,7 @@ S9sOptions::readOptionsUser(
         { "generate-key",     no_argument,       0, 'g'               }, 
         { "cmon-user",        required_argument, 0, 'u'               }, 
         { "list",             no_argument,       0, 'L'               },
+        { "whoami",           no_argument,       0, OptionWhoAmI      },
         { "create",           no_argument,       0, OptionCreate      },
         { "set",              no_argument,       0, OptionSet         },
        
@@ -2389,11 +2405,15 @@ S9sOptions::readOptionsUser(
                 // --create
                 m_options["create"] = true;
                 break;
-
-            
+ 
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionWhoAmI:
+                // --whoami
+                m_options["whoami"] = true;
                 break;
 
             case OptionSet:
