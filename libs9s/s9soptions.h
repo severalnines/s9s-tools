@@ -133,6 +133,7 @@ class S9sOptions
         S9sString lastName() const;
         S9sString firstName() const;
         S9sString title() const;
+        S9sString emailAddress() const;
 
         bool isListRequested() const;
         bool isWhoAmIRequested() const;

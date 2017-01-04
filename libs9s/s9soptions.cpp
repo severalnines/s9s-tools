@@ -78,6 +78,7 @@ enum S9sOptionType
     OptionGroup,
     OptionCreateGroup,
     OptionFirstName,
+    OptionEmailAddress,
     OptionLastName,
     OptionTitle,
     OptionStart,
@@ -2306,33 +2307,34 @@ S9sOptions::readOptionsUser(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'               },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
-        { "rpc-token",        required_argument, 0, 't'               },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0, OptionPrintJson   },
-        { "color",            optional_argument, 0, OptionColor       },
-        { "config-file",      required_argument, 0, OptionConfigFile  },
-        { "batch",            no_argument,       0, OptionBatch       },
+        { "help",             no_argument,       0, 'h'                },
+        { "verbose",          no_argument,       0, 'v'                },
+        { "version",          no_argument,       0, 'V'                },
+        { "controller",       required_argument, 0, 'c'                },
+        { "controller-port",  required_argument, 0, 'P'                },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls       },
+        { "rpc-token",        required_argument, 0, 't'                },
+        { "long",             no_argument,       0, 'l'                },
+        { "print-json",       no_argument,       0, OptionPrintJson    },
+        { "color",            optional_argument, 0, OptionColor        },
+        { "config-file",      required_argument, 0, OptionConfigFile   },
+        { "batch",            no_argument,       0, OptionBatch        },
 
         // Main Option
-        { "generate-key",     no_argument,       0, 'g'               }, 
-        { "cmon-user",        required_argument, 0, 'u'               }, 
-        { "list",             no_argument,       0, 'L'               },
-        { "whoami",           no_argument,       0, OptionWhoAmI      },
-        { "create",           no_argument,       0, OptionCreate      },
-        { "set",              no_argument,       0, OptionSet         },
+        { "generate-key",     no_argument,       0, 'g'                }, 
+        { "cmon-user",        required_argument, 0, 'u'                }, 
+        { "list",             no_argument,       0, 'L'                },
+        { "whoami",           no_argument,       0, OptionWhoAmI       },
+        { "create",           no_argument,       0, OptionCreate       },
+        { "set",              no_argument,       0, OptionSet          },
        
         // Options about the user.
-        { "group",            required_argument, 0, OptionGroup       },
-        { "create-group",     no_argument,       0, OptionCreateGroup },
-        { "first-name",       required_argument, 0, OptionFirstName   },
-        { "last-name",        required_argument, 0, OptionLastName    },
-        { "title",            required_argument, 0, OptionTitle       },
+        { "group",            required_argument, 0, OptionGroup        },
+        { "create-group",     no_argument,       0, OptionCreateGroup  },
+        { "first-name",       required_argument, 0, OptionFirstName    },
+        { "last-name",        required_argument, 0, OptionLastName     },
+        { "title",            required_argument, 0, OptionTitle        },
+        { "email-address",    required_argument, 0, OptionEmailAddress },
 
         { 0, 0, 0, 0 }
     };
@@ -2467,6 +2469,11 @@ S9sOptions::readOptionsUser(
             case OptionTitle:
                 // --title=TITLE
                 m_options["title"] = optarg;
+                break;
+            
+            case OptionEmailAddress:
+                // --email-address=ADDRESSS
+                m_options["email_address"] = optarg;
                 break;
 
             default:
@@ -3218,3 +3225,11 @@ S9sOptions::firstName() const
     return S9sString();
 }
 
+S9sString
+S9sOptions::emailAddress() const
+{
+    if (m_options.contains("email_address"))
+        return m_options.at("email_address").toString();
+
+    return S9sString();
+}
