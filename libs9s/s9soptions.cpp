@@ -52,6 +52,7 @@ enum S9sOptionType
     OptionTop,
     OptionUpdateFreq,
     OptionBatch,
+    OptionNoHeader,
     OptionNodes,
     OptionAddNode,
     OptionRemoveNode,
@@ -1184,11 +1185,18 @@ S9sOptions::isBatchRequested() const
     return false;
 }
 
+/**
+ * \returns true if the --no-header or --batch command line options are
+ *   provided.
+ */
 bool
 S9sOptions::isNoHeaderRequested() const
 {
     if (isBatchRequested())
         return true;
+    
+    if (m_options.contains("no_header"))
+        return m_options.at("no_header").toBoolean();
 
     return false;
 }
@@ -1656,6 +1664,7 @@ S9sOptions::printHelpGeneric()
 "  --config-file=PATH         Set the configuration file.\n"
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
+"  --no-header                Do not print headers.\n"
 "\n"
 "Job related options:\n"
 "  --wait                     Wait until the job ends.\n"
@@ -1813,18 +1822,19 @@ S9sOptions::readOptionsNode(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls  },
-        { "rpc-token",        required_argument, 0, 't' },
+        { "help",             no_argument,       0, OptionHelp        },
+        { "verbose",          no_argument,       0, 'v'               },
+        { "version",          no_argument,       0, 'V'               },
+        { "controller",       required_argument, 0, 'c'               },
+        { "controller-port",  required_argument, 0, 'P'               },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
+        { "rpc-token",        required_argument, 0, 't'               },
         { "long",             no_argument,       0, 'l'               },
         { "print-json",       no_argument,       0, OptionPrintJson   },
         { "color",            optional_argument, 0, OptionColor       },
         { "config-file",      required_argument, 0,  4                },
         { "batch",            no_argument,       0, OptionBatch       },
+        { "no-header",        no_argument,       0, OptionNoHeader    },
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
@@ -1907,6 +1917,11 @@ S9sOptions::readOptionsNode(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
             
             case OptionColor:
@@ -1994,6 +2009,7 @@ S9sOptions::readOptionsBackup(
         { "wait",             no_argument,       0, OptionWait        },
         { "log",              no_argument,       0, 'G'               },
         { "batch",            no_argument,       0, OptionBatch       },
+        { "no-header",        no_argument,       0, OptionNoHeader    },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
@@ -2071,6 +2087,11 @@ S9sOptions::readOptionsBackup(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
             
             case OptionCreate:
@@ -2329,6 +2350,7 @@ S9sOptions::readOptionsUser(
         { "color",            optional_argument, 0, OptionColor        },
         { "config-file",      required_argument, 0, OptionConfigFile   },
         { "batch",            no_argument,       0, OptionBatch        },
+        { "no-header",        no_argument,       0, OptionNoHeader     },
 
         // Main Option
         { "generate-key",     no_argument,       0, 'g'                }, 
@@ -2406,6 +2428,11 @@ S9sOptions::readOptionsUser(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
             
             case OptionColor:
@@ -2533,6 +2560,7 @@ S9sOptions::readOptionsMaintenance(
         { "color",            optional_argument, 0, OptionColor       },
         { "config-file",      required_argument, 0, OptionConfigFile  },
         { "batch",            no_argument,       0, OptionBatch       },
+        { "no-header",        no_argument,       0, OptionNoHeader    },
         { "date-format",      required_argument, 0, OptionDateFormat  },
         { "full-uuid",        no_argument,       0, OptionFullUuid    },
 
@@ -2609,6 +2637,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
 
             case OptionDateFormat:
@@ -2708,17 +2741,17 @@ S9sOptions::readOptionsCluster(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  OptionRpcTls },
-        { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, OptionPrintJson },
-        { "color",            optional_argument, 0, OptionColor  },
-        { "config-file",      required_argument, 0, OptionConfigFile  },
+        { "help",             no_argument,       0, OptionHelp       },
+        { "verbose",          no_argument,       0, 'v'              },
+        { "version",          no_argument,       0, 'V'              },
+        { "controller",       required_argument, 0, 'c'              },
+        { "controller-port",  required_argument, 0, 'P'              },
+        { "rpc-tls",          no_argument,       0,  OptionRpcTls    },
+        { "rpc-token",        required_argument, 0, 't'              },
+        { "long",             no_argument,       0, 'l'              },
+        { "print-json",       no_argument,       0, OptionPrintJson  },
+        { "color",            optional_argument, 0, OptionColor      },
+        { "config-file",      required_argument, 0, OptionConfigFile },
 
         // Main Option
         { "ping",             no_argument,       0, OptionPing       },
@@ -2732,9 +2765,10 @@ S9sOptions::readOptionsCluster(
         { "start",            no_argument,       0, OptionStart      },
 
         // Job Related Options
-        { "wait",             no_argument,       0, 16  },
-        { "log",              no_argument,       0, 'G' },
+        { "wait",             no_argument,       0, OptionWait       },
+        { "log",              no_argument,       0, 'G'              },
         { "batch",            no_argument,       0, OptionBatch      },
+        { "no-header",        no_argument,       0, OptionNoHeader   },
         { "schedule",         required_argument, 0, OptionSchedule   },
 
 
@@ -2856,7 +2890,7 @@ S9sOptions::readOptionsCluster(
                 m_options["print_json"] = true;
                 break;
             
-            case 16:
+            case OptionWait:
                 // --wait
                 m_options["wait"] = true;
                 break;
@@ -2869,6 +2903,11 @@ S9sOptions::readOptionsCluster(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
            
             case OptionSchedule:
