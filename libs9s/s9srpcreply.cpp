@@ -801,11 +801,37 @@ S9sRpcReply::printClusterListLong()
         S9S_DEBUG("*** groupName: '%s'", STR(groupName));
 
         idFormat.widen(clusterId);
-        nameFormat.widen(clusterName);
-        ownerFormat.widen(ownerName);
-        groupFormat.widen(groupName);
         stateFormat.widen(state);
         typeFormat.widen(clusterType);
+        ownerFormat.widen(ownerName);
+        groupFormat.widen(groupName);
+        nameFormat.widen(clusterName);
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        idFormat.widen("ID");
+        stateFormat.widen("STATE");
+        typeFormat.widen("TYPE");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        nameFormat.widen("NAME");
+
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        stateFormat.printf("STATE");
+        typeFormat.printf("TYPE");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
+        nameFormat.printf("NAME");
+        printf("COMMENT");
+        
+        printf("%s", headerColorEnd());
+
+        printf("\n");
     }
 
     /*
