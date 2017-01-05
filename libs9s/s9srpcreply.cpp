@@ -2633,6 +2633,8 @@ S9sRpcReply::nodeTypeFlag(
         return "y";
     else if (nodeType == "haproxy")
         return "h";
+    else if (nodeType == "garbd")
+        return "a";
 
     if (className == "CmonMySqlHost")
         return "s";
