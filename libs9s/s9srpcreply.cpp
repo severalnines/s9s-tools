@@ -1045,11 +1045,10 @@ S9sRpcReply::printNodeListLong()
     S9sString       clusterNameFilter = options->clusterName();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     S9sVariantList  hostList;
-
     S9sFormat       hostNameFormat;
     S9sFormat       versionFormat;
     S9sFormat       clusterNameFormat;
-
+    S9sFormat       portFormat;
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
@@ -1059,8 +1058,8 @@ S9sRpcReply::printNodeListLong()
      */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        S9sVariantList hosts = theMap["hosts"].toVariantList();
+        S9sVariantMap  theMap      = theList[idx].toVariantMap();
+        S9sVariantList hosts       = theMap["hosts"].toVariantList();
         S9sString      clusterName = theMap["cluster_name"].toString();
         
         total += hosts.size();
@@ -1076,10 +1075,12 @@ S9sRpcReply::printNodeListLong()
             S9sNode       node      = hostMap;
             S9sString     hostName  = node.name();
             S9sString     version   = hostMap["version"].toString();
+            int           port      = hostMap["port"].toInt(-1);
             
             hostNameFormat.widen(hostName);
             versionFormat.widen(version);
-        
+            portFormat.widen(port);
+
             hostMap["cluster_name"] = clusterName;
             hostList << hostMap;
         }
@@ -1089,7 +1090,29 @@ S9sRpcReply::printNodeListLong()
      * Sorting the hosts.
      */
     sort(hostList.begin(), hostList.end(), compareHostMaps);
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        versionFormat.widen("VERSION");
+        clusterNameFormat.widen("CLUSTER");
+        hostNameFormat.widen("HOST");
+        portFormat.widen("PORT");
 
+        printf("%s", headerColorBegin());
+        printf("ST  ");
+        versionFormat.printf("VERSION");
+        clusterNameFormat.printf("CLUSTER");
+        hostNameFormat.printf("HOST");
+        portFormat.printf("PORT");
+        printf("COMMENT");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+        
     /*
      * Second run: doing the actual printing.
      */
@@ -1130,7 +1153,7 @@ S9sRpcReply::printNodeListLong()
         nColumns += versionFormat.realWidth();
         nColumns += clusterNameFormat.realWidth();
         nColumns += hostNameFormat.realWidth();
-        nColumns += 4 + 1;
+        nColumns += portFormat.realWidth();
 
         if (nColumns < terminalWidth)
         {
@@ -1156,9 +1179,9 @@ S9sRpcReply::printNodeListLong()
         hostNameFormat.printf(hostName);
 
         if (port >= 0)
-            printf("%4d ", port);
+            portFormat.printf(port);
         else
-            printf("   - ");
+            portFormat.printf("-");
 
 
         printf("%s\n", STR(message));
