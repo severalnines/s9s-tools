@@ -172,7 +172,7 @@ function testSystemUsers()
     text=$($S9S user --list --long --batch --color=never)
 
     row=1
-    column=1
+    column=2
     cell=$(index_table "$text" $row $column)
     required="1"
     if [ "$cell" != "$required" ]; then
@@ -199,7 +199,7 @@ function testSystemUsers()
     fi
     
     row=2
-    column=1
+    column=2
     cell=$(index_table "$text" $row $column)
     required="2"
     if [ "$cell" != "$required" ]; then
@@ -255,6 +255,7 @@ function testCreateUsers()
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \
+        --email-address="sisko@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -270,6 +271,7 @@ function testCreateUsers()
         --cmon-user="odo" \
         --first-name="Odo" \
         --last-name="" \
+        --email-address="odo@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -285,6 +287,7 @@ function testCreateUsers()
         --cmon-user="jake"\
         --first-name="Jake"\
         --last-name="Sisko"\
+        --email-address="jake.sisko@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -301,6 +304,7 @@ function testCreateUsers()
         --title="Dr." \
         --first-name="Julian" \
         --last-name="Bashir" \
+        --email-address="drbashir@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -317,6 +321,7 @@ function testCreateUsers()
         --title="Chief" \
         --first-name="Miles" \
         --last-name="O'Brien" \
+        --email-address="chief@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -333,6 +338,7 @@ function testCreateUsers()
         --title="Major" \
         --first-name="Kira" \
         --last-name="Nerys" \
+        --email-address="kira@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -348,6 +354,7 @@ function testCreateUsers()
         --cmon-user="quark" \
         --first-name="Quark" \
         --last-name=""\
+        --email-address="quark@ferengi.fr" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -364,6 +371,7 @@ function testCreateUsers()
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
+        --email-address="dax@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
@@ -380,6 +388,7 @@ function testCreateUsers()
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
+        --email-address="warrior@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \

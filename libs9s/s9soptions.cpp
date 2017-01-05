@@ -1184,6 +1184,15 @@ S9sOptions::isBatchRequested() const
     return false;
 }
 
+bool
+S9sOptions::isNoHeaderRequested() const
+{
+    if (isBatchRequested())
+        return true;
+
+    return false;
+}
+
 /**
  * \returns true if the passed string matches the extra command line arguments
  *   (the command line arguments found after the last command line options).
@@ -1743,6 +1752,7 @@ S9sOptions::printHelpUser()
 "  --first-name=NAME          The first name of the user.\n"
 "  --last-name=NAME           The last name of the user.\n"
 "  --title=TITLE              The prefix title for the user.\n"
+"  --email-address=ADDRESS    The email address for the user.\n"
 "\n");
 }
 

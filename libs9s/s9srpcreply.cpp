@@ -1932,7 +1932,9 @@ S9sRpcReply::printUserListBrief()
     }
 }
 
-
+/**
+ * Prints the user list in long format.
+ */
 void 
 S9sRpcReply::printUserListLong()
 {
@@ -1948,6 +1950,7 @@ S9sRpcReply::printUserListLong()
     S9sFormat       idFormat;
     S9sFormat       userNameFormat;
     S9sFormat       groupNamesFormat;
+    S9sFormat       emailFormat;
 
     userList = operator[]("users").toVariantList();
    
@@ -1959,6 +1962,7 @@ S9sRpcReply::printUserListLong()
         S9sVariantMap  userMap    = userList[idx].toVariantMap();
         S9sVariantList groupList  = userMap["groups"].toVariantList();
         S9sString      userName   = userMap["user_name"].toString();
+        S9sString      emailAddress = userMap["email_address"].toString();
         int            userId     = userMap["user_id"].toInt();
         S9sString      groupNames; 
 
@@ -1987,10 +1991,28 @@ S9sRpcReply::printUserListLong()
 
         if (groupNames.empty())
             groupNames = "-";
+        
+        if (emailAddress.empty())
+            emailAddress = "-";
 
         userNameFormat.widen(userName);
+        emailFormat.widen(emailAddress);
         idFormat.widen(userId);
         groupNamesFormat.widen(groupNames);
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        printf("A ");
+        idFormat.printf("ID");
+        userNameFormat.printf("UNAME");
+        groupNamesFormat.printf("GNAME");
+        emailFormat.printf("EMAIL");
+        printf("REALNAME");
+        printf("\n");
     }
 
     /*
@@ -2005,6 +2027,7 @@ S9sRpcReply::printUserListLong()
         S9sString      title      = userMap["title"].toString();
         S9sString      firstName  = userMap["first_name"].toString();
         S9sString      lastName   = userMap["last_name"].toString();
+        S9sString      emailAddress = userMap["email_address"].toString();
         S9sString      fullName;
         S9sString      groupNames; 
        
@@ -2033,6 +2056,9 @@ S9sRpcReply::printUserListLong()
         
         if (groupNames.empty())
             groupNames = "-";
+        
+        if (emailAddress.empty())
+            emailAddress = "-";
 
         /*
          * Concatenating the real-world names.
@@ -2072,12 +2098,15 @@ S9sRpcReply::printUserListLong()
             groupColorEnd   = TERM_NORMAL;
         }
 
-        idFormat.printf(userId);
-
+        //
+        // Printing the fields.
+        //
         if (userId == authUserId)
             printf("A ");
         else
             printf("- ");
+        
+        idFormat.printf(userId);
 
         printf("%s", colorBegin);
         userNameFormat.printf(userName);
@@ -2086,6 +2115,8 @@ S9sRpcReply::printUserListLong()
         printf("%s", groupColorBegin);
         groupNamesFormat.printf(groupNames);
         printf("%s", groupColorEnd);
+
+        emailFormat.printf(emailAddress);
 
         printf("%s", STR(fullName));
         printf("\n");

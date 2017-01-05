@@ -155,6 +155,7 @@ class S9sOptions
         bool isTopRequested() const;
         bool isWaitRequested() const;
         bool isBatchRequested() const;
+        bool isNoHeaderRequested() const;
         bool isStringMatchExtraArguments(const S9sString &theString) const;
 
         bool useSyntaxHighlight() const;
