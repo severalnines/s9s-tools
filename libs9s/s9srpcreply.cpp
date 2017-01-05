@@ -2006,12 +2006,20 @@ S9sRpcReply::printUserListLong()
      */
     if (!options->isNoHeaderRequested())
     {
+        idFormat.widen("ID");
+        userNameFormat.widen("UNAME");
+        groupNamesFormat.widen("GNAME");
+        emailFormat.widen("EMAIL");
+
+        printf("%s", headerColorBegin());
         printf("A ");
         idFormat.printf("ID");
         userNameFormat.printf("UNAME");
         groupNamesFormat.printf("GNAME");
         emailFormat.printf("EMAIL");
         printf("REALNAME");
+        printf("%s", headerColorEnd());
+
         printf("\n");
     }
 
@@ -2672,3 +2680,20 @@ S9sRpcReply::groupColorEnd() const
     return "";
 }
 
+const char *
+S9sRpcReply::headerColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return TERM_BOLD;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::headerColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}

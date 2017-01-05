@@ -103,5 +103,9 @@ class S9sRpcReply : public S9sVariantMap
         
         const char *userColorBegin() const;
         const char *userColorEnd() const;
+
+        const char *headerColorBegin() const;
+        const char *headerColorEnd() const;
+
 };
 
