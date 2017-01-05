@@ -65,6 +65,16 @@ is
 .BR never ", " always ", or " auto .
 
 .TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\-no\-header
+Do not print headers for tables.
+
+.TP
 .BR \-\^\-date-format =\fIFORMATSTRING\fP "]
 Set the date and time format for the output of the program. The format string 
 is as it is specified for the strftime() standard C library function.
