@@ -1977,6 +1977,15 @@ S9sOptions::readOptionsNode(
                 return false;
         }
     }
+    
+    // 
+    // The first extra argument is 'user', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
+    }
 
     return true;
 }

@@ -1076,6 +1076,9 @@ S9sRpcReply::printNodeListLong()
             S9sString     hostName  = node.name();
             S9sString     version   = hostMap["version"].toString();
             int           port      = hostMap["port"].toInt(-1);
+
+            if (!options->isStringMatchExtraArguments(hostName))
+                continue;
             
             hostNameFormat.widen(hostName);
             versionFormat.widen(version);
@@ -1129,6 +1132,10 @@ S9sRpcReply::printNodeListLong()
         S9sString     clusterName = hostMap["cluster_name"].toString();
         bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
         int           port      = hostMap["port"].toInt(-1);
+            
+        // Filtering...
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         if (message.empty())
             message = "-";
