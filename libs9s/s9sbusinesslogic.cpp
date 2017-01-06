@@ -1546,6 +1546,8 @@ S9sBusinessLogic::executeMaintenanceCreate(
     S9sRpcReply    reply;
     bool           success;
 
+    S9S_DEBUG("Creating maintence.");
+
     /*
      * Running the request on the controller.
      */

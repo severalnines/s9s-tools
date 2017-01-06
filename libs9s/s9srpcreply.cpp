@@ -1015,6 +1015,12 @@ S9sRpcReply::printNodeListBrief()
     }
 }
 
+/**
+ * \param a the first host represented as a variantmap
+ * \param b the second host represented as a variantmap
+ * This function is used to sort the hosts before printing them in a list. First
+ * the cluster IDs are compared, the second key is the host name.
+ */
 bool 
 compareHostMaps(
         const S9sVariant &a,
@@ -1862,7 +1868,12 @@ S9sRpcReply::printMaintenanceListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  recordList;
-    S9sFormat       ownerFormat, groupOwnerFormat, startFormat, endFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       uuidFormat;
+    S9sFormat       groupOwnerFormat;
+    S9sFormat       startFormat;
+    S9sFormat       endFormat;
+    S9sFormat       nameFormat;
 
     recordList = operator[]("maintenance_records").toVariantList();
 
@@ -1871,28 +1882,71 @@ S9sRpcReply::printMaintenanceListLong()
      */
     for (uint idx = 0; idx < recordList.size(); ++idx)
     {
-        S9sVariantMap  record   = recordList[idx].toVariantMap();
+        S9sVariantMap  record  = recordList[idx].toVariantMap();
         S9sVariantList periods = record["maintenance_periods"].toVariantList();
-        S9sString      hostName = record["hostname"].toString();
+        bool           isClusterMaintenance = record.contains("cluster_id");
+        S9sString      hostName;
+        S9sString      clusterName;
+        S9sVariantMap  clusterMap;
+        
+        if (!isClusterMaintenance)
+        {
+            hostName = record["hostname"].toString();
+            nameFormat.widen(hostName);
+        } else if (isClusterMaintenance)
+        {
+            clusterMap  = record["cluster"].toVariantMap();
+            clusterName = clusterMap["cluster_name"].toString();
+            nameFormat.widen(clusterName);
+        }
        
         for (uint idx1 = 0; idx1 < periods.size(); ++idx1)
         {
             S9sVariantMap period    = periods[idx1].toVariantMap();
             S9sString     userName  = period["username"].toString();
             S9sString     groupName = period["groupname"].toString();
+            S9sString     uuid      = period["UUID"].toString();
             S9sDateTime   start, end;
             S9sString     startString, endString;
+            
+            if (!options->fullUuid())
+                uuid = uuid.substr(0, 7);
 
             start.parse(period["initiate"].toString());
             end.parse(period["deadline"].toString());
             startString = options->formatDateTime(start);
             endString   = options->formatDateTime(end);
-
+            
+            uuidFormat.widen(uuid);
             ownerFormat.widen(userName);
             groupOwnerFormat.widen(groupName);
             startFormat.widen(startString);
             endFormat.widen(endString);
         }
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        uuidFormat.widen("UUID");
+        ownerFormat.widen("OWNER");
+        groupOwnerFormat.widen("GROUP");
+        startFormat.widen("START");
+        endFormat.widen("END");
+        nameFormat.widen("HOST/CLUSTER");
+
+        printf("%s", headerColorBegin());
+        printf("ST ");
+        uuidFormat.printf("UUID");
+        ownerFormat.printf("OWNER");
+        groupOwnerFormat.printf("GROUP");
+        startFormat.printf("START");
+        endFormat.printf("END");
+        nameFormat.printf("HOST/CLUSTER");
+        printf("REASON");
+        
+        printf("%s", headerColorEnd());
+
+        printf("\n");
     }
 
     /*
@@ -1959,10 +2013,10 @@ S9sRpcReply::printMaintenanceListLong()
 
             if (isHostMaintenance)
             {
-                printf("%s ", STR(hostName));
+                nameFormat.printf(STR(hostName));
             } else {
                 printf("%s", clusterColorBegin());
-                printf("%s ", STR(clusterName));
+                nameFormat.printf(STR(clusterName));
                 printf("%s", groupColorEnd());
             }
 
