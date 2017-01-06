@@ -1209,30 +1209,58 @@ S9sRpcReply::printJobListBrief()
     S9sVariantList  theList         = operator[]("jobs").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             total           = operator[]("total").toInt();
-    unsigned int    userNameLength  = 0;
-    S9sString       userNameFormat;
-    unsigned int    statusLength  = 0;
-    S9sString       statusFormat;
-
+    S9sFormat       idFormat;
+    S9sFormat       stateFormat;
+    S9sFormat       userFormat;
+    S9sFormat       dateFormat;
+    S9sFormat       percentFormat;
 
     //
     // The width of certain columns are variable.
     //
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap = theList[idx].toVariantMap();
-        S9sString     user   = theMap["user_name"].toString();
-        S9sString     status = theMap["status"].toString();
-
-        if (user.length() > userNameLength)
-            userNameLength = user.length();
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        int            jobId  = theMap["job_id"].toInt();
+        S9sString      user   = theMap["user_name"].toString();
+        S9sString      status = theMap["status"].toString();
+        S9sDateTime    timeStamp;
+        S9sString      timeStampString;
         
-        if (status.length() > statusLength)
-            statusLength = status.length();
+        // The timestamp. Now we use 'created' later we can make this
+        // configurable.
+        timeStamp.parse(theMap["created"].toString());
+        timeStampString = options->formatDateTime(timeStamp);
+        
+        idFormat.widen(jobId);
+        stateFormat.widen(status);
+        userFormat.widen(user);
+        dateFormat.widen(timeStampString);
     }
 
-    userNameFormat.sprintf("%%-%us ", userNameLength);
-    statusFormat.sprintf("%%s%%-%ds%%s ", statusLength);
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        idFormat.widen("ID");
+        stateFormat.widen("STATE");
+        userFormat.widen("OWNER");
+        dateFormat.widen("CREATED");
+        percentFormat.widen("100%");
+
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        stateFormat.printf("STATE");
+        userFormat.printf("OWNER");
+        dateFormat.printf("CREATED");
+        percentFormat.printf("RDY");
+        printf("COMMENT");
+
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -1270,7 +1298,7 @@ S9sRpcReply::printJobListBrief()
 
         // The timestamp.
         created.parse(theMap["created"].toString());
-        timeStamp = created.toString(S9sDateTime::MySqlLogFileFormat);
+        timeStamp = options->formatDateTime(created);
 
         if (syntaxHighlight)
         {
@@ -1289,9 +1317,15 @@ S9sRpcReply::printJobListBrief()
             }
         }
 
-        printf("%5d ", jobId);
-        printf(STR(statusFormat), stateColorStart, STR(status), stateColorEnd);
-        printf(STR(userNameFormat), STR(user));
+        idFormat.printf(jobId);
+        printf("%s", stateColorStart);
+        stateFormat.printf(status);
+        printf("%s", stateColorEnd);
+        
+        printf("%s", userColorBegin());
+        userFormat.printf(user);
+        printf("%s", userColorEnd());
+
         printf("%s ", STR(timeStamp));
         printf("%s ", STR(percent));
         printf("%s\n", STR(title));
