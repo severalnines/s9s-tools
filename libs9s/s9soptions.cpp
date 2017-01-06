@@ -2014,7 +2014,7 @@ S9sOptions::readOptionsBackup(
         { "color",            optional_argument, 0, OptionColor      },
         { "human-readable",   no_argument,       0, 'h' },
         { "time-style",       required_argument, 0, OptionTimeStyle   },
-        { "config-file",      required_argument, 0,  OptionConfigFile },
+        { "config-file",      required_argument, 0, OptionConfigFile },
 
         // Main Option
         { "list",             no_argument,       0, 'L' },
@@ -3027,7 +3027,8 @@ S9sOptions::readOptionsJob(
         { "long",             no_argument,       0, 'l' },
         { "print-json",       no_argument,       0,  OptionPrintJson  },
         { "config-file",      required_argument, 0,  OptionConfigFile },
-        { "color",            optional_argument, 0,  OptionColor },
+        { "color",            optional_argument, 0,  OptionColor      },
+        { "date-format",      required_argument, 0,  OptionDateFormat },
 
         // Main Option
         { "wait",             no_argument,       0,  5  },
@@ -3112,6 +3113,11 @@ S9sOptions::readOptionsJob(
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
+                break;
+            
+            case OptionDateFormat:
+                // --date-format=FORMAT
+                m_options["date_format"] = optarg;
                 break;
 
             case OptionPrintJson:
