@@ -1805,6 +1805,7 @@ S9sOptions::printHelpNode()
 "  --set                      Change the properties of a node.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
+"  --cluster-name=NAME        Name of the cluster to list.\n"
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
 "  --properties=ASSIGNMENTS   The names and values of the properties to change.\n"
 "\n");
@@ -1842,6 +1843,7 @@ S9sOptions::readOptionsNode(
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'               },
+        { "cluster-name",     required_argument, 0, 'n'               },
         { "nodes",            required_argument, 0, OptionNodes       },
 
         // Node options. 
@@ -1945,6 +1947,11 @@ S9sOptions::readOptionsNode(
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
                 break;
 
             case OptionProperties:
