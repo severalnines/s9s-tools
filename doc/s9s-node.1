@@ -151,3 +151,9 @@ List the nodes managed by the controller:
 .nf
 # \fBs9s node --list --long --controller=localhost:9555 --color=always\fR
 .fi
+
+List a few specific nodes from one specific cluster:
+
+.nf
+# \fBs9s node --list --long --cluster-name=ft_postgresql_36945 '*168.0*' '10.10*'\fR
+.fi
