@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include "S9sOptions"
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 #define KILO (1024.0)
@@ -37,7 +37,7 @@ S9sFormat::S9sFormat() :
     m_withFieldSeparator(true),
     m_colorStart(0),
     m_colorEnd(0),
-    m_rightJustify(true)
+    m_rightJustify(false)
 {
 }
 
@@ -145,12 +145,15 @@ S9sFormat::printf(
 {
     S9sString formatString;
 
+    S9S_WARNING("-> value          : %s", STR(value));
+    S9S_WARNING("-> width          : %d", m_width);
+    S9S_WARNING("-> m_rightJustify : %s", m_rightJustify ? "yes" : "no");
     if (m_width > 0)
     {
         if (m_rightJustify)
-            formatString.sprintf("%%-%ds", m_width);
-        else
             formatString.sprintf("%%%ds", m_width);
+        else
+            formatString.sprintf("%%-%ds", m_width);
     } else {
         formatString = "%s";
     }

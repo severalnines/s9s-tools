@@ -1733,7 +1733,11 @@ S9sRpcReply::printBackupListLong()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  dataList;
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sFormat       sizeFormat, hostNameFormat, idFormat;
+    S9sFormat       sizeFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       idFormat;
+    S9sFormat       stateFormat;
+    S9sFormat       createdFormat;
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
     
@@ -1743,18 +1747,19 @@ S9sRpcReply::printBackupListLong()
     else if (contains("backup_records"))
         dataList = operator[]("backup_records").toVariantList();
    
-    sizeFormat.setRightJustify(true);
 
     /*
      * Collecting some information.
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
-        S9sVariantList backups = theMap["backup"].toVariantList();
+        S9sVariantMap  theMap   = dataList[idx].toVariantMap();
+        S9sVariantList backups  = theMap["backup"].toVariantList();
         S9sString      hostName = theMap["backup_host"].toString();
         int            id       = theMap["id"].toInt();
+        S9sString      status   = theMap["status"].toString().toUpper();
 
+        stateFormat.widen(status);
         hostNameFormat.widen(hostName);
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
@@ -1770,13 +1775,47 @@ S9sRpcReply::printBackupListLong()
                 S9sString     path = file["path"].toString();
                 ulonglong     size = file["size"].toULongLong();
                 S9sString     sizeString;
-
+                S9sString     createdString = file["created"].toString();
+                S9sDateTime   created;
+        
+                created.parse(createdString);
+                createdString = options->formatDateTime(created);
+                
                 sizeString = S9sFormat::toSizeString(size);
-
+                
+                createdFormat.widen(createdString);
                 sizeFormat.widen(sizeString);
             }
         }
     }
+
+    /*
+     * Printing the header.
+     */
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        idFormat.widen("ID");
+        stateFormat.widen("STATE");
+        hostNameFormat.widen("HOSTNAME");
+        createdFormat.widen("CREATED");
+        sizeFormat.widen("SIZE");
+
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        stateFormat.printf("STATE");
+        hostNameFormat.printf("HOSTNAME");
+        createdFormat.printf("CREATED");
+        sizeFormat.printf("SIZE");
+        printf("FILENAME");
+ 
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+    
+    sizeFormat.setRightJustify(true);
 
     /*
      * 
@@ -1804,11 +1843,9 @@ S9sRpcReply::printBackupListLong()
                 S9sDateTime   created;
 
                 created.parse(createdString);
-                createdString = created.toString(
-                        S9sDateTime::MySqlLogFileFormat);
+                createdString = options->formatDateTime(created);
 
                 sizeString = S9sFormat::toSizeString(size);
-
 
                 if (syntaxHighlight)
                 {
@@ -1822,7 +1859,7 @@ S9sRpcReply::printBackupListLong()
                 idFormat.printf(id);
                 printf("%s ", STR(status));
                 hostNameFormat.printf(hostName);
-                printf("%s ", STR(createdString));
+                createdFormat.printf(createdString);
                 sizeFormat.printf(sizeString);
                 printf("%s%s%s", colorBegin, STR(path), colorEnd);
                 printf("\n");
