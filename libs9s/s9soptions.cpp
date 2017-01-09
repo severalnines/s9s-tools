@@ -3008,6 +3008,9 @@ S9sOptions::readOptionsCluster(
     return true;
 }
 
+/**
+ * Reads the command line options for the "job" command.
+ */
 bool
 S9sOptions::readOptionsJob(
         int    argc,
@@ -3144,6 +3147,10 @@ S9sOptions::readOptionsJob(
                 // --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
+
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
