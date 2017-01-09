@@ -1738,6 +1738,7 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
+    S9sFormat       ownerFormat;
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
     
@@ -1753,14 +1754,17 @@ S9sRpcReply::printBackupListLong()
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap   = dataList[idx].toVariantMap();
-        S9sVariantList backups  = theMap["backup"].toVariantList();
-        S9sString      hostName = theMap["backup_host"].toString();
-        int            id       = theMap["id"].toInt();
-        S9sString      status   = theMap["status"].toString().toUpper();
+        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
+        S9sVariantList backups   = theMap["backup"].toVariantList();
+        S9sString      hostName  = theMap["backup_host"].toString();
+        S9sVariantMap  configMap = theMap["config"].toVariantMap();
+        S9sString      owner     = configMap["createdBy"].toString();
+        int            id        = theMap["id"].toInt();
+        S9sString      status    = theMap["status"].toString().toUpper();
 
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
+        ownerFormat.widen(owner);
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1792,13 +1796,11 @@ S9sRpcReply::printBackupListLong()
     /*
      * Printing the header.
      */
-    /*
-     * Printing the header.
-     */
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
         stateFormat.widen("STATE");
+        ownerFormat.widen("OWNER");
         hostNameFormat.widen("HOSTNAME");
         createdFormat.widen("CREATED");
         sizeFormat.widen("SIZE");
@@ -1806,6 +1808,7 @@ S9sRpcReply::printBackupListLong()
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
         stateFormat.printf("STATE");
+        ownerFormat.printf("OWNER");
         hostNameFormat.printf("HOSTNAME");
         createdFormat.printf("CREATED");
         sizeFormat.printf("SIZE");
@@ -1818,15 +1821,17 @@ S9sRpcReply::printBackupListLong()
     sizeFormat.setRightJustify(true);
 
     /*
-     * 
+     * Second run, we print things here.
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap   = dataList[idx].toVariantMap();
-        S9sVariantList backups  = theMap["backup"].toVariantList();
-        S9sString      hostName = theMap["backup_host"].toString();
-        int            id       = theMap["id"].toInt();
-        S9sString      status   = theMap["status"].toString().toUpper();
+        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
+        S9sVariantList backups   = theMap["backup"].toVariantList();
+        S9sString      hostName  = theMap["backup_host"].toString();
+        S9sVariantMap  configMap = theMap["config"].toVariantMap();
+        S9sString      owner     = configMap["createdBy"].toString();
+        int            id        = theMap["id"].toInt();
+        S9sString      status    = theMap["status"].toString().toUpper();
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1857,7 +1862,8 @@ S9sRpcReply::printBackupListLong()
                 }
 
                 idFormat.printf(id);
-                printf("%s ", STR(status));
+                stateFormat.printf(status);
+                ownerFormat.printf(owner);
                 hostNameFormat.printf(hostName);
                 createdFormat.printf(createdString);
                 sizeFormat.printf(sizeString);
