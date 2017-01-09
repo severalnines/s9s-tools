@@ -1776,7 +1776,8 @@ S9sRpcReply::printBackupListLong()
             for (uint idx1 = 0; idx1 < files.size(); ++idx1)
             {
                 S9sVariantMap file = files[idx1].toVariantMap();
-                S9sString     path = file["path"].toString();
+                //S9sString     root = file["root_dir"].toString();
+                //S9sString     path = file["path"].toString();
                 ulonglong     size = file["size"].toULongLong();
                 S9sString     sizeString;
                 S9sString     createdString = file["created"].toString();
@@ -1832,6 +1833,7 @@ S9sRpcReply::printBackupListLong()
         S9sString      owner     = configMap["createdBy"].toString();
         int            id        = theMap["id"].toInt();
         S9sString      status    = theMap["status"].toString().toUpper();
+        S9sString      root = theMap["root_dir"].toString();
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1846,6 +1848,14 @@ S9sRpcReply::printBackupListLong()
                 S9sString     sizeString;
                 S9sString     createdString = file["created"].toString();
                 S9sDateTime   created;
+
+                if (true)
+                {
+                    if (!root.endsWith("/"))
+                        root += "/";
+
+                    path = root + path;
+                }
 
                 created.parse(createdString);
                 createdString = options->formatDateTime(created);
