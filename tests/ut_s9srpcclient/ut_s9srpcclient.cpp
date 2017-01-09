@@ -33,12 +33,12 @@ S9sRpcClientTester::executeRequest(
         const S9sString &uri,
         S9sVariantMap &payload)
 {
-    //S9S_DEBUG("*** ");
-    //S9S_DEBUG("*** uri     : %s", STR(uri));
-    //S9S_DEBUG("*** payload : \n%s\n", STR(payload));
+    S9S_DEBUG("*** ");
+    S9S_DEBUG("*** uri     : %s", STR(uri));
+    S9S_DEBUG("*** payload : \n%s\n", STR(payload.toString()));
 
     m_urls     << uri;
-    m_payloads << payload;
+    m_payloads << payload.toString();
 
     return true;
 }
@@ -58,7 +58,7 @@ S9sRpcClientTester::payload(
         const uint index) const
 {
     if (index >= m_payloads.size())
-        return S9sString();
+        return S9sString("INDEX OUT OF RANGE");
 
     return m_payloads[index].toString();
 }
@@ -99,7 +99,7 @@ UtS9sRpcClient::testGetAllClusterInfo()
     S9sRpcClientTester client;
 
     S9S_VERIFY(client.getClusters());
-    S9S_COMPARE(client.uri(0u), "/0/clusters/");
+    S9S_COMPARE(client.uri(0u), "/v2/clusters/");
     S9S_VERIFY(client.payload(0u).contains(
                 "\"operation\": \"getAllClusterInfo\""));
 
@@ -159,7 +159,7 @@ UtS9sRpcClient::testCreateGalera()
 
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
-    S9S_COMPARE(uri, "/0/job/");
+    S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"galera\""));
     S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
@@ -194,7 +194,7 @@ UtS9sRpcClient::testCreateReplication()
 
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
-    S9S_COMPARE(uri, "/0/job/");
+    S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"replication\""));
     S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
@@ -241,7 +241,7 @@ UtS9sRpcClient::testCreateNdbCluster()
 
     //S9S_DEBUG("*** uri     : %s", STR(uri));
     //S9S_DEBUG("*** payload : %s", STR(payload));
-    S9S_COMPARE(uri, "/0/job/");
+    S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"mysqlcluster\""));
     S9S_VERIFY(payload.contains("\"type\": \"mysql\""));
@@ -281,7 +281,7 @@ UtS9sRpcClient::testAddNode()
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
     
-    S9S_COMPARE(uri, "/1/job/");
+    S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"addnode\""));
     S9S_VERIFY(payload.contains("\"disable_firewall\": true"));
     S9S_VERIFY(payload.contains("\"disable_selinux\": true"));
