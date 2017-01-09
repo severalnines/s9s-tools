@@ -1218,6 +1218,7 @@ S9sRpcReply::printJobListBrief()
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       userFormat;
+    S9sFormat       groupFormat;
     S9sFormat       dateFormat;
     S9sFormat       percentFormat;
 
@@ -1229,10 +1230,14 @@ S9sRpcReply::printJobListBrief()
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         int            jobId  = theMap["job_id"].toInt();
         S9sString      user   = theMap["user_name"].toString();
+        S9sString      group  = theMap["group_name"].toString();
         S9sString      status = theMap["status"].toString();
         S9sDateTime    timeStamp;
         S9sString      timeStampString;
         
+        if (group.empty())
+            group = "-";
+
         // The timestamp. Now we use 'created' later we can make this
         // configurable.
         timeStamp.parse(theMap["created"].toString());
@@ -1241,6 +1246,7 @@ S9sRpcReply::printJobListBrief()
         idFormat.widen(jobId);
         stateFormat.widen(status);
         userFormat.widen(user);
+        groupFormat.widen(group);
         dateFormat.widen(timeStampString);
     }
 
@@ -1252,6 +1258,7 @@ S9sRpcReply::printJobListBrief()
         idFormat.widen("ID");
         stateFormat.widen("STATE");
         userFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
         dateFormat.widen("CREATED");
         percentFormat.widen("100%");
 
@@ -1259,6 +1266,7 @@ S9sRpcReply::printJobListBrief()
         idFormat.printf("ID");
         stateFormat.printf("STATE");
         userFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
         dateFormat.printf("CREATED");
         percentFormat.printf("RDY");
         printf("COMMENT");
@@ -1275,6 +1283,7 @@ S9sRpcReply::printJobListBrief()
         S9sString      status = theMap["status"].toString();
         S9sString      title  = theMap["title"].toString();
         S9sString      user   = theMap["user_name"].toString();
+        S9sString      group  = theMap["group_name"].toString();
         S9sString      percent;
         S9sDateTime    created;
         S9sString      timeStamp;
@@ -1288,6 +1297,9 @@ S9sRpcReply::printJobListBrief()
         // The user name or if it is not there the user ID.
         if (user.empty())
             user.sprintf("%d", theMap["user_id"].toInt());
+        
+        if (group.empty())
+            group = "-";
 
         // The progress.
         if (theMap.contains("progress_percent"))
@@ -1331,6 +1343,10 @@ S9sRpcReply::printJobListBrief()
         printf("%s", userColorBegin());
         userFormat.printf(user);
         printf("%s", userColorEnd());
+
+        printf("%s", groupColorBegin(group));
+        groupFormat.printf(group);
+        printf("%s", groupColorEnd());
 
         printf("%s ", STR(timeStamp));
         printf("%s ", STR(percent));

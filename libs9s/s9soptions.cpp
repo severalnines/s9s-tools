@@ -1963,6 +1963,10 @@ S9sOptions::readOptionsNode(
                 // --nodes=LIST
                 setNodes(optarg);
                 break;
+            
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -2170,6 +2174,10 @@ S9sOptions::readOptionsBackup(
                 // --backup-id=BACKUPID
                 m_options["backup_id"] = atoi(optarg);
                 break;
+            
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -2323,6 +2331,10 @@ S9sOptions::readOptionsProcess(
                     return false;
                 }
                 break;
+            
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -2528,6 +2540,10 @@ S9sOptions::readOptionsUser(
                 // --email-address=ADDRESSS
                 m_options["email_address"] = optarg;
                 break;
+            
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -2727,6 +2743,10 @@ S9sOptions::readOptionsMaintenance(
                 // --uuid=UUID
                 m_options["uuid"] = optarg;
                 break;
+            
+            case '?':
+                // 
+                return false;
 
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -2990,6 +3010,10 @@ S9sOptions::readOptionsCluster(
                 // --db-admin-passwd=PASSWD
                 m_options["db_admin_password"]  = optarg;
                 break;
+            
+            case '?':
+                // 
+                return false;
                 
             default:
                 S9S_WARNING("Unrecognized command line option.");
