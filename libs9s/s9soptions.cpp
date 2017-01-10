@@ -748,6 +748,9 @@ S9sOptions::clusterId() const
     return retval;
 }
 
+/**
+ * \returns true if the --cluster-id command line option was provided.
+ */
 bool
 S9sOptions::hasClusterIdOption() const
 {

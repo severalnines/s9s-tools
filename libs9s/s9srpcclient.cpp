@@ -471,16 +471,16 @@ S9sRpcClient::getRunningProcesses(
  * to get the job list (e.g. s9s job --list).
  */
 bool
-S9sRpcClient::getJobInstances(
-        const int clusterId)
+S9sRpcClient::getJobInstances()
 {
-    S9sString      uri;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/job/", clusterId);
-
     request["operation"] = "getJobInstances";
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
 
     if (!m_priv->m_token.empty())
         request["token"] = m_priv->m_token;
