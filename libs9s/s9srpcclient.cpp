@@ -479,6 +479,7 @@ S9sRpcClient::getJobInstances()
     bool           retval;
 
     request["operation"] = "getJobInstances";
+    request["ascending"] = true;
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
 

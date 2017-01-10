@@ -1216,6 +1216,7 @@ S9sRpcReply::printJobListBrief()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             total           = operator[]("total").toInt();
     S9sFormat       idFormat;
+    S9sFormat       cidFormat;
     S9sFormat       stateFormat;
     S9sFormat       userFormat;
     S9sFormat       groupFormat;
@@ -1229,6 +1230,7 @@ S9sRpcReply::printJobListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         int            jobId  = theMap["job_id"].toInt();
+        int            cid    = theMap["cluster_id"].toInt();
         S9sString      user   = theMap["user_name"].toString();
         S9sString      group  = theMap["group_name"].toString();
         S9sString      status = theMap["status"].toString();
@@ -1244,6 +1246,7 @@ S9sRpcReply::printJobListBrief()
         timeStampString = options->formatDateTime(timeStamp);
         
         idFormat.widen(jobId);
+        cidFormat.widen(cid);
         stateFormat.widen(status);
         userFormat.widen(user);
         groupFormat.widen(group);
@@ -1256,6 +1259,7 @@ S9sRpcReply::printJobListBrief()
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
+        cidFormat.widen("CID");
         stateFormat.widen("STATE");
         userFormat.widen("OWNER");
         groupFormat.widen("GROUP");
@@ -1264,6 +1268,7 @@ S9sRpcReply::printJobListBrief()
 
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        cidFormat.printf("CID");
         stateFormat.printf("STATE");
         userFormat.printf("OWNER");
         groupFormat.printf("GROUP");
@@ -1280,6 +1285,7 @@ S9sRpcReply::printJobListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         int            jobId  = theMap["job_id"].toInt();
+        int            cid    = theMap["cluster_id"].toInt();
         S9sString      status = theMap["status"].toString();
         S9sString      title  = theMap["title"].toString();
         S9sString      user   = theMap["user_name"].toString();
@@ -1336,6 +1342,7 @@ S9sRpcReply::printJobListBrief()
         }
 
         idFormat.printf(jobId);
+        cidFormat.printf(cid);
         printf("%s", stateColorStart);
         stateFormat.printf(status);
         printf("%s", stateColorEnd);
