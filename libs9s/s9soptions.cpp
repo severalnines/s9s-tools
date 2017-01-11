@@ -1986,11 +1986,11 @@ S9sOptions::readOptionsNode(
     }
     
     // 
-    // The first extra argument is 'user', so we leave that out.
+    // The first extra argument is 'node', so we leave that out. We are
+    // interested in the others.
     //
     for (int idx = optind + 1; idx < argc; ++idx)
     {
-        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
         m_extraArguments << argv[idx];
     }
 
@@ -3030,6 +3030,15 @@ S9sOptions::readOptionsCluster(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+    
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
     }
 
     return true;

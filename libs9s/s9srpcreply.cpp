@@ -743,6 +743,9 @@ S9sRpcReply::printClusterListBrief()
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
         S9sString     clusterName = theMap["cluster_name"].toString();
+        
+        if (!options->isStringMatchExtraArguments(clusterName))
+            continue;
 
         if (syntaxHighlight)
             printf("%s%s%s ", TERM_BLUE, STR(clusterName), TERM_NORMAL);
@@ -794,6 +797,9 @@ S9sRpcReply::printClusterListLong()
         S9sString     version     = 
             clusterMap["vendor"].toString() + " " +
             clusterMap["version"].toString();
+        
+        if (!options->isStringMatchExtraArguments(clusterName))
+            continue;
 
         if (groupName.empty())
             groupName = "0";
@@ -860,11 +866,14 @@ S9sRpcReply::printClusterListLong()
 
         if (!requestedName.empty() && requestedName != clusterName)
             continue;
+        
+        if (!options->isStringMatchExtraArguments(clusterName))
+            continue;
 
         // This should not happen!
         if (clusterName.empty())
             continue;
-
+        
         nColumns += idFormat.realWidth();
         nColumns += stateFormat.realWidth();
         nColumns += typeFormat.realWidth();
