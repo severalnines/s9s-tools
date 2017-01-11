@@ -1655,7 +1655,7 @@ S9sBusinessLogic::executeMetaTypeList(
     S9sRpcReply reply;
     bool        success;
 
-    success = client.getMetaType();
+    success = client.getMetaType("CmonHost");
     if (success)
     {
         reply = client.reply();

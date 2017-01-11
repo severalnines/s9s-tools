@@ -63,7 +63,7 @@ class S9sRpcClient
 
         bool getCpuInfo(const int clusterId);
         bool getCpuStats(const int clusterId);
-        bool getMetaType();
+        bool getMetaType(const S9sString &typeName);
         bool getMemoryStats(const int clusterId);
 
         bool getRunningProcesses(const int clusterId);
