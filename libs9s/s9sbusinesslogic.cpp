@@ -205,6 +205,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
         }
+    } else if (options->isMetaTypeOperation())
+    {
+        if (options->isListRequested())
+        {
+            executeMetaTypeList(client);
+        } else {
+            PRINT_ERROR("Unknown metatype operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }
@@ -1628,6 +1636,36 @@ S9sBusinessLogic::executeMaintenanceList(
                 printf("\n%s\n", STR(reply.toString()));
             else
                 reply.printMaintenanceList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::executeMetaTypeList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getMetaType();
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printMetaTypeList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

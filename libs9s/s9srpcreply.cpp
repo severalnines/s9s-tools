@@ -693,6 +693,23 @@ S9sRpcReply::printMaintenanceList()
         printMaintenanceListBrief();
 }
 
+void 
+S9sRpcReply::printMetaTypeList()
+{
+    //S9sOptions *options = S9sOptions::instance();
+    
+    //if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+#if 0
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printMaintenanceListLong();
+    else
+        printMaintenanceListBrief();
+#endif
+}
+
 /**
  * Generic method that prints the reply as a node list.
  */

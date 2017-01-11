@@ -412,6 +412,22 @@ S9sRpcClient::getCpuStats(
 }
 
 bool
+S9sRpcClient::getMetaType()
+{
+    int            clusterId = 0;
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/%d/stat/", clusterId);
+
+    request["operation"] = "getMetaType";
+    retval = executeRequest(uri, request);
+    
+    return retval;    
+}
+
+bool
 S9sRpcClient::getMemoryStats(
         const int clusterId)
 {

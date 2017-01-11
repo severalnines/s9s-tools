@@ -53,7 +53,8 @@ class S9sOptions
             Backup,
             Process,
             User,
-            Maintenance
+            Maintenance,
+            MetaType,
         };
 
         enum ExitCodes
@@ -111,7 +112,6 @@ class S9sOptions
 
         S9sString userName( const bool tryLocalUserToo = false) const;
 
-        //S9sString authUsername() const;
         S9sString privateKeyPath() const;
 
         S9sString backupDir() const;
@@ -126,6 +126,7 @@ class S9sOptions
         bool isProcessOperation() const;
         bool isUserOperation() const;
         bool isMaintenanceOperation() const;
+        bool isMetaTypeOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -195,6 +196,7 @@ class S9sOptions
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
+        void printHelpMetaType();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
@@ -204,6 +206,7 @@ class S9sOptions
         bool readOptionsProcess(int argc, char  *argv[]);
         bool readOptionsUser(int argc, char *argv[]);
         bool readOptionsMaintenance(int argc, char *argv[]);
+        bool readOptionsMetaType(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);
 
@@ -213,6 +216,7 @@ class S9sOptions
         static S9sOptions *sm_instance;
 
     private:
+        S9sMap<S9sString, OperationMode> m_modes;
         S9sFileName          m_myName;
         OperationMode        m_operationMode;
         int                  m_exitStatus;

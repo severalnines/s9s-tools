@@ -103,6 +103,20 @@ S9sOptions::S9sOptions() :
 
     sm_instance = this;
 
+    /*
+     * Setting up some internals that we use later.
+     */
+    m_modes["cluster"]     = Cluster;
+    m_modes["node"]        = Node;
+    m_modes["job"]         = Job;
+    m_modes["backup"]      = Backup;
+    m_modes["maintenance"] = Maintenance;
+    m_modes["user"]        = User;
+    m_modes["metatype"]    = MetaType;
+
+    /*
+     * Reading environment variables and storing them as settings.
+     */
     tmp = getenv("CMON_CONTROLLER");
     if (tmp)
     {
@@ -937,6 +951,15 @@ S9sOptions::isMaintenanceOperation() const
 }
 
 /**
+ * \returns true if the main operation is "metatype".
+ */
+bool
+S9sOptions::isMetaTypeOperation() const
+{
+    return m_operationMode == MetaType;
+}
+
+/**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.
  */
@@ -1516,6 +1539,10 @@ S9sOptions::readOptions(
         case Maintenance:
             retval = readOptionsMaintenance(*argc, argv);
             break;
+        
+        case MetaType:
+            retval = readOptionsMetaType(*argc, argv);
+            break;
     }
 
     return retval;
@@ -1578,6 +1605,9 @@ S9sOptions::setMode(
     } else if (modeName == "user")
     {
         m_operationMode = User;
+    } else if (modeName == "metatype")
+    {
+        m_operationMode = MetaType;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -1628,6 +1658,10 @@ S9sOptions::printHelp()
 
         case Maintenance:
             printHelpMaintenance();
+            break;
+        
+        case MetaType:
+            printHelpMetaType();
             break;
 
         case User:
@@ -1725,6 +1759,28 @@ S9sOptions::printHelpBackup()
 
 void
 S9sOptions::printHelpMaintenance()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"maintenance\" command:\n"
+"  --list                     List the maintenance period.\n"
+"  --create                   Create a new maintenance period.\n"
+"  --delete                   Delete a maintenance period.\n"
+"\n"
+"  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"  --nodes=NODELIST           The nodes for the node maintenances.\n"
+"  --full-uuid                Print the full UUID.\n"
+"  --start=DATE&TIME          The start of the maintenance period.\n"
+"  --end=DATE&TIME            The end of the maintenance period.\n"
+"  --reason=STRING            The reason for the maintenance.\n"
+"  --uuid=UUID                The UUID to identify the maintenance period.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpMetaType()
 {
     printHelpGeneric();
 
@@ -2768,6 +2824,199 @@ S9sOptions::readOptionsMaintenance(
     return true;
 }
 
+bool
+S9sOptions::readOptionsMetaType(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h'               },
+        { "verbose",          no_argument,       0, 'v'               },
+        { "version",          no_argument,       0, 'V'               },
+        { "controller",       required_argument, 0, 'c'               },
+        { "controller-port",  required_argument, 0, 'P'               },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
+        { "rpc-token",        required_argument, 0, 't'               },
+        { "long",             no_argument,       0, 'l'               },
+        { "print-json",       no_argument,       0, OptionPrintJson   },
+        { "color",            optional_argument, 0, OptionColor       },
+        { "config-file",      required_argument, 0, OptionConfigFile  },
+        { "batch",            no_argument,       0, OptionBatch       },
+        { "no-header",        no_argument,       0, OptionNoHeader    },
+        { "date-format",      required_argument, 0, OptionDateFormat  },
+        { "full-uuid",        no_argument,       0, OptionFullUuid    },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L'               },
+        { "create",           no_argument,       0, OptionCreate      },
+        { "delete",           no_argument,       0, OptionDelete      },
+       
+        // Options about the maintenance period.
+        { "cluster-id",       required_argument, 0, 'i'               },
+        { "nodes",            required_argument, 0, OptionNodes       },
+        { "start",            required_argument, 0, OptionStart       },
+        { "end",              required_argument, 0, OptionEnd         },
+        { "reason",           required_argument, 0, OptionReason      },
+        { "uuid",             required_argument, 0, OptionUuid        },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 't':
+                // -t, --token=RPC_TOKEN
+                m_options["rpc_token"] = optarg;
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionDateFormat:
+                // --date-format=FORMAT
+                m_options["date_format"] = optarg;
+                break;
+
+            case OptionFullUuid:
+                // --full-uuid
+                m_options["full_uuid"] = true;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+            
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
+                break;
+            
+            case OptionNodes:
+                // --nodes=LIST
+                setNodes(optarg);
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionStart:
+                // --start=DATE
+                m_options["start"] = optarg;
+                break;
+
+            case OptionEnd:
+                // --end=DATE
+                m_options["end"] = optarg;
+                break;
+            
+            case OptionReason:
+                // --reason=DATE
+                m_options["reason"] = optarg;
+                break;
+
+            case OptionUuid:
+                // --uuid=UUID
+                m_options["uuid"] = optarg;
+                break;
+            
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
 /**
  * Reads the command line options in cluster mode.
  */

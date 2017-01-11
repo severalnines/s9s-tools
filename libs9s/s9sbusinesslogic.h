@@ -84,5 +84,6 @@ class S9sBusinessLogic
         void executeMaintenanceCreate(S9sRpcClient &client);
         void executeMaintenanceDelete(S9sRpcClient &client);
         void executeMaintenanceList(S9sRpcClient &client);
+        void executeMetaTypeList(S9sRpcClient &client);
 };
 
