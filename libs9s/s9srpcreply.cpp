@@ -1355,8 +1355,8 @@ S9sRpcReply::printJobListBrief()
         groupFormat.printf(group);
         printf("%s", groupColorEnd());
 
-        printf("%s ", STR(timeStamp));
-        printf("%s ", STR(percent));
+        dateFormat.printf(timeStamp);
+        percentFormat.printf(percent);
         printf("%s\n", STR(title));
     }
     
