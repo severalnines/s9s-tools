@@ -83,6 +83,9 @@ class S9sRpcReply : public S9sVariantMap
         void printMaintenanceListBrief();
         void printMaintenanceListLong();
 
+        void printMetaTypeListLong();
+        void printMetaTypeListBrief();
+
         void html2ansi(S9sString &s);
 
         S9sString 
@@ -108,5 +111,7 @@ class S9sRpcReply : public S9sVariantMap
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
 
+        const char *typeColorBegin() const;
+        const char *typeColorEnd() const;
 };
 

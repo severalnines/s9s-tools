@@ -696,18 +696,14 @@ S9sRpcReply::printMaintenanceList()
 void 
 S9sRpcReply::printMetaTypeList()
 {
-    //S9sOptions *options = S9sOptions::instance();
+    S9sOptions *options = S9sOptions::instance();
     
-    //if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-#if 0
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (options->isLongRequested())
-        printMaintenanceListLong();
+        printMetaTypeListLong();
     else
-        printMaintenanceListBrief();
-#endif
+        printMetaTypeListBrief();
 }
 
 /**
@@ -2944,4 +2940,63 @@ S9sRpcReply::headerColorEnd() const
         return TERM_NORMAL;
 
     return "";
+}
+
+const char *
+S9sRpcReply::typeColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_GREEN;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::typeColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+void 
+S9sRpcReply::printMetaTypeListLong()
+{
+    S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    S9sFormat       nameFormat;
+
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["type_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+
+        nameFormat.widen(typeName);
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["type_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+
+        if (description.empty())
+            description = "-";
+
+        printf("%s", typeColorBegin());
+        nameFormat.printf(typeName);
+        printf("%s", typeColorEnd());
+
+        printf("%s", STR(description));
+        printf("\n");
+    }
+}
+
+void 
+S9sRpcReply::printMetaTypeListBrief()
+{
 }

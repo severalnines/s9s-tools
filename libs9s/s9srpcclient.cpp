@@ -422,8 +422,11 @@ S9sRpcClient::getMetaType(
 
     uri.sprintf("/v2/metatype/", clusterId);
 
+    request["operation"] = "getMetaTypes";
+#if 0
     request["operation"] = "getMetaTypeInfo";
     request["type-name"] = typeName;
+#endif
 
     retval = executeRequest(uri, request);
     
