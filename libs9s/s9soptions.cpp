@@ -89,6 +89,8 @@ enum S9sOptionType
     OptionDateFormat,
     OptionFullUuid,
     OptionWhoAmI,
+    OptionListProperties,
+    OptionType,
 };
 
 /**
@@ -1785,18 +1787,11 @@ S9sOptions::printHelpMetaType()
     printHelpGeneric();
 
     printf(
-"Options for the \"maintenance\" command:\n"
-"  --list                     List the maintenance period.\n"
-"  --create                   Create a new maintenance period.\n"
-"  --delete                   Delete a maintenance period.\n"
+"Options for the \"metatype\" command:\n"
+"  --list                     List all the metatypes.\n"
+"  --list-properties          List the properties of a certain type.\n"
 "\n"
-"  --cluster-id=ID            The cluster for cluster maintenances.\n"
-"  --nodes=NODELIST           The nodes for the node maintenances.\n"
-"  --full-uuid                Print the full UUID.\n"
-"  --start=DATE&TIME          The start of the maintenance period.\n"
-"  --end=DATE&TIME            The end of the maintenance period.\n"
-"  --reason=STRING            The reason for the maintenance.\n"
-"  --uuid=UUID                The UUID to identify the maintenance period.\n"
+"  --type=NAME                The name of the type.\n"
 "\n"
     );
 }
@@ -2839,7 +2834,6 @@ S9sOptions::readOptionsMetaType(
         { "controller",       required_argument, 0, 'c'               },
         { "controller-port",  required_argument, 0, 'P'               },
         { "rpc-tls",          no_argument,       0, OptionRpcTls      },
-        { "rpc-token",        required_argument, 0, 't'               },
         { "long",             no_argument,       0, 'l'               },
         { "print-json",       no_argument,       0, OptionPrintJson   },
         { "color",            optional_argument, 0, OptionColor       },
@@ -2851,16 +2845,10 @@ S9sOptions::readOptionsMetaType(
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
-        { "create",           no_argument,       0, OptionCreate      },
-        { "delete",           no_argument,       0, OptionDelete      },
-       
-        // Options about the maintenance period.
-        { "cluster-id",       required_argument, 0, 'i'               },
-        { "nodes",            required_argument, 0, OptionNodes       },
-        { "start",            required_argument, 0, OptionStart       },
-        { "end",              required_argument, 0, OptionEnd         },
-        { "reason",           required_argument, 0, OptionReason      },
-        { "uuid",             required_argument, 0, OptionUuid        },
+        { "list-properties",  no_argument,       0, OptionListProperties },
+        
+        // Type/property related options
+        { "type",             required_argument, 0, OptionType        },
 
         { 0, 0, 0, 0 }
     };
@@ -2956,47 +2944,17 @@ S9sOptions::readOptionsMetaType(
                 // --list
                 m_options["list"] = true;
                 break;
-            
-            case OptionCreate:
-                // --create
-                m_options["create"] = true;
-                break;
-            
-            case OptionDelete:
-                // --delete
-                m_options["delete"] = true;
-                break;
-            
-            case OptionNodes:
-                // --nodes=LIST
-                setNodes(optarg);
-                break;
-            
-            case 'i':
-                // -i, --cluster-id=ID
-                m_options["cluster_id"] = atoi(optarg);
+           
+            case OptionListProperties:
+                // --list-properties
+                m_options["list-properties"] = true;
                 break;
 
-            case OptionStart:
-                // --start=DATE
-                m_options["start"] = optarg;
+            case OptionType:
+                // --type=NAME
+                m_options["type"] = optarg;
                 break;
 
-            case OptionEnd:
-                // --end=DATE
-                m_options["end"] = optarg;
-                break;
-            
-            case OptionReason:
-                // --reason=DATE
-                m_options["reason"] = optarg;
-                break;
-
-            case OptionUuid:
-                // --uuid=UUID
-                m_options["uuid"] = optarg;
-                break;
-            
             case '?':
                 // 
                 return false;
