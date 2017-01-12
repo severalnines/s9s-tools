@@ -2996,6 +2996,14 @@ S9sOptions::readOptionsMetaType(
                 return false;
         }
     }
+    
+    // 
+    // The first extra argument is 'metatype', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
 
     return true;
 }

@@ -1438,6 +1438,7 @@ S9sRpcClient::createBackup(
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
     S9sString       schedule     = options->schedule();
+    S9sNode         backupHost;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
@@ -1446,12 +1447,18 @@ S9sRpcClient::createBackup(
     if (hosts.size() != 1u)
     {
         PRINT_ERROR("To create a new backup one node must be specified.");
-
         return false;
     }
 
+    backupHost = hosts[0].toNode();
+
+
     // The job_data describing how the backup will be created.
-    jobData["hostname"]         = hosts[0].toNode().hostName();
+    jobData["hostname"]         = backupHost.hostName();
+
+    if (backupHost.hasPort())
+        jobData["port"]         = backupHost.port();
+
     jobData["backupdir"]        = "/tmp";
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
@@ -1465,6 +1472,7 @@ S9sRpcClient::createBackup(
     job["title"]          = "Create Backup";
     job["job_spec"]       = jobSpec;
     job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
 

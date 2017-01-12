@@ -2964,6 +2964,7 @@ S9sRpcReply::printMetaTypeList()
 void 
 S9sRpcReply::printMetaTypeListLong()
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
     S9sFormat       nameFormat;
 
@@ -2975,6 +2976,9 @@ S9sRpcReply::printMetaTypeListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+        
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
 
         nameFormat.widen(typeName);
     }
@@ -2984,6 +2988,9 @@ S9sRpcReply::printMetaTypeListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
 
         if (description.empty())
             description = "-";
@@ -3019,6 +3026,7 @@ S9sRpcReply::printMetaTypePropertyList()
 void 
 S9sRpcReply::printMetaTypePropertyListLong()
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
     S9sFormat       nameFormat;
 
@@ -3030,6 +3038,9 @@ S9sRpcReply::printMetaTypePropertyListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["property_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+        
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
 
         nameFormat.widen(typeName);
     }
@@ -3039,13 +3050,16 @@ S9sRpcReply::printMetaTypePropertyListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["property_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+        
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
 
         if (description.empty())
             description = "-";
 
-        printf("%s", typeColorBegin());
+        //printf("%s", typeColorBegin());
         nameFormat.printf(typeName);
-        printf("%s", typeColorEnd());
+        //printf("%s", typeColorEnd());
 
         printf("%s", STR(description));
         printf("\n");
