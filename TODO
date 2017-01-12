@@ -4,8 +4,6 @@ o send password when creating a cluster (root user password).
 o add node
 o remove node
 o remove job
-- job scheduling
-o delete cluster (maybe shutdown).
-o create load balancer
 
-
+o Send backupmethod as in CmonJob::backupMethod().
+  /job_data/backup_method

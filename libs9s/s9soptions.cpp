@@ -91,6 +91,8 @@ enum S9sOptionType
     OptionWhoAmI,
     OptionListProperties,
     OptionType,
+    OptionBackupMethod,
+    OptionBackupDirectory,
 };
 
 /**
@@ -1779,7 +1781,11 @@ S9sOptions::printHelpBackup()
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --backup-id=ID             The ID of the backup.\n"
-"  --nodes=NODELIST           The list of nodes inved in the backup.\n"
+"  --nodes=NODELIST           The list of nodes involved in the backup.\n"
+"\n"
+"  --backup-method=METHOD     Defines the backup program to be used.\n"
+"  --backup-directory=DIR     The directory where the backup is placed.\n"
+"\n"
     );
 }
 
@@ -2084,37 +2090,40 @@ S9sOptions::readOptionsBackup(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls  },
-        { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0, OptionPrintJson  },
-        { "color",            optional_argument, 0, OptionColor      },
+        { "help",             no_argument,       0, OptionHelp         },
+        { "verbose",          no_argument,       0, 'v'                },
+        { "version",          no_argument,       0, 'V'                },
+        { "controller",       required_argument, 0, 'c'                },
+        { "controller-port",  required_argument, 0, 'P'                },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls       },
+        { "rpc-token",        required_argument, 0, 't'                },
+        { "long",             no_argument,       0, 'l'                },
+        { "print-json",       no_argument,       0, OptionPrintJson    },
+        { "color",            optional_argument, 0, OptionColor        },
         { "human-readable",   no_argument,       0, 'h' },
-        { "time-style",       required_argument, 0, OptionTimeStyle   },
-        { "config-file",      required_argument, 0, OptionConfigFile },
+        { "time-style",       required_argument, 0, OptionTimeStyle    },
+        { "config-file",      required_argument, 0, OptionConfigFile   },
 
         // Main Option
-        { "list",             no_argument,       0, 'L' },
-        { "create",           no_argument,       0,  OptionCreate     },
-        { "restore",          no_argument,       0,  OptionRestore    },
+        { "list",             no_argument,       0, 'L'                },
+        { "create",           no_argument,       0,  OptionCreate      },
+        { "restore",          no_argument,       0,  OptionRestore     },
         
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait        },
-        { "log",              no_argument,       0, 'G'               },
-        { "batch",            no_argument,       0, OptionBatch       },
-        { "no-header",        no_argument,       0, OptionNoHeader    },
+        { "wait",             no_argument,       0, OptionWait         },
+        { "log",              no_argument,       0, 'G'                },
+        { "batch",            no_argument,       0, OptionBatch        },
+        { "no-header",        no_argument,       0, OptionNoHeader     },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i' },
-        { "backup-id",        required_argument, 0, OptionBackupId    },
-        { "nodes",            required_argument, 0, OptionNodes       },
-        { "schedule",         required_argument, 0, OptionSchedule    },
+        { "backup-id",        required_argument, 0, OptionBackupId     },
+        { "nodes",            required_argument, 0, OptionNodes        },
+        { "schedule",         required_argument, 0, OptionSchedule     },
 
+        // Backup info
+        { "backup-method",    required_argument, 0, OptionBackupMethod },
+        { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { 0, 0, 0, 0 }
     };
 
@@ -2252,7 +2261,17 @@ S9sOptions::readOptionsBackup(
                 // --backup-id=BACKUPID
                 m_options["backup_id"] = atoi(optarg);
                 break;
-            
+           
+            case OptionBackupMethod:
+                // --backup-method=METHOD
+                m_options["backup_method"] = optarg;
+                break;
+
+            case OptionBackupDirectory:
+                // --backup-directory=DIRECTORY
+                m_options["backup_directory"] = optarg;
+                break;
+                
             case '?':
                 // 
                 return false;

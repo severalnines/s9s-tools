@@ -125,6 +125,21 @@ The strings in the node list are urls that can have the following protocols:
 .\"
 .\"
 .\"
+.SS Backup Related Options
+
+.TP
+.BI \-\^\-backup\-method= METHOD
+Controls what backup software is going to be used to create the backup. The
+controller currently supports the following method: ndb, mysqldump, 
+xtrabackupfull, xtrabackupincr, mongodump, pg_dump, mysqlpump.
+
+.TP
+.BI \-\^\-backup\-directory= DIR
+Controls where the created archive files are going to be placed.
+
+.\"
+.\"
+.\"
 .SH ENVIRONMENT
 The s9s application will read and consider the following environment variables:
 .TP 5 
