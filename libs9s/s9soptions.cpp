@@ -784,6 +784,18 @@ S9sOptions::backupId() const
     return retval;
 }
 
+/**
+ * \returns The value provided using the --type command line option.
+ */
+S9sString
+S9sOptions::type() const
+{
+    if (m_options.contains("type"))
+        return m_options.at("type").toString();
+
+    return S9sString();
+}
+
 int
 S9sOptions::updateFreq() const
 {
@@ -970,6 +982,18 @@ S9sOptions::isListRequested() const
 {
     if (m_options.contains("list"))
         return m_options.at("list").toBoolean();
+
+    return false;
+}
+
+/**
+ * \returns true if the --list-properties main option was provided.
+ */
+bool
+S9sOptions::isListPropertiesRequested() const
+{
+    if (m_options.contains("list-properties"))
+        return m_options.at("list-properties").toBoolean();
 
     return false;
 }

@@ -106,6 +106,7 @@ class S9sOptions
         bool hasClusterIdOption() const;
         int backupId() const;
         int updateFreq() const;
+        S9sString type() const;
 
         S9sString clusterName() const;
         int jobId() const;
@@ -137,6 +138,7 @@ class S9sOptions
         S9sString emailAddress() const;
 
         bool isListRequested() const;
+        bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isSetRequested() const;
         bool isLogRequested() const;

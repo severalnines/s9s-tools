@@ -48,6 +48,7 @@ class S9sRpcReply : public S9sVariantMap
         void printUserList();
         void printMaintenanceList();
         void printMetaTypeList();
+        void printMetaTypePropertyList();
         void printPing();
         void printProcessList(const int maxLines = -1);
         void printCpuStat();
@@ -85,6 +86,9 @@ class S9sRpcReply : public S9sVariantMap
 
         void printMetaTypeListLong();
         void printMetaTypeListBrief();
+        
+        void printMetaTypePropertyListLong();
+        void printMetaTypePropertyListBrief();
 
         void html2ansi(S9sString &s);
 

@@ -210,6 +210,9 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeMetaTypeList(client);
+        } else if (options->isListPropertiesRequested())
+        {
+            executeMetaTypePropertyList(client);
         } else {
             PRINT_ERROR("Unknown metatype operation.");
         }
@@ -1655,7 +1658,7 @@ S9sBusinessLogic::executeMetaTypeList(
     S9sRpcReply reply;
     bool        success;
 
-    success = client.getMetaType("CmonHost");
+    success = client.getMetaTypes();
     if (success)
     {
         reply = client.reply();
@@ -1666,6 +1669,37 @@ S9sBusinessLogic::executeMetaTypeList(
                 printf("\n%s\n", STR(reply.toString()));
             else
                 reply.printMetaTypeList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::executeMetaTypePropertyList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options  = S9sOptions::instance();
+    S9sString    typeName = options->type();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getMetaTypeProperties(typeName);
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printMetaTypePropertyList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

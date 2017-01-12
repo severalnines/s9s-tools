@@ -693,19 +693,6 @@ S9sRpcReply::printMaintenanceList()
         printMaintenanceListBrief();
 }
 
-void 
-S9sRpcReply::printMetaTypeList()
-{
-    S9sOptions *options = S9sOptions::instance();
-    
-    if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-    else if (options->isLongRequested())
-        printMetaTypeListLong();
-    else
-        printMetaTypeListBrief();
-}
-
 /**
  * Generic method that prints the reply as a node list.
  */
@@ -2961,6 +2948,20 @@ S9sRpcReply::typeColorEnd() const
 }
 
 void 
+S9sRpcReply::printMetaTypeList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printMetaTypeListLong();
+    else
+        printMetaTypeListBrief();
+}
+
+
+void 
 S9sRpcReply::printMetaTypeListLong()
 {
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
@@ -2998,5 +2999,60 @@ S9sRpcReply::printMetaTypeListLong()
 
 void 
 S9sRpcReply::printMetaTypeListBrief()
+{
+}
+
+void 
+S9sRpcReply::printMetaTypePropertyList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printMetaTypePropertyListLong();
+    else
+        printMetaTypePropertyListBrief();
+}
+
+
+void 
+S9sRpcReply::printMetaTypePropertyListLong()
+{
+    S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    S9sFormat       nameFormat;
+
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["property_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+
+        nameFormat.widen(typeName);
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["property_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+
+        if (description.empty())
+            description = "-";
+
+        printf("%s", typeColorBegin());
+        nameFormat.printf(typeName);
+        printf("%s", typeColorEnd());
+
+        printf("%s", STR(description));
+        printf("\n");
+    }
+}
+
+void 
+S9sRpcReply::printMetaTypePropertyListBrief()
 {
 }

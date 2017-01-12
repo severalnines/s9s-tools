@@ -412,8 +412,7 @@ S9sRpcClient::getCpuStats(
 }
 
 bool
-S9sRpcClient::getMetaType(
-        const S9sString &typeName)
+S9sRpcClient::getMetaTypes()
 {
     int            clusterId = 0;
     S9sString      uri;
@@ -423,10 +422,25 @@ S9sRpcClient::getMetaType(
     uri.sprintf("/v2/metatype/", clusterId);
 
     request["operation"] = "getMetaTypes";
-#if 0
+
+    retval = executeRequest(uri, request);
+    
+    return retval;    
+}
+
+bool
+S9sRpcClient::getMetaTypeProperties(
+        const S9sString &typeName)
+{
+    int            clusterId = 0;
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/metatype/", clusterId);
+
     request["operation"] = "getMetaTypeInfo";
     request["type-name"] = typeName;
-#endif
 
     retval = executeRequest(uri, request);
     
