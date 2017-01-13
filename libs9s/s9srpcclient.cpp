@@ -1468,6 +1468,9 @@ S9sRpcClient::createBackup(
     if (options->noCompression())
         jobData["compression"]   = false;
 
+    if (options->usePigz())
+        jobData["use_pigz"]      = true;
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;

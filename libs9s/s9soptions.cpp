@@ -94,6 +94,7 @@ enum S9sOptionType
     OptionBackupMethod,
     OptionBackupDirectory,
     OptionNoCompression,
+    OptionUsePigz,
 };
 
 /**
@@ -904,10 +905,23 @@ bool
 S9sOptions::noCompression() const
 {
     if (m_options.contains("no_compression"))
-        return m_options.at("no_compression").toInt();
+        return m_options.at("no_compression").toBoolean();
 
     return -1;
 }
+
+/**
+ * \returns true if the --use-pigz command line option was provided.
+ */
+bool
+S9sOptions::usePigz() const
+{
+    if (m_options.contains("use_pigz"))
+        return m_options.at("use_pigz").toBoolean();
+
+    return -1;
+}
+
 
 S9sString
 S9sOptions::backupMethod() const
@@ -1808,6 +1822,7 @@ S9sOptions::printHelpBackup()
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --no-compression           Do not compress the archive file.\n"
+"  --use-pigz                 Use the pigz program to compress archive.\n"
 "\n"
     );
 }
@@ -2148,6 +2163,7 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { "no-compression",   no_argument,       0, OptionNoCompression },
+        { "use-pigz",         no_argument,       0, OptionUsePigz      },
         { 0, 0, 0, 0 }
     };
 
@@ -2299,6 +2315,11 @@ S9sOptions::readOptionsBackup(
             case OptionNoCompression:
                 // --no-compression
                 m_options["no_compression"] = true;
+                break;
+
+            case OptionUsePigz:
+                // --use-pigz
+                m_options["use_pigz"] = true;
                 break;
 
             case '?':
