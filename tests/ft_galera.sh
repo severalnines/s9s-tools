@@ -447,7 +447,7 @@ function testRestoreBackup()
         awk '{print $1}')
 
     #
-    # Calling for a rolling restart.
+    # Creating a backup. 
     #
     $S9S backup \
         --restore \

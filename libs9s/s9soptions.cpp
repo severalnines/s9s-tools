@@ -910,7 +910,7 @@ S9sOptions::noCompression() const
     if (m_options.contains("no_compression"))
         return m_options.at("no_compression").toBoolean();
 
-    return -1;
+    return false;
 }
 
 /**
@@ -922,7 +922,7 @@ S9sOptions::usePigz() const
     if (m_options.contains("use_pigz"))
         return m_options.at("use_pigz").toBoolean();
 
-    return -1;
+    return false;
 }
 
 /**
@@ -934,7 +934,7 @@ S9sOptions::onNode() const
     if (m_options.contains("on_node"))
         return m_options.at("on_node").toBoolean();
 
-    return -1;
+    return false;
 }
 
 

@@ -173,6 +173,7 @@ function testCreateCluster()
     pip-say "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
     #
@@ -346,6 +347,66 @@ function testRollingRestart()
 }
 
 #
+# This will create a backup.
+#
+function testCreateBackup()
+{
+    local exitCode
+    
+    pip-say "The test to create a backup is starting."
+
+    #
+    # Creating a backup.
+    #
+cat <<EOF
+    $S9S backup --create --cluster-id=$CLUSTER_ID --nodes=$FIRST_ADDED_NODE --backup-directory=/tmp $LOG_OPTION
+EOF
+
+    $S9S backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-directory=/tmp \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This will restore a backup. 
+#
+function testRestoreBackup()
+{
+    local exitCode
+    local backupId
+
+    pip-say "The test to restore a backup is starting."
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        awk '{print $1}')
+
+    #
+    # Calling for a rolling restart.
+    #
+    $S9S backup \
+        --restore \
+        --cluster-id=$CLUSTER_ID \
+        --backup-id=$backupId \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+
+#
 # Stopping the cluster.
 #
 function testStop()
@@ -446,7 +507,9 @@ else
     #runFunctionalTest testAddHaProxy
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart
-    
+    runFunctionalTest testCreateBackup
+    runFunctionalTest testRestoreBackup
+
     # Not implemented.
     #runFunctionalTest testStop
 
