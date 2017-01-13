@@ -976,6 +976,43 @@ S9sOptions::databases() const
     return retval;
 }
 
+bool
+S9sOptions::setParallellism(
+        const S9sString &value)
+{
+    int integerValue = value.toInt();
+    
+    if (integerValue < 1)
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for parallellism.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+
+        return false;        
+    }
+
+    m_options["parallellism"] = integerValue;
+    return true;
+}
+
+bool
+S9sOptions::hasParallellism() const
+{
+    return m_options.contains("parallellism");
+}
+
+int
+S9sOptions::parallellism() const
+{
+    int retval = 1;
+
+    if (m_options.contains("parallellism"))
+        retval = m_options.at("parallellism").toInt();
+
+    return retval;
+}
 
 /**
  * \returns true if the main operation is "node".

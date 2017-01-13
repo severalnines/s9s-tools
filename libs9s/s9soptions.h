@@ -121,6 +121,9 @@ class S9sOptions
         bool usePigz() const;
         bool onNode() const;
         S9sString databases() const;
+        bool setParallellism(const S9sString &value);
+        bool hasParallellism() const;
+        int parallellism() const;
 
         bool useTls();
 
