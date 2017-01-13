@@ -1465,6 +1465,9 @@ S9sRpcClient::createBackup(
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
 
+    if (options->noCompression())
+        jobData["compression"]   = false;
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;

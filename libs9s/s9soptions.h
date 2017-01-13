@@ -117,6 +117,8 @@ class S9sOptions
 
         S9sString backupDir() const;
         S9sString backupMethod() const;
+        bool noCompression() const;
+
 
         bool useTls();
 

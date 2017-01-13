@@ -93,6 +93,7 @@ enum S9sOptionType
     OptionType,
     OptionBackupMethod,
     OptionBackupDirectory,
+    OptionNoCompression,
 };
 
 /**
@@ -889,6 +890,18 @@ S9sOptions::backupDir() const
         retval = m_systemConfig.variableValue("backup_directory");
 
     return retval;
+}
+
+/**
+ * \returns true if the --no-compression command line option was provided.
+ */
+bool
+S9sOptions::noCompression() const
+{
+    if (m_options.contains("no_compression"))
+        return m_options.at("no_compression").toInt();
+
+    return -1;
 }
 
 S9sString
@@ -1785,6 +1798,7 @@ S9sOptions::printHelpBackup()
 "\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
+"  --no-compression           Do not compress the archive file.\n"
 "\n"
     );
 }
@@ -2124,6 +2138,7 @@ S9sOptions::readOptionsBackup(
         // Backup info
         { "backup-method",    required_argument, 0, OptionBackupMethod },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
+        { "no-compression",   no_argument,       0, OptionNoCompression },
         { 0, 0, 0, 0 }
     };
 
@@ -2272,6 +2287,11 @@ S9sOptions::readOptionsBackup(
                 m_options["backup_directory"] = optarg;
                 break;
                 
+            case OptionNoCompression:
+                // --no-compression
+                m_options["no_compression"] = true;
+                break;
+
             case '?':
                 // 
                 return false;
