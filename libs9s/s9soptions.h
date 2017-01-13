@@ -204,7 +204,10 @@ class S9sOptions
 
         bool readOptionsNoMode(int argc, char *argv[]);
         bool readOptionsNode(int argc, char *argv[]);
+
         bool readOptionsBackup(int argc, char *argv[]);
+        bool checkOptionsBackup();
+
         bool readOptionsCluster(int argc, char *argv[]);
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);

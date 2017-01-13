@@ -1572,6 +1572,10 @@ S9sOptions::readOptions(
 
         case Backup:
             retval = readOptionsBackup(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsBackup();
+
             break;
  
         case Process:
@@ -2313,6 +2317,30 @@ S9sOptions::readOptionsBackup(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+    
+    // 
+    // The first extra argument is 'backup', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::checkOptionsBackup()
+{
+    if (isListRequested() && isCreateRequested())
+    {
+        m_errorMessage = 
+            "The --list and --create options are mutually exclusive.";
+
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;
