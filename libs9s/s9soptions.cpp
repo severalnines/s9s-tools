@@ -936,6 +936,15 @@ S9sOptions::onNode() const
     return -1;
 }
 
+
+/**
+ * \returns the value provided with --backup-method or the backup_method
+ *   configuration file value or the empty string if none of those are 
+ *   provided.
+ *
+ * The controller currently supports 'ndb', 'mysqldump', 'xtrabackupfull',
+ * 'xtrabackupincr', 'mongodump', 'pg_dump' and 'mysqlpump'.
+ */
 S9sString
 S9sOptions::backupMethod() const
 {
