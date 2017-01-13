@@ -1438,6 +1438,7 @@ S9sRpcClient::createBackup(
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
     S9sString       schedule     = options->schedule();
+    S9sString       databases    = options->databases();
     S9sNode         backupHost;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
@@ -1464,6 +1465,9 @@ S9sRpcClient::createBackup(
 
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
+    
+    if (!databases.empty())
+        jobData["include_databases"] = databases;
 
     if (options->noCompression())
         jobData["compression"]   = false;

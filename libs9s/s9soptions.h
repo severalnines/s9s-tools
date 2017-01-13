@@ -120,7 +120,7 @@ class S9sOptions
         bool noCompression() const;
         bool usePigz() const;
         bool onNode() const;
-
+        S9sString databases() const;
 
         bool useTls();
 

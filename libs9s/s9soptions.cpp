@@ -963,6 +963,21 @@ S9sOptions::backupMethod() const
 }
 
 /**
+ * \returns the value received for the --databases command line option.
+ */
+S9sString
+S9sOptions::databases() const
+{
+    S9sString retval;
+
+    if (m_options.contains("databases"))
+        retval = m_options.at("databases").toString();
+
+    return retval;
+}
+
+
+/**
  * \returns true if the main operation is "node".
  */
 bool
@@ -1846,11 +1861,13 @@ S9sOptions::printHelpBackup()
 "  --backup-id=ID             The ID of the backup.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "\n"
+"  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
+
 "\n"
     );
 }
@@ -2193,6 +2210,7 @@ S9sOptions::readOptionsBackup(
         { "no-compression",   no_argument,       0, OptionNoCompression },
         { "use-pigz",         no_argument,       0, OptionUsePigz      },
         { "on-node",          no_argument,       0, OptionOnNode       },
+        { "databases",        required_argument, 0, OptionDatabases    },
         { 0, 0, 0, 0 }
     };
 
@@ -2356,6 +2374,11 @@ S9sOptions::readOptionsBackup(
                 m_options["on_node"] = true;
                 break;
 
+            case OptionDatabases:
+                // --databases=LIST
+                m_options["databases"] = optarg;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -2389,13 +2412,45 @@ S9sOptions::readOptionsBackup(
 bool
 S9sOptions::checkOptionsBackup()
 {
-    if (isListRequested() && isCreateRequested())
+    int countOptions = 0;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+
+    if (isRestoreRequested())
+        countOptions++;
+
+    if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list and --create options are mutually exclusive.";
+            "The --list, --create and --restore options are mutually"
+            " exclusive.";
 
         m_exitStatus = BadOptions;
         return false;
+    }
+
+    /*
+     * Using the --databases is missleading when not creating new backup: the
+     * user might think it is possible to restore one database of an archive.
+     */
+    if (!databases().empty())
+    {
+        if (isListRequested() && isRestoreRequested())
+        {
+            m_errorMessage = 
+                "The --databases option can only be used while creating "
+                "backups.";
+        
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;
