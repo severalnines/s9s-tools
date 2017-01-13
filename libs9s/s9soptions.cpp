@@ -96,6 +96,7 @@ enum S9sOptionType
     OptionNoCompression,
     OptionUsePigz,
     OptionOnNode,
+    OptionDatabases,
 };
 
 /**
@@ -940,9 +941,14 @@ S9sOptions::backupMethod() const
 {
     S9sString  retval;
 
-    retval = m_userConfig.variableValue("backup_method");
-    if (retval.empty())
-        retval = m_systemConfig.variableValue("backup_method");
+    if (m_options.contains("backup_method"))
+    {
+        retval = m_options.at("backup_method").toString();
+    } else {
+        retval = m_userConfig.variableValue("backup_method");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("backup_method");
+    }
 
     return retval;
 }
