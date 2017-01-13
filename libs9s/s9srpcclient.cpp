@@ -1471,6 +1471,9 @@ S9sRpcClient::createBackup(
     if (options->usePigz())
         jobData["use_pigz"]      = true;
 
+    if (options->onNode())
+        jobData["cc_storage"]    = false;
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;

@@ -95,6 +95,7 @@ enum S9sOptionType
     OptionBackupDirectory,
     OptionNoCompression,
     OptionUsePigz,
+    OptionOnNode,
 };
 
 /**
@@ -922,6 +923,17 @@ S9sOptions::usePigz() const
     return -1;
 }
 
+/**
+ * \returns true if the --on-node command line option was provided.
+ */
+bool
+S9sOptions::onNode() const
+{
+    if (m_options.contains("on_node"))
+        return m_options.at("on_node").toBoolean();
+
+    return -1;
+}
 
 S9sString
 S9sOptions::backupMethod() const
@@ -1823,6 +1835,7 @@ S9sOptions::printHelpBackup()
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
+"  --on-node                  Store the archive file on the node itself.\n"
 "\n"
     );
 }
@@ -2164,6 +2177,7 @@ S9sOptions::readOptionsBackup(
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { "no-compression",   no_argument,       0, OptionNoCompression },
         { "use-pigz",         no_argument,       0, OptionUsePigz      },
+        { "on-node",          no_argument,       0, OptionOnNode       },
         { 0, 0, 0, 0 }
     };
 
@@ -2320,6 +2334,11 @@ S9sOptions::readOptionsBackup(
             case OptionUsePigz:
                 // --use-pigz
                 m_options["use_pigz"] = true;
+                break;
+
+            case OptionOnNode:
+                // --on-node
+                m_options["on_node"] = true;
                 break;
 
             case '?':

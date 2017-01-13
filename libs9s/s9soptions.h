@@ -119,6 +119,7 @@ class S9sOptions
         S9sString backupMethod() const;
         bool noCompression() const;
         bool usePigz() const;
+        bool onNode() const;
 
 
         bool useTls();
