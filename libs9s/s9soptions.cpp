@@ -885,9 +885,14 @@ S9sOptions::backupDir() const
 {
     S9sString  retval;
 
-    retval = m_userConfig.variableValue("backup_directory");
-    if (retval.empty())
-        retval = m_systemConfig.variableValue("backup_directory");
+    if (m_options.contains("backup_directory"))
+    {
+        retval = m_options.at("backup_directory").toString();
+    } else {
+        retval = m_userConfig.variableValue("backup_directory");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("backup_directory");
+    }
 
     return retval;
 }
