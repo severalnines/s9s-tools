@@ -27,8 +27,8 @@
 #include "S9sRegExp"
 #include "S9sNode"
 
-//#define DEBUG
-//#define WARNING
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 /**
@@ -1797,6 +1797,18 @@ S9sRpcReply::printBackupListLong()
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
         ownerFormat.widen(owner);
+        
+        if (backups.size() == 0u)
+        {
+            //S9sString     path          = "-";
+            S9sString     sizeString    = "-";
+            S9sString     createdString = "-";
+            
+            createdFormat.widen(createdString);
+            sizeFormat.widen(sizeString);
+            
+            continue;
+        }
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1865,7 +1877,25 @@ S9sRpcReply::printBackupListLong()
         S9sString      owner     = configMap["createdBy"].toString();
         int            id        = theMap["id"].toInt();
         S9sString      status    = theMap["status"].toString().toUpper();
-        S9sString      root = theMap["root_dir"].toString();
+        S9sString      root      = theMap["root_dir"].toString();
+
+        if (backups.size() == 0u)
+        {
+            S9sString     path          = "-";
+            S9sString     sizeString    = "-";
+            S9sString     createdString = "-";
+                
+            idFormat.printf(id);
+            stateFormat.printf(status);
+            ownerFormat.printf(owner);
+            hostNameFormat.printf(hostName);
+            createdFormat.printf(createdString);
+            sizeFormat.printf(sizeString);
+            printf("%s", STR(path));
+            printf("\n");
+
+            continue;
+        }
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
