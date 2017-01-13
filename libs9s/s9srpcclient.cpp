@@ -1478,6 +1478,9 @@ S9sRpcClient::createBackup(
     if (options->onNode())
         jobData["cc_storage"]    = false;
 
+    if (options->hasParallellism())
+        jobData["xtrabackup_parallellism"] = options->parallellism();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;

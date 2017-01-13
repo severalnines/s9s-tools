@@ -97,6 +97,7 @@ enum S9sOptionType
     OptionUsePigz,
     OptionOnNode,
     OptionDatabases,
+    OptionParallellism,
 };
 
 /**
@@ -1901,6 +1902,7 @@ S9sOptions::printHelpBackup()
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
+"  --parallellism=N           Number of threads used while creating backup.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -2248,6 +2250,7 @@ S9sOptions::readOptionsBackup(
         { "use-pigz",         no_argument,       0, OptionUsePigz      },
         { "on-node",          no_argument,       0, OptionOnNode       },
         { "databases",        required_argument, 0, OptionDatabases    },
+        { "parallellism",     required_argument, 0, OptionParallellism },
         { 0, 0, 0, 0 }
     };
 
@@ -2414,6 +2417,13 @@ S9sOptions::readOptionsBackup(
             case OptionDatabases:
                 // --databases=LIST
                 m_options["databases"] = optarg;
+                break;
+
+            case OptionParallellism:
+                // --parallellism=N
+                if (!setParallellism(optarg))
+                    return false;
+
                 break;
 
             case '?':

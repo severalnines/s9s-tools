@@ -144,6 +144,11 @@ are going to be archived into the backup file. By default all the databases are
 going to be archived.
 
 .TP
+.BI \-\^\-parallellism= N
+Controls how many threads are used while creating backup. Please note that not
+all the backup methods support multi-thread operations.
+
+.TP
 .BI \-\^\-no\-compression
 Do not compress the archive file created by the backup.
 
