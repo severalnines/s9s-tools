@@ -1504,6 +1504,12 @@ S9sRpcClient::createBackup(
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Creates a job to restore a pre-existing backup.
+ */
 bool
 S9sRpcClient::restoreBackup(
         const int             clusterId,
@@ -1566,6 +1572,28 @@ S9sRpcClient::getBackups(
 
     return retval;
 }
+
+bool
+S9sRpcClient::deleteBackupRecord(
+        const ulonglong backupId)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    S9sVariantMap  backupMap;
+    bool           retval;
+
+    uri = "/v2/backup/";
+
+    backupMap["backup_id"]   = backupId;
+    request["operation"]     = "deleteBackupRecord";
+    request["backup_record"] = backupMap;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
 
 /**
  * The method that gets the list of users from the server.

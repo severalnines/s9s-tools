@@ -1727,7 +1727,7 @@ S9sRpcReply::printBackupListBrief()
         dataList = operator[]("backup_records").toVariantList();
 
     /*
-     * 
+     * We go through the data and print the file names. 
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
