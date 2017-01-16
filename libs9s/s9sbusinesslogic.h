@@ -80,6 +80,7 @@ class S9sBusinessLogic
 
         void executeCreateBackup(S9sRpcClient &client);
         void executeRestoreBackup(S9sRpcClient &client);
+        void executeDeleteBackup(S9sRpcClient &client);
         
         void executeMaintenanceCreate(S9sRpcClient &client);
         void executeMaintenanceDelete(S9sRpcClient &client);

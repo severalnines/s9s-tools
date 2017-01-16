@@ -169,6 +169,9 @@ S9sBusinessLogic::execute()
         } else if (options->isRestoreRequested())
         {
             executeRestoreBackup(client);
+        } else if (options->isDeleteRequested())
+        {
+            executeDeleteBackup(client);
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
@@ -718,6 +721,44 @@ S9sBusinessLogic::executeRestoreBackup(
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
+}
+
+void
+S9sBusinessLogic::executeDeleteBackup(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.deleteBackupRecord(options->backupId());
+    reply   = client.reply();
+    if (success)
+    {
+        if (options->isJsonRequested())
+        {
+            printf("%s\n", STR(reply.toString()));
+        } else {
+            if (reply.isOk())
+            {
+                if (!options->isBatchRequested()) 
+                {
+                    printf("Deleted.\n");
+                }
+            } else {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+            }
+        }
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+
 }
 
 /**

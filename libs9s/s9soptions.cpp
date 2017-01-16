@@ -1913,6 +1913,7 @@ S9sOptions::printHelpBackup()
 "  --list                     List the backups.\n"
 "  --create                   Create a new backup.\n"
 "  --restore                  Restore an existing backup.\n"
+"  --delete                   Delete a previously created backup.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --backup-id=ID             The ID of the backup.\n"
@@ -2249,6 +2250,7 @@ S9sOptions::readOptionsBackup(
         { "list",             no_argument,       0, 'L'                },
         { "create",           no_argument,       0,  OptionCreate      },
         { "restore",          no_argument,       0,  OptionRestore     },
+        { "delete",           no_argument,       0,  OptionDelete      },
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait         },
@@ -2356,6 +2358,11 @@ S9sOptions::readOptionsBackup(
             case OptionRestore:
                 // --restore
                 m_options["restore"] = true;
+                break;
+
+            case OptionDelete:
+                // --delete
+                m_options["delete"]  = true;
                 break;
 
             case OptionConfigFile:
