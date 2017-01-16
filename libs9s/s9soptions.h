@@ -124,6 +124,7 @@ class S9sOptions
         bool setParallellism(const S9sString &value);
         bool hasParallellism() const;
         int parallellism() const;
+        bool fullPathRequested() const;
 
         bool useTls();
 

@@ -98,6 +98,7 @@ enum S9sOptionType
     OptionOnNode,
     OptionDatabases,
     OptionParallellism,
+    OptionFullPath,
 };
 
 /**
@@ -1004,6 +1005,10 @@ S9sOptions::hasParallellism() const
     return m_options.contains("parallellism");
 }
 
+/**
+ * \returns the integer value of the command line option argument for
+ * --parallellism.
+ */
 int
 S9sOptions::parallellism() const
 {
@@ -1011,6 +1016,20 @@ S9sOptions::parallellism() const
 
     if (m_options.contains("parallellism"))
         retval = m_options.at("parallellism").toInt();
+
+    return retval;
+}
+
+/**
+ * \returns true if the --full-path command line option was provided.
+ */
+bool
+S9sOptions::fullPathRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("full_path"))
+        retval = m_options.at("full_path").toBoolean();
 
     return retval;
 }
@@ -1906,7 +1925,7 @@ S9sOptions::printHelpBackup()
 "  --no-compression           Do not compress the archive file.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
-
+"  --full-path                Print the full path of the files.\n"
 "\n"
     );
 }
@@ -2251,6 +2270,7 @@ S9sOptions::readOptionsBackup(
         { "on-node",          no_argument,       0, OptionOnNode       },
         { "databases",        required_argument, 0, OptionDatabases    },
         { "parallellism",     required_argument, 0, OptionParallellism },
+        { "full-path",        no_argument,       0, OptionFullPath     },
         { 0, 0, 0, 0 }
     };
 
@@ -2424,6 +2444,11 @@ S9sOptions::readOptionsBackup(
                 if (!setParallellism(optarg))
                     return false;
 
+                break;
+
+            case OptionFullPath:
+                // full-path
+                m_options["full_path"] = true;
                 break;
 
             case '?':

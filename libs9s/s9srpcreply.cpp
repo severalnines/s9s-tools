@@ -1731,8 +1731,9 @@ S9sRpcReply::printBackupListBrief()
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap  = dataList[idx].toVariantMap();
-        S9sVariantList backups = theMap["backup"].toVariantList();
+        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
+        S9sVariantList backups   = theMap["backup"].toVariantList();
+        S9sString      root      = theMap["root_dir"].toString();
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
@@ -1743,6 +1744,14 @@ S9sRpcReply::printBackupListBrief()
             {
                 S9sVariantMap file = files[idx1].toVariantMap();
                 S9sString     path = file["path"].toString();
+                
+                if (options->fullPathRequested())
+                {
+                    if (!root.endsWith("/"))
+                        root += "/";
+
+                    path = root + path;
+                }
 
                 if (syntaxHighlight)
                 {
@@ -1914,7 +1923,7 @@ S9sRpcReply::printBackupListLong()
                 S9sString     createdString = file["created"].toString();
                 S9sDateTime   created;
 
-                if (true)
+                if (options->fullPathRequested())
                 {
                     if (!root.endsWith("/"))
                         root += "/";
