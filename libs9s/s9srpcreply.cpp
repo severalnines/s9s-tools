@@ -1965,6 +1965,9 @@ S9sRpcReply::printBackupListLong()
         }
     }
 
+    /*
+     * Footer.
+     */
     if (!options->isBatchRequested() && contains("total"))
     {
         int total = operator[]("total").toInt();
