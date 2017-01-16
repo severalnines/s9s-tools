@@ -27,8 +27,8 @@
 #include "S9sRegExp"
 #include "S9sNode"
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 /**
@@ -1759,6 +1759,9 @@ S9sRpcReply::printBackupListBrief()
     }
 }
 
+/**
+ * This is the one that prints the detailed list of the backups.
+ */
 void 
 S9sRpcReply::printBackupListLong()
 {
@@ -2800,6 +2803,7 @@ S9sRpcReply::html2ansi(
     s.replace("<em style='color: #c0392b;'>",     XTERM_COLOR_8);
     s.replace("<em style='color: #0b33b5;'>",     XTERM_COLOR_BLUE);
     s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
+    s.replace("<em style='color: #f3990b;'>",     XTERM_COLOR_7);
     s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
 
     //s.replace("", );
