@@ -1780,6 +1780,7 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       sizeFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       idFormat;
+    S9sFormat       cidFormat;
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
@@ -1801,11 +1802,13 @@ S9sRpcReply::printBackupListLong()
         S9sVariantMap  theMap    = dataList[idx].toVariantMap();
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = theMap["backup_host"].toString();
+        int            clusterId = theMap["cid"].toInt();
         S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = configMap["createdBy"].toString();
         int            id        = theMap["id"].toInt();
         S9sString      status    = theMap["status"].toString().toUpper();
 
+        cidFormat.widen(clusterId);
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
         ownerFormat.widen(owner);
@@ -1856,6 +1859,7 @@ S9sRpcReply::printBackupListLong()
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
+        cidFormat.widen("CID");
         stateFormat.widen("STATE");
         ownerFormat.widen("OWNER");
         hostNameFormat.widen("HOSTNAME");
@@ -1864,6 +1868,7 @@ S9sRpcReply::printBackupListLong()
 
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        cidFormat.printf("CID");
         stateFormat.printf("STATE");
         ownerFormat.printf("OWNER");
         hostNameFormat.printf("HOSTNAME");
@@ -1885,6 +1890,7 @@ S9sRpcReply::printBackupListLong()
         S9sVariantMap  theMap    = dataList[idx].toVariantMap();
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = theMap["backup_host"].toString();
+        int            clusterId = theMap["cid"].toInt();
         S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = configMap["createdBy"].toString();
         int            id        = theMap["id"].toInt();
@@ -1898,6 +1904,7 @@ S9sRpcReply::printBackupListLong()
             S9sString     createdString = "-";
                 
             idFormat.printf(id);
+            cidFormat.printf(clusterId);
             stateFormat.printf(status);
             ownerFormat.printf(owner);
             hostNameFormat.printf(hostName);
@@ -1946,6 +1953,7 @@ S9sRpcReply::printBackupListLong()
                 }
 
                 idFormat.printf(id);
+                cidFormat.printf(clusterId);
                 stateFormat.printf(status);
                 ownerFormat.printf(owner);
                 hostNameFormat.printf(hostName);
