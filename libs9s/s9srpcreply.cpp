@@ -1963,7 +1963,11 @@ S9sRpcReply::printBackupListLong()
                 idFormat.printf(id);
                 cidFormat.printf(clusterId);
                 stateFormat.printf(status);
+
+                printf("%s", userColorBegin());
                 ownerFormat.printf(owner);
+                printf("%s", userColorEnd());
+
                 hostNameFormat.printf(hostName);
                 createdFormat.printf(createdString);
                 sizeFormat.printf(sizeString);
