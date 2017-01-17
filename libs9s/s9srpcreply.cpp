@@ -1060,6 +1060,7 @@ S9sRpcReply::printNodeListLong()
     S9sString       clusterNameFilter = options->clusterName();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     S9sVariantList  hostList;
+    S9sFormat       cidFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       versionFormat;
     S9sFormat       clusterNameFormat;
@@ -1076,7 +1077,7 @@ S9sRpcReply::printNodeListLong()
         S9sVariantMap  theMap      = theList[idx].toVariantMap();
         S9sVariantList hosts       = theMap["hosts"].toVariantList();
         S9sString      clusterName = theMap["cluster_name"].toString();
-        
+
         total += hosts.size();
 
         if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
@@ -1091,11 +1092,13 @@ S9sRpcReply::printNodeListLong()
             S9sString     hostName  = node.name();
             S9sString     version   = hostMap["version"].toString();
             int           port      = hostMap["port"].toInt(-1);
+            int           clusterId = hostMap["clusterid"].toInt();
 
             if (!options->isStringMatchExtraArguments(hostName))
                 continue;
             
             hostNameFormat.widen(hostName);
+            cidFormat.widen(clusterId);
             versionFormat.widen(version);
             portFormat.widen(port);
 
@@ -1115,6 +1118,7 @@ S9sRpcReply::printNodeListLong()
     if (!options->isNoHeaderRequested())
     {
         versionFormat.widen("VERSION");
+        cidFormat.widen("CID");
         clusterNameFormat.widen("CLUSTER");
         hostNameFormat.widen("HOST");
         portFormat.widen("PORT");
@@ -1122,6 +1126,7 @@ S9sRpcReply::printNodeListLong()
         printf("%s", headerColorBegin());
         printf("ST  ");
         versionFormat.printf("VERSION");
+        cidFormat.printf("CID");
         clusterNameFormat.printf("CLUSTER");
         hostNameFormat.printf("HOST");
         portFormat.printf("PORT");
@@ -1139,6 +1144,7 @@ S9sRpcReply::printNodeListLong()
         S9sVariantMap hostMap   = hostList[idx2].toVariantMap();
         S9sNode       node      = hostMap;
         S9sString     hostName  = node.name();
+        int           clusterId = hostMap["clusterid"].toInt();
         S9sString     status    = hostMap["hoststatus"].toString();
         S9sString     className = hostMap["class_name"].toString();
         S9sString     nodeType  = hostMap["nodetype"].toString();
@@ -1172,6 +1178,7 @@ S9sRpcReply::printNodeListLong()
 
         // Calculating how much space we have for the message column.
         nColumns  = 3 + 1;
+        nColumns += cidFormat.realWidth();
         nColumns += versionFormat.realWidth();
         nColumns += clusterNameFormat.realWidth();
         nColumns += hostNameFormat.realWidth();
@@ -1193,6 +1200,7 @@ S9sRpcReply::printNodeListLong()
         printf("%c ", maintenance ? 'M' : '-');
 
         versionFormat.printf(version);
+        cidFormat.printf(clusterId);
 
         printf("%s", clusterColorBegin());
         clusterNameFormat.printf(clusterName);
