@@ -1564,6 +1564,7 @@ S9sRpcClient::getBackups(
     uri = "/v2/backup/";
 
     request["operation"] = "getBackups";
+    request["ascending"] = true;
 
     if (clusterId > 0)
         request["cluster_id"] = clusterId;
