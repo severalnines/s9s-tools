@@ -463,6 +463,34 @@ function testRestoreBackup()
 }
 
 #
+# This will remove a backup. 
+#
+function testRemoveBackup()
+{
+    local exitCode
+    local backupId
+
+    pip-say "The test to remove a backup is starting."
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        awk '{print $1}')
+
+    #
+    # Calling for a rolling restart.
+    #
+    $S9S backup \
+        --delete \
+        --backup-id=$backupId \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
 # Stopping the cluster.
 #
 function testStop()
@@ -537,6 +565,7 @@ else
     runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
+    runFunctionalTest testRemoveBackup
     runFunctionalTest testStop
     runFunctionalTest testStart
     runFunctionalTest testDestroyNodes

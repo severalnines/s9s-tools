@@ -518,6 +518,10 @@ S9sRpcReply::printProcessList(
         ulonglong     rss        = process["res_mem"].toULongLong();
         ulonglong     virtMem    = process["virt_mem"].toULongLong();
         int           priority   = process["priority"].toInt();
+        
+        printf("\n");
+        printf("%d ", maxLines);
+        printf("%u ", idx);
 
         rss     /= 1024;
         virtMem /= 1024;
@@ -539,7 +543,6 @@ S9sRpcReply::printProcessList(
         if (maxLines > 0 && (int) idx + 1 >= maxLines)
             break;
 
-        printf("\n");
     }
 }
 
@@ -1096,6 +1099,9 @@ S9sRpcReply::printNodeListLong()
 
             if (!options->isStringMatchExtraArguments(hostName))
                 continue;
+
+            if (version.empty())
+                version = "-";
             
             hostNameFormat.widen(hostName);
             cidFormat.widen(clusterId);
@@ -1160,6 +1166,9 @@ S9sRpcReply::printNodeListLong()
 
         if (message.empty())
             message = "-";
+
+        if (version.empty())
+            version = "-";
 
         if (syntaxHighlight)
         {

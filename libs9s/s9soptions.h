@@ -146,6 +146,7 @@ class S9sOptions
         S9sString emailAddress() const;
 
         bool isListRequested() const;
+        bool isStatRequested() const;
         bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isSetRequested() const;

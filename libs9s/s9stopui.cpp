@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-//#include <curses.h>
 
 #define DEBUG
 #define WARNING
@@ -131,6 +130,8 @@ S9sTopUi::executeTopOnce(
     //
     client.getRunningProcesses(clusterId);
     reply = client.reply();
+
+    //S9S_DEBUG("reply.printProcessList(%d)", options->terminalHeight() - 6);
     reply.printProcessList(options->terminalHeight() - 6);
 
 

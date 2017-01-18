@@ -99,6 +99,7 @@ enum S9sOptionType
     OptionDatabases,
     OptionParallellism,
     OptionFullPath,
+    OptionStat,
 };
 
 /**
@@ -1120,6 +1121,19 @@ S9sOptions::isListRequested() const
 }
 
 /**
+ * \returns true if the --stat command line option was provided to get a
+ *   detailed list of something
+ */
+bool
+S9sOptions::isStatRequested() const
+{
+    if (m_options.contains("stat"))
+        return m_options.at("stat").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the --list-properties main option was provided.
  */
 bool
@@ -1844,7 +1858,7 @@ S9sOptions::printHelpGeneric()
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
-"    maint - to view and manupilate maintenance periods.\n"
+"    maint - to view and manipulate maintenance periods.\n"
 "     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
 "     user - to manage users.\n"
@@ -2065,6 +2079,7 @@ S9sOptions::readOptionsNode(
 
         // Main Option
         { "list",             no_argument,       0, 'L'               },
+        { "stat",             no_argument,       0,  OptionStat       },
         { "set",              no_argument,       0,  OptionSet        },
 
         // Cluster information
@@ -2130,6 +2145,11 @@ S9sOptions::readOptionsNode(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
                 break;
 
             case OptionSet:
