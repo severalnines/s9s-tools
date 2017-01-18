@@ -26,6 +26,7 @@
 #include "S9sFormat"
 #include "S9sRegExp"
 #include "S9sNode"
+#include "S9sCluster"
 
 //#define DEBUG
 //#define WARNING
@@ -1059,13 +1060,19 @@ compareHostMaps(
  */
 void
 S9sRpcReply::printNodeStat(
-        S9sNode &node)
+        S9sCluster &cluster,
+        S9sNode    &node)
 {
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
 
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.name()));
+    //printf("\n");
+    
+    printf("%s       Cluster:%s ", greyBegin, greyEnd);
+    printf("%s%s%s ", 
+            clusterColorBegin(), STR(cluster.name()), clusterColorEnd());
     printf("\n");
     
     printf("%s      IP:%s ", greyBegin, greyEnd);
@@ -1138,15 +1145,16 @@ S9sRpcReply::printNodeListStat()
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap      = theList[idx].toVariantMap();
-        S9sVariantList hosts       = theMap["hosts"].toVariantList();
+        S9sVariantMap  clusterMap  = theList[idx].toVariantMap();
+        S9sCluster     cluster     = clusterMap;
+        S9sVariantList hosts       = clusterMap["hosts"].toVariantList();
 
         for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
         {
             S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
             S9sNode       node      = hostMap;
             
-            printNodeStat(node);
+            printNodeStat(cluster, node);
         }
     }
 }

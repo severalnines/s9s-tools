@@ -20,6 +20,8 @@
 #pragma once
 
 #include "S9sVariantMap"
+class S9sNode;
+class S9sCluster;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -72,7 +74,7 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeListStat();
         void printNodeListBrief();
         void printNodeListLong();
-        void printNodeStat(S9sNode &node);
+        void printNodeStat(S9sCluster &cluster, S9sNode &node);
         
         void printJobListBrief();
         void printJobListLong();
