@@ -49,6 +49,7 @@ class S9sVariant
             return isInt() || isULongLong() || isDouble(); }; 
         bool isString() const { return m_type == String; };
         bool isVariantMap() const { return m_type == Map; };
+        bool isVariantList() const { return m_type == List; };
         bool isNode() const { return m_type == Node; };
 
         bool toBoolean(const bool defaultValue = false) const;

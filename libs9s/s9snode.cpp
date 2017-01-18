@@ -164,10 +164,27 @@ S9sNode::role() const
 S9sString
 S9sNode::configFile() const
 {
-    if (m_properties.contains("configfile"))
-        return m_properties.at("configfile").toString();
+    S9sString retval;
 
-    return S9sString();
+    if (m_properties.contains("configfile"))
+    {
+        S9sVariant variant = m_properties.at("configfile");
+
+        if (variant.isVariantList())
+        {
+            for (uint idx = 0u; idx < variant.toVariantList().size(); ++idx)
+            {
+                if (!retval.empty())
+                    retval += "; ";
+
+                retval += variant.toVariantList()[idx].toString();
+            }
+        } else {
+            variant = m_properties.at("configfile").toString();
+        }
+    }
+
+    return retval;
 }
 
 S9sString
