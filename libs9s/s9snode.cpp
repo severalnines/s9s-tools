@@ -196,6 +196,24 @@ S9sNode::logFile() const
     return S9sString();
 }
 
+S9sString
+S9sNode::pidFile() const
+{
+    if (m_properties.contains("pidfile"))
+        return m_properties.at("pidfile").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::dataDir() const
+{
+    if (m_properties.contains("datadir"))
+        return m_properties.at("datadir").toString();
+
+    return S9sString();
+}
+
 /**
  * \returns true if the node has a port number set.
  */

@@ -48,7 +48,9 @@ class S9sNode
         S9sString role() const;
         S9sString configFile() const;
         S9sString logFile() const;
-        
+        S9sString pidFile() const;
+        S9sString dataDir() const;
+
         bool hasPort() const;
         int port() const;
 

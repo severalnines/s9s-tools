@@ -1064,54 +1064,68 @@ S9sRpcReply::printNodeStat(
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
 
-    printf("%sName  :%s ", greyBegin, greyEnd);
+    printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.name()));
     printf("\n");
     
-    printf("%sIP    :%s ", greyBegin, greyEnd);
+    printf("%s      IP:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.ipAddress()));
     //printf("\n");
     
-    printf("%sPort :%s ", greyBegin, greyEnd);
+    printf("          %sPort:%s ", greyBegin, greyEnd);
     if (node.hasPort())
     printf("%d ", node.port());
     printf("\n");
     
-    printf("%sAlias :%s ", greyBegin, greyEnd);
+    printf("%s   Alias:%s ", greyBegin, greyEnd);
     printf("'%s' ", STR(node.alias()));
     printf("\n");
     
-    printf("%sClass :%s ", greyBegin, greyEnd);
+    printf("%s   Class:%s ", greyBegin, greyEnd);
     printf("%s%-16s%s ", 
             typeColorBegin(), 
             STR(node.className()), 
             typeColorEnd());
     //printf("\n");
     
-    printf("%sRole :%s ", greyBegin, greyEnd);
+    printf("          %sRole:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.role()));
     printf("\n");
     
-    printf("%sStatus:%s ", greyBegin, greyEnd);
+    printf("%s  Status:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.hostStatus()));
     printf("\n");
     
-    printf("%sOS    :%s ", greyBegin, greyEnd);
+    printf("%s      OS:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.osVersionString()));
     printf("\n");
     
-    printf("%sConfig:%s ", greyBegin, greyEnd);
+    printf("%s  Config:%s ", greyBegin, greyEnd);
     printf("'%s%s%s'", 
             fileColorBegin(node.configFile()),
             STR(node.configFile()),
             fileColorEnd());
     printf("\n");
     
-    printf("%sLog   :%s ", greyBegin, greyEnd);
+    printf("%s LogFile:%s ", greyBegin, greyEnd);
     printf("'%s%s%s'", 
             fileColorBegin(node.logFile()),
             STR(node.logFile()),
             fileColorEnd());
+    printf("\n");
+
+    printf("%s PidFile:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(node.pidFile()),
+            STR(node.pidFile()),
+            fileColorEnd());
+    printf("\n");
+    
+    printf("%s DataDir:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            XTERM_COLOR_BLUE,
+            STR(node.dataDir()),
+            TERM_NORMAL);
     printf("\n");
 
     printf("\n\n");
