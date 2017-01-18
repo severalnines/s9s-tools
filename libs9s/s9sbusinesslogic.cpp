@@ -135,7 +135,7 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isNodeOperation())
     {
-        if (options->isListRequested())
+        if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);
         } else if (options->isSetRequested())

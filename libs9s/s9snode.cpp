@@ -19,7 +19,8 @@
  */
 #include "s9snode.h"
 
-#include "S9sUrl"
+#include <S9sUrl>
+#include <S9sVariantMap>
 
 //#define DEBUG
 //#define WARNING
@@ -128,6 +129,16 @@ S9sNode::hostName() const
     return S9sString();
 }
 
+S9sString
+S9sNode::ipAddress() const
+{
+    if (m_properties.contains("ip"))
+        return m_properties.at("ip").toString();
+
+    return S9sString();
+}
+
+
 /**
  * \returns The alias name (or nickname) of the node if there is one, returns
  *   the empty string if not.
@@ -199,6 +210,28 @@ S9sNode::message() const
         return m_properties.at("message").toString();
 
     return S9sString();
+}
+
+S9sString
+S9sNode::osVersionString() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("distribution"))
+    {
+        S9sVariantMap map = m_properties.at("distribution").toVariantMap();
+        S9sString     name, release, codeName;
+        
+        name     = map["name"].toString();
+        release  = map["release"].toString();
+        codeName = map["codename"].toString();
+
+        retval.appendWord(name);
+        retval.appendWord(release);
+        retval.appendWord(codeName);
+    }
+
+    return retval;
 }
 
 /**

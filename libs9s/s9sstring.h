@@ -58,6 +58,7 @@ class S9sString : public std::string
         void vsprintf(const char *formatString, va_list arguments);
 
         S9sVariantList split(const char *ifs = ";, ") const;
+        S9sString &appendWord(const S9sString &word);
 
         int toInt(const int defaultVal = 0) const;
         ulonglong toULongLong(const ulonglong defaultVal = 0ull) const;

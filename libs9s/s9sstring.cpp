@@ -140,6 +140,27 @@ S9sString::split(
     return retval;
 }
 
+S9sString &
+S9sString::appendWord(
+        const S9sString &word)
+{
+    if (empty())
+    {
+        *this = word;
+        return *this;
+    }
+
+    if (!word.empty())
+    {
+        if (!endsWith(" "))
+            *this += " ";
+
+        *this += word;
+    }
+
+    return *this;
+}
+
 /**
  * \param formatString a standard printf() style formatstring.
  */

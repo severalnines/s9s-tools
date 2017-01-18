@@ -69,8 +69,10 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterListBrief();
         void printClusterListLong();
         
+        void printNodeListStat();
         void printNodeListBrief();
         void printNodeListLong();
+        void printNodeStat(S9sNode &node);
         
         void printJobListBrief();
         void printJobListLong();
@@ -117,5 +119,8 @@ class S9sRpcReply : public S9sVariantMap
 
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
+
+        const char *greyColorBegin() const;
+        const char *greyColorEnd() const;
 };
 

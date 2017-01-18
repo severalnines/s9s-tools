@@ -706,6 +706,8 @@ S9sRpcReply::printNodeList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (options->isStatRequested())
+        printNodeListStat();
     else if (options->isLongRequested())
         printNodeListLong();
     else
@@ -1051,6 +1053,63 @@ compareHostMaps(
     return hostName1 < hostName2;
 }
 
+/**
+ * Prints one host in the "stat" format, the format that print every single
+ * detail.
+ */
+void
+S9sRpcReply::printNodeStat(
+        S9sNode &node)
+{
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+
+    printf("%sName  : %s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(node.name()));
+    printf("\n");
+    
+    printf("%sIP    : %s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(node.ipAddress()));
+    printf("\n");
+    
+    printf("%sAlias : %s ", greyBegin, greyEnd);
+    printf("'%s' ", STR(node.alias()));
+    printf("\n");
+    
+    printf("%sClass : %s ", greyBegin, greyEnd);
+    printf("%s%s%s", typeColorBegin(), STR(node.className()), typeColorEnd());
+    printf("\n");
+    
+    printf("%sStatus: %s ", greyBegin, greyEnd);
+    printf("%s", STR(node.hostStatus()));
+    printf("\n");
+    
+    printf("%sOS    : %s ", greyBegin, greyEnd);
+    printf("%s", STR(node.osVersionString()));
+    printf("\n");
+
+    printf("\n\n");
+}
+
+void 
+S9sRpcReply::printNodeListStat()
+{
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap      = theList[idx].toVariantMap();
+        S9sVariantList hosts       = theMap["hosts"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
+        {
+            S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
+            S9sNode       node      = hostMap;
+            
+            printNodeStat(node);
+        }
+    }
+}
 
 /**
  * Prints the node list in its long format (aka "node --list --long).
@@ -2997,6 +3056,24 @@ S9sRpcReply::headerColorBegin() const
 
 const char *
 S9sRpcReply::headerColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::greyColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_DARK_GRAY;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::greyColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
