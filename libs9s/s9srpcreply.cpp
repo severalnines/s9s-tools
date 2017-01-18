@@ -1101,11 +1101,17 @@ S9sRpcReply::printNodeStat(
     printf("\n");
     
     printf("%sConfig:%s ", greyBegin, greyEnd);
-    printf("'%s'", STR(node.configFile()));
+    printf("'%s%s%s'", 
+            fileColorBegin(node.configFile()),
+            STR(node.configFile()),
+            fileColorEnd());
     printf("\n");
     
     printf("%sLog   :%s ", greyBegin, greyEnd);
-    printf("'%s'", STR(node.logFile()));
+    printf("'%s%s%s'", 
+            fileColorBegin(node.logFile()),
+            STR(node.logFile()),
+            fileColorEnd());
     printf("\n");
 
     printf("\n\n");
@@ -3112,6 +3118,36 @@ S9sRpcReply::typeColorBegin() const
 
 const char *
 S9sRpcReply::typeColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::fileColorBegin(
+        const S9sString &fileName) const
+{
+    if (useSyntaxHighLight())
+    {
+        if (fileName.endsWith(".gz"))
+            return XTERM_COLOR_RED;
+        else if (fileName.endsWith(".tar"))
+            return XTERM_COLOR_ORANGE;
+        else if (fileName.endsWith(".log"))
+            return XTERM_COLOR_ORANGE;
+        else if (fileName.endsWith(".cnf"))
+            return XTERM_COLOR_ORANGE;
+        else
+            return XTERM_COLOR_PURPLE;
+    }
+
+    return "";
+}
+
+const char *
+S9sRpcReply::fileColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

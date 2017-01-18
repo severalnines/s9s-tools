@@ -119,6 +119,9 @@ class S9sRpcReply : public S9sVariantMap
 
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
+        
+        const char *fileColorBegin(const S9sString &fileName) const;
+        const char *fileColorEnd() const;
 
         const char *greyColorBegin() const;
         const char *greyColorEnd() const;
