@@ -77,3 +77,51 @@ S9sCluster::name() const
     return S9sString();
 }
 
+S9sString
+S9sCluster::ownerName() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("owner"))
+    {
+        S9sVariantMap map = m_properties.at("owner").toVariantMap();
+        
+        if (map.contains("user_name"))
+        {
+            retval = map["user_name"].toString();
+        } else {
+            retval.sprintf("%d", map["user_id"].toInt());
+        }
+    }
+
+    return retval;
+}
+
+S9sString
+S9sCluster::groupOwnerName() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("group_owner"))
+    {
+        S9sVariantMap map = m_properties.at("group_owner").toVariantMap();
+        
+        if (map.contains("group_name"))
+        {
+            retval = map["group_name"].toString();
+        } else {
+            retval.sprintf("%d", map["group_id"].toInt());
+        }
+    }
+
+    return retval;
+}
+
+int 
+S9sCluster::clusterId() const
+{
+    if (m_properties.contains("cluster_id"))
+        return m_properties.at("cluster_id").toInt();
+
+    return 0;
+}

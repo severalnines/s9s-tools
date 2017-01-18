@@ -1071,8 +1071,11 @@ S9sRpcReply::printNodeStat(
     //printf("\n");
     
     printf("%s       Cluster:%s ", greyBegin, greyEnd);
-    printf("%s%s%s ", 
-            clusterColorBegin(), STR(cluster.name()), clusterColorEnd());
+    printf("%s%s%s (%d) ", 
+            clusterColorBegin(), 
+            STR(cluster.name()), 
+            clusterColorEnd(),
+            cluster.clusterId());
     printf("\n");
     
     printf("%s      IP:%s ", greyBegin, greyEnd);
@@ -1084,8 +1087,17 @@ S9sRpcReply::printNodeStat(
     printf("%d ", node.port());
     printf("\n");
     
+    // Line 
     printf("%s   Alias:%s ", greyBegin, greyEnd);
-    printf("'%s' ", STR(node.alias()));
+    printf("%-16s ", STR("'" + node.alias() + "'"));
+    //printf("\n");
+    
+    printf("%s         Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
+            groupColorBegin(cluster.groupOwnerName()), 
+            STR(cluster.groupOwnerName()), 
+            groupColorEnd());
     printf("\n");
     
     printf("%s   Class:%s ", greyBegin, greyEnd);
@@ -1141,6 +1153,7 @@ S9sRpcReply::printNodeStat(
 void 
 S9sRpcReply::printNodeListStat()
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -1153,6 +1166,9 @@ S9sRpcReply::printNodeListStat()
         {
             S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
             S9sNode       node      = hostMap;
+           
+            if (!options->isStringMatchExtraArguments(node.name()))
+                continue;
             
             printNodeStat(cluster, node);
         }
@@ -3158,11 +3174,11 @@ S9sRpcReply::fileColorBegin(
         else if (fileName.endsWith(".tar"))
             return XTERM_COLOR_ORANGE;
         else if (fileName.endsWith(".log"))
-            return XTERM_COLOR_ORANGE;
+            return TERM_NORMAL;
         else if (fileName.endsWith(".cnf"))
-            return XTERM_COLOR_ORANGE;
+            return TERM_NORMAL;
         else
-            return XTERM_COLOR_PURPLE;
+            return TERM_NORMAL;
     }
 
     return "";
