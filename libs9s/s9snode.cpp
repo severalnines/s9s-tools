@@ -152,6 +152,33 @@ S9sNode::alias() const
     return S9sString();
 }
 
+S9sString
+S9sNode::role() const
+{
+    if (m_properties.contains("role"))
+        return m_properties.at("role").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::configFile() const
+{
+    if (m_properties.contains("configfile"))
+        return m_properties.at("configfile").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::logFile() const
+{
+    if (m_properties.contains("logfile"))
+        return m_properties.at("logfile").toString();
+
+    return S9sString();
+}
+
 /**
  * \returns true if the node has a port number set.
  */

@@ -45,6 +45,9 @@ class S9sNode
         S9sString hostName() const;
         S9sString ipAddress() const;
         S9sString alias() const;
+        S9sString role() const;
+        S9sString configFile() const;
+        S9sString logFile() const;
         
         bool hasPort() const;
         int port() const;
