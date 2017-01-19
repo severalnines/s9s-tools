@@ -1065,9 +1065,30 @@ S9sRpcReply::printNodeStat(
         S9sCluster &cluster,
         S9sNode    &node)
 {
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
+    S9sString   title;
 
+    //
+    // The title that is in inverse. 
+    //
+    if (node.port() > 0)
+        title.sprintf(" %s:%d ", STR(node.name()), node.port());
+    else
+        title.sprintf(" %s ", STR(node.name()));
+
+    printf("%s", TERM_INVERSE/*headerColorBegin()*/);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL /*headerColorEnd()*/);
+    printf("\n");
+
+    //
+    //
+    //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.name()));
     //printf("\n");
@@ -3188,6 +3209,7 @@ S9sRpcReply::headerColorBegin() const
 {
     if (useSyntaxHighLight())
         return TERM_BOLD;
+        //return TERM_INVERSE;
 
     return "";
 }
