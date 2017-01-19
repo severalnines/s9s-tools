@@ -296,6 +296,28 @@ S9sNode::osVersionString() const
     return retval;
 }
 
+int
+S9sNode::pid() const
+{
+    int retval = -1;
+
+    if (m_properties.contains("pid"))
+        retval = m_properties.at("pid").toInt();
+
+    return retval;
+}
+
+ulonglong
+S9sNode::uptime() const
+{
+    ulonglong retval = 0ull;
+
+    if (m_properties.contains("uptime"))
+        retval = m_properties.at("uptime").toULongLong();
+
+    return retval;
+}
+
 /**
  * \returns true if the maintenance mode is active for the given node.
  */

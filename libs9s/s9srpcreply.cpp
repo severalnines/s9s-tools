@@ -1109,16 +1109,39 @@ S9sRpcReply::printNodeStat(
             typeColorEnd());
     //printf("\n");
     
-    printf("  %sRole:%s ", greyBegin, greyEnd);
-    printf("%s", STR(node.role()));
+    printf("%s  Type:%s ", greyBegin, greyEnd);
+    printf("%s", STR(node.nodeType()));
     printf("\n");
     
     printf("%s  Status:%s ", greyBegin, greyEnd);
-    printf("%s", STR(node.hostStatus()));
+    printf("%-24s", STR(node.hostStatus()));
+    //printf("\n");
+    
+    printf("   %sRole:%s ", greyBegin, greyEnd);
+    printf("%s", STR(node.role()));
     printf("\n");
+    
     
     printf("%s      OS:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.osVersionString()));
+    printf("\n");
+
+
+    printf("%s Message:%s ", greyBegin, greyEnd);
+    printf("%s", STR(node.message()));
+    printf("\n");
+    
+    /*
+     * Last seen time and SSH fail count.
+     */
+    printf("%sLastSeen:%s ", greyBegin, greyEnd);
+    printf("%20s", STR(S9sString::pastTime(node.lastSeen())));
+    //printf("\n");
+    
+    printf("%s        SSH:%s ", greyBegin, greyEnd);
+    printf("%d ", node.sshFailCount());
+    printf("%sfail(s)%s ", greyBegin, greyEnd);
+
     printf("\n");
 
     //
@@ -1150,17 +1173,22 @@ S9sRpcReply::printNodeStat(
     
     printf("\n");
     
-    /*
-     *
-     */
-    printf("%sLastSeen:%s ", greyBegin, greyEnd);
-    printf("%20s", STR(S9sString::pastTime(node.lastSeen())));
-    //printf("\n");
+    //
+    //
+    //
+    if (node.pid() > 0)
+    {
+        printf("%s     Pid:%s %d", 
+                greyBegin, greyEnd, 
+                node.pid());
+    } else {
+        printf("%s     Pid:%s -", greyBegin, greyEnd);
+    }
     
-    printf("%s        SSH:%s ", greyBegin, greyEnd);
-    printf("%d ", node.sshFailCount());
-    printf("%sfail(s)%s ", greyBegin, greyEnd);
-
+    printf("  %sUptime:%s %s", 
+            greyBegin, greyEnd, 
+            STR(S9sString::uptime(node.uptime())));
+    
     printf("\n");
 
     //

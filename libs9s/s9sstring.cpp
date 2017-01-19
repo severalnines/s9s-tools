@@ -696,3 +696,34 @@ S9sString::pastTime(
 
     return retval;
 }
+
+S9sString
+S9sString::uptime(
+        ulonglong seconds)
+{
+    S9sString retval;
+    int       days;
+    int       hours;
+    int       minutes;
+    
+    days     = seconds / (60 * 60 * 24);
+    seconds -= days * (60 * 60 * 24);
+
+    hours    = seconds / (60 * 60);
+    seconds -= hours * (60 * 60);
+
+    minutes  = seconds / 60;
+    seconds -= minutes * 60;
+
+    if (days > 1)
+    {
+        retval.sprintf("%d days %02d:%02d:%02d", days, hours, minutes, seconds);
+    } else if (days > 0)
+    {
+        retval.sprintf("%d day %02d:%02d:%02d", days, hours, minutes, seconds);
+    } else {
+        retval.sprintf("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    return retval;
+}

@@ -50,6 +50,8 @@ class S9sNode
         S9sString logFile() const;
         S9sString pidFile() const;
         S9sString dataDir() const;
+        int pid() const;
+        ulonglong uptime() const;
 
         bool hasPort() const;
         int port() const;

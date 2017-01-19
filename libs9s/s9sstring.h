@@ -95,6 +95,7 @@ class S9sString : public std::string
         bool looksULongLong() const;
 
         static S9sString pastTime(const time_t theTime);
+        static S9sString uptime(ulonglong seconds);
 
         static const S9sString space;
         static const S9sString dash;
