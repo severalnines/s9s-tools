@@ -1103,13 +1103,13 @@ S9sRpcReply::printNodeStat(
     printf("\n");
     
     printf("%s   Class:%s ", greyBegin, greyEnd);
-    printf("%s%-16s%s ", 
+    printf("%s%-24s%s ", 
             typeColorBegin(), 
             STR(node.className()), 
             typeColorEnd());
     //printf("\n");
     
-    printf("          %sRole:%s ", greyBegin, greyEnd);
+    printf("  %sRole:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.role()));
     printf("\n");
     
@@ -1149,7 +1149,20 @@ S9sRpcReply::printNodeStat(
             BoolToHuman(node.skipNameResolve()));
     
     printf("\n");
-   
+    
+    /*
+     *
+     */
+    printf("%sLastSeen:%s ", greyBegin, greyEnd);
+    printf("%20s", STR(S9sString::pastTime(node.lastSeen())));
+    //printf("\n");
+    
+    printf("%s        SSH:%s ", greyBegin, greyEnd);
+    printf("%d ", node.sshFailCount());
+    printf("%sfail(s)%s ", greyBegin, greyEnd);
+
+    printf("\n");
+
     //
     // Lines of various files.
     //

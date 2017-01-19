@@ -353,6 +353,23 @@ S9sNode::skipNameResolve() const
     return false;
 }
 
+time_t
+S9sNode::lastSeen() const
+{
+    if (m_properties.contains("lastseen"))
+        return m_properties.at("lastseen").toTimeT();
+
+    return false;
+}
+
+int
+S9sNode::sshFailCount() const
+{
+    if (m_properties.contains("sshfailcount"))
+        return m_properties.at("sshfailcount").toInt();
+
+    return 0;
+}
 
 /**
  * \param theList List of S9sNode objects to select from.

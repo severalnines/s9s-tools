@@ -1,5 +1,21 @@
-/* 
- * Copyright (C) 2011-2015 severalnines.com
+/*
+ * Severalnines Tools
+ * Copyright (C) 2016  Severalnines AB
+ *
+ * This file is part of s9s-tools.
+ *
+ * s9s-tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Foobar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -42,9 +58,6 @@ class S9sVariant
         bool isInt() const { return m_type == Int; };
         bool isULongLong() const { return m_type == Ulonglong; };
         bool isDouble() const { return m_type == Double; };
-        int toInt(const int defaultValue = 0) const;
-        ulonglong toULongLong(ulonglong defaultValue = 0ull) const;
-        
         bool isNumber() const { 
             return isInt() || isULongLong() || isDouble(); }; 
         bool isString() const { return m_type == String; };
@@ -52,6 +65,9 @@ class S9sVariant
         bool isVariantList() const { return m_type == List; };
         bool isNode() const { return m_type == Node; };
 
+        int toInt(const int defaultValue = 0) const;
+        ulonglong toULongLong(ulonglong defaultValue = 0ull) const; 
+        time_t toTimeT() const;
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;
         S9sString toString() const;

@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sstring.h"
 
@@ -676,4 +676,23 @@ S9sString::looksULongLong() const
     return true;
 }
 
+S9sString
+S9sString::pastTime(
+        const time_t theTime)
+{
+    time_t    now = time(NULL);
+    int       diff = now - theTime;
+    S9sString retval;
 
+    if (theTime == 0)
+    {
+        retval = "Never";
+    } else if (diff == 0) 
+    {
+        retval = "Just now";
+    } else {
+        retval.sprintf("%d seconds ago", diff);
+    }
+
+    return retval;
+}

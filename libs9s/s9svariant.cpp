@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9svariant.h"
 #include "S9sVariantMap"
@@ -424,6 +424,13 @@ S9sVariant::toULongLong(
 
     return defaultValue;
 }
+
+time_t
+S9sVariant::toTimeT() const
+{
+    return toULongLong(0ull);
+}
+
 
 /**
  * If the value can not be converted to a double value this function will return

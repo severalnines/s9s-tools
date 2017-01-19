@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -93,6 +93,8 @@ class S9sString : public std::string
 
         bool looksInteger() const;
         bool looksULongLong() const;
+
+        static S9sString pastTime(const time_t theTime);
 
         static const S9sString space;
         static const S9sString dash;

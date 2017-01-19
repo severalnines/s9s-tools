@@ -65,6 +65,8 @@ class S9sNode
         bool managed() const;
         bool nodeAutoRecovery() const;
         bool skipNameResolve() const;
+        time_t lastSeen() const;
+        int sshFailCount() const;
 
         static void 
             selectByProtocol(
