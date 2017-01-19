@@ -1056,6 +1056,28 @@ compareHostMaps(
     return hostName1 < hostName2;
 }
 
+void
+S9sRpcReply::printClusterStat(
+        S9sCluster &cluster)
+{
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
+    S9sString   title;
+
+    //
+    // The title that is in inverse. 
+    //
+    title.sprintf(" %s ", STR(cluster.name()));
+
+    printf("%s", TERM_INVERSE/*headerColorBegin()*/);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL /*headerColorEnd()*/);
+    printf("\n");
+}
+
+
 /**
  * Prints one host in the "stat" format, the format that print every single
  * detail.
@@ -1267,6 +1289,21 @@ S9sRpcReply::printNodeListStat()
             
             printNodeStat(cluster, node);
         }
+    }
+}
+
+void 
+S9sRpcReply::printClusterListStat()
+{
+    S9sVariantList  theList = operator[]("clusters").toVariantList();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  clusterMap  = theList[idx].toVariantMap();
+        S9sCluster     cluster     = clusterMap;
+        S9sVariantList hosts       = clusterMap["hosts"].toVariantList();
+ 
+        printClusterStat(cluster);
     }
 }
 
