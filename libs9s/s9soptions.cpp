@@ -3315,6 +3315,7 @@ S9sOptions::readOptionsCluster(
         // Main Option
         { "ping",             no_argument,       0, OptionPing       },
         { "list",             no_argument,       0, 'L'              },
+        { "stat",             no_argument,       0, OptionStat       },
         { "create",           no_argument,       0, OptionCreate     },
         { "rolling-restart",  no_argument,       0, 12               },
         { "add-node",         no_argument,       0, OptionAddNode    },

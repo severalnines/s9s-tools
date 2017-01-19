@@ -106,7 +106,7 @@ S9sBusinessLogic::execute()
         if (options->isPingRequested())
         {
             executePing(client);
-        } else if (options->isListRequested())
+        } else if (options->isListRequested() || options->isStatRequested())
         {
             executeClusterList(client);
         } else if (options->isCreateRequested())

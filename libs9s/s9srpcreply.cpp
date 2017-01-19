@@ -728,6 +728,8 @@ S9sRpcReply::printClusterList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (options->isStatRequested())
+        printClusterListStat();
     else if (options->isLongRequested())
         printClusterListLong();
     else
@@ -1062,6 +1064,8 @@ S9sRpcReply::printClusterStat(
 {
     S9sOptions *options = S9sOptions::instance();
     int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
     S9sString   title;
 
     //
@@ -1074,6 +1078,16 @@ S9sRpcReply::printClusterStat(
     for (int n = title.length(); n < terminalWidth; ++n)
         printf(" ");
     printf("%s", TERM_NORMAL /*headerColorEnd()*/);
+    
+    //
+    //
+    //
+    printf("%s    Name:%s ", greyBegin, greyEnd);
+    printf("%s", clusterColorBegin());
+    printf("%-16s ", STR(cluster.name()));
+    printf("%s", clusterColorEnd());
+    printf("\n");
+    printf("\n");
     printf("\n");
 }
 
