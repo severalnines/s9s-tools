@@ -308,6 +308,52 @@ S9sNode::isMaintenanceActive() const
     return false;
 }
 
+bool
+S9sNode::readOnly() const
+{
+    if (m_properties.contains("readonly"))
+        return m_properties.at("readonly").toBoolean();
+
+    return false;
+}
+
+bool
+S9sNode::connected() const
+{
+    if (m_properties.contains("connected"))
+        return m_properties.at("connected").toBoolean();
+
+    return false;
+}
+
+bool
+S9sNode::managed() const
+{
+    if (m_properties.contains("managed"))
+        return m_properties.at("managed").toBoolean();
+
+    return false;
+}
+
+bool
+S9sNode::nodeAutoRecovery() const
+{
+    if (m_properties.contains("node_auto_recovery"))
+        return m_properties.at("node_auto_recovery").toBoolean();
+
+    return false;
+}
+
+bool
+S9sNode::skipNameResolve() const
+{
+    if (m_properties.contains("skip_name_resolve"))
+        return m_properties.at("skip_name_resolve").toBoolean();
+
+    return false;
+}
+
+
 /**
  * \param theList List of S9sNode objects to select from.
  * \param matchedNodes The list where the matching nodes will be placed.

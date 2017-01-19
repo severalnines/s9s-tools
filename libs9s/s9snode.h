@@ -60,6 +60,11 @@ class S9sNode
         S9sString message() const;
         S9sString osVersionString() const;
         bool isMaintenanceActive() const;
+        bool readOnly() const;
+        bool connected() const;
+        bool managed() const;
+        bool nodeAutoRecovery() const;
+        bool skipNameResolve() const;
 
         static void 
             selectByProtocol(

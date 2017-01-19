@@ -32,6 +32,8 @@
 //#define WARNING
 #include "s9sdebug.h"
 
+#define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
+
 /**
  * \returns true if the reply states that the request status is 'ok'.
  */
@@ -1118,7 +1120,39 @@ S9sRpcReply::printNodeStat(
     printf("%s      OS:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.osVersionString()));
     printf("\n");
+
+    //
+    // A line of switches.
+    //
+    printf("%sReadonly:%s %c  ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.readOnly()));
+
+    printf("%sConnected:%s %c  ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.readOnly()));
+
+    printf("%sMaintenance:%s %c  ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.isMaintenanceActive()));
     
+    printf("%sManaged:%s %c  ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.managed()));
+    
+    printf("%sRecovery:%s %c  ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.nodeAutoRecovery()));
+
+    printf("%sSkip DNS:%s %c", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.skipNameResolve()));
+    
+    printf("\n");
+   
+    //
+    // Lines of various files.
+    //
     printf("%s  Config:%s ", greyBegin, greyEnd);
     printf("'%s%s%s'", 
             fileColorBegin(node.configFile()),
@@ -1145,7 +1179,6 @@ S9sRpcReply::printNodeStat(
             XTERM_COLOR_BLUE,
             STR(node.dataDir()),
             TERM_NORMAL);
-    printf("\n");
 
     printf("\n\n");
 }
