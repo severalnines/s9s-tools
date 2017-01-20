@@ -125,3 +125,12 @@ S9sCluster::clusterId() const
 
     return 0;
 }
+
+S9sString
+S9sCluster::clusterType() const
+{
+    if (m_properties.contains("cluster_type"))
+        return m_properties.at("cluster_type").toString();
+
+    return 0;
+}

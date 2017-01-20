@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -38,6 +38,7 @@ class S9sCluster
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
         int clusterId() const;
+        S9sString clusterType() const;
 
     private:
         S9sVariantMap    m_properties;

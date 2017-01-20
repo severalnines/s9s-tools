@@ -1098,8 +1098,11 @@ S9sRpcReply::printClusterStat(
 
     printf("%s      ID:%s ", greyBegin, greyEnd);
     printf("%-8d ", cluster.clusterId());
-
     printf("\n");
+    
+    printf("%s    Tpye:%s ", greyBegin, greyEnd);
+    printf("%-24s ", STR(cluster.clusterType()));
+
     printf("\n");
     printf("\n");
 }
