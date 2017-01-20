@@ -1118,18 +1118,28 @@ S9sRpcReply::printClusterStat(
     // Counting the alarms.
     //
     printf("%s  Alarms:%s ", greyBegin, greyEnd);
-    printf("%d ", cluster.alarmsCritical());
-    printf("%scrit%s ", greyBegin, greyEnd);
-    printf("%d ", cluster.alarmsWarning());
-    printf("%swarn%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.alarmsCritical());
+    printf("%scrit %s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.alarmsWarning());
+    printf("%swarn %s ", greyBegin, greyEnd);
     printf("\n");
 
     //
     // Counting the jobs.
     //
     printf("%s    Jobs:%s ", greyBegin, greyEnd);
-    printf("%d ", cluster.jobsAborted());
-    printf("%sabrt%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsAborted());
+    printf("%sabort%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsDefined());
+    printf("%sdefnd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsDequeued());
+    printf("%sdequd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsFailed());
+    printf("%sfaild%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsFinished());
+    printf("%sfinsd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsRunning());
+    printf("%srunng%s ", greyBegin, greyEnd);
     printf("\n");
     
     //

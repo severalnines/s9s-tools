@@ -206,6 +206,46 @@ S9sCluster::jobsAborted() const
     return stateMap["ABORTED"].toInt();
 }
 
+int
+S9sCluster::jobsDefined() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["DEFINED"].toInt();
+}
+
+int
+S9sCluster::jobsDequeued() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["DEQUEUED"].toInt();
+}
+
+int
+S9sCluster::jobsFailed() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["FAILED"].toInt();
+}
+
+int
+S9sCluster::jobsFinished() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["FINISHED"].toInt();
+}
+
+int
+S9sCluster::jobsRunning() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["RUNNING"].toInt();
+}
+
 
 /**
  * Private function to get the job statistics map.

@@ -47,6 +47,11 @@ class S9sCluster
         int alarmsWarning() const;
 
         int jobsAborted() const;
+        int jobsDefined() const;
+        int jobsDequeued() const;
+        int jobsFailed() const;
+        int jobsFinished() const;
+        int jobsRunning() const;
 
     private:
         S9sVariantMap jobStatistics() const;
