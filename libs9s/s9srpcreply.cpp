@@ -1086,6 +1086,19 @@ S9sRpcReply::printClusterStat(
     printf("%s", clusterColorBegin());
     printf("%-16s ", STR(cluster.name()));
     printf("%s", clusterColorEnd());
+    
+    printf("%s         Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
+            groupColorBegin(cluster.groupOwnerName()), 
+            STR(cluster.groupOwnerName()), 
+            groupColorEnd());
+
+    printf("\n");
+
+    printf("%s      ID:%s ", greyBegin, greyEnd);
+    printf("%-8d ", cluster.clusterId());
+
     printf("\n");
     printf("\n");
     printf("\n");
