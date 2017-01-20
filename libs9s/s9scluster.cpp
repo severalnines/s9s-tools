@@ -134,3 +134,36 @@ S9sCluster::clusterType() const
 
     return 0;
 }
+
+S9sString
+S9sCluster::state() const
+{
+    if (m_properties.contains("state"))
+        return m_properties.at("state").toString();
+
+    return 0;
+}
+
+S9sString
+S9sCluster::configFile() const
+{
+    if (m_properties.contains("configuration_file"))
+        return m_properties.at("configuration_file").toString();
+
+    return 0;
+}
+
+S9sString
+S9sCluster::vendorAndVersion() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("vendor"))
+        retval = m_properties.at("vendor").toString();
+
+    if (m_properties.contains("version"))
+        retval.appendWord(m_properties.at("version").toString());
+
+    return retval;
+}
+

@@ -39,6 +39,9 @@ class S9sCluster
         S9sString groupOwnerName() const;
         int clusterId() const;
         S9sString clusterType() const;
+        S9sString state() const;
+        S9sString configFile() const;
+        S9sString vendorAndVersion() const;
 
     private:
         S9sVariantMap    m_properties;

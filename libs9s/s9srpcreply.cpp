@@ -1084,10 +1084,10 @@ S9sRpcReply::printClusterStat(
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%s", clusterColorBegin());
-    printf("%-16s ", STR(cluster.name()));
+    printf("%-32s ", STR(cluster.name()));
     printf("%s", clusterColorEnd());
     
-    printf("%s         Owner:%s ", greyBegin, greyEnd);
+    printf("%s   Owner:%s ", greyBegin, greyEnd);
     printf("%s%s%s/%s%s%s ", 
             userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
             groupColorBegin(cluster.groupOwnerName()), 
@@ -1097,13 +1097,32 @@ S9sRpcReply::printClusterStat(
     printf("\n");
 
     printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-8d ", cluster.clusterId());
+    printf("%-32d ", cluster.clusterId());
+    
+    printf("%s   State:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(cluster.state()));
     printf("\n");
     
-    printf("%s    Tpye:%s ", greyBegin, greyEnd);
-    printf("%-24s ", STR(cluster.clusterType()));
+    printf("%s    Type:%s ", greyBegin, greyEnd);
+    printf("%-32s ", STR(cluster.clusterType()));
+    
+    printf("%s  Vendor:%s ", greyBegin, greyEnd);
+    printf("%s", STR(cluster.vendorAndVersion()));
 
     printf("\n");
+    
+    //
+    // Lines of various files.
+    //
+    printf("%s  Config:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(cluster.configFile()),
+            STR(cluster.configFile()),
+            fileColorEnd());
+
+    printf("\n");
+
+
     printf("\n");
 }
 
