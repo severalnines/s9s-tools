@@ -42,6 +42,14 @@ class S9sCluster
         S9sString state() const;
         S9sString configFile() const;
         S9sString vendorAndVersion() const;
+        S9sString statusText() const;
+        int alarmsCritical() const;
+        int alarmsWarning() const;
+
+        int jobsAborted() const;
+
+    private:
+        S9sVariantMap jobStatistics() const;
 
     private:
         S9sVariantMap    m_properties;

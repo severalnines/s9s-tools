@@ -167,3 +167,56 @@ S9sCluster::vendorAndVersion() const
     return retval;
 }
 
+S9sString
+S9sCluster::statusText() const
+{
+    if (m_properties.contains("status_text"))
+        return m_properties.at("status_text").toString();
+
+    return 0;
+}
+
+int
+S9sCluster::alarmsCritical() const
+{
+    S9sVariantMap statMap;
+
+    if (m_properties.contains("alarm_statistics"))
+        statMap = m_properties.at("alarm_statistics").toVariantMap();
+
+    return statMap["critical"].toInt();
+}
+
+int
+S9sCluster::alarmsWarning() const
+{
+    S9sVariantMap statMap;
+
+    if (m_properties.contains("alarm_statistics"))
+        statMap = m_properties.at("alarm_statistics").toVariantMap();
+
+    return statMap["warning"].toInt();
+}
+
+int
+S9sCluster::jobsAborted() const
+{
+    S9sVariantMap stateMap = S9sCluster::jobStatistics() ;
+
+    return stateMap["ABORTED"].toInt();
+}
+
+
+/**
+ * Private function to get the job statistics map.
+ */
+S9sVariantMap 
+S9sCluster::jobStatistics() const
+{
+    S9sVariantMap jobsMap;
+
+    if (m_properties.contains("job_statistics"))
+        jobsMap = m_properties.at("job_statistics").toVariantMap();
+
+    return jobsMap["by_state"].toVariantMap();
+}

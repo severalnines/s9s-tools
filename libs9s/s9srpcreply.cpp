@@ -1108,7 +1108,28 @@ S9sRpcReply::printClusterStat(
     
     printf("%s  Vendor:%s ", greyBegin, greyEnd);
     printf("%s", STR(cluster.vendorAndVersion()));
+    printf("\n");
+    
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s", STR(cluster.statusText()));
+    printf("\n");
 
+    //
+    // Counting the alarms.
+    //
+    printf("%s  Alarms:%s ", greyBegin, greyEnd);
+    printf("%d ", cluster.alarmsCritical());
+    printf("%scrit%s ", greyBegin, greyEnd);
+    printf("%d ", cluster.alarmsWarning());
+    printf("%swarn%s ", greyBegin, greyEnd);
+    printf("\n");
+
+    //
+    // Counting the jobs.
+    //
+    printf("%s    Jobs:%s ", greyBegin, greyEnd);
+    printf("%d ", cluster.jobsAborted());
+    printf("%sabrt%s ", greyBegin, greyEnd);
     printf("\n");
     
     //
