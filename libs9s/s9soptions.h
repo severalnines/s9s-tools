@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -216,6 +216,8 @@ class S9sOptions
         bool checkOptionsBackup();
 
         bool readOptionsCluster(int argc, char *argv[]);
+        bool checkOptionsCluster();
+
         bool readOptionsJob(int argc, char *argv[]);
         bool readOptionsProcess(int argc, char  *argv[]);
         bool readOptionsUser(int argc, char *argv[]);

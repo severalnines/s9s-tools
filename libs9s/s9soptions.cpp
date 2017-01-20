@@ -1687,6 +1687,10 @@ S9sOptions::readOptions(
 
         case Cluster:
             retval = readOptionsCluster(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsCluster();
+
             break;
         
         case Job:
@@ -2012,7 +2016,8 @@ S9sOptions::printHelpCluster()
 
     printf(
 "Options for the \"cluster\" command:\n"
-"  --list                     List the users.\n"
+"  --list                     List the clusters.\n"
+"  --stat                     Print the details of a cluster.\n"
 "  --create                   Create and install a new cluster.\n"
 "  --ping                     Check the connection to the controller.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
@@ -2530,6 +2535,76 @@ S9sOptions::checkOptionsBackup()
         m_errorMessage = 
             "The --list, --create and --restore options are mutually"
             " exclusive.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * Using the --databases is missleading when not creating new backup: the
+     * user might think it is possible to restore one database of an archive.
+     */
+    if (!databases().empty())
+    {
+        if (isListRequested() && isRestoreRequested())
+        {
+            m_errorMessage = 
+                "The --databases option can only be used while creating "
+                "backups.";
+        
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::checkOptionsCluster()
+{
+    int countOptions = 0;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isStatRequested())
+        countOptions++;
+
+    if (isCreateRequested())
+        countOptions++;
+
+    if (isPingRequested())
+        countOptions++;
+
+    if (isRollingRestartRequested())
+        countOptions++;
+
+    if (isAddNodeRequested())
+        countOptions++;
+
+    if (isRemoveNodeRequested())
+        countOptions++;
+
+    if (isDropRequested())
+        countOptions++;
+
+    if (isStopRequested())
+        countOptions++;
+
+    if (isStartRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The following options are mutually exclusive: "
+            "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
+            " --remove-node, --drop, --stop, --start"
+            ".";
 
         m_exitStatus = BadOptions;
         return false;
