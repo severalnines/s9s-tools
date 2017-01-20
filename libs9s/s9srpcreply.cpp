@@ -1344,6 +1344,7 @@ S9sRpcReply::printNodeListStat()
 void 
 S9sRpcReply::printClusterListStat()
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -1351,7 +1352,10 @@ S9sRpcReply::printClusterListStat()
         S9sVariantMap  clusterMap  = theList[idx].toVariantMap();
         S9sCluster     cluster     = clusterMap;
         S9sVariantList hosts       = clusterMap["hosts"].toVariantList();
- 
+     
+        if (!options->isStringMatchExtraArguments(cluster.name()))
+            continue;
+
         printClusterStat(cluster);
     }
 }
