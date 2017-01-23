@@ -1600,9 +1600,13 @@ S9sRpcClient::createAccount()
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
+    S9sVariantMap  account;
     bool           retval;
 
-    request["operation"] = "createAccount";
+    account["class_name"] = "CmonAccount";
+    
+    request["operation"]  = "createAccount";
+    request["account"]    = account;
 
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
