@@ -130,6 +130,9 @@ S9sBusinessLogic::execute()
         } else if (options->isDropRequested())
         {
             executeDropCluster(client);
+        } else if (options->isCreateAccountRequested())
+        {
+            executeCreateAccount(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -721,6 +724,44 @@ S9sBusinessLogic::executeRestoreBackup(
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
+}
+
+void
+S9sBusinessLogic::executeCreateAccount(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.createAccount();
+    reply   = client.reply();
+    if (success)
+    {
+        if (options->isJsonRequested())
+        {
+            printf("%s\n", STR(reply.toString()));
+        } else {
+            if (reply.isOk())
+            {
+                if (!options->isBatchRequested()) 
+                {
+                    printf("Created.\n");
+                }
+            } else {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+            }
+        }
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+
 }
 
 void

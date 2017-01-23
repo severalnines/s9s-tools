@@ -86,6 +86,11 @@ class S9sRpcClient
         bool deleteBackupRecord(const ulonglong backupId);
 
         /*
+         * Account handling.
+         */
+        bool createAccount();
+
+        /*
          * Requests related to the cmon users.
          */
         bool getUsers();

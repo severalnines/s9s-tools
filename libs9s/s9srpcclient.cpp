@@ -1594,6 +1594,23 @@ S9sRpcClient::deleteBackupRecord(
     return retval;
 }
 
+bool
+S9sRpcClient::createAccount()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "createAccount";
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 
 /**
