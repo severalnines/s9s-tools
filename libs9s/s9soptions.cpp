@@ -103,6 +103,7 @@ enum S9sOptionType
     OptionCreateAccount,
     OptionUserName,
     OptionPassword,
+    OptionWithDatabase
 };
 
 /**
@@ -916,6 +917,21 @@ S9sOptions::optionPassword() const
 
     return retval;
 }
+
+/**
+ * \returns true if the --with-database command line option was provided.
+ */
+bool
+S9sOptions::withDatabase() const
+{
+    bool retval = false;
+
+    if (m_options.contains("with_database"))
+        retval = m_options.at("with_database").toBoolean();
+
+    return retval;
+}
+
 
 S9sString
 S9sOptions::backupDir() const
@@ -2083,6 +2099,9 @@ S9sOptions::printHelpCluster()
 "  --cluster-type=TYPE        The type of the cluster to install.\n"
 "  --db-adnim=USERNAME        The database admin user name.\n"
 "  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
+"  --username=USERNAME        User name for the cluster.\n"
+"  --password=PASSWORD        User password for the cluster.\n"
+"  --with-database            Create a database for the user too.\n"
 "\n");
 }
 
@@ -3469,6 +3488,7 @@ S9sOptions::readOptionsCluster(
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "username",         required_argument, 0, OptionUserName        },
         { "password",         required_argument, 0, OptionPassword        },
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
     
         { 0, 0, 0, 0 }
     };
@@ -3679,7 +3699,12 @@ S9sOptions::readOptionsCluster(
                 // --password=PASSWORD
                 m_options["password"]  = optarg;
                 break;
-            
+           
+            case OptionWithDatabase:
+                // --with-database
+                m_options["with_database"] = true;
+                break;
+
             case '?':
                 // 
                 return false;

@@ -117,6 +117,7 @@ class S9sOptions
 
         S9sString optionUserName() const;
         S9sString optionPassword() const;
+        bool withDatabase() const;
         S9sString backupDir() const;
         S9sString backupMethod() const;
         bool noCompression() const;

@@ -204,6 +204,30 @@ function testCreateCluster()
 }
 
 #
+# Creating a new account on the cluster.
+#
+function testCreateAccount()
+{
+    pip-say "Testing account creation."
+
+    #
+    # This command will create a new account on the cluster.
+    #
+    $S9S cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --username=john_doe \
+        --password=passwd \
+        --with-database
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating an account."
+    fi
+}
+
+#
 # This test will add one new node to the cluster.
 #
 function testAddNode()
@@ -529,6 +553,8 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateAccount
+
     # Not implemented in CmonAbstractPostgreSqlCluster.
     # runFunctionalTest testAddNode
     #runFunctionalTest testAddProxySql

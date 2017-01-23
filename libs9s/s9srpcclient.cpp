@@ -1594,6 +1594,10 @@ S9sRpcClient::deleteBackupRecord(
     return retval;
 }
 
+/**
+ * A function to add a new account to the cluster. With this account the user
+ * can work on the production database.
+ */
 bool
 S9sRpcClient::createAccount()
 {
@@ -1606,6 +1610,9 @@ S9sRpcClient::createAccount()
     account["class_name"] = "CmonAccount";
     account["user_name"]  = options->optionUserName();
     account["password"]   = options->optionPassword();
+    if (options->withDatabase())
+        account["own_database"] = options->optionUserName();
+
     request["operation"]  = "createAccount";
     request["account"]    = account;
 
