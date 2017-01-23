@@ -1604,7 +1604,8 @@ S9sRpcClient::createAccount()
     bool           retval;
 
     account["class_name"] = "CmonAccount";
-    
+    account["user_name"]  = options->optionUserName();
+    account["password"]   = options->optionPassword();
     request["operation"]  = "createAccount";
     request["account"]    = account;
 
