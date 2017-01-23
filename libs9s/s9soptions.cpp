@@ -2099,7 +2099,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-type=TYPE        The type of the cluster to install.\n"
 "  --db-adnim=USERNAME        The database admin user name.\n"
 "  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
-"  --username=USERNAME        User name for the cluster.\n"
+"  --username=USERNAME        User name to be used or created on the cluster.\n"
 "  --password=PASSWORD        User password for the cluster.\n"
 "  --with-database            Create a database for the user too.\n"
 "\n");

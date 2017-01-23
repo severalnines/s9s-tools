@@ -60,6 +60,11 @@ Creates a new job to start the cluster.
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
 
+.TP
+.B \-\-create-account
+Create a new account to be used on the cluster to access the database(s).
+
+
 .SS Generic Options
 
 .TP
@@ -206,6 +211,19 @@ The password of the datanase administrator. Passing the password through the
 command line is a security risk, so I will add other ways to store the password
 soon.
 
+.TP
+.BI \-\^\-username= USERNAME
+The user name of the cluster to be used, created or modified.
+
+.TP
+.BI \-\^\-password= PASSWORD
+The password of the account identified by the username provided using the 
+--username command line option.
+
+.TP
+.BI \-\^\-with-database
+Create a database when creating a new user account on the cluster.
+
 .\"
 .\"
 .\"
@@ -250,5 +268,12 @@ Another example simply lists the clusters managed by the controller:
 Schedule a rolling restart of the cluster 20 minutes from now:
 
 .nf
-# \fBs9s cluster --rolling-restart --cluster-id=1 --schedule="$(date -d 'now + 20 min')"
+# \fBs9s cluster --rolling-restart --cluster-id=1 --schedule="$(date -d 'now + 20 min')"\fR
+.fi
+
+Create a database account on the cluster and also create a new database to be
+used by the new user. Grant all access on the new database for the new user:
+
+.nf
+# \fBs9s cluster --create-account --cluster-id=1 --username=john --password=passwd --with-database\fR
 .fi

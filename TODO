@@ -11,3 +11,11 @@ o Send backupmethod as in CmonJob::backupMethod().
 
 o s9s node --stat
 o s9s cluster —add-node —nodes=proxysql://10.10.10.23?db_username=bob&db_password=b0b&db_database=‘*.*'&db_privs=‘SELECT,INSERT,UPDATE'
+
+ok, so to summarise it will be possible to do this:
+
+s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd —database=“*.*”  —privs=“REPLICATION CLIENT"
+
+but also
+
+s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd —compact-priv-format=“*.*: REPLICATION CLIENT”
