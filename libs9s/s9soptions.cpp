@@ -100,6 +100,7 @@ enum S9sOptionType
     OptionParallellism,
     OptionFullPath,
     OptionStat,
+    OptionCreateAccount,
 };
 
 /**
@@ -1323,6 +1324,21 @@ S9sOptions::isStartRequested() const
 }
 
 /**
+ * \returns true if the --create-account command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCreateAccountRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("create_account"))
+        retval = m_options.at("create_account").toBoolean();
+
+    return retval;
+}
+
+/**
  * \returns true if the --long command line option was provided.
  */
 bool
@@ -2026,6 +2042,7 @@ S9sOptions::printHelpCluster()
 "  --drop                     Drop cluster from the controller.\n"
 "  --stop                     Stop the cluster.\n"
 "  --start                    Start the cluster.\n"
+"  --create-account           Create a user account on the cluster.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
@@ -3375,49 +3392,50 @@ S9sOptions::readOptionsCluster(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp       },
-        { "verbose",          no_argument,       0, 'v'              },
-        { "version",          no_argument,       0, 'V'              },
-        { "controller",       required_argument, 0, 'c'              },
-        { "controller-port",  required_argument, 0, 'P'              },
-        { "rpc-tls",          no_argument,       0,  OptionRpcTls    },
-        { "rpc-token",        required_argument, 0, 't'              },
-        { "long",             no_argument,       0, 'l'              },
-        { "print-json",       no_argument,       0, OptionPrintJson  },
-        { "color",            optional_argument, 0, OptionColor      },
-        { "config-file",      required_argument, 0, OptionConfigFile },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
 
         // Main Option
-        { "ping",             no_argument,       0, OptionPing       },
-        { "list",             no_argument,       0, 'L'              },
-        { "stat",             no_argument,       0, OptionStat       },
-        { "create",           no_argument,       0, OptionCreate     },
-        { "rolling-restart",  no_argument,       0, 12               },
-        { "add-node",         no_argument,       0, OptionAddNode    },
-        { "remove-node",      no_argument,       0, OptionRemoveNode },
-        { "drop",             no_argument,       0, OptionDrop       },
-        { "stop",             no_argument,       0, OptionStop       },
-        { "start",            no_argument,       0, OptionStart      },
+        { "ping",             no_argument,       0, OptionPing            },
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "rolling-restart",  no_argument,       0, 12                    },
+        { "add-node",         no_argument,       0, OptionAddNode         },
+        { "remove-node",      no_argument,       0, OptionRemoveNode      },
+        { "drop",             no_argument,       0, OptionDrop            },
+        { "stop",             no_argument,       0, OptionStop            },
+        { "start",            no_argument,       0, OptionStart           },
+        { "create-account",   no_argument,       0, OptionCreateAccount   },
 
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait       },
-        { "log",              no_argument,       0, 'G'              },
-        { "batch",            no_argument,       0, OptionBatch      },
-        { "no-header",        no_argument,       0, OptionNoHeader   },
-        { "schedule",         required_argument, 0, OptionSchedule   },
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "schedule",         required_argument, 0, OptionSchedule        },
 
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
-        { "cluster-id",       required_argument, 0, 'i' },
-        { "cluster-name",     required_argument, 0, 'n' },
-        { "nodes",            required_argument, 0,  OptionNodes },
-        { "vendor",           required_argument, 0, OptionVendor  },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
+        { "nodes",            required_argument, 0,  OptionNodes          },
+        { "vendor",           required_argument, 0, OptionVendor          },
         { "provider-version", required_argument, 0, OptionProviderVersion },
-        { "os-user",          required_argument, 0, OptionOsUser  },
-        { "cluster-type",     required_argument, 0, OptionClusterType },
-        { "db-admin",         required_argument, 0, OptionDbAdmin },
+        { "os-user",          required_argument, 0, OptionOsUser          },
+        { "cluster-type",     required_argument, 0, OptionClusterType     },
+        { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
 
         { 0, 0, 0, 0 }
@@ -3510,6 +3528,11 @@ S9sOptions::readOptionsCluster(
             case OptionStart:
                 // --start
                 m_options["start"] = true;
+                break;
+            
+            case OptionCreateAccount:
+                // --create-account
+                m_options["create_account"] = true;
                 break;
 
             case OptionConfigFile:

@@ -160,6 +160,7 @@ class S9sOptions
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;
         bool isStartRequested() const;
+        bool isCreateAccountRequested() const; 
         bool isDropRequested() const;
 
         bool isLongRequested() const;
