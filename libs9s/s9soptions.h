@@ -115,6 +115,8 @@ class S9sOptions
 
         S9sString privateKeyPath() const;
 
+        S9sString optionUserName() const;
+        S9sString optionPassword() const;
         S9sString backupDir() const;
         S9sString backupMethod() const;
         bool noCompression() const;

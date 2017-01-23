@@ -101,6 +101,8 @@ enum S9sOptionType
     OptionFullPath,
     OptionStat,
     OptionCreateAccount,
+    OptionUserName,
+    OptionPassword,
 };
 
 /**
@@ -883,6 +885,34 @@ S9sOptions::userName(
 
     if (retval.empty() && tryLocalUserToo)
         retval = getenv("USER");
+
+    return retval;
+}
+
+/**
+ * \returns the command line option argument for the --username option.
+ */
+S9sString
+S9sOptions::optionUserName() const
+{
+    S9sString retval;
+
+    if (m_options.contains("username"))
+        retval = m_options.at("username").toString();
+
+    return retval;
+}
+
+/**
+ * \returns the command line option argument for the --password option.
+ */
+S9sString
+S9sOptions::optionPassword() const
+{
+    S9sString retval;
+
+    if (m_options.contains("password"))
+        retval = m_options.at("password").toString();
 
     return retval;
 }
@@ -3437,7 +3467,9 @@ S9sOptions::readOptionsCluster(
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
-
+        { "username",         required_argument, 0, OptionUserName        },
+        { "password",         required_argument, 0, OptionPassword        },
+    
         { 0, 0, 0, 0 }
     };
 
@@ -3636,6 +3668,16 @@ S9sOptions::readOptionsCluster(
             case OptionDbAdminPassword:
                 // --db-admin-passwd=PASSWD
                 m_options["db_admin_password"]  = optarg;
+                break;
+            
+            case OptionUserName:
+                // --username=USERNAME
+                m_options["username"]  = optarg;
+                break;
+            
+            case OptionPassword:
+                // --password=PASSWORD
+                m_options["password"]  = optarg;
                 break;
             
             case '?':
