@@ -242,6 +242,7 @@ S9sRpcReply::progressLine(
     double        percent;
     bool          hasProgress;
     S9sString     tmp;
+    S9sString     statusText;
 
     retval.clear();
 
@@ -306,7 +307,10 @@ S9sRpcReply::progressLine(
     if (syntaxHighlight)
         retval += TERM_BOLD;
 
-    retval += job["status_text"].toString();
+    statusText = job["status_text"].toString();
+    html2ansi(statusText);
+    
+    retval += statusText;
     retval += "      ";
     
     if (syntaxHighlight)
@@ -3158,20 +3162,6 @@ void
 S9sRpcReply::html2ansi(
         S9sString &s)
 {
-#if 0
-    //
-    // This is using a palette. Right now it seems to be a bit overcomplicated
-    // to use a palette like this.
-    //
-    S9sRegExp regexp1("<em style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
-    S9sRegExp regexp2("<strong style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
-
-    s.replace(regexp1, "\033]4;1;rgb:$1/$2/$3\033\\\033[31m");
-    s.replace(regexp2, "\033]4;1;rgb:$1/$2/$3\033\\\033[31m");
-    
-    s.replace("</em>",     "\e[m");
-    s.replace("</strong>", "\e[m");
-#else
     s.replace("<em style='color: #c66211;'>",     XTERM_COLOR_3);
     s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
     s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
@@ -3201,7 +3191,6 @@ S9sRpcReply::html2ansi(
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");
-#endif
 }
 
 S9sString 
