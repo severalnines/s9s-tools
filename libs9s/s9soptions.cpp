@@ -103,7 +103,9 @@ enum S9sOptionType
     OptionCreateAccount,
     OptionUserName,
     OptionPassword,
-    OptionWithDatabase
+    OptionWithDatabase,
+    OptionObjects,
+    OptionPrivileges,
 };
 
 /**
@@ -3489,6 +3491,9 @@ S9sOptions::readOptionsCluster(
         { "username",         required_argument, 0, OptionUserName        },
         { "password",         required_argument, 0, OptionPassword        },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
+        
+        { "objects",          required_argument, 0, OptionObjects         },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
     
         { 0, 0, 0, 0 }
     };
@@ -3703,6 +3708,16 @@ S9sOptions::readOptionsCluster(
             case OptionWithDatabase:
                 // --with-database
                 m_options["with_database"] = true;
+                break;
+
+            case OptionObjects:
+                // --objects=OBJECTS
+                m_options["objects"] = optarg;
+                break;
+
+            case OptionPrivileges:
+                // --privileges=PRIVILEGES
+                m_options["privileges"] = optarg;
                 break;
 
             case '?':
