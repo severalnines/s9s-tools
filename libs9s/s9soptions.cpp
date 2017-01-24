@@ -106,6 +106,7 @@ enum S9sOptionType
     OptionWithDatabase,
     OptionObjects,
     OptionPrivileges,
+    OptionGrants,
 };
 
 /**
@@ -919,6 +920,21 @@ S9sOptions::optionPassword() const
 
     return retval;
 }
+
+/**
+ * \returns the command line option argument for the --grants option.
+ */
+S9sString
+S9sOptions::grants() const
+{
+    S9sString retval;
+
+    if (m_options.contains("grants"))
+        retval = m_options.at("grants").toString();
+
+    return retval;
+}
+
 
 /**
  * \returns true if the --with-database command line option was provided.
@@ -3494,6 +3510,7 @@ S9sOptions::readOptionsCluster(
         
         { "objects",          required_argument, 0, OptionObjects         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "grants",           required_argument, 0, OptionGrants          },
     
         { 0, 0, 0, 0 }
     };
@@ -3718,6 +3735,11 @@ S9sOptions::readOptionsCluster(
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;
+                break;
+            
+            case OptionGrants:
+                // --grants=GRANTS
+                m_options["grants"] = optarg;
                 break;
 
             case '?':

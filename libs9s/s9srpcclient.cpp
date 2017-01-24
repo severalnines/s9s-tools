@@ -1610,8 +1610,12 @@ S9sRpcClient::createAccount()
     account["class_name"] = "CmonAccount";
     account["user_name"]  = options->optionUserName();
     account["password"]   = options->optionPassword();
+
     if (options->withDatabase())
         account["own_database"] = options->optionUserName();
+
+    if (!options->grants().empty())
+        account["grants"] = options->grants();
 
     request["operation"]  = "createAccount";
     request["account"]    = account;
