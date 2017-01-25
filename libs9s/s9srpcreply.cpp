@@ -936,7 +936,7 @@ S9sRpcReply::printClusterListLong()
     }
    
     if (!options->isBatchRequested())
-        printf("Total: %u\n", theList.size());
+        printf("Total: %lu\n", (unsigned long int) theList.size());
 }
 
 /**

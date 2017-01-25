@@ -37,6 +37,10 @@ const S9sVariantMap  S9sVariant::sm_emptyMap;
 const S9sVariantList S9sVariant::sm_emptyList = S9sVariantList();
 static const S9sNode sm_emptyNode;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#pragma GCC visibility push(hidden)
+#endif
 
 S9sVariant::S9sVariant(
         const S9sVariant &orig)
