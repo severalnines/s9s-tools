@@ -1,5 +1,5 @@
-s9s-tools (0.1.20170125nightly) UNRELEASED; urgency=low
+s9s-tools (0.1.20170125-nightly1) UNRELEASED; urgency=low
 
   * Initial packaging...
 
- -- David Kedves <kedazo@severalnines.com>  Wed, 25 Jan 2017 12:28:45 +0100
+ -- David Kedves <kedazo@severalnines.com>  Wed, 25 Jan 2017 12:34:42 +0100
