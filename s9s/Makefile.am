@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016 severalnines.com
+# Copyright (C) 2016-2017 severalnines.com
 #
 
 AM_CPPFLAGS = -Wall -Werror -fno-strict-aliasing
@@ -9,7 +9,7 @@ AM_CPPFLAGS += -I../libs9s/
 AM_CPPFLAGS += -I../libs9s/include/
 AM_CPPFLAGS += -pipe
 
-LDADD = -L../libs9s -ls9s
+LDADD = -L../libs9s -ls9s -lrt
 
 #add '../libs9s' to the lib search path
 AM_LDFLAGS = -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,./libs9s
