@@ -1623,6 +1623,9 @@ S9sRpcClient::createAccount()
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
 
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
     retval = executeRequest(uri, request);
 
     return retval;
