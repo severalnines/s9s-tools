@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+
+comma :=,
+empty :=
+space := $(empty) $(empty)
+
+PARALLEL_MAKEFLAGS = -j3
+
+TMP_BUILD_OPTS = $(subst $(comma),$(space),$(DEB_BUILD_OPTIONS))
+ifneq (,$(filter parallel=%,$(TMP_BUILD_OPTS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(TMP_BUILD_OPTS)))
+    PARALLEL_MAKEFLAGS = -j$(NUMJOBS)
+endif
+
+MAKEOPTS = $(PARALLEL_MAKEFLAGS)
+
+# Define PUBLIC_RELEASE if changelog is not contains ~ in version number
+CXXFLAGS += $(shell dpkg-parsechangelog | sed -n 's/^Version: //p' | \
+			  grep '~' > /dev/null \
+			  && echo '-O0 -g -ggdb' || \
+			  echo '-O2 -g -DPUBLIC_RELEASE -DNDEBUG')
+
+clean:
+	dh_testroot
+	dh_testdir
+	-@ $(MAKE) $(MAKEOPTS) distclean
+	dh_clean
+
+build:
+	dh_testdir
+	dh_prep
+	./autogen.sh --prefix=/usr
+	$(MAKE) $(MAKEOPTS)
+
+binary:
+	dh_testroot
+	dh_testdir
+	dh_installdirs
+	$(MAKE) $(PARALLEL_MAKEFLAGS) DESTDIR=$(PWD)/debian/tmp install
+	dh_install --sourcedir=debian/tmp
+	dh_makeshlibs
+	dh_fixperms
+	dh_compress
+	dh_shlibdeps
+	#dh_strip -plibs9s0 --dbg-package=libs9s0-dbg
+	#dh_strip -ps9s-tools --dbg-package=s9s-tools-dbg
+	dh_installdeb
+	dh_installchangelogs
+	dh_md5sums
+	dh_gencontrol
+	dh_builddeb
+
+binary-arch: binary
+binary-indep: binary
+
+.PHONY: clean build binary binary-arch binary-indep
+

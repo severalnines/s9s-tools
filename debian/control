@@ -1,0 +1,35 @@
+Source: s9s-tools
+Section: devel
+Priority: optional
+Maintainer: David Kedves <kedazo@severalnines.com>
+Build-Depends: debhelper (>= 5), automake, bison, flex, gcc, libssl-dev
+Standards-Version: 3.9.1
+
+Package: libs9s0
+Architecture: any
+Section: net
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A (shared) runtime library for Severalnines Tools
+
+# Package: libs9s-dev
+# Priority: optional
+# Section: misc
+# Depends: libs9s0 (= ${binary:Version})
+# Architecture: any
+# Description: Development package and static library for libs9s0.
+
+Package: s9s-tools
+Priority: optional
+Section: net
+Depends: libs9s-tools0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Architecture: any
+Description: Severalnines ClusterControl CLI Tools
+
+# Package: s9s-tools-dbg
+# Priority: optional
+# Section: misc
+# Depends: s9s-tools (= ${binary:Version})
+# Architecture: any
+# Description: Debug symbols for s9s-tools
+

@@ -1,0 +1,9 @@
+usr/bin/s9s
+usr/share/man/man1/s9s-maintenance.1
+usr/share/man/man1/s9s-cluster.1
+usr/share/man/man1/s9s-node.1
+usr/share/man/man1/s9s.1
+usr/share/man/man1/s9s-job.1
+usr/share/man/man1/s9s-backup.1
+usr/share/man/man1/s9s-process.1
+usr/share/man/man1/s9s-user.1
