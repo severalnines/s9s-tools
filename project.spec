@@ -10,7 +10,6 @@ URL: https://github.com/severalnines/s9s-tools/
 Source0: https://github.com/severalnines/s9s-tools/archive/master.zip
 
 BuildRequires: bison
-BuildRequires: bison-devel
 BuildRequires: automake
 BuildRequires: gcc-c++
 BuildRequires: openssl-devel
