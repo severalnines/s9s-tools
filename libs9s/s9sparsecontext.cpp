@@ -250,26 +250,27 @@ S9sParseContext::yyinput(
         char *buffer, 
         int   maxsize)
 {
-    if (m_states.empty())
+    if (m_states.empty()) {
         return 0;
+    }
 
-	const char *data = STR(m_states.top().m_inputString);
-	int         dataLength = m_states.top().m_inputString.length();
+    const char *data = STR(m_states.top().m_inputString);
+    int         dataLength = m_states.top().m_inputString.length();
 
-	int numBytes = maxsize;
-	if (numBytes > dataLength - m_states.top().m_parserCursor)
-		numBytes = dataLength - m_states.top().m_parserCursor;
+    int numBytes = maxsize;
+    if (numBytes > dataLength - m_states.top().m_parserCursor)
+        numBytes = dataLength - m_states.top().m_parserCursor;
 
-	if (numBytes < 0)
-		numBytes = 0;
+    if (numBytes < 0)
+        numBytes = 0;
 
-	if (numBytes > 0)
-	{
-		memcpy(buffer, data + m_states.top().m_parserCursor, numBytes);
-		m_states.top().m_parserCursor += numBytes;
-	}
+    if (numBytes > 0)
+    {
+        memcpy(buffer, data + m_states.top().m_parserCursor, numBytes);
+        m_states.top().m_parserCursor += numBytes;
+    }
 
-	return numBytes;
+    return numBytes;
 }
 
 /**
