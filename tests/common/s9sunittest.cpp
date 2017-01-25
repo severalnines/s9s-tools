@@ -360,10 +360,11 @@ S9sUnitTest::message(
         const char *formatString,
         ...)
 {
-    if (m_runningTestName.empty())
+    if (m_runningTestName.empty()) {
         return;
+    }
 
-	printf("\r  %-24s: RUNNING ",
+    printf("\r  %-24s: RUNNING ",
             STR(m_runningTestName));
 
     S9sString  theString;
