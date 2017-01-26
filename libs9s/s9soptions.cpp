@@ -101,12 +101,12 @@ enum S9sOptionType
     OptionFullPath,
     OptionStat,
     OptionCreateAccount,
+    OptionCreateDatabase,
     OptionUserName,
     OptionPassword,
     OptionWithDatabase,
     OptionObjects,
     OptionPrivileges,
-    OptionGrants,
 };
 
 /**
@@ -922,15 +922,15 @@ S9sOptions::optionPassword() const
 }
 
 /**
- * \returns the command line option argument for the --grants option.
+ * \returns the command line option argument for the --privileges option.
  */
 S9sString
-S9sOptions::grants() const
+S9sOptions::privileges() const
 {
     S9sString retval;
 
-    if (m_options.contains("grants"))
-        retval = m_options.at("grants").toString();
+    if (m_options.contains("privileges"))
+        retval = m_options.at("privileges").toString();
 
     return retval;
 }
@@ -1398,6 +1398,21 @@ S9sOptions::isCreateAccountRequested() const
 
     if (m_options.contains("create_account"))
         retval = m_options.at("create_account").toBoolean();
+
+    return retval;
+}
+
+/**
+ * \returns true if the --create-database command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCreateDatabaseRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("create_database"))
+        retval = m_options.at("create_database").toBoolean();
 
     return retval;
 }
@@ -2107,6 +2122,7 @@ S9sOptions::printHelpCluster()
 "  --stop                     Stop the cluster.\n"
 "  --start                    Start the cluster.\n"
 "  --create-account           Create a user account on the cluster.\n"
+"  --create-database          Create a database on the cluster.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
@@ -3483,6 +3499,7 @@ S9sOptions::readOptionsCluster(
         { "stop",             no_argument,       0, OptionStop            },
         { "start",            no_argument,       0, OptionStart           },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
+        { "create-database",  no_argument,       0, OptionCreateDatabase  },
 
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -3510,7 +3527,6 @@ S9sOptions::readOptionsCluster(
         
         { "objects",          required_argument, 0, OptionObjects         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
-        { "grants",           required_argument, 0, OptionGrants          },
     
         { 0, 0, 0, 0 }
     };
@@ -3607,6 +3623,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateAccount:
                 // --create-account
                 m_options["create_account"] = true;
+                break;
+            
+            case OptionCreateDatabase:
+                // --create-database
+                m_options["create_database"] = true;
                 break;
 
             case OptionConfigFile:
@@ -3731,15 +3752,10 @@ S9sOptions::readOptionsCluster(
                 // --objects=OBJECTS
                 m_options["objects"] = optarg;
                 break;
-
+            
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;
-                break;
-            
-            case OptionGrants:
-                // --grants=GRANTS
-                m_options["grants"] = optarg;
                 break;
 
             case '?':

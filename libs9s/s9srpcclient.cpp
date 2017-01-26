@@ -1614,8 +1614,8 @@ S9sRpcClient::createAccount()
     if (options->withDatabase())
         account["own_database"] = options->optionUserName();
 
-    if (!options->grants().empty())
-        account["grants"] = options->grants();
+    if (!options->privileges().empty())
+        account["grants"] = options->privileges();
 
     request["operation"]  = "createAccount";
     request["account"]    = account;
@@ -1631,6 +1631,31 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
+bool
+S9sRpcClient::createDatabase()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    S9sVariantMap  database;
+    bool           retval;
+
+    database["class_name"]    = "CmonDataBase";
+    database["database_name"] = options->optionUserName();
+
+    request["operation"]      = "createDatabase";
+    request["database"]       = database;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 /**
  * The method that gets the list of users from the server.

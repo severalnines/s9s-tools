@@ -118,7 +118,7 @@ class S9sOptions
         S9sString optionUserName() const;
         S9sString optionPassword() const;
         bool withDatabase() const;
-        S9sString grants() const;
+        S9sString privileges() const;
         
 
         S9sString backupDir() const;
@@ -167,6 +167,7 @@ class S9sOptions
         bool isStopRequested() const;
         bool isStartRequested() const;
         bool isCreateAccountRequested() const; 
+        bool isCreateDatabaseRequested() const; 
         bool isDropRequested() const;
 
         bool isLongRequested() const;
