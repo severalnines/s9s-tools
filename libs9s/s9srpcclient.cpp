@@ -1641,7 +1641,7 @@ S9sRpcClient::createDatabase()
     bool           retval;
 
     database["class_name"]    = "CmonDataBase";
-    database["database_name"] = options->optionUserName();
+    database["database_name"] = options->dbName();
 
     request["operation"]      = "createDatabase";
     request["database"]       = database;

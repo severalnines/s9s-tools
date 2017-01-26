@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * S9sTools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -77,6 +77,7 @@ class S9sBusinessLogic
         void executeStartCluster(S9sRpcClient &client);
         void executeDropCluster(S9sRpcClient &client);
         void executeCreateAccount(S9sRpcClient &client);
+        void executeCreateDatabase(S9sRpcClient &client);
         void doExecuteCreateCluster(S9sRpcClient &client);
 
         void executeCreateBackup(S9sRpcClient &client);

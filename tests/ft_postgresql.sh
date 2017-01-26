@@ -206,6 +206,10 @@ function testCreateCluster()
 #
 # Creating a new account on the cluster.
 #
+# FIXME: These are not yet tested:
+# s9s cluster --create-account --cluster-id=1 --username=pip --password=passwd --with-database --privileges="john:ALL;pipas:INSERT"
+# s9s cluster --create-database --db-name="mine" --cluster-id=1
+#
 function testCreateAccount()
 {
     pip-say "Testing account creation."

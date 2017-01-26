@@ -118,6 +118,7 @@ class S9sOptions
         S9sString optionUserName() const;
         S9sString optionPassword() const;
         bool withDatabase() const;
+        S9sString dbName() const;
         S9sString privileges() const;
         
 

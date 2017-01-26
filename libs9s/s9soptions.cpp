@@ -45,7 +45,7 @@ S9sOptions *S9sOptions::sm_instance = 0;
 
 enum S9sOptionType
 {
-    OptionRpcTls     = 1,
+    OptionRpcTls     = 1000,
     OptionPrintJson,
     OptionColor,
     OptionConfigFile,
@@ -107,6 +107,7 @@ enum S9sOptionType
     OptionWithDatabase,
     OptionObjects,
     OptionPrivileges,
+    OptionDbName,
 };
 
 /**
@@ -950,6 +951,16 @@ S9sOptions::withDatabase() const
     return retval;
 }
 
+S9sString
+S9sOptions::dbName() const
+{
+    S9sString retval;
+
+    if (m_options.contains("db_name"))
+        retval = m_options.at("db_name").toString();
+
+    return retval;
+}
 
 S9sString
 S9sOptions::backupDir() const
@@ -2136,6 +2147,7 @@ S9sOptions::printHelpCluster()
 "  --username=USERNAME        User name to be used or created on the cluster.\n"
 "  --password=PASSWORD        User password for the cluster.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --db-name=NAME             The name of the database.\n"
 "\n");
 }
 
@@ -3524,7 +3536,7 @@ S9sOptions::readOptionsCluster(
         { "username",         required_argument, 0, OptionUserName        },
         { "password",         required_argument, 0, OptionPassword        },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
-        
+        { "db-name",          required_argument, 0, OptionDbName          },
         { "objects",          required_argument, 0, OptionObjects         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
     
@@ -3746,6 +3758,11 @@ S9sOptions::readOptionsCluster(
             case OptionWithDatabase:
                 // --with-database
                 m_options["with_database"] = true;
+                break;
+
+            case OptionDbName:
+                // --db-name=NAME
+                m_options["db_name"] = optarg;
                 break;
 
             case OptionObjects:
