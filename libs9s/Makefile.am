@@ -82,6 +82,7 @@ libs9s_a_SOURCES =            \
 	s9surl.cpp                \
 	s9snode.cpp               \
 	s9scluster.cpp            \
+	s9saccount.cpp            \
 	s9svariant.cpp            \
 	s9svariantmap.cpp         \
 	s9svariantlist.cpp        \
