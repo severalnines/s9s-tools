@@ -19,11 +19,11 @@
  */
 #include "s9sunittest.h"
 
-class UtS9sNode : public S9sUnitTest
+class UtS9sAccount : public S9sUnitTest
 {
     public:
-        UtS9sNode();
-        virtual ~UtS9sNode();
+        UtS9sAccount();
+        virtual ~UtS9sAccount();
         virtual bool runTest(const char *testName = 0);
     
     protected:
@@ -32,4 +32,5 @@ class UtS9sNode : public S9sUnitTest
         bool testAssign();
         bool testVariant01();
 };
+
 

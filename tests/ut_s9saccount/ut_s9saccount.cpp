@@ -17,19 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "s9sunittest.h"
+#include "ut_s9saccount.h"
 
-class UtS9sNode : public S9sUnitTest
+#include "S9sAccount"
+#include "S9sVariantMap"
+
+//#define DEBUG
+#define WARNING
+#include "s9sdebug.h"
+
+UtS9sAccount::UtS9sAccount()
 {
-    public:
-        UtS9sNode();
-        virtual ~UtS9sNode();
-        virtual bool runTest(const char *testName = 0);
-    
-    protected:
-        bool testCreate();
-        bool testSetProperties();
-        bool testAssign();
-        bool testVariant01();
-};
+}
+
+UtS9sAccount::~UtS9sAccount()
+{
+}
+
+bool
+UtS9sAccount::runTest(const char *testName)
+{
+    bool retval = true;
+
+    PERFORM_TEST(testCreate,          retval);
+
+    return retval;
+}
+
+/**
+ */
+bool
+UtS9sAccount::testCreate()
+{
+    return true;
+}
+
+S9S_UNIT_TEST_MAIN(UtS9sAccount)
 
