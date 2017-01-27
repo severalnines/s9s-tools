@@ -36,7 +36,8 @@
 
 const S9sVariantMap  S9sVariant::sm_emptyMap;
 const S9sVariantList S9sVariant::sm_emptyList = S9sVariantList();
-static const S9sNode sm_emptyNode;
+static const S9sNode             sm_emptyNode;
+static const S9sAccount          sm_emptyAccount;
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wreturn-type"
@@ -310,6 +311,28 @@ S9sVariant::toNode() const
     return sm_emptyNode;
 }
 
+const S9sAccount &
+S9sVariant::toAccount() const
+{
+    switch (m_type)
+    {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+        case String:
+        case List:
+        case Map:
+        case Node:
+            return sm_emptyAccount;
+
+        case Account:
+            return *m_union.accountValue;
+    }
+            
+    return sm_emptyAccount;
+}
 
 /**
  * \returns the reference to the S9sVariantMap held in the S9sVariant.

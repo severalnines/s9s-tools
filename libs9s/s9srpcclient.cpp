@@ -22,6 +22,7 @@
 
 #include "S9sOptions"
 #include "S9sNode"
+#include "S9sAccount"
 #include "S9sRsaKey"
 #include "S9sDateTime"
 
@@ -1604,18 +1605,12 @@ S9sRpcClient::createAccount()
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
-    S9sVariantMap  account;
+    S9sAccount     account;
     bool           retval;
 
-    account["class_name"] = "CmonAccount";
-    account["user_name"]  = options->optionUserName();
-    account["password"]   = options->optionPassword();
-
-    if (options->withDatabase())
-        account["own_database"] = options->optionUserName();
-
-    if (!options->privileges().empty())
-        account["grants"] = options->privileges();
+    account = options->account();
+    account.setWithDatabase(options->withDatabase());
+    account.setGrants(options->privileges());
 
     request["operation"]  = "createAccount";
     request["account"]    = account;

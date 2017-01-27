@@ -135,6 +135,26 @@ S9sAccount::setHostAllow(
 }
 
 void
+S9sAccount::setWithDatabase(
+        bool value)
+{
+    if (value)
+        m_properties["own_database"] = m_properties["user_name"];
+    else
+        m_properties.erase("own_database");
+}
+
+void
+S9sAccount::setGrants(
+        const S9sString &value)
+{
+    if (value.empty())
+        m_properties.erase("grants");
+    else
+        m_properties["grants"] = value;
+}
+
+void
 S9sAccount::setError(
         const S9sString &value)
 {

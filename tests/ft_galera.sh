@@ -224,8 +224,7 @@ function testCreateAccount()
     $S9S cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --username=john_doe \
-        --password=passwd \
+        --account="john_doe:password@1.2.3.4" \
         --with-database
     
     exitCode=$?

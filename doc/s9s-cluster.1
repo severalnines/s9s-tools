@@ -212,13 +212,10 @@ command line is a security risk, so I will add other ways to store the password
 soon.
 
 .TP
-.BI \-\^\-username= USERNAME
-The user name of the cluster to be used, created or modified.
-
-.TP
-.BI \-\^\-password= PASSWORD
-The password of the account identified by the username provided using the 
---username command line option.
+.BI \-\^\-account= USERNAME[:PASSWORD][@HOSTNAME]
+The account to be used or created on the cluster. The command line option
+argument may contain a username, a password for the user and a hostname
+identifying the host from where the user may log in.
 
 .TP
 .BI \-\^\-with-database
@@ -277,5 +274,5 @@ Create a database account on the cluster and also create a new database to be
 used by the new user. Grant all access on the new database for the new user:
 
 .nf
-# \fBs9s cluster --create-account --cluster-id=1 --username=john --password=passwd --with-database\fR
+# \fBs9s cluster --create-account --cluster-id=1 --account=john:passwd@10.10.1.100 --with-database\fR
 .fi

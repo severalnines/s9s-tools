@@ -44,6 +44,10 @@ class S9sAccount
         S9sString hostAllow() const;
         void setHostAllow(const S9sString &value);
 
+        void setWithDatabase(bool value);
+
+        void setGrants(const S9sString &value);
+
         void setError(const S9sString &value);
         bool hasError() const;
         S9sString errorString() const;

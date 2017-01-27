@@ -115,8 +115,9 @@ class S9sOptions
 
         S9sString privateKeyPath() const;
 
-        S9sString optionUserName() const;
-        S9sString optionPassword() const;
+        S9sAccount account() const;
+        bool setAccount(const S9sString &value);
+
         bool withDatabase() const;
         S9sString dbName() const;
         S9sString privileges() const;

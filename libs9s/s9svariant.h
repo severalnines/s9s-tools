@@ -75,6 +75,7 @@ class S9sVariant
         S9sString toString() const;
         const S9sVariantMap &toVariantMap() const;
         const S9sNode &toNode() const;
+        const S9sAccount &toAccount() const;
         const S9sVariantList &toVariantList() const;
 
         void clear();

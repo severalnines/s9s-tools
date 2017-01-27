@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "S9sNode"
+#include "S9sAccount"
 #include "S9sFile"
 #include "S9sRegExp"
 #include "S9sFile"
@@ -102,8 +103,7 @@ enum S9sOptionType
     OptionStat,
     OptionCreateAccount,
     OptionCreateDatabase,
-    OptionUserName,
-    OptionPassword,
+    OptionAccount,
     OptionWithDatabase,
     OptionObjects,
     OptionPrivileges,
@@ -897,29 +897,25 @@ S9sOptions::userName(
 /**
  * \returns the command line option argument for the --username option.
  */
-S9sString
-S9sOptions::optionUserName() const
+S9sAccount
+S9sOptions::account() const
 {
-    S9sString retval;
+    S9sAccount retval;
 
-    if (m_options.contains("username"))
-        retval = m_options.at("username").toString();
+    if (m_options.contains("account"))
+        retval = m_options.at("account").toAccount();
 
     return retval;
 }
 
-/**
- * \returns the command line option argument for the --password option.
- */
-S9sString
-S9sOptions::optionPassword() const
+bool
+S9sOptions::setAccount(
+        const S9sString &value)
 {
-    S9sString retval;
+    S9sAccount account(value);
 
-    if (m_options.contains("password"))
-        retval = m_options.at("password").toString();
-
-    return retval;
+    m_options["account"] = account;
+    return !account.hasError();
 }
 
 /**
@@ -2145,7 +2141,6 @@ S9sOptions::printHelpCluster()
 "  --db-adnim=USERNAME        The database admin user name.\n"
 "  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
 "  --username=USERNAME        User name to be used or created on the cluster.\n"
-"  --password=PASSWORD        User password for the cluster.\n"
 "  --with-database            Create a database for the user too.\n"
 "  --db-name=NAME             The name of the database.\n"
 "\n");
@@ -3533,8 +3528,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
-        { "username",         required_argument, 0, OptionUserName        },
-        { "password",         required_argument, 0, OptionPassword        },
+        { "account",          required_argument, 0, OptionAccount,        },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "db-name",          required_argument, 0, OptionDbName          },
         { "objects",          required_argument, 0, OptionObjects         },
@@ -3745,16 +3739,13 @@ S9sOptions::readOptionsCluster(
                 m_options["db_admin_password"]  = optarg;
                 break;
             
-            case OptionUserName:
-                // --username=USERNAME
-                m_options["username"]  = optarg;
+            case OptionAccount:
+                // --account=USERNAME
+                if (!setAccount(optarg))
+                    return false;
+
                 break;
             
-            case OptionPassword:
-                // --password=PASSWORD
-                m_options["password"]  = optarg;
-                break;
-           
             case OptionWithDatabase:
                 // --with-database
                 m_options["with_database"] = true;
