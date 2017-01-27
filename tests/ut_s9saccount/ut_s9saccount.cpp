@@ -106,6 +106,14 @@ UtS9sAccount::testParse04()
     S9S_VERIFY(success);
     S9S_COMPARE(account.userName(),  "pipas");
     S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+    
+    success = account.parseStringRep("'pipas@'1.2.3.4'");
+    S9S_VERIFY(!success);
+    S9S_VERIFY(account.hasError());
+    
+    success = account.parseStringRep("pipas@'1.2.3.4");
+    S9S_VERIFY(!success);
+    S9S_VERIFY(account.hasError());
 
     return true;
 }

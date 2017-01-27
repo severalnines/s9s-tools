@@ -21,7 +21,7 @@
 
 #include <S9sVariantMap>
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -126,6 +126,31 @@ S9sAccount::setHostAllow(
     m_properties["host_allow"] = value;
 }
 
+void
+S9sAccount::setError(
+        const S9sString &value)
+{
+    m_properties["error_string"] = value;
+    m_properties["has_error"]    = true;
+}
+
+bool
+S9sAccount::hasError() const
+{
+    if (m_properties.contains("has_error"))
+        return m_properties.at("has_error").toBoolean();
+
+    return false;
+}
+
+S9sString
+S9sAccount::errorString() const
+{
+    if (m_properties.contains("error_string"))
+        return m_properties.at("error_string").toString();
+
+    return S9sString();
+}
 
 
 
@@ -163,6 +188,8 @@ S9sAccount::parseStringRep(
     S9sString  userName, hostName, password;
 
     S9S_DEBUG("*** input: %s", STR(input));
+    m_properties.clear();
+
     for (int n = 0;;)
     {
         c = input.c_str()[n];
@@ -229,7 +256,6 @@ S9sAccount::parseStringRep(
             case HostName:
                 if (c == '\0')
                 {
-                    S9S_DEBUG("userName : %s", STR(userName));
                     setUserName(userName);
                     setHostAllow(hostName);
                     setPassword(password);
@@ -243,7 +269,7 @@ S9sAccount::parseStringRep(
             case SingleQuoteUserName:
                 if (c == '\0')
                 {
-                    S9S_WARNING("Single quote (') expected.");
+                    setError("Single quote (') expected.");
                     return false;
                 } else if (c == '\'')
                 {
@@ -266,13 +292,16 @@ S9sAccount::parseStringRep(
                 {
                     n++;
                     state = HostNameStart;
+                } else {
+                    setError("Invalid character at the end of the username.");
+                    return false;
                 }
                 break;
 
             case SingleQuoteHostName:
                 if (c == '\0')
                 {
-                    S9S_WARNING("Single quote (') expected.");
+                    setError("Single quote (') expected.");
                     return false;
                 } else if (c == '\'')
                 {

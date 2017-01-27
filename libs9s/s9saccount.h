@@ -44,6 +44,10 @@ class S9sAccount
         S9sString hostAllow() const;
         void setHostAllow(const S9sString &value);
 
+        void setError(const S9sString &value);
+        bool hasError() const;
+        S9sString errorString() const;
+
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
