@@ -26,7 +26,7 @@
  */
 class S9sAccount
 {
-    private:
+    public:
         S9sAccount();
         S9sAccount(const S9sVariantMap &properties);
         S9sAccount(const S9sString &stringRep);

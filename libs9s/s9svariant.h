@@ -39,6 +39,7 @@ class S9sVariant
         inline S9sVariant(const std::string &stringValue);
         inline S9sVariant(const S9sString &stringValue);
         S9sVariant(const S9sNode &nodeValue);
+        S9sVariant(const S9sAccount &accountValue);
         
         S9sVariant(const S9sVariantMap &mapValue);
         S9sVariant(const S9sVariantList &listValue);
@@ -64,6 +65,7 @@ class S9sVariant
         bool isVariantMap() const { return m_type == Map; };
         bool isVariantList() const { return m_type == List; };
         bool isNode() const { return m_type == Node; };
+        bool isAccount() const { return m_type == Account; };
 
         int toInt(const int defaultValue = 0) const;
         ulonglong toULongLong(ulonglong defaultValue = 0ull) const; 

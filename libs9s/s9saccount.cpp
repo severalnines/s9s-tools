@@ -27,21 +27,28 @@
 
 S9sAccount::S9sAccount()
 {
+    m_properties["class_name"] = "CmonAccount";
 }
  
 S9sAccount::S9sAccount(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
+    m_properties["class_name"] = "CmonAccount";
 }
 
 /**
- * \param stringRep The string representation of the host, either a JSon string
- *   or an url (e.g. "192.168.1.100:3306".
+ * \param stringRep The string representation of the account. 
+ *
+ * Currently the URL format (e.g. "pipas:pwd@1.2.3.4") is the only one that is 
+ * accepted.
  */
 S9sAccount::S9sAccount(
         const S9sString &stringRep)
 {
+    parseStringRep(stringRep);
+    
+    m_properties["class_name"] = "CmonAccount";
 }
 
 S9sAccount::~S9sAccount()
@@ -53,6 +60,7 @@ S9sAccount::operator=(
         const S9sVariantMap &rhs)
 {
     setProperties(rhs);
+    m_properties["class_name"] = "CmonAccount";
     
     return *this;
 }
@@ -165,6 +173,7 @@ S9sAccount::setProperties(
         const S9sVariantMap &properties)
 {
     m_properties = properties;
+    m_properties["class_name"] = "CmonAccount";
 }
 
 enum ParseState

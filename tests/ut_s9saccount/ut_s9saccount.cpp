@@ -22,7 +22,7 @@
 #include "S9sAccount"
 #include "S9sVariantMap"
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -44,6 +44,8 @@ UtS9sAccount::runTest(const char *testName)
     PERFORM_TEST(testParse03,         retval);
     PERFORM_TEST(testParse04,         retval);
     PERFORM_TEST(testParse05,         retval);
+    PERFORM_TEST(testCreate,          retval);
+    PERFORM_TEST(testMap,             retval);
 
     return retval;
 }
@@ -133,6 +135,36 @@ UtS9sAccount::testParse05()
     return true;
 }
 
+bool
+UtS9sAccount::testCreate()
+{
+    S9sAccount account("pipas:pwd@1.2.3.4");
+
+    S9S_COMPARE(account.userName(),  "pipas");
+    S9S_COMPARE(account.password(),  "pwd");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+
+    return true;
+}
+
+bool
+UtS9sAccount::testMap()
+{
+    S9sAccount    account("pipas:pwd@1.2.3.4");
+    S9sVariantMap map;
+    S9sString     string;
+
+    map["account"] = account;
+    string = map.toString();
+
+    //S9S_DEBUG("-> \n%s\n", STR(string));
+    S9S_VERIFY(string.contains("\"class_name\": \"CmonAccount\""));
+    S9S_VERIFY(string.contains("\"host_allow\": \"1.2.3.4\""));
+    S9S_VERIFY(string.contains("\"password\": \"pwd\""));
+    S9S_VERIFY(string.contains("\"user_name\": \"pipas\""));
+
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sAccount)
 

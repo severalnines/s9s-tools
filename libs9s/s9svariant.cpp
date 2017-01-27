@@ -29,6 +29,7 @@
 #include <limits> 
 
 #include "S9sNode"
+#include "S9sAccount"
 
 #define DEBUG
 #include "s9sdebug.h"
@@ -73,6 +74,9 @@ S9sVariant::S9sVariant(
         case Node:
             m_union.nodeValue = new S9sNode(*orig.m_union.nodeValue);
             break;
+
+        case Account:
+            m_union.accountValue = new S9sAccount(*orig.m_union.accountValue);
     }
 }
 
@@ -81,6 +85,13 @@ S9sVariant::S9sVariant(
     m_type (Node)
 {
     m_union.nodeValue = new S9sNode(nodeValue);
+}
+
+S9sVariant::S9sVariant(
+        const S9sAccount &accountValue) :
+    m_type (Account)
+{
+    m_union.accountValue = new S9sAccount(accountValue);
 }
 
 S9sVariant::S9sVariant(
@@ -142,6 +153,10 @@ S9sVariant::operator= (
 
         case Node:
             m_union.nodeValue = new S9sNode(*rhs.m_union.nodeValue);
+            break;
+
+        case Account:
+            m_union.accountValue = new S9sAccount(*rhs.m_union.accountValue);
             break;
     }
     
@@ -255,6 +270,10 @@ S9sVariant::typeName() const
         case Node:
             retval = "node";
             break;
+        
+        case Account:
+            retval = "account";
+            break;
 
         case List:
             retval = "list";
@@ -281,6 +300,7 @@ S9sVariant::toNode() const
         case String:
         case List:
         case Map:
+        case Account:
             return sm_emptyNode;
 
         case Node:
@@ -313,6 +333,9 @@ S9sVariant::toVariantMap() const
 
         case Node:
             return m_union.nodeValue->toVariantMap();
+
+        case Account:
+            return m_union.accountValue->toVariantMap();
     }
             
     return sm_emptyMap;
@@ -334,6 +357,7 @@ S9sVariant::toVariantList() const
         case String:
         case Map:
         case Node:
+        case Account:
             return sm_emptyList;
 
         case List:
@@ -380,6 +404,7 @@ S9sVariant::toInt(
         case Map:
         case List:
         case Node:
+        case Account:
             return defaultValue;
     }
 
@@ -422,6 +447,7 @@ S9sVariant::toULongLong(
         case Map:
         case List:
         case Node:
+        case Account:
             // FIXME: This is not yet implemented.
             return defaultValue;
     }
@@ -452,6 +478,7 @@ S9sVariant::toDouble(
         case List:
         case Invalid:
         case Node:
+        case Account:
             // The default value is already there.
             break;
 
@@ -546,6 +573,7 @@ S9sVariant::toBoolean(
         case Map:
         case List:
         case Node:
+        case Account:
             return defaultValue;
     }
 
@@ -689,6 +717,11 @@ S9sVariant::clear()
         case Node:
             delete m_union.nodeValue;
             m_union.nodeValue = NULL;
+            break;
+
+        case Account:
+            delete m_union.accountValue;
+            m_union.accountValue = NULL;
             break;
     }
 
