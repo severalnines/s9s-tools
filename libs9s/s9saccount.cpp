@@ -80,6 +80,27 @@ S9sAccount::setUserName(
     m_properties["user_name"] = value;
 }
 
+/**
+ * \returns the allowed client host name of the user.
+ */
+S9sString
+S9sAccount::hostAllow() const
+{
+    if (m_properties.contains("host_allow"))
+        return m_properties.at("host_allow").toString();
+
+    return S9sString();
+}
+
+/**
+ * \param value The host name from where the login is allowed.
+ */
+void
+S9sAccount::setHostAllow(
+        const S9sString    &value)
+{
+    m_properties["host_allow"] = value;
+}
 
 const S9sVariantMap &
 S9sAccount::toVariantMap() const

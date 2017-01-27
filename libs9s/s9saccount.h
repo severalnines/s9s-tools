@@ -38,6 +38,9 @@ class S9sAccount
         S9sString userName() const;
         void setUserName(const S9sString &value);
 
+        S9sString hostAllow() const;
+        void setHostAllow(const S9sString &value);
+
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
