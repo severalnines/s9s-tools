@@ -38,6 +38,9 @@ class S9sAccount
         S9sString userName() const;
         void setUserName(const S9sString &value);
 
+        S9sString password() const;
+        void setPassword(const S9sString &value);
+
         S9sString hostAllow() const;
         void setHostAllow(const S9sString &value);
 

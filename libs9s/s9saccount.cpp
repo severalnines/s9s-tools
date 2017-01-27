@@ -81,6 +81,30 @@ S9sAccount::setUserName(
 }
 
 /**
+ * \returns the password  for the account.
+ */
+S9sString
+S9sAccount::password() const
+{
+    if (m_properties.contains("password"))
+        return m_properties.at("password").toString();
+
+    return S9sString();
+}
+
+/**
+ * \param value The new password for the account.
+ *
+ * Sets the password for the account.
+ */
+void
+S9sAccount::setPassword(
+        const S9sString    &value)
+{
+    m_properties["password"] = value;
+}
+
+/**
  * \returns the allowed client host name of the user.
  */
 S9sString
@@ -101,6 +125,9 @@ S9sAccount::setHostAllow(
 {
     m_properties["host_allow"] = value;
 }
+
+
+
 
 const S9sVariantMap &
 S9sAccount::toVariantMap() const
@@ -124,6 +151,7 @@ enum ParseState
     HostName,
     HostNameStart,
     SingleQuoteHostName,
+    Password,
 };
 
 bool 
@@ -132,7 +160,7 @@ S9sAccount::parseStringRep(
 {
     int        c;
     ParseState state = StartState;
-    S9sString  userName, hostName;
+    S9sString  userName, hostName, password;
 
     S9S_DEBUG("*** input: %s", STR(input));
     for (int n = 0;;)
@@ -155,9 +183,12 @@ S9sAccount::parseStringRep(
             case UserName:
                 if (c == '\0')
                 {
-                    S9S_DEBUG("userName : %s", STR(userName));
                     setUserName(userName);
                     return true;
+                } else if (c == ':')
+                {
+                    n++;
+                    state = Password;
                 } else if (c == '@')
                 {
                     n++;
@@ -166,6 +197,23 @@ S9sAccount::parseStringRep(
                     userName += c;
                     n++;
                 }
+                break;
+
+            case Password:
+                if (c == '\0')
+                {
+                    setUserName(userName);
+                    setPassword(password);
+                    return true;
+                } else if (c == '@')
+                {
+                    ++n;
+                    state = HostNameStart;
+                } else 
+                {
+                    ++n;
+                    password += c;
+                } 
                 break;
 
             case HostNameStart:
@@ -184,6 +232,7 @@ S9sAccount::parseStringRep(
                     S9S_DEBUG("userName : %s", STR(userName));
                     setUserName(userName);
                     setHostAllow(hostName);
+                    setPassword(password);
                     return true;
                 } else {
                     hostName += c;
@@ -198,7 +247,6 @@ S9sAccount::parseStringRep(
                     return false;
                 } else if (c == '\'')
                 {
-                    setUserName(userName);
                     n++;
                     state = UserNameEnd;
                 } else {
@@ -210,6 +258,9 @@ S9sAccount::parseStringRep(
             case UserNameEnd:
                 if (c == '\0')
                 {
+                    setUserName(userName);
+                    setHostAllow(hostName);
+                    setPassword(password);
                     return true;
                 } else if (c == '@')
                 {
@@ -227,6 +278,7 @@ S9sAccount::parseStringRep(
                 {
                     setUserName(userName);
                     setHostAllow(hostName);
+                    setPassword(password);
                     return true;
                 } else {
                     hostName += c;
