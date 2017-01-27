@@ -120,6 +120,10 @@ enum ParseState
     StartState,
     UserName,
     SingleQuoteUserName,
+    UserNameEnd,
+    HostName,
+    HostNameStart,
+    SingleQuoteHostName,
 };
 
 bool 
@@ -128,12 +132,13 @@ S9sAccount::parseStringRep(
 {
     int        c;
     ParseState state = StartState;
-    S9sString  userName;
+    S9sString  userName, hostName;
 
+    S9S_DEBUG("*** input: %s", STR(input));
     for (int n = 0;;)
     {
         c = input.c_str()[n];
-        S9S_DEBUG("n = %02d c = '%c'", n, c);
+        S9S_DEBUG("*** n = %02d c = '%c'", n, c);
         
         switch (state)
         {
@@ -153,9 +158,36 @@ S9sAccount::parseStringRep(
                     S9S_DEBUG("userName : %s", STR(userName));
                     setUserName(userName);
                     return true;
+                } else if (c == '@')
+                {
+                    n++;
+                    state = HostNameStart;
                 } else {
                     userName += c;
                     n++;
+                }
+                break;
+
+            case HostNameStart:
+                if (c == '\'')
+                {
+                    state = SingleQuoteHostName;
+                    ++n;
+                } else {
+                    state = HostName;
+                }
+                break;
+
+            case HostName:
+                if (c == '\0')
+                {
+                    S9S_DEBUG("userName : %s", STR(userName));
+                    setUserName(userName);
+                    setHostAllow(hostName);
+                    return true;
+                } else {
+                    hostName += c;
+                    ++n;
                 }
                 break;
 
@@ -166,11 +198,38 @@ S9sAccount::parseStringRep(
                     return false;
                 } else if (c == '\'')
                 {
-                    S9S_DEBUG("userName : %s", STR(userName));
                     setUserName(userName);
-                    return true;
+                    n++;
+                    state = UserNameEnd;
                 } else {
                     userName += c;
+                    n++;
+                }
+                break;
+            
+            case UserNameEnd:
+                if (c == '\0')
+                {
+                    return true;
+                } else if (c == '@')
+                {
+                    n++;
+                    state = HostNameStart;
+                }
+                break;
+
+            case SingleQuoteHostName:
+                if (c == '\0')
+                {
+                    S9S_WARNING("Single quote (') expected.");
+                    return false;
+                } else if (c == '\'')
+                {
+                    setUserName(userName);
+                    setHostAllow(hostName);
+                    return true;
+                } else {
+                    hostName += c;
                     n++;
                 }
                 break;

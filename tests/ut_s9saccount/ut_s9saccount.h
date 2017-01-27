@@ -30,6 +30,7 @@ class UtS9sAccount : public S9sUnitTest
         bool testParse01();
         bool testParse02();
         bool testParse03();
+        bool testParse04();
 };
 
 
