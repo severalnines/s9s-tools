@@ -37,7 +37,12 @@ class S9sAccount
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
+    protected:
+        bool parseStringRep(const S9sString &input);
+
     private:
         S9sVariantMap    m_properties;
+
+        friend class UtS9sAccount;
 };
 

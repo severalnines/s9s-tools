@@ -49,6 +49,10 @@ UtS9sAccount::runTest(const char *testName)
 bool
 UtS9sAccount::testCreate()
 {
+    S9sAccount account;
+
+    account.parseStringRep("pipas");
+
     return true;
 }
 

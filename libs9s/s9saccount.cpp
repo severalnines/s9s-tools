@@ -21,7 +21,7 @@
 
 #include <S9sVariantMap>
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -68,5 +68,40 @@ S9sAccount::setProperties(
         const S9sVariantMap &properties)
 {
     m_properties = properties;
+}
+
+enum ParseState
+{
+    StartState,
+};
+
+bool 
+S9sAccount::parseStringRep(
+        const S9sString &input)
+{
+    int        c;
+    ParseState state = StartState;
+    S9sString  userName;
+
+    for (int n = 0;;)
+    {
+        c = input.c_str()[n];
+        S9S_DEBUG("n = %02d c = '%c'", n, c);
+        
+        switch (state)
+        {
+            case StartState:
+                if (c == '\0')
+                {
+                    S9S_DEBUG("userName : %s", STR(userName));
+                    return true;
+                } else {
+                    userName += c;
+                    n++;
+                }
+        }
+    }
+
+    return false;
 }
 
