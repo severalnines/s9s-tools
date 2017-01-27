@@ -119,6 +119,7 @@ S9sAccount::parseStringRep(
             case StartState:
                 if (c == '\'')
                 {
+                    ++n;
                     state = SingleQuoteUserName;
                 } else {
                     state = UserName;
@@ -138,6 +139,19 @@ S9sAccount::parseStringRep(
                 break;
 
             case SingleQuoteUserName:
+                if (c == '\0')
+                {
+                    S9S_WARNING("Single quote (') expected.");
+                    return false;
+                } else if (c == '\'')
+                {
+                    S9S_DEBUG("userName : %s", STR(userName));
+                    setUserName(userName);
+                    return true;
+                } else {
+                    userName += c;
+                    n++;
+                }
                 break;
         }
     }

@@ -39,7 +39,8 @@ UtS9sAccount::runTest(const char *testName)
 {
     bool retval = true;
 
-    PERFORM_TEST(testCreate,          retval);
+    PERFORM_TEST(testParse01,         retval);
+    PERFORM_TEST(testParse02,         retval);
 
     return retval;
 }
@@ -47,12 +48,31 @@ UtS9sAccount::runTest(const char *testName)
 /**
  */
 bool
-UtS9sAccount::testCreate()
+UtS9sAccount::testParse01()
 {
     S9sAccount account;
     bool       success;
 
     success = account.parseStringRep("pipas");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(), "pipas");
+    
+    success = account.parseStringRep("'pipas'");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(), "pipas");
+
+    return true;
+}
+
+/**
+ */
+bool
+UtS9sAccount::testParse02()
+{
+    S9sAccount account;
+    bool       success;
+
+    success = account.parseStringRep("'pipas'");
     S9S_VERIFY(success);
     S9S_COMPARE(account.userName(), "pipas");
 

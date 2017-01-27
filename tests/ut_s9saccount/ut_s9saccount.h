@@ -27,10 +27,8 @@ class UtS9sAccount : public S9sUnitTest
         virtual bool runTest(const char *testName = 0);
     
     protected:
-        bool testCreate();
-        bool testSetProperties();
-        bool testAssign();
-        bool testVariant01();
+        bool testParse01();
+        bool testParse02();
 };
 
 
