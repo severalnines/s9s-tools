@@ -57,6 +57,30 @@ S9sAccount::operator=(
     return *this;
 }
 
+/**
+ * \returns the username (or login-name) for the account.
+ */
+S9sString
+S9sAccount::userName() const
+{
+    if (m_properties.contains("user_name"))
+        return m_properties.at("user_name").toString();
+
+    return S9sString();
+}
+
+/**
+ * \param value The new username (or 
+ * Sets the username for the account.
+ */
+void
+S9sAccount::setUserName(
+        const S9sString    &value)
+{
+    m_properties["user_name"] = value;
+}
+
+
 const S9sVariantMap &
 S9sAccount::toVariantMap() const
 {
@@ -73,6 +97,8 @@ S9sAccount::setProperties(
 enum ParseState
 {
     StartState,
+    UserName,
+    SingleQuoteUserName,
 };
 
 bool 
@@ -91,14 +117,28 @@ S9sAccount::parseStringRep(
         switch (state)
         {
             case StartState:
+                if (c == '\'')
+                {
+                    state = SingleQuoteUserName;
+                } else {
+                    state = UserName;
+                }
+                break;
+
+            case UserName:
                 if (c == '\0')
                 {
                     S9S_DEBUG("userName : %s", STR(userName));
+                    setUserName(userName);
                     return true;
                 } else {
                     userName += c;
                     n++;
                 }
+                break;
+
+            case SingleQuoteUserName:
+                break;
         }
     }
 

@@ -50,8 +50,11 @@ bool
 UtS9sAccount::testCreate()
 {
     S9sAccount account;
+    bool       success;
 
-    account.parseStringRep("pipas");
+    success = account.parseStringRep("pipas");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(), "pipas");
 
     return true;
 }

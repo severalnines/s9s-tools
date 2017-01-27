@@ -34,6 +34,10 @@ class S9sAccount
         virtual ~S9sAccount();
 
         S9sAccount &operator=(const S9sVariantMap &rhs);
+
+        S9sString userName() const;
+        void setUserName(const S9sString &value);
+
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
