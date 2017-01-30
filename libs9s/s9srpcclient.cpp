@@ -1626,6 +1626,37 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
+/**
+ * A function to delete an account from the cluster. 
+ */
+bool
+S9sRpcClient::deleteAccount()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    S9sAccount     account;
+    bool           retval;
+
+    account = options->account();
+    // We don't need these, do we?
+    //account.setWithDatabase(options->withDatabase());
+    //account.setGrants(options->privileges());
+
+    request["operation"]  = "deleteAccount";
+    request["account"]    = account;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 bool
 S9sRpcClient::createDatabase()
 {

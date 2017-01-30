@@ -133,6 +133,9 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateAccountRequested())
         {
             executeCreateAccount(client);
+        } else if (options->isDeleteAccountRequested())
+        {
+            executeDeleteAccount(client);
         } else if (options->isCreateDatabaseRequested())
         {
             executeCreateDatabase(client);
@@ -741,6 +744,43 @@ S9sBusinessLogic::executeCreateAccount(
      * Running the request on the controller.
      */
     success = client.createAccount();
+    reply   = client.reply();
+    if (success)
+    {
+        if (options->isJsonRequested())
+        {
+            printf("%s\n", STR(reply.toString()));
+        } else {
+            if (reply.isOk())
+            {
+                if (!options->isBatchRequested()) 
+                {
+                    reply.printMessages("Created.\n");
+                }
+            } else {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+            }
+        }
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeDeleteAccount(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.deleteAccount();
     reply   = client.reply();
     if (success)
     {

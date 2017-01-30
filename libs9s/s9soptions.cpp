@@ -102,6 +102,7 @@ enum S9sOptionType
     OptionFullPath,
     OptionStat,
     OptionCreateAccount,
+    OptionDeleteAccount,
     OptionCreateDatabase,
     OptionAccount,
     OptionWithDatabase,
@@ -1410,6 +1411,21 @@ S9sOptions::isCreateAccountRequested() const
 }
 
 /**
+ * \returns true if the --delete-account command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isDeleteAccountRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("delete_account"))
+        retval = m_options.at("delete_account").toBoolean();
+
+    return retval;
+}
+
+/**
  * \returns true if the --create-database command line option was provided when
  *   the program was started.
  */
@@ -2129,6 +2145,7 @@ S9sOptions::printHelpCluster()
 "  --stop                     Stop the cluster.\n"
 "  --start                    Start the cluster.\n"
 "  --create-account           Create a user account on the cluster.\n"
+"  --delete-account           Delete a user account on the cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
@@ -3506,6 +3523,7 @@ S9sOptions::readOptionsCluster(
         { "stop",             no_argument,       0, OptionStop            },
         { "start",            no_argument,       0, OptionStart           },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
+        { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
 
         // Job Related Options
@@ -3629,6 +3647,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateAccount:
                 // --create-account
                 m_options["create_account"] = true;
+                break;
+            
+            case OptionDeleteAccount:
+                // --delete-account
+                m_options["delete_account"] = true;
                 break;
             
             case OptionCreateDatabase:

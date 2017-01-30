@@ -89,6 +89,7 @@ class S9sRpcClient
          * Account&database handling.
          */
         bool createAccount();
+        bool deleteAccount();
         bool createDatabase();
 
         /*

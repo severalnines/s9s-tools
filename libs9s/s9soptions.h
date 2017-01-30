@@ -99,9 +99,7 @@ class S9sOptions
 
         
         S9sString schedule() const;
-#if 0
-        bool setSchedule(const S9sString &value);
-#endif
+        
         int clusterId() const;
         bool hasClusterIdOption() const;
         int backupId() const;
@@ -169,6 +167,7 @@ class S9sOptions
         bool isStopRequested() const;
         bool isStartRequested() const;
         bool isCreateAccountRequested() const; 
+        bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isDropRequested() const;
 
