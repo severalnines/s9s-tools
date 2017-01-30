@@ -208,7 +208,6 @@ function testCreateCluster()
 #
 # FIXME: These are not yet tested:
 # s9s cluster --create-account --cluster-id=1 --username=pip --password=passwd --with-database --privileges="john:ALL;pipas:INSERT"
-# s9s cluster --create-database --db-name="mine" --cluster-id=1
 #
 function testCreateAccount()
 {
@@ -220,7 +219,7 @@ function testCreateAccount()
     $S9S cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="john_doe:password@1.2.3.4" \
+        --account="pipas:password" \
         --with-database
     
     exitCode=$?
@@ -229,6 +228,30 @@ function testCreateAccount()
         failure "Exit code is not 0 while creating an account."
     fi
 }
+
+#
+# Creating a new database on the cluster.
+#
+function testCreateDatabase()
+{
+    pip-say "Testing database creation."
+
+    #
+    # This command will create a new account on the cluster.
+    #
+    $S9S cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testCreateDatabase" 
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating a database."
+    fi
+}
+
+
 
 #
 # This test will add one new node to the cluster.
@@ -557,6 +580,7 @@ else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateAccount
+    runFunctionalTest testCreateDatabase
 
     # Not implemented in CmonAbstractPostgreSqlCluster.
     # runFunctionalTest testAddNode
