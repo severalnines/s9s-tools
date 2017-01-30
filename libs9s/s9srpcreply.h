@@ -41,6 +41,7 @@ class S9sRpcReply : public S9sVariantMap
 
         bool progressLine(S9sString &retval, bool syntaxHighlight);
 
+        void printMessages(const S9sString &defaultMessage);
         void printJobStarted();
         void printJobLog();
         void printClusterList();

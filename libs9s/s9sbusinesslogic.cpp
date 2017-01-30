@@ -752,7 +752,7 @@ S9sBusinessLogic::executeCreateAccount(
             {
                 if (!options->isBatchRequested()) 
                 {
-                    printf("Created.\n");
+                    reply.printMessages("Created.\n");
                 }
             } else {
                 PRINT_ERROR("%s", STR(reply.errorString()));
@@ -790,7 +790,7 @@ S9sBusinessLogic::executeCreateDatabase(
             {
                 if (!options->isBatchRequested()) 
                 {
-                    printf("Created.\n");
+                    reply.printMessages("Created.\n");
                 }
             } else {
                 PRINT_ERROR("%s", STR(reply.errorString()));

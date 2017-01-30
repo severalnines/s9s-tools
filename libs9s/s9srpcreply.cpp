@@ -64,7 +64,6 @@ S9sRpcReply::isAuthRequired() const
     return false;
 }
 
-
 /**
  * \returns The error string sent by the controller in the reply if there is
  *   indeed an error string.
@@ -321,6 +320,32 @@ S9sRpcReply::progressLine(
         status == "FINISHED" ||
         status == "FAILED";
 }
+
+void
+S9sRpcReply::printMessages(
+        const S9sString &defaultMessage)
+{
+    if (contains("errorString"))
+    {
+        // Error in RPC 1.0.
+        printf("%s\n", STR(at("errorString").toString()));
+    } else if (contains("error_string"))
+    {
+        // Error in RPC 2.0
+        printf("%s\n", STR(at("error_string").toString()));
+    } else if (contains("messages"))
+    {
+        S9sVariantList list = at("messages").toVariantList();
+
+        for (uint idx = 0u; idx < list.size(); ++idx)
+        {
+            printf("%s\n", STR(list[idx].toString()));
+        }
+    } else {
+        printf("%s\n", STR(defaultMessage));
+    }
+}
+
 
 
 /**
