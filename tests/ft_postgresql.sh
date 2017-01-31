@@ -220,12 +220,28 @@ function testCreateAccount()
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
-        --with-database
+        --with-database \
+        --batch 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating an account."
+    fi
+    
+    #
+    # This command will delete the same account from the cluster.
+    #
+    $S9S cluster \
+        --delete-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas" \
+        --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while deleting an account."
     fi
 }
 
@@ -242,7 +258,24 @@ function testCreateDatabase()
     $S9S cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
-        --db-name="testCreateDatabase" 
+        --db-name="testCreateDatabase" \
+        --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating a database."
+    fi
+    
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    $S9S cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas:password" \
+        --privileges="testCreateDatabase.*:INSERT,UPDATE"
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -250,8 +283,6 @@ function testCreateDatabase()
         failure "Exit code is not 0 while creating a database."
     fi
 }
-
-
 
 #
 # This test will add one new node to the cluster.
@@ -482,8 +513,6 @@ function testRemoveBackup()
         failure "The exit code is ${exitCode}"
     fi
 }
-
-
 
 #
 # Stopping the cluster.

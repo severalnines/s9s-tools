@@ -845,7 +845,6 @@ S9sBusinessLogic::executeCreateDatabase(
 
 }
 
-
 void
 S9sBusinessLogic::executeDeleteBackup(
         S9sRpcClient &client)
@@ -869,7 +868,7 @@ S9sBusinessLogic::executeDeleteBackup(
             {
                 if (!options->isBatchRequested()) 
                 {
-                    printf("Deleted.\n");
+                    reply.printMessages("Deleted.\n");
                 }
             } else {
                 PRINT_ERROR("%s", STR(reply.errorString()));
