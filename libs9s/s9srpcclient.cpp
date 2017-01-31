@@ -1627,6 +1627,41 @@ S9sRpcClient::createAccount()
 }
 
 /**
+ * \param account The account for which we are granting privileges.
+ * \param privileges The privileges in GSL language.
+ * \returns True if the request sent and the reply received even if that reply
+ *   is an error reply.
+ *
+ * A function to grant rights for an account that already exists.
+ *
+ * FIXME: We need to handle the cluster name and cluster ID smarter than this.
+ */
+bool
+S9sRpcClient::grantPrivileges(
+        const S9sAccount &account,
+        const S9sString  &privileges)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]  = "grantPrivileges";
+    request["account"]    = account;
+    request["privileges"] = privileges;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * A function to delete an account from the cluster. 
  */
 bool

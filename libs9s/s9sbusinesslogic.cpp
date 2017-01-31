@@ -23,6 +23,7 @@
 #include "S9sRpcReply"
 #include "S9sOptions"
 #include "S9sNode"
+#include "S9sAccount"
 #include "S9sDateTime"
 #include "S9sTopUi"
 #include "S9sFile"
@@ -133,6 +134,9 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateAccountRequested())
         {
             executeCreateAccount(client);
+        } else if (options->isGrantRequested())
+        {
+            executeGrant(client);
         } else if (options->isDeleteAccountRequested())
         {
             executeDeleteAccount(client);
@@ -756,6 +760,43 @@ S9sBusinessLogic::executeCreateAccount(
                 if (!options->isBatchRequested()) 
                 {
                     reply.printMessages("Created.\n");
+                }
+            } else {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+            }
+        }
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
+S9sBusinessLogic::executeGrant(
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
+
+    /*
+     * Running the request on the controller.
+     */
+    success = client.grantPrivileges(options->account(), options->privileges());
+    reply   = client.reply();
+    if (success)
+    {
+        if (options->isJsonRequested())
+        {
+            printf("%s\n", STR(reply.toString()));
+        } else {
+            if (reply.isOk())
+            {
+                if (!options->isBatchRequested()) 
+                {
+                    reply.printMessages("Grant.\n");
                 }
             } else {
                 PRINT_ERROR("%s", STR(reply.errorString()));

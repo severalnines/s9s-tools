@@ -455,7 +455,10 @@ function testDrop()
 function testDestroyNodes()
 {
     pip-say "The test is now destroying the nodes."
-    pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #

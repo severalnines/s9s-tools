@@ -102,6 +102,7 @@ enum S9sOptionType
     OptionFullPath,
     OptionStat,
     OptionCreateAccount,
+    OptionGrant,
     OptionDeleteAccount,
     OptionCreateDatabase,
     OptionAccount,
@@ -1406,6 +1407,21 @@ S9sOptions::isCreateAccountRequested() const
 
     if (m_options.contains("create_account"))
         retval = m_options.at("create_account").toBoolean();
+
+    return retval;
+}
+
+/**
+ * \returns true if the --create-account command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isGrantRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("grant"))
+        retval = m_options.at("grant").toBoolean();
 
     return retval;
 }
@@ -3525,6 +3541,7 @@ S9sOptions::readOptionsCluster(
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
+        { "grant",            no_argument,       0, OptionGrant           },
 
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -3657,6 +3674,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateDatabase:
                 // --create-database
                 m_options["create_database"] = true;
+                break;
+            
+            case OptionGrant:
+                // --grant
+                m_options["grant"] = true;
                 break;
 
             case OptionConfigFile:

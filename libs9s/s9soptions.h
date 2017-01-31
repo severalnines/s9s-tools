@@ -167,6 +167,7 @@ class S9sOptions
         bool isStopRequested() const;
         bool isStartRequested() const;
         bool isCreateAccountRequested() const; 
+        bool isGrantRequested() const;
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isDropRequested() const;

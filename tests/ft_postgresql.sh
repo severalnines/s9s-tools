@@ -206,8 +206,6 @@ function testCreateCluster()
 #
 # Creating a new account on the cluster.
 #
-# FIXME: These are not yet tested:
-# s9s cluster --create-account --cluster-id=1 --username=pip --password=passwd --with-database --privileges="john:ALL;pipas:INSERT"
 #
 function testCreateAccount()
 {
@@ -219,7 +217,7 @@ function testCreateAccount()
     $S9S cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="joe:password" \
         --with-database \
         --batch 
     
@@ -235,7 +233,7 @@ function testCreateAccount()
     $S9S cluster \
         --delete-account \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
+        --account="joe" \
         --batch
     
     exitCode=$?
@@ -275,155 +273,30 @@ function testCreateDatabase()
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
-        --privileges="testCreateDatabase.*:INSERT,UPDATE"
+        --privileges="testCreateDatabase.*:INSERT,UPDATE" \
+        --batch
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating a database."
+        failure "Exit code is not 0 while creating account."
     fi
-}
-
-#
-# This test will add one new node to the cluster.
-#
-function testAddNode()
-{
-    local nodes
-    local exitCode
-
-    pip-say "The test to add node is starting now."
-    printVerbose "Creating Node..."
-    LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE"
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
-
+    
     #
-    # Adding a node to the cluster.
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
     #
     $S9S cluster \
-        --add-node \
+        --grant \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
+        --account="pipas" \
+        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
+        --batch
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This test will add a proxy sql node.
-#
-function testAddProxySql()
-{
-    local node
-    local nodes
-    local exitCode
-
-    pip-say "The test to add ProxySQL node is starting now."
-    printVerbose "Creating Node..."
-    node=$(create_node)
-    nodes+="proxySql://$node"
-
-    #
-    # Adding a node to the cluster.
-    #
-    $S9S cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-
-#
-# This test will add a HaProxy node.
-#
-function testAddHaProxy()
-{
-    local node
-    local nodes
-    local exitCode
-    
-    pip-say "The test to add HaProxy node is starting now."
-    printVerbose "Creating Node..."
-    node=$(create_node)
-    nodes+="haProxy://$node"
-    ALL_CREATED_IPS+=" $node"
-
-    #
-    # Adding a node to the cluster.
-    #
-    $S9S cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This test will remove the last added node.
-#
-function testRemoveNode()
-{
-    if [ -z "$LAST_ADDED_NODE" ]; then
-        printVerbose "Skipping test."
-    fi
-    
-    pip-say "The test to remove node is starting now."
-    
-    #
-    # Removing the last added node.
-    #
-    $S9S cluster \
-        --remove-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$LAST_ADDED_NODE" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This will perform a rolling restart on the cluster
-#
-function testRollingRestart()
-{
-    local exitCode
-    
-    pip-say "The test of rolling restart is starting now."
-
-    #
-    # Calling for a rolling restart.
-    #
-    $S9S cluster \
-        --rolling-restart \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
+        failure "Exit code is not 0 while granting privileges."
     fi
 }
 
@@ -439,10 +312,6 @@ function testCreateBackup()
     #
     # Creating a backup.
     #
-cat <<EOF
-    $S9S backup --create --cluster-id=$CLUSTER_ID --nodes=$FIRST_ADDED_NODE --backup-directory=/tmp $LOG_OPTION
-EOF
-
     $S9S backup \
         --create \
         --cluster-id=$CLUSTER_ID \
@@ -505,54 +374,7 @@ function testRemoveBackup()
     $S9S backup \
         --delete \
         --backup-id=$backupId \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# Stopping the cluster.
-#
-function testStop()
-{
-    local exitCode
-
-    pip-say "The test to stop the cluster is starting now."
-
-    #
-    # Stopping the cluster.
-    #
-    $S9S cluster \
-        --stop \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# Starting the cluster.
-#
-function testStart()
-{
-    local exitCode
-
-    pip-say "The test to start the cluster is starting now."
-
-    #
-    # Starting the cluster.
-    #
-    $S9S cluster \
-        --start \
-        --cluster-id=$CLUSTER_ID \
+        --batch \
         $LOG_OPTION
     
     exitCode=$?
@@ -592,7 +414,10 @@ function testDrop()
 function testDestroyNodes()
 {
     pip-say "The test is now destroying the nodes."
-    pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #
@@ -611,22 +436,9 @@ else
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
 
-    # Not implemented in CmonAbstractPostgreSqlCluster.
-    # runFunctionalTest testAddNode
-    #runFunctionalTest testAddProxySql
-    
-    #runFunctionalTest testAddHaProxy
-    #runFunctionalTest testRemoveNode
-    #runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
     runFunctionalTest testRemoveBackup
-
-    # Not implemented.
-    #runFunctionalTest testStop
-
-    # Not implemented.
-    #runFunctionalTest testStart
 
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
