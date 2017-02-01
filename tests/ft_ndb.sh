@@ -7,7 +7,7 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-PIP_CONTAINER_CREATE=$(which "pip-container-create")
+ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
@@ -92,11 +92,7 @@ fi
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-#if [ ! -d data -a -d tests/data ]; then
-#    echo "Entering directory tests..."
-#    cd tests
-#fi
-if [ -z "$PIP_CONTAINER_CREATE" ]; then
+if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
@@ -107,7 +103,10 @@ fi
 #
 function create_node()
 {
-    $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
+    local ip
+
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    echo $ip
 }
 
 #
@@ -186,15 +185,19 @@ function testCreateCluster()
     pip-say "The test to create NDB cluster is starting now."
     nodeName=$(create_node)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    
+    ALL_CREATED_IPS+=" $nodeName"
+
     nodeName=$(create_node)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="ndbd://$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="ndbd://$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
 
     #
     #
@@ -232,8 +235,10 @@ function testAddNode()
 
     pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
-    LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE"
+    nodeName=$(create_node)
+    ALL_CREATED_IPS+=" $nodeName"
+    LAST_ADDED_NODE=$nodeName
+    nodes+="$nodeName"
 
     #
     # Adding a node to the cluster.
@@ -303,19 +308,19 @@ function testRollingRestart()
 }
 
 #
-# Stopping the cluster.
+# Dropping the cluster from the controller.
 #
-function testStop()
+function testDrop()
 {
     local exitCode
 
-    pip-say "The test to stop cluster is starting now."
+    pip-say "The test to drop the cluster is starting now."
 
     #
-    # Stopping the cluster.
+    # Starting the cluster.
     #
     $S9S cluster \
-        --stop \
+        --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
@@ -324,6 +329,18 @@ function testStop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+}
+
+#
+# This will destroy the containers we created.
+#
+function testDestroyNodes()
+{
+    pip-say "The test is now destroying the nodes."
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #
@@ -342,7 +359,8 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
-    runFunctionalTest testStop
+    runFunctionalTest testDrop
+    runFunctionalTest testDestroyNodes
 fi
 
 endTests

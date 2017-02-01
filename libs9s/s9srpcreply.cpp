@@ -3187,6 +3187,10 @@ void
 S9sRpcReply::html2ansi(
         S9sString &s)
 {
+    S9sString origString;
+
+do_again:
+    origString = s;
     s.replace("<em style='color: #c66211;'>",     XTERM_COLOR_3);
     s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
     s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
@@ -3212,11 +3216,15 @@ S9sRpcReply::html2ansi(
     S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
     S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
 
+
     s.replace(regexp1, XTERM_COLOR_ORANGE);
     s.replace(regexp2, XTERM_COLOR_8);
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");
+
+    if (origString != s)
+        goto do_again;
 }
 
 S9sString 
