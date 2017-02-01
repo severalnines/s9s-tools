@@ -19,3 +19,8 @@ s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd �
 but also
 
 s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd —compact-priv-format=“*.*: REPLICATION CLIENT”
+
+o Make sure we have a meaningful error string if we try to use 
+  http:// communication.
+
+  Authentication failed: Invalid clusterId path: 'v2'
