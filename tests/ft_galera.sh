@@ -312,7 +312,7 @@ function testAddRemoveHaProxy()
         $S9S node --list --long --batch | \
         grep ^g | \
         tail -n1 | \
-        awk '{print $4}')
+        awk '{print $5}')
 
     #
     # Adding a node to the cluster.
