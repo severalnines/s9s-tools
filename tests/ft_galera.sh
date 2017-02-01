@@ -317,6 +317,7 @@ function testAddRemoveHaProxy()
     #
     # Adding a node to the cluster.
     #
+    printVerbose "Adding haproxy at '$node'."
     $S9S cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -334,6 +335,7 @@ function testAddRemoveHaProxy()
     #
     # Remove a node to the cluster.
     #
+    printVerbose "Removing haproxy at '$node:9600'."
     $S9S cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \

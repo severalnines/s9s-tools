@@ -3203,17 +3203,17 @@ S9sRpcReply::html2ansi(
     s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
 
     //s.replace("", );
-    s.replace("</em>",                        TERM_NORMAL);
-    s.replace("</strong>",                    TERM_NORMAL);
+    s.replace("</em>",       TERM_NORMAL);
+    s.replace("</strong>",   TERM_NORMAL);
 
     // Replacing all the other colors. This code is originally created to be
     // used with a palette, but I am not sure if we should modify the palette,
     // so it is kinda unfinished here.
-    S9sRegExp regexp1("<em style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
-    S9sRegExp regexp2("<strong style='color: #([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f]);'>", "i");
+    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
+    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
 
     s.replace(regexp1, XTERM_COLOR_ORANGE);
-    s.replace(regexp2, XTERM_COLOR_ORANGE);
+    s.replace(regexp2, XTERM_COLOR_8);
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");
