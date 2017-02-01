@@ -7,6 +7,7 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
+ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # This is the name of the server that will hold the linux containers.
@@ -107,7 +108,10 @@ fi
 #
 function create_node()
 {
-    $PIP_CONTAINER_CREATE --server=$CONTAINER_SERVER
+    local ip
+
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    echo $ip
 }
 
 #
@@ -186,12 +190,16 @@ function testCreateCluster()
     pip-say "The test to create MySQL replication cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    FIRST_ADDED_NODE=$nodeName
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     nodes+="$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a MySQL replication cluster.
@@ -224,18 +232,24 @@ function testCreateCluster()
 #
 function testAddNode()
 {
+    local nodeName
     local nodes
     local exitCode
 
     pip-say "The test to add node is starting now."
-    printVerbose "Creating Node..."
-    LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE"
+    printVerbose "Creating node..."
+    nodeName=$(create_node)
+    LAST_ADDED_NODE="$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
+    nodes+="$nodeName"
+    
+    printVerbose "Created node '$LAST_ADDED_NODE'."
+    printVerbose "*** nodes: '$nodes'"
 
     #
     # Adding a node to the cluster.
     #
-    #
+    printVerbose "Adding node:"
     $S9S cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -325,19 +339,19 @@ function testStop()
 }
 
 #
-# Starting the cluster.
+# Dropping the cluster from the controller.
 #
-function testStart()
+function testDrop()
 {
     local exitCode
 
-    pip-say "The test to start the cluster is starting now."
+    pip-say "The test to drop the cluster is starting now."
 
     #
     # Starting the cluster.
     #
     $S9S cluster \
-        --start \
+        --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
@@ -346,6 +360,18 @@ function testStart()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+}
+
+#
+# This will destroy the containers we created.
+#
+function testDestroyNodes()
+{
+    pip-say "The test is now destroying the nodes."
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #
@@ -365,7 +391,8 @@ else
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop
-    runFunctionalTest testStart
+    runFunctionalTest testDrop
+    runFunctionalTest testDestroyNodes
 fi
 
 endTests
