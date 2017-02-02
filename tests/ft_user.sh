@@ -131,7 +131,7 @@ function testPing()
 }
 
 #
-# Just a normal "grant" call we do all the time to register a user on the
+# Just a normal createUser call we do all the time to register a user on the
 # controller so that we can actually execute RPC calls.
 #
 function testGrantUser()
@@ -163,12 +163,7 @@ function testSystemUsers()
     local required
 
     # This command 
-    $S9S user --list --long 
-    # should produce somethink like this:
-    # 1 system admins System User
-    # 2 nobody nobody -
-    # 3 pipas  users  -
-    # 
+    #$S9S user --list --long 
     text=$($S9S user --list --long --batch --color=never)
 
     row=1
@@ -227,10 +222,13 @@ function testSystemUsers()
 }
 
 #
-# Testing what happens when a creation of a new user fails.
+# Testing what happens when a creation of a new user fails because the group 
+# does not exist.
 #
 function testFailNoGroup()
 {
+    local user_name
+
     #
     # Yes, this is a problem, we can't get an error message back from the pipe.
     # The group here does not exists and we did not request the creation of the
@@ -242,6 +240,14 @@ function testFailNoGroup()
         --title="Captain" \
         --generate-key \
         --group=nosuchgroup
+
+    user_name=$(s9s user --list kirk)
+    if [ "$user_name" ]; then
+        failure "User created when the group was invalid."
+        return 1
+    fi
+
+    return 0
 }
 
 function testCreateUsers()
@@ -415,8 +421,8 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
     runFunctionalTest testSystemUsers
+    runFunctionalTest testFailNoGroup
     runFunctionalTest testCreateUsers
-    #runFunctionalTest testFailNoGroup
 fi
 
 endTests
