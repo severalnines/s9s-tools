@@ -5,10 +5,6 @@ o add node
 o remove node
 o remove job
 
-o Send backupmethod as in CmonJob::backupMethod().
-  /job_data/backup_method
-  'ndb','mysqldump','xtrabackupfull','xtrabackupincr','mongodump','pg_dump','mysqlpump'
-
 o s9s node --stat
 o s9s cluster —add-node —nodes=proxysql://10.10.10.23?db_username=bob&db_password=b0b&db_database=‘*.*'&db_privs=‘SELECT,INSERT,UPDATE'
 

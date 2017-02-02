@@ -424,6 +424,7 @@ function testRollingRestart()
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
+        --backup-dir=/tmp \
         $LOG_OPTION
     
     exitCode=$?
