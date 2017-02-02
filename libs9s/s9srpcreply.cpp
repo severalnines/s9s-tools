@@ -1786,9 +1786,14 @@ S9sRpcReply::printJobListLong()
     //
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap = theList[idx].toVariantMap();
-        S9sString     user   = theMap["user_name"].toString();
-        S9sString     status = theMap["status"].toString();
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        int            jobId  = theMap["job_id"].toInt();
+        S9sString      user   = theMap["user_name"].toString();
+        S9sString      status = theMap["status"].toString();
+        
+        // Filtering.
+        if (options->hasJobId() && options->jobId() != jobId)
+            continue;
 
         if (user.length() > userNameLength)
             userNameLength = user.length();
@@ -1818,6 +1823,10 @@ S9sRpcReply::printJobListLong()
         S9sString      timeStamp;
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
+
+        // Filtering.
+        if (options->hasJobId() && options->jobId() != jobId)
+            continue;
 
         // The title.
         if (title.empty())
