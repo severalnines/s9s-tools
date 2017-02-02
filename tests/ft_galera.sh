@@ -424,7 +424,6 @@ function testRollingRestart()
     $S9S cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        --backup-dir=/tmp \
         $LOG_OPTION
     
     exitCode=$?
@@ -435,7 +434,8 @@ function testRollingRestart()
 }
 
 #
-# This will create a backup.
+# This will create a backup. Here we pass the backup-dir, so this should work
+# even if the backup directory is not set in the config.
 #
 function testCreateBackup()
 {
@@ -450,6 +450,7 @@ function testCreateBackup()
         --create \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
         $LOG_OPTION
     
     exitCode=$?
