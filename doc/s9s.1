@@ -68,9 +68,9 @@ command line option.
 List the clusters and the nodes managed by the controller:
 
 .RS
-# s9s cluster --list --controller=localhost:9555 --color=always
+# s9s cluster --list --controller=https://localhost:9556 --color=always
 
-# s9s node --list --long --controller=localhost:9555
+# s9s node --list --long --controller=https://localhost:9556
 .RE
 
 
@@ -78,5 +78,5 @@ Get the job list for the specified cluster maintained by the specified
 controller:
 .RS
 
-# s9s job --list --cluster-id=1  --controller=localhost:9555
+# s9s job --list --cluster-id=1  --controller=https://localhost:9556
 .RE

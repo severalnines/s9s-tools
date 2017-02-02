@@ -287,7 +287,7 @@ command line option.
 Here is an example showing how to create a new cluster:
 
 .nf
-# \fBs9s cluster --create --controller=localhost:9555 --cluster-type=galera --vendor=percona --nodes="192.168.1.104;192.168.1.107;192.168.1.108" --provider-version=5.6 --wait\fR
+# \fBs9s cluster --create --controller=https://localhost:9556 --cluster-type=galera --vendor=percona --nodes="192.168.1.104;192.168.1.107;192.168.1.108" --provider-version=5.6 --wait\fR
 .fi
 
 This command will create a new job on the controller to create a new cluster.
@@ -300,7 +300,7 @@ print the messages of the job.
 Another example simply lists the clusters managed by the controller:
 
 .nf
-# \fBs9s cluster --list --long --controller=localhost:9555 --color=always\fR
+# \fBs9s cluster --list --long --controller=https://localhost:9556 --color=always\fR
 .fi
 
 Schedule a rolling restart of the cluster 20 minutes from now:
