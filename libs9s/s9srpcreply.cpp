@@ -1631,6 +1631,10 @@ S9sRpcReply::printJobListBrief()
         S9sDateTime    timeStamp;
         S9sString      timeStampString;
         
+        // Filtering.
+        if (options->hasJobId() && options->jobId() != jobId)
+            continue;
+
         if (group.empty())
             group = "-";
 
@@ -1689,6 +1693,10 @@ S9sRpcReply::printJobListBrief()
         S9sString      timeStamp;
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
+        
+        // Filtering.
+        if (options->hasJobId() && options->jobId() != jobId)
+            continue;
 
         // The title.
         if (title.empty())

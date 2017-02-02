@@ -107,6 +107,8 @@ class S9sOptions
         S9sString type() const;
 
         S9sString clusterName() const;
+
+        bool hasJobId() const;
         int jobId() const;
 
         S9sString userName( const bool tryLocalUserToo = false) const;

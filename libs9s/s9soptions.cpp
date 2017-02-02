@@ -852,7 +852,16 @@ S9sOptions::clusterName() const
 }
 
 /**
- * \returns the job ID as it is set by the --job-id command line option.
+ * \returns True if the --job-id command line option was provided.
+ */
+bool
+S9sOptions::hasJobId() const
+{
+    return m_options.contains("job_id");
+}
+
+/**
+ * \returns The job ID as it is set by the --job-id command line option.
  */
 int
 S9sOptions::jobId() const

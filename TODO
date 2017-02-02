@@ -1,3 +1,19 @@
+o DONE
+  Filtering with job-id
+  s9s job --list --job-id=6
+
+o s9s job --log --job-id=6 --long
+  This should not have JOB_SUCCESS, JOB_WARNING, JOB_FAILED, but 
+  MESSAGE, WARNING, ERROR
+  Not Status but severity.
+
+o This should tell what are the possible command line options.
+  s9s job --job-id=5 
+  Unknown job operation.
+
+o The man pages should describe "operations".
+ 
+
 o send password when creating a cluster (root user password).
  /job_data/postgre_password
 
