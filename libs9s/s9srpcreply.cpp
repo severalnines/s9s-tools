@@ -628,21 +628,33 @@ S9sRpcReply::printJobLogLong()
             created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
         }
         
-        if (syntaxHighlight)
+        if (status == "JOB_SUCCESS")
         {
-            if (status == "JOB_SUCCESS")
+            if (syntaxHighlight)
             {
                 stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;
-            } else if (status == "JOB_WARNING")
+            }
+
+            status = "MESSAGE";
+        } else if (status == "JOB_WARNING")
+        {
+            if (syntaxHighlight)
             {
                 stateColorStart = XTERM_COLOR_YELLOW;
                 stateColorEnd   = TERM_NORMAL;
-            } else if (status == "JOB_FAILED")
+            }
+
+            status = "WARNING";
+        } else if (status == "JOB_FAILED")
+        {
+            if (syntaxHighlight)
             {
                 stateColorStart = XTERM_COLOR_RED;
                 stateColorEnd   = TERM_NORMAL;
             }
+
+            status = "FAILURE";
         }
 
         //printf("%s%s%s\n\n", TERM_BOLD, STR(message), TERM_NORMAL);
@@ -655,7 +667,7 @@ S9sRpcReply::printJobLogLong()
                 STR(created),
                 TERM_NORMAL); 
         
-        printf("%sStatus:%s %s%s%s\n", 
+        printf("%sSeverity:%s %s%s%s\n", 
                 XTERM_COLOR_DARK_GRAY, 
                 TERM_NORMAL,
                 stateColorStart, 
