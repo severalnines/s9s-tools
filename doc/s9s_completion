@@ -2,23 +2,20 @@
 
 function elementExists()
 {
-        local i isRunning result
-        i=0
-        isRunning=1
-        result=0
-        opts_with_equal=(--color --cluster-name --cluster-id)
+    opts_with_equal=(\
+        --color \
+        --config-file \
+        --controller --controller-port \
+        --cluster-name --cluster-id )
 
-        #~ for i in ${opts_with_equal[@]}; do
-        while [ "$isRunning" -eq 1 ]; do
-            if [ "$i" -ge "${#opts_with_equal[@]}" ]; then
-                isRunning=0
-            elif [ "${opts_with_equal[$i]}" == "$1" ]; then
-                result=1
-                isRunning=0
-            fi
-            ((i++))
-        done
-        echo $result
+    for i in ${opts_with_equal[@]}; do
+        if [ "${opts_with_equal[$i]}" == "$1" ]; then
+            echo 1
+            break
+        fi
+    done
+
+    return 0
 }
 
 function _s9s_has_options()
@@ -95,6 +92,8 @@ function _s9s()
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "
             elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
                 opts=$(s9s cluster --list --long --batch | awk '{print $1}')
             elif [ "$prev" == "--cluster-name" ]; then
                 prev="${cur%%=*}="
@@ -110,11 +109,11 @@ function _s9s()
             else 
                 opts=$(s9s cluster --list)
                 opts+="--help --verbose --version " 
-                opts+="--config-file= --controller= "
-                opts+="--controller-port= "
-                opts+="--long --print-json --color --batch --no-header "
-                opts+="--wait --log --schedule "
-                opts+="--cluster-id --cluster-name= --nodes "
+                opts+="--config-file= "
+                opts+="--controller= --controller-port= "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--properties "
             fi
 
