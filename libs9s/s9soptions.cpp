@@ -2845,6 +2845,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isCreateAccountRequested())
         countOptions++;
+    
+    if (isGrantRequested())
+        countOptions++;
 
     if (isDeleteAccountRequested())
         countOptions++;
@@ -2858,7 +2861,7 @@ S9sOptions::checkOptionsCluster()
             "The following options are mutually exclusive: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
-            " --delete-account, --create-database"
+            " --delete-account, --create-database, --grant"
             ".";
 
         m_exitStatus = BadOptions;
@@ -2869,7 +2872,7 @@ S9sOptions::checkOptionsCluster()
             "One of the following options is mandatory: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
-            " --delete-account, --create-database"
+            " --delete-account, --create-database, --grant"
             ".";
 
         m_exitStatus = BadOptions;
