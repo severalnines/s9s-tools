@@ -99,13 +99,10 @@ function _s9s()
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts=$(s9s cluster --list)
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             elif [ "$prev" == "--color" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts="never always auto"
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-                return 0
             else 
                 opts=$(s9s cluster --list)
                 opts+="--help --verbose --version " 
@@ -117,9 +114,6 @@ function _s9s()
                 opts+="--properties "
             fi
 
-            #echo "cur<$cur> prev<$prev>"
-            #COMPREPLY=( $(compgen -W "${opts}" -S '=' -- ${cur}) )
-            
             isEqualOptions=$(elementExists "${cur}")
             if [ "${isEqualOptions:-0}" -eq 1 ]; then
                 COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
