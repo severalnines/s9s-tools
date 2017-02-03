@@ -2843,12 +2843,22 @@ S9sOptions::checkOptionsCluster()
     if (isStartRequested())
         countOptions++;
 
+    if (isCreateAccountRequested())
+        countOptions++;
+
+    if (isDeleteAccountRequested())
+        countOptions++;
+
+    if (isCreateDatabaseRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = 
             "The following options are mutually exclusive: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
-            " --remove-node, --drop, --stop, --start"
+            " --remove-node, --drop, --stop, --start, --create-account,"
+            " --delete-account, --create-database"
             ".";
 
         m_exitStatus = BadOptions;
@@ -2858,7 +2868,8 @@ S9sOptions::checkOptionsCluster()
         m_errorMessage = 
             "One of the following options is mandatory: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
-            " --remove-node, --drop, --stop, --start"
+            " --remove-node, --drop, --stop, --start, --create-account,"
+            " --delete-account, --create-database"
             ".";
 
         m_exitStatus = BadOptions;
