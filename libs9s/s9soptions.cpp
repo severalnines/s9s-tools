@@ -1838,6 +1838,10 @@ S9sOptions::readOptions(
         
         case Job:
             retval = readOptionsJob(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsJob();
+
             break;
 
         case Node:
@@ -2705,6 +2709,46 @@ S9sOptions::checkOptionsBackup()
             return false;
         }
     }
+
+    return true;
+}
+
+bool
+S9sOptions::checkOptionsJob()
+{
+    int countOptions = 0;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isLogRequested())
+        countOptions++;
+
+    if (isWaitRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --log and --wait options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --log and --wait options mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
 
     return true;
 }

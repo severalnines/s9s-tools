@@ -73,7 +73,7 @@ main(int argc, char **argv)
         S9S_DEBUG("*** exitStatus: %d", options->exitStatus());
         if (!options->errorString().empty())
         {
-            PRINT_ERROR("%s\n", STR(options->errorString()));
+            PRINT_ERROR("%s", STR(options->errorString()));
         } else {
             PRINT_ERROR("Error in command line options.");
         }

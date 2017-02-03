@@ -231,6 +231,8 @@ class S9sOptions
         bool checkOptionsCluster();
 
         bool readOptionsJob(int argc, char *argv[]);
+        bool checkOptionsJob();
+
         bool readOptionsProcess(int argc, char  *argv[]);
         bool readOptionsUser(int argc, char *argv[]);
         bool readOptionsMaintenance(int argc, char *argv[]);
