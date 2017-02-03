@@ -2725,6 +2725,9 @@ S9sOptions::checkOptionsBackup()
     return true;
 }
 
+/**
+ * \returns True if the command line options seem to be ok.
+ */
 bool
 S9sOptions::checkOptionsJob()
 {
@@ -2765,6 +2768,9 @@ S9sOptions::checkOptionsJob()
     return true;
 }
 
+/**
+ * \returns True if the command line options seem to be ok.
+ */
 bool
 S9sOptions::checkOptionsCluster()
 {
@@ -2807,6 +2813,16 @@ S9sOptions::checkOptionsCluster()
     {
         m_errorMessage = 
             "The following options are mutually exclusive: "
+            "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
+            " --remove-node, --drop, --stop, --start"
+            ".";
+
+        m_exitStatus = BadOptions;
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the following options is mandatory: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start"
             ".";

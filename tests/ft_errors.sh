@@ -212,6 +212,35 @@ function testBackupOperations()
 }
 
 #
+# Checks the main operation command line options for the cluster handling.
+#
+function testClusterOperations()
+{
+    local output
+    local expected
+
+    expected="One of the following options is mandatory: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start."
+    output=$($S9S cluster 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The following options are mutually exclusive: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start."
+    output=$($S9S cluster --list --start 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    return 0
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -224,6 +253,7 @@ else
     runFunctionalTest testGrantUser
     runFunctionalTest testJobOperations
     runFunctionalTest testBackupOperations
+    runFunctionalTest testClusterOperations
 fi
 
 endTests
