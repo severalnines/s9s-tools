@@ -153,12 +153,54 @@ function testGrantUser()
     return 0
 }
 
+#
+# Checks the main operation command line options for the job handling.
+#
 function testJobOperations()
 {
     local output
-    local expected="One of the --list, --log and --wait options are mandatory."
+    local expected
 
+    expected="One of the --list, --log and --wait options is mandatory."
     output=$($S9S job --job-id=5 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The --list, --log and --wait options are mutually exclusive."
+    output=$($S9S job --list --log --job-id=5 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    return 0
+}
+
+#
+# Checks the main operation command line options for the backup handling.
+#
+function testBackupOperations()
+{
+    local output
+    local expected
+
+    expected="One of the --list, --create, --restore and --delete options is mandatory."
+    output=$($S9S backup 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The --list, --create, --restore and --delete options are mutually exclusive."
+    output=$($S9S backup --list --delete 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
@@ -181,6 +223,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testGrantUser
     runFunctionalTest testJobOperations
+    runFunctionalTest testBackupOperations
 fi
 
 endTests

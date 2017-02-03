@@ -2682,14 +2682,26 @@ S9sOptions::checkOptionsBackup()
 
     if (isRestoreRequested())
         countOptions++;
+    
+    if (isDeleteRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --create and --restore options are mutually"
+            "The --list, --create, --restore and --delete options are mutually"
             " exclusive.";
 
         m_exitStatus = BadOptions;
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --create, --restore and --delete options"
+            " is mandatory.";
+
+        m_exitStatus = BadOptions;
+
         return false;
     }
 
@@ -2742,7 +2754,7 @@ S9sOptions::checkOptionsJob()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --log and --wait options mandatory.";
+            "One of the --list, --log and --wait options is mandatory.";
 
         m_exitStatus = BadOptions;
 
