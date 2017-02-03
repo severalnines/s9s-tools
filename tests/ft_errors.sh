@@ -241,6 +241,35 @@ function testClusterOperations()
 }
 
 #
+# Checks the main operation command line options for the cluster handling.
+#
+function testNodeOperations()
+{
+    local output
+    local expected
+
+    expected="One of the --list and --set options is mandatory."
+    output=$($S9S node 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The --list and --set options are mutually exclusive."
+    output=$($S9S node --list --set 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    return 0
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -254,6 +283,7 @@ else
     runFunctionalTest testJobOperations
     runFunctionalTest testBackupOperations
     runFunctionalTest testClusterOperations
+    runFunctionalTest testNodeOperations
 fi
 
 endTests

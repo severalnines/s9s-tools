@@ -222,7 +222,9 @@ class S9sOptions
         void printHelpMetaType();
 
         bool readOptionsNoMode(int argc, char *argv[]);
+        
         bool readOptionsNode(int argc, char *argv[]);
+        bool checkOptionsNode();
 
         bool readOptionsBackup(int argc, char *argv[]);
         bool checkOptionsBackup();
