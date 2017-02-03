@@ -270,7 +270,7 @@ function testNodeOperations()
 }
 
 #
-# Checks the main operation command line options for the cluster handling.
+# Checks the main operation command line options for the user handling.
 #
 function testUserOperations()
 {
@@ -299,6 +299,35 @@ function testUserOperations()
 }
 
 #
+# Checks the main operation command line options for the maintenance handling.
+#
+function testMaintenanceOperations()
+{
+    local output
+    local expected
+
+    expected="One of the --list, --create and --delete options is mandatory."
+    output=$($S9S maintenance 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The --list, --create and --delete options are mutually exclusive."
+    output=$($S9S maintenance --list --create 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    return 0
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -314,6 +343,7 @@ else
     runFunctionalTest testClusterOperations
     runFunctionalTest testNodeOperations
     runFunctionalTest testUserOperations
+    runFunctionalTest testMaintenanceOperations
 fi
 
 endTests

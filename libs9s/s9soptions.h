@@ -241,6 +241,8 @@ class S9sOptions
         bool checkOptionsUser();
 
         bool readOptionsMaintenance(int argc, char *argv[]);
+        bool checkOptionsMaintenance();
+
         bool readOptionsMetaType(int argc, char *argv[]);
 
         bool setMode(const S9sString &modeName);

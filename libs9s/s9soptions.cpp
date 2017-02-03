@@ -1874,6 +1874,10 @@ S9sOptions::readOptions(
         
         case Maintenance:
             retval = readOptionsMaintenance(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsMaintenance();
+
             break;
         
         case MetaType:
@@ -2889,6 +2893,48 @@ S9sOptions::checkOptionsNode()
     {
         m_errorMessage = 
             "One of the --list and --set options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsMaintenance()
+{
+    int countOptions = 0;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+    
+    if (isDeleteRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --create and --delete options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --create and --delete options is mandatory.";
 
         m_exitStatus = BadOptions;
 
