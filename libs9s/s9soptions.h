@@ -236,6 +236,7 @@ class S9sOptions
         bool checkOptionsJob();
 
         bool readOptionsProcess(int argc, char  *argv[]);
+        bool checkOptionsProcess();
         
         bool readOptionsUser(int argc, char *argv[]);
         bool checkOptionsUser();

@@ -328,6 +328,35 @@ function testMaintenanceOperations()
 }
 
 #
+# Checks the main operation command line options for the process handling.
+#
+function testProcessOperations()
+{
+    local output
+    local expected
+
+    expected="One of the --list and --top options is mandatory."
+    output=$($S9S process 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected="The --list and --top options are mutually exclusive."
+    output=$($S9S process --list --top 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when operation is missing."
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    return 0
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -344,6 +373,7 @@ else
     runFunctionalTest testNodeOperations
     runFunctionalTest testUserOperations
     runFunctionalTest testMaintenanceOperations
+    runFunctionalTest testProcessOperations
 fi
 
 endTests
