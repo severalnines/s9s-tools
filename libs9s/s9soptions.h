@@ -153,6 +153,7 @@ class S9sOptions
         S9sString title() const;
         S9sString emailAddress() const;
 
+        bool isHelpRequested() const;
         bool isListRequested() const;
         bool isStatRequested() const;
         bool isListPropertiesRequested() const;

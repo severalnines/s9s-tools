@@ -1190,6 +1190,15 @@ S9sOptions::isMetaTypeOperation() const
     return m_operationMode == MetaType;
 }
 
+bool
+S9sOptions::isHelpRequested() const
+{
+    if (m_options.contains("help"))
+        return m_options.at("help").toBoolean();
+
+    return false;
+}
+
 /**
  * \returns true if the "list" function is requested by providing the --list
  *   command line option.
@@ -2686,6 +2695,9 @@ bool
 S9sOptions::checkOptionsBackup()
 {
     int countOptions = 0;
+    
+    if (isHelpRequested())
+        return true;
 
     /*
      * Checking if multiple operations are requested.
@@ -2749,6 +2761,9 @@ S9sOptions::checkOptionsJob()
 {
     int countOptions = 0;
 
+    if (isHelpRequested())
+        return true;
+
     /*
      * Checking if multiple operations are requested.
      */
@@ -2791,6 +2806,9 @@ bool
 S9sOptions::checkOptionsCluster()
 {
     int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
 
     /*
      * Checking if multiple operations are requested.
@@ -2875,6 +2893,9 @@ S9sOptions::checkOptionsNode()
 {
     int countOptions = 0;
 
+    if (isHelpRequested())
+        return true;
+
     /*
      * Checking if multiple operations are requested.
      */
@@ -2913,6 +2934,9 @@ bool
 S9sOptions::checkOptionsMaintenance()
 {
     int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
 
     /*
      * Checking if multiple operations are requested.
@@ -2956,6 +2980,9 @@ S9sOptions::checkOptionsUser()
 {
     int countOptions = 0;
 
+    if (isHelpRequested())
+        return true;
+
     /*
      * Checking if multiple operations are requested.
      */
@@ -2998,6 +3025,9 @@ bool
 S9sOptions::checkOptionsProcess()
 {
     int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
 
     /*
      * Checking if multiple operations are requested.

@@ -9,5 +9,12 @@ man_MANS =            \
 	s9s-maintenance.1 \
 	s9s.conf.5
 
-EXTRA_DIST = $(man_MANS)
+completion_DATA =     \
+	s9s_completion
+
+completiondir = /etc/bash_completion.d
+
+EXTRA_DIST =          \
+	$(man_MANS)       \
+	$(completion_DATA)
 

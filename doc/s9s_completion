@@ -1,0 +1,46 @@
+function _s9s_has_options()
+{
+    local option
+
+    for (( i=0; i < COMP_CWORD; i++ )); do
+        for option in $*; do
+            if [[ ${COMP_WORDS[i]} == "$option" ]]; then
+                return 0
+            fi
+        done
+    done
+    
+    return 1
+}
+
+function _s9s() 
+{
+    local cur prev opts
+
+    COMPREPLY=()
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    opts="--help --verbose --version"
+    opts+=" node cluster"
+
+    for (( i=0; i < COMP_CWORD; i++ )); do
+        if [[ ${COMP_WORDS[i]} == "node" ]]; then
+            if _s9s_has_options --list --set; then
+                opts="--already_has"
+            else
+                opts="--list --set"
+            fi
+
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+        fi
+    done
+
+    if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _s9s s9s
