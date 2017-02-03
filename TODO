@@ -8,6 +8,9 @@ o DONE
   MESSAGE, WARNING, ERROR
   Not Status but severity.
 
+o 
+  Filtering the cluster list with --cluster-name and --cluster-id
+
 o This should tell what are the possible command line options.
   s9s job --job-id=5 
   Unknown job operation.

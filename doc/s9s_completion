@@ -1,3 +1,26 @@
+#-*- mode: shell-script;-*-
+
+function elementExists()
+{
+        local i isRunning result
+        i=0
+        isRunning=1
+        result=0
+        opts_with_equal=(--color --cluster-name --cluster-id)
+
+        #~ for i in ${opts_with_equal[@]}; do
+        while [ "$isRunning" -eq 1 ]; do
+            if [ "$i" -ge "${#opts_with_equal[@]}" ]; then
+                isRunning=0
+            elif [ "${opts_with_equal[$i]}" == "$1" ]; then
+                result=1
+                isRunning=0
+            fi
+            ((i++))
+        done
+        echo $result
+}
+
 function _s9s_has_options()
 {
     local option
@@ -31,12 +54,16 @@ function _s9s()
     local main_opt
     local cur prev opts
 
+
     COMPREPLY=()
 
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    
-    opts="--help --verbose --version "
+    if [[ "$prev" == "=" ]]; then
+        prev="${COMP_WORDS[COMP_CWORD - 2]}"
+    fi
+ 
+    #opts="--help --verbose --version "
     #opts+=" node cluster"
 
     # 
@@ -67,18 +94,40 @@ function _s9s()
             main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "
+            elif [ "$prev" == "--cluster-id" ]; then
+                opts=$(s9s cluster --list --long --batch | awk '{print $1}')
+            elif [ "$prev" == "--cluster-name" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list)
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            elif [ "$prev" == "--color" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts="never always auto"
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                return 0
             else 
                 opts=$(s9s cluster --list)
-                #opts+="cur<$cur> prev<$prev>"
-                #opts+="--help --verbose --version " 
-                #opts+="--config-file= --controller= "
-                #opts+="--controller-port= "
-                #opts+="--long --print-json --color= --batch --no-header "
-                #opts+="--wait --log --schedule= "
-                #opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+                opts+="--help --verbose --version " 
+                opts+="--config-file= --controller= "
+                opts+="--controller-port= "
+                opts+="--long --print-json --color --batch --no-header "
+                opts+="--wait --log --schedule "
+                opts+="--cluster-id --cluster-name= --nodes "
+                opts+="--properties "
             fi
 
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            #echo "cur<$cur> prev<$prev>"
+            #COMPREPLY=( $(compgen -W "${opts}" -S '=' -- ${cur}) )
+            
+            isEqualOptions=$(elementExists "${cur}")
+            if [ "${isEqualOptions:-0}" -eq 1 ]; then
+                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
+            else
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            fi
+
             return 0
 
         fi
@@ -89,4 +138,4 @@ function _s9s()
         return 0
     fi
 }
-complete -F _s9s s9s
+complete -o nospace -F _s9s s9s
