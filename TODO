@@ -17,6 +17,9 @@ o This should tell what are the possible command line options.
 
 o The man pages should describe "operations".
  
+o 
+  Should be able to filter like this:
+  s9s user --list --cmon-user=pipas
 
 o send password when creating a cluster (root user password).
  /job_data/postgre_password

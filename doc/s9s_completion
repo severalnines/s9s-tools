@@ -3,10 +3,15 @@
 function elementExists()
 {
     opts_with_equal=(\
-        --color \
         --config-file \
         --controller --controller-port \
-        --cluster-name --cluster-id )
+        --color \
+        --cluster-id --cluster-name --nodes \
+        --properties \
+        --vendor --provider-version --os-user \
+        --cluster-type --db-admin --db-admin-passwd \
+        --account --db-name \
+        )
 
     for i in ${opts_with_equal[@]}; do
         if [ "${opts_with_equal[$i]}" == "$1" ]; then
@@ -86,6 +91,40 @@ function _s9s()
 
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
+        elif [[ ${COMP_WORDS[i]} == "user" ]]; then
+            main_opt="--list --whoami --create"
+
+            if ! _s9s_has_options $main_opt; then
+                opts="$main_opt "
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version " 
+                opts+="--config-file= "
+                opts+="--controller= --controller-port= "
+                opts+="--rpc-tls "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--properties= "
+                opts+="--vendor= --provider-version= --os-user= "
+                opts+="--cluster-type= --db-admin= --db-admin-passwd= "
+                opts+="--account= --with-database --db-name= "
+
+                opts+="--cmon-user="
+                opts+=$(s9s user --list)
+            fi
+            
+            isEqualOptions=$(elementExists "${cur}")
+            if [ "${isEqualOptions:-0}" -eq 1 ]; then
+                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
+            else
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            fi
+
+            return 0
         elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
             main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
             if ! _s9s_has_options $main_opt; then
@@ -114,7 +153,6 @@ function _s9s()
                 opts+="--properties= "
                 opts+="--vendor= --provider-version= --os-user= "
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
-
                 opts+="--account= --with-database --db-name= "
             fi
 
