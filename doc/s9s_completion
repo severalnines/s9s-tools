@@ -13,8 +13,22 @@ function _s9s_has_options()
     return 1
 }
 
+#
+# Returns true if the COMMAND part of the command line options is not yet
+# entered.
+#
+function _s9s_no_command()
+{
+    if ! _s9s_has_options backup cluster job maint node process user; then
+        return 0
+    fi
+
+    return 1
+}
+
 function _s9s() 
 {
+    local main_opt
     local cur prev opts
 
     COMPREPLY=()
@@ -22,19 +36,51 @@ function _s9s()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     
-    opts="--help --verbose --version"
-    opts+=" node cluster"
+    opts="--help --verbose --version "
+    #opts+=" node cluster"
+
+    # 
+    # Offering the commands if they are not entered.
+    #
+    if _s9s_no_command; then
+        opts+="backup cluster job maint node process user"
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
 
     for (( i=0; i < COMP_CWORD; i++ )); do
         if [[ ${COMP_WORDS[i]} == "node" ]]; then
-            if _s9s_has_options --list --set; then
-                opts="--already_has"
-            else
+            if ! _s9s_has_options --list --set; then
                 opts="--list --set"
+            else
+                opts+="--help --verbose --version " 
+                opts+="--config-file= --controller= "
+                opts+="--controller-port= "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= --properties= "
             fi
 
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
+        elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
+            main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
+            if ! _s9s_has_options $main_opt; then
+                opts="$main_opt "
+            else 
+                opts=$(s9s cluster --list)
+                #opts+="cur<$cur> prev<$prev>"
+                #opts+="--help --verbose --version " 
+                #opts+="--config-file= --controller= "
+                #opts+="--controller-port= "
+                #opts+="--long --print-json --color= --batch --no-header "
+                #opts+="--wait --log --schedule= "
+                #opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+            fi
+
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+
         fi
     done
 
