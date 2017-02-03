@@ -1866,6 +1866,10 @@ S9sOptions::readOptions(
 
         case User:
             retval = readOptionsUser(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsUser();
+
             break;
         
         case Maintenance:
@@ -2891,6 +2895,48 @@ S9sOptions::checkOptionsNode()
         return false;
     }
 
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsUser()
+{
+    int countOptions = 0;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+    
+    if (isWhoAmIRequested())
+        countOptions++;
+
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --whoami and --create options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --whoami and --create options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
 
     return true;
 }

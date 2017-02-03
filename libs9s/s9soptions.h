@@ -236,7 +236,10 @@ class S9sOptions
         bool checkOptionsJob();
 
         bool readOptionsProcess(int argc, char  *argv[]);
+        
         bool readOptionsUser(int argc, char *argv[]);
+        bool checkOptionsUser();
+
         bool readOptionsMaintenance(int argc, char *argv[]);
         bool readOptionsMetaType(int argc, char *argv[]);
 
