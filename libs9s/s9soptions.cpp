@@ -2221,6 +2221,7 @@ S9sOptions::printHelpCluster()
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
@@ -3258,7 +3259,6 @@ S9sOptions::readOptionsUser(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
@@ -3379,7 +3379,7 @@ S9sOptions::readOptionsUser(
                 break;
 
             case 'u':
-                // --cmon-user
+                // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
 
@@ -3841,6 +3841,7 @@ S9sOptions::readOptionsCluster(
         { "help",             no_argument,       0, OptionHelp            },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
@@ -3922,6 +3923,11 @@ S9sOptions::readOptionsCluster(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
