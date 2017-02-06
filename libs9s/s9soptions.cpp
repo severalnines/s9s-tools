@@ -2091,6 +2091,7 @@ S9sOptions::printHelpJob()
 "Options for the \"job\" command:\n"
 "  --list                     List the jobs.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --job-id=ID                The ID of the job.\n"
 "\n"
     );
@@ -4189,27 +4190,28 @@ S9sOptions::readOptionsJob(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0,  6  },
-        { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
+        { "help",             no_argument,       0, OptionHelp        },
+        { "verbose",          no_argument,       0, 'v'               },
+        { "version",          no_argument,       0, 'V'               },
+        { "cmon-user",        required_argument, 0, 'u'               }, 
+        { "controller",       required_argument, 0, 'c'               },
+        { "controller-port",  required_argument, 0, 'P'               },
+        { "rpc-tls",          no_argument,       0,  6                },
+        { "rpc-token",        required_argument, 0, 't'               },
+        { "long",             no_argument,       0, 'l'               },
         { "print-json",       no_argument,       0,  OptionPrintJson  },
         { "config-file",      required_argument, 0,  OptionConfigFile },
         { "color",            optional_argument, 0,  OptionColor      },
         { "date-format",      required_argument, 0,  OptionDateFormat },
 
         // Main Option
-        { "wait",             no_argument,       0,  5  },
-        { "log",              no_argument,       0, 'G' },
-        { "list",             no_argument,       0, 'L' },
+        { "wait",             no_argument,       0,  5                },
+        { "log",              no_argument,       0, 'G'               },
+        { "list",             no_argument,       0, 'L'               },
 
         // Job Related Options
-        { "cluster-id",       required_argument, 0, 'i' },
-        { "job-id",           required_argument, 0, OptionJobId  },
+        { "cluster-id",       required_argument, 0, 'i'               },
+        { "job-id",           required_argument, 0, OptionJobId       },
 
         { 0, 0, 0, 0 }
     };
@@ -4242,6 +4244,11 @@ S9sOptions::readOptionsJob(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
