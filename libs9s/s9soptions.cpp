@@ -921,6 +921,20 @@ S9sOptions::account() const
 }
 
 /**
+ * \returns the username property of the account that was presented by the
+ *   --account command line option or the empty string if the account was not
+ *   provided.
+ */
+S9sString
+S9sOptions::accountName() const
+{
+    S9sString retval = m_options.at("account").toAccount().userName();
+
+    return retval;
+
+}
+
+/**
  * \returns True if the account description was successfully parsed and the 
  *   account was stored, false if the string is mallformed.
  */

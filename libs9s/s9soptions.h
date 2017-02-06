@@ -117,6 +117,7 @@ class S9sOptions
 
         S9sAccount account() const;
         bool setAccount(const S9sString &value);
+        S9sString accountName() const;
 
         bool withDatabase() const;
         S9sString dbName() const;
