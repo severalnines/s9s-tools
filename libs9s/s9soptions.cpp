@@ -2125,6 +2125,7 @@ S9sOptions::printHelpBackup()
 "  --restore                  Restore an existing backup.\n"
 "  --delete                   Delete a previously created backup.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
@@ -2463,47 +2464,48 @@ S9sOptions::readOptionsBackup(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp         },
-        { "verbose",          no_argument,       0, 'v'                },
-        { "version",          no_argument,       0, 'V'                },
-        { "controller",       required_argument, 0, 'c'                },
-        { "controller-port",  required_argument, 0, 'P'                },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls       },
-        { "rpc-token",        required_argument, 0, 't'                },
-        { "long",             no_argument,       0, 'l'                },
-        { "print-json",       no_argument,       0, OptionPrintJson    },
-        { "color",            optional_argument, 0, OptionColor        },
-        { "human-readable",   no_argument,       0, 'h' },
-        { "time-style",       required_argument, 0, OptionTimeStyle    },
-        { "config-file",      required_argument, 0, OptionConfigFile   },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "human-readable",   no_argument,       0, 'h'                   },
+        { "time-style",       required_argument, 0, OptionTimeStyle       },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                },
-        { "create",           no_argument,       0,  OptionCreate      },
-        { "restore",          no_argument,       0,  OptionRestore     },
-        { "delete",           no_argument,       0,  OptionDelete      },
+        { "list",             no_argument,       0, 'L'                   },
+        { "create",           no_argument,       0,  OptionCreate         },
+        { "restore",          no_argument,       0,  OptionRestore        },
+        { "delete",           no_argument,       0,  OptionDelete         },
         
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait         },
-        { "log",              no_argument,       0, 'G'                },
-        { "batch",            no_argument,       0, OptionBatch        },
-        { "no-header",        no_argument,       0, OptionNoHeader     },
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Cluster information
-        { "cluster-id",       required_argument, 0, 'i' },
-        { "backup-id",        required_argument, 0, OptionBackupId     },
-        { "nodes",            required_argument, 0, OptionNodes        },
-        { "schedule",         required_argument, 0, OptionSchedule     },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "backup-id",        required_argument, 0, OptionBackupId        },
+        { "nodes",            required_argument, 0, OptionNodes           },
+        { "schedule",         required_argument, 0, OptionSchedule        },
 
         // Backup info
-        { "backup-method",    required_argument, 0, OptionBackupMethod },
+        { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
-        { "no-compression",   no_argument,       0, OptionNoCompression },
-        { "use-pigz",         no_argument,       0, OptionUsePigz      },
-        { "on-node",          no_argument,       0, OptionOnNode       },
-        { "databases",        required_argument, 0, OptionDatabases    },
-        { "parallellism",     required_argument, 0, OptionParallellism },
-        { "full-path",        no_argument,       0, OptionFullPath     },
+        { "no-compression",   no_argument,       0, OptionNoCompression   },
+        { "use-pigz",         no_argument,       0, OptionUsePigz         },
+        { "on-node",          no_argument,       0, OptionOnNode          },
+        { "databases",        required_argument, 0, OptionDatabases       },
+        { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "full-path",        no_argument,       0, OptionFullPath        },
         { 0, 0, 0, 0 }
     };
 
@@ -2534,6 +2536,11 @@ S9sOptions::readOptionsBackup(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':

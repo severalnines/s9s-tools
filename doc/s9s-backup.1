@@ -43,12 +43,19 @@ The host name of the Cmon Controller. The protocol and port is also accepted as
 part of the hostname (e.g. --controller="https://127.0.0.1:9556").
 
 .TP
-.B \-h, \-\-human-readable
-Print the sizes of files in human readable format.
-
-.TP
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
 The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+The name of the user that is going to be used to authenticate on the Cmon
+Controller. This can also be set as the \fBcmon_user\fP configuration file 
+value, but the command line option of course has precedence over the
+configuration file. 
+
+.TP
+.B \-h, \-\-human-readable
+Print the sizes of files in human readable format.
 
 .TP
 .BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
