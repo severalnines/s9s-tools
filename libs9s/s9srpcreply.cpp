@@ -794,7 +794,14 @@ S9sRpcReply::printClusterListBrief()
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
         S9sString     clusterName = theMap["cluster_name"].toString();
+        int           clusterId   = theMap["cluster_id"].toInt();
         
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
+
         if (!options->isStringMatchExtraArguments(clusterName))
             continue;
 
@@ -849,13 +856,20 @@ S9sRpcReply::printClusterListLong()
             clusterMap["vendor"].toString() + " " +
             clusterMap["version"].toString();
         
+        //
+        // Filtering.
+        //
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
+
         if (!options->isStringMatchExtraArguments(clusterName))
             continue;
 
         if (groupName.empty())
             groupName = "0";
-
-        S9S_DEBUG("*** groupName: '%s'", STR(groupName));
 
         idFormat.widen(clusterId);
         stateFormat.widen(state);
@@ -914,6 +928,15 @@ S9sRpcReply::printClusterListLong()
         
         if (groupName.empty())
             groupName = "0";
+
+        //
+        // Filtering
+        //
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
 
         if (!requestedName.empty() && requestedName != clusterName)
             continue;

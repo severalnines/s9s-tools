@@ -15,8 +15,6 @@ o This should tell what are the possible command line options.
   s9s job --job-id=5 
   Unknown job operation.
 
-o The man pages should describe "operations".
- 
 o NOPE, this is already used, the --cmon-user actually will be used in the
   authenticating.
   Should be able to filter like this:
@@ -41,11 +39,18 @@ Ended     : 2017-02-06 11:11:59
 --------------------------------------------------------------------------------
 
 
-o add node
-o remove node
-o remove job
+o DONE
+  add node
 
-o s9s node --stat
+o DONE
+  remove node
+
+o 
+  remove job
+
+o DONE
+  s9s node --stat
+
 o s9s cluster —add-node —nodes=proxysql://10.10.10.23?db_username=bob&db_password=b0b&db_database=‘*.*'&db_privs=‘SELECT,INSERT,UPDATE'
 
 ok, so to summarise it will be possible to do this:
