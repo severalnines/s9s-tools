@@ -8,7 +8,7 @@ o DONE
   MESSAGE, WARNING, ERROR
   Not Status but severity.
 
-o 
+o DONE
   Filtering the cluster list with --cluster-name and --cluster-id
 
 o This should tell what are the possible command line options.
@@ -61,7 +61,8 @@ but also
 
 s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd —compact-priv-format=“*.*: REPLICATION CLIENT”
 
-o Make sure we have a meaningful error string if we try to use 
+o DONE
+  Make sure we have a meaningful error string if we try to use 
   http:// communication.
 
   Authentication failed: Invalid clusterId path: 'v2'
