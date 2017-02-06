@@ -17,7 +17,8 @@ o This should tell what are the possible command line options.
 
 o The man pages should describe "operations".
  
-o 
+o NOPE, this is already used, the --cmon-user actually will be used in the
+  authenticating.
   Should be able to filter like this:
   s9s user --list --cmon-user=pipas
 
