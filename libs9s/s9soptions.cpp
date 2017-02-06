@@ -2153,6 +2153,7 @@ S9sOptions::printHelpMaintenance()
 "  --create                   Create a new maintenance period.\n"
 "  --delete                   Delete a maintenance period.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
 "  --nodes=NODELIST           The nodes for the node maintenances.\n"
 "  --full-uuid                Print the full UUID.\n"
@@ -3492,34 +3493,35 @@ S9sOptions::readOptionsMaintenance(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'               },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
-        { "rpc-token",        required_argument, 0, 't'               },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0, OptionPrintJson   },
-        { "color",            optional_argument, 0, OptionColor       },
-        { "config-file",      required_argument, 0, OptionConfigFile  },
-        { "batch",            no_argument,       0, OptionBatch       },
-        { "no-header",        no_argument,       0, OptionNoHeader    },
-        { "date-format",      required_argument, 0, OptionDateFormat  },
-        { "full-uuid",        no_argument,       0, OptionFullUuid    },
+        { "help",             no_argument,       0, 'h'                   },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "date-format",      required_argument, 0, OptionDateFormat      },
+        { "full-uuid",        no_argument,       0, OptionFullUuid        },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'               },
-        { "create",           no_argument,       0, OptionCreate      },
-        { "delete",           no_argument,       0, OptionDelete      },
+        { "list",             no_argument,       0, 'L'                   },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "delete",           no_argument,       0, OptionDelete          },
        
         // Options about the maintenance period.
-        { "cluster-id",       required_argument, 0, 'i'               },
-        { "nodes",            required_argument, 0, OptionNodes       },
-        { "start",            required_argument, 0, OptionStart       },
-        { "end",              required_argument, 0, OptionEnd         },
-        { "reason",           required_argument, 0, OptionReason      },
-        { "uuid",             required_argument, 0, OptionUuid        },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "nodes",            required_argument, 0, OptionNodes           },
+        { "start",            required_argument, 0, OptionStart           },
+        { "end",              required_argument, 0, OptionEnd             },
+        { "reason",           required_argument, 0, OptionReason          },
+        { "uuid",             required_argument, 0, OptionUuid            },
 
         { 0, 0, 0, 0 }
     };
@@ -3551,6 +3553,11 @@ S9sOptions::readOptionsMaintenance(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
