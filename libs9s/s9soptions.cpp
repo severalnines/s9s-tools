@@ -2107,6 +2107,7 @@ S9sOptions::printHelpProcess()
 "  --list                     List the processes.\n"
 "  --top                      Continuosly print top processes.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
 "  --update-freq=SECS         The screen update frequency.\n"
 "\n"
@@ -3118,30 +3119,30 @@ S9sOptions::readOptionsProcess(
         int    argc,
         char  *argv[])
 {
-    S9S_DEBUG("");
     int           c;
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp },
-        { "verbose",          no_argument,       0, 'v' },
-        { "version",          no_argument,       0, 'V' },
-        { "controller",       required_argument, 0, 'c' },
-        { "controller-port",  required_argument, 0, 'P' },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls },
-        { "rpc-token",        required_argument, 0, 't' },
-        { "long",             no_argument,       0, 'l' },
-        { "print-json",       no_argument,       0,  OptionPrintJson },
-        { "color",            optional_argument, 0,  OptionColor },
-        { "config-file",      required_argument, 0,  OptionConfigFile },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "color",            optional_argument, 0,  OptionColor          },
+        { "config-file",      required_argument, 0,  OptionConfigFile     },
 
         // Main Option
-        { "list",             no_argument,       0, 'L' },
-        { "top",              no_argument,       0,  OptionTop },
+        { "list",             no_argument,       0, 'L'                   },
+        { "top",              no_argument,       0,  OptionTop            },
 
         // Cluster information
-        { "cluster-id",       required_argument, 0, 'i' },
-        { "update-freq",      required_argument, 0,  OptionUpdateFreq },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "update-freq",      required_argument, 0,  OptionUpdateFreq     },
 
         { 0, 0, 0, 0 }
     };
@@ -3173,6 +3174,11 @@ S9sOptions::readOptionsProcess(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
