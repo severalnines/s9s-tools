@@ -787,7 +787,6 @@ S9sRpcReply::printClusterListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     int             nPrinted = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -796,19 +795,29 @@ S9sRpcReply::printClusterListBrief()
         S9sString     clusterName = theMap["cluster_name"].toString();
         int           clusterId   = theMap["cluster_id"].toInt();
         
+        //
+        // Filtering.
+        //
         if (options->hasClusterIdOption())
         {
             if (clusterId != options->clusterId())
+                continue;
+        }
+        
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
                 continue;
         }
 
         if (!options->isStringMatchExtraArguments(clusterName))
             continue;
 
-        if (syntaxHighlight)
-            printf("%s%s%s ", TERM_BLUE, STR(clusterName), TERM_NORMAL);
-        else
-            printf("%s ", STR(clusterName));
+
+        printf("%s%s%s ", 
+                clusterColorBegin(), 
+                STR(clusterName), 
+                clusterColorEnd());
 
         ++nPrinted;
     }
@@ -862,6 +871,12 @@ S9sRpcReply::printClusterListLong()
         if (options->hasClusterIdOption())
         {
             if (clusterId != options->clusterId())
+                continue;
+        }
+        
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
                 continue;
         }
 
@@ -935,6 +950,12 @@ S9sRpcReply::printClusterListLong()
         if (options->hasClusterIdOption())
         {
             if (clusterId != options->clusterId())
+                continue;
+        }
+
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
                 continue;
         }
 

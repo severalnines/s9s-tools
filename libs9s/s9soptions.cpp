@@ -851,6 +851,12 @@ S9sOptions::clusterName() const
     return retval;
 }
 
+bool
+S9sOptions::hasClusterNameOption()
+{
+    return m_options.contains("cluster_name");
+}
+
 /**
  * \returns True if the --job-id command line option was provided.
  */

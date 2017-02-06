@@ -107,6 +107,7 @@ class S9sOptions
         S9sString type() const;
 
         S9sString clusterName() const;
+        bool hasClusterNameOption();
 
         bool hasJobId() const;
         int jobId() const;
