@@ -906,7 +906,8 @@ S9sOptions::userName(
 }
 
 /**
- * \returns the command line option argument for the --username option.
+ * \returns the account that was provided using the --account command line
+ *   options.
  */
 S9sAccount
 S9sOptions::account() const
@@ -919,6 +920,10 @@ S9sOptions::account() const
     return retval;
 }
 
+/**
+ * \returns True if the account description was successfully parsed and the 
+ *   account was stored, false if the string is mallformed.
+ */
 bool
 S9sOptions::setAccount(
         const S9sString &value)
