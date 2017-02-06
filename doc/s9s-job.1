@@ -9,21 +9,43 @@ s9s_job \- Command line client for the Severalnines Clustercontrol server.
 \fBs9s\fP is command line tool to manage and monitor... more info needed...
 
 .SH OPTIONS
-General options for \fBs9s_job\fP:
-.TP
 
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-L, \-\-list
+List jobs.
+
+.TP
+.B \-\-wait
+Wait for the specified job to end. While waiting a progress bar will be shown
+unless the silent mode is set.
+
+.TP
+.B \-\-log
+Print the job messages of the specified job.
+
+.\"
+.\"
+.\"
+.SS General Options
+
+.TP
 .B \-\-help
 Print the help message and exist.
-.TP
 
+.TP
 .B \-v, \-\-verbose
 Print more messages than normally.
-.TP
 
+.TP
 .B \-V, \-\-version
 Print version information and exit.
-.TP
 
+.TP
 .BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
 The host name of the Cmon Controller. The port is also accepted as part of the
 hostname.
@@ -31,7 +53,6 @@ hostname.
 
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
 The port where the Cmon Controller is waiting for connections.
-.TP
 
 .TP
 .BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
@@ -70,19 +91,6 @@ accepted as specified in the strftime(3) man page.
 .\"
 .\"
 .SS Job Related Options
-
-.TP
-.B \-\-wait
-Wait for the specified job to end. While waiting a progress bar will be shown
-unless the silent mode is set.
-
-.TP
-.B \-\-log
-Print the job messages of the specified job.
-
-.TP
-.BR \-\^\-job-id =\fIID\fP
-The job ID of the job to handle or view.
 
 .TP
 .BR \-\^\-job-id =\fIID\fP
