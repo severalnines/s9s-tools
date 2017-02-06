@@ -1825,6 +1825,7 @@ S9sRpcReply::printJobListLong()
         S9sString      title      = theMap["title"].toString();
         S9sString      statusText = theMap["status_text"].toString();
         S9sString      user       = theMap["user_name"].toString();
+        S9sString      group      = theMap["group_name"].toString();
         S9sString      hostName   = theMap["ip_address"].toString();
         S9sString      created    = theMap["created"].toString();
         S9sString      ended      = theMap["ended"].toString();
@@ -1968,13 +1969,14 @@ S9sRpcReply::printJobListLong()
 
         printf("\n");
 
+        // Started : 2017-02-06 11:13:04  User : system   Host   : 127.0.0.1
         printf("%sStarted   :%s %s%19s%s    ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 XTERM_COLOR_LIGHT_GRAY, STR(started), TERM_NORMAL);
         
         printf("%sUser :%s %s%-10s%s ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                XTERM_COLOR_BLUE, STR(user), TERM_NORMAL);
+                userColorBegin(), STR(user), userColorEnd());
 
         printf("%sHost   :%s %s%s%s ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
@@ -1984,9 +1986,15 @@ S9sRpcReply::printJobListLong()
 
 
 
-        printf("%sEnded     :%s %s%19s%s\n", 
+        printf("%sEnded     :%s %s%19s%s    ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 XTERM_COLOR_LIGHT_GRAY, STR(ended), TERM_NORMAL);
+        
+        printf("%sGroup:%s %s%-10s%s ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                groupColorBegin(group), STR(group), groupColorEnd());
+        
+        printf("\n");
         
         if (!scheduled.empty())
         {

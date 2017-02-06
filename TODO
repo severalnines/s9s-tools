@@ -22,13 +22,14 @@ o NOPE, this is already used, the --cmon-user actually will be used in the
   Should be able to filter like this:
   s9s user --list --cmon-user=pipas
 
-o send password when creating a cluster (root user password).
+o DONE
+  send password when creating a cluster (root user password).
  /job_data/postgre_password
 
 o 
   Jobs don't have "host" part when created from the command line tool.
 
-o 
+o DONE 
   Jobs don't have group in the detailed list (only in the brief).
 --------------------------------------------------------------------------------
 Setup PostgreSQL Server
