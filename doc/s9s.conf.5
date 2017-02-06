@@ -5,6 +5,44 @@ s9s.conf \- configuration file for the s9s command line tool
 .B ~/s9s/s9s.conf
 
 .B /etc/s9s.conf
+
+.SH INTRODUCTION
+The following lines show a minimalistic configuration file that can be used as a
+template to create one's first configuration file:
+.nf
+
+.RS
+[global]
+controller = https://192.168.1.200:9556
+cmon_user  = pipas
+.RE
+
+.fi
+This simple example configuration shows the most important elements one need to
+use the s9s command line tool:
+
+.TP
+.B PROTOCOL
+The configuration has a value for the \fBcontroller\fP and it is defined using
+the https:// protocol. This means the communication between the command line
+tool and the Cmon Controller will be implemented through an encrypted channel.
+Currently this is the only way the s9s command line tool and the controller can
+communicate, so using the https:// prefix is very important.
+
+.TP 
+.B HOSTNAME:PORT
+The IP address and the port number. These are used to define where the
+controller is waiting for the requests the usual ways.
+
+.TP
+.B USERNAME
+Then the \fBcmon_user\fP is defined. This is the username for the account
+maintained by the controller to be used while sending requests from the command
+line tool. The authetication will be done using a public and a private key pair
+that is by default stored in the ~/.s9s/ directory under the Cmon User's
+username (e.g ~/.s9s/pipas.pub and ~/.s9s/pipas.key in this case). 
+
+
 .SH DESCRIPTION
 .TP
 \fBbackup_directory\fP 
@@ -54,12 +92,13 @@ on the nodes with SSH.
 .TP
 \fBprovider_version\fP
 The version of the SQL software that will be installed when no value is set by
-the --provider-version command line option.
+the \fB--provider-version\fP command line option.
 
 .TP
 \fBcmon_user\fP
-The Cmon user name used to authenticate the user on the Cmon system and identify
-the owner of the objects the user creates (e.g. owner of the cluster). 
+The Cmon user name used to authenticate the user on the Cmon system and 
+identify the owner of the objects the user creates (e.g. owner of the cluster).
+This value can also be set using the \fB--cmon-user\fP command line option.
 
 .TP
 \fBvendor\fP 

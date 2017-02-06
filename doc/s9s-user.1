@@ -87,7 +87,15 @@ Do not print headers for tables.
 .SS Options Related to Users
 
 .TP
-.BI \-\^\-group= NAME
+.BI \-\^\-cmon-user= USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be manipulated or used to authenticate. Since most of the
+functionality needs authentication this command line option should be very
+frequently used or set in the configuration file. Please check the documentation
+of the s9s-conf(5) to see how the Cmon User can be set.
+
+.TP
+.BI \-\^\-group= GROUPNAME
 Set the name of the group. For example when a new user is created this option
 can be used to control what will be the primary group of the new user.
 
