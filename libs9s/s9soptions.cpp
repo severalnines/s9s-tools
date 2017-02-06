@@ -2247,6 +2247,7 @@ S9sOptions::printHelpNode()
 "  --list                     List the jobs found on the controller.\n"
 "  --set                      Change the properties of a node.\n"
 "\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
 "  --cluster-name=NAME        Name of the cluster to list.\n"
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
@@ -2269,6 +2270,7 @@ S9sOptions::readOptionsNode(
         { "help",             no_argument,       0, OptionHelp        },
         { "verbose",          no_argument,       0, 'v'               },
         { "version",          no_argument,       0, 'V'               },
+        { "cmon-user",        required_argument, 0, 'u'               }, 
         { "controller",       required_argument, 0, 'c'               },
         { "controller-port",  required_argument, 0, 'P'               },
         { "rpc-tls",          no_argument,       0, OptionRpcTls      },
@@ -2323,6 +2325,11 @@ S9sOptions::readOptionsNode(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
