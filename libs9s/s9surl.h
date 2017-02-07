@@ -31,6 +31,7 @@ class S9sUrl
         S9sUrl(const S9sString &stringRep);
 
         S9sString protocol() const { return m_protocol; };
+        bool hasProtocol() const { return !m_protocol.empty(); };
         S9sString hostName() const { return m_hostName; };
         int port() const { return m_port; };
         bool hasPort() const { return m_hasPort; };

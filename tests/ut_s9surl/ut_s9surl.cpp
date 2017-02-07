@@ -39,6 +39,7 @@ UtS9sUrl::runTest(const char *testName)
 
     PERFORM_TEST(testCreate01,      retval);
     PERFORM_TEST(testCreate02,      retval);
+    PERFORM_TEST(testCreate03,      retval);
 
     return retval;
 }
@@ -66,6 +67,23 @@ UtS9sUrl::testCreate02()
     S9S_COMPARE(url.hostName(), "hostname.eu");
     S9S_VERIFY(url.hasPort());
     S9S_COMPARE(url.port(), 8000);
+
+    return true;
+}
+
+/**
+ * Testing the constructor that parse the string representation.
+ */
+bool
+UtS9sUrl::testCreate03()
+{
+    S9sUrl url("https://hostname.eu:8000");
+
+    S9S_COMPARE(url.hostName(), "hostname.eu");
+    S9S_VERIFY(url.hasPort());
+    S9S_COMPARE(url.port(), 8000);
+    S9S_VERIFY(url.hasProtocol());
+    S9S_COMPARE(url.protocol(), "https");
 
     return true;
 }

@@ -29,5 +29,6 @@ class UtS9sUrl : public S9sUnitTest
     protected:
         bool testCreate01();
         bool testCreate02();
+        bool testCreate03();
 };
 
