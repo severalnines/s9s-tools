@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sString"
+#include "S9sVariantMap"
 
 /**
  * A simple class to parse URLs.
@@ -35,6 +36,8 @@ class S9sUrl
         S9sString hostName() const { return m_hostName; };
         int port() const { return m_port; };
         bool hasPort() const { return m_hasPort; };
+        
+        S9sVariant property(const S9sString &key) const;
 
     protected:
         enum ParseState
@@ -46,17 +49,19 @@ class S9sUrl
             MaybeUserName,
             PropertyName,
             PropertyValue,
+            PortString,
         };
 
         S9sString parseStateToString(const S9sUrl::ParseState state);
         bool parse(const S9sString      &input);
 
     private:
-        S9sString    m_origString;
-        S9sString    m_protocol;
-        S9sString    m_hostName;
-        int          m_port;
-        bool         m_hasPort;
+        S9sString     m_origString;
+        S9sString     m_protocol;
+        S9sString     m_hostName;
+        int           m_port;
+        bool          m_hasPort;
+        S9sVariantMap m_properties;
 
         friend class UtS9sUrl;
 };

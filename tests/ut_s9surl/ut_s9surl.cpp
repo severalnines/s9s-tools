@@ -42,6 +42,9 @@ UtS9sUrl::runTest(const char *testName)
     PERFORM_TEST(testCreate03,      retval);
     PERFORM_TEST(testParse01,       retval);
     PERFORM_TEST(testParse02,       retval);
+    PERFORM_TEST(testParse03,       retval);
+    PERFORM_TEST(testParse04,       retval);
+    PERFORM_TEST(testParse05,       retval);
 
     return retval;
 }
@@ -112,8 +115,53 @@ UtS9sUrl::testParse02()
     S9S_COMPARE(url.protocol(), "proxysql");
     S9S_COMPARE(url.hostName(), "10.10.10.23");
     S9S_COMPARE(url.hasPort(),  false);
+    S9S_COMPARE(url.property("db_username"),  "bob");
 
     return true;
 }
+
+bool
+UtS9sUrl::testParse03()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("proxysql://10.10.10.23?db_username=bob&db_password=b0b&db_database='*.*'&db_privs='SELECT,INSERT,UPDATE'"));
+    S9S_COMPARE(url.protocol(), "proxysql");
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
+    S9S_COMPARE(url.hasPort(),  false);
+    S9S_COMPARE(url.property("db_username"),  "bob");
+    S9S_COMPARE(url.property("db_password"),  "b0b");
+    S9S_COMPARE(url.property("db_database"),  "*.*");
+    S9S_COMPARE(url.property("db_privs"),     "SELECT,INSERT,UPDATE");
+
+    return true;
+}
+
+bool
+UtS9sUrl::testParse04()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("https://10.10.1.120:8080"));
+    S9S_COMPARE(url.protocol(), "https");
+    S9S_COMPARE(url.hostName(), "10.10.1.120");
+    S9S_COMPARE(url.hasPort(),  true);
+    S9S_COMPARE(url.port(),     8080);
+
+    return true;
+}
+
+bool
+UtS9sUrl::testParse05()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("10.10.1.120"));
+    S9S_COMPARE(url.hostName(), "10.10.1.120");
+    S9S_COMPARE(url.hasPort(),  false);
+
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sUrl)

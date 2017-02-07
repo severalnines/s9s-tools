@@ -41,6 +41,8 @@ S9sUrl::S9sUrl(
     S9sRegExp  protocolRegExp("(.+)://(.*)");
     S9sRegExp  regexp("([^:]+):([0-9]+)");
 
+    // If the string starts with a protocol we remove that and continue with the
+    // remaining part.
     if (protocolRegExp == theString)
     {
         //S9S_WARNING("protocolRegExp[0] = '%s'", STR(protocolRegExp[0]));
@@ -51,6 +53,7 @@ S9sUrl::S9sUrl(
         theString  = protocolRegExp[2];
     }
 
+    // If the string contains a port.
     if (regexp == theString)
     {
         //S9S_WARNING("regexp[0] = '%s'", STR(regexp[0]));
@@ -63,6 +66,16 @@ S9sUrl::S9sUrl(
     } else {
         m_hostName = theString;
     }
+}
+
+S9sVariant 
+S9sUrl::property(
+        const S9sString &key) const
+{
+    if (m_properties.contains(key))
+        return m_properties.at(key);
+
+    return S9sVariant();
 }
 
 S9sString
@@ -91,6 +104,9 @@ S9sUrl::parseStateToString(
 
         case PropertyValue:
             return "PropertyValue";
+
+        case PortString:
+            return "PortString";
     }
 
     return "UNKNOWN";
@@ -109,6 +125,8 @@ S9sUrl::parse(
     S9sString      protocol;
     S9sString      hostName;
     S9sString      propertyName, propertyValue;
+    S9sVariantMap  properties;
+    S9sString      portString;
 
     S9S_DEBUG("");
     for (int n = 0;;)
@@ -132,6 +150,13 @@ S9sUrl::parse(
             case MayBeProtocol:
                 if (c == '\0')
                 {
+                    hostName     = tmpString;
+
+                    m_origString = input;
+                    m_protocol   = protocol;
+                    m_hostName   = hostName;
+                    m_port       = -1;
+                    m_hasPort    = false;
                     return true;
                 } else if (c == ':')
                 {
@@ -165,7 +190,6 @@ S9sUrl::parse(
                     // The second '/', we finished reading the protocol.
                     protocol = tmpString;
                     tmpString.clear();
-                    S9S_DEBUG("protocol -> '%s'", STR(protocol));
 
                     n++;
                     state = MaybeUserName;
@@ -176,7 +200,6 @@ S9sUrl::parse(
                 if (c == '\0')
                 {
                     hostName = tmpString;
-                    S9S_DEBUG("hostName -> '%s'", STR(hostName));
 
                     m_origString = input;
                     m_protocol   = protocol;
@@ -184,16 +207,60 @@ S9sUrl::parse(
                     m_port       = -1;
                     m_hasPort    = false;
                     return true;
+                } else if (c == ':')
+                {
+                    hostName = tmpString;
+                    ++n;
+                    state = PortString;
                 } else if (c == '?') 
                 {
                     hostName = tmpString;
-                    S9S_DEBUG("hostName -> '%s'", STR(hostName));
-                    
                     ++n;
                     state = PropertyName;
                 } else {
                     tmpString += c;
                     ++n;
+                }
+                break;
+
+            case PortString:
+                if (c == 0)
+                {
+                    if (portString.empty())
+                    {
+                        return false;
+                    } else {
+                        m_origString = input;
+                        m_protocol   = protocol;
+                        m_hostName   = hostName;
+                        m_port       = portString.toInt();
+                        m_hasPort    = true;
+                    }
+
+                    return true;
+                } else if (c >= '0' && c <= '9')
+                {
+                    portString += c;
+                    n++;
+                } else if (c == '?')
+                {
+                    if (portString.empty())
+                    {
+                        // We started to read the port, but it is an empty
+                        // string.
+                        return false;
+                    } else {
+                        m_origString = input;
+                        m_protocol   = protocol;
+                        m_hostName   = hostName;
+                        m_port       = portString.toInt();
+                        m_hasPort    = true;
+
+                        state = PropertyName;
+                        n++;
+                    }
+                } else {
+                    return false;
                 }
                 break;
 
@@ -214,15 +281,23 @@ S9sUrl::parse(
             case PropertyValue:
                 if (c == 0)
                 {
-                    S9S_DEBUG("name     -> '%s'", STR(propertyName));
-                    S9S_DEBUG("value    -> '%s'", STR(propertyValue));
+                    properties[propertyName] = propertyValue.unQuote();
+
                     m_origString = input;
                     m_protocol   = protocol;
                     m_hostName   = hostName;
                     m_port       = -1;
                     m_hasPort    = false;
+                    m_properties = properties;
 
                     return true;
+                } else if (c == '&')
+                {
+                    properties[propertyName] = propertyValue.unQuote();
+                    propertyName.clear();
+                    propertyValue.clear();
+                    state = PropertyName;
+                    n++;
                 } else {
                     propertyValue += c;
                     n++;
