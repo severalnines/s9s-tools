@@ -44,6 +44,7 @@ class S9sUrl
             MaybeProtocolSeparator,
             ProtocolSeparator,
             MaybeUserName,
+            PropertyName,
         };
 
         S9sString parseStateToString(const S9sUrl::ParseState state);
