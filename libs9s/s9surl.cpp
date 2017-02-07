@@ -21,7 +21,7 @@
 
 #include "S9sRegExp"
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -45,10 +45,6 @@ S9sUrl::S9sUrl(
     // remaining part.
     if (protocolRegExp == theString)
     {
-        //S9S_WARNING("protocolRegExp[0] = '%s'", STR(protocolRegExp[0]));
-        //S9S_WARNING("protocolRegExp[1] = '%s'", STR(protocolRegExp[1]));
-        //S9S_WARNING("protocolRegExp[2] = '%s'", STR(protocolRegExp[2]));
-
         m_protocol = protocolRegExp[1];
         theString  = protocolRegExp[2];
     }
@@ -56,10 +52,6 @@ S9sUrl::S9sUrl(
     // If the string contains a port.
     if (regexp == theString)
     {
-        //S9S_WARNING("regexp[0] = '%s'", STR(regexp[0]));
-        //S9S_WARNING("regexp[1] = '%s'", STR(regexp[1]));
-        //S9S_WARNING("regexp[2] = '%s'", STR(regexp[2]));
-
         m_hostName = regexp[1];
         m_port     = regexp[2].toInt();
         m_hasPort  = true;
@@ -68,6 +60,68 @@ S9sUrl::S9sUrl(
     }
 }
 
+/**
+ * \returns The single line error string if the parsing found and error, the
+ *   empty string otherwise.
+ */
+S9sString
+S9sUrl::errorString() const
+{
+    return m_errorString;
+}
+
+/**
+ * \returns The original string that was parsed to get the URL object.
+ */
+S9sString
+S9sUrl::origString() const
+{
+    return m_origString;
+}
+
+/**
+ * \returns A multi line error string or the empty string if no error found
+ *   while parsing.
+ *
+ * It helps to understand what's wrong with an URL string if we have a detailed
+ * error showing the exact location of the error. This function returns an error
+ * string that provides this kind of details. Here are some examples:
+
+Expected port number.
+10.10.1.120:3306extra
+                ^
+
+Expected '/' or port number.
+10.10.1.120:some
+            ^
+ */
+S9sString
+S9sUrl::fullErrorString() const
+{
+    S9sString retval;
+
+    if (!m_errorString.empty())
+    {
+        retval += m_errorString;
+        retval += '\n';
+        retval += m_origString;
+        retval += '\n';
+
+        for (int n = 0; n < m_parseCursor; ++n)
+            retval += ' ';
+
+        retval += "^\n";
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The property for the given key or the null variant.
+ *
+ * Should the URL contain keys and values (e.g. "proxysql://10.10.10.23?db_username=bob&db_password=b0b&db_database='*.*'&db_privs='SELECT,INSERT,UPDATE'") 
+ * this function can be used to retrieve such values by their names.
+ */
 S9sVariant 
 S9sUrl::property(
         const S9sString &key) const
@@ -129,19 +183,24 @@ S9sUrl::parse(
     S9sString      portString;
 
     S9S_DEBUG("");
-    for (int n = 0;;)
-    {
-        c = input.c_str()[n];
+    m_errorString.clear();
+    m_origString = input;
 
-        S9S_DEBUG("%-26s n = %02d c = '%c'", 
-                STR(parseStateToString(state)), n, c);
+    for (m_parseCursor = 0;;)
+    {
+        c = input.c_str()[m_parseCursor];
+
+        S9S_DEBUG("%-26s m_parseCursor = %02d c = '%c'", 
+                STR(parseStateToString(state)),
+                m_parseCursor, c);
 
         switch (state)
         {
             case StartState:
                 if (c == '\0')
                 {
-                    return true;
+                    m_errorString = "Expected protocol or host name.";
+                    return false;
                 } else {
                     state = MayBeProtocol;
                 }
@@ -152,7 +211,6 @@ S9sUrl::parse(
                 {
                     hostName     = tmpString;
 
-                    m_origString = input;
                     m_protocol   = protocol;
                     m_hostName   = hostName;
                     m_port       = -1;
@@ -161,22 +219,32 @@ S9sUrl::parse(
                 } else if (c == ':')
                 {
                     state = MaybeProtocolSeparator;
-                    n++;
+                    m_parseCursor++;
                 } else {
                     tmpString += c;
-                    ++n;
+                    m_parseCursor++;
                 }
                 break;
 
             case MaybeProtocolSeparator:
+                // In this state we already consumed a ':' character, so we
+                // expect either a '/' for protocol separator or a port number.
                 if (c == '\0')
                 {
+                    m_errorString = "Expected '/' or port number.";
                     return false;
                 } else if (c == '/')
                 {
                     state = ProtocolSeparator;
-                    n++;
+                    m_parseCursor++;
+                } else if (c <= '9' && c >= '0') 
+                {
+                    hostName    = tmpString;
+                    portString += c;
+                    state       = PortString;
+                    m_parseCursor++;
                 } else {
+                    m_errorString = "Expected '/' or port number.";
                     return false;
                 }
                 break;
@@ -184,6 +252,7 @@ S9sUrl::parse(
             case ProtocolSeparator:
                 if (c == '\0')
                 {
+                    m_errorString = "Expected '/' or port number.";
                     return false;
                 } else if (c == '/') 
                 {
@@ -191,7 +260,7 @@ S9sUrl::parse(
                     protocol = tmpString;
                     tmpString.clear();
 
-                    n++;
+                    m_parseCursor++;
                     state = MaybeUserName;
                 }
                 break;
@@ -201,7 +270,6 @@ S9sUrl::parse(
                 {
                     hostName = tmpString;
 
-                    m_origString = input;
                     m_protocol   = protocol;
                     m_hostName   = hostName;
                     m_port       = -1;
@@ -210,16 +278,16 @@ S9sUrl::parse(
                 } else if (c == ':')
                 {
                     hostName = tmpString;
-                    ++n;
+                    m_parseCursor++;
                     state = PortString;
                 } else if (c == '?') 
                 {
                     hostName = tmpString;
-                    ++n;
+                    m_parseCursor++;
                     state = PropertyName;
                 } else {
                     tmpString += c;
-                    ++n;
+                    m_parseCursor++;
                 }
                 break;
 
@@ -230,7 +298,6 @@ S9sUrl::parse(
                     {
                         return false;
                     } else {
-                        m_origString = input;
                         m_protocol   = protocol;
                         m_hostName   = hostName;
                         m_port       = portString.toInt();
@@ -241,25 +308,26 @@ S9sUrl::parse(
                 } else if (c >= '0' && c <= '9')
                 {
                     portString += c;
-                    n++;
+                    m_parseCursor++;
                 } else if (c == '?')
                 {
                     if (portString.empty())
                     {
                         // We started to read the port, but it is an empty
                         // string.
+                        m_errorString = "Expected port number.";
                         return false;
                     } else {
-                        m_origString = input;
                         m_protocol   = protocol;
                         m_hostName   = hostName;
                         m_port       = portString.toInt();
                         m_hasPort    = true;
 
                         state = PropertyName;
-                        n++;
+                        m_parseCursor++;
                     }
                 } else {
+                    m_errorString = "Expected port number.";
                     return false;
                 }
                 break;
@@ -267,23 +335,31 @@ S9sUrl::parse(
             case PropertyName:
                 if (c == 0)
                 {
+                    m_errorString = "Expected '='.";
                     return false;
                 } else if (c == '=')
                 {
                     state = PropertyValue;
-                    n++;
+                    m_parseCursor++;
                 } else {
                     propertyName += c;
-                    n++;
+                    m_parseCursor++;
                 }
                 break;
 
             case PropertyValue:
-                if (c == 0)
+                if (c == '\0')
                 {
+                    if (propertyValue.empty())
+                    {
+                        m_errorString.sprintf(
+                                "Expected property value for '%s'.",
+                                STR(propertyName));
+                        return false;
+                    }
+
                     properties[propertyName] = propertyValue.unQuote();
 
-                    m_origString = input;
                     m_protocol   = protocol;
                     m_hostName   = hostName;
                     m_port       = -1;
@@ -297,10 +373,10 @@ S9sUrl::parse(
                     propertyName.clear();
                     propertyValue.clear();
                     state = PropertyName;
-                    n++;
+                    m_parseCursor++;
                 } else {
                     propertyValue += c;
-                    n++;
+                    m_parseCursor++;
                 }
                 break;
         }

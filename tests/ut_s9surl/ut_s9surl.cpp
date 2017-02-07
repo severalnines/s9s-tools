@@ -45,6 +45,8 @@ UtS9sUrl::runTest(const char *testName)
     PERFORM_TEST(testParse03,       retval);
     PERFORM_TEST(testParse04,       retval);
     PERFORM_TEST(testParse05,       retval);
+    PERFORM_TEST(testParse06,       retval);
+    PERFORM_TEST(testParse07,       retval);
 
     return retval;
 }
@@ -163,5 +165,45 @@ UtS9sUrl::testParse05()
     return true;
 }
 
+bool
+UtS9sUrl::testParse06()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("10.10.1.120:80"));
+    S9S_COMPARE(url.hostName(), "10.10.1.120");
+    S9S_COMPARE(url.hasPort(),  true);
+    S9S_COMPARE(url.port(),     80);
+
+    return true;
+}
+
+bool
+UtS9sUrl::testParse07()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(!url.parse("10.10.1.120:"));
+    printf("\n%s", STR(url.fullErrorString()));
+    S9S_COMPARE(url.errorString(), "Expected '/' or port number.");
+    
+    S9S_VERIFY(!url.parse("10.10.1.120:some"));
+    printf("\n%s", STR(url.fullErrorString()));
+    S9S_COMPARE(url.errorString(), "Expected '/' or port number.");
+    
+    S9S_VERIFY(!url.parse("http://10.10.1.120:80?db_privs="));
+    printf("\n%s", STR(url.fullErrorString()));
+    S9S_COMPARE(url.errorString(), "Expected property value for 'db_privs'.");
+    
+    S9S_VERIFY(!url.parse("10.10.1.120:3306extra"));
+    printf("\n%s", STR(url.fullErrorString()));
+    S9S_COMPARE(url.errorString(), "Expected port number.");
+    
+    S9S_VERIFY(!url.parse(""));
+    printf("\n%s", STR(url.fullErrorString()));
+    S9S_COMPARE(url.errorString(), "Expected protocol or host name.");
+
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sUrl)
