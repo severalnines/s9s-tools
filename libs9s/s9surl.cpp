@@ -88,6 +88,9 @@ S9sUrl::parseStateToString(
 
         case PropertyName:
             return "PropertyName";
+
+        case PropertyValue:
+            return "PropertyValue";
     }
 
     return "UNKNOWN";
@@ -105,7 +108,7 @@ S9sUrl::parse(
     S9sString      tmpString;
     S9sString      protocol;
     S9sString      hostName;
-    S9sString      propertyName;
+    S9sString      propertyName, propertyValue;
 
     S9S_DEBUG("");
     for (int n = 0;;)
@@ -198,8 +201,30 @@ S9sUrl::parse(
                 if (c == 0)
                 {
                     return false;
+                } else if (c == '=')
+                {
+                    state = PropertyValue;
+                    n++;
                 } else {
                     propertyName += c;
+                    n++;
+                }
+                break;
+
+            case PropertyValue:
+                if (c == 0)
+                {
+                    S9S_DEBUG("name     -> '%s'", STR(propertyName));
+                    S9S_DEBUG("value    -> '%s'", STR(propertyValue));
+                    m_origString = input;
+                    m_protocol   = protocol;
+                    m_hostName   = hostName;
+                    m_port       = -1;
+                    m_hasPort    = false;
+
+                    return true;
+                } else {
+                    propertyValue += c;
                     n++;
                 }
                 break;

@@ -41,6 +41,7 @@ UtS9sUrl::runTest(const char *testName)
     PERFORM_TEST(testCreate02,      retval);
     PERFORM_TEST(testCreate03,      retval);
     PERFORM_TEST(testParse01,       retval);
+    PERFORM_TEST(testParse02,       retval);
 
     return retval;
 }
@@ -97,6 +98,19 @@ UtS9sUrl::testParse01()
     S9S_VERIFY(url.parse("https://10.10.1.120"));
     S9S_COMPARE(url.protocol(), "https");
     S9S_COMPARE(url.hostName(), "10.10.1.120");
+    S9S_COMPARE(url.hasPort(),  false);
+
+    return true;
+}
+
+bool
+UtS9sUrl::testParse02()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("proxysql://10.10.10.23?db_username=bob"));
+    S9S_COMPARE(url.protocol(), "proxysql");
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
     S9S_COMPARE(url.hasPort(),  false);
 
     return true;

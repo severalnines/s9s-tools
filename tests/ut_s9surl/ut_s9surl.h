@@ -31,5 +31,6 @@ class UtS9sUrl : public S9sUnitTest
         bool testCreate02();
         bool testCreate03();
         bool testParse01();
+        bool testParse02();
 };
 
