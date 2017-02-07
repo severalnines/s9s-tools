@@ -63,5 +63,130 @@ S9sUrl::S9sUrl(
     } else {
         m_hostName = theString;
     }
-
 }
+
+S9sString
+S9sUrl::parseStateToString(
+        const S9sUrl::ParseState state)
+{
+    switch (state)
+    {
+        case StartState:
+            return "StartState";
+
+        case MayBeProtocol:
+            return "MayBeProtocol";
+
+        case MaybeProtocolSeparator:
+            return "MaybeProtocolSeparator";
+
+        case ProtocolSeparator:
+            return "ProtocolSeparator";
+
+        case MaybeUserName:
+            return "MaybeUserName";
+    }
+
+    return "UNKNOWN";
+}
+
+/**
+ *
+ */
+bool
+S9sUrl::parse(
+        const S9sString      &input)
+{
+    int            c;
+    ParseState     state = StartState;
+    S9sString      tmpString;
+    S9sString      protocol;
+    S9sString      hostName;
+
+    S9S_DEBUG("");
+    for (int n = 0;;)
+    {
+        c = input.c_str()[n];
+
+        S9S_DEBUG("%-26s n = %02d c = '%c'", 
+                STR(parseStateToString(state)), n, c);
+
+        switch (state)
+        {
+            case StartState:
+                if (c == '\0')
+                {
+                    return true;
+                } else {
+                    state = MayBeProtocol;
+                }
+                break;
+
+            case MayBeProtocol:
+                if (c == '\0')
+                {
+                    return true;
+                } else if (c == ':')
+                {
+                    state = MaybeProtocolSeparator;
+                    n++;
+                } else {
+                    tmpString += c;
+                    ++n;
+                }
+                break;
+
+            case MaybeProtocolSeparator:
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == '/')
+                {
+                    state = ProtocolSeparator;
+                    n++;
+                } else {
+                    return false;
+                }
+                break;
+
+            case ProtocolSeparator:
+                if (c == '\0')
+                {
+                    return false;
+                } else if (c == '/') 
+                {
+                    // The second '/', we finished reading the protocol.
+                    protocol = tmpString;
+                    tmpString.clear();
+                    S9S_DEBUG("protocol -> '%s'", STR(protocol));
+
+                    n++;
+                    state = MaybeUserName;
+                }
+                break;
+
+            case MaybeUserName:
+                if (c == '\0')
+                {
+                    hostName = tmpString;
+                    S9S_DEBUG("hostName -> '%s'", STR(hostName));
+
+                    m_origString = input;
+                    m_protocol   = protocol;
+                    m_hostName   = hostName;
+                    m_port       = -1;
+                    m_hasPort    = false;
+                    return true;
+                } else {
+                    tmpString += c;
+                    ++n;
+                }
+                break;
+        }
+    }
+
+    return true;
+}
+
+
+

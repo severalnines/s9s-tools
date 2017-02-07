@@ -36,10 +36,25 @@ class S9sUrl
         int port() const { return m_port; };
         bool hasPort() const { return m_hasPort; };
 
+    protected:
+        enum ParseState
+        {
+            StartState,
+            MayBeProtocol,
+            MaybeProtocolSeparator,
+            ProtocolSeparator,
+            MaybeUserName,
+        };
+
+        S9sString parseStateToString(const S9sUrl::ParseState state);
+        bool parse(const S9sString      &input);
+
     private:
         S9sString    m_origString;
         S9sString    m_protocol;
         S9sString    m_hostName;
         int          m_port;
         bool         m_hasPort;
+
+        friend class UtS9sUrl;
 };

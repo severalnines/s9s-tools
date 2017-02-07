@@ -40,6 +40,7 @@ UtS9sUrl::runTest(const char *testName)
     PERFORM_TEST(testCreate01,      retval);
     PERFORM_TEST(testCreate02,      retval);
     PERFORM_TEST(testCreate03,      retval);
+    PERFORM_TEST(testParse01,       retval);
 
     return retval;
 }
@@ -84,6 +85,19 @@ UtS9sUrl::testCreate03()
     S9S_COMPARE(url.port(), 8000);
     S9S_VERIFY(url.hasProtocol());
     S9S_COMPARE(url.protocol(), "https");
+
+    return true;
+}
+
+bool
+UtS9sUrl::testParse01()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("https://10.10.1.120"));
+    S9S_COMPARE(url.protocol(), "https");
+    S9S_COMPARE(url.hostName(), "10.10.1.120");
+    S9S_COMPARE(url.hasPort(),  false);
 
     return true;
 }
