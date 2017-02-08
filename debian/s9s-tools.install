@@ -1,4 +1,5 @@
 usr/bin/s9s
+etc/bash_completion.d/s9s_completion
 usr/share/man/man1/s9s-maintenance.1
 usr/share/man/man1/s9s-cluster.1
 usr/share/man/man1/s9s-node.1
