@@ -31,6 +31,7 @@ class S9sUrl
         S9sUrl();
         S9sUrl(const S9sString &stringRep);
 
+        bool hasError() const { return !m_errorString.empty(); };
         S9sString errorString() const;
         S9sString fullErrorString() const;
         S9sString origString() const;
@@ -38,9 +39,13 @@ class S9sUrl
         S9sString protocol() const { return m_protocol; };
         bool hasProtocol() const { return !m_protocol.empty(); };
         S9sString hostName() const { return m_hostName; };
-        int port() const { return m_port; };
-        bool hasPort() const { return m_hasPort; };
+
+        void setPort(int value);
+        int port() const;
+        bool hasPort() const;
         
+        void setProperties(const S9sVariantMap &values);
+        const S9sVariantMap &properties() const;
         S9sVariant property(const S9sString &key) const;
 
     protected:

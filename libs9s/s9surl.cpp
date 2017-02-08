@@ -35,8 +35,10 @@ S9sUrl::S9sUrl(
         const S9sString &stringRep) :
     m_origString(stringRep),
     m_port(0),
-    m_hasPort(false)
+    m_hasPort(false),
+    m_parseCursor(0)
 {
+#if 0
     S9sString  theString = stringRep;
     S9sRegExp  protocolRegExp("(.+)://(.*)");
     S9sRegExp  regexp("([^:]+):([0-9]+)");
@@ -58,6 +60,29 @@ S9sUrl::S9sUrl(
     } else {
         m_hostName = theString;
     }
+#else
+    parse(stringRep);
+#endif
+}
+
+void 
+S9sUrl::setPort(
+        int value)
+{
+    m_port    = value;
+    m_hasPort = true;
+}
+
+int 
+S9sUrl::port() const 
+{ 
+    return m_port; 
+}
+
+bool 
+S9sUrl::hasPort() const 
+{
+    return m_hasPort; 
 }
 
 /**
@@ -114,6 +139,19 @@ S9sUrl::fullErrorString() const
     }
 
     return retval;
+}
+
+void
+S9sUrl::setProperties(
+        const S9sVariantMap &values)
+{
+    m_properties = values;
+}
+
+const S9sVariantMap &
+S9sUrl::properties() const
+{
+    return m_properties;
 }
 
 /**

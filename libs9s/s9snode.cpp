@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * S9sTools is distributed in the hope that it will be useful,
+ * s9s-tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
+ * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9snode.h"
 
@@ -45,12 +45,21 @@ S9sNode::S9sNode(
 {
     bool success;
 
+    // Parsing as a JSon string, that's more specific.
     success = m_properties.parse(STR(stringRep));
-    if (!success)
+    if (success)
     {
+        m_url = m_properties["hostname"].toString();
+
+        if (m_properties.contains("port"))
+            m_url.setPort(m_properties["port"].toInt());
+
+        m_url.setProperties(m_properties);
+    } else {
+        // If not ok then parsing as an URL.
         m_url = S9sUrl(stringRep);
 
-        m_properties.clear();
+        m_properties = m_url.properties();
         m_properties["hostname"] = m_url.hostName();
 
         if (m_url.hasPort())
