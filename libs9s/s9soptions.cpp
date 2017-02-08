@@ -496,7 +496,7 @@ S9sOptions::propertiesOption() const
  *
  * The node list is usually set in the command line using the --nodes option.
  */
-void
+bool
 S9sOptions::setNodes(
         const S9sString &value)
 {
@@ -508,10 +508,18 @@ S9sOptions::setNodes(
         S9sString nodeString = nodeStrings[idx].toString();
         S9sNode   node(nodeString.trim());
 
+        if (node.hasError())
+        {
+            PRINT_ERROR("%s", STR(node.fullErrorString()));
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
         nodes << node;
     }
 
     m_options["nodes"] = nodes;
+    return true;
 }
 
 /**
@@ -2427,7 +2435,8 @@ S9sOptions::readOptionsNode(
             
             case OptionNodes:
                 // --nodes=LIST
-                setNodes(optarg);
+                if (!setNodes(optarg))
+                    return false;
                 break;
             
             case '?':
@@ -2649,7 +2658,8 @@ S9sOptions::readOptionsBackup(
             
             case OptionNodes:
                 // --nodes=LIST
-                setNodes(optarg);
+                if (!setNodes(optarg))
+                    return false;
                 break;
 
             case OptionSchedule:
@@ -3647,7 +3657,8 @@ S9sOptions::readOptionsMaintenance(
             
             case OptionNodes:
                 // --nodes=LIST
-                setNodes(optarg);
+                if (!setNodes(optarg))
+                    return false;
                 break;
             
             case 'i':
@@ -4109,7 +4120,8 @@ S9sOptions::readOptionsCluster(
 
             case OptionNodes:
                 // --nodes=LIST
-                setNodes(optarg);
+                if (!setNodes(optarg))
+                    return false;
                 break;
 
             case OptionVendor:

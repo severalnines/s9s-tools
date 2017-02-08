@@ -357,6 +357,35 @@ function testProcessOperations()
 }
 
 #
+# This test will pass an invalid url as option argument for the --nodes command
+# line option and check the error string.
+#
+function testInvalidUrl()
+{
+    output=$($S9S cluster \
+        --create \
+        --cluster-type=postgresql \
+        --nodes="10.10.1.100:" \
+        --cluster-name=name \
+        --db-admin=postmaster \
+        --db-admin-passwd=pwd \
+        --provider-version=9.3 \
+        2>&1)
+
+    if [ $? -eq 0 ]; then
+        failure "Return value is true when passing invalid url."
+        return 1
+    fi
+
+    if [[ ! "$output" =~ "Expected" ]]; then
+        failure "Error string is not what it is expected."
+        return 1
+    fi
+
+    return 0
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -374,6 +403,7 @@ else
     runFunctionalTest testUserOperations
     runFunctionalTest testMaintenanceOperations
     runFunctionalTest testProcessOperations
+    runFunctionalTest testInvalidUrl
 fi
 
 endTests

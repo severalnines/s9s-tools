@@ -232,12 +232,20 @@ S9sNode::hasPort() const
     return m_properties.contains("port");
 }
 
+/**
+ * \returns True if an error found while parsing the string representation of
+ *   the node.
+ */
 bool
 S9sNode::hasError() const
 {
     return m_url.hasError();
 }
 
+/**
+ * \returns A multi-line error message discribing the error found while parsing
+ *   the string representation or the empty string if no error was found.
+ */
 S9sString
 S9sNode::fullErrorString() const
 {

@@ -83,7 +83,7 @@ class S9sOptions
         S9sVariantMap propertiesOption() const;
 
 
-        void setNodes(const S9sString &value);
+        bool setNodes(const S9sString &value);
         S9sVariantList nodes() const;
 
         S9sString vendor() const;
