@@ -2247,7 +2247,7 @@ S9sOptions::printHelpCluster()
 "  --provider-version=VER     The version of the software.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --cluster-type=TYPE        The type of the cluster to install.\n"
-"  --db-adnim=USERNAME        The database admin user name.\n"
+"  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
 "  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
 "  --with-database            Create a database for the user too.\n"
