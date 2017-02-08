@@ -232,6 +232,18 @@ S9sNode::hasPort() const
     return m_properties.contains("port");
 }
 
+bool
+S9sNode::hasError() const
+{
+    return m_url.hasError();
+}
+
+S9sString
+S9sNode::fullErrorString() const
+{
+    return m_url.fullErrorString();
+}
+
 /**
  * \returns the port number for the node.
  */
