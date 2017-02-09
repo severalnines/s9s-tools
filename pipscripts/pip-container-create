@@ -257,26 +257,46 @@ function create_container()
     #
     printVerbose "Creating container $new_name"
     lxc-copy -n $parent_name --newname="$new_name"
+    lxc-start -n "$new_name"
 
     #
     # Creating the new user.
     #
-    lxc-execute -n "$new_name" -- \
+    # lxc-attach -n node001 -- /usr/sbin/useradd --create-home --shell=/bin/bash pipas 
+    lxc-attach -n "$new_name" -- \
         /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
         2>/dev/null
+
+    if [ $? -ne 0 ]; then
+        printError "Could not create user $OWNER"
+    fi
 
     #
     # Copying the SSH keys.
     #
-    cp -r "/home/$OWNER/.ssh/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
-    lxc-execute -n "$new_name" -- \
+    printVerbose "user     : $USER"
+    printVerbose "OWNER    : $OWNER"
+    printVerbose "new_name : $new_name"
+    
+    #sudo ls -lha /home/$OWNER
+
+    printVerbose \
+        "/home/$OWNER/.ssh -> /var/lib/lxc/$new_name/rootfs/home/$OWNER"
+
+    cp -r \
+        "/home/$OWNER/.ssh" \
+        "/var/lib/lxc/$new_name/rootfs/home/$OWNER/.ssh"
+
+    lxc-attach -n "$new_name" -- \
         chown -R ${OWNER}.${OWNER} "/home/${OWNER}/.ssh" \
         2>/dev/null
 
-    cp -r "/home/$OWNER/bin/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
-    lxc-execute -n "$new_name" -- \
-        chown -R ${OWNER}.${OWNER} "/home/${OWNER}/bin" \
-        2>/dev/null
+    #ls -lha /var/lib/lxc/$new_name/rootfs/home/$OWNER
+
+    #cp -r "/home/$OWNER/bin/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
+    #lxc-execute -n "$new_name" -- \
+    #    chown -R ${OWNER}.${OWNER} "/home/${OWNER}/bin" \
+    #    2>/dev/null
 
     #
     # Adding to the sudoers.
@@ -295,7 +315,7 @@ function create_container()
     #
     # Starting the new container, showing the list.
     #
-    lxc-start -n "$new_name"
+    #lxc-start -n "$new_name"
 
     #
     # 

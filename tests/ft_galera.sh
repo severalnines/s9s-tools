@@ -91,6 +91,54 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
+
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local isOK
+
+    isOk=$(ssh -o ConnectTimeout=1 "$serverName" 2>/dev/null -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+#
+# $2: the server name
+#
+# Waits until the server is accepting SSH connections. There is also a timeout
+# implemented here.
+#
+function wait_for_server_ssh()
+{
+    local serverName="$1"
+    local nTry=0
+
+    while true; do
+        if is_server_running_ssh "$serverName"; then
+            printVerbose "Server '$serverName' is started."
+            return 0
+        fi
+
+        # 60 x 10 = 10 minutes
+        if [ "$nTry" -gt 60 ]; then
+            printVerbose "Server '$serverName' did not came alive."
+            return 1
+        fi
+
+        printVerbose "Server '$serverName' is not yet started."
+        sleep 10
+        let nTry+=1
+    done
+
+    return 0
+}
+
 #
 # Creates and starts a new 
 #
@@ -101,7 +149,9 @@ function create_node()
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
     echo $ip
 
-    sleep 5
+    wait_for_server_ssh $ip
+
+    sleep 30
 }
 
 #
