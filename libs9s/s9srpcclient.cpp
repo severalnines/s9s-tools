@@ -1918,7 +1918,9 @@ S9sRpcClient::createMaintenance(
 
     if (hosts.size() != 1)
     {
-        PRINT_ERROR("Currently exactly one hostname has to provided.");
+        PRINT_ERROR(
+                "To create a maintenance period one"
+                " hostname has to be provided.");
         return false;
     }
     

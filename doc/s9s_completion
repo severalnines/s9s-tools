@@ -124,17 +124,19 @@ function _s9s()
                 opts+="--vendor= --provider-version= --os-user= "
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "
+            fi 
+        elif [[ ${COMP_WORDS[i]} == "job" ]]; then
+            main_opt="--wait --log --list --help"
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
             fi
+        elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
+            main_opt="--list --create --delete --help"
 
-            isEqualOptions=$(elementExists "${cur}")
-            if [ "${isEqualOptions:-0}" -eq 1 ]; then
-                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
-            else
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
             fi
-
-            return 0
-
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt="--list --set --help"
 
@@ -148,14 +150,11 @@ function _s9s()
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --properties= "
             fi
-
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-            return 0
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
-            main_opt="--list --whoami --create"
+            main_opt="--list --whoami --create --help"
 
             if ! _s9s_has_options $main_opt; then
-                opts="$main_opt "
+                opts=$main_opt
             elif [ "$prev" == "--cmon-user" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
@@ -176,7 +175,9 @@ function _s9s()
                 opts+="--cmon-user="
                 opts+=$(s9s user --list)
             fi
-            
+        fi
+    done
+ 
             isEqualOptions=$(elementExists "${cur}")
             if [ "${isEqualOptions:-0}" -eq 1 ]; then
                 COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
@@ -185,12 +186,5 @@ function _s9s()
             fi
 
             return 0
-        fi
-    done
-
-    if [[ ${cur} == -* ]] ; then
-        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-        return 0
-    fi
 }
 complete -o nospace -F _s9s s9s
