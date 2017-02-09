@@ -1003,7 +1003,19 @@ S9sRpcClient::addNode(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = clusterId;
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    } else {
+        PRINT_ERROR(
+                "Either the --cluster-id or the --cluster-name command line "
+                "option has to be provided.");
+        return false;
+    }
     
     retval = executeRequest(uri, request);
 
