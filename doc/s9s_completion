@@ -1,5 +1,8 @@
 #-*- mode: shell-script;-*-
 
+#
+# echo 1 if the command line option is a longopt with '='.
+#
 function elementExists()
 {
     opts_with_equal=(\
@@ -23,6 +26,12 @@ function elementExists()
     return 0
 }
 
+#
+# $*. The options to find.
+#
+# Returns true if the current command line option list has one option of the
+# presented options.
+#
 function _s9s_has_options()
 {
     local option
@@ -78,8 +87,10 @@ function _s9s()
 
     for (( i=0; i < COMP_CWORD; i++ )); do
         if [[ ${COMP_WORDS[i]} == "node" ]]; then
-            if ! _s9s_has_options --list --set; then
-                opts="--list --set"
+            main_opt="--list --set --help"
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
             else
                 opts+="--help --verbose --version " 
                 opts+="--config-file= --controller= "
