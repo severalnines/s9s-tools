@@ -67,7 +67,7 @@ o DONE
 
   Authentication failed: Invalid clusterId path: 'v2'
 
-o 
+o DONE
   s9s cluster —add-node
   with --cluster-name
 

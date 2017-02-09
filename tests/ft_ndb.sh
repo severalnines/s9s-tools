@@ -245,9 +245,15 @@ function testAddNode()
     #
     $S9S cluster \
         --add-node \
-        --cluster-id=$CLUSTER_ID \
+        --cluster-name=$CLUSTER_NAME \
         --nodes="$nodes" \
         $LOG_OPTION
+    
+    #$S9S cluster \
+    #    --add-node \
+    #    --cluster-id=$CLUSTER_ID \
+    #    --nodes="$nodes" \
+    #    $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
