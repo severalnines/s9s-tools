@@ -36,6 +36,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_libdir}/*
 %{_mandir}/man1/*
 %{_mandir}/man5/*
+%{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
 * Wed Jan 25 2017 David Kedves <kedazo@severalnines.com> 0.1.20170125

@@ -1,3 +1,9 @@
+s9s-tools (0.1.20170208-nightly2) UNRELEASED; urgency=low
+
+  * Initial packaging...
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 08 Feb 2017 15:56:49 +0100
+
 s9s-tools (0.1.20170125-nightly1) UNRELEASED; urgency=low
 
   * Initial packaging...
