@@ -242,6 +242,8 @@ function testAddNode()
 
     #
     # Adding a node to the cluster.
+    # We can do this by cluster ID and we also can do this by cluster name, but
+    # it takes a bit too long to test both.
     #
     $S9S cluster \
         --add-node \
