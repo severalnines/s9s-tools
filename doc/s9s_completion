@@ -86,7 +86,56 @@ function _s9s()
     fi
 
     for (( i=0; i < COMP_CWORD; i++ )); do
-        if [[ ${COMP_WORDS[i]} == "node" ]]; then
+        if [[ ${COMP_WORDS[i]} == "backup" ]]; then
+            main_opt="--list --create --restore --delete --help"
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            fi
+            
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+        elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
+            main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
+            if ! _s9s_has_options $main_opt; then
+                opts="$main_opt "
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list --long --batch | awk '{print $1}')
+            elif [ "$prev" == "--cluster-name" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list)
+            elif [ "$prev" == "--color" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts="never always auto"
+            else 
+                opts=$(s9s cluster --list)
+                opts+="--help --verbose --version " 
+                opts+="--config-file= "
+                opts+="--controller= --controller-port= "
+                opts+="--rpc-tls "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--properties= "
+                opts+="--vendor= --provider-version= --os-user= "
+                opts+="--cluster-type= --db-admin= --db-admin-passwd= "
+                opts+="--account= --with-database --db-name= "
+            fi
+
+            isEqualOptions=$(elementExists "${cur}")
+            if [ "${isEqualOptions:-0}" -eq 1 ]; then
+                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
+            else
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            fi
+
+            return 0
+
+        elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt="--list --set --help"
 
             if ! _s9s_has_options $main_opt; then
@@ -136,46 +185,6 @@ function _s9s()
             fi
 
             return 0
-        elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
-            main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
-            if ! _s9s_has_options $main_opt; then
-                opts="$main_opt "
-            elif [ "$prev" == "--cluster-id" ]; then
-                prev="${cur%%=*}="
-                cur=${cur#*=}
-                opts=$(s9s cluster --list --long --batch | awk '{print $1}')
-            elif [ "$prev" == "--cluster-name" ]; then
-                prev="${cur%%=*}="
-                cur=${cur#*=}
-                opts=$(s9s cluster --list)
-            elif [ "$prev" == "--color" ]; then
-                prev="${cur%%=*}="
-                cur=${cur#*=}
-                opts="never always auto"
-            else 
-                opts=$(s9s cluster --list)
-                opts+="--help --verbose --version " 
-                opts+="--config-file= "
-                opts+="--controller= --controller-port= "
-                opts+="--rpc-tls "
-                opts+="--long --print-json --color= --batch --no-header "
-                opts+="--wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= "
-                opts+="--properties= "
-                opts+="--vendor= --provider-version= --os-user= "
-                opts+="--cluster-type= --db-admin= --db-admin-passwd= "
-                opts+="--account= --with-database --db-name= "
-            fi
-
-            isEqualOptions=$(elementExists "${cur}")
-            if [ "${isEqualOptions:-0}" -eq 1 ]; then
-                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
-            else
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            fi
-
-            return 0
-
         fi
     done
 
