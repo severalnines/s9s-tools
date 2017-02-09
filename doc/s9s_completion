@@ -150,6 +150,12 @@ function _s9s()
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --properties= "
             fi
+        elif [[ ${COMP_WORDS[i]} == "process" ]]; then
+            main_opt="--list --top --help"
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
             main_opt="--list --whoami --create --help"
 
