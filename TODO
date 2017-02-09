@@ -66,3 +66,17 @@ o DONE
   http:// communication.
 
   Authentication failed: Invalid clusterId path: 'v2'
+
+o 
+  s9s cluster —add-node
+  with --cluster-name
+
+o 
+  Implement s9s cluster —delete-account
+
+o 
+  s9s node —stop/—start  —nodes=mysql://10.10.10.10
+
+o 
+  s9s cluster —change-config —nodes=mysql://10.10.10.10  —group=mysqld  —variable=max_connections —value=200
+
