@@ -797,6 +797,83 @@ S9sRpcClient::createMySqlReplication(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \param vendor the name of the database vendor to install.
+ * \param mySqlVersion the MySql version to install. 
+ * \param uninstall true if uninstalling the existing software is allowed.
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::createGroupReplication(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &vendor,
+        const S9sString      &mySqlVersion,
+        bool                  uninstall)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    bool            retval;
+    
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Galera cluster.");
+        return false;
+    }
+    
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        if (hosts[idx].isNode())
+            hostNames << hosts[idx].toNode().hostName();
+        else
+            hostNames << hosts[idx];
+    }
+
+    // The job_data describing the cluster.
+    jobData["cluster_type"]     = "group_replication";
+    jobData["mysql_hostnames"]  = hostNames;
+    jobData["master_address"]   = hostNames[0].toString();
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
+    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["type"]             = "mysql";
+    jobData["ssh_user"]         = osUserName;
+    jobData["repl_user"]        = options->dbAdminUserName();
+    jobData["repl_password"]    = options->dbAdminPassword();
+   
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"]      = options->osKeyFile();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "create_cluster";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create MySQL Replication Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  *
  */
 bool

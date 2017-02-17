@@ -15,7 +15,7 @@ s9s_print_message (
         const char        *formatstring,
         ...)
 {
-    FILE          *stream = stdout;
+    FILE          *stream = stderr;
     va_list        args;
 
     va_start (args, formatstring);

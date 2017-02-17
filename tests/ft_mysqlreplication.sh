@@ -20,21 +20,6 @@ cd $MYDIR
 source include.sh
 
 #
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$MYNAME($$) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
 # Prints usage information and exits.
 #
 function printHelpAndExit()
@@ -43,9 +28,10 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help      Print this help and exit.
- --verbose       Print more messages.
- --log           Print the logs while waiting for the job to be ended.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --log            Print the logs while waiting for the job to be ended.
+ --server=SERVER  The name of the server that will hold the containers. 
 
 EOF
     exit 1
@@ -54,7 +40,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log" \
+        -l "help,verbose,log,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -77,6 +63,12 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            ;;
+
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
             ;;
 
         --)
@@ -147,13 +139,8 @@ function find_cluster_id()
 
 function grant_user()
 {
-    echo "Granting..."
-    $S9S user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key
-
-    echo "Done..."
+    $S9S user --create --cmon-user=$USER --generate-key \
+        >/dev/null 2>/dev/null
 }
 
 #

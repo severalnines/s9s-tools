@@ -101,7 +101,6 @@ S9sBusinessLogic::execute()
         }
     }
 
-    S9S_DEBUG("");
     if (options->isClusterOperation())
     {
         if (options->isPingRequested())
@@ -254,7 +253,6 @@ S9sBusinessLogic::waitForJob(
 {
     S9sOptions  *options = S9sOptions::instance();
     
-    S9S_DEBUG("");
     if (options->isLogRequested())
     {
         waitForJobWithLog(clusterId, jobId, client);
@@ -285,6 +283,9 @@ S9sBusinessLogic::executeClusterCreate(
     {
         doExecuteCreateCluster(client);
     } else if (options->clusterType() == "mysqlreplication")
+    {
+        doExecuteCreateCluster(client);
+    } else if (options->clusterType() == "group_replication")
     {
         doExecuteCreateCluster(client);
     } else if (options->clusterType() == "ndb")
@@ -1233,6 +1234,12 @@ S9sBusinessLogic::doExecuteCreateCluster(
         success = client.createMySqlReplication(
                 hosts, osUserName, vendor, 
                 mySqlVersion, uninstall);
+    } else if (options->clusterType() == "group_replication" || 
+            options->clusterType() == "groupreplication")
+    {
+        success = client.createGroupReplication(
+                hosts, osUserName, vendor, 
+                mySqlVersion, uninstall);
     } else if (options->clusterType() == "postgresql")
     {
         success = client.createPostgreSql(
@@ -1247,10 +1254,6 @@ S9sBusinessLogic::doExecuteCreateCluster(
             S9sNode     node     = hosts[idx].toNode();
             S9sString   protocol = node.protocol().toLower();
 
-            S9S_DEBUG("*** idx      : %d", idx);
-            S9S_DEBUG("*** type     : %s", STR(hosts[idx].typeName()));
-            S9S_DEBUG("*** node     : %s", STR(node.hostName()));
-            S9S_DEBUG("*** protocol : %s", STR(protocol));
             if (protocol == "ndbd")
             {
                 ndbdHosts << node;
@@ -1345,7 +1348,7 @@ S9sBusinessLogic::waitForJobWithProgress(
     int            rotateCycle     = 0;
     S9sRpcReply    reply;
     bool           success, finished;
-    S9sString      progressLine;
+    S9sString      progressLine, previousProgressLine;
     bool           titlePrinted = false;
     int            nFailures = 0;
     int            nAuthentications = 0;
@@ -1414,10 +1417,23 @@ S9sBusinessLogic::waitForJobWithProgress(
         }
 
         /*
-         *
+         * Printing the progress line.
          */
         finished = reply.progressLine(progressLine, syntaxHighlight);
+        if (progressLine.empty())
+            goto end_of_loop;
+        
+        #ifdef DEBUG
+        if (progressLine == previousProgressLine)
+            goto end_of_loop;
+        #endif
+
         printf("%s %s\033[K\r", rotate[rotateCycle], STR(progressLine));
+        #ifdef DEBUG
+        printf("\n");
+        #endif
+
+        previousProgressLine = progressLine;
 
         if (reply.isJobFailed())
             options->setExitStatus(S9sOptions::JobFailed);
@@ -1430,6 +1446,7 @@ S9sBusinessLogic::waitForJobWithProgress(
         ++rotateCycle;
         rotateCycle %= sizeof(rotate) / sizeof(void *);
 
+end_of_loop:
         if (finished)
             break;
     }
@@ -1759,8 +1776,6 @@ S9sBusinessLogic::executeMaintenanceCreate(
     S9sOptions    *options = S9sOptions::instance();
     S9sRpcReply    reply;
     bool           success;
-
-    S9S_DEBUG("Creating maintence.");
 
     /*
      * Running the request on the controller.

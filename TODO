@@ -80,3 +80,63 @@ o
 o 
   s9s cluster —change-config —nodes=mysql://10.10.10.10  —group=mysqld  —variable=max_connections —value=200
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Laszlo, I would like to sync up tomorrow about the CmonCommandHandlerWorker
+ and the
+
+Laszlo - great work on the command  line tool (flex) 
+
+What do you think about:
+
+1)  Fix up so that ’s9s cluster —add-node’  accepts —cluster_name as well? Now it requires an cluster Id, and is then node consistent with the —create-database/create-account e.g (perhaps there are more like this)
+
+s9s cluster --add-node  --cluster-id=$CID  --nodes='proxysql://10.10.10.17' --wait
+
+^^ i think this is ready.
+
+2) implement ‘s9s cluster —delete-account … ’
+
+3) stop/start nodes, e.g:
+
+s9s node —stop/—start  —nodes=mysql://10.10.10.10
+or
+s9s cluster —stop-node/—start-node  —nodes=mysql://10.10.10.10
+
+4) Then i am quite keen on being able to make config changes on the nodes , and list config data from a node 
+e.g:
+s9s cluster —change-config —nodes=mysql://10.10.10.10  —group=mysqld  —variable=max_connections —value=200
+
+i can write atleast the code in cmonabstractmysqlcluster  for this as we want to try to do a “SET GLOBAL max_connections=200” and if that is not supported to be changed dynamically, we will in any case update the my.cnf file and prompt the user that a restart of the node is required. Not sure how it works in postgres/mongodb yet however..
+[15:49:20] Pere László: I made most of these. Only the "make config changes on the nodes" is not finished.
+[15:49:56] Pere László: I am not sure about the start/stop though.
+[15:51:11] David Kedves: { "command": "start", "job_data": { "hostname": "STRING", "port": INT } }
+[15:51:24] David Kedves: this should work for all kind of nodes ^ (and "stop" is the same)
+[15:51:45] Pere László: easy to implement then
+[15:51:51] David Kedves: however i am not sure about why Johan wrote nodes
+[15:52:08] David Kedves: maybe thats the name of argument we have already in place, i dunno
+[15:52:30] Pere László: Thats an argument we always use.
+[15:52:37] David Kedves: aha, ok i c
+
