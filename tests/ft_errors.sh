@@ -248,7 +248,7 @@ function testNodeOperations()
     local output
     local expected
 
-    expected="One of the --list and --set options is mandatory."
+    expected="One of the --list, --list-config, --change-config, --stat and --set options is mandatory."
     output=$($S9S node 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."
@@ -257,7 +257,7 @@ function testNodeOperations()
         return 1
     fi
     
-    expected="The --list and --set options are mutually exclusive."
+    expected="The --list, --list-config, --change-config, --stat and --set options are mutually exclusive."
     output=$($S9S node --list --set 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."

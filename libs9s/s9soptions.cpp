@@ -1296,6 +1296,33 @@ S9sOptions::isStatRequested() const
 }
 
 /**
+ * \returns true if the "list-config" function is requested by providing the
+ *     --list command line option.
+ */
+bool
+S9sOptions::isListConfigRequested() const
+{
+    if (m_options.contains("list_config"))
+        return m_options.at("list_config").toBoolean();
+
+    return false;
+}
+
+/**
+ * \returns true if the "change-config" function is requested by providing the
+ *     --change-config command line option.
+ */
+bool
+S9sOptions::isChangeConfigRequested() const
+{
+    if (m_options.contains("change_config"))
+        return m_options.at("change_config").toBoolean();
+
+    return false;
+}
+
+
+/**
  * \returns true if the --list-properties main option was provided.
  */
 bool
@@ -3043,12 +3070,21 @@ S9sOptions::checkOptionsNode()
     
     if (isSetRequested())
         countOptions++;
+    
+    if (isStatRequested())
+        countOptions++;
+
+    if (isListConfigRequested())
+        countOptions++;
+    
+    if (isChangeConfigRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list and --set options are mutually"
-            " exclusive.";
+            "The --list, --list-config, --change-config, --stat and --set "
+            "options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
 
@@ -3056,7 +3092,8 @@ S9sOptions::checkOptionsNode()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list and --set options is mandatory.";
+            "One of the --list, --list-config, --change-config, --stat and "
+            "--set options is mandatory.";
 
         m_exitStatus = BadOptions;
 

@@ -161,6 +161,8 @@ class S9sOptions
         bool isHelpRequested() const;
         bool isListRequested() const;
         bool isStatRequested() const;
+        bool isListConfigRequested() const;
+        bool isChangeConfigRequested() const;
         bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isSetRequested() const;
