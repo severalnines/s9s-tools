@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * S9sTools is distributed in the hope that it will be useful,
+ * s9s-tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
+ * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
@@ -124,6 +124,9 @@ class S9sOptions
         S9sString dbName() const;
         S9sString privileges() const;
         
+        S9sString optGroup() const;
+        S9sString optName() const;
+        S9sString optValue() const;
 
         S9sString backupDir() const;
         S9sString backupMethod() const;

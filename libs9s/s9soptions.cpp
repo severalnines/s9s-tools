@@ -110,6 +110,11 @@ enum S9sOptionType
     OptionObjects,
     OptionPrivileges,
     OptionDbName,
+    OptionOptGroup,
+    OptionOptName,
+    OptionOptValue,
+    OptionListConfig,
+    OptionChangeConfig,
 };
 
 /**
@@ -976,6 +981,38 @@ S9sOptions::privileges() const
     return retval;
 }
 
+S9sString
+S9sOptions::optGroup() const
+{
+    S9sString retval;
+
+    if (m_options.contains("opt_group"))
+        retval = m_options.at("opt_group").toString();
+
+    return retval;
+}
+
+S9sString
+S9sOptions::optName() const
+{
+    S9sString retval;
+
+    if (m_options.contains("opt_name"))
+        retval = m_options.at("opt_name").toString();
+
+    return retval;
+}
+
+S9sString
+S9sOptions::optValue() const
+{
+    S9sString retval;
+
+    if (m_options.contains("opt_value"))
+        retval = m_options.at("opt_value").toString();
+
+    return retval;
+}
 
 /**
  * \returns true if the --with-database command line option was provided.
@@ -2252,6 +2289,9 @@ S9sOptions::printHelpCluster()
 "  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
 "  --with-database            Create a database for the user too.\n"
 "  --db-name=NAME             The name of the database.\n"
+"  --opt-group=NAME           The option group for configuration.\n"
+"  --opt-name=NAME            The name of the configuration item.\n"
+"  --opt-value=VALUE          The value for the configuration item.\n"
 "\n");
 }
 
@@ -2263,7 +2303,10 @@ S9sOptions::printHelpNode()
     printf(
 "Options for the \"node\" command:\n"
 "  --list                     List the jobs found on the controller.\n"
+"  --stat                     Print detailed node information.\n"
 "  --set                      Change the properties of a node.\n"
+"  --list-config              Print the configuration for a node.\n"
+"  --change-config            Change the configuration for a node.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
@@ -2285,33 +2328,38 @@ S9sOptions::readOptionsNode(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp        },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "cmon-user",        required_argument, 0, 'u'               }, 
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
-        { "rpc-token",        required_argument, 0, 't'               },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0, OptionPrintJson   },
-        { "color",            optional_argument, 0, OptionColor       },
-        { "config-file",      required_argument, 0,  4                },
-        { "batch",            no_argument,       0, OptionBatch       },
-        { "no-header",        no_argument,       0, OptionNoHeader    },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0,  4                    },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'               },
-        { "stat",             no_argument,       0,  OptionStat       },
-        { "set",              no_argument,       0,  OptionSet        },
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0,  OptionStat           },
+        { "set",              no_argument,       0,  OptionSet            },
+        { "list-config",      no_argument,       0,  OptionListConfig     },
+        { "change-config",    no_argument,       0,  OptionChangeConfig   },
 
         // Cluster information
-        { "cluster-id",       required_argument, 0, 'i'               },
-        { "cluster-name",     required_argument, 0, 'n'               },
-        { "nodes",            required_argument, 0, OptionNodes       },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
+        { "nodes",            required_argument, 0, OptionNodes           },
 
         // Node options. 
-        { "properties",       required_argument, 0, OptionProperties  },
+        { "properties",       required_argument, 0, OptionProperties      },
+        { "opt-group",        required_argument, 0, OptionOptGroup        },
+        { "opt-name",         required_argument, 0, OptionOptName         },
+        { "opt-value",        required_argument, 0, OptionOptValue        }, 
 
         { 0, 0, 0, 0 }
     };
@@ -2385,6 +2433,15 @@ S9sOptions::readOptionsNode(
                 m_options["set"]  = true;
                 break;
 
+            case OptionListConfig:
+                // --list-config
+                m_options["list_config"] = true;
+                break;
+
+            case OptionChangeConfig:
+                // --change-config
+                m_options["change_config"] = true;
+
             case 4:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
@@ -2437,6 +2494,21 @@ S9sOptions::readOptionsNode(
                 // --nodes=LIST
                 if (!setNodes(optarg))
                     return false;
+                break;
+            
+            case OptionOptGroup:
+                // --opt-group=NAME
+                m_options["opt_group"] = optarg;
+                break;
+
+            case OptionOptName:
+                // --opt-name=NAME
+                m_options["opt_name"] = optarg;
+                break;
+
+            case OptionOptValue:
+                // --opt-value=VALUE
+                m_options["opt_value"] = optarg;
                 break;
             
             case '?':
@@ -3871,6 +3943,7 @@ S9sOptions::readOptionsMetaType(
 
     return true;
 }
+
 /**
  * Reads the command line options in cluster mode.
  */
@@ -3937,7 +4010,9 @@ S9sOptions::readOptionsCluster(
         { "db-name",          required_argument, 0, OptionDbName          },
         { "objects",          required_argument, 0, OptionObjects         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
-    
+        { "opt-group",        required_argument, 0, OptionOptGroup        },
+        { "opt-name",         required_argument, 0, OptionOptName         },
+        { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { 0, 0, 0, 0 }
     };
 
@@ -4184,6 +4259,21 @@ S9sOptions::readOptionsCluster(
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;
+                break;
+
+            case OptionOptGroup:
+                // --opt-group=NAME
+                m_options["opt_group"] = optarg;
+                break;
+
+            case OptionOptName:
+                // --opt-name=NAME
+                m_options["opt_name"] = optarg;
+                break;
+
+            case OptionOptValue:
+                // --opt-value=VALUE
+                m_options["opt_value"] = optarg;
                 break;
 
             case '?':

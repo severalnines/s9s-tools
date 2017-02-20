@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-//#define DEBUG
+#define DEBUG
 #include "s9sdebug.h"
 
 /**
