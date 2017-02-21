@@ -7,7 +7,7 @@ VERBOSE=""
 LOGFILE=""
 SERVER=""
 PARENT_NAME=ubuntu
-OWNER=pipas
+OWNER=${USER}
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 #
@@ -350,7 +350,7 @@ function create_container()
     # Adding to the sudoers.
     #
     echo "" >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
-    echo "pipas ALL=(ALL) NOPASSWD:ALL" \
+    echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" \
         >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
 
     #
