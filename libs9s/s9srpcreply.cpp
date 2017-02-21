@@ -777,6 +777,81 @@ S9sRpcReply::printClusterList()
         printClusterListBrief();
 }
 
+void
+S9sRpcReply::printConfigList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else 
+        printConfigBrief();
+}
+
+void
+S9sRpcReply::printConfigBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariant      config   = operator[]("config");
+    S9sVariantList  fileList = config["files"].toVariantList();
+    S9sFormat       nameFormat;
+    S9sFormat       valueFormat;
+    S9sFormat       sectionFormat;
+
+    for (uint idx1 = 0; idx1 < fileList.size(); ++idx1)
+    {
+        S9sVariantMap  fileMap = fileList[idx1].toVariantMap();
+        S9sVariantList valueList = fileMap["values"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
+        {
+            S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+
+            nameFormat.widen(valueMap["variablename"].toString());
+            valueFormat.widen(valueMap["value"].toString());
+            sectionFormat.widen(valueMap["section"].toString());
+        }
+    }
+        
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        sectionFormat.widen("GROUP");
+        nameFormat.widen("OPTION NAME");
+        valueFormat.widen("VALUE");
+        
+        printf("%s", headerColorBegin());
+        sectionFormat.printf("GROUP");
+        nameFormat.printf("OPTION NAME");
+        valueFormat.printf("VALUE");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (uint idx1 = 0; idx1 < fileList.size(); ++idx1)
+    {
+        S9sVariantMap  fileMap = fileList[idx1].toVariantMap();
+        S9sVariantList valueList = fileMap["values"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
+        {
+            S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+            
+            sectionFormat.printf(valueMap["section"].toString());
+
+            printf("%s", optNameColorBegin());
+            nameFormat.printf(valueMap["variablename"].toString());
+            printf("%s", optNameColorEnd());
+
+            valueFormat.printf(valueMap["value"].toString());
+            printf("\n");
+        }
+    }
+}
+
+
 /**
  * Private low-level function to print the cluster list in the "brief" format.
  * The brief format can be used in shell scripts to create lists to walk
@@ -916,7 +991,6 @@ S9sRpcReply::printClusterListLong()
         printf("COMMENT");
         
         printf("%s", headerColorEnd());
-
         printf("\n");
     }
 
@@ -3366,6 +3440,24 @@ S9sRpcReply::useSyntaxHighLight() const
     S9sOptions *options = S9sOptions::instance();
    
     return options->useSyntaxHighlight();
+}
+
+const char *
+S9sRpcReply::optNameColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return TERM_BLUE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::optNameColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
 }
 
 const char *

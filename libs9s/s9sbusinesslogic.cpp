@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * S9sTools is distributed in the hope that it will be useful,
+ * s9s-tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
+ * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sbusinesslogic.h"
 
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define DEBUG
+//#define DEBUG
 #include "s9sdebug.h"
 
 /**
@@ -153,6 +153,9 @@ S9sBusinessLogic::execute()
         } else if (options->isSetRequested())
         {
             executeNodeSet(client);
+        } else if (options->isListConfigRequested())
+        {
+            executeConfigList(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -626,6 +629,39 @@ S9sBusinessLogic::executeNodeList(
         if (success)
         {
             reply.printNodeList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ */
+void 
+S9sBusinessLogic::executeConfigList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+
+    success = client.getConfig(options->nodes());
+    if (success)
+    {
+        reply = client.reply();
+
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printConfigList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

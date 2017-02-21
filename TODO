@@ -140,3 +140,10 @@ i can write atleast the code in cmonabstractmysqlcluster  for this as we want to
 [15:52:30] Pere László: Thats an argument we always use.
 [15:52:37] David Kedves: aha, ok i c
 
+
+s9s cluster —change-config —nodes=mysql://10.10.10.10  —group=mysqld  —variable=max_connections —value=200
+
+
+It would be also cool to do on multiple nodes:
+
+s9s cluster —change-config —nodes=mysql://10.10.10.10;10.10.10.11;10.10.10.12  —group=mysqld  —variable=max_connections —value=200

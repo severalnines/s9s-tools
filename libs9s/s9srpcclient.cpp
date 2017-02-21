@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * S9sTools is distributed in the hope that it will be useful,
+ * s9s-tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
+ * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9srpcclient.h"
 #include "s9srpcclient_p.h"
@@ -246,6 +246,44 @@ S9sRpcClient::getClusters()
 
     return retval;
 }
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * The method that sends the "getAllClusterInfo" RPC request and reads the
+ * reply.
+ */
+bool
+S9sRpcClient::getConfig(
+        const S9sVariantList &hosts)
+{
+    //S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/config/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]  = "getConfig";
+    if (hosts.size() == 1u)
+    {
+        S9sNode node = hosts[0].toNode();
+
+        request["hostname"] = node.hostName();
+
+        if (node.hasPort())
+            request["port"] = node.port();
+    } else {
+        PRINT_ERROR("getConfig only implemented for one host.");
+        return false;
+    }
+
+    //request["user"]       = options->userName();
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 bool
 S9sRpcClient::ping()

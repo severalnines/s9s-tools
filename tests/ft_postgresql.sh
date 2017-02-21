@@ -204,6 +204,35 @@ function testCreateCluster()
 }
 
 #
+# 
+#
+function testConfig()
+{
+    local exitCode
+    
+    pip-say "The test to check configuration is starting now."
+
+    #
+    # Listing the configuration values.
+    #
+    cat <<EOF
+    $S9S node 
+        --list-config 
+        --nodes=$FIRST_ADDED_NODE:5432 
+EOF
+
+    $S9S node \
+        --list-config \
+        --nodes=$FIRST_ADDED_NODE:5432 \
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
 # Creating a new account on the cluster.
 #
 #
@@ -432,7 +461,10 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest testPing
+    
     runFunctionalTest testCreateCluster
+    runFunctionalTest testConfig
+
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
 

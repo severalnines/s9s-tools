@@ -45,6 +45,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobStarted();
         void printJobLog();
         void printClusterList();
+        void printConfigList();
         void printNodeList();
         void printJobList();
         void printBackupList();
@@ -68,6 +69,8 @@ class S9sRpcReply : public S9sVariantMap
     private:
         void printJobLogBrief();
         void printJobLogLong();
+
+        void printConfigBrief();
 
         void printClusterListBrief();
         void printClusterListLong();
@@ -109,6 +112,9 @@ class S9sRpcReply : public S9sVariantMap
                 const S9sString &state);
 
         bool useSyntaxHighLight() const;
+        
+        const char *optNameColorBegin() const;
+        const char *optNameColorEnd() const;
 
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
