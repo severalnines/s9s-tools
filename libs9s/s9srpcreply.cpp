@@ -806,10 +806,14 @@ S9sRpcReply::printConfigBrief()
         for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+            S9sString     section  = valueMap["section"].toString();
 
-            nameFormat.widen(valueMap["variablename"].toString());
+            if (section.empty())
+                section = "-";
+
+            sectionFormat.widen(section);
             valueFormat.widen(valueMap["value"].toString());
-            sectionFormat.widen(valueMap["section"].toString());
+            nameFormat.widen(valueMap["variablename"].toString());
         }
     }
         
@@ -838,8 +842,12 @@ S9sRpcReply::printConfigBrief()
         for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+            S9sString     section  = valueMap["section"].toString();
+
+            if (section.empty())
+                section = "-";
             
-            sectionFormat.printf(valueMap["section"].toString());
+            sectionFormat.printf(section);
 
             printf("%s", optNameColorBegin());
             nameFormat.printf(valueMap["variablename"].toString());
