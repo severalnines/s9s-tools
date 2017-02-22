@@ -1652,6 +1652,7 @@ S9sOptions::isNoHeaderRequested() const
 /**
  * \returns true if the passed string matches the extra command line arguments
  *   (the command line arguments found after the last command line options).
+ *   Also returns true if the program did not receive extra arguments. 
  */
 bool
 S9sOptions::isStringMatchExtraArguments(

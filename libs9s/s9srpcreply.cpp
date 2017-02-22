@@ -794,6 +794,7 @@ void
 S9sRpcReply::printConfigLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             terminalWidth = options->terminalWidth();
     S9sVariant      config   = operator[]("config");
     S9sVariantList  fileList = config["files"].toVariantList();
     S9sFormat       nameFormat;
@@ -809,13 +810,23 @@ S9sRpcReply::printConfigLong()
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
+            S9sString     name     = valueMap["variablename"].toString();
+
+            if (!options->optName().empty() && 
+                    options->optName() != name)
+            {
+                continue;
+            }
+
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
 
             if (section.empty())
                 section = "-";
 
             sectionFormat.widen(section);
             valueFormat.widen(valueMap["value"].toString());
-            nameFormat.widen(valueMap["variablename"].toString());
+            nameFormat.widen(name);
         }
     }
         
@@ -845,17 +856,42 @@ S9sRpcReply::printConfigLong()
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
+            S9sString     filePath = valueMap["filepath"].toString();
+            int           line     = valueMap["linenumber"].toInt(-1);
+            S9sString     name     = valueMap["variablename"].toString();
+            
+            if (!options->optName().empty() && 
+                    options->optName() != name)
+            {
+                continue;
+            }
+            
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
 
             if (section.empty())
                 section = "-";
+
+            printf("%sFile    :%s %s%s%s:%d\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                XTERM_COLOR_ORANGE, STR(filePath), TERM_NORMAL,
+                line);
             
-            sectionFormat.printf(section);
-
-            printf("%s", optNameColorBegin());
-            nameFormat.printf(valueMap["variablename"].toString());
-            printf("%s", optNameColorEnd());
-
-            valueFormat.printf(valueMap["value"].toString());
+            printf("%sSection :%s %s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                STR(section));
+            
+            printf("%sName    :%s %s%s%s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                optNameColorBegin(), STR(name), optNameColorEnd());
+            
+            printf("%sValue   :%s %s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                STR(valueMap["value"].toString()));
+            
+            // A horizontal line.
+            for (int n = 0; n < terminalWidth; ++n)
+                printf("-");
             printf("\n");
         }
     }
@@ -870,6 +906,7 @@ S9sRpcReply::printConfigBrief()
     S9sFormat       nameFormat;
     S9sFormat       valueFormat;
     S9sFormat       sectionFormat;
+    int             total = 0;
 
     for (uint idx1 = 0; idx1 < fileList.size(); ++idx1)
     {
@@ -880,13 +917,24 @@ S9sRpcReply::printConfigBrief()
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
+            S9sString     name     = valueMap["variablename"].toString();
+
+            total++;
+            if (!options->optName().empty() && 
+                    options->optName() != name)
+            {
+                continue;
+            }
+
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
 
             if (section.empty())
                 section = "-";
 
             sectionFormat.widen(section);
             valueFormat.widen(valueMap["value"].toString());
-            nameFormat.widen(valueMap["variablename"].toString());
+            nameFormat.widen(name);
         }
     }
         
@@ -916,6 +964,16 @@ S9sRpcReply::printConfigBrief()
         {
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
+            S9sString     name     = valueMap["variablename"].toString();
+
+            if (!options->optName().empty() && 
+                    options->optName() != name)
+            {
+                continue;
+            }
+
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
 
             if (section.empty())
                 section = "-";
@@ -923,13 +981,16 @@ S9sRpcReply::printConfigBrief()
             sectionFormat.printf(section);
 
             printf("%s", optNameColorBegin());
-            nameFormat.printf(valueMap["variablename"].toString());
+            nameFormat.printf(name);
             printf("%s", optNameColorEnd());
 
             valueFormat.printf(valueMap["value"].toString());
             printf("\n");
         }
     }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
 }
 
 
