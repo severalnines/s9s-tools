@@ -258,7 +258,7 @@ bool
 S9sRpcClient::getConfig(
         const S9sVariantList &hosts)
 {
-    //S9sOptions    *options = S9sOptions::instance();
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/config/";
     S9sVariantMap  request;
     bool           retval;
@@ -277,8 +277,9 @@ S9sRpcClient::getConfig(
         return false;
     }
 
-    //request["user"]       = options->userName();
-    
+    if (options->clusterId() > 0)
+        request["cluster_id"] = options->clusterId();
+
     retval = executeRequest(uri, request);
 
     return retval;

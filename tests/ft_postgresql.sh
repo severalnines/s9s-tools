@@ -218,12 +218,12 @@ function testConfig()
     cat <<EOF
     $S9S node 
         --list-config 
-        --nodes=$FIRST_ADDED_NODE:5432 
+        --nodes=$FIRST_ADDED_NODE
 EOF
 
     $S9S node \
         --list-config \
-        --nodes=$FIRST_ADDED_NODE:5432 \
+        --nodes=$FIRST_ADDED_NODE \
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"

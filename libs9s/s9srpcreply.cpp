@@ -784,8 +784,81 @@ S9sRpcReply::printConfigList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printConfigLong();
     else 
         printConfigBrief();
+}
+
+void
+S9sRpcReply::printConfigLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariant      config   = operator[]("config");
+    S9sVariantList  fileList = config["files"].toVariantList();
+    S9sFormat       nameFormat;
+    S9sFormat       valueFormat;
+    S9sFormat       sectionFormat;
+
+    for (uint idx1 = 0; idx1 < fileList.size(); ++idx1)
+    {
+        S9sVariantMap  fileMap = fileList[idx1].toVariantMap();
+        S9sVariantList valueList = fileMap["values"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
+        {
+            S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+            S9sString     section  = valueMap["section"].toString();
+
+            if (section.empty())
+                section = "-";
+
+            sectionFormat.widen(section);
+            valueFormat.widen(valueMap["value"].toString());
+            nameFormat.widen(valueMap["variablename"].toString());
+        }
+    }
+        
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        sectionFormat.widen("GROUP");
+        nameFormat.widen("OPTION NAME");
+        valueFormat.widen("VALUE");
+        
+        printf("%s", headerColorBegin());
+        sectionFormat.printf("GROUP");
+        nameFormat.printf("OPTION NAME");
+        valueFormat.printf("VALUE");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (uint idx1 = 0; idx1 < fileList.size(); ++idx1)
+    {
+        S9sVariantMap  fileMap = fileList[idx1].toVariantMap();
+        S9sVariantList valueList = fileMap["values"].toVariantList();
+
+        for (uint idx2 = 0; idx2 < valueList.size(); ++idx2)
+        {
+            S9sVariantMap valueMap = valueList[idx2].toVariantMap();
+            S9sString     section  = valueMap["section"].toString();
+
+            if (section.empty())
+                section = "-";
+            
+            sectionFormat.printf(section);
+
+            printf("%s", optNameColorBegin());
+            nameFormat.printf(valueMap["variablename"].toString());
+            printf("%s", optNameColorEnd());
+
+            valueFormat.printf(valueMap["value"].toString());
+            printf("\n");
+        }
+    }
 }
 
 void

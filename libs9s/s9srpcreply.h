@@ -71,6 +71,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobLogLong();
 
         void printConfigBrief();
+        void printConfigLong();
 
         void printClusterListBrief();
         void printClusterListLong();
