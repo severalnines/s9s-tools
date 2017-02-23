@@ -981,6 +981,9 @@ S9sOptions::privileges() const
     return retval;
 }
 
+/**
+ * \returns the argument for the command line option --opt-group.
+ */
 S9sString
 S9sOptions::optGroup() const
 {
@@ -992,6 +995,9 @@ S9sOptions::optGroup() const
     return retval;
 }
 
+/**
+ * \returns the argument for the command line option --opt-name.
+ */
 S9sString
 S9sOptions::optName() const
 {
@@ -1003,6 +1009,9 @@ S9sOptions::optName() const
     return retval;
 }
 
+/**
+ * \returns the argument for the command line option --opt-value.
+ */
 S9sString
 S9sOptions::optValue() const
 {

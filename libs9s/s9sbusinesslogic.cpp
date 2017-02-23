@@ -156,6 +156,9 @@ S9sBusinessLogic::execute()
         } else if (options->isListConfigRequested())
         {
             executeConfigList(client);
+        } else if (options->isChangeConfigRequested())
+        {
+            executeSetConfig(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -675,7 +678,56 @@ S9sBusinessLogic::executeConfigList(
 
 /**
  * \param client A client for the communication.
- *
+ */
+void 
+S9sBusinessLogic::executeSetConfig(
+        S9sRpcClient &client)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sRpcReply     reply;
+    S9sVariantList  hosts;
+    S9sString       optName;
+    bool            success;
+
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        options->printError(
+                "Node list is empty while setting configuration.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+    
+    optName = options->optName();
+    if (optName.empty())
+    {
+        options->printError(
+                "Configuration option name is not provided.\n"
+                "Use the --opt-name command line option to provide"
+                " a configuration option name."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    success = client.setConfig(hosts);
+    if (options->isJsonRequested())
+    {
+        reply = client.reply();
+        printf("%s\n", STR(reply.toString()));
+    } else {
+        if (success)
+            printf("OK\n");
+    }
+}
+
+
+/**
+ * \param client A client for the communication.
  */
 void 
 S9sBusinessLogic::executeNodeSet(

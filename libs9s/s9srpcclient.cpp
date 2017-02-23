@@ -285,6 +285,51 @@ S9sRpcClient::getConfig(
     return retval;
 }
 
+bool
+S9sRpcClient::setConfig(
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/config/";
+    S9sVariantMap  request;
+    S9sVariantList optionList;
+    S9sVariantMap  optionMap;
+    bool           retval;
+
+    request["operation"]  = "setConfig";
+    if (hosts.size() == 1u)
+    {
+        S9sNode node = hosts[0].toNode();
+
+        request["hostname"] = node.hostName();
+
+        if (node.hasPort())
+            request["port"] = node.port();
+    } else {
+        PRINT_ERROR("getConfig only implemented for one host.");
+        return false;
+    }
+
+    if (options->clusterId() > 0)
+        request["cluster_id"] = options->clusterId();
+    
+    // 
+    // The configuration value: here it is implemented for one value.
+    //
+    optionMap["name"]  = options->optName();
+    optionMap["value"] = options->optValue();
+
+    if (!options->optGroup().empty())
+        optionMap["group"] = options->optGroup();
+
+    optionList << optionMap;
+    request["configuration"] = optionList;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 bool
 S9sRpcClient::ping()

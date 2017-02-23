@@ -817,6 +817,12 @@ S9sRpcReply::printConfigLong()
             {
                 continue;
             }
+            
+            if (!options->optGroup().empty() && 
+                    options->optGroup() != section)
+            {
+                continue;
+            }
 
             if (!options->isStringMatchExtraArguments(name))
                 continue;
@@ -862,6 +868,12 @@ S9sRpcReply::printConfigLong()
             
             if (!options->optName().empty() && 
                     options->optName() != name)
+            {
+                continue;
+            }
+            
+            if (!options->optGroup().empty() && 
+                    options->optGroup() != section)
             {
                 continue;
             }
@@ -926,6 +938,12 @@ S9sRpcReply::printConfigBrief()
                 continue;
             }
 
+            if (!options->optGroup().empty() && 
+                    options->optGroup() != section)
+            {
+                continue;
+            }
+
             if (!options->isStringMatchExtraArguments(name))
                 continue;
 
@@ -968,6 +986,12 @@ S9sRpcReply::printConfigBrief()
 
             if (!options->optName().empty() && 
                     options->optName() != name)
+            {
+                continue;
+            }
+            
+            if (!options->optGroup().empty() && 
+                    options->optGroup() != section)
             {
                 continue;
             }
