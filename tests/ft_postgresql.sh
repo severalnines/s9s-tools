@@ -98,7 +98,10 @@ function create_node()
 {
     local ip
 
+    printVerbose "Creating container..."
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    printVerbose "Created '$ip'."
+
     echo $ip
 }
 
@@ -209,27 +212,64 @@ function testCreateCluster()
 function testConfig()
 {
     local exitCode
-    
+    local value
+
     pip-say "The test to check configuration is starting now."
 
     #
-    # Listing the configuration values.
+    # Listing the configuration values. The exit code should be 0.
     #
-    cat <<EOF
-    $S9S node 
-        --list-config 
-        --nodes=$FIRST_ADDED_NODE
-EOF
-
     $S9S node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
+        >/dev/null
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    #
+    # Changing a configuration value.
+    #
+    $S9S node \
+        --change-config \
+        --nodes=$FIRST_ADDED_NODE \
+        --opt-name=log_line_prefix \
+        --opt-value="%m"
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    #
+    # Reading the configuration back. This time we only read one value.
+    #
+    value=$($S9S node \
+            --batch \
+            --list-config \
+            --opt-name=log_line_prefix \
+            --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    if [ "$value" != "%m" ]; then
+        failure "Configuration value should not be '$value'"
+    fi
+
+    #
+    # This is just to produce some nice output for the user.
+    #
+    #$S9S node \
+    #    --list-config \
+    #    --nodes=$FIRST_ADDED_NODE 
 }
 
 #
@@ -478,4 +518,5 @@ fi
 
 endTests
 
+pip-say "The test script is now finished."
 
