@@ -27,6 +27,15 @@ Print the details of one or more nodes.
 .B \-\-set
 Sets various properties of the specified node/host.
 
+.TP
+.B \-\-list\-config
+List the configuration values for the given node.
+
+.TP
+.B \-\-set\-config
+Change configuration values for the given node.
+
+
 .SS Generic Options
 
 .TP
@@ -66,6 +75,19 @@ The RPC token to be used when authenticating on the Cmon Controller.
 This option is similar to the -l option for the standard ls UNIX utility
 program. If the program creates a list of objects this option will change its
 format to show more details.
+
+.TP 
+.BI \-\-opt\-group= GROUP
+Configuration option group that is usually written as "[GROUP]" in the
+configuration files.
+
+.TP
+.BI \-\-opt\-name= NAME
+Configuration option name.
+
+.TP 
+.BI \-\-opt\-value= VALUE
+Configuration option value.
 
 .TP
 .B \-\-print-json
@@ -167,4 +189,10 @@ List a few specific nodes from one specific cluster:
 
 .nf
 # \fBs9s node --list --long --cluster-name=ft_postgresql_36945 '*168.0*' '10.10*'\fR
+.fi
+
+Change a configuration value for a PostgreSQL server:
+
+.nf
+# \fBs9s node --change-config --nodes=192.168.1.115 --opt-name=log_line_prefix --opt-value='%m '\fR
 .fi
