@@ -1266,7 +1266,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
     S9sVariantList hosts;
     S9sString      osUserName;
     S9sString      vendor;
-    S9sString      mySqlVersion;
+    S9sString      dbVersion;
     bool           uninstall = true;
     S9sRpcReply    reply;
     bool           success;
@@ -1283,7 +1283,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
         return;
     }
 
-    mySqlVersion = options->providerVersion("5.6");
+    dbVersion = options->providerVersion("5.6");
     osUserName   = options->osUser();
     vendor       = options->vendor();
 
@@ -1298,7 +1298,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
         return;
     }
 
-    if (mySqlVersion.empty())
+    if (dbVersion.empty())
     {
         options->printError(
             "The SQL server version is unknown while creating a cluster.\n"
@@ -1316,18 +1316,18 @@ S9sBusinessLogic::doExecuteCreateCluster(
     {
         success = client.createGaleraCluster(
                 hosts, osUserName, vendor, 
-                mySqlVersion, uninstall);
+                dbVersion, uninstall);
     } else if (options->clusterType() == "mysqlreplication")
     {
         success = client.createMySqlReplication(
                 hosts, osUserName, vendor, 
-                mySqlVersion, uninstall);
+                dbVersion, uninstall);
     } else if (options->clusterType() == "group_replication" || 
             options->clusterType() == "groupreplication")
     {
         success = client.createGroupReplication(
                 hosts, osUserName, vendor, 
-                mySqlVersion, uninstall);
+                dbVersion, uninstall);
     } else if (options->clusterType() == "postgresql")
     {
         success = client.createPostgreSql(
@@ -1361,7 +1361,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
         success = client.createNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts,
-                osUserName, vendor, mySqlVersion, uninstall);
+                osUserName, vendor, dbVersion, uninstall);
     } else {
         success = false;
     }
