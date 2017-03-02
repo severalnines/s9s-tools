@@ -910,6 +910,68 @@ S9sRpcReply::printConfigLong()
 }
 
 void
+S9sRpcReply::printConfigBriefWiden(
+        S9sVariantMap   map, 
+        S9sFormat      &sectionFormat,
+        S9sFormat      &nameFormat,
+        S9sFormat      &valueFormat,
+        int            depth)
+{
+    S9sVector<S9sString> keys = map.keys();
+
+    for (uint idx = 0; idx < keys.size(); ++idx)
+    {
+        S9sString     section  = map["section"].toString();
+        S9sString     name     = keys[idx];
+        S9sString     value    = map[name].toString();
+
+        if (section.empty())
+            section = "-";
+        
+        for (int n = 0; n < depth; ++n)
+            name = "    " + name;
+
+        sectionFormat.widen(section);
+        nameFormat.widen(name);
+        valueFormat.widen(value);
+    }
+}
+
+void
+S9sRpcReply::printConfigBrief(
+        S9sVariantMap   map, 
+        S9sFormat      &sectionFormat,
+        S9sFormat      &nameFormat,
+        S9sFormat      &valueFormat,
+        int            depth)
+{
+    S9sVector<S9sString> keys = map.keys();
+
+    for (uint idx = 0; idx < keys.size(); ++idx)
+    {
+        S9sString     section  = map["section"].toString();
+        S9sString     name     = keys[idx];
+        S9sString     value    = map[name].toString();
+
+        if (section.empty())
+            section = "-";
+        
+        for (int n = 0; n < depth; ++n)
+            name = "    " + name;
+
+        sectionFormat.printf(section);
+
+        printf("%s", optNameColorBegin());
+        nameFormat.printf(name);
+        printf("%s", optNameColorEnd());
+        
+        valueFormat.printf(value);
+
+        printf("\n");
+    }
+}
+
+void
 S9sRpcReply::printConfigBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -930,6 +992,14 @@ S9sRpcReply::printConfigBrief()
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
             S9sString     name     = valueMap["variablename"].toString();
+            
+            if (valueMap["value"].isVariantMap())
+            {
+                printConfigBriefWiden(
+                        valueMap["value"].toVariantMap(),
+                        sectionFormat, nameFormat, valueFormat, 1);
+                continue;
+            }
 
             total++;
             if (!options->optName().empty() && 
@@ -983,6 +1053,14 @@ S9sRpcReply::printConfigBrief()
             S9sVariantMap valueMap = valueList[idx2].toVariantMap();
             S9sString     section  = valueMap["section"].toString();
             S9sString     name     = valueMap["variablename"].toString();
+
+            if (valueMap["value"].isVariantMap())
+            {
+                printConfigBrief(
+                        valueMap["value"].toVariantMap(),
+                        sectionFormat, nameFormat, valueFormat, 1);
+                continue;
+            }
 
             if (!options->optName().empty() && 
                     options->optName() != name)
