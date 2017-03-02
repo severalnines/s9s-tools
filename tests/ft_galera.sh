@@ -291,6 +291,10 @@ function testAddProxySql()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    $S9S node \
+        --list-config \
+        --nodes=$nodeName 
 }
 
 #

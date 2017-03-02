@@ -1330,7 +1330,7 @@ S9sRpcClient::addProxySql(
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
- * A function to create a job that will add a proxysql host to the cluster.
+ * A function to create a job that will add a maxscale host to the cluster.
  */
 bool
 S9sRpcClient::addMaxScale(
