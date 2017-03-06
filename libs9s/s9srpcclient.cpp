@@ -358,14 +358,11 @@ S9sRpcClient::ping()
  */
 bool
 S9sRpcClient::setHost(
-        const int             clusterId,
         const S9sVariantList &hosts,
         const S9sVariantMap  &properties)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/host";
     S9sVariantMap  request;
-
-    uri.sprintf("/%d/stat", clusterId);
 
     if (hosts.size() != 1u)
     {
@@ -385,10 +382,6 @@ S9sRpcClient::setHost(
         request["hostname"]   = hosts[0].toString();
     }
     
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
-
-        
     return executeRequest(uri, request);
 }
 

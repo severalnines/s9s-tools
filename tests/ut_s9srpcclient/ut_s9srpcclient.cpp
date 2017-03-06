@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * s9s-tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ut_s9srpcclient.h"
 
@@ -115,13 +115,12 @@ UtS9sRpcClient::testSetHost()
     S9sRpcClientTester client;
     S9sVariantList     hosts;
     S9sVariantMap      properties;
-    int                clusterId = 1;
     S9sString          uri, payload;
 
     properties["name"] = "value";
     hosts << S9sNode("myserver.eu:80");
 
-    S9S_VERIFY(client.setHost(clusterId, hosts, properties));
+    S9S_VERIFY(client.setHost(hosts, properties));
     uri     = client.uri(0u);
     payload = client.payload(0u);
 

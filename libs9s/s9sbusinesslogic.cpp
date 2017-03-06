@@ -738,7 +738,6 @@ S9sBusinessLogic::executeNodeSet(
     S9sVariantList  hostNames;
     S9sVariantMap   properties;
     bool            success;
-    int             clusterId = options->clusterId();
 
     hostNames = options->nodes();
     if (hostNames.empty())
@@ -765,7 +764,7 @@ S9sBusinessLogic::executeNodeSet(
         return;
     }
 
-    success = client.setHost(clusterId, hostNames, properties);
+    success = client.setHost(hostNames, properties);
     if (options->isJsonRequested())
     {
         reply = client.reply();
