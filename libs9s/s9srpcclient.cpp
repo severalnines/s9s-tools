@@ -1717,6 +1717,8 @@ S9sRpcClient::restoreBackup(
 
 /**
  * \param clusterId The cluster to read or <= 0 to read all the clusters
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
  *
  * The method that gets the list of backups from the server.
  */
@@ -1741,6 +1743,11 @@ S9sRpcClient::getBackups(
     return retval;
 }
 
+/**
+ * \param backupId The ID of the backup to delete.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ */
 bool
 S9sRpcClient::deleteBackupRecord(
         const ulonglong backupId)
@@ -1762,6 +1769,9 @@ S9sRpcClient::deleteBackupRecord(
 }
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
  * A function to add a new account to the cluster. With this account the user
  * can work on the production database.
  */
@@ -1797,6 +1807,8 @@ S9sRpcClient::createAccount()
  * \param privileges The privileges in GSL language.
  * \returns True if the request sent and the reply received even if that reply
  *   is an error reply.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
  *
  * A function to grant rights for an account that already exists.
  *
@@ -1828,6 +1840,9 @@ S9sRpcClient::grantPrivileges(
 }
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
  * A function to delete an account from the cluster. 
  */
 bool
@@ -1858,6 +1873,11 @@ S9sRpcClient::deleteAccount()
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
 bool
 S9sRpcClient::createDatabase()
 {
@@ -1885,6 +1905,9 @@ S9sRpcClient::createDatabase()
 }
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
  * The method that gets the list of users from the server.
  */
 bool
@@ -1903,8 +1926,127 @@ S9sRpcClient::getUsers()
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ */
+bool 
+S9sRpcClient::createMaintenance(
+        const S9sVariantList &hosts,
+        const S9sString      &start,
+        const S9sString      &end,
+        const S9sString      &reason)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR(
+                "To create a maintenance period one"
+                " hostname has to be provided.");
+        return false;
+    }
+    
+    request["operation"] = "addMaintenance";
+    request["hostname"]  = hosts[0].toNode().hostName();
+    request["initiate"]  = start;
+    request["deadline"]  = end;
+    request["reason"]    = reason;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ */
+bool 
+S9sRpcClient::createMaintenance(
+        const int            &clusterId,
+        const S9sString      &start,
+        const S9sString      &end,
+        const S9sString      &reason)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    request["operation"]  = "addMaintenance";
+    request["cluster_id"] = clusterId;
+    request["initiate"]   = start;
+    request["deadline"]   = end;
+    request["reason"]     = reason;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ */
+bool
+S9sRpcClient::deleteMaintenance(
+        const S9sString &uuid)
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    if (uuid.empty())
+    {
+        PRINT_ERROR("Missing UUID.");
+        PRINT_ERROR("Use the --uuid command line option to provide the UUID.");
+        return false;
+    }
+    
+    request["operation"] = "removeMaintenance";
+    request["UUID"]      = uuid;
+
+    //request["hostname"]  = hosts[0].toNode().hostName();
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Get the maintenance periods from the server.
+ */
+bool
+S9sRpcClient::getMaintenance()
+{
+    S9sString      uri;
+    S9sVariantMap  request;
+    bool           retval;
+
+    uri.sprintf("/v2/maintenance/");
+
+    request["operation"] = "getMaintenance";
+    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
  * 
  */
 bool
@@ -2069,105 +2211,3 @@ S9sRpcClient::doExecuteRequest(
     return true;
 }
 
-bool 
-S9sRpcClient::createMaintenance(
-        const S9sVariantList &hosts,
-        const S9sString      &start,
-        const S9sString      &end,
-        const S9sString      &reason)
-{
-    S9sString      uri;
-    S9sVariantMap  request;
-    bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
-
-    if (hosts.size() != 1)
-    {
-        PRINT_ERROR(
-                "To create a maintenance period one"
-                " hostname has to be provided.");
-        return false;
-    }
-    
-    request["operation"] = "addMaintenance";
-    request["hostname"]  = hosts[0].toNode().hostName();
-    request["initiate"]  = start;
-    request["deadline"]  = end;
-    request["reason"]    = reason;
-
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
-bool 
-S9sRpcClient::createMaintenance(
-        const int            &clusterId,
-        const S9sString      &start,
-        const S9sString      &end,
-        const S9sString      &reason)
-{
-    S9sString      uri;
-    S9sVariantMap  request;
-    bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
-
-    request["operation"]  = "addMaintenance";
-    request["cluster_id"] = clusterId;
-    request["initiate"]   = start;
-    request["deadline"]   = end;
-    request["reason"]     = reason;
-
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
-bool
-S9sRpcClient::deleteMaintenance(
-        const S9sString &uuid)
-{
-    S9sString      uri;
-    S9sVariantMap  request;
-    bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
-
-    if (uuid.empty())
-    {
-        PRINT_ERROR("Missing UUID.");
-        PRINT_ERROR("Use the --uuid command line option to provide the UUID.");
-        return false;
-    }
-    
-    request["operation"] = "removeMaintenance";
-    request["UUID"]      = uuid;
-
-    //request["hostname"]  = hosts[0].toNode().hostName();
-
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
-/**
- * Get the maintenance periods from the server.
- */
-bool
-S9sRpcClient::getMaintenance()
-{
-    S9sString      uri;
-    S9sVariantMap  request;
-    bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
-
-    request["operation"] = "getMaintenance";
-    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
-    
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
