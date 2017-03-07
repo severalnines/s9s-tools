@@ -422,17 +422,12 @@ bool
 S9sRpcClient::getCpuInfo(
         const int clusterId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/stat";
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/stat/", clusterId);
-
     request["operation"] = "getCpuPhysicalInfo";
     //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request);
 
@@ -586,11 +581,9 @@ S9sRpcClient::getJobInstances()
 
     request["operation"] = "getJobInstances";
     request["ascending"] = true;
+    
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request);
 
@@ -619,9 +612,6 @@ S9sRpcClient::getJobInstance(
 
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request);
 
@@ -659,9 +649,6 @@ S9sRpcClient::getJobLog(
 
     if (offset != 0)
         request["offset"] = offset;
-
-    if (!m_priv->m_token.empty())
-        request["token"]  = m_priv->m_token;
 
     retval = executeRequest(uri, request);
 
