@@ -533,7 +533,7 @@ S9sRpcReply::printProcessList(
     printf("%s", " VIRT      RES    S   %CPU   %MEM COMMAND    ");
     printf("%s", STR(S9sString::space * columns));
     printf("%s", TERM_NORMAL);
-    printf("\n");
+    //printf("\n");
 
     // rss          resident set size
     // vsz          virtual memory size
@@ -552,8 +552,8 @@ S9sRpcReply::printProcessList(
         int           priority   = process["priority"].toInt();
         
         printf("\n");
-        printf("%d ", maxLines);
-        printf("%u ", idx);
+        //printf("%d ", maxLines);
+        //printf("%u ", idx);
 
         rss     /= 1024;
         virtMem /= 1024;

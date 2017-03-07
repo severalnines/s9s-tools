@@ -97,7 +97,7 @@ S9sTopUi::executeTopOnce(
     columns  = terminalWidth;
     columns -= clusterName.length();
     columns -= clusterStatusText.length();
-    columns -= 12;
+    columns -= 13;
         
     tmp = S9sString::space * columns;
 
@@ -132,7 +132,7 @@ S9sTopUi::executeTopOnce(
     reply = client.reply();
 
     //S9S_DEBUG("reply.printProcessList(%d)", options->terminalHeight() - 6);
-    reply.printProcessList(options->terminalHeight() - 6);
+    reply.printProcessList(options->terminalHeight() - 7);
 
 
     if (!success)
