@@ -476,14 +476,9 @@ S9sRpcClient::getCpuStats(
     S9sVariantMap  request;
     bool           retval;
 
-    //uri.sprintf("/%d/stat/", clusterId);
-
     request["operation"]  = "statByName";
     request["name"]       = "cpustat";
     request["cluster_id"] = clusterId;
-
-    //if (!m_priv->m_token.empty())
-    //    request["token"] = m_priv->m_token;
 
     retval = executeRequest(uri, request);
     
@@ -530,17 +525,13 @@ bool
 S9sRpcClient::getMemoryStats(
         const int clusterId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/stat";
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/stat/", clusterId);
-
-    request["operation"] = "statByName";
-    request["name"]      = "memorystat";
-
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    request["operation"]  = "statByName";
+    request["name"]       = "memorystat";
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
     
