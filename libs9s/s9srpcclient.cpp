@@ -483,12 +483,9 @@ S9sRpcClient::getCpuStats(
 bool
 S9sRpcClient::getMetaTypes()
 {
-    int            clusterId = 0;
-    S9sString      uri;
+    S9sString      uri = "/v2/metatype/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/metatype/", clusterId);
 
     request["operation"] = "getMetaTypes";
 
@@ -501,12 +498,9 @@ bool
 S9sRpcClient::getMetaTypeProperties(
         const S9sString &typeName)
 {
-    int            clusterId = 0;
-    S9sString      uri;
+    S9sString      uri = "/v2/metatype/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/metatype/", clusterId);
 
     request["operation"] = "getMetaTypeInfo";
     request["type-name"] = typeName;
@@ -546,16 +540,12 @@ bool
 S9sRpcClient::getRunningProcesses(
         const int clusterId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/process";
     S9sVariantMap  request;
     bool           retval;
 
-    uri.sprintf("/%d/proc/", clusterId);
-
-    request["operation"] = "getRunningProcesses";
-    
-    if (!m_priv->m_token.empty())
-        request["token"] = m_priv->m_token;
+    request["operation"]  = "getRunningProcesses";
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -604,11 +594,9 @@ bool
 S9sRpcClient::getJobInstance(
         const int jobId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/jobs/");
 
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
@@ -634,16 +622,15 @@ S9sRpcClient::getJobLog(
         const int limit,
         const int offset)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/jobs/");
 
     // Building the request.
     request["operation"]  = "getJobLog";
     request["job_id"]     = jobId;
     request["ascending"]  = true;
+    
     if (limit != 0)
         request["limit"]  = limit;
 
@@ -726,8 +713,6 @@ S9sRpcClient::createGaleraCluster(
         return false;
     }
     
-    uri = "/v2/jobs/";
-
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         if (hosts[idx].isNode())
@@ -1705,11 +1690,9 @@ bool
 S9sRpcClient::getBackups(
         const int clusterId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/backup/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri = "/v2/backup/";
 
     request["operation"] = "getBackups";
     request["ascending"] = true;
@@ -1731,12 +1714,10 @@ bool
 S9sRpcClient::deleteBackupRecord(
         const ulonglong backupId)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/backup/";
     S9sVariantMap  request;
     S9sVariantMap  backupMap;
     bool           retval;
-
-    uri = "/v2/backup/";
 
     backupMap["backup_id"]   = backupId;
     request["operation"]     = "deleteBackupRecord";
@@ -1892,11 +1873,9 @@ S9sRpcClient::createDatabase()
 bool
 S9sRpcClient::getUsers()
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/users/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri = "/v2/users/";
 
     request["operation"] = "getUsers";
 
@@ -1916,11 +1895,9 @@ S9sRpcClient::createMaintenance(
         const S9sString      &end,
         const S9sString      &reason)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
 
     if (hosts.size() != 1)
     {
@@ -1952,11 +1929,9 @@ S9sRpcClient::createMaintenance(
         const S9sString      &end,
         const S9sString      &reason)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
 
     request["operation"]  = "addMaintenance";
     request["cluster_id"] = clusterId;
@@ -1977,11 +1952,9 @@ bool
 S9sRpcClient::deleteMaintenance(
         const S9sString &uuid)
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
 
     if (uuid.empty())
     {
@@ -2009,11 +1982,9 @@ S9sRpcClient::deleteMaintenance(
 bool
 S9sRpcClient::getMaintenance()
 {
-    S9sString      uri;
+    S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
-
-    uri.sprintf("/v2/maintenance/");
 
     request["operation"] = "getMaintenance";
     //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
