@@ -682,6 +682,9 @@ S9sRpcClient::rollingRestart(
 }
 
 /**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply), false if the request was
+ *   not even sent.
  *
  */
 bool

@@ -82,7 +82,6 @@ class S9sBusinessLogic
         void executeGrant(S9sRpcClient &client);
         void executeDeleteAccount(S9sRpcClient &client);
         void executeCreateDatabase(S9sRpcClient &client);
-        void doExecuteCreateCluster(S9sRpcClient &client);
 
         void executeCreateBackup(S9sRpcClient &client);
         void executeRestoreBackup(S9sRpcClient &client);

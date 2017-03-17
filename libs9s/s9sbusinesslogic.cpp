@@ -276,36 +276,23 @@ void
 S9sBusinessLogic::executeClusterCreate(
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
-        
-    if (options->clusterType() == "")
-    {
-        PRINT_ERROR(
-                 "Cluster type is not set.\n"
-                 "Use the --cluster-type command line option to set it.");
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    bool           success;
 
-        options->setExitStatus(S9sOptions::BadOptions);
-    } else if (options->clusterType() == "galera")
+    success = client.createCluster();
+    if (success)
     {
-        doExecuteCreateCluster(client);
-    } else if (options->clusterType() == "mysqlreplication")
-    {
-        doExecuteCreateCluster(client);
-    } else if (options->clusterType() == "group_replication")
-    {
-        doExecuteCreateCluster(client);
-    } else if (options->clusterType() == "ndb")
-    {
-        doExecuteCreateCluster(client);
-    } else if (options->clusterType() == "postgresql")
-    {
-        doExecuteCreateCluster(client);
+        // FIXME: this method happens to know that the request sent to the 0
+        // cluster, but this is not exactly robust like this.
+        jobRegistered(client, 0);
     } else {
-        PRINT_ERROR(
-                "Cluster type '%s' is not supported.",
-                STR(options->clusterType()));
+        reply = client.reply();
 
-        options->setExitStatus(S9sOptions::BadOptions);
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 
@@ -1243,133 +1230,6 @@ S9sBusinessLogic::executeRollingRestart(
     if (success)
     {
         jobRegistered(client, clusterId);
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-/**
- * \param client A client for the communication.
- *
- * This private function will execute the create cluster request that will
- * register a job to create a new cluster.
- */
-void
-S9sBusinessLogic::doExecuteCreateCluster(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    S9sVariantList hosts;
-    S9sString      osUserName;
-    S9sString      vendor;
-    S9sString      dbVersion;
-    bool           uninstall = true;
-    S9sRpcReply    reply;
-    bool           success;
-
-    hosts = options->nodes();
-    if (hosts.empty())
-    {
-        PRINT_ERROR(
-            "Node list is empty while creating cluster.\n"
-            "Use the --nodes command line option to provide the node list."
-            );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    dbVersion = options->providerVersion("5.6");
-    osUserName   = options->osUser();
-    vendor       = options->vendor();
-
-    if (vendor.empty() && options->clusterType() != "postgresql")
-    {
-        PRINT_ERROR(
-            "The vendor name is unknown while creating a galera cluster.\n"
-            "Use the --vendor command line option to provide the vendor."
-            );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    if (dbVersion.empty())
-    {
-        PRINT_ERROR(
-            "The SQL server version is unknown while creating a cluster.\n"
-            "Use the --provider-version command line option set it."
-            );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    /*
-     * Running the request on the controller.
-     */
-    if (options->clusterType() == "galera")
-    {
-        success = client.createGaleraCluster(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
-    } else if (options->clusterType() == "mysqlreplication")
-    {
-        success = client.createMySqlReplication(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
-    } else if (options->clusterType() == "group_replication" || 
-            options->clusterType() == "groupreplication")
-    {
-        success = client.createGroupReplication(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
-    } else if (options->clusterType() == "postgresql")
-    {
-        success = client.createPostgreSql(
-                hosts, osUserName, uninstall);
-    } else if (options->clusterType() == "ndb" || 
-            options->clusterType() == "ndbcluster")
-    {
-        S9sVariantList mySqlHosts, mgmdHosts, ndbdHosts;
-
-        for (uint idx = 0u; idx < hosts.size(); ++idx)
-        {
-            S9sNode     node     = hosts[idx].toNode();
-            S9sString   protocol = node.protocol().toLower();
-
-            if (protocol == "ndbd")
-            {
-                ndbdHosts << node;
-            } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
-            {
-                mgmdHosts << node;
-            } else if (protocol == "mysql" || protocol.empty())
-            {
-                mySqlHosts << node;
-            } else {
-                PRINT_ERROR(
-                        "The protocol '%s' is not supported.", 
-                        STR(protocol));
-                return;
-            }
-        }
-
-        success = client.createNdbCluster(
-                mySqlHosts, mgmdHosts, ndbdHosts,
-                osUserName, vendor, dbVersion, uninstall);
-    } else {
-        success = false;
-    }
-
-    if (success)
-    {
-        // FIXME: this method happens to know that the request sent to the 0
-        // cluster, but this is not exactly robust like this.
-        jobRegistered(client, 0);
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));

@@ -116,41 +116,6 @@ class S9sRpcClient
 
         bool createCluster();
 
-        bool createGaleraCluster(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
-
-        bool createMySqlReplication(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
-        
-        bool createGroupReplication(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
-
-        bool createNdbCluster(
-                const S9sVariantList &mySqlHosts,
-                const S9sVariantList &mgmdHosts,
-                const S9sVariantList &ndbdHosts,
-                const S9sString      &osUserName, 
-                const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
-
-        bool createPostgreSql(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                bool                  uninstall);
-
         bool addNode(
                 const int             clusterId,
                 const S9sVariantList &hosts);
@@ -209,6 +174,46 @@ class S9sRpcClient
                 const S9sString &payload);
 
     private:
+        /*
+         *
+         */
+        bool createGaleraCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
+        bool createMySqlReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+        
+        bool createGroupReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
+        bool createNdbCluster(
+                const S9sVariantList &mySqlHosts,
+                const S9sVariantList &mgmdHosts,
+                const S9sVariantList &ndbdHosts,
+                const S9sString      &osUserName, 
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
+        bool createPostgreSql(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                bool                  uninstall);
+    private:
         S9sRpcClientPrivate *m_priv;
+
+        friend class UtS9sRpcClient;
 };
 
