@@ -1775,11 +1775,11 @@ S9sRpcClient::dropCluster()
  * incompatible with the backend.
  */
 bool
-S9sRpcClient::createBackup(
-        const int             clusterId,
-        const S9sVariantList &hosts)
+S9sRpcClient::createBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
+    int             clusterId    = options->clusterId();
+    S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
     S9sString       schedule     = options->schedule();

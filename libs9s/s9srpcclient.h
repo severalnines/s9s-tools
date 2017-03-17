@@ -77,9 +77,7 @@ class S9sRpcClient
         /*
          * Backup related methods.
          */
-        bool createBackup(
-                const int             clusterId,
-                const S9sVariantList &hosts);
+        bool createBackup();
 
         bool restoreBackup(
                 const int             clusterId,
