@@ -79,10 +79,6 @@ class S9sBusinessLogic
         void executeJobLog(S9sRpcClient &client);
 
         void executeRollingRestart(S9sRpcClient &client);
-        //void executeAddNode(S9sRpcClient &client);
-        void executeRemoveNode(S9sRpcClient &client);
-        void executeStopCluster(S9sRpcClient &client);
-        void executeStartCluster(S9sRpcClient &client);
         void executeDropCluster(S9sRpcClient &client);
         void executeCreateAccount(S9sRpcClient &client);
         void executeGrant(S9sRpcClient &client);

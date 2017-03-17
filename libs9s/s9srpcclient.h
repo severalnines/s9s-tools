@@ -116,19 +116,10 @@ class S9sRpcClient
 
         bool createCluster();
         bool createNode();
-
-        bool removeNode(
-                const int             clusterId,
-                const S9sVariantList &hosts);
-
-        bool stopCluster(
-                const int             clusterId);
-        
-        bool startCluster(
-                const int             clusterId);
-
-        bool dropCluster(
-                const int             clusterId);
+        bool removeNode();
+        bool stopCluster();
+        bool startCluster();
+        bool dropCluster();
 
         bool createMaintenance(
                 const S9sVariantList &hosts,

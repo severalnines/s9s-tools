@@ -129,16 +129,20 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isRemoveNodeRequested())
         {
-            executeRemoveNode(client);
+            success = client.removeNode();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isStopRequested())
         {
-            executeStopCluster(client);
+            success = client.stopCluster();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isStartRequested())
         {
-            executeStartCluster(client);
+            success = client.startCluster();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isDropRequested())
         {
-            executeDropCluster(client);
+            success = client.dropCluster();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateAccountRequested())
         {
             executeCreateAccount(client);
@@ -290,159 +294,6 @@ S9sBusinessLogic::executeClusterCreate(
     success = client.createCluster();
 
     maybeJobRegistered(client, 0, success);
-}
-
-#if 0
-/**
- * \param client A client for the communication.
- *
- * This method will register a new "addNode" job on the controller using the
- * help of the S9sRpcClint class.
- */
-void
-S9sBusinessLogic::executeAddNode(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    success = client.createNode();
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        reply = client.reply();
-
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-#endif
-
-/**
- * \param client A client for the communication.
- *
- * This method will register a new "removeNode" job on the controller using the
- * help of the S9sRpcClint class.
- */
-void
-S9sBusinessLogic::executeRemoveNode(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.removeNode(clusterId, options->nodes());
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        reply = client.reply();
-
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-/**
- * \param client A client for the communication.
- *
- * This method will register a new "stop_cluster" job on the controller 
- * using the help of the S9sRpcClint class.
- */
-void
-S9sBusinessLogic::executeStopCluster(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.stopCluster(clusterId);
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        reply = client.reply();
-
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-void
-S9sBusinessLogic::executeStartCluster(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.startCluster(clusterId);
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        reply = client.reply();
-
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-/**
- * \param client A client for the communication.
- *
- * This method will register a new "remove_cluster" job on the controller 
- * using the help of the S9sRpcClint class.
- */
-void
-S9sBusinessLogic::executeDropCluster(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.dropCluster(clusterId);
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        reply = client.reply();
-
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
 }
 
 void

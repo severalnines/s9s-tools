@@ -1574,11 +1574,12 @@ S9sRpcClient::addMaxScale(
  * This function will create a "removeNode" job on the controller.
  */
 bool
-S9sRpcClient::removeNode(
-        const int             clusterId,
-        const S9sVariantList &hosts)
+S9sRpcClient::removeNode()
 {
+
     S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts = options->nodes();
     S9sNode        host;
     S9sString      hostName, title;
     S9sVariantMap  request;
@@ -1635,17 +1636,16 @@ S9sRpcClient::removeNode(
 }
 
 /**
- * \param clusterId The ID of the cluster.
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).
  *
  * This function will stop the cluster by creating a "stop_cluster" job.
  */
 bool
-S9sRpcClient::stopCluster(
-        const int             clusterId)
+S9sRpcClient::stopCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
@@ -1683,10 +1683,10 @@ S9sRpcClient::stopCluster(
 }
 
 bool
-S9sRpcClient::startCluster(
-        const int             clusterId)
+S9sRpcClient::startCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
@@ -1731,10 +1731,10 @@ S9sRpcClient::startCluster(
  * the cluster from the cmon controller.
  */
 bool
-S9sRpcClient::dropCluster(
-        const int             clusterId)
+S9sRpcClient::dropCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
