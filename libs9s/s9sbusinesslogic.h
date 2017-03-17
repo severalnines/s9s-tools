@@ -78,7 +78,6 @@ class S9sBusinessLogic
         void executeJobList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 
-        void executeRollingRestart(S9sRpcClient &client);
         void executeDropCluster(S9sRpcClient &client);
         void executeCreateAccount(S9sRpcClient &client);
         void executeGrant(S9sRpcClient &client);

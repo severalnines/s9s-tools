@@ -112,15 +112,10 @@ S9sBusinessLogic::execute()
             executeClusterList(client);
         } else if (options->isCreateRequested())
         {
-#if 0
-            executeClusterCreate(client);
-#else
             success = client.createCluster();
             maybeJobRegistered(client, 0, success);
-#endif
         } else if (options->isRollingRestartRequested())
         {
-            //executeRollingRestart(client);
             success = client.rollingRestart(clusterId);
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isAddNodeRequested())
@@ -145,6 +140,7 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateAccountRequested())
         {
+
             executeCreateAccount(client);
         } else if (options->isGrantRequested())
         {
@@ -992,32 +988,6 @@ S9sBusinessLogic::executeJobLog(
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
 }
-}
-
-/**
- * \param client A client for the communication.
- *
- * This method will start a rolling-restart job on the controller. 
- */
-void 
-S9sBusinessLogic::executeRollingRestart(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options = S9sOptions::instance();
-    int         clusterId = options->clusterId();
-    S9sRpcReply reply;
-    bool        success;
-
-    success = client.rollingRestart(clusterId);
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
 }
 
 void
