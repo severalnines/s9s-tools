@@ -114,6 +114,8 @@ class S9sRpcClient
 
         bool rollingRestart(const int clusterId);
 
+        bool createCluster();
+
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,

@@ -1273,7 +1273,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
     hosts = options->nodes();
     if (hosts.empty())
     {
-        options->printError(
+        PRINT_ERROR(
             "Node list is empty while creating cluster.\n"
             "Use the --nodes command line option to provide the node list."
             );
@@ -1288,7 +1288,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
-        options->printError(
+        PRINT_ERROR(
             "The vendor name is unknown while creating a galera cluster.\n"
             "Use the --vendor command line option to provide the vendor."
             );
@@ -1299,7 +1299,7 @@ S9sBusinessLogic::doExecuteCreateCluster(
 
     if (dbVersion.empty())
     {
-        options->printError(
+        PRINT_ERROR(
             "The SQL server version is unknown while creating a cluster.\n"
             "Use the --provider-version command line option set it."
             );
