@@ -405,7 +405,6 @@ S9sRpcReply::printJobLog()
     } else {
         printJobLogBrief();
     }
-
 }
 
 void
@@ -574,7 +573,6 @@ S9sRpcReply::printProcessList(
 
         if (maxLines > 0 && (int) idx + 1 >= maxLines)
             break;
-
     }
 }
 
@@ -1440,6 +1438,7 @@ S9sRpcReply::printNodeListBrief()
 /**
  * \param a the first host represented as a variantmap
  * \param b the second host represented as a variantmap
+ *
  * This function is used to sort the hosts before printing them in a list. First
  * the cluster IDs are compared, the second key is the host name.
  */
@@ -1992,7 +1991,7 @@ S9sRpcReply::printJobListBrief()
     S9sFormat       percentFormat;
 
     //
-    // The width of certain columns are variable.
+    // First run, collecting some information. 
     //
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2025,9 +2024,9 @@ S9sRpcReply::printJobListBrief()
         dateFormat.widen(timeStampString);
     }
 
-    /*
-     * Printing the header.
-     */
+    //
+    // Printing the header.
+    //
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
@@ -2053,6 +2052,9 @@ S9sRpcReply::printJobListBrief()
         printf("\n");
     }
 
+    //
+    // Second run, doing the actual printing.
+    //
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -2152,7 +2154,7 @@ S9sRpcReply::printJobListLong()
     int             total           = operator[]("total").toInt();
     unsigned int    userNameLength  = 0;
     S9sString       userNameFormat;
-    unsigned int    statusLength  = 0;
+    unsigned int    statusLength    = 0;
     S9sString       statusFormat;
 
     //
@@ -2373,6 +2375,7 @@ S9sRpcReply::printJobListLong()
         
     for (int n = 0; n < terminalWidth; ++n)
         printf("-");
+
     printf("\n");
     
     printf("Total: %d\n", total);
