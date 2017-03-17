@@ -273,4 +273,5 @@ class S9sOptions
         S9sVector<S9sString> m_extraArguments;
 
     friend class UtS9sOptions;
+    friend class UtS9sRpcClient;
 };

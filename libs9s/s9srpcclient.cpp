@@ -1856,11 +1856,11 @@ S9sRpcClient::createBackup()
  * Creates a job to restore a pre-existing backup.
  */
 bool
-S9sRpcClient::restoreBackup(
-        const int             clusterId,
-        const int             backupId)
+S9sRpcClient::restoreBackup()
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             clusterId = options->clusterId();
+    int             backupId  = options->backupId();
     S9sString       backupMethod = options->backupMethod();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;

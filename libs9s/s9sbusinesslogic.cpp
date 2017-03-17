@@ -191,11 +191,12 @@ S9sBusinessLogic::execute()
             executeBackupList(client);
         } else if (options->isCreateRequested())
         {
-            success =  client.createBackup();
+            success = client.createBackup();
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isRestoreRequested())
         {
-            executeRestoreBackup(client);
+            success = client.restoreBackup();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isDeleteRequested())
         {
             executeDeleteBackup(client);
@@ -537,31 +538,6 @@ S9sBusinessLogic::executeNodeSet(
     } else {
         if (success)
             printf("OK\n");
-    }
-}
-
-void
-S9sBusinessLogic::executeRestoreBackup(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    int            backupId  = options->backupId();
-    S9sRpcReply    reply;
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.restoreBackup(clusterId, backupId);
-    if (success)
-    {
-        jobRegistered(client, clusterId);
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 

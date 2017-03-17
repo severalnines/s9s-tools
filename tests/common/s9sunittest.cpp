@@ -441,6 +441,7 @@ S9sUnitTest::compare (
     if (value1 == value2)
         return true;
 
+    printf("\n");
     printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
     if (!m_errorString.empty())
         printf("*** error         : %s\n", STR(m_errorString));
@@ -467,6 +468,7 @@ S9sUnitTest::compare (
     if (value1 == value2)
         return true;
 
+    printf("\n");
     printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
     if (!m_errorString.empty())
         printf("*** error         : %s\n", STR(m_errorString));
@@ -493,6 +495,7 @@ S9sUnitTest::compare (
     if (value1 == value2)
         return true;
 
+    printf("\n");
     printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
     if (!m_errorString.empty())
         printf("*** error         : %s\n", STR(m_errorString));
@@ -522,6 +525,7 @@ S9sUnitTest::compare (
         return true;
     }
 
+    printf("\n");
     printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
     if (!m_errorString.empty())
         printf("*** error         : %s\n", STR(m_errorString));
@@ -548,6 +552,7 @@ S9sUnitTest::compare (
     if (value1 == value2)
         return true;
 
+    printf("\n");
     printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
     if (!m_errorString.empty())
         printf("*** error         : %s\n", STR(m_errorString));
@@ -581,6 +586,7 @@ S9sUnitTest::compare (
 
     if (value1.type() != value1.type()) 
     {
+        printf("\n");
         printf("Test failed in file %s at line %d.\n", fileName, lineNumber);
         if (!m_errorString.empty())
             printf("*** error         : %s\n", STR(m_errorString));

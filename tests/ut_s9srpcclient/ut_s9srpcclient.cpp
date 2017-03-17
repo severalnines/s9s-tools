@@ -20,9 +20,10 @@
 #include "ut_s9srpcclient.h"
 
 #include "S9sNode"
+#include "S9sOptions"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 /******************************************************************************
@@ -127,7 +128,7 @@ UtS9sRpcClient::testSetHost()
     S9S_DEBUG("*** uri     : %s", STR(uri));
     S9S_DEBUG("*** payload : %s", STR(payload));
 
-    S9S_COMPARE(uri, "/1/stat");
+    S9S_COMPARE(uri, "/v2/host");
     S9S_VERIFY(payload.contains("\"operation\": \"setHost\""));
     S9S_VERIFY(payload.contains("\"hostname\": \"myserver.eu\""));
     S9S_VERIFY(payload.contains("\"port\": 80"));
@@ -266,12 +267,14 @@ UtS9sRpcClient::testCreateNdbCluster()
 bool
 UtS9sRpcClient::testAddNode()
 {
-    S9sRpcClientTester client;
-    S9sVariantList     hosts;
-    S9sString          uri, payload;
-    int                clusterId = 1;
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantList      hosts;
+    S9sString           uri, payload;
+    int                 clusterId = 1;
 
     hosts << S9sNode("192.168.1.191");
+    options->m_options["cluster_id"] = clusterId;
     S9S_VERIFY(client.addNode(clusterId, hosts));
 
     uri     = client.uri(0u);
