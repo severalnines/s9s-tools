@@ -49,6 +49,7 @@ S9sBusinessLogic::execute()
     int          clusterId  = options->clusterId();
     bool         useTls     = options->useTls();
     S9sRpcClient client(controller, port, token, useTls);
+    bool         success;
 
     /*
      * Here is a fucked up version and a version that I try to clean up.
@@ -111,13 +112,21 @@ S9sBusinessLogic::execute()
             executeClusterList(client);
         } else if (options->isCreateRequested())
         {
+#if 0
             executeClusterCreate(client);
+#else
+            success = client.createCluster();
+            maybeJobRegistered(client, 0, success);
+#endif
         } else if (options->isRollingRestartRequested())
         {
-            executeRollingRestart(client);
+            //executeRollingRestart(client);
+            success = client.rollingRestart(clusterId);
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isAddNodeRequested())
         {
-            executeAddNode(client);
+            success = client.createNode();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isRemoveNodeRequested())
         {
             executeRemoveNode(client);
@@ -276,26 +285,14 @@ void
 S9sBusinessLogic::executeClusterCreate(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     success = client.createCluster();
-    if (success)
-    {
-        // FIXME: this method happens to know that the request sent to the 0
-        // cluster, but this is not exactly robust like this.
-        jobRegistered(client, 0);
-    } else {
-        reply = client.reply();
 
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
+    maybeJobRegistered(client, 0, success);
 }
 
+#if 0
 /**
  * \param client A client for the communication.
  *
@@ -308,84 +305,23 @@ S9sBusinessLogic::executeAddNode(
 {
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
-    S9sVariantList hosts;
     S9sRpcReply    reply;
-    bool           hasHaproxy  = false;
-    bool           hasProxySql = false;
-    bool           hasMaxScale = false;
     bool           success;
 
-    hosts = options->nodes();
-    if (hosts.empty())
-    {
-        PRINT_ERROR(
-                "Node list is empty while adding node.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
-    {
-        S9sString protocol = hosts[idx].toNode().protocol().toLower();
-
-        if (protocol == "haproxy")
-            hasHaproxy = true;
-        else if (protocol == "proxysql")
-            hasProxySql = true;
-        else if (protocol == "maxscale")
-            hasMaxScale = true;
-    }
-
-    /*
-     * Running the request on the controller.
-     */
-    if (hasHaproxy && hasProxySql) 
-    {
-        PRINT_ERROR(
-                "It is not possible to add a HaProxy and a ProxySql node "
-                "in one call.");
-
-        return;
-    } else if (hasHaproxy && hasMaxScale)
-    {
-        PRINT_ERROR(
-                "It is not possible to add a HaProxy and a MaxScale node "
-                "in one call.");
-
-        return;
-    } else if (hasProxySql && hasMaxScale)
-    {
-        PRINT_ERROR(
-                "It is not possible to add a ProxySql and a MaxScale node "
-                "in one call.");
-
-        return;
-    } else if (hasProxySql)
-    {
-        success = client.addProxySql(clusterId, hosts);
-    } else if (hasHaproxy)
-    {
-        success = client.addHaProxy(clusterId, hosts);
-    } else if (hasMaxScale)
-    {
-        success = client.addMaxScale(clusterId, hosts);
-    } else {
-        success = client.addNode(clusterId, hosts);
-    }
-
+    success = client.createNode();
     if (success)
     {
         jobRegistered(client, clusterId);
     } else {
+        reply = client.reply();
+
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
+#endif
 
 /**
  * \param client A client for the communication.
@@ -399,30 +335,19 @@ S9sBusinessLogic::executeRemoveNode(
 {
     S9sOptions    *options = S9sOptions::instance();
     int            clusterId = options->clusterId();
-    S9sVariantList hostNames;
     S9sRpcReply    reply;
     bool           success;
-
-    hostNames = options->nodes();
-    if (hostNames.empty())
-    {
-        options->printError(
-                "Node list is empty while removing node.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
 
     /*
      * Running the request on the controller.
      */
-    success = client.removeNode(clusterId, hostNames);
+    success = client.removeNode(clusterId, options->nodes());
     if (success)
     {
         jobRegistered(client, clusterId);
     } else {
+        reply = client.reply();
+
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
@@ -453,6 +378,8 @@ S9sBusinessLogic::executeStopCluster(
     {
         jobRegistered(client, clusterId);
     } else {
+        reply = client.reply();
+
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
@@ -477,6 +404,8 @@ S9sBusinessLogic::executeStartCluster(
     {
         jobRegistered(client, clusterId);
     } else {
+        reply = client.reply();
+
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
@@ -507,6 +436,8 @@ S9sBusinessLogic::executeDropCluster(
     {
         jobRegistered(client, clusterId);
     } else {
+        reply = client.reply();
+
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
         else
@@ -1237,6 +1168,29 @@ S9sBusinessLogic::executeRollingRestart(
             PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
+
+void
+S9sBusinessLogic::maybeJobRegistered(
+        S9sRpcClient &client,
+        const int     clusterId,
+        bool          success)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+
+    if (success)
+    {
+        jobRegistered(client, clusterId);
+    } else {
+        reply = client.reply();
+
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }    
+}
+
 
 /**
  * \param client The client that just created the new job with the reply in it.

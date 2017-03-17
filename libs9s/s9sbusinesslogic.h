@@ -37,6 +37,12 @@ class S9sBusinessLogic
 
     protected:
         virtual void 
+            maybeJobRegistered(
+                S9sRpcClient &client,
+                const int     clusterId,
+                bool          success);
+
+        virtual void 
             jobRegistered(
                     S9sRpcClient &client,
                     const int     clusterId);
@@ -73,7 +79,7 @@ class S9sBusinessLogic
         void executeJobLog(S9sRpcClient &client);
 
         void executeRollingRestart(S9sRpcClient &client);
-        void executeAddNode(S9sRpcClient &client);
+        //void executeAddNode(S9sRpcClient &client);
         void executeRemoveNode(S9sRpcClient &client);
         void executeStopCluster(S9sRpcClient &client);
         void executeStartCluster(S9sRpcClient &client);

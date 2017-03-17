@@ -115,22 +115,7 @@ class S9sRpcClient
         bool rollingRestart(const int clusterId);
 
         bool createCluster();
-
-        bool addNode(
-                const int             clusterId,
-                const S9sVariantList &hosts);
-
-        bool addHaProxy(
-                const int             clusterId,
-                const S9sVariantList &hosts);
-        
-        bool addProxySql(
-                const int             clusterId,
-                const S9sVariantList &hosts);
-
-        bool addMaxScale(
-                const int             clusterId,
-                const S9sVariantList &hosts);
+        bool createNode();
 
         bool removeNode(
                 const int             clusterId,
@@ -174,9 +159,7 @@ class S9sRpcClient
                 const S9sString &payload);
 
     private:
-        /*
-         *
-         */
+        // Low level methods that create new clusters.
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
@@ -211,6 +194,25 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 bool                  uninstall);
+        
+        // Low level methods that create/install a new node and add it to a
+        // cluster.
+        bool addNode(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
+        bool addHaProxy(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+        
+        bool addProxySql(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
+        bool addMaxScale(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
     private:
         S9sRpcClientPrivate *m_priv;
 

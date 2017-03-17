@@ -1195,6 +1195,83 @@ S9sRpcClient::createPostgreSql(
     return retval;
 }
 
+bool 
+S9sRpcClient::createNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts;
+    S9sRpcReply    reply;
+    bool           hasHaproxy  = false;
+    bool           hasProxySql = false;
+    bool           hasMaxScale = false;
+    bool           success;
+
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while adding node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol == "haproxy")
+            hasHaproxy = true;
+        else if (protocol == "proxysql")
+            hasProxySql = true;
+        else if (protocol == "maxscale")
+            hasMaxScale = true;
+    }
+
+    /*
+     * Running the request on the controller.
+     */
+    if (hasHaproxy && hasProxySql) 
+    {
+        PRINT_ERROR(
+                "It is not possible to add a HaProxy and a ProxySql node "
+                "in one call.");
+
+        return false;
+    } else if (hasHaproxy && hasMaxScale)
+    {
+        PRINT_ERROR(
+                "It is not possible to add a HaProxy and a MaxScale node "
+                "in one call.");
+
+        return false;
+    } else if (hasProxySql && hasMaxScale)
+    {
+        PRINT_ERROR(
+                "It is not possible to add a ProxySql and a MaxScale node "
+                "in one call.");
+
+        return false;
+    } else if (hasProxySql)
+    {
+        success = addProxySql(clusterId, hosts);
+    } else if (hasHaproxy)
+    {
+        success = addHaProxy(clusterId, hosts);
+    } else if (hasMaxScale)
+    {
+        success = addMaxScale(clusterId, hosts);
+    } else {
+        success = addNode(clusterId, hosts);
+    }
+
+    return success;
+}
+
+
 
 /**
  * \param clusterId The ID of the cluster.
@@ -1509,9 +1586,20 @@ S9sRpcClient::removeNode(
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while removing node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     if (hosts.size() != 1u)
     {
-        PRINT_ERROR("removenode is currently implemented only for one node.");
+        PRINT_ERROR("Remove node is currently implemented only for one node.");
         return false;
     }
     
