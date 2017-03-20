@@ -370,6 +370,43 @@ S9sRpcClient::ping()
     return retval;
 }
 
+bool 
+S9sRpcClient::setHost()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  hostNames;
+    S9sVariantMap   properties;
+
+    hostNames = options->nodes();
+    if (hostNames.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while setting node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    properties = options->propertiesOption();
+    if (properties.empty())
+    {
+        PRINT_ERROR(
+                "Properties not provided while setting node.\n"
+                "Use the --properties command line option to provide"
+                " properties."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return setHost(hostNames, properties);
+}
+
+
+
 /**
  * \param clusterId The cluster where the request will be sent.
  * \param hosts The list of hosts to change (currently only one host is

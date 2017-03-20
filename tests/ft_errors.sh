@@ -260,7 +260,25 @@ function testNodeOperations()
     expected="The --list, --list-config, --change-config, --stat and --set options are mutually exclusive."
     output=$($S9S node --list --set 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message mismatch when operation is missing"
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+
+    expected=$'Node list is empty while setting node.\nUse the --nodes command line option to provide the node list.'
+    output=$($S9S node --set 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message mismatch when setting unknown host"
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
+    
+    expected=$'Properties not provided while setting node.\nUse the --properties command line option to provide properties.'
+    output=$($S9S node --set --nodes=128.1.1.2 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message mismatch when setting unknown host properties."
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1

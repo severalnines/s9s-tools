@@ -63,6 +63,8 @@ class S9sRpcClient
 
         bool ping();
 
+        bool setHost();
+        
         bool setHost(
                 const S9sVariantList &hosts,
                 const S9sVariantMap  &properties);
