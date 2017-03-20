@@ -45,6 +45,9 @@ class S9sRpcClient
 
         const S9sRpcReply &reply() const;
         S9sString errorString() const;
+        void printMessages(
+                const S9sString &defaultMessage,
+                bool             success);
 
         bool authenticate();
 

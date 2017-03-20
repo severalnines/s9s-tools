@@ -136,6 +136,26 @@ S9sRpcClient::errorString() const
     return m_priv->m_errorString;
 }
 
+void
+S9sRpcClient::printMessages(
+        const S9sString &defaultMessage,
+        bool             success)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    rpcReply;
+
+    rpcReply = reply();
+    if (success)
+    {
+        rpcReply.printMessages(defaultMessage);
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(rpcReply.toString()));
+        else
+            PRINT_ERROR("%s", STR(errorString()));
+    }
+}
+
 bool
 S9sRpcClient::authenticate()
 {

@@ -638,24 +638,13 @@ void
 S9sBusinessLogic::executeCreateAccount(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
     success = client.createAccount();
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Created.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
+    client.printMessages("Created.\n", success);
 }
 
 void
@@ -663,73 +652,39 @@ S9sBusinessLogic::executeGrant(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
     success = client.grantPrivileges(options->account(), options->privileges());
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Grant.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
+    client.printMessages("Grant.\n", success);
 }
 
 void
 S9sBusinessLogic::executeDeleteAccount(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
     success = client.deleteAccount();
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Created.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-
+    client.printMessages("Created.\n", success);
 }
 
 void
 S9sBusinessLogic::executeCreateDatabase(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
     success = client.createDatabase();
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Created.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-
+    client.printMessages("Created.\n", success);
 }
 
 void
@@ -737,24 +692,13 @@ S9sBusinessLogic::executeDeleteBackup(
         S9sRpcClient &client)
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
     success = client.deleteBackupRecord(options->backupId());
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Deleted.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-
+    client.printMessages("Deleted.\n", success);
 }
 
 /**
