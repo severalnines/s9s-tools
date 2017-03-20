@@ -325,24 +325,62 @@ void
 S9sRpcReply::printMessages(
         const S9sString &defaultMessage)
 {
-    if (contains("errorString"))
+    S9sOptions    *options = S9sOptions::instance();
+        
+    if (options->isJsonRequested())
     {
-        // Error in RPC 1.0.
-        printf("%s\n", STR(at("errorString").toString()));
-    } else if (contains("error_string"))
-    {
-        // Error in RPC 2.0
-        printf("%s\n", STR(at("error_string").toString()));
-    } else if (contains("messages"))
-    {
-        S9sVariantList list = at("messages").toVariantList();
+        printf("%s\n", STR(toString()));
+        return;
+    }
 
-        for (uint idx = 0u; idx < list.size(); ++idx)
+    if (options->isBatchRequested())
+        return;
+
+    if (isOk())
+    {
+        if (contains("errorString"))
         {
-            printf("%s\n", STR(list[idx].toString()));
+            // Reply message in RPC 1.0.
+            printf("%s\n", STR(at("errorString").toString()));
+        } else if (contains("error_string"))
+        {
+            // Reply message in RPC 2.0
+            printf("%s\n", STR(at("error_string").toString()));
+        } else if (contains("messages"))
+        {
+            // ROC 2.0 might hold multiple messages.
+            S9sVariantList list = at("messages").toVariantList();
+    
+            for (uint idx = 0u; idx < list.size(); ++idx)
+            {
+                printf("%s\n", STR(list[idx].toString()));
+            }
+        } else {
+            // Well, no message, everything is ok.
+            printf("%s\n", STR(defaultMessage));
         }
     } else {
-        printf("%s\n", STR(defaultMessage));
+        if (contains("errorString"))
+        {
+            // Reply message in RPC 1.0.
+            PRINT_ERROR("%s", STR(at("errorString").toString()));
+        } else if (contains("error_string"))
+        {
+            // Reply message in RPC 2.0
+            PRINT_ERROR("%s", STR(at("error_string").toString()));
+        } else if (contains("messages"))
+        {
+            // ROC 2.0 might hold multiple messages.
+            S9sVariantList list = at("messages").toVariantList();
+    
+            for (uint idx = 0u; idx < list.size(); ++idx)
+            {
+                PRINT_ERROR("%s", STR(list[idx].toString()));
+            }
+        } else {
+            // Well, no message, everything is ok.
+            PRINT_ERROR("Error: Unknown error.");
+        }
     }
 }
 
@@ -2143,6 +2181,51 @@ S9sRpcReply::printJobListBrief()
 
 /**
  * Prints the list of jobs in their detailed form.
+ *
+--------------------------------------------------------------------------------
+Setup PostgreSQL Server
+Job finished.                                                      [██████████] 
+                                                                      100.00% 
+Created   : 2017-03-17 15:37:47    ID   : 84         Status : FINISHED 
+Started   : 2017-03-17 15:37:52    User : pipas      Host   :  
+Ended     : 2017-03-17 15:39:18    Group: users      
+--------------------------------------------------------------------------------
+
+    {
+        "can_be_aborted": false,
+        "can_be_deleted": true,
+        "class_name": "CmonJobInstance",
+        "cluster_id": 0,
+        "created": "2017-03-17T14:37:47.000Z",
+        "ended": "2017-03-17T14:39:18.000Z",
+        "exit_code": 0,
+        "group_id": 2,
+        "group_name": "users",
+        "has_progress": true,
+        "job_id": 84,
+        "job_spec": 
+        {
+            "command": "setup_server",
+            "job_data": 
+            {
+                "cluster_name": "ft_postgresql_3680",
+                "cluster_type": "postgresql_single",
+                "enable_uninstall": true,
+                "hostname": "192.168.1.117",
+                "postgre_password": "passwd12",
+                "postgre_user": "postmaster",
+                "ssh_user": "pipas",
+                "type": "postgresql"
+            }
+        },
+        "progress_percent": 100,
+        "started": "2017-03-17T14:37:52.000Z",
+        "status": "FINISHED",
+        "status_text": "Job finished.",
+        "title": "Setup PostgreSQL Server",
+        "user_id": 3,
+        "user_name": "pipas"
+    },
  */
 void 
 S9sRpcReply::printJobListLong()

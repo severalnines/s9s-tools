@@ -442,6 +442,97 @@ S9sBusinessLogic::executeConfigList(
     }
 }
 
+void 
+S9sBusinessLogic::executeMaintenanceList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getMaintenance();
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printMaintenanceList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::executeMetaTypeList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getMetaTypes();
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printMetaTypeList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::executeMetaTypePropertyList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options  = S9sOptions::instance();
+    S9sString    typeName = options->type();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getMetaTypeProperties(typeName);
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            if (options->isJsonRequested())
+                printf("\n%s\n", STR(reply.toString()));
+            else
+                reply.printMetaTypePropertyList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 /**
  * \param client A client for the communication.
  */
@@ -531,13 +622,15 @@ S9sBusinessLogic::executeNodeSet(
     }
 
     success = client.setHost(hostNames, properties);
-    if (options->isJsonRequested())
+    reply   = client.reply();
+    if (success)
     {
-        reply = client.reply();
-        printf("%s\n", STR(reply.toString()));
+        reply.printMessages("Ok.\n");
     } else {
-        if (success)
-            printf("OK\n");
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 
@@ -556,20 +649,7 @@ S9sBusinessLogic::executeCreateAccount(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else {
-            if (reply.isOk())
-            {
-                if (!options->isBatchRequested()) 
-                {
-                    reply.printMessages("Created.\n");
-                }
-            } else {
-                PRINT_ERROR("%s", STR(reply.errorString()));
-            }
-        }
+        reply.printMessages("Created.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -593,20 +673,7 @@ S9sBusinessLogic::executeGrant(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else {
-            if (reply.isOk())
-            {
-                if (!options->isBatchRequested()) 
-                {
-                    reply.printMessages("Grant.\n");
-                }
-            } else {
-                PRINT_ERROR("%s", STR(reply.errorString()));
-            }
-        }
+        reply.printMessages("Grant.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -630,20 +697,7 @@ S9sBusinessLogic::executeDeleteAccount(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else {
-            if (reply.isOk())
-            {
-                if (!options->isBatchRequested()) 
-                {
-                    reply.printMessages("Created.\n");
-                }
-            } else {
-                PRINT_ERROR("%s", STR(reply.errorString()));
-            }
-        }
+        reply.printMessages("Created.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -668,20 +722,7 @@ S9sBusinessLogic::executeCreateDatabase(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else {
-            if (reply.isOk())
-            {
-                if (!options->isBatchRequested()) 
-                {
-                    reply.printMessages("Created.\n");
-                }
-            } else {
-                PRINT_ERROR("%s", STR(reply.errorString()));
-            }
-        }
+        reply.printMessages("Created.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -706,20 +747,7 @@ S9sBusinessLogic::executeDeleteBackup(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else {
-            if (reply.isOk())
-            {
-                if (!options->isBatchRequested()) 
-                {
-                    reply.printMessages("Deleted.\n");
-                }
-            } else {
-                PRINT_ERROR("%s", STR(reply.errorString()));
-            }
-        }
+        reply.printMessages("Deleted.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -1498,13 +1526,7 @@ S9sBusinessLogic::executeMaintenanceDelete(
     reply   = client.reply();
     if (success)
     {
-        if (options->isJsonRequested())
-        {
-            printf("%s\n", STR(reply.toString()));
-        } else if (!options->isBatchRequested()) 
-        {
-            printf("Deleted.\n");
-        }
+        reply.printMessages("Created.\n");
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
@@ -1513,93 +1535,3 @@ S9sBusinessLogic::executeMaintenanceDelete(
     }
 }
 
-void 
-S9sBusinessLogic::executeMaintenanceList(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options = S9sOptions::instance();
-    S9sRpcReply reply;
-    bool        success;
-
-    success = client.getMaintenance();
-    if (success)
-    {
-        reply = client.reply();
-        success = reply.isOk();
-        if (success)
-        {
-            if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
-            else
-                reply.printMaintenanceList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
-    } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-void 
-S9sBusinessLogic::executeMetaTypeList(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options = S9sOptions::instance();
-    S9sRpcReply reply;
-    bool        success;
-
-    success = client.getMetaTypes();
-    if (success)
-    {
-        reply = client.reply();
-        success = reply.isOk();
-        if (success)
-        {
-            if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
-            else
-                reply.printMetaTypeList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
-    } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-void 
-S9sBusinessLogic::executeMetaTypePropertyList(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options  = S9sOptions::instance();
-    S9sString    typeName = options->type();
-    S9sRpcReply reply;
-    bool        success;
-
-    success = client.getMetaTypeProperties(typeName);
-    if (success)
-    {
-        reply = client.reply();
-        success = reply.isOk();
-        if (success)
-        {
-            if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
-            else
-                reply.printMetaTypePropertyList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
-    } else {
-        PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
