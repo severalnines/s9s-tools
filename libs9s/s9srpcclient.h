@@ -121,6 +121,8 @@ class S9sRpcClient
         bool startCluster();
         bool dropCluster();
 
+        bool createMaintenance();
+
         bool createMaintenance(
                 const S9sVariantList &hosts,
                 const S9sString      &start,
@@ -132,6 +134,8 @@ class S9sRpcClient
                 const S9sString      &start,
                 const S9sString      &end,
                 const S9sString      &reason);
+
+        bool deleteMaintenance();
 
         bool deleteMaintenance(
                 const S9sString      &uuid);

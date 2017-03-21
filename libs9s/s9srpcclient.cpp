@@ -2169,6 +2169,39 @@ S9sRpcClient::getUsers()
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
+ *
+ * The function to create maintenance as it is defined in the S9sOptions
+ * singleton.
+ */
+bool 
+S9sRpcClient::createMaintenance()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    bool           success;
+
+    /*
+     * Two ways: host maintenance or cluster maintenance.
+     */
+    if (options->hasClusterIdOption())
+    {
+        success = createMaintenance(
+                options->clusterId(), options->start(), options->end(),
+                options->reason());
+    } else {
+        success = createMaintenance(
+                options->nodes(), options->start(), options->end(),
+                options->reason());
+    }
+
+    return success;
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Overloaded version of the function that create a maintence period as defined
+ * in the function arguments.
  */
 bool 
 S9sRpcClient::createMaintenance(
@@ -2203,6 +2236,9 @@ S9sRpcClient::createMaintenance(
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
+ *
+ * Overloaded version of the function that create a maintence period as defined
+ * in the function arguments.
  */
 bool 
 S9sRpcClient::createMaintenance(
@@ -2229,6 +2265,22 @@ S9sRpcClient::createMaintenance(
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::deleteMaintenance()
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    return deleteMaintenance(options->uuid());
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Overloaded function that will delete a maintence as it is defined in the
+ * command line argument.
  */
 bool
 S9sRpcClient::deleteMaintenance(

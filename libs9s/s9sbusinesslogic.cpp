@@ -1388,17 +1388,7 @@ S9sBusinessLogic::executeMaintenanceCreate(
     /*
      * Running the request on the controller.
      */
-    if (options->hasClusterIdOption())
-    {
-        success = client.createMaintenance(
-                options->clusterId(), options->start(), options->end(),
-                options->reason());
-    } else {
-        success = client.createMaintenance(
-                options->nodes(), options->start(), options->end(),
-                options->reason());
-    }
-
+    success = client.createMaintenance();
     reply   = client.reply();
     if (success)
     {
@@ -1421,23 +1411,12 @@ void
 S9sBusinessLogic::executeMaintenanceDelete(
         S9sRpcClient &client)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sRpcReply    reply;
     bool           success;
 
     /*
      * Running the request on the controller.
      */
-    success = client.deleteMaintenance(options->uuid());
-    reply   = client.reply();
-    if (success)
-    {
-        reply.printMessages("Created.\n");
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
+    success = client.deleteMaintenance();
+    client.printMessages("Created.\n", success);
 }
 
