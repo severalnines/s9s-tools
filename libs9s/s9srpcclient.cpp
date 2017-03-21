@@ -1836,6 +1836,7 @@ S9sRpcClient::createBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
     int             clusterId    = options->clusterId();
+    S9sString       clusterName  = options->clusterName();
     S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
@@ -1846,6 +1847,12 @@ S9sRpcClient::createBackup()
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
+
+    if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
+    {
+        PRINT_ERROR("The cluster ID or the cluster name must be specified.");
+        return false;
+    }
 
     if (hosts.size() != 1u)
     {
