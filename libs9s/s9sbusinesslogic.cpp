@@ -756,19 +756,7 @@ S9sBusinessLogic::executeBackupList(
     if (success)
     {
         reply = client.reply();
-        success = reply.isOk();
-        if (success)
-        {
-            if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
-            else
-                reply.printBackupList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        reply.printBackupList();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

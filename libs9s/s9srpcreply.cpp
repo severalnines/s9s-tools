@@ -734,11 +734,18 @@ S9sRpcReply::printBackupList()
     S9sOptions *options = S9sOptions::instance();
     
     if (options->isJsonRequested())
+    {
         printf("%s\n", STR(toString()));
+        return;
+    }
 
-    if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-    else if (options->isLongRequested())
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
         printBackupListLong();
     else
         printBackupListBrief();
