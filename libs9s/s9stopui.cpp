@@ -128,7 +128,7 @@ S9sTopUi::executeTopOnce(
     //
     // List of processes.
     //
-    client.getRunningProcesses(clusterId);
+    client.getRunningProcesses();
     reply = client.reply();
 
     //S9S_DEBUG("reply.printProcessList(%d)", options->terminalHeight() - 6);

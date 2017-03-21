@@ -585,8 +585,6 @@ S9sRpcClient::getMemoryStats(
 }
 
 /**
- * \param clusterId the ID of the cluster for which the process information will
- *   be fetched.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
@@ -594,15 +592,17 @@ S9sRpcClient::getMemoryStats(
  * particular cluster.
  */
 bool 
-S9sRpcClient::getRunningProcesses(
-        const int clusterId)
+S9sRpcClient::getRunningProcesses()
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/process";
     S9sVariantMap  request;
     bool           retval;
 
     request["operation"]  = "getRunningProcesses";
-    request["cluster_id"] = clusterId;
+    
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
 
     retval = executeRequest(uri, request);
 

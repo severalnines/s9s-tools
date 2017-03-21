@@ -717,11 +717,10 @@ S9sBusinessLogic::executeProcessList(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
-    int         clusterId = options->clusterId();
     S9sRpcReply reply;
     bool        success;
 
-    success = client.getRunningProcesses(clusterId);
+    success = client.getRunningProcesses();
     if (success)
     {
         reply = client.reply();
