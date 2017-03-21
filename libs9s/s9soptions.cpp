@@ -2619,6 +2619,7 @@ S9sOptions::readOptionsBackup(
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
         { "backup-id",        required_argument, 0, OptionBackupId        },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "schedule",         required_argument, 0, OptionSchedule        },
@@ -2764,6 +2765,12 @@ S9sOptions::readOptionsBackup(
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
+            
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
+                break;
+
             
             case OptionNodes:
                 // --nodes=LIST

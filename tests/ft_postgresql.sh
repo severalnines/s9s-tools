@@ -379,7 +379,7 @@ function testCreateBackup()
     pip-say "The test to create a backup is starting."
 
     #
-    # Creating a backup.
+    # Creating a backup using the cluster ID to reference the cluster.
     #
     $S9S backup \
         --create \
@@ -391,7 +391,23 @@ function testCreateBackup()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
+        failure "The exit code is ${exitCode} while creating a backup."
+    fi
+    
+    #
+    # Creating a backup using the cluster name.
+    #
+    $S9S backup \
+        --create \
+        --cluster-name=$CLUSTER_NAME \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-directory=/tmp \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating a backup"
     fi
 }
 
@@ -516,7 +532,7 @@ else
     runFunctionalTest testDestroyNodes
 fi
 
+pip-say "The test script is now finished."
 endTests
 
-pip-say "The test script is now finished."
 

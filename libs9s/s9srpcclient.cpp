@@ -1906,7 +1906,11 @@ S9sRpcClient::createBackup()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = clusterId;
+    else if (options->hasClusterNameOption())
+        request["cluster_name"] = clusterName;
 
     retval = executeRequest(uri, request);
 
