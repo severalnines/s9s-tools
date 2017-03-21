@@ -350,6 +350,15 @@ function testMaintenanceOperations()
         failure "output   : '$output'"
         return 1
     fi
+    
+    expected=$'Missing UUID.\nUse the --uuid command line option to provide the UUID.'
+    output=$($S9S maintenance --delete 2>&1)
+    if [ "$output" != "$expected" ]; then
+        failure "Error message not as expected when UUID is missing"
+        failure "expected : '$expected'"
+        failure "output   : '$output'"
+        return 1
+    fi
 
     return 0
 }
