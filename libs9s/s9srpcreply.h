@@ -56,7 +56,8 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypeList();
         void printMetaTypePropertyList();
         void printPing();
-        void printProcessList(const int maxLines = -1);
+        void printProcessList();
+        void printProcessListBrief(const int maxLines = -1);
         void printCpuStat();
         void printCpuStatLine1();
         void printMemoryStatLine1();

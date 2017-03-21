@@ -716,7 +716,6 @@ void
 S9sBusinessLogic::executeProcessList(
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
     bool        success;
 
@@ -724,19 +723,7 @@ S9sBusinessLogic::executeProcessList(
     if (success)
     {
         reply = client.reply();
-        success = reply.isOk();
-        if (success)
-        {
-            if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
-            else
-                reply.printProcessList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        reply.printProcessListBrief();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

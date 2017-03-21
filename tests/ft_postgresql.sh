@@ -532,7 +532,12 @@ else
     runFunctionalTest testDestroyNodes
 fi
 
-pip-say "The test script is now finished."
+if [ "$FAILED" == "no" ]; then
+    pip-say "The test script is now finished. No errors were found."
+else
+    pip-say "The test script is now finished. Some failures were detected."
+fi
+
 endTests
 
 

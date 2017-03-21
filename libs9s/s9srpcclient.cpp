@@ -604,6 +604,10 @@ S9sRpcClient::getRunningProcesses()
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
 
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -631,6 +635,9 @@ S9sRpcClient::getJobInstances()
     
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
+    
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
 
     retval = executeRequest(uri, request);
 

@@ -499,7 +499,29 @@ compareProcessByCpuUsage(
 }
 
 void
-S9sRpcReply::printProcessList(
+S9sRpcReply::printProcessList()
+{
+    S9sOptions  *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("\n%s\n", STR(toString()));
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    // FIXME: No detailed list format available for processes.
+    printProcessListBrief();
+}
+
+
+void
+S9sRpcReply::printProcessListBrief(
         const int maxLines)
 {
     S9sOptions     *options = S9sOptions::instance();

@@ -131,8 +131,7 @@ S9sTopUi::executeTopOnce(
     client.getRunningProcesses();
     reply = client.reply();
 
-    //S9S_DEBUG("reply.printProcessList(%d)", options->terminalHeight() - 6);
-    reply.printProcessList(options->terminalHeight() - 7);
+    reply.printProcessListBrief(options->terminalHeight() - 7);
 
 
     if (!success)
