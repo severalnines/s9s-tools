@@ -103,7 +103,16 @@ class S9sRpcClient
         /*
          * Requests related to scripts.
          */
-        bool saveScript(S9sString remoteFileName, S9sString content);
+        bool saveScript(
+                S9sString remoteFileName, 
+                S9sString content);
+
+        bool executeScript(
+                S9sString remoteFileName,
+                S9sString arguments);
+
+        bool saveScript(
+                S9sString remoteFileName);
 
         /*
          * Requests related to the cmon users.

@@ -2158,7 +2158,9 @@ S9sRpcClient::saveScript(
         S9sString remoteFileName,
         S9sString content)
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/imperative/";
+    S9sVariantMap  request;
 
     request["operation"]      = "saveScript";
     request["filename"]       = remoteFileName;
@@ -2173,6 +2175,47 @@ S9sRpcClient::saveScript(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::executeScript(
+        S9sString remoteFileName,
+        S9sString arguments)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/imperative/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "executeScript";
+    request["filename"]       = remoteFileName;
+    request["arguments"]      = arguments;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::saveScript(
+        S9sString remoteFileName)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/imperative/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "removeScript";
+    request["filename"]       = remoteFileName;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    return executeRequest(uri, request);
+}
 
 /**
  * \returns true if the request sent and a return is received (even if the reply
