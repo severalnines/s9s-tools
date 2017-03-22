@@ -111,7 +111,7 @@ class S9sRpcClient
                 S9sString remoteFileName,
                 S9sString arguments);
 
-        bool saveScript(
+        bool removeScript(
                 S9sString remoteFileName);
 
         /*

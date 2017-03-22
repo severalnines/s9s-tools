@@ -2198,7 +2198,7 @@ S9sRpcClient::executeScript(
 }
 
 bool
-S9sRpcClient::saveScript(
+S9sRpcClient::removeScript(
         S9sString remoteFileName)
 {
     S9sOptions    *options = S9sOptions::instance();
