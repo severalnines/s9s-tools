@@ -1509,6 +1509,32 @@ S9sRpcReply::printNodeListBrief()
     }
 }
 
+void
+S9sRpcReply::printScriptOutput()
+{
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else 
+        printScriptOutputBrief();
+}
+
+void
+S9sRpcReply::printScriptOutputBrief()
+{
+    S9sVariantMap  results  = operator[]("results").toVariantMap();
+    S9sVariantList messages = results["messages"].toVariantList();
+
+    for (uint idx = 0; idx < messages.size(); ++idx)
+    {
+        S9sVariantMap  theMap  = messages[idx].toVariantMap();
+        S9sString      message = theMap["message"].toString();
+
+        printf("%s\n", STR(message));
+    }
+}
+
+
 /**
  * \param a the first host represented as a variantmap
  * \param b the second host represented as a variantmap

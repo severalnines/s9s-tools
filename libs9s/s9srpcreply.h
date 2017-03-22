@@ -63,6 +63,10 @@ class S9sRpcReply : public S9sVariantMap
         void printMemoryStatLine1();
         void printMemoryStatLine2();
 
+        void printScriptOutput();
+        void printScriptOutputBrief();
+
+
         static S9sString progressBar(double percent, bool syntaxHighlight);
         static S9sString progressBar(bool syntaxHighlight);
 
