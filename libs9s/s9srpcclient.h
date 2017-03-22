@@ -101,6 +101,11 @@ class S9sRpcClient
         bool createDatabase();
 
         /*
+         * Requests related to scripts.
+         */
+        bool saveScript(S9sString remoteFileName, S9sString content);
+
+        /*
          * Requests related to the cmon users.
          */
         bool getUsers();

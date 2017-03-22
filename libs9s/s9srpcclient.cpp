@@ -2153,6 +2153,27 @@ S9sRpcClient::createDatabase()
     return retval;
 }
 
+bool
+S9sRpcClient::saveScript(
+        S9sString remoteFileName,
+        S9sString content)
+{
+    S9sString      uri = "/v2/imperative/";
+
+    request["operation"]      = "saveScript";
+    request["filename"]       = remoteFileName;
+    request["content"]        = content;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    return executeRequest(uri, request);
+}
+
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
