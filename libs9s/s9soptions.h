@@ -55,6 +55,7 @@ class S9sOptions
             User,
             Maintenance,
             MetaType,
+            Script,
         };
 
         enum ExitCodes
@@ -228,6 +229,7 @@ class S9sOptions
         void printHelpBackup();
         void printHelpMaintenance();
         void printHelpMetaType();
+        void printHelpScript();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         
@@ -251,6 +253,9 @@ class S9sOptions
 
         bool readOptionsMaintenance(int argc, char *argv[]);
         bool checkOptionsMaintenance();
+
+        bool readOptionsScript(int argc, char *argv[]);
+        bool checkOptionsScript();
 
         bool readOptionsMetaType(int argc, char *argv[]);
 

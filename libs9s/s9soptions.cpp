@@ -115,6 +115,7 @@ enum S9sOptionType
     OptionOptValue,
     OptionListConfig,
     OptionChangeConfig,
+    OptionExecute,
 };
 
 /**
@@ -139,6 +140,7 @@ S9sOptions::S9sOptions() :
     m_modes["maintenance"] = Maintenance;
     m_modes["user"]        = User;
     m_modes["metatype"]    = MetaType;
+    m_modes["script"]      = Script;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -760,16 +762,6 @@ S9sOptions::schedule() const
 
     return retval;
 }
-
-#if 0
-bool
-S9sOptions::setSchedule(
-        const S9sString &value)
-{
-    m_options["schedule"] = value;
-    return true;
-}
-#endif
 
 /**
  * \returns the cluster ID from the command line or the configuration or
@@ -2003,6 +1995,14 @@ S9sOptions::readOptions(
         case MetaType:
             retval = readOptionsMetaType(*argc, argv);
             break;
+        
+        case Script:
+            retval = readOptionsScript(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsScript();
+
+            break;
     }
 
     return retval;
@@ -2126,6 +2126,10 @@ S9sOptions::printHelp()
 
         case User:
             printHelpUser();
+            break;
+        
+        case Script:
+            printHelpScript();
             break;
     }
 }
@@ -2351,6 +2355,21 @@ S9sOptions::printHelpNode()
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
 "  --properties=ASSIGNMENTS   The names and values of the properties to change.\n"
 "\n");
+}
+
+void
+S9sOptions::printHelpScript()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"script\" command:\n"
+"  --execute                  Execute a script.\n"
+"\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"\n"
+    );
 }
 
 /**
@@ -4522,6 +4541,190 @@ S9sOptions::readOptionsJob(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::readOptionsScript(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h'                   },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        // Main Option
+        { "execute",          no_argument,       0, OptionExecute         },
+       
+        // Options about the maintenance period.
+        { "cluster-id",       required_argument, 0, 'i'                   },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionExecute:
+                // --execute
+                m_options["execute"] = true;
+                break;
+
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsScript()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+    
+    if (isDeleteRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --create and --delete options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --create and --delete options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
     }
 
     return true;
