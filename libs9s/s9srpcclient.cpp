@@ -2176,6 +2176,31 @@ S9sRpcClient::saveScript(
 }
 
 bool
+S9sRpcClient::executeExternalScript(
+        S9sString localFileName,
+        S9sString content,
+        S9sString arguments)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/imperative/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "executeExternalScript";
+    request["filename"]       = localFileName;
+    request["content"]        = content;
+    request["arguments"]      = arguments;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    return executeRequest(uri, request);
+}
+
+
+bool
 S9sRpcClient::executeScript(
         S9sString remoteFileName,
         S9sString arguments)

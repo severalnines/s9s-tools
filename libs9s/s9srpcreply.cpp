@@ -1515,6 +1515,8 @@ S9sRpcReply::printScriptOutput()
     S9sOptions *options = S9sOptions::instance();
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
     else 
         printScriptOutputBrief();
 }

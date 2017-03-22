@@ -599,17 +599,12 @@ S9sBusinessLogic::executeExecute(
         S9sRpcClient &client)
 {
     S9sString   content   = S9sString::readStdIn();
-    S9sString   fileName  = "tbd.js";
-    S9sString   arguments = "tbd.js --help";
+    S9sString   fileName  = "stdin";
+    S9sString   arguments = "";
     S9sRpcReply reply;
     bool        success;
-
-    //S9S_WARNING("script: \n%s\n", STR(content));
-    success = client.saveScript(fileName, content);
-    //S9S_WARNING("success: %s", success ? "true" : "false");
-    //S9S_WARNING("reply  : \n%s\n", STR(client.reply().toString()));
-    
-    success = client.executeScript(fileName, arguments);
+ 
+    success = client.executeExternalScript(fileName, content, arguments);
     //S9S_WARNING("success: %s", success ? "true" : "false");
     //S9S_WARNING("reply  : \n%s\n", STR(client.reply().toString()));
     if (success)

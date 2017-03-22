@@ -107,6 +107,11 @@ class S9sRpcClient
                 S9sString remoteFileName, 
                 S9sString content);
 
+        bool executeExternalScript(
+                S9sString localFileName,
+                S9sString content,
+                S9sString arguments);
+
         bool executeScript(
                 S9sString remoteFileName,
                 S9sString arguments);
