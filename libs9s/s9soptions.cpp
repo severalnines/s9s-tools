@@ -1199,6 +1199,15 @@ S9sOptions::isNodeOperation() const
 }
 
 /**
+ * \returns true if the main operation is "script".
+ */
+bool
+S9sOptions::isScriptOperation() const
+{
+    return m_operationMode == Script;
+}
+
+/**
  * \returns true if the main operation is "cluster".
  */
 bool
@@ -2081,6 +2090,9 @@ S9sOptions::setMode(
     } else if (modeName == "metatype")
     {
         m_operationMode = MetaType;
+    } else if (modeName == "script")
+    {
+        m_operationMode = Script;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -2162,6 +2174,7 @@ S9sOptions::printHelpGeneric()
 "     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
 "     user - to manage users.\n"
+"   script - manage and execute scripts.\n"
 "\n"
 "Generic options:\n"
 "  -h, --help                 Show help message and exit.\n" 

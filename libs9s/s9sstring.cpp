@@ -21,6 +21,7 @@
 
 #include <strings.h>
 #include <string.h>
+#include <iostream>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
@@ -105,6 +106,21 @@ S9sString::operator*(
     return retval;
 }
 
+S9sString &
+S9sString::operator+=(
+        const std::string &rhs)
+{
+    std::string::operator+=(rhs);
+    return *this;
+}
+
+S9sString &
+S9sString::operator+=(
+        const char rhs)
+{
+    std::string::operator+=(rhs);
+    return *this;
+}
 
 /**
  * \returns the variant list contains the parts of the original string.
@@ -723,6 +739,21 @@ S9sString::uptime(
         retval.sprintf("%d day %02d:%02d:%02d", days, hours, minutes, seconds);
     } else {
         retval.sprintf("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    return retval;
+}
+
+S9sString 
+S9sString::readStdIn()
+{
+    S9sString retval;
+
+    for (std::string line; std::getline(std::cin, line);) 
+    {
+        retval += line;
+        //retval += std::endl;
+        retval += '\n';
     }
 
     return retval;

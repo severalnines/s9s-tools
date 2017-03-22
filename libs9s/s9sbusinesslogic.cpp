@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 //#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 /**
@@ -167,6 +168,14 @@ S9sBusinessLogic::execute()
         } else if (options->isChangeConfigRequested())
         {
             executeSetConfig(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
+    } else if (options->isScriptOperation())
+    {
+        if (options->isExecuteRequested())
+        {
+            executeExecute(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -582,6 +591,17 @@ S9sBusinessLogic::executeSetConfig(
     }
 }
 
+/**
+ * \param client A client for the communication.
+ */
+void 
+S9sBusinessLogic::executeExecute(
+        S9sRpcClient &client)
+{
+    S9sString content = S9sString::readStdIn();
+
+    S9S_WARNING("script: \n%s\n", STR(content));
+}
 
 /**
  * \param client A client for the communication.

@@ -143,6 +143,7 @@ class S9sOptions
         bool useTls();
 
         bool isNodeOperation() const;
+        bool isScriptOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
         bool isBackupOperation() const;
