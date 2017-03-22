@@ -182,6 +182,7 @@ class S9sOptions
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isDropRequested() const;
+        bool isExecuteRequested() const;
 
         bool isLongRequested() const;
         bool isJsonRequested() const;

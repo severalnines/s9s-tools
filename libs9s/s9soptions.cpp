@@ -1388,6 +1388,19 @@ S9sOptions::isCreateRequested() const
 }
 
 /**
+ * \returns true if the --execute command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isExecuteRequested() const
+{
+    if (m_options.contains("execute"))
+        return m_options.at("execute").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the --delete command line option was provided when the
  *   program was started.
  */
@@ -4702,7 +4715,7 @@ S9sOptions::checkOptionsScript()
     if (isListRequested())
         countOptions++;
     
-    if (isCreateRequested())
+    if (isExecuteRequested())
         countOptions++;
     
     if (isDeleteRequested())
@@ -4711,7 +4724,7 @@ S9sOptions::checkOptionsScript()
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --create and --delete options are mutually"
+            "The --list, --execute and --delete options are mutually"
             " exclusive.";
 
         m_exitStatus = BadOptions;
@@ -4720,7 +4733,7 @@ S9sOptions::checkOptionsScript()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --create and --delete options is mandatory.";
+            "One of the --list, --execute and --delete options is mandatory.";
 
         m_exitStatus = BadOptions;
 
