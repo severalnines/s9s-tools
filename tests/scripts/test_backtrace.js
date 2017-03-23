@@ -1,14 +1,14 @@
 /*
  * 
  */
-function recursive(int n)
+function recursive(n)
 {
-    return recursive(n) + 1;
+    return recursive(n + k) + 1;
 }
 
 function main()
 {
-    int a = recursive(0);
+    var a = recursive(0);
 
     exit(a);
 }
