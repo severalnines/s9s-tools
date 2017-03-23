@@ -137,3 +137,20 @@ S9sMessage::termColorString() const
 
     return retval;
 }
+
+S9sString
+S9sMessage::toString() const
+{
+    S9sString retval;
+
+    if (hasFileName() && hasLineNumber())
+    {
+        retval.sprintf("%s:%d:%s",
+                STR(fileName()), lineNumber(), STR(message()));
+    } else {
+        retval.sprintf("%s",
+                STR(message()), TERM_NORMAL);
+    }
+
+    return retval;
+}

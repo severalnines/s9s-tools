@@ -42,6 +42,8 @@ class S9sMessage
         S9sString message() const;
 
         bool isError() const;
+
+        S9sString toString() const;
         S9sString termColorString() const;
 
     private:

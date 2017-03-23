@@ -1558,7 +1558,7 @@ S9sRpcReply::printScriptOutputBrief()
         {
             printf("%s\n", STR(message.termColorString()));
         } else {
-            printf("%s\n", STR(message.message()));
+            printf("%s\n", STR(message.toString()));
         }
     }
 
