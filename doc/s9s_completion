@@ -53,7 +53,8 @@ function _s9s_has_options()
 #
 function _s9s_no_command()
 {
-    if ! _s9s_has_options backup cluster job maint node process user; then
+    if ! _s9s_has_options backup cluster job maint node process user script;
+    then
         return 0
     fi
 
@@ -80,7 +81,7 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="backup cluster job maint node process user"
+        opts+="backup cluster job maint node process user script"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -149,6 +150,20 @@ function _s9s()
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+            fi
+        elif [[ ${COMP_WORDS[i]} == "script" ]]; then
+            main_opt="--execute"
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            else
+                opts+="--help --verbose --version " 
+                opts+="--config-file= --controller= "
+                opts+="--controller-port= "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+                opts+=$(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" )
             fi
         elif [[ ${COMP_WORDS[i]} == "process" ]]; then
             main_opt="--list --top --help"

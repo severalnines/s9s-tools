@@ -788,6 +788,15 @@ safeRead (
     return retval;
 }
 
+/**
+ * \param fileName The name of the file to read.
+ * \param content The place where the content of the file will be placed.
+ * \param errorString The place where the error message will be placed if
+ *   something went wrong.
+ * \returns True if everything is ok.
+ *
+ * Reads the entire file into a string.
+ */
 bool
 S9sString::readFile(
         const S9sString &fileName,
