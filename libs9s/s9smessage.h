@@ -41,6 +41,9 @@ class S9sMessage
 
         S9sString message() const;
 
+        bool isError() const;
+        S9sString termColorString() const;
+
     private:
         S9sVariantMap    m_properties;
 };

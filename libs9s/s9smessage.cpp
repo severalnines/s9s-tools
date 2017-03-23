@@ -90,3 +90,50 @@ S9sMessage::message() const
 
     return S9sString();
 }
+
+bool 
+S9sMessage::isError() const
+{
+    if (m_properties.contains("severity"))
+    {
+        S9sString severityString = m_properties.at("severity").toString();
+        
+        if (severityString == "error")
+            return true;
+    }
+
+    return false;
+}
+
+S9sString
+S9sMessage::termColorString() const
+{
+    S9sString retval;
+
+    if (hasFileName() && hasLineNumber())
+    {
+        if (isError())
+        {
+            retval.sprintf("%s%s%s:%d:%s%s%s",
+                    XTERM_COLOR_BLUE, STR(fileName()), TERM_NORMAL,
+                    lineNumber(),
+                    XTERM_COLOR_RED, STR(message()), TERM_NORMAL);
+        } else {
+            retval.sprintf("%s%s%s:%d:%s",
+                    XTERM_COLOR_BLUE, STR(fileName()), TERM_NORMAL,
+                    lineNumber(),
+                    STR(message()));
+        }
+    } else {
+        if (isError())
+        {
+            retval.sprintf("%s%s%s",
+                    XTERM_COLOR_RED, STR(message()), TERM_NORMAL);
+        } else {
+            retval.sprintf("%s",
+                    STR(message()));
+        }
+    }
+
+    return retval;
+}

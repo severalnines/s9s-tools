@@ -27,6 +27,7 @@
 #include "S9sRegExp"
 #include "S9sNode"
 #include "S9sCluster"
+#include "S9sMessage"
 
 //#define DEBUG
 //#define WARNING
@@ -1551,27 +1552,13 @@ S9sRpcReply::printScriptOutputBrief()
     for (uint idx = 0; idx < messages.size(); ++idx)
     {
         S9sVariantMap  theMap     = messages[idx].toVariantMap();
-        S9sString      fileName   = theMap["fileName"].toString();
-        int            lineNumber = theMap["lineNumber"].toInt();
-        S9sString      severity   = theMap["severity"].toString();
-        S9sString      message    = theMap["message"].toString();
+        S9sMessage     message    = theMap;
 
         if (syntaxHighlight)
         {
-            if (severity == "error")
-            {
-                printf("%s%s%s:%d:%s%s%s",
-                        XTERM_COLOR_BLUE, STR(fileName), TERM_NORMAL,
-                        lineNumber,
-                        XTERM_COLOR_RED, STR(message), TERM_NORMAL);
-            } else {
-                printf("%s%s%s:%d:%s",
-                        XTERM_COLOR_BLUE, STR(fileName), TERM_NORMAL,
-                        lineNumber,
-                        STR(message));
-            }
+            printf("%s\n", STR(message.termColorString()));
         } else {
-            printf("%s\n", STR(message));
+            printf("%s\n", STR(message.message()));
         }
     }
 
