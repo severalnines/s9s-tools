@@ -598,19 +598,44 @@ void
 S9sBusinessLogic::executeExecute(
         S9sRpcClient &client)
 {
-    S9sString   content   = S9sString::readStdIn();
-    S9sString   fileName  = "stdin";
-    S9sString   arguments = "";
-    S9sRpcReply reply;
-    bool        success;
+    S9sOptions  *options    = S9sOptions::instance();
+    uint         nFileNames = options->nExtraArguments();
+    S9sString    content;
+    S9sString    fileName  = "stdin";
+    S9sString    arguments = "";
+    S9sString    errorString;
+    S9sRpcReply  reply;
+    bool         success;
  
-    success = client.executeExternalScript(fileName, content, arguments);
-    //S9S_WARNING("success: %s", success ? "true" : "false");
-    //S9S_WARNING("reply  : \n%s\n", STR(client.reply().toString()));
-    if (success)
+    if (nFileNames == 0u)
     {
-        reply = client.reply();
-        reply.printScriptOutput();
+        content = S9sString::readStdIn();
+        success = client.executeExternalScript(fileName, content, arguments);
+
+        if (success)
+        {
+            reply = client.reply();
+            reply.printScriptOutput();
+        }
+    } else if (nFileNames > 1u)
+    {
+        PRINT_ERROR("Multiple file names in the command line.");
+    } else {
+        fileName = options->extraArgument(0u);
+        
+        success = S9sString::readFile(fileName, content, errorString);
+        if (!success)
+        {
+            PRINT_ERROR("%s\n", STR(errorString));
+            return;
+        }
+
+        success = client.executeExternalScript(fileName, content, arguments);
+        if (success)
+        {
+            reply = client.reply();
+            reply.printScriptOutput();
+        }
     }
 }
 

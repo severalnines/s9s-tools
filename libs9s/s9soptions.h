@@ -192,6 +192,8 @@ class S9sOptions
         bool isBatchRequested() const;
         bool isNoHeaderRequested() const;
         bool isStringMatchExtraArguments(const S9sString &theString) const;
+        uint nExtraArguments() const;
+        S9sString extraArgument(uint idx);
 
         bool useSyntaxHighlight() const;
         bool humanReadable() const;

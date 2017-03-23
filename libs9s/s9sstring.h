@@ -100,6 +100,11 @@ class S9sString : public std::string
         static S9sString uptime(ulonglong seconds);
 
         static S9sString readStdIn();
+        
+        static bool readFile(
+                    const S9sString &fileName,
+                    S9sString       &content,
+                    S9sString       &errorString);
 
         static const S9sString space;
         static const S9sString dash;

@@ -116,6 +116,7 @@ enum S9sOptionType
     OptionListConfig,
     OptionChangeConfig,
     OptionExecute,
+
 };
 
 /**
@@ -1693,6 +1694,22 @@ S9sOptions::isStringMatchExtraArguments(
     }
 
     return false;
+}
+
+uint
+S9sOptions::nExtraArguments() const
+{
+    return m_extraArguments.size();
+}
+
+S9sString
+S9sOptions::extraArgument(
+        uint idx)
+{
+    if (idx < m_extraArguments.size())
+        return m_extraArguments[idx];
+
+    return S9sString();
 }
 
 /**
@@ -4706,6 +4723,15 @@ S9sOptions::readOptionsScript(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
     }
 
     return true;

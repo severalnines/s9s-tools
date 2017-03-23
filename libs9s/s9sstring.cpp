@@ -22,12 +22,19 @@
 #include <strings.h>
 #include <string.h>
 #include <iostream>
-#include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <algorithm>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "S9sRegExp"
+
+// Let's read in 16KB chunks
+#define READ_BUFFER_SIZE 16384
 
 const S9sString S9sString::space = " ";
 const S9sString S9sString::dash  = "-";
@@ -744,6 +751,10 @@ S9sString::uptime(
     return retval;
 }
 
+/**
+ * Reads all the lines from the standard input and stores it in an S9sString
+ * string.
+ */
 S9sString 
 S9sString::readStdIn()
 {
@@ -752,9 +763,79 @@ S9sString::readStdIn()
     for (std::string line; std::getline(std::cin, line);) 
     {
         retval += line;
-        //retval += std::endl;
         retval += '\n';
     }
 
     return retval;
 }
+
+/**
+ * Same as read(3), but this repeats the request if it was interrupted by a
+ * signal.
+ */
+static ssize_t
+safeRead (
+    int fileDescriptor, 
+    void *buffer, 
+    size_t bufferSize)
+{
+    ssize_t retval;
+  
+    do {
+        retval = ::read(fileDescriptor, buffer, bufferSize);
+    } while (retval == -1 && errno == EINTR);
+
+    return retval;
+}
+
+bool
+S9sString::readFile(
+        const S9sString &fileName,
+        S9sString       &content,
+        S9sString       &errorString)
+{
+    int      fileDescriptor;
+    bool     retval = false;
+
+    fileDescriptor = open(STR(fileName), O_RDONLY); 
+    if (fileDescriptor < 0)
+    {
+        errorString.sprintf(
+                "Error opening '%s' for reading: %m", STR(fileName));
+        return false;
+    }
+
+    // content should be empty
+    content.clear();
+
+    char *buffer = new char[READ_BUFFER_SIZE];
+    if (buffer == 0) 
+    {
+        errorString.sprintf("can't allocate memory");
+        return false;
+    }
+
+    retval = true;
+    ssize_t readBytes = 0;
+    do
+    {
+        readBytes = safeRead(fileDescriptor, buffer, READ_BUFFER_SIZE);
+
+        if (readBytes > 0) 
+        {
+            content += std::string(buffer, (size_t) readBytes);
+        } else if (readBytes < 0) 
+        {
+            // reading failed
+            errorString.sprintf("read error: %m");
+            retval = false;
+            break;
+        }
+    } while (readBytes > 0);
+
+    delete[] buffer;
+    ::close(fileDescriptor);
+
+    return retval;
+}
+
