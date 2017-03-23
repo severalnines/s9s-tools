@@ -1522,6 +1522,25 @@ S9sRpcReply::printScriptOutput()
 }
 
 void
+S9sRpcReply::printScriptBacktrace()
+{
+    S9sVariantMap   results  = operator[]("results").toVariantMap();
+    S9sVariantList  backtrace = results["backtrace"].toVariantList();
+
+    if (!backtrace.empty())
+    {
+        printf("\nBacktrace:\n");
+    }
+
+    for (uint idx = 0; idx < backtrace.size(); ++idx)
+    {
+        S9sString message = backtrace[idx].toString();
+
+        printf("  %s\n", STR(message));
+    }
+}
+
+void
 S9sRpcReply::printScriptOutputBrief()
 {
     S9sVariantMap  results  = operator[]("results").toVariantMap();
@@ -1534,6 +1553,8 @@ S9sRpcReply::printScriptOutputBrief()
 
         printf("%s\n", STR(message));
     }
+
+    printScriptBacktrace();
 }
 
 

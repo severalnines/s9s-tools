@@ -64,6 +64,7 @@ class S9sRpcReply : public S9sVariantMap
         void printMemoryStatLine2();
 
         void printScriptOutput();
+        void printScriptBacktrace();
         void printScriptOutputBrief();
 
 
