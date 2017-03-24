@@ -2242,6 +2242,24 @@ S9sRpcClient::removeScript(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::treeScripts()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/imperative/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "dirTree";
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = options->clusterId();
+
+    if (!options->clusterName().empty())
+        request["cluster_name"] = options->clusterName();
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

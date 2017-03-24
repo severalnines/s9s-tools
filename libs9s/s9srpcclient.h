@@ -119,6 +119,8 @@ class S9sRpcClient
         bool removeScript(
                 S9sString remoteFileName);
 
+        bool treeScripts();
+
         /*
          * Requests related to the cmon users.
          */

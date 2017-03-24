@@ -184,6 +184,7 @@ class S9sOptions
         bool isCreateDatabaseRequested() const; 
         bool isDropRequested() const;
         bool isExecuteRequested() const;
+        bool isTreeRequested() const;
 
         bool isLongRequested() const;
         bool isJsonRequested() const;

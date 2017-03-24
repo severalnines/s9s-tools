@@ -116,7 +116,7 @@ enum S9sOptionType
     OptionListConfig,
     OptionChangeConfig,
     OptionExecute,
-
+    OptionTree,
 };
 
 /**
@@ -1411,6 +1411,19 @@ S9sOptions::isExecuteRequested() const
 }
 
 /**
+ * \returns true if the --tree command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isTreeRequested() const
+{
+    if (m_options.contains("tree"))
+        return m_options.at("tree").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns true if the --delete command line option was provided when the
  *   program was started.
  */
@@ -2407,6 +2420,7 @@ S9sOptions::printHelpScript()
 
     printf(
 "Options for the \"script\" command:\n"
+"  --tree                     Print the scripts available on the controller.\n"
 "  --execute                  Execute a script.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
@@ -4613,6 +4627,7 @@ S9sOptions::readOptionsScript(
 
         // Main Option
         { "execute",          no_argument,       0, OptionExecute         },
+        { "tree",             no_argument,       0, OptionTree            },
        
         // Options about the maintenance period.
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -4706,6 +4721,11 @@ S9sOptions::readOptionsScript(
                 // --execute
                 m_options["execute"] = true;
                 break;
+            
+            case OptionTree:
+                // --tree
+                m_options["tree"] = true;
+                break;
 
             case '?':
                 // 
@@ -4751,6 +4771,9 @@ S9sOptions::checkOptionsScript()
     /*
      * Checking if multiple operations are requested.
      */
+    if (isTreeRequested())
+        countOptions++;
+
     if (isListRequested())
         countOptions++;
     
