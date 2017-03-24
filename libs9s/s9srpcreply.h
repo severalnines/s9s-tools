@@ -67,6 +67,15 @@ class S9sRpcReply : public S9sVariantMap
         void printScriptBacktrace();
         void printScriptOutputBrief();
 
+        void printScriptTree();
+        void printScriptTreeBrief();
+
+        void printScriptTreeBrief(
+                S9sVariantMap        entry,
+                int                  recursionLevel,
+                S9sString            indentString,
+                bool                 isLast);
+
 
         static S9sString progressBar(double percent, bool syntaxHighlight);
         static S9sString progressBar(bool syntaxHighlight);

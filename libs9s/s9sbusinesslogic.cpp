@@ -173,7 +173,10 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isScriptOperation())
     {
-        if (options->isExecuteRequested())
+        if (options->isTreeRequested())
+        {
+            executeScriptTree(client);
+        } else if (options->isExecuteRequested())
         {
             executeExecute(client);
         } else {
@@ -346,6 +349,32 @@ again:
     {
         usleep(500000);
         goto again;
+    }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ * Execute the "script --tree" operation.
+ */
+void
+S9sBusinessLogic::executeScriptTree(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.treeScripts();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printScriptTree();
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
 

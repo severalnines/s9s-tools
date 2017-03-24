@@ -1,3 +1,17 @@
+o Make screenshots about CLI.
+
+o Change config with rewriting the value
+  SET GLOBAL variable_name=value;
+
+  set global port =2222;
+  ERROR 1238 (HY000): Variable 'port' is a read only variable
+
+o Get config file.
+
+o Upload config file.
+
+o Node stop start restart.
+
 o DONE
   Filtering with job-id
   s9s job --list --job-id=6

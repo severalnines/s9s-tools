@@ -30,7 +30,7 @@
 #include "S9sMessage"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
@@ -1508,6 +1508,79 @@ S9sRpcReply::printNodeListBrief()
         printf("\n");
         fflush(stdout);
     }
+}
+
+void
+S9sRpcReply::printScriptTree()
+{
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else 
+        printScriptTreeBrief();
+}
+
+void 
+S9sRpcReply::printScriptTreeBrief(
+        S9sVariantMap        entry,
+        int                  recursionLevel,
+        S9sString            indentString,
+        bool                 isLast)
+{
+    S9sString       name    = entry["name"].toString();
+    S9sVariantList  entries = entry["contents"].toVariantList();
+    S9sString       type    = entry["type"].toString();
+    bool            isDir   = type == "directory";
+    S9sString       indent;
+
+    printf("%s", STR(indentString));
+
+    if (recursionLevel)
+    {
+        if (isLast)
+            indent = "└── ";
+        else 
+            indent = "├── ";
+    }
+
+    if (isDir)
+    {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_BLUE, STR(name), TERM_NORMAL);
+    } else {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_GREEN, STR(name), TERM_NORMAL);
+    }
+
+    for (uint idx = 0; idx < entries.size(); ++idx)
+    {
+        S9sVariantMap child = entries[idx].toVariantMap();
+        bool          last = idx + 1 >= entries.size();
+       
+        if (recursionLevel)
+        {
+            if (isLast)
+                indent = "    ";
+            else
+                indent = "│   ";
+        }
+
+        printScriptTreeBrief(
+                child, recursionLevel + 1, 
+                indentString + indent, last);
+    }
+}
+
+void
+S9sRpcReply::printScriptTreeBrief()
+{
+    S9sVariantMap entry =  operator[]("data").toVariantMap();
+
+    printScriptTreeBrief(entry, 0, "", false);
 }
 
 void
