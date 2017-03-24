@@ -470,6 +470,43 @@ function testRemoveBackup()
 }
 
 #
+# This will remove a backup. 
+#
+function testRunScript()
+{
+    local output_file=$(mktemp)
+    local exitCode
+    local backupId
+
+    pip-say "The test to run scripts is starting."
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        awk '{print $1}')
+
+    #
+    # Calling for a rolling restart.
+    #
+    $S9S script \
+        --cluster-id=$CLUSTER_ID \
+        --execute scripts/test_output_lines.js \
+        2>&1 >$output_file
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    if ! grep --quiet "This is a warning" $output_file; then
+        failure "Script output is not as expected."
+        echo "output: "
+        cat $output_file
+    fi
+
+    rm $output_file
+}
+
+#
 # Dropping the cluster from the controller.
 #
 function testDrop()
@@ -527,6 +564,8 @@ else
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
     runFunctionalTest testRemoveBackup
+    
+    runFunctionalTest testRunScript
 
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
