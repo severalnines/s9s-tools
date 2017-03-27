@@ -23,6 +23,7 @@
 
 #include "S9sOptions"
 #include "S9sDateTime"
+#include "S9sFile"
 #include "S9sFormat"
 #include "S9sRegExp"
 #include "S9sNode"
@@ -1168,6 +1169,56 @@ S9sRpcReply::printConfigBrief()
         printf("Total: %d\n", total);
 }
 
+void
+S9sRpcReply::saveConfig(
+        S9sString outputDir)
+{
+    S9sVariantList files = operator[]("files").toVariantList();
+    int            nFilesExist = 0;
+
+    /*
+     * First we check if the files are not already there. If any of the files
+     * are already exist we won't crate the others either.
+     */
+    for (uint idx = 0; idx < files.size(); ++idx)
+    {
+        S9sVariantMap map      = files[idx].toVariantMap();
+        S9sString     fileName = map["filename"].toString();
+        S9sString     path     = S9sFile::buildPath(outputDir, fileName);;
+        S9sFile       file(path);
+
+        if (!file.exists())
+            continue;
+
+        nFilesExist++;
+        PRINT_ERROR("The file '%s' already exists.", STR(path));
+    }
+
+    if (nFilesExist > 0)
+        return;
+   
+    /*
+     * Then we save the files one by one.
+     */
+    for (uint idx = 0; idx < files.size(); ++idx)
+    {
+        S9sVariantMap map      = files[idx].toVariantMap();
+        S9sString     fileName = map["filename"].toString();
+        S9sString     content  = map["content"].toString();
+        S9sString     path;
+        S9sString     errorString;
+        bool          success;
+
+        path = S9sFile::buildPath(outputDir, fileName);
+        //printf("-> '%s'\n", STR(path));
+
+        success = S9sString::writeFile(path, content, errorString);
+        if (!success)
+        {
+            PRINT_ERROR("Error saving configuration: %s", STR(errorString));
+        }
+    }
+}
 
 /**
  * Private low-level function to print the cluster list in the "brief" format.

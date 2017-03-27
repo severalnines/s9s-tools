@@ -69,6 +69,9 @@ class S9sRpcReply : public S9sVariantMap
 
         void printScriptTree();
         void printScriptTreeBrief();
+        
+        void saveConfig(S9sString outputDir);
+
 
         void printScriptTreeBrief(
                 S9sVariantMap        entry,
@@ -104,6 +107,7 @@ class S9sRpcReply : public S9sVariantMap
                 int            depth); 
 
         void printConfigLong();
+
 
         void printClusterListBrief();
         void printClusterListLong();

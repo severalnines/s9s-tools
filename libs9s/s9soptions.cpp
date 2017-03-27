@@ -115,8 +115,11 @@ enum S9sOptionType
     OptionOptValue,
     OptionListConfig,
     OptionChangeConfig,
+    OptionPullConfig,
+    OptionPushConfig,
     OptionExecute,
     OptionTree,
+    OptionOutputDir,
 };
 
 /**
@@ -1017,6 +1020,21 @@ S9sOptions::optValue() const
 }
 
 /**
+ * \returns the argument for the command line option --output-dir.
+ */
+S9sString
+S9sOptions::outputDir() const
+{
+    S9sString retval;
+
+    if (m_options.contains("output_dir"))
+        retval = m_options.at("output_dir").toString();
+
+    return retval;
+}
+
+
+/**
  * \returns true if the --with-database command line option was provided.
  */
 bool
@@ -1332,6 +1350,31 @@ S9sOptions::isChangeConfigRequested() const
     return false;
 }
 
+/**
+ * \returns true if the "pull-config" function is requested by providing the
+ *     --pull-config command line option.
+ */
+bool
+S9sOptions::isPullConfigRequested() const
+{
+    if (m_options.contains("pull_config"))
+        return m_options.at("pull_config").toBoolean();
+
+    return false;
+}
+
+/**
+ * \returns true if the "push-config" function is requested by providing the
+ *     --push-config command line option.
+ */
+bool
+S9sOptions::isPushConfigRequested() const
+{
+    if (m_options.contains("push_config"))
+        return m_options.at("push_config").toBoolean();
+
+    return false;
+}
 
 /**
  * \returns true if the --list-properties main option was provided.
@@ -2462,6 +2505,8 @@ S9sOptions::readOptionsNode(
         { "set",              no_argument,       0,  OptionSet            },
         { "list-config",      no_argument,       0,  OptionListConfig     },
         { "change-config",    no_argument,       0,  OptionChangeConfig   },
+        { "pull-config",      no_argument,       0,  OptionPullConfig     },
+        { "push-config",      no_argument,       0,  OptionPushConfig     },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -2473,6 +2518,7 @@ S9sOptions::readOptionsNode(
         { "opt-group",        required_argument, 0, OptionOptGroup        },
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
+        { "output-dir",       required_argument, 0, OptionOutputDir       },
 
         { 0, 0, 0, 0 }
     };
@@ -2554,6 +2600,17 @@ S9sOptions::readOptionsNode(
             case OptionChangeConfig:
                 // --change-config
                 m_options["change_config"] = true;
+                break;
+
+            case OptionPullConfig:
+                // --pull-config
+                m_options["pull_config"] = true;
+                break;
+
+            case OptionPushConfig:
+                // --push-config
+                m_options["push_config"] = true;
+                break;
 
             case 4:
                 // --config-file=FILE
@@ -2623,7 +2680,12 @@ S9sOptions::readOptionsNode(
                 // --opt-value=VALUE
                 m_options["opt_value"] = optarg;
                 break;
-            
+           
+            case OptionOutputDir:
+                // --output-dir=DIRECTORY
+                m_options["output_dir"] = optarg;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -3159,6 +3221,12 @@ S9sOptions::checkOptionsNode()
      * Checking if multiple operations are requested.
      */
     if (isListRequested())
+        countOptions++;
+    
+    if (isPullConfigRequested())
+        countOptions++;
+    
+    if (isPushConfigRequested())
         countOptions++;
     
     if (isSetRequested())

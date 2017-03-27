@@ -28,6 +28,7 @@
 #include "S9sTopUi"
 #include "S9sFile"
 #include "S9sRsaKey"
+#include "S9sDir"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -168,6 +169,9 @@ S9sBusinessLogic::execute()
         } else if (options->isChangeConfigRequested())
         {
             executeSetConfig(client);
+        } else if (options->isPullConfigRequested())
+        {
+            executePullConfig(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -478,6 +482,73 @@ S9sBusinessLogic::executeConfigList(
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ */
+void 
+S9sBusinessLogic::executePullConfig(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options   = S9sOptions::instance();
+    S9sString    outputDir = options->outputDir();
+    S9sRpcReply  reply;
+    S9sDir       dir;
+    bool         success;
+
+    /*
+     * 
+     */
+    if (outputDir.empty())
+    {
+        PRINT_ERROR(
+                "The output driectory is not set.\n"
+                "Use the --output-dir command line option to set it.");
+        return;
+    }
+
+    dir = S9sDir(outputDir);
+    if (!dir.exists())
+    {
+        success = dir.mkdir();
+        if (!success)
+        {
+            PRINT_ERROR("%s", STR(dir.errorString()));
+            return;
+        }
+    }
+    
+    if (!dir.exists())
+    {
+        PRINT_ERROR("Unable to create directory '%s'.", STR(outputDir));
+        return;
+    }
+
+    /*
+     *
+     */
+    success = client.getConfig(options->nodes());
+    if (!success)
+    {
+        PRINT_ERROR("%s", STR(client.errorString()));
+        return;
+    }
+
+    reply   = client.reply();
+    success = reply.isOk();
+    if (!success)
+    {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(reply.errorString()));
+
+        return;
+    }
+
+    reply.saveConfig(outputDir);
 }
 
 void 

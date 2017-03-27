@@ -128,6 +128,8 @@ class S9sOptions
         S9sString optGroup() const;
         S9sString optName() const;
         S9sString optValue() const;
+        S9sString outputDir() const;
+
 
         S9sString backupDir() const;
         S9sString backupMethod() const;
@@ -165,6 +167,8 @@ class S9sOptions
         bool isStatRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
+        bool isPullConfigRequested() const;
+        bool isPushConfigRequested() const;
         bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isSetRequested() const;
