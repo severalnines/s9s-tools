@@ -106,6 +106,11 @@ class S9sString : public std::string
                     S9sString       &content,
                     S9sString       &errorString);
 
+        static bool writeFile(
+                const S9sString     &fileName,
+                S9sString           &content,
+                S9sString           &errorString);
+
         static const S9sString space;
         static const S9sString dash;
 };

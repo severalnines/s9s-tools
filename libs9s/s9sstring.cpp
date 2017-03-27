@@ -848,3 +848,73 @@ S9sString::readFile(
     return retval;
 }
 
+/**
+ * Same as write(3), but this repeats the write request if it was interrupted by
+ * a signal.
+ */
+static ssize_t
+safeWrite (
+    int         fileDescriptor, 
+    const void *buffer, 
+    size_t      nBytes)
+{
+    ssize_t retval;
+  
+    do {
+        retval = ::write(fileDescriptor, buffer, nBytes);
+    } while (retval == -1 && errno == EINTR);
+
+    return retval;
+}
+
+/**
+ * \param fileName The name of the file to read.
+ * \param content The place where the content of the file will be placed.
+ * \param errorString The place where the error message will be placed if
+ *   something went wrong.
+ * \returns True if everything is ok.
+ *
+ * Reads the entire file into a string.
+ */
+bool
+S9sString::writeFile(
+        const S9sString     &fileName,
+        S9sString           &content,
+        S9sString           &errorString)
+{
+    mode_t   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    int      fileDescriptor;
+    ssize_t  nBytes;
+    int      errorCode;
+
+    fileDescriptor = open(STR(fileName), 
+            O_WRONLY | O_CREAT | O_TRUNC, mode);
+    if (fileDescriptor < 0)
+    {
+        errorString.sprintf(
+                "Error opening '%s' for writing: %m",
+                STR(fileName));
+        return false;
+    }
+
+    nBytes = ::safeWrite(fileDescriptor, STR(content), content.size());
+    if (nBytes < (ssize_t) content.size())
+    {
+        errorString.sprintf(
+                "Error writing file '%s': %m", 
+                STR(fileName));
+        ::close(fileDescriptor);
+        return false;
+    }
+
+    errorCode = ::close(fileDescriptor);
+    if (errorCode != 0)
+    {
+        errorString.sprintf(
+                "Error closing file '%s': %m", 
+                STR(fileName));
+        return false;
+    }
+
+    return true;
+}
