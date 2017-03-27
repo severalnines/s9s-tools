@@ -30,7 +30,7 @@
 #include "S9sMessage"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
@@ -3711,7 +3711,6 @@ S9sRpcReply::progressBar(
 
     nBars   = percent / 10;
     remain  = (int) percent % 10;
-    S9S_WARNING("*** remain: %d", remain);
 
     retval += "[";
 

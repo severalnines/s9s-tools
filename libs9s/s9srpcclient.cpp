@@ -271,8 +271,9 @@ S9sRpcClient::getClusters()
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
- * The method that sends the "getAllClusterInfo" RPC request and reads the
- * reply.
+ * The method that sends the "getConfig" RPC request and reads the
+ * reply. The "getConfig" returns the parsed version of the configuration for a
+ * given node.
  */
 bool
 S9sRpcClient::getConfig(

@@ -207,7 +207,8 @@ function testCreateCluster()
 }
 
 #
-# 
+# This function will check the basic getconfig/setconfig features that reads the
+# configuration of one node.
 #
 function testConfig()
 {
