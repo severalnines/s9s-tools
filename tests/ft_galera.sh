@@ -224,6 +224,71 @@ EOF
 }
 
 #
+# This function will check the basic getconfig/setconfig features that reads the
+# configuration of one node.
+#
+function testConfig()
+{
+    local exitCode
+    local value
+
+    pip-say "The test to check configuration is starting now."
+
+    #
+    # Listing the configuration values. The exit code should be 0.
+    #
+    $S9S node \
+        --list-config \
+        --nodes=$FIRST_ADDED_NODE \
+        >/dev/null
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    #
+    # Changing a configuration value.
+    #
+    $S9S node \
+        --change-config \
+        --nodes=$FIRST_ADDED_NODE \
+        --opt-name=max_heap_table_size \
+        --opt-value=128M
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    #
+    # Reading the configuration back. This time we only read one value.
+    #
+    value=$($S9S node \
+            --batch \
+            --list-config \
+            --opt-name=max_heap_table_size \
+            --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    if [ "$value" != "1" ]; then
+        failure "Configuration value should not be '$value'"
+    fi
+
+    $S9S node \
+        --list-config \
+        --nodes=$FIRST_ADDED_NODE \
+        'max*'
+}
+
+#
 # Creating a new account on the cluster.
 #
 function testCreateAccount()
@@ -609,6 +674,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testConfig
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql

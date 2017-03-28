@@ -2447,12 +2447,17 @@ S9sOptions::printHelpNode()
 "  --set                      Change the properties of a node.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --change-config            Change the configuration for a node.\n"
+"  --pull-config              Copy configuration files from a node.\n"
+"  --push-config              Copy configuration files to a node.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
 "  --cluster-name=NAME        Name of the cluster to list.\n"
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
-"  --properties=ASSIGNMENTS   The names and values of the properties to change.\n"
+"  --properties=ASSIGNMENTS   Names and values of the properties to change.\n"
+"  --opt-group=GROUP          The configuration option group.\n"
+"  --opt-name=NAME            The name of the configuration option.\n"
+"  --opt-value=VALUE          The value of the configuration option.\n"
 "\n");
 }
 
