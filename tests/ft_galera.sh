@@ -186,6 +186,20 @@ function testCreateCluster()
     #
     # Creating a Galera cluster.
     #
+    clear
+
+cat <<EOF
+# s9s cluster \\
+    --create \\
+    --cluster-type=galera \\
+    --nodes="$nodes" \\
+    --vendor=percona \\
+    --cluster-name="$CLUSTER_NAME" \\
+    --provider-version=5.6 \\
+    $LOG_OPTION
+    
+EOF
+
     $S9S cluster \
         --create \
         --cluster-type=galera \
@@ -280,6 +294,15 @@ function testAddProxySql()
     #
     # Adding a node to the cluster.
     #
+cat <<EOF
+# s9s cluster \\
+    --add-node \\
+    --cluster-id=$CLUSTER_ID \\
+    --nodes="$nodes" \\
+    $LOG_OPTION
+
+EOF
+
     $S9S cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
