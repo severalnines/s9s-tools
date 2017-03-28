@@ -35,6 +35,10 @@ List the configuration values for the given node.
 .B \-\-set\-config
 Change configuration values for the given node.
 
+.TP
+.B \-\-pull\-config
+Copy the configuration file(s) from the node to the local computer. Use the 
+\fB\-\-output\-dir\fP to control where the files will be created.
 
 .SS Generic Options
 
@@ -121,6 +125,10 @@ Do not print headers for tables.
 One or more assignments specifying property names and values. The assignment
 operator is the '=' character (e.g. --properties='alias="newname"'), multiple
 assignments are separated by the semicolon (';').
+
+.TP
+.BI \-\^\-output\-dir= DIRECTORY
+The directory where the output files will be created on the local computer.
 
 .\"
 .\"

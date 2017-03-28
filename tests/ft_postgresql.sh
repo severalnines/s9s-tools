@@ -266,6 +266,22 @@ function testConfig()
     fi
 
     #
+    # Pulling a configuration file from a node to the local host.
+    #
+    rm -rf tmp
+    $S9S node \
+        --pull-config \
+        --nodes=$FIRST_ADDED_NODE \
+        --output-dir=tmp \
+        --batch
+
+    if [ ! -f "tmp/postgresql.conf" ]; then
+        failure "The config file 'tmp/postgresql.conf' was not created."
+    fi
+
+    rm -rf tmp
+
+    #
     # This is just to produce some nice output for the user.
     #
     #$S9S node \

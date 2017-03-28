@@ -6,8 +6,9 @@ o Change config with rewriting the value
   set global port =2222;
   ERROR 1238 (HY000): Variable 'port' is a read only variable
 
-o Get config file.
-
+o DONE
+  Get config file(s).
+  
 o Upload config file.
 
 o Node stop start restart.

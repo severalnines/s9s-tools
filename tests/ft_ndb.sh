@@ -195,7 +195,7 @@ function testCreateCluster()
         --nodes="$nodes" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version=5.7 \
         $LOG_OPTION
 
     exitCode=$?
