@@ -26,3 +26,11 @@ The repository files for each distribution:
 - http://download.opensuse.org/repositories/home:/kedazo/RHEL_6/home:kedazo.repo
 - http://download.opensuse.org/repositories/home:/kedazo/RHEL_7/home:kedazo.repo
 
+# Some screenshots
+
+![Screenshot01](screenshots/screen-01.png)
+![Screenshot02](screenshots/screen-02.png)
+![Screenshot03](screenshots/screen-03.png)
+![Screenshot04](screenshots/screen-04.png)
+![Screenshot05](screenshots/screen-05.png)
+
