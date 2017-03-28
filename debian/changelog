@@ -1,3 +1,9 @@
+s9s-tools (0.1.20170328-nightly3) UNRELEASED; urgency=low
+
+  * Pushing new version to PPA and OBS
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 28 Mar 2017 08:28:49 +0100
+
 s9s-tools (0.1.20170208-nightly2) UNRELEASED; urgency=low
 
   * Initial packaging...
