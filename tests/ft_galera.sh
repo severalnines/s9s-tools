@@ -251,6 +251,17 @@ function testConfig()
     #
     # Changing a configuration value.
     #
+    clear 
+    cat <<EOF
+s9s node \\
+    --change-config \\
+    --nodes=$FIRST_ADDED_NODE \\
+    --opt-name=max_heap_table_size \\
+    --opt-group=MYSQLD \\
+    --opt-value=128M
+
+EOF
+
     $S9S node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
@@ -282,6 +293,14 @@ function testConfig()
     if [ "$value" != "128M" ]; then
         failure "Configuration value should not be '$value'"
     fi
+
+    cat <<EOF
+# s9s node \\
+        --list-config \\
+        --nodes=$FIRST_ADDED_NODE \\
+        'max*'
+
+EOF
 
     $S9S node \
         --list-config \
