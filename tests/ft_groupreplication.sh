@@ -191,6 +191,18 @@ function testCreateCluster()
     #
     # Creating a MySQL replication cluster.
     #
+clear
+cat <<EOF
+# s9s cluster \\
+    --create \\
+    --cluster-type=group_replication \\
+    --nodes="$nodes" \\
+    --vendor=oracle \\
+    --cluster-name="$CLUSTER_NAME" \\
+    --provider-version=5.7 \\
+    --wait
+EOF
+
     $S9S cluster \
         --create \
         --cluster-type=group_replication \
