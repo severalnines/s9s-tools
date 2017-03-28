@@ -255,6 +255,7 @@ function testConfig()
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=max_heap_table_size \
+        --opt-group=MYSQLD \
         --opt-value=128M
     
     exitCode=$?
@@ -278,7 +279,7 @@ function testConfig()
         failure "The exit code is ${exitCode}"
     fi
 
-    if [ "$value" != "1" ]; then
+    if [ "$value" != "128M" ]; then
         failure "Configuration value should not be '$value'"
     fi
 

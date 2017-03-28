@@ -681,13 +681,10 @@ S9sBusinessLogic::executeSetConfig(
     }
 
     success = client.setConfig(hosts);
-    if (options->isJsonRequested())
+    if (success)
     {
         reply = client.reply();
-        printf("%s\n", STR(reply.toString()));
-    } else {
-        if (success)
-            printf("OK\n");
+        reply.printMessages("OK");
     }
 }
 
