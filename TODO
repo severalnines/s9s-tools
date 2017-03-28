@@ -1,4 +1,5 @@
-o Make screenshots about CLI.
+o DONE
+  Make screenshots about CLI.
 
 o Change config with rewriting the value
   SET GLOBAL variable_name=value;
