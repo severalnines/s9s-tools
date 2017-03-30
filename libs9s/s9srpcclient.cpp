@@ -1785,6 +1785,106 @@ S9sRpcClient::startCluster()
 }
 
 bool
+S9sRpcClient::startNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To start a node exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["hostname"]   = node.hostName();
+    
+    if (node.hasPort())
+        jobData["port"]   = node.port();
+     
+    // The jobspec describing the command.
+    jobSpec["command"]    = "start";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Starting Node";
+    job["job_spec"]       = jobSpec;
+    //job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::stopNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To stop a node exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["hostname"]   = node.hostName();
+    
+    if (node.hasPort())
+        jobData["port"]   = node.port();
+     
+    // The jobspec describing the command.
+    jobSpec["command"]    = "stop";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Stopping Node";
+    job["job_spec"]       = jobSpec;
+    //job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
 S9sRpcClient::restartNode()
 {
     S9sOptions    *options   = S9sOptions::instance();

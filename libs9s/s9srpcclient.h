@@ -142,6 +142,8 @@ class S9sRpcClient
         bool startCluster();
         bool dropCluster();
 
+        bool startNode();
+        bool stopNode();
         bool restartNode();
 
         bool createMaintenance();
