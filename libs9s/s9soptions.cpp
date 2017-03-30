@@ -84,6 +84,7 @@ enum S9sOptionType
     OptionLastName,
     OptionTitle,
     OptionStart,
+    OptionRestart,
     OptionEnd,
     OptionReason,
     OptionUuid,
@@ -1592,6 +1593,21 @@ S9sOptions::isStartRequested() const
 }
 
 /**
+ * \returns true if the --restart command line option was provided when the
+ * program was started.
+ */
+bool
+S9sOptions::isRestartRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("restart"))
+        retval = m_options.at("restart").toBoolean();
+
+    return retval;
+}
+
+/**
  * \returns true if the --create-account command line option was provided when
  *   the program was started.
  */
@@ -2508,6 +2524,9 @@ S9sOptions::readOptionsNode(
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0,  OptionStat           },
         { "set",              no_argument,       0,  OptionSet            },
+        { "start",            no_argument,       0,  OptionStart          },
+        { "stop",             no_argument,       0,  OptionStop           },
+        { "restart",          no_argument,       0,  OptionRestart        },
         { "list-config",      no_argument,       0,  OptionListConfig     },
         { "change-config",    no_argument,       0,  OptionChangeConfig   },
         { "pull-config",      no_argument,       0,  OptionPullConfig     },
@@ -2595,6 +2614,21 @@ S9sOptions::readOptionsNode(
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
+                break;
+
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
+                break;
+
+            case OptionStop:
+                // --stop
+                m_options["stop"] = true;
+                break;
+
+            case OptionRestart:
+                // --restart
+                m_options["restart"] = true;
                 break;
 
             case OptionListConfig:
