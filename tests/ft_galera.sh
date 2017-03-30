@@ -231,6 +231,8 @@ function testConfig()
 {
     local exitCode
     local value
+    local newValue
+    local name
 
     pip-say "The test to check configuration is starting now."
 
@@ -239,8 +241,7 @@ function testConfig()
     #
     $S9S node \
         --list-config \
-        --nodes=$FIRST_ADDED_NODE \
-        >/dev/null
+        --nodes=$FIRST_ADDED_NODE #\ >/dev/null
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -252,22 +253,25 @@ function testConfig()
     # Changing a configuration value.
     #
     clear 
+    newValue=200
+    name="max_connections"
+
     cat <<EOF
-s9s node \\
+# s9s node \\
     --change-config \\
     --nodes=$FIRST_ADDED_NODE \\
-    --opt-name=max_heap_table_size \\
+    --opt-name=$name \\
     --opt-group=MYSQLD \\
-    --opt-value=128M
+    --opt-value=$newValue
 
 EOF
 
     $S9S node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
-        --opt-name=max_heap_table_size \
+        --opt-name=$name \
         --opt-group=MYSQLD \
-        --opt-value=128M
+        --opt-value=$newValue
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -281,7 +285,7 @@ EOF
     value=$($S9S node \
             --batch \
             --list-config \
-            --opt-name=max_heap_table_size \
+            --opt-name=$name \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
     exitCode=$?
@@ -290,17 +294,78 @@ EOF
         failure "The exit code is ${exitCode}"
     fi
 
-    if [ "$value" != "128M" ]; then
-        failure "Configuration value should not be '$value'"
+    if [ "$value" != "$newValue" ]; then
+        failure "Configuration value should be $newValue not $value"
     fi
 
     cat <<EOF
 # s9s node \\
         --list-config \\
         --nodes=$FIRST_ADDED_NODE \\
-        'max*'
+        $name
 
 EOF
+
+    $S9S node \
+        --list-config \
+        --nodes=$FIRST_ADDED_NODE \
+        $name
+}
+
+#
+# This test will set a configuration value that contains an SI prefixum,
+# ("54M").
+#
+function testSetConfig()
+{
+    local exitCode
+    local value
+    local newValue="64M"
+    local name="max_heap_table_size"
+
+    #
+    # Changing a configuration value.
+    #
+    cat <<EOF
+# s9s node \\
+    --change-config \\
+    --nodes=$FIRST_ADDED_NODE \\
+    --opt-name=$name \\
+    --opt-group=MYSQLD \\
+    --opt-value=$newValue
+
+EOF
+    $S9S node \
+        --change-config \
+        --nodes=$FIRST_ADDED_NODE \
+        --opt-name=$name \
+        --opt-group=MYSQLD \
+        --opt-value=$newValue
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    #
+    # Reading the configuration back. This time we only read one value.
+    #
+    value=$($S9S node \
+            --batch \
+            --list-config \
+            --opt-name=$name \
+            --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    if [ "$value" != "$newValue" ]; then
+        failure "Configuration value should be $newValue not $value"
+    fi
 
     $S9S node \
         --list-config \
@@ -695,6 +760,8 @@ else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testConfig
+    runFunctionalTest testSetConfig
+
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql

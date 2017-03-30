@@ -589,7 +589,7 @@ else
 fi
 
 if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were found."
+    pip-say "The test script is now finished. No errors were detected."
 else
     pip-say "The test script is now finished. Some failures were detected."
 fi
