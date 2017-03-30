@@ -1,7 +1,8 @@
 o DONE
   Make screenshots about CLI.
 
-o Change config with rewriting the value
+o DONE
+  Change config with rewriting the value
   SET GLOBAL variable_name=value;
 
   set global port =2222;

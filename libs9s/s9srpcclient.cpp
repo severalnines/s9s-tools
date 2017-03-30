@@ -1747,6 +1747,9 @@ S9sRpcClient::stopCluster()
     return retval;
 }
 
+/**
+ * This method will create and send a start_cluster job.
+ */
 bool
 S9sRpcClient::startCluster()
 {
@@ -1758,22 +1761,16 @@ S9sRpcClient::startCluster()
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    title = "Starting Cluster";
-
-    // The job_data describing the cluster.
-    //jobData["force"]               = false;
-    //jobData["stop_timeout"]        = 1800;
-    //jobData["auto_select"]         = true;
-    
     // The jobspec describing the command.
     jobSpec["command"]    = "start_cluster";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
-    job["title"]          = title;
+    job["title"]          = "Starting Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+    //job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -1786,6 +1783,57 @@ S9sRpcClient::startCluster()
 
     return retval;
 }
+
+bool
+S9sRpcClient::restartNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To restart a node exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["hostname"]   = node.hostName();
+    
+    if (node.hasPort())
+        jobData["port"]   = node.port();
+     
+    // The jobspec describing the command.
+    jobSpec["command"]    = "restart";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Restarting Node";
+    job["job_spec"]       = jobSpec;
+    //job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \param clusterId The ID of the cluster.
