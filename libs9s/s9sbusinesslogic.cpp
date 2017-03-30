@@ -172,6 +172,18 @@ S9sBusinessLogic::execute()
         } else if (options->isPullConfigRequested())
         {
             executePullConfig(client);
+        } else if (options->isStartRequested())
+        {
+            success = client.startNode();
+            maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isStopRequested())
+        {
+            success = client.stopNode();
+            maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isRestartRequested())
+        {
+            success = client.restartNode();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

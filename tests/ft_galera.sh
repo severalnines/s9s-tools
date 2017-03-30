@@ -373,6 +373,34 @@ EOF
         'max*'
 }
 
+function testRestartNode()
+{
+    local exitCode
+
+    #
+    # Restarting a node. 
+    #
+    cat <<EOF
+# s9s node \\
+    --restart \\
+    --cluster-id=$CLUSTER_ID \\
+    --nodes=$FIRST_ADDED_NODE:3306 \\
+    $LOG_OPTION
+
+EOF
+    $S9S node \
+        --restart \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE:3306 \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
 #
 # Creating a new account on the cluster.
 #
@@ -761,6 +789,8 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testConfig
     runFunctionalTest testSetConfig
+    
+    runFunctionalTest testRestartNode
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode

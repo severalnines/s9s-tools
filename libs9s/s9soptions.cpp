@@ -2517,7 +2517,6 @@ S9sOptions::readOptionsNode(
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
-        { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
@@ -2536,6 +2535,13 @@ S9sOptions::readOptionsNode(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "nodes",            required_argument, 0, OptionNodes           },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "schedule",         required_argument, 0, OptionSchedule        },
 
         // Node options. 
         { "properties",       required_argument, 0, OptionProperties      },
@@ -2656,6 +2662,16 @@ S9sOptions::readOptionsNode(
                 m_options["config-file"] = optarg;
                 break;
             
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
@@ -2664,6 +2680,11 @@ S9sOptions::readOptionsNode(
             case OptionNoHeader:
                 // --no-header
                 m_options["no_header"] = true;
+                break;
+           
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
                 break;
             
             case OptionColor:
@@ -3278,6 +3299,15 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isChangeConfigRequested())
+        countOptions++;
+    
+    if (isStartRequested())
+        countOptions++;
+    
+    if (isStopRequested())
+        countOptions++;
+    
+    if (isRestartRequested())
         countOptions++;
 
     if (countOptions > 1)
