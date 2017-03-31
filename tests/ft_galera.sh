@@ -373,6 +373,9 @@ EOF
         'max*'
 }
 
+#
+# This test will call a --restart on the node.
+#
 function testRestartNode()
 {
     local exitCode
@@ -384,14 +387,69 @@ function testRestartNode()
 # s9s node \\
     --restart \\
     --cluster-id=$CLUSTER_ID \\
-    --nodes=$FIRST_ADDED_NODE:3306 \\
+    --nodes=$FIRST_ADDED_NODE \\
     $LOG_OPTION
 
 EOF
     $S9S node \
         --restart \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE:3306 \
+        --nodes=$FIRST_ADDED_NODE \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This test will first call a --stop then a --start on a node. Pretty basic
+# stuff.
+#
+function testStopStartNode()
+{
+    local exitCode
+
+    #
+    # First stop.
+    #
+    cat <<EOF
+# s9s node \\
+    --stop \\
+    --cluster-id=$CLUSTER_ID \\
+    --nodes=$FIRST_ADDED_NODE \\
+    $LOG_OPTION
+
+EOF
+    $S9S node \
+        --stop \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    #
+    # Then start.
+    #
+    cat <<EOF
+# s9s node \\
+    --start \\
+    --cluster-id=$CLUSTER_ID \\
+    --nodes=$FIRST_ADDED_NODE \\
+    $LOG_OPTION
+
+EOF
+    $S9S node \
+        --start \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -791,6 +849,7 @@ else
     runFunctionalTest testSetConfig
     
     runFunctionalTest testRestartNode
+    runFunctionalTest testStopStartNode
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
