@@ -20,6 +20,7 @@
 #pragma once
 
 #include <S9sVariantMap>
+#include <S9sDateTime>
 
 class S9sMessage
 {
@@ -40,6 +41,8 @@ class S9sMessage
         int lineNumber() const;
 
         int messageId() const;
+        S9sDateTime created() const;
+        S9sString severity() const;
 
         S9sString message() const;
 

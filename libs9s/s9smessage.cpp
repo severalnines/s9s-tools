@@ -82,6 +82,10 @@ S9sMessage::lineNumber() const
     return -1;
 }
 
+/**
+ * \returns The numerical ID of the message if there is a message ID or -1 if
+ *   there is no ID.
+ */
 int
 S9sMessage::messageId() const
 {
@@ -89,6 +93,41 @@ S9sMessage::messageId() const
         return m_properties.at("message_id").toInt();
 
     return -1;
+}
+
+/**
+ * \returns The 'created' date and time property.
+ */
+S9sDateTime
+S9sMessage::created() const
+{
+    S9sDateTime retval;
+
+    if (m_properties.contains("created"))
+        retval.parse( m_properties.at("created").toString());
+
+    return retval;
+}
+
+S9sString
+S9sMessage::severity() const
+{
+    S9sString      status;
+        
+    if (m_properties.contains("message_status"))
+        status = m_properties.at("message_status").toString();
+
+    if (status == "JOB_SUCCESS")
+        // XTERM_COLOR_GREEN TERM_NORMAL
+        return "MESSAGE";
+    else if (status == "JOB_WARNING")
+        // XTERM_COLOR_YELLOW TERM_NORMAL
+        return "WARNING";
+    else if (status == "JOB_FAILED")
+        // XTERM_COLOR_RED TERM_NORMAL
+        return "FAILURE";
+
+    return status;
 }
 
 S9sString
@@ -209,6 +248,7 @@ S9sMessage::toString(
             switch (c)
             {
                 case 'L':
+                    // The line number.
                     partFormat += 'd';
                     //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
                     tmp.sprintf(STR(partFormat), lineNumber());
@@ -216,6 +256,7 @@ S9sMessage::toString(
                     break;
                 
                 case 'I':
+                    // The message ID.
                     partFormat += 'd';
                     //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
                     tmp.sprintf(STR(partFormat), messageId());
@@ -223,10 +264,40 @@ S9sMessage::toString(
                     break;
 
                 case 'M':
+                    // The message in color.
                     partFormat += 's';
                     tmp.sprintf(
                             STR(partFormat), 
                             STR(S9sString::html2ansi(message())));
+                    retval += tmp;
+                    break;
+
+                case 'C':
+                    // The 'created' date&time.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(created().toString(
+                                    S9sDateTime::MySqlLogFileFormat)));
+                    retval += tmp;
+                    break;
+                
+                case 'T':
+                    // The 'created' time.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(created().toString(
+                                    S9sDateTime::LongTimeFormat)));
+                    retval += tmp;
+                    break;
+
+                case 'S':
+                    // The severity or status.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(severity()));
                     retval += tmp;
                     break;
 
@@ -240,6 +311,9 @@ S9sMessage::toString(
                 case '7':
                 case '8':
                 case '9':
+                case '-':
+                case '+':
+                case '.':
                     partFormat += c;
                     continue;
             }

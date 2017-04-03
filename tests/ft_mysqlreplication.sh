@@ -32,6 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers. 
+ --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -40,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -69,6 +70,12 @@ while true; do
             shift
             CONTAINER_SERVER="$1"
             shift
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
             ;;
 
         --)
@@ -153,7 +160,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -191,7 +198,7 @@ function testCreateCluster()
     #
     # Creating a MySQL replication cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=mysqlreplication \
         --nodes="$nodes" \
@@ -237,7 +244,7 @@ function testAddNode()
     # Adding a node to the cluster.
     #
     printVerbose "Adding node:"
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -264,7 +271,7 @@ function testRemoveNode()
     #
     # Removing the last added node.
     #
-    $S9S cluster \
+    mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
@@ -289,7 +296,7 @@ function testRollingRestart()
     #
     # Calling for a rolling restart.
     #
-    $S9S cluster \
+    mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -313,7 +320,7 @@ function testStop()
     #
     # Stopping the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -337,7 +344,7 @@ function testDrop()
     #
     # Starting the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
