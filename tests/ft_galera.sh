@@ -32,6 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
+ --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -40,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -69,6 +70,12 @@ while true; do
             shift
             CONTAINER_SERVER="$1"
             shift
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
             ;;
 
         --)
@@ -148,7 +155,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -186,21 +193,7 @@ function testCreateCluster()
     #
     # Creating a Galera cluster.
     #
-    clear
-
-cat <<EOF
-# s9s cluster \\
-    --create \\
-    --cluster-type=galera \\
-    --nodes="$nodes" \\
-    --vendor=percona \\
-    --cluster-name="$CLUSTER_NAME" \\
-    --provider-version=5.6 \\
-    $LOG_OPTION
-    
-EOF
-
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \
@@ -239,7 +232,7 @@ function testConfig()
     #
     # Listing the configuration values. The exit code should be 0.
     #
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE #\ >/dev/null
 
@@ -252,21 +245,10 @@ function testConfig()
     #
     # Changing a configuration value.
     #
-    clear 
     newValue=200
     name="max_connections"
-
-    cat <<EOF
-# s9s node \\
-    --change-config \\
-    --nodes=$FIRST_ADDED_NODE \\
-    --opt-name=$name \\
-    --opt-group=MYSQLD \\
-    --opt-value=$newValue
-
-EOF
-
-    $S9S node \
+    
+    mys9s node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=$name \
@@ -298,15 +280,7 @@ EOF
         failure "Configuration value should be $newValue not $value"
     fi
 
-    cat <<EOF
-# s9s node \\
-        --list-config \\
-        --nodes=$FIRST_ADDED_NODE \\
-        $name
-
-EOF
-
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         $name
@@ -326,16 +300,7 @@ function testSetConfig()
     #
     # Changing a configuration value.
     #
-    cat <<EOF
-# s9s node \\
-    --change-config \\
-    --nodes=$FIRST_ADDED_NODE \\
-    --opt-name=$name \\
-    --opt-group=MYSQLD \\
-    --opt-value=$newValue
-
-EOF
-    $S9S node \
+    mys9s node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=$name \
@@ -367,7 +332,7 @@ EOF
         failure "Configuration value should be $newValue not $value"
     fi
 
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         'max*'
@@ -383,15 +348,7 @@ function testRestartNode()
     #
     # Restarting a node. 
     #
-    cat <<EOF
-# s9s node \\
-    --restart \\
-    --cluster-id=$CLUSTER_ID \\
-    --nodes=$FIRST_ADDED_NODE \\
-    $LOG_OPTION
-
-EOF
-    $S9S node \
+    mys9s node \
         --restart \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
@@ -415,15 +372,7 @@ function testStopStartNode()
     #
     # First stop.
     #
-    cat <<EOF
-# s9s node \\
-    --stop \\
-    --cluster-id=$CLUSTER_ID \\
-    --nodes=$FIRST_ADDED_NODE \\
-    $LOG_OPTION
-
-EOF
-    $S9S node \
+    mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
@@ -438,15 +387,7 @@ EOF
     #
     # Then start.
     #
-    cat <<EOF
-# s9s node \\
-    --start \\
-    --cluster-id=$CLUSTER_ID \\
-    --nodes=$FIRST_ADDED_NODE \\
-    $LOG_OPTION
-
-EOF
-    $S9S node \
+    mys9s node \
         --start \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
@@ -469,7 +410,7 @@ function testCreateAccount()
     #
     # This command will create a new account on the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="john_doe:password@1.2.3.4" \
@@ -499,7 +440,7 @@ function testAddNode()
     #
     # Adding a node to the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -530,16 +471,7 @@ function testAddProxySql()
     #
     # Adding a node to the cluster.
     #
-cat <<EOF
-# s9s cluster \\
-    --add-node \\
-    --cluster-id=$CLUSTER_ID \\
-    --nodes="$nodes" \\
-    $LOG_OPTION
-
-EOF
-
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -551,7 +483,7 @@ EOF
         failure "The exit code is ${exitCode}"
     fi
 
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$nodeName 
 }
@@ -579,7 +511,7 @@ function testAddRemoveHaProxy()
     # Adding a node to the cluster.
     #
     printVerbose "Adding haproxy at '$node'."
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="haProxy://$node" \
@@ -591,13 +523,13 @@ function testAddRemoveHaProxy()
         failure "The exit code is ${exitCode}"
     fi
    
-    $S9S node --list --long --color=always
+    mys9s node --list --long --color=always
 
     #
     # Remove a node to the cluster.
     #
     printVerbose "Removing haproxy at '$node:9600'."
-    $S9S cluster \
+    mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$node:9600" \
@@ -609,7 +541,7 @@ function testAddRemoveHaProxy()
         failure "The exit code is ${exitCode}"
     fi
     
-    $S9S node --list --long --color=always
+    mys9s node --list --long --color=always
 }
 
 #
@@ -630,7 +562,7 @@ function testAddHaProxy()
     #
     # Adding a node to the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -657,7 +589,7 @@ function testRemoveNode()
     #
     # Removing the last added node.
     #
-    $S9S cluster \
+    mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
@@ -682,7 +614,7 @@ function testRollingRestart()
     #
     # Calling for a rolling restart.
     #
-    $S9S cluster \
+    mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -707,7 +639,7 @@ function testCreateBackup()
     #
     # Calling for a rolling restart.
     #
-    $S9S backup \
+    mys9s backup \
         --create \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
@@ -737,7 +669,7 @@ function testRestoreBackup()
     #
     # Creating a backup. 
     #
-    $S9S backup \
+    mys9s backup \
         --restore \
         --cluster-id=$CLUSTER_ID \
         --backup-id=$backupId \
@@ -766,7 +698,7 @@ function testRemoveBackup()
     #
     # Calling for a rolling restart.
     #
-    $S9S backup \
+    mys9s backup \
         --delete \
         --backup-id=$backupId \
         $LOG_OPTION
@@ -790,7 +722,7 @@ function testStop()
     #
     # Stopping the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -814,7 +746,7 @@ function testStart()
     #
     # Starting the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --start \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
