@@ -781,7 +781,7 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testConfig
     runFunctionalTest testSetConfig
-    
+
     runFunctionalTest testRestartNode
     runFunctionalTest testStopStartNode
 

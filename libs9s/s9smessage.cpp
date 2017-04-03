@@ -298,7 +298,18 @@ S9sMessage::toString(
                     tmp.sprintf(
                             STR(partFormat), 
                             STR(severity()));
+
+                    // FIXME: This is hackish.
+                    if (severity() == "MESSAGE")
+                        retval += XTERM_COLOR_GREEN;
+                    else if (severity() == "WARNING")
+                        retval += XTERM_COLOR_YELLOW;
+                    else if (severity() == "FAILURE")
+                        retval += XTERM_COLOR_RED;
+
                     retval += tmp;
+
+                    retval += TERM_NORMAL;
                     break;
 
                 case '0':
