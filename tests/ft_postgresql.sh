@@ -152,7 +152,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -182,7 +182,7 @@ function testCreateCluster()
     #
     # Creating a PostgreSQL cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=postgresql \
         --nodes="$nodes" \
@@ -220,7 +220,7 @@ function testConfig()
     #
     # Listing the configuration values. The exit code should be 0.
     #
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         >/dev/null
@@ -234,7 +234,7 @@ function testConfig()
     #
     # Changing a configuration value.
     #
-    $S9S node \
+    mys9s node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=log_line_prefix \
@@ -269,7 +269,7 @@ function testConfig()
     # Pulling a configuration file from a node to the local host.
     #
     rm -rf tmp
-    $S9S node \
+    mys9s node \
         --pull-config \
         --nodes=$FIRST_ADDED_NODE \
         --output-dir=tmp \
@@ -300,7 +300,7 @@ function testCreateAccount()
     #
     # This command will create a new account on the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="joe:password" \
@@ -316,7 +316,7 @@ function testCreateAccount()
     #
     # This command will delete the same account from the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --delete-account \
         --cluster-id=$CLUSTER_ID \
         --account="joe" \
@@ -339,7 +339,7 @@ function testCreateDatabase()
     #
     # This command will create a new account on the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
         --db-name="testCreateDatabase" \
@@ -355,7 +355,7 @@ function testCreateDatabase()
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
@@ -372,7 +372,7 @@ function testCreateDatabase()
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
     #
-    $S9S cluster \
+    mys9s cluster \
         --grant \
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
@@ -398,7 +398,7 @@ function testCreateBackup()
     #
     # Creating a backup using the cluster ID to reference the cluster.
     #
-    $S9S backup \
+    mys9s backup \
         --create \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
@@ -414,7 +414,7 @@ function testCreateBackup()
     #
     # Creating a backup using the cluster name.
     #
-    $S9S backup \
+    mys9s backup \
         --create \
         --cluster-name=$CLUSTER_NAME \
         --nodes=$FIRST_ADDED_NODE \
@@ -444,7 +444,7 @@ function testRestoreBackup()
     #
     # Calling for a rolling restart.
     #
-    $S9S backup \
+    mys9s backup \
         --restore \
         --cluster-id=$CLUSTER_ID \
         --backup-id=$backupId \
@@ -473,7 +473,7 @@ function testRemoveBackup()
     #
     # Calling for a rolling restart.
     #
-    $S9S backup \
+    mys9s backup \
         --delete \
         --backup-id=$backupId \
         --batch \
@@ -503,7 +503,7 @@ function testRunScript()
     #
     # Calling for a rolling restart.
     #
-    $S9S script \
+    mys9s script \
         --cluster-id=$CLUSTER_ID \
         --execute scripts/test_output_lines.js \
         2>&1 >$output_file
@@ -535,7 +535,7 @@ function testDrop()
     #
     # Starting the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
