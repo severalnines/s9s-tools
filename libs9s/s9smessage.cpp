@@ -20,7 +20,7 @@
 #include "s9smessage.h"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sMessage::S9sMessage()
@@ -82,11 +82,22 @@ S9sMessage::lineNumber() const
     return -1;
 }
 
+int
+S9sMessage::messageId() const
+{
+    if (m_properties.contains("message_id"))
+        return m_properties.at("message_id").toInt();
+
+    return -1;
+}
+
 S9sString
 S9sMessage::message() const
 {
     if (m_properties.contains("message"))
         return m_properties.at("message").toString();
+    else if (m_properties.contains("message_text"))
+        return m_properties.at("message_text").toString();
 
     return S9sString();
 }
@@ -154,3 +165,92 @@ S9sMessage::toString() const
 
     return retval;
 }
+
+S9sString
+S9sMessage::toString(
+        const S9sString &formatString) const
+{
+    S9sString retval;
+    S9sString tmp;
+    char      c;
+    S9sString partFormat;
+    bool      percent = false;
+    bool      escaped = false;
+    
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+        
+        if (c == '%')
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+        } else if (c == '\\')
+        {
+            escaped = true;
+            continue;
+        }
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'L':
+                    partFormat += 'd';
+                    //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
+                    tmp.sprintf(STR(partFormat), lineNumber());
+                    retval += tmp;
+                    break;
+                
+                case 'I':
+                    partFormat += 'd';
+                    //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
+                    tmp.sprintf(STR(partFormat), messageId());
+                    retval += tmp;
+                    break;
+
+                case 'M':
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(S9sString::html2ansi(message())));
+                    retval += tmp;
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent = false;
+        escaped    = false;
+    }
+
+    return retval;
+}
+

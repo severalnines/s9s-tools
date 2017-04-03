@@ -1216,6 +1216,10 @@ S9sBusinessLogic::waitForJobWithLog(
 
     for (;;)
     {
+        /*
+         * Requested at most 300 log messages. If we have more we will print
+         * them later in the next round.
+         */
         success = client.getJobLog(jobId, 300, nLogsPrinted);
         if (success)
         {
@@ -1234,6 +1238,10 @@ S9sBusinessLogic::waitForJobWithLog(
             }
         }
 
+        /*
+         * If we have errors we count them, if we have more errors than we care
+         * to abide we exit.
+         */
         if (success)
         { 
             nFailures = 0;
@@ -1247,6 +1255,9 @@ S9sBusinessLogic::waitForJobWithLog(
             continue;
         }
 
+        /*
+         * Printing the log messages.
+         */
         nEntries = reply["messages"].toVariantList().size();
         if (nEntries > 0)
             reply.printJobLog();

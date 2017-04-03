@@ -39,11 +39,15 @@ class S9sMessage
         bool hasLineNumber() const;
         int lineNumber() const;
 
+        int messageId() const;
+
         S9sString message() const;
 
         bool isError() const;
 
         S9sString toString() const;
+        S9sString toString(const S9sString &formatString) const;
+
         S9sString termColorString() const;
 
     private:

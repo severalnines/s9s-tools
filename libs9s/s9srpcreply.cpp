@@ -645,15 +645,27 @@ S9sRpcReply::printProcessListBrief(
 void
 S9sRpcReply::printJobLogBrief()
 {
+    S9sOptions     *options = S9sOptions::instance();
+    S9sString       formatString = options->briefJobLogFormat();
     S9sVariantList  theList = operator[]("messages").toVariantList();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sMessage    message = theMap;
+
+        //printf("-> %s\n", STR(theMap.toString()));
+        if (formatString.empty())
+            printf("%s\n", STR(S9sString::html2ansi(message.message())));
+        else
+            printf("%s", STR(message.toString(formatString)));
+
+#if 0
         S9sString     message = theMap["message_text"].toString();
 
         html2ansi(message);
         printf("%s\n", STR(message));
+#endif
     }
 }
 

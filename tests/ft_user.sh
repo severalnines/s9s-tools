@@ -31,6 +31,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --verbose       Print more messages.
  --print-json    Print the JSON messages sent and received.
  --log           Print the logs while waiting for the job to be ended.
+ --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -38,7 +39,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log" \
+        -l "help,verbose,print-json,log,print-commands" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -67,6 +68,12 @@ while true; do
         --print-json)
             shift
             OPTION_PRINT_JSON="--print-json"
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
             ;;
 
         --)
@@ -115,7 +122,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster \
+    mys9s cluster \
         --ping \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE
@@ -136,7 +143,7 @@ function testPing()
 #
 function testGrantUser()
 {
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user=$USER \
         --generate-key \
@@ -234,7 +241,7 @@ function testFailNoGroup()
     # The group here does not exists and we did not request the creation of the
     # group, so this will fail, but we still get the AOK back from the program.
     #
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user=kirk \
         --title="Captain" \
@@ -255,7 +262,7 @@ function testCreateUsers()
     #
     # Let's add some users so that we have something to work on.
     #
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="sisko" \
         --title="Captain" \
@@ -272,7 +279,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="odo" \
         --first-name="Odo" \
@@ -288,7 +295,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="jake"\
         --first-name="Jake"\
@@ -304,7 +311,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="bashir" \
         --title="Dr." \
@@ -321,7 +328,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="chief" \
         --title="Chief" \
@@ -338,7 +345,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="nerys"  \
         --title="Major" \
@@ -355,7 +362,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="quark" \
         --first-name="Quark" \
@@ -371,7 +378,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="jadzia" \
         --title="Lt." \
@@ -388,7 +395,7 @@ function testCreateUsers()
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    $S9S user \
+    mys9s user \
         --create \
         --cmon-user="worf"\
         --title="Lt." \

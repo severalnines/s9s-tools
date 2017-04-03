@@ -41,6 +41,7 @@ function mys9s()
     local nth=0
 
     if [ "$PRINT_COMMANDS" ]; then
+        echo ""
         echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
 
         for argument in $*; do

@@ -87,6 +87,7 @@ class S9sOptions
         bool setNodes(const S9sString &value);
         S9sVariantList nodes() const;
 
+        S9sString briefJobLogFormat() const;
         S9sString vendor() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
         S9sString osUser() const;

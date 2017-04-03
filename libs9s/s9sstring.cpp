@@ -39,6 +39,10 @@
 const S9sString S9sString::space = " ";
 const S9sString S9sString::dash  = "-";
 
+//#define DEBUG
+//#define WARNING
+#include "s9sdebug.h"
+
 
 S9sString::S9sString() :
     std::string()
@@ -698,6 +702,54 @@ S9sString::looksULongLong() const
 
     return true;
 }
+
+S9sString 
+S9sString::html2ansi(
+        const S9sString &input)
+{
+    S9sString s           = input;
+    S9sString origString;
+
+do_again:
+    origString = s;
+    s.replace("<em style='color: #c66211;'>",     XTERM_COLOR_3);
+    s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
+    s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
+    s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
+    s.replace("<em style='color: #007e18;'>",     XTERM_COLOR_4);
+    s.replace("<em style='color: #7415f6;'>",     XTERM_COLOR_5);
+    s.replace("<em style='color: #1abc9c;'>",     XTERM_COLOR_6);
+    s.replace("<em style='color: #d35400;'>",     XTERM_COLOR_7);
+    s.replace("<em style='color: #c0392b;'>",     XTERM_COLOR_8);
+    s.replace("<em style='color: #0b33b5;'>",     XTERM_COLOR_BLUE);
+    s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
+    s.replace("<em style='color: #f3990b;'>",     XTERM_COLOR_7);
+    s.replace("<em style='color: #c49854;'>",     XTERM_COLOR_7);
+    s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
+
+    //s.replace("", );
+    s.replace("</em>",       TERM_NORMAL);
+    s.replace("</strong>",   TERM_NORMAL);
+
+    // Replacing all the other colors. This code is originally created to be
+    // used with a palette, but I am not sure if we should modify the palette,
+    // so it is kinda unfinished here.
+    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
+    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
+
+
+    s.replace(regexp1, XTERM_COLOR_ORANGE);
+    s.replace(regexp2, XTERM_COLOR_8);
+
+    s.replace("<BR/>", "\n");
+    s.replace("<br/>", "\n");
+
+    if (origString != s)
+        goto do_again;
+
+    return s;
+}
+
 
 S9sString
 S9sString::pastTime(

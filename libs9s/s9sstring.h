@@ -96,6 +96,8 @@ class S9sString : public std::string
         bool looksInteger() const;
         bool looksULongLong() const;
 
+        static S9sString html2ansi(const S9sString &input);
+
         static S9sString pastTime(const time_t theTime);
         static S9sString uptime(ulonglong seconds);
 
