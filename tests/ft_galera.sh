@@ -8,6 +8,7 @@ LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
+PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
@@ -92,7 +93,7 @@ fi
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-if [ -z $(which pip-container-create) ]; then
+if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
@@ -142,7 +143,8 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key
+    $S9S user --create --cmon-user=$USER --generate-key \
+        >/dev/null 2>/dev/null
 }
 
 #
@@ -432,7 +434,7 @@ function testAddNode()
     local exitCode
 
     pip-say "The test to add node is starting now."
-    printVerbose "Creating Node..."
+    printVerbose "Creating node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -560,7 +562,7 @@ function testAddHaProxy()
     ALL_CREATED_IPS+=" $node"
 
     #
-    # Adding a node to the cluster.
+    # Adding haproxy to the cluster.
     #
     mys9s cluster \
         --add-node \
