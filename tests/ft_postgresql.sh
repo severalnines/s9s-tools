@@ -32,6 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
+ --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -40,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -69,6 +70,12 @@ while true; do
             shift
             CONTAINER_SERVER="$1"
             shift
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
             ;;
 
         --)

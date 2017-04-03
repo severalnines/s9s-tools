@@ -3,8 +3,8 @@ S9S=$(which s9s)
 FAILED="no"
 TEST_SUITE_NAME=""
 TEST_NAME=""
-DONT_PRINT_TEST_MESSAGES="true"
-
+DONT_PRINT_TEST_MESSAGES=""
+PRINT_COMMANDS=""
 
 TERM_NORMAL="\033[0;39m"
 TERM_BOLD="\033[1m"
@@ -40,27 +40,28 @@ function mys9s()
     local prompt="#"
     local nth=0
 
-    echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
+    if [ "$PRINT_COMMANDS" ]; then
+        echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
 
-    for argument in $*; do
-        
-        if [ $nth -gt 0 ]; then
-            echo -e "\\"
-        fi
+        for argument in $*; do
+            if [ $nth -gt 0 ]; then
+                echo -e "\\"
+            fi
 
-        if [ $nth -eq 0 ]; then
-            echo -ne "${XTERM_COLOR_BLUE}$argument${TERM_NORMAL} "
-        elif [ $nth -eq 1 ]; then
-            echo -ne "    ${XTERM_COLOR_PURPLE}$argument${TERM_NORMAL} "
-        else
-            echo -ne "    $argument " | color_command
-        fi
+            if [ $nth -eq 0 ]; then
+                echo -ne "${XTERM_COLOR_BLUE}$argument${TERM_NORMAL} "
+            elif [ $nth -eq 1 ]; then
+                echo -ne "    ${XTERM_COLOR_PURPLE}$argument${TERM_NORMAL} "
+            else
+                echo -ne "    $argument " | color_command
+            fi
 
-        let nth+=1
-    done
+            let nth+=1
+        done
     
-    echo ""
-    echo ""
+        echo ""
+        echo ""
+    fi
 
     $S9S $*
 }
