@@ -32,6 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
+ --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -40,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -69,6 +70,12 @@ while true; do
             shift
             CONTAINER_SERVER="$1"
             shift
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
             ;;
 
         --)
@@ -161,7 +168,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -191,7 +198,7 @@ function testCreateCluster()
     #
     # Creating a PostgreSQL cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=postgresql \
         --nodes="$nodes" \
@@ -226,7 +233,7 @@ function testCreateMaintenance()
     #
     # Creating a maintenance period that expires real soon.
     #
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
@@ -265,9 +272,10 @@ function testCreateMaintenance()
 function testCreateTwoPeriods()
 {
     #
-    # Creating a maintenance period that expires real soon.
+    # Creating a maintenance period that expires real soon and an other one that
+    # expires a bit later.
     #
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
@@ -275,7 +283,7 @@ function testCreateTwoPeriods()
         --reason="longer_$$" \
         --batch
 
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
@@ -290,7 +298,7 @@ function testCreateTwoPeriods()
     fi
 
     #
-    # The maintenance period should be there now.
+    # The maintenance periods should be there now.
     #
     #printVerbose "Maintenance immediately:"
     #s9s maintenance --list --long
@@ -303,7 +311,7 @@ function testCreateTwoPeriods()
     fi
 
     #
-    # But it should disappear in a jiffy.
+    # But the short one should disappear in a jiffy.
     #
     sleep 15
     #printVerbose "After 15 seconds:"
@@ -325,9 +333,9 @@ function testCreateTwoPeriods()
 function testDeletePeriods()
 {
     #
-    # Creating a maintenance period that expires real soon.
+    # Creating maintenance periods.
     #
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
@@ -335,7 +343,7 @@ function testDeletePeriods()
         --reason="test_1_$$" \
         --batch
 
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
@@ -343,7 +351,7 @@ function testDeletePeriods()
         --reason="test_2_$$" \
         --batch
     
-    s9s \
+    mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now + 1 day")" \
@@ -389,7 +397,7 @@ function testClusterMaintenance()
     #
     # Creating a maintenance period that expires real soon.
     #
-    s9s \
+    mys9s \
         maintenance --create \
         --cluster-id=$CLUSTER_ID \
         --start="$(dateFormat "now")" \
@@ -437,7 +445,7 @@ function testDrop()
     #
     # Dropping the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -480,6 +488,12 @@ else
     runFunctionalTest testClusterMaintenance
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
+fi
+
+if [ "$FAILED" == "no" ]; then
+    pip-say "The test script is now finished. No errors were detected."
+else
+    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests
