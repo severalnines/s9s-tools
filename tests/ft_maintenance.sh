@@ -103,7 +103,7 @@ fi
 #
 function dateFormat()
 {
-    date -d "$1" "+%Y-%m-%d %H:%M:%S"
+    date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
 }
 
 #
@@ -228,18 +228,17 @@ function testCreateCluster()
 #
 function testCreateMaintenance()
 {
-    local reason="test $$ maintenance"
+    local reason="test_$$_maintenance"
 
     #
     # Creating a maintenance period that expires real soon.
     #
-    mys9s \
-        maintenance --create \
+    mys9s maintenance \
+        --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
-        --reason="$reason" \
-        --batch
+        --reason="$reason" #\ --batch
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -250,18 +249,20 @@ function testCreateMaintenance()
     #
     # The maintenance period should be there now.
     #
-    #printVerbose "Maintenance immediately:"
-    #s9s maintenance --list --long
+    printVerbose "Maintenance immediately:"
+    mys9s maintenance --list --long
+
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
-        failure "The maintenance not found: '$reason'."
+        failure "The maintenance not found with reason '$reason'."
     fi
 
     #
     # But it should disappear in a jiffy.
     #
     sleep 15
-    #printVerbose "After 15 seconds:"
-    #s9s maintenance --list --long
+    printVerbose "After 15 seconds:"
+    mys9s maintenance --list --long
+
     if s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance should have expired: '$reason'."
     fi
@@ -275,16 +276,16 @@ function testCreateTwoPeriods()
     # Creating a maintenance period that expires real soon and an other one that
     # expires a bit later.
     #
-    mys9s \
-        maintenance --create \
+    mys9s maintenance \
+        --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 1 min")" \
         --reason="longer_$$" \
         --batch
 
-    mys9s \
-        maintenance --create \
+    mys9s maintenance \
+        --create \
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \

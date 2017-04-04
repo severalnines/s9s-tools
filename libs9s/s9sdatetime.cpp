@@ -804,9 +804,9 @@ S9sDateTime::parseMySqlLogFileFormat(
 }
 
 /**
- * \param input the input line to be parsed
- * \length the place where the method returns how many characters are parsed or
- *   NULL
+ * \param input The input line to be parsed
+ * \param length The place where the method returns how many characters are
+ *   parsed or NULL
  * \returns true if the string is parsed using the MySqlShortLogFormat.
  *
  * This method assumes the string starts with a date time in a
