@@ -652,6 +652,18 @@ S9sString::trim(
     return retval;
 }
 
+S9sString 
+S9sString::baseName() const
+{
+    S9sString retval = *this;
+
+    size_t lastsep = retval.find_last_of("/");
+    if (lastsep != std::string::npos)
+        retval = retval.substr(lastsep + 1);
+
+    return retval;
+}
+
 /**
  * \returns true if a string is a representation of an integer number, and so
  *   the string can be converted to an integer

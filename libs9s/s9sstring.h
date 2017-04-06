@@ -92,6 +92,7 @@ class S9sString : public std::string
         void replace(S9sRegExp &regExp, S9sString replacement);
 
         S9sString trim(const std::string &pWhitespace = " \t") const;
+        S9sString baseName() const;
 
         bool looksInteger() const;
         bool looksULongLong() const;

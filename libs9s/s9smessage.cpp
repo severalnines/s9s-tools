@@ -55,7 +55,9 @@ S9sMessage::toVariantMap() const
 bool
 S9sMessage::hasFileName() const
 {
-    return m_properties.contains("fileName");
+    return 
+        m_properties.contains("fileName") || 
+        m_properties.contains("file_name");
 }
 
 S9sString 
@@ -63,6 +65,9 @@ S9sMessage::fileName() const
 {
     if (m_properties.contains("fileName"))
         return m_properties.at("fileName").toString();
+    
+    if (m_properties.contains("file_name"))
+        return m_properties.at("file_name").toString();
 
     return S9sString();
 }
@@ -70,7 +75,9 @@ S9sMessage::fileName() const
 bool
 S9sMessage::hasLineNumber() const
 {
-    return m_properties.contains("lineNumber");
+    return 
+        m_properties.contains("lineNumber") || 
+        m_properties.contains("line_number");
 }
 
 int
@@ -78,6 +85,9 @@ S9sMessage::lineNumber() const
 {
     if (m_properties.contains("lineNumber"))
         return m_properties.at("lineNumber").toInt();
+
+    if (m_properties.contains("line_number"))
+        return m_properties.at("line_number").toInt();
 
     return -1;
 }
@@ -307,6 +317,32 @@ S9sMessage::toString(
                     else if (severity() == "FAILURE")
                         retval += XTERM_COLOR_RED;
 
+                    retval += tmp;
+
+                    retval += TERM_NORMAL;
+                    break;
+
+                case 'F':
+                    // The file name in color.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(fileName()));
+                        
+                    retval += XTERM_COLOR_BLUE;
+                    retval += tmp;
+
+                    retval += TERM_NORMAL;
+                    break;
+
+                case 'B':
+                    // The base name in color.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(fileName().baseName()));
+                        
+                    retval += XTERM_COLOR_BLUE;
                     retval += tmp;
 
                     retval += TERM_NORMAL;
