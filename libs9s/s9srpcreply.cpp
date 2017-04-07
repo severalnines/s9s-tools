@@ -309,7 +309,7 @@ S9sRpcReply::progressLine(
         retval += TERM_BOLD;
 
     statusText = job["status_text"].toString();
-    html2ansi(statusText);
+    statusText = S9sString::html2ansi(statusText);
     
     retval += statusText;
     retval += "      ";
@@ -710,7 +710,7 @@ S9sRpcReply::printJobLogLong()
         const char    *stateColorStart = "";
         const char    *stateColorEnd   = "";
   
-        html2ansi(message);
+        message = S9sString::html2ansi(message);
 
         if (!created.empty())
         {
@@ -3914,94 +3914,6 @@ S9sRpcReply::clusterMap(
     }
 
     return retval;
-}
-
-void 
-S9sRpcReply::html2ansi(
-        S9sString &s)
-{
-    S9sString origString;
-
-do_again:
-    origString = s;
-    s.replace("<em style='color: #c66211;'>",     XTERM_COLOR_3);
-    s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
-    s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
-    s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
-    s.replace("<em style='color: #007e18;'>",     XTERM_COLOR_4);
-    s.replace("<em style='color: #7415f6;'>",     XTERM_COLOR_5);
-    s.replace("<em style='color: #1abc9c;'>",     XTERM_COLOR_6);
-    s.replace("<em style='color: #d35400;'>",     XTERM_COLOR_7);
-    s.replace("<em style='color: #c0392b;'>",     XTERM_COLOR_8);
-    s.replace("<em style='color: #0b33b5;'>",     XTERM_COLOR_BLUE);
-    s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
-    s.replace("<em style='color: #f3990b;'>",     XTERM_COLOR_7);
-    s.replace("<em style='color: #c49854;'>",     XTERM_COLOR_7);
-    s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
-
-    //s.replace("", );
-    s.replace("</em>",       TERM_NORMAL);
-    s.replace("</strong>",   TERM_NORMAL);
-
-    // Replacing all the other colors. This code is originally created to be
-    // used with a palette, but I am not sure if we should modify the palette,
-    // so it is kinda unfinished here.
-    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
-    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
-
-
-    s.replace(regexp1, XTERM_COLOR_ORANGE);
-    s.replace(regexp2, XTERM_COLOR_8);
-
-    s.replace("<BR/>", "\n");
-    s.replace("<br/>", "\n");
-
-    if (origString != s)
-        goto do_again;
-}
-
-void 
-S9sRpcReply::html2text(
-        S9sString &s)
-{
-    S9sString origString;
-
-do_again:
-    origString = s;
-    s.replace("<em style='color: #c66211;'>",     "");
-    s.replace("<em style='color: #75599b;'>",     "");
-    s.replace("<strong style='color: #110679;'>", "");
-    s.replace("<strong style='color: #59a449;'>", "");
-    s.replace("<em style='color: #007e18;'>",     "");
-    s.replace("<em style='color: #7415f6;'>",     "");
-    s.replace("<em style='color: #1abc9c;'>",     "");
-    s.replace("<em style='color: #d35400;'>",     "");
-    s.replace("<em style='color: #c0392b;'>",     "");
-    s.replace("<em style='color: #0b33b5;'>",     "");
-    s.replace("<em style='color: #34495e;'>",     "");
-    s.replace("<em style='color: #f3990b;'>",     "");
-    s.replace("<em style='color: #c49854;'>",     "");
-    s.replace("<strong style='color: red;'>",     "");
-
-    //s.replace("", );
-    s.replace("</em>",       "");
-    s.replace("</strong>",   "");
-
-    // Replacing all the other colors. This code is originally created to be
-    // used with a palette, but I am not sure if we should modify the palette,
-    // so it is kinda unfinished here.
-    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
-    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
-
-
-    s.replace(regexp1, "");
-    s.replace(regexp2, "");
-
-    s.replace("<BR/>", "\n");
-    s.replace("<br/>", "\n");
-
-    if (origString != s)
-        goto do_again;
 }
 
 S9sString 
