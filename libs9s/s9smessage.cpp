@@ -254,8 +254,32 @@ S9sMessage::toString(
         {
             switch (c)
             {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
                 case 'n':
                     retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
                     break;
 
                 case 't':
@@ -360,6 +384,10 @@ S9sMessage::toString(
                     retval += tmp;
 
                     retval += TERM_NORMAL;
+                    break;
+
+                case '%':
+                    retval += '%';
                     break;
 
                 case '0':
