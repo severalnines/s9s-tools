@@ -114,6 +114,9 @@ class S9sOptions
         bool hasJobId() const;
         int jobId() const;
 
+        bool hasLogFormat() const;
+        S9sString logFormat() const;
+
         S9sString userName( const bool tryLocalUserToo = false) const;
 
         S9sString privateKeyPath() const;

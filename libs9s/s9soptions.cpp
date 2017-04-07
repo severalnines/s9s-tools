@@ -121,6 +121,7 @@ enum S9sOptionType
     OptionExecute,
     OptionTree,
     OptionOutputDir,
+    OptionLogFormat,
 };
 
 /**
@@ -905,6 +906,21 @@ S9sOptions::jobId() const
         return m_options.at("job_id").toInt();
 
     return -1;
+}
+
+bool
+S9sOptions::hasLogFormat() const
+{
+    return m_options.contains("log_format");
+}
+
+S9sString
+S9sOptions::logFormat() const
+{
+    if (m_options.contains("log_format"))
+        return m_options.at("log_format").toString();
+
+    return S9sString();
 }
 
 /**
@@ -4626,6 +4642,7 @@ S9sOptions::readOptionsJob(
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'               },
         { "job-id",           required_argument, 0, OptionJobId       },
+        { "log-format",       required_argument, 0, OptionLogFormat   },
 
         { 0, 0, 0, 0 }
     };
@@ -4736,6 +4753,11 @@ S9sOptions::readOptionsJob(
             case 'i':
                 // --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionLogFormat:
+                // --log-format=FORMAT
+                m_options["log_format"] = optarg;
                 break;
 
             case '?':

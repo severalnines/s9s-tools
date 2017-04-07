@@ -649,6 +649,9 @@ S9sRpcReply::printJobLogBrief()
     S9sString       formatString = options->briefJobLogFormat();
     S9sVariantList  theList = operator[]("messages").toVariantList();
 
+    if (options->hasLogFormat())
+        formatString = options->logFormat();
+
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap  = theList[idx].toVariantMap();
