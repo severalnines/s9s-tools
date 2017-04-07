@@ -51,7 +51,9 @@ class S9sMessage
         bool isError() const;
 
         S9sString toString() const;
-        S9sString toString(const S9sString &formatString) const;
+        S9sString toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
 
         S9sString termColorString() const;
 

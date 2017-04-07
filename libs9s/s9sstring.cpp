@@ -762,6 +762,52 @@ do_again:
     return s;
 }
 
+S9sString 
+S9sString::html2text(
+        const S9sString &input)
+{
+    S9sString s           = input;
+    S9sString origString;
+
+do_again:
+    origString = s;
+    s.replace("<em style='color: #c66211;'>",     "");
+    s.replace("<em style='color: #75599b;'>",     "");
+    s.replace("<strong style='color: #110679;'>", "");
+    s.replace("<strong style='color: #59a449;'>", "");
+    s.replace("<em style='color: #007e18;'>",     "");
+    s.replace("<em style='color: #7415f6;'>",     "");
+    s.replace("<em style='color: #1abc9c;'>",     "");
+    s.replace("<em style='color: #d35400;'>",     "");
+    s.replace("<em style='color: #c0392b;'>",     "");
+    s.replace("<em style='color: #0b33b5;'>",     "");
+    s.replace("<em style='color: #34495e;'>",     "");
+    s.replace("<em style='color: #f3990b;'>",     "");
+    s.replace("<em style='color: #c49854;'>",     "");
+    s.replace("<strong style='color: red;'>",     "");
+
+    //s.replace("", );
+    s.replace("</em>",       "");
+    s.replace("</strong>",   "");
+
+    // Replacing all the other colors. This code is originally created to be
+    // used with a palette, but I am not sure if we should modify the palette,
+    // so it is kinda unfinished here.
+    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
+    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
+
+
+    s.replace(regexp1, "");
+    s.replace(regexp2, "");
+
+    s.replace("<BR/>", "\n");
+    s.replace("<br/>", "\n");
+
+    if (origString != s)
+        goto do_again;
+
+    return s;
+}
 
 S9sString
 S9sString::pastTime(

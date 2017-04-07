@@ -646,6 +646,7 @@ void
 S9sRpcReply::printJobLogBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->briefJobLogFormat();
     S9sVariantList  theList = operator[]("messages").toVariantList();
 
@@ -659,8 +660,10 @@ S9sRpcReply::printJobLogBrief()
 
         if (formatString.empty())
             printf("%s\n", STR(S9sString::html2ansi(message.message())));
-        else
-            printf("%s", STR(message.toString(formatString)));
+        else {
+            printf("%s",
+                    STR(message.toString(syntaxHighlight, formatString)));
+        }
     }
 }
 
@@ -689,14 +692,15 @@ S9sRpcReply::printJobLogLong()
 
             if (formatString.empty())
                 printf("%s\n", STR(S9sString::html2ansi(message.message())));
-            else
-                printf("%s", STR(message.toString(formatString)));
+            else {
+                printf("%s",
+                        STR(message.toString(syntaxHighlight, formatString)));
+            }
         }
 
         return;
     }
 
-    
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap          = theList[idx].toVariantMap();
@@ -3948,6 +3952,50 @@ do_again:
 
     s.replace(regexp1, XTERM_COLOR_ORANGE);
     s.replace(regexp2, XTERM_COLOR_8);
+
+    s.replace("<BR/>", "\n");
+    s.replace("<br/>", "\n");
+
+    if (origString != s)
+        goto do_again;
+}
+
+void 
+S9sRpcReply::html2text(
+        S9sString &s)
+{
+    S9sString origString;
+
+do_again:
+    origString = s;
+    s.replace("<em style='color: #c66211;'>",     "");
+    s.replace("<em style='color: #75599b;'>",     "");
+    s.replace("<strong style='color: #110679;'>", "");
+    s.replace("<strong style='color: #59a449;'>", "");
+    s.replace("<em style='color: #007e18;'>",     "");
+    s.replace("<em style='color: #7415f6;'>",     "");
+    s.replace("<em style='color: #1abc9c;'>",     "");
+    s.replace("<em style='color: #d35400;'>",     "");
+    s.replace("<em style='color: #c0392b;'>",     "");
+    s.replace("<em style='color: #0b33b5;'>",     "");
+    s.replace("<em style='color: #34495e;'>",     "");
+    s.replace("<em style='color: #f3990b;'>",     "");
+    s.replace("<em style='color: #c49854;'>",     "");
+    s.replace("<strong style='color: red;'>",     "");
+
+    //s.replace("", );
+    s.replace("</em>",       "");
+    s.replace("</strong>",   "");
+
+    // Replacing all the other colors. This code is originally created to be
+    // used with a palette, but I am not sure if we should modify the palette,
+    // so it is kinda unfinished here.
+    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
+    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
+
+
+    s.replace(regexp1, "");
+    s.replace(regexp2, "");
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");

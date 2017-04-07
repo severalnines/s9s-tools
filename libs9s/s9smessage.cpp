@@ -226,6 +226,7 @@ S9sMessage::toString() const
 
 S9sString
 S9sMessage::toString(
+        const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
     S9sString retval;
@@ -314,9 +315,18 @@ S9sMessage::toString(
                 case 'M':
                     // The message in color.
                     partFormat += 's';
-                    tmp.sprintf(
-                            STR(partFormat), 
-                            STR(S9sString::html2ansi(message())));
+                    
+                    if (syntaxHighlight)
+                    {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                STR(S9sString::html2ansi(message())));
+                    } else {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                STR(S9sString::html2text(message())));
+                    }
+
                     retval += tmp;
                     break;
 
@@ -348,12 +358,15 @@ S9sMessage::toString(
                             STR(severity()));
 
                     // FIXME: This is hackish.
-                    if (severity() == "MESSAGE")
-                        retval += XTERM_COLOR_GREEN;
-                    else if (severity() == "WARNING")
-                        retval += XTERM_COLOR_YELLOW;
-                    else if (severity() == "FAILURE")
-                        retval += XTERM_COLOR_RED;
+                    if (syntaxHighlight)
+                    {
+                        if (severity() == "MESSAGE")
+                            retval += XTERM_COLOR_GREEN;
+                        else if (severity() == "WARNING")
+                            retval += XTERM_COLOR_YELLOW;
+                        else if (severity() == "FAILURE")
+                            retval += XTERM_COLOR_RED;
+                    }
 
                     retval += tmp;
 
@@ -380,10 +393,13 @@ S9sMessage::toString(
                             STR(partFormat), 
                             STR(fileName().baseName()));
                         
-                    retval += XTERM_COLOR_BLUE;
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
                     retval += tmp;
 
-                    retval += TERM_NORMAL;
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
                     break;
 
                 case '%':

@@ -138,6 +138,7 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyListBrief();
 
         void html2ansi(S9sString &s);
+        void html2text(S9sString &s);
 
         S9sString 
             nodeTypeFlag(
