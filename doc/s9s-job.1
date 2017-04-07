@@ -96,6 +96,64 @@ accepted as specified in the strftime(3) man page.
 .BR \-\^\-job-id =\fIID\fP
 The job ID of the job to handle or view.
 
+.TP
+.BR \-\^\-log\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed log and job messages. The
+format string uses the '%' character to mark variable fields, flag characters as
+they are specified in the standard printf() C library functions and its own
+field name letters to refer to the various properties of the messages. 
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number.
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The properties of the message are encoded by letters. The in the "%-5L" for
+example the letter "L" encodes the "line-number" field, so the number of the
+source line that produced the message will be substituted. The program supports
+the following fields:
+
+.RS 7
+.TP
+.B B
+The base name of the source file that produced the message. 
+
+.TP
+.B C
+The creation date&time that marks the exact moment when the message was created.
+
+.TP
+.B F
+The name of the source file that created the message. This is similar to the
+\fBB\fR fields, but instead of the base name the entire file name will be
+substituted.
+
+.TP
+.B I
+The ID of the message, a numerical ID that can be used as a unique identifier
+for the message.
+
+.TP
+.B L
+The line number in the source file where the message was created. This property
+is implemented mostly for debugging purposes.
+
+.TP
+.B M
+The message text.
+
+.TP
+.B S 
+The severity of the message in text format. This field can be "MESSAGE",
+"WARNING" or "FAILURE".
+
+.TP
+.B T
+The creation time of the message. This is similar to the \fBC\fR field, but
+shows only hours, minutes and seconds instead of the full date and time.
+
 .\"
 .\"
 .\"
