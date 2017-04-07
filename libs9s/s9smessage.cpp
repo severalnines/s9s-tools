@@ -105,6 +105,15 @@ S9sMessage::messageId() const
     return -1;
 }
 
+int
+S9sMessage::jobId() const
+{
+    if (m_properties.contains("job_id"))
+        return m_properties.at("job_id").toInt();
+
+    return -1;
+}
+
 /**
  * \returns The 'created' date and time property.
  */
@@ -260,7 +269,6 @@ S9sMessage::toString(
                 case 'L':
                     // The line number.
                     partFormat += 'd';
-                    //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
                     tmp.sprintf(STR(partFormat), lineNumber());
                     retval += tmp;
                     break;
@@ -268,8 +276,14 @@ S9sMessage::toString(
                 case 'I':
                     // The message ID.
                     partFormat += 'd';
-                    //S9S_WARNING("  partFormat: '%s'", STR(partFormat));
                     tmp.sprintf(STR(partFormat), messageId());
+                    retval += tmp;
+                    break;
+                
+                case 'J':
+                    // The job ID.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), jobId());
                     retval += tmp;
                     break;
 

@@ -487,6 +487,26 @@ S9sOptions::briefJobLogFormat() const
     return retval;
 }
 
+S9sString 
+S9sOptions::longJobLogFormat() const
+{
+    const char *key = "long_job_log_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+
 /**
  * \param assignments The argument of the --properties command line option.
  * \returns true if the format of the optarg is valid.

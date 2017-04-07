@@ -41,6 +41,8 @@ class S9sMessage
         int lineNumber() const;
 
         int messageId() const;
+        int jobId() const;
+
         S9sDateTime created() const;
         S9sString severity() const;
 

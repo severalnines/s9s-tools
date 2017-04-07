@@ -671,10 +671,31 @@ void
 S9sRpcReply::printJobLogLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       formatString = options->longJobLogFormat();
     S9sVariantList  theList = operator[]("messages").toVariantList();
     int             terminalWidth = options->terminalWidth();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       line = S9sString::dash * terminalWidth;
+
+    if (options->hasLogFormat())
+        formatString = options->logFormat();
+
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap theMap  = theList[idx].toVariantMap();
+            S9sMessage    message = theMap;
+
+            if (formatString.empty())
+                printf("%s\n", STR(S9sString::html2ansi(message.message())));
+            else
+                printf("%s", STR(message.toString(formatString)));
+        }
+
+        return;
+    }
+
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
