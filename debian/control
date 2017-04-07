@@ -22,7 +22,7 @@ Description: A (shared) runtime library for Severalnines Tools
 Package: s9s-tools
 Priority: optional
 Section: net
-Depends: libs9s-tools0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libs9s0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Architecture: any
 Description: Severalnines ClusterControl CLI Tools
 
