@@ -763,6 +763,14 @@ S9sOptions::clusterType() const
     return S9sString();
 }
 
+/**
+ * \param value The date and time to convert to a string.
+ * \returns The string version of the argument.
+ *
+ * This function will convert a date&time value to a string. The format of the
+ * string can be controlled through command line options and configuration
+ * settings.
+ */
 S9sString
 S9sOptions::formatDateTime(
         S9sDateTime value) const
@@ -2355,6 +2363,7 @@ S9sOptions::printHelpJob()
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --job-id=ID                The ID of the job.\n"
+"  --date-format=FORMAT       The format of the dates printed.\n"
 "\n"
     );
 }
@@ -2423,6 +2432,7 @@ S9sOptions::printHelpMaintenance()
 "  --start=DATE&TIME          The start of the maintenance period.\n"
 "  --end=DATE&TIME            The end of the maintenance period.\n"
 "  --reason=STRING            The reason for the maintenance.\n"
+"  --date-format=FORMAT       The format of the dates printed.\n"
 "  --uuid=UUID                The UUID to identify the maintenance period.\n"
 "\n"
     );

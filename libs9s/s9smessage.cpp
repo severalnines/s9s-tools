@@ -19,6 +19,8 @@
  */
 #include "s9smessage.h"
 
+#include "S9sOptions"
+
 //#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
@@ -229,12 +231,13 @@ S9sMessage::toString(
         const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
-    S9sString retval;
-    S9sString tmp;
-    char      c;
-    S9sString partFormat;
-    bool      percent = false;
-    bool      escaped = false;
+    S9sOptions  *options = S9sOptions::instance();
+    S9sString    retval;
+    S9sString    tmp;
+    char         c;
+    S9sString    partFormat;
+    bool         percent = false;
+    bool         escaped = false;
     
     for (uint n = 0; n < formatString.size(); ++n)
     {
@@ -335,8 +338,7 @@ S9sMessage::toString(
                     partFormat += 's';
                     tmp.sprintf(
                             STR(partFormat), 
-                            STR(created().toString(
-                                    S9sDateTime::MySqlLogFileFormat)));
+                            STR(options->formatDateTime(created())));
                     retval += tmp;
                     break;
                 
