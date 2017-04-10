@@ -737,6 +737,7 @@ do_again:
     s.replace("<em style='color: #34495e;'>",     XTERM_COLOR_CYAN);
     s.replace("<em style='color: #f3990b;'>",     XTERM_COLOR_7);
     s.replace("<em style='color: #c49854;'>",     XTERM_COLOR_7);
+    s.replace("<em style='color: #877d0f;'>",     XTERM_COLOR_7);
     s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
 
     //s.replace("", );
@@ -746,12 +747,11 @@ do_again:
     // Replacing all the other colors. This code is originally created to be
     // used with a palette, but I am not sure if we should modify the palette,
     // so it is kinda unfinished here.
-    S9sRegExp regexp1("<em style=.color:[^;]+;.>",      "i");
-    S9sRegExp regexp2("<strong style=.color:[^;]+;.>",  "i");
-
-
-    s.replace(regexp1, XTERM_COLOR_ORANGE);
-    s.replace(regexp2, XTERM_COLOR_8);
+    S9sRegExp regexp2("<em style=.color:[^;]+;.>",      "i");
+    S9sRegExp regexp3("<strong style=.color:[^;]+;.>",  "i");
+    
+    s.replace(regexp2, XTERM_COLOR_ORANGE);
+    s.replace(regexp3, XTERM_COLOR_8);
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");

@@ -2520,6 +2520,7 @@ S9sRpcReply::printJobListLong()
         S9sString      status     = theMap["status"].toString();
         S9sString      title      = theMap["title"].toString();
         S9sString      statusText = theMap["status_text"].toString();
+        S9sString      statusTextMonochrome;
         S9sString      user       = theMap["user_name"].toString();
         S9sString      group      = theMap["group_name"].toString();
         S9sString      hostName   = theMap["ip_address"].toString();
@@ -2540,6 +2541,10 @@ S9sRpcReply::printJobListLong()
         // The title.
         if (title.empty())
             title = "Untitled Job";
+
+        // Status text
+        statusTextMonochrome = S9sString::html2text(statusText);
+        statusText = S9sString::html2ansi(statusText);
 
         // The user name or if it is not there the user ID.
         if (user.empty())
@@ -2609,15 +2614,18 @@ S9sRpcReply::printJobListLong()
             }
         }
 
+        /*
+         * A line, then a title and a status text.
+         */
         for (int n = 0; n < terminalWidth; ++n)
             printf("-");
+
         printf("\n");
 
         printf("%s%s%s\n", TERM_BOLD, STR(title), TERM_NORMAL);
-        //printf("%s%s%s", XTERM_COLOR_LIGHT_GRAY, STR(statusText), TERM_NORMAL);
         printf("%s", STR(statusText));
 
-        for (int n = statusText.length(); n < terminalWidth - 13; ++n)
+        for (int n = statusTextMonochrome.length(); n < terminalWidth - 13; ++n)
             printf(" ");
 
         if (theMap.contains("progress_percent"))
@@ -2631,11 +2639,7 @@ S9sRpcReply::printJobListLong()
         printf("%s", STR(bar));
         printf("\n");
 
-        
-        /*
-         *
-         */
-        for (int n = 10; n < terminalWidth; ++n)
+        for (int n = 11; n < terminalWidth; ++n)
             printf(" ");
 
         if (theMap.contains("progress_percent"))

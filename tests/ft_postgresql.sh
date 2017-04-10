@@ -255,7 +255,7 @@ function testConfig()
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=log_line_prefix \
-        --opt-value="%m"
+        --opt-value="'%m'"
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -278,7 +278,7 @@ function testConfig()
         failure "The exit code is ${exitCode}"
     fi
 
-    if [ "$value" != "%m" ]; then
+    if [ "$value" != "'%m'" ]; then
         failure "Configuration value should not be '$value'"
     fi
 
