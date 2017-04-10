@@ -775,10 +775,17 @@ S9sString
 S9sOptions::formatDateTime(
         S9sDateTime value) const
 {
+    S9sString formatString;
+
     if (m_options.contains("date_format"))
-    {
         return value.toString(m_options.at("date_format").toString());
-    }
+
+    formatString = m_userConfig.variableValue("date_format");
+    if (formatString.empty())
+        formatString = m_systemConfig.variableValue("date_format");
+
+    if (!formatString.empty())
+        return value.toString(formatString);
 
     // The default date&time format.
     return value.toString(S9sDateTime::CompactFormat);
