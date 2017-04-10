@@ -249,6 +249,7 @@ function testConfig()
 
     #
     # Changing a configuration value.
+    # /etc/postgresql/9.6/main/postgresql.conf
     #
     mys9s node \
         --change-config \

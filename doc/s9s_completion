@@ -139,7 +139,8 @@ function _s9s()
                 opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
-            main_opt="--list --set --help"
+            main_opt="--list --set --help --list-config --change-config "
+            main_opt+="--pull-config --push-config"
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
