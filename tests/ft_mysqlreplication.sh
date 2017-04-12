@@ -177,13 +177,14 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create MySQL replication cluster is starting now."
+    pip-say "The test to create My SQL replication cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
+    SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
     
@@ -372,11 +373,12 @@ function testStopStartNode()
 
     #
     # First stop.
+    # FIXME: Restarting the first node won't work, but what about the second?
     #
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
+        --nodes=$SECOND_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -391,7 +393,7 @@ function testStopStartNode()
     mys9s node \
         --start \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
+        --nodes=$SECOND_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -399,6 +401,12 @@ function testStopStartNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    for (( q=0; q<30; q++)); do
+        s9s node --list --long 
+        s9s job  --list
+        sleep 1
+    done
 }
 
 #
