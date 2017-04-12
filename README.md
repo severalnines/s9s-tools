@@ -1,6 +1,8 @@
 # s9s-tools
 
 Repository for tools helping to manage and monitor your Severalnines clusters. 
+The repository contains the following tools:
+- s9s  (cli)
 
 # APT and YUM repositories
 
