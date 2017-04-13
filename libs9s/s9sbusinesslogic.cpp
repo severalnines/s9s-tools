@@ -313,22 +313,6 @@ S9sBusinessLogic::waitForJob(
     }
 }
 
-/**
- * \param client A client for the communication.
- *
- * Execute the "cluster --create" requests.
- */
-void
-S9sBusinessLogic::executeClusterCreate(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    success = client.createCluster();
-
-    maybeJobRegistered(client, 0, success);
-}
-
 void
 S9sBusinessLogic::executePing(
         S9sRpcClient &client)
