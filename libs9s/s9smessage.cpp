@@ -66,10 +66,16 @@ S9sString
 S9sMessage::fileName() const
 {
     if (m_properties.contains("fileName"))
+    {
         return m_properties.at("fileName").toString();
-    
-    if (m_properties.contains("file_name"))
+    } else if (m_properties.contains("file_name"))
+    {
         return m_properties.at("file_name").toString();
+    } else if (m_properties.contains("log_origins"))
+    {
+        S9sVariantMap map = m_properties.at("log_origins").toVariantMap();
+        return map["sender_file"].toString();
+    }
 
     return S9sString();
 }
@@ -86,10 +92,17 @@ int
 S9sMessage::lineNumber() const
 {
     if (m_properties.contains("lineNumber"))
+    {
         return m_properties.at("lineNumber").toInt();
-
-    if (m_properties.contains("line_number"))
+    } else if (m_properties.contains("line_number"))
+    {
         return m_properties.at("line_number").toInt();
+    } else if (m_properties.contains("log_origins"))
+    {
+        S9sVariantMap map = m_properties.at("log_origins").toVariantMap();
+        return map["sender_line"].toInt();
+    }
+
 
     return -1;
 }
@@ -137,18 +150,23 @@ S9sMessage::severity() const
         
     if (m_properties.contains("message_status"))
         status = m_properties.at("message_status").toString();
+    else if (m_properties.contains("severity"))
+        status = m_properties.at("severity").toString();
 
     if (status == "JOB_SUCCESS")
-        // XTERM_COLOR_GREEN TERM_NORMAL
         return "MESSAGE";
-    else if (status == "JOB_WARNING")
-        // XTERM_COLOR_YELLOW TERM_NORMAL
+    else if (status == "JOB_WARNING" || status == "LOG_WARNING")
         return "WARNING";
     else if (status == "JOB_FAILED")
-        // XTERM_COLOR_RED TERM_NORMAL
         return "FAILURE";
-    else if (status == "JOB_DEBUG")
+    else if (status == "JOB_DEBUG" || status == "LOG_DEBUG")
         return "DEBUG";
+    else if (status == "LOG_ERR")
+        return "ERROR";
+    else if (status == "LOG_CRIT")
+        return "CRITICAL";
+    else if (status == "LOG_INFO")
+        return "INFO";
 
     return status;
 }
@@ -157,9 +175,16 @@ S9sString
 S9sMessage::message() const
 {
     if (m_properties.contains("message"))
+    {
         return m_properties.at("message").toString();
-    else if (m_properties.contains("message_text"))
+    } else if (m_properties.contains("message_text"))
+    {
         return m_properties.at("message_text").toString();
+    } else if (m_properties.contains("log_specifics"))
+    {
+        S9sVariantMap map = m_properties.at("log_specifics").toVariantMap();
+        return map["message_text"].toString();
+    }
 
     return S9sString();
 }
@@ -364,12 +389,18 @@ S9sMessage::toString(
                     // FIXME: This is hackish.
                     if (syntaxHighlight)
                     {
-                        if (severity() == "MESSAGE")
+                        if (severity() == "MESSAGE" || 
+                                severity() == "DEBUG")
+                        {
                             retval += XTERM_COLOR_GREEN;
-                        else if (severity() == "WARNING")
+                        } else if (severity() == "WARNING")
                             retval += XTERM_COLOR_YELLOW;
-                        else if (severity() == "FAILURE")
+                        else if (severity() == "FAILURE" ||
+                                 severity() == "ERROR"   ||
+                                 severity() == "CRITICAL")
+                        {
                             retval += XTERM_COLOR_RED;
+                        }
                     }
 
                     retval += tmp;

@@ -722,7 +722,7 @@ S9sRpcClient::getLog()
 
     // Building the request.
     request["operation"]  = "getLogEntries";
-    //request["ascending"]  = true;
+    request["ascending"]  = true;
 
     #if 0
     if (limit != 0)

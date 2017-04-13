@@ -488,6 +488,27 @@ S9sOptions::briefJobLogFormat() const
 }
 
 S9sString 
+S9sOptions::briefLogFormat() const
+{
+    const char *key = "brief_log_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+
+
+S9sString 
 S9sOptions::longJobLogFormat() const
 {
     const char *key = "long_job_log_format";
@@ -1286,6 +1307,12 @@ bool
 S9sOptions::isNodeOperation() const
 {
     return m_operationMode == Node;
+}
+
+bool
+S9sOptions::isLogOperation() const
+{
+    return m_operationMode == Log;
 }
 
 /**
@@ -2261,6 +2288,9 @@ S9sOptions::setMode(
     } else if (modeName == "script")
     {
         m_operationMode = Script;
+    } else if (modeName == "log")
+    {
+        m_operationMode = Log;
     } else if (modeName.startsWith("-"))
     {
         // Ignored.

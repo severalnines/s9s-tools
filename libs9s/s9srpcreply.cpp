@@ -905,6 +905,43 @@ S9sRpcReply::printConfigList()
         printConfigBrief();
 }
 
+void 
+S9sRpcReply::printLogList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else 
+        printLogBrief();
+}
+
+void
+S9sRpcReply::printLogBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       formatString = options->briefLogFormat();
+    S9sVariantList  theList = operator[]("log_entries").toVariantList();
+
+    if (options->hasLogFormat())
+        formatString = options->logFormat();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sMessage    message = theMap;
+
+        if (formatString.empty())
+            printf("%s\n", STR(S9sString::html2ansi(message.message())));
+        else {
+            printf("%s",
+                    STR(message.toString(syntaxHighlight, formatString)));
+        }
+    }
+}
+
+
 void
 S9sRpcReply::printConfigLong()
 {

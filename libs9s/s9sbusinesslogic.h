@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2017 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -79,6 +79,7 @@ class S9sBusinessLogic
         void executeUserList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
+        void executeLogList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 
         void executeDropCluster(S9sRpcClient &client);

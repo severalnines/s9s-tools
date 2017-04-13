@@ -89,6 +89,7 @@ class S9sOptions
         S9sVariantList nodes() const;
 
         S9sString briefJobLogFormat() const;
+        S9sString briefLogFormat() const;
         S9sString longJobLogFormat() const;
         S9sString vendor() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
@@ -151,6 +152,7 @@ class S9sOptions
         bool useTls();
 
         bool isNodeOperation() const;
+        bool isLogOperation() const;
         bool isScriptOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;

@@ -155,6 +155,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isLogOperation())
+    {
+        if (options->isListRequested())
+        {
+            executeLogList(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isNodeOperation())
     {
         if (options->isListRequested() || options->isStatRequested())
@@ -955,6 +963,33 @@ S9sBusinessLogic::executeJobList(
         if (success)
         {
             reply.printJobList();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    } 
+}
+
+void 
+S9sBusinessLogic::executeLogList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getLog();
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printLogList();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

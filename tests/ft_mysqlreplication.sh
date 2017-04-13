@@ -386,7 +386,9 @@ function testStopStartNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
-    
+   
+    sleep 10
+
     #
     # Then start.
     #
@@ -402,11 +404,11 @@ function testStopStartNode()
         failure "The exit code is ${exitCode}"
     fi
 
-    for (( q=0; q<30; q++)); do
-        s9s node --list --long 
-        s9s job  --list
-        sleep 1
-    done
+    #for (( q=0; q<30; q++)); do
+    #    s9s node --list --long 
+    #    s9s job  --list
+    #    sleep 1
+    #done
 }
 
 #
