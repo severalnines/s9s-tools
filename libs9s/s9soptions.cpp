@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2017  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -2184,6 +2184,15 @@ S9sOptions::readOptions(
                 retval = checkOptionsScript();
 
             break;
+
+        case Log:
+            retval = readOptionsLog(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsLog();
+
+            break;
+
     }
 
     return retval;
@@ -2314,6 +2323,10 @@ S9sOptions::printHelp()
         
         case Script:
             printHelpScript();
+            break;
+
+        case Log:
+            // Missing help
             break;
     }
 }
@@ -2867,7 +2880,6 @@ S9sOptions::readOptionsBackup(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -2878,31 +2890,255 @@ S9sOptions::readOptionsBackup(
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
         { "create",           no_argument,       0,  OptionCreate         },
-        { "restore",          no_argument,       0,  OptionRestore        },
-        { "delete",           no_argument,       0,  OptionDelete         },
         
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait            },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "backup-id",        required_argument, 0, OptionBackupId        },
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+            
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+
+            case OptionConfigFile:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionTimeStyle:
+                m_options["time_style"] = optarg;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
+                break;
+ 
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+    
+    // 
+    // The first extra argument is 'backup', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsLog()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list and --create "
+            "options are mutually exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list and --create options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+/**
+ * Reads the command line options in "node" mode.
+ */
+bool
+S9sOptions::readOptionsLog(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, OptionHelp            },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0,  4                    },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0,  OptionStat           },
+        { "set",              no_argument,       0,  OptionSet            },
+        { "start",            no_argument,       0,  OptionStart          },
+        { "stop",             no_argument,       0,  OptionStop           },
+        { "restart",          no_argument,       0,  OptionRestart        },
+        { "list-config",      no_argument,       0,  OptionListConfig     },
+        { "change-config",    no_argument,       0,  OptionChangeConfig   },
+        { "pull-config",      no_argument,       0,  OptionPullConfig     },
+        { "push-config",      no_argument,       0,  OptionPushConfig     },
+
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
         { "nodes",            required_argument, 0, OptionNodes           },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
 
-        // Backup info
-        { "backup-method",    required_argument, 0, OptionBackupMethod    },
-        { "backup-directory", required_argument, 0, OptionBackupDirectory },
-        { "no-compression",   no_argument,       0, OptionNoCompression   },
-        { "use-pigz",         no_argument,       0, OptionUsePigz         },
-        { "on-node",          no_argument,       0, OptionOnNode          },
-        { "databases",        required_argument, 0, OptionDatabases       },
-        { "parallellism",     required_argument, 0, OptionParallellism    },
-        { "full-path",        no_argument,       0, OptionFullPath        },
+        // Node options. 
+        { "properties",       required_argument, 0, OptionProperties      },
+        { "opt-group",        required_argument, 0, OptionOptGroup        },
+        { "opt-name",         required_argument, 0, OptionOptName         },
+        { "opt-value",        required_argument, 0, OptionOptValue        }, 
+        { "output-dir",       required_argument, 0, OptionOutputDir       },
+
         { 0, 0, 0, 0 }
     };
 
@@ -2964,6 +3200,56 @@ S9sOptions::readOptionsBackup(
                 // --list
                 m_options["list"] = true;
                 break;
+
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
+                break;
+
+            case OptionSet:
+                // --set
+                m_options["set"]  = true;
+                break;
+
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
+                break;
+
+            case OptionStop:
+                // --stop
+                m_options["stop"] = true;
+                break;
+
+            case OptionRestart:
+                // --restart
+                m_options["restart"] = true;
+                break;
+
+            case OptionListConfig:
+                // --list-config
+                m_options["list_config"] = true;
+                break;
+
+            case OptionChangeConfig:
+                // --change-config
+                m_options["change_config"] = true;
+                break;
+
+            case OptionPullConfig:
+                // --pull-config
+                m_options["pull_config"] = true;
+                break;
+
+            case OptionPushConfig:
+                // --push-config
+                m_options["push_config"] = true;
+                break;
+
+            case 4:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
             
             case OptionWait:
                 // --wait
@@ -2984,25 +3270,10 @@ S9sOptions::readOptionsBackup(
                 // --no-header
                 m_options["no_header"] = true;
                 break;
-            
-            case OptionCreate:
-                // --create
-                m_options["create"] = true;
-                break;
-
-            case OptionRestore:
-                // --restore
-                m_options["restore"] = true;
-                break;
-
-            case OptionDelete:
-                // --delete
-                m_options["delete"]  = true;
-                break;
-
-            case OptionConfigFile:
-                // --config-file=FILE
-                m_options["config-file"] = optarg;
+           
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
                 break;
             
             case OptionColor:
@@ -3011,14 +3282,6 @@ S9sOptions::readOptionsBackup(
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
-                break;
-
-            case 'h':
-                m_options["human_readable"] = true;
-                break;
-
-            case OptionTimeStyle:
-                m_options["time_style"] = optarg;
                 break;
 
             case OptionPrintJson:
@@ -3041,63 +3304,35 @@ S9sOptions::readOptionsBackup(
                 m_options["cluster_name"] = optarg;
                 break;
 
+            case OptionProperties:
+                // --properties=STRING
+                setPropertiesOption(optarg);
+                break;
             
             case OptionNodes:
                 // --nodes=LIST
                 if (!setNodes(optarg))
                     return false;
                 break;
-
-            case OptionSchedule:
-                // --schedule=DATETIME
-                m_options["schedule"] = optarg;
+            
+            case OptionOptGroup:
+                // --opt-group=NAME
+                m_options["opt_group"] = optarg;
                 break;
 
-            case OptionBackupId:
-                // --backup-id=BACKUPID
-                m_options["backup_id"] = atoi(optarg);
+            case OptionOptName:
+                // --opt-name=NAME
+                m_options["opt_name"] = optarg;
+                break;
+
+            case OptionOptValue:
+                // --opt-value=VALUE
+                m_options["opt_value"] = optarg;
                 break;
            
-            case OptionBackupMethod:
-                // --backup-method=METHOD
-                m_options["backup_method"] = optarg;
-                break;
-
-            case OptionBackupDirectory:
-                // --backup-directory=DIRECTORY
-                m_options["backup_directory"] = optarg;
-                break;
-                
-            case OptionNoCompression:
-                // --no-compression
-                m_options["no_compression"] = true;
-                break;
-
-            case OptionUsePigz:
-                // --use-pigz
-                m_options["use_pigz"] = true;
-                break;
-
-            case OptionOnNode:
-                // --on-node
-                m_options["on_node"] = true;
-                break;
-
-            case OptionDatabases:
-                // --databases=LIST
-                m_options["databases"] = optarg;
-                break;
-
-            case OptionParallellism:
-                // --parallellism=N
-                if (!setParallellism(optarg))
-                    return false;
-
-                break;
-
-            case OptionFullPath:
-                // full-path
-                m_options["full_path"] = true;
+            case OptionOutputDir:
+                // --output-dir=DIRECTORY
+                m_options["output_dir"] = optarg;
                 break;
 
             case '?':
@@ -3119,11 +3354,11 @@ S9sOptions::readOptionsBackup(
     }
     
     // 
-    // The first extra argument is 'backup', so we leave that out.
+    // The first extra argument is 'node', so we leave that out. We are
+    // interested in the others.
     //
     for (int idx = optind + 1; idx < argc; ++idx)
     {
-        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
         m_extraArguments << argv[idx];
     }
 

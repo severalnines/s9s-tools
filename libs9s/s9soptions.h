@@ -56,6 +56,7 @@ class S9sOptions
             Maintenance,
             MetaType,
             Script,
+            Log
         };
 
         enum ExitCodes
@@ -273,6 +274,9 @@ class S9sOptions
         bool checkOptionsScript();
 
         bool readOptionsMetaType(int argc, char *argv[]);
+        
+        bool readOptionsLog(int argc, char *argv[]);
+        bool checkOptionsLog();
 
         bool setMode(const S9sString &modeName);
 

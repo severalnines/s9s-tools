@@ -147,6 +147,8 @@ S9sMessage::severity() const
     else if (status == "JOB_FAILED")
         // XTERM_COLOR_RED TERM_NORMAL
         return "FAILURE";
+    else if (status == "JOB_DEBUG")
+        return "DEBUG";
 
     return status;
 }

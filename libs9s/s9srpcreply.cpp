@@ -747,6 +747,15 @@ S9sRpcReply::printJobLogLong()
             }
 
             status = "FAILURE";
+        } else if (status == "JOB_DEBUG")
+        {
+            if (syntaxHighlight)
+            {
+                stateColorStart = "";
+                stateColorEnd   = "";
+            }
+
+            status = "DEBUG";
         }
 
         //printf("%s%s%s\n\n", TERM_BOLD, STR(message), TERM_NORMAL);
