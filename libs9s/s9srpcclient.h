@@ -133,6 +133,7 @@ class S9sRpcClient
                 const int limit   = 0,
                 const int offset  = 0);
 
+        bool getLog();
         bool rollingRestart(const int clusterId);
 
         bool createCluster();

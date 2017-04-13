@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2017  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -707,6 +707,46 @@ S9sRpcClient::getJobLog(
     return retval;
 
 }
+
+/**
+ * This function gets the logs from the controller. Not the job messages, but
+ * the actual cmon logs.
+ */
+bool
+S9sRpcClient::getLog()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/log/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    // Building the request.
+    request["operation"]  = "getLogEntries";
+    //request["ascending"]  = true;
+
+    #if 0
+    if (limit != 0)
+        request["limit"]  = limit;
+
+    if (offset != 0)
+        request["offset"] = offset;
+    #endif
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+
+}
+
+
 
 /**
  * \param clusterId the ID of the cluster that will be restarted
