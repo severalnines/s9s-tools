@@ -122,6 +122,8 @@ enum S9sOptionType
     OptionTree,
     OptionOutputDir,
     OptionLogFormat,
+    OptionFrom,
+    OptionUntil,
 };
 
 /**
@@ -629,6 +631,9 @@ S9sOptions::vendor() const
     return retval;
 }
 
+/**
+ * \returns The option argument passed to the --start command line option.
+ */
 S9sString
 S9sOptions::start() const
 {
@@ -638,6 +643,9 @@ S9sOptions::start() const
     return S9sString();
 }
 
+/**
+ * \returns The option argument passed to the --end command line option.
+ */
 S9sString
 S9sOptions::end() const
 {
@@ -647,6 +655,29 @@ S9sOptions::end() const
     return S9sString();
 }
 
+/**
+ * \returns The option argument passed to the --from command line option.
+ */
+S9sString
+S9sOptions::from() const
+{
+    if (m_options.contains("from"))
+        return m_options.at("from").toString();
+
+    return S9sString();
+}
+
+/**
+ * \returns The option argument passed to the --until command line option.
+ */
+S9sString
+S9sOptions::until() const
+{
+    if (m_options.contains("until"))
+        return m_options.at("until").toString();
+
+    return S9sString();
+}
 
 S9sString
 S9sOptions::reason() const
@@ -2415,6 +2446,9 @@ S9sOptions::printHelpJob()
 "  --job-id=ID                The ID of the job.\n"
 "  --date-format=FORMAT       The format of the dates printed.\n"
 "\n"
+"  --from=DATE&TIME           The start of the interval to be printed.\n"
+"  --until=DATE&TIME          The end of the interval to be printed.\n"
+"\n"
     );
 }
 
@@ -3160,14 +3194,10 @@ S9sOptions::readOptionsLog(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
-        { "schedule",         required_argument, 0, OptionSchedule        },
 
-        // Node options. 
-        { "properties",       required_argument, 0, OptionProperties      },
-        { "opt-group",        required_argument, 0, OptionOptGroup        },
-        { "opt-name",         required_argument, 0, OptionOptName         },
-        { "opt-value",        required_argument, 0, OptionOptValue        }, 
-        { "output-dir",       required_argument, 0, OptionOutputDir       },
+        // Log Options 
+        { "from",            required_argument,  0, OptionFrom            },
+        { "until",           required_argument,  0, OptionUntil           },
 
         { 0, 0, 0, 0 }
     };
@@ -3251,31 +3281,6 @@ S9sOptions::readOptionsLog(
                 m_options["stop"] = true;
                 break;
 
-            case OptionRestart:
-                // --restart
-                m_options["restart"] = true;
-                break;
-
-            case OptionListConfig:
-                // --list-config
-                m_options["list_config"] = true;
-                break;
-
-            case OptionChangeConfig:
-                // --change-config
-                m_options["change_config"] = true;
-                break;
-
-            case OptionPullConfig:
-                // --pull-config
-                m_options["pull_config"] = true;
-                break;
-
-            case OptionPushConfig:
-                // --push-config
-                m_options["push_config"] = true;
-                break;
-
             case 4:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
@@ -3301,11 +3306,6 @@ S9sOptions::readOptionsLog(
                 m_options["no_header"] = true;
                 break;
            
-            case OptionSchedule:
-                // --schedule=DATETIME
-                m_options["schedule"] = optarg;
-                break;
-            
             case OptionColor:
                 // --color=COLOR
                 if (optarg)
@@ -3345,26 +3345,16 @@ S9sOptions::readOptionsLog(
                     return false;
                 break;
             
-            case OptionOptGroup:
-                // --opt-group=NAME
-                m_options["opt_group"] = optarg;
+            case OptionFrom:
+                // --from=DATE&TIME
+                m_options["from"] = optarg;
                 break;
-
-            case OptionOptName:
-                // --opt-name=NAME
-                m_options["opt_name"] = optarg;
+            
+            case OptionUntil:
+                // --until=DATE&TIME
+                m_options["until"] = optarg;
                 break;
-
-            case OptionOptValue:
-                // --opt-value=VALUE
-                m_options["opt_value"] = optarg;
-                break;
-           
-            case OptionOutputDir:
-                // --output-dir=DIRECTORY
-                m_options["output_dir"] = optarg;
-                break;
-
+            
             case '?':
                 // 
                 return false;

@@ -723,6 +723,12 @@ S9sRpcClient::getLog()
     // Building the request.
     request["operation"]  = "getLogEntries";
     request["ascending"]  = true;
+    
+    if (!options->from().empty())
+        request["created_after"] = options->from();
+
+    if (!options->until().empty())
+        request["created_before"] = options->until();
 
     #if 0
     if (limit != 0)

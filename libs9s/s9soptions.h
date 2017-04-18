@@ -220,6 +220,9 @@ class S9sOptions
         S9sString reason() const;
         S9sString uuid() const;
 
+        S9sString from() const;
+        S9sString until() const;
+
         int terminalWidth() const;
         int terminalHeight() const;
         S9sString binaryName() const;

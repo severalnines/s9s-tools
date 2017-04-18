@@ -90,7 +90,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
 
 if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "The 'pip-container-create' program is not found."
@@ -119,7 +119,7 @@ function find_cluster_id()
     local nTry=0
 
     while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
+        retval=$($S9S cluster --list --long --batch --cluster-name="$name" 2>/dev/null)
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then
@@ -378,7 +378,7 @@ function testStopStartNode()
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$SECOND_ADDED_NODE \
+        --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -387,15 +387,13 @@ function testStopStartNode()
         failure "The exit code is ${exitCode}"
     fi
    
-    sleep 10
-
     #
     # Then start.
     #
     mys9s node \
         --start \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$SECOND_ADDED_NODE \
+        --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
