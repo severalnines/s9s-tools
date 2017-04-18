@@ -343,6 +343,9 @@ function testSetConfig()
 #
 # This test will call a --restart on the node.
 #
+# The problem in mysqlreplication is that this test will try to stop the
+# read-write server and that's now really allowed here.
+#
 function testRestartNode()
 {
     local exitCode
@@ -367,6 +370,9 @@ function testRestartNode()
 #
 # This test will first call a --stop then a --start on a node. Pretty basic
 # stuff.
+#
+# The problem in mysqlreplication is that this test will try to stop the
+# read-write server and that's now really allowed here.
 #
 function testStopStartNode()
 {

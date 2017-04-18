@@ -1831,6 +1831,9 @@ S9sRpcClient::startCluster()
     return retval;
 }
 
+/**
+ * This function will create and send a job to start a node of a cluster.
+ */
 bool
 S9sRpcClient::startNode()
 {
@@ -1881,6 +1884,9 @@ S9sRpcClient::startNode()
     return retval;
 }
 
+/**
+ * This function will create and send a job to stop a node of a cluster.
+ */
 bool
 S9sRpcClient::stopNode()
 {
@@ -1934,6 +1940,10 @@ S9sRpcClient::stopNode()
     return retval;
 }
 
+/**
+ * This function will create and send a job to stop and then start a node of a
+ * cluster.
+ */
 bool
 S9sRpcClient::restartNode()
 {
