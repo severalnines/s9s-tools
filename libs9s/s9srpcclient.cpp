@@ -730,6 +730,7 @@ S9sRpcClient::getLog()
     if (!options->until().empty())
         request["created_before"] = options->until();
 
+        
     #if 0
     if (limit != 0)
         request["limit"]  = limit;
@@ -1907,6 +1908,9 @@ S9sRpcClient::stopNode()
     if (node.hasPort())
         jobData["port"]   = node.port();
      
+    if (options->force())
+        jobData["force_stop"] = true;
+
     // The jobspec describing the command.
     jobSpec["command"]    = "stop";
     jobSpec["job_data"]   = jobData;
@@ -1957,6 +1961,9 @@ S9sRpcClient::restartNode()
     if (node.hasPort())
         jobData["port"]   = node.port();
      
+    if (options->force())
+        jobData["force_stop"] = true;
+
     // The jobspec describing the command.
     jobSpec["command"]    = "restart";
     jobSpec["job_data"]   = jobData;

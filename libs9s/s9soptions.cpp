@@ -124,6 +124,7 @@ enum S9sOptionType
     OptionLogFormat,
     OptionFrom,
     OptionUntil,
+    OptionForce
 };
 
 /**
@@ -1156,6 +1157,20 @@ S9sOptions::outputDir() const
     return retval;
 }
 
+/**
+ * \return True if the --force command line option is provided.
+ */
+bool
+S9sOptions::force() const
+{
+    bool retval = false;
+
+    if (m_options.contains("force"))
+        retval = m_options.at("force").toBoolean();
+
+    return retval;
+
+}
 
 /**
  * \returns true if the --with-database command line option was provided.
@@ -2623,6 +2638,8 @@ S9sOptions::printHelpNode()
 "  --opt-group=GROUP          The configuration option group.\n"
 "  --opt-name=NAME            The name of the configuration option.\n"
 "  --opt-value=VALUE          The value of the configuration option.\n"
+"  --output-dir=DIR           The directory where the files are created.\n"
+"  --force                    Force to execute dangerous operations.\n"
 "\n");
 }
 
@@ -2691,6 +2708,7 @@ S9sOptions::readOptionsNode(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "force",            no_argument,       0, OptionForce           },
 
         // Node options. 
         { "properties",       required_argument, 0, OptionProperties      },
@@ -2893,6 +2911,11 @@ S9sOptions::readOptionsNode(
             case OptionOutputDir:
                 // --output-dir=DIRECTORY
                 m_options["output_dir"] = optarg;
+                break;
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
                 break;
 
             case '?':

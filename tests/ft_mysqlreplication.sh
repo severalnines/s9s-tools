@@ -352,6 +352,7 @@ function testRestartNode()
     #
     mys9s node \
         --restart \
+        --force \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
@@ -377,6 +378,7 @@ function testStopStartNode()
     #
     mys9s node \
         --stop \
+        --force \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
@@ -402,10 +404,10 @@ function testStopStartNode()
         failure "The exit code is ${exitCode}"
     fi
 
-    #for (( q=0; q<30; q++)); do
+    #for (( q=0; q<10; q++)); do
     #    s9s node --list --long 
     #    s9s job  --list
-    #    sleep 1
+    #    sleep 10
     #done
 }
 

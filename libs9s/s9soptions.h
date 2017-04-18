@@ -136,6 +136,7 @@ class S9sOptions
         S9sString optName() const;
         S9sString optValue() const;
         S9sString outputDir() const;
+        bool force() const;
 
 
         S9sString backupDir() const;
