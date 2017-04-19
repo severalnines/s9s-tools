@@ -2977,7 +2977,12 @@ S9sOptions::readOptionsBackup(
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
         { "create",           no_argument,       0,  OptionCreate         },
-        
+        { "delete",           no_argument,       0,  OptionDelete         },
+        { "restore",          no_argument,       0,  OptionRestore        },
+       
+        // Backup options
+        { "nodes",            required_argument, 0, OptionNodes           },
+
         // Job Related Options
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -3056,6 +3061,16 @@ S9sOptions::readOptionsBackup(
                 // --create
                 m_options["create"] = true;
                 break;
+            
+            case OptionRestore:
+                // --restore
+                m_options["restore"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
+                break;
 
             case OptionConfigFile:
                 // --config-file=FILE
@@ -3088,6 +3103,12 @@ S9sOptions::readOptionsBackup(
                 m_options["rpc_tls"] = true;
                 break;
             
+            case OptionNodes:
+                // --nodes=LIST
+                if (!setNodes(optarg))
+                    return false;
+                break;
+
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);

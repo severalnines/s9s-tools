@@ -206,7 +206,6 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="9.3" \
-        --print-json \
         $LOG_OPTION
 
     exitCode=$?
