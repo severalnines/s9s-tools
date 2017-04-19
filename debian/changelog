@@ -1,3 +1,9 @@
+s9s-tools (0.1.20170419-nightly0) UNRELEASED; urgency=medium
+
+  * NEW VERSION
+
+ -- David Kedves <david.kedves@borgcollective.eu>  Wed, 19 Apr 2017 13:05:24 +0200
+
 s9s-tools (0.1.20170407-nightly4) UNRELEASED; urgency=low
 
   * Pushing new version to PPA and OBS
