@@ -2967,6 +2967,7 @@ S9sOptions::readOptionsBackup(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -2977,19 +2978,31 @@ S9sOptions::readOptionsBackup(
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
         { "create",           no_argument,       0,  OptionCreate         },
-        { "delete",           no_argument,       0,  OptionDelete         },
         { "restore",          no_argument,       0,  OptionRestore        },
-       
-        // Backup options
-        { "nodes",            required_argument, 0, OptionNodes           },
-
+        { "delete",           no_argument,       0,  OptionDelete         },
+        
         // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
+        { "backup-id",        required_argument, 0, OptionBackupId        },
+        { "nodes",            required_argument, 0, OptionNodes           },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+
+        // Backup info
+        { "backup-method",    required_argument, 0, OptionBackupMethod    },
+        { "backup-directory", required_argument, 0, OptionBackupDirectory },
+        { "no-compression",   no_argument,       0, OptionNoCompression   },
+        { "use-pigz",         no_argument,       0, OptionUsePigz         },
+        { "on-node",          no_argument,       0, OptionOnNode          },
+        { "databases",        required_argument, 0, OptionDatabases       },
+        { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "full-path",        no_argument,       0, OptionFullPath        },
         { 0, 0, 0, 0 }
     };
 
@@ -3036,6 +3049,11 @@ S9sOptions::readOptionsBackup(
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
+
+            case 't':
+                // -t, --token
+                m_options["rpc_token"] = optarg;
+                break;
             
             case 'l':
                 // -l, --long
@@ -3045,6 +3063,16 @@ S9sOptions::readOptionsBackup(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
                 break;
             
             case OptionBatch:
@@ -3061,15 +3089,15 @@ S9sOptions::readOptionsBackup(
                 // --create
                 m_options["create"] = true;
                 break;
-            
+
             case OptionRestore:
                 // --restore
                 m_options["restore"] = true;
                 break;
-            
+
             case OptionDelete:
                 // --delete
-                m_options["delete"] = true;
+                m_options["delete"]  = true;
                 break;
 
             case OptionConfigFile:
@@ -3103,12 +3131,6 @@ S9sOptions::readOptionsBackup(
                 m_options["rpc_tls"] = true;
                 break;
             
-            case OptionNodes:
-                // --nodes=LIST
-                if (!setNodes(optarg))
-                    return false;
-                break;
-
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
@@ -3118,7 +3140,66 @@ S9sOptions::readOptionsBackup(
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
- 
+
+            
+            case OptionNodes:
+                // --nodes=LIST
+                if (!setNodes(optarg))
+                    return false;
+                break;
+
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+
+            case OptionBackupId:
+                // --backup-id=BACKUPID
+                m_options["backup_id"] = atoi(optarg);
+                break;
+           
+            case OptionBackupMethod:
+                // --backup-method=METHOD
+                m_options["backup_method"] = optarg;
+                break;
+
+            case OptionBackupDirectory:
+                // --backup-directory=DIRECTORY
+                m_options["backup_directory"] = optarg;
+                break;
+                
+            case OptionNoCompression:
+                // --no-compression
+                m_options["no_compression"] = true;
+                break;
+
+            case OptionUsePigz:
+                // --use-pigz
+                m_options["use_pigz"] = true;
+                break;
+
+            case OptionOnNode:
+                // --on-node
+                m_options["on_node"] = true;
+                break;
+
+            case OptionDatabases:
+                // --databases=LIST
+                m_options["databases"] = optarg;
+                break;
+
+            case OptionParallellism:
+                // --parallellism=N
+                if (!setParallellism(optarg))
+                    return false;
+
+                break;
+
+            case OptionFullPath:
+                // full-path
+                m_options["full_path"] = true;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -3147,6 +3228,7 @@ S9sOptions::readOptionsBackup(
     }
 
     return true;
+
 }
 
 /**
