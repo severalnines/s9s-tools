@@ -1252,7 +1252,6 @@ S9sRpcClient::createPostgreSql(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
@@ -1266,18 +1265,15 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
-    for (uint idx = 0; idx < hosts.size(); ++idx)
-    {
-        if (hosts[idx].isNode())
-            hostNames << hosts[idx].toNode().hostName();
-        else
-            hostNames << hosts[idx];
-    }
-
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
-    jobData["hostname"]         = hostNames[0];
+    
+    jobData["hostname"]         = hosts[0].toNode().hostName();
+
+    if (hosts[0].toNode().hasPort())
+        jobData["port"] = hosts[0].toNode().port();
+
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["postgre_user"]     = options->dbAdminUserName();

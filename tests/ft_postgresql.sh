@@ -191,7 +191,7 @@ function testCreateCluster()
 
     pip-say "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node)
-    nodes+="$nodeName;"
+    nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
@@ -206,6 +206,7 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="9.3" \
+        --print-json \
         $LOG_OPTION
 
     exitCode=$?
