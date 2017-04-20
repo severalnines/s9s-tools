@@ -22,7 +22,7 @@
 #include "S9sRegExp"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sUrl::S9sUrl() :
@@ -141,6 +141,12 @@ S9sUrl::fullErrorString() const
     return retval;
 }
 
+/**
+ * \param properties The properties to be set as a name -> value mapping.
+ *
+ * Sets all the properties in one step. All the existing properties will be
+ * deleted, then the new properties set.
+ */
 void
 S9sUrl::setProperties(
         const S9sVariantMap &values)
@@ -148,12 +154,18 @@ S9sUrl::setProperties(
     m_properties = values;
 }
 
+/**
+ * \returns All the properties as a name -> value mapping.
+ */
 const S9sVariantMap &
 S9sUrl::properties() const
 {
     return m_properties;
 }
 
+/**
+ * \returns True if the property with the given key is set.
+ */
 bool
 S9sUrl::hasProperty(
         const S9sString &key) const
@@ -177,6 +189,15 @@ S9sUrl::property(
     return S9sVariant();
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as a string.
+ *
+ * This function will investigate the value represented as a string. If it looks
+ * like a boolean value (e.g. "true") then it will be converted to a boolean
+ * value, if it looks like an integer (e.g. 42) it will be converted to an
+ * integer. Then the property will be set accordingly.
+ */
 void
 S9sUrl::setProperty(
         const S9sString &name,
@@ -193,6 +214,13 @@ S9sUrl::setProperty(
     }
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The new value of the property.
+ *
+ * This function will set one property leaving the other existing properties
+ * unchanged.
+ */
 void
 S9sUrl::setProperty(
         const S9sString  &name,
@@ -258,7 +286,7 @@ S9sUrl::parse(
     {
         c = input.c_str()[m_parseCursor];
 
-        S9S_DEBUG("%-26s m_parseCursor = %02d c = '%c'", 
+        S9S_DEBUG("%-22s m_parseCursor = %02d c = '%c'", 
                 STR(parseStateToString(state)),
                 m_parseCursor, c);
 
@@ -288,6 +316,13 @@ S9sUrl::parse(
                 {
                     state = MaybeProtocolSeparator;
                     m_parseCursor++;
+                } else if (c == '?')
+                {
+                    protocol   = "";
+                    hostName   = tmpString;
+                    
+                    m_parseCursor++;
+                    state = PropertyName;
                 } else {
                     tmpString += c;
                     m_parseCursor++;
@@ -403,8 +438,11 @@ S9sUrl::parse(
             case PropertyName:
                 if (c == 0)
                 {
-                    m_errorString = "Expected '='.";
-                    return false;
+                    setProperty(propertyName, true);
+                    m_protocol   = protocol;
+                    m_hostName   = hostName;
+
+                    return true;
                 } else if (c == '=')
                 {
                     state = PropertyValue;
@@ -440,8 +478,6 @@ S9sUrl::parse(
 
                     m_protocol   = protocol;
                     m_hostName   = hostName;
-                    m_port       = -1;
-                    m_hasPort    = false;
 
                     return true;
                 } else if (c == '&')

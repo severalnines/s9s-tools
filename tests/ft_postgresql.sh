@@ -227,13 +227,12 @@ function testCreateCluster()
 #
 function testAddNode()
 {
-    local nodes
     local exitCode
 
     pip-say "The test to add node is starting now."
     printVerbose "Creating node..."
+
     LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE"
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
@@ -242,7 +241,7 @@ function testAddNode()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
+        --nodes="$LAST_ADDED_NODE?master" \
         $LOG_OPTION
     
     exitCode=$?
@@ -624,6 +623,7 @@ else
     
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+
     runFunctionalTest testConfig
 
     runFunctionalTest testCreateAccount

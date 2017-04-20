@@ -210,9 +210,11 @@ UtS9sNode::testParse()
 {
     S9sNode  node1("proxysql://10.10.10.23?db_username=bob&db_password=b0b");
     S9sNode  node2("psql://10.10.10.23?master&password=b0b&big=true");
+    S9sNode  node3("10.10.10.23?master");
 
     S9S_WARNING("node1: \n%s\n", STR(node1.toVariantMap().toString()));
     S9S_WARNING("node2: \n%s\n", STR(node2.toVariantMap().toString()));
+    S9S_WARNING("node3: \n%s\n", STR(node3.toVariantMap().toString()));
     S9S_COMPARE(node1.property("db_username"), "bob");
     S9S_COMPARE(node1.property("db_password"), "b0b");
 

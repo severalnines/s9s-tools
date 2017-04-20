@@ -47,6 +47,7 @@ UtS9sUrl::runTest(const char *testName)
     PERFORM_TEST(testParse05,       retval);
     PERFORM_TEST(testParse06,       retval);
     PERFORM_TEST(testParse07,       retval);
+    PERFORM_TEST(testParse08,       retval);
 
     return retval;
 }
@@ -205,5 +206,36 @@ UtS9sUrl::testParse07()
 
     return true;
 }
+
+bool
+UtS9sUrl::testParse08()
+{
+    S9sUrl url;
+
+    S9S_VERIFY(url.parse("10.10.10.23?master"));
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
+    S9S_VERIFY(!url.hasPort());
+    S9S_VERIFY(url.hasProperty("master"));
+    
+    S9S_VERIFY(url.parse("10.10.10.23?master=true"));
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
+    S9S_VERIFY(!url.hasPort());
+    S9S_VERIFY(url.hasProperty("master"));
+    
+    S9S_VERIFY(url.parse("10.10.10.23:8080?master"));
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
+    S9S_VERIFY(url.hasPort());
+    S9S_COMPARE(url.port(), 8080);
+    S9S_VERIFY(url.hasProperty("master"));
+    
+    S9S_VERIFY(url.parse("10.10.10.23:8080?master=true"));
+    S9S_COMPARE(url.hostName(), "10.10.10.23");
+    S9S_VERIFY(url.hasPort());
+    S9S_COMPARE(url.port(), 8080);
+    S9S_VERIFY(url.hasProperty("master"));
+
+    return true;
+}
+    
 
 S9S_UNIT_TEST_MAIN(UtS9sUrl)

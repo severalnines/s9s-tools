@@ -39,7 +39,7 @@
 #include <fnmatch.h>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
@@ -584,6 +584,8 @@ S9sOptions::setNodes(
         S9sString nodeString = nodeStrings[idx].toString();
         S9sNode   node(nodeString.trim());
 
+        //S9S_WARNING("[%2u] %s", idx, STR(nodeStrings[idx].toString()));
+        //S9S_WARNING("%s\n", STR(node.toVariantMap().toString()));
         if (node.hasError())
         {
             PRINT_ERROR("%s", STR(node.fullErrorString()));

@@ -45,6 +45,7 @@ S9sNode::S9sNode(
 {
     bool success;
 
+    S9S_WARNING("stringRep : %s", STR(stringRep));
     // Parsing as a JSon string, that's more specific.
     success = m_properties.parse(STR(stringRep));
     if (success)
@@ -82,12 +83,18 @@ S9sNode::operator=(
     return *this;
 }
 
+/**
+ * \returns The S9sNode converted to a variant map.
+ */
 const S9sVariantMap &
 S9sNode::toVariantMap() const
 {
     return m_properties;
 }
 
+/**
+ * \returns True if a property with the given key exists.
+ */
 bool
 S9sNode::hasProperty(
         const S9sString &key) const
@@ -95,6 +102,10 @@ S9sNode::hasProperty(
     return m_properties.contains(key);
 }
 
+/**
+ * \returns The value of the property with the given name or the empty
+ *   S9sVariant object if the property is not set.
+ */
 S9sVariant
 S9sNode::property(
         const S9sString &name) const
@@ -105,6 +116,15 @@ S9sNode::property(
     return S9sVariant();
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as a string.
+ *
+ * This function will investigate the value represented as a string. If it looks
+ * like a boolean value (e.g. "true") then it will be converted to a boolean
+ * value, if it looks like an integer (e.g. 42) it will be converted to an
+ * integer. Then the property will be set accordingly.
+ */
 void
 S9sNode::setProperty(
         const S9sString &name,
@@ -121,6 +141,12 @@ S9sNode::setProperty(
     }
 }
 
+/**
+ * \param properties The properties to be set as a name -> value mapping.
+ *
+ * Sets all the properties in one step. All the existing properties will be
+ * deleted, then the new properties set.
+ */
 void
 S9sNode::setProperties(
         const S9sVariantMap &properties)
