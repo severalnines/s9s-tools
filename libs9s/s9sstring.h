@@ -94,6 +94,7 @@ class S9sString : public std::string
         S9sString trim(const std::string &pWhitespace = " \t") const;
         S9sString baseName() const;
 
+        bool looksBoolean() const;
         bool looksInteger() const;
         bool looksULongLong() const;
 

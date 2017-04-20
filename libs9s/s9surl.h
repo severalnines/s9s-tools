@@ -46,7 +46,11 @@ class S9sUrl
         
         void setProperties(const S9sVariantMap &values);
         const S9sVariantMap &properties() const;
+
+        bool hasProperty(const S9sString &key) const;
         S9sVariant property(const S9sString &key) const;
+        void setProperty(const S9sString &name, const S9sString &value);
+        void setProperty(const S9sString &name, const S9sVariant &value);
 
     protected:
         enum ParseState

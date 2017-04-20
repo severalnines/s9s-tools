@@ -154,6 +154,13 @@ S9sUrl::properties() const
     return m_properties;
 }
 
+bool
+S9sUrl::hasProperty(
+        const S9sString &key) const
+{
+    return m_properties.contains(key);
+}
+
 /**
  * \returns The property for the given key or the null variant.
  *
@@ -168,6 +175,30 @@ S9sUrl::property(
         return m_properties.at(key);
 
     return S9sVariant();
+}
+
+void
+S9sUrl::setProperty(
+        const S9sString &name,
+        const S9sString &value)
+{
+    if (value.looksBoolean())
+    {
+        m_properties[name] = value.toBoolean();
+    } else if (value.looksInteger())
+    {
+        m_properties[name] = value.toInt();
+    } else {
+        m_properties[name] = value;
+    }
+}
+
+void
+S9sUrl::setProperty(
+        const S9sString  &name,
+        const S9sVariant &value)
+{
+    m_properties[name] = value;
 }
 
 S9sString
@@ -217,7 +248,6 @@ S9sUrl::parse(
     S9sString      protocol;
     S9sString      hostName;
     S9sString      propertyName, propertyValue;
-    S9sVariantMap  properties;
     S9sString      portString;
 
     S9S_DEBUG("");
@@ -384,7 +414,7 @@ S9sUrl::parse(
                     // We just had a name, then &, a field separator. Let's
                     // store this as a boolean true value, easy to remember and
                     // use.
-                    properties[propertyName] = true;
+                    setProperty(propertyName, true);
                     propertyName.clear();
                     propertyValue.clear();
                     state = PropertyName;
@@ -406,18 +436,17 @@ S9sUrl::parse(
                         return false;
                     }
 
-                    properties[propertyName] = propertyValue.unQuote();
+                    setProperty(propertyName, propertyValue.unQuote());
 
                     m_protocol   = protocol;
                     m_hostName   = hostName;
                     m_port       = -1;
                     m_hasPort    = false;
-                    m_properties = properties;
 
                     return true;
                 } else if (c == '&')
                 {
-                    properties[propertyName] = propertyValue.unQuote();
+                    setProperty(propertyName, propertyValue.unQuote());
                     propertyName.clear();
                     propertyValue.clear();
                     state = PropertyName;

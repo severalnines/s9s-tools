@@ -36,8 +36,9 @@ class S9sNode
 
         S9sNode &operator=(const S9sVariantMap &rhs);
 
+        bool hasProperty(const S9sString &key) const;
         S9sVariant property(const S9sString &name) const;
-        
+        void setProperty(const S9sString &name, const S9sString &value);
 
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);

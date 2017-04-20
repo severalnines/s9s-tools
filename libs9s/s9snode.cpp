@@ -88,6 +88,13 @@ S9sNode::toVariantMap() const
     return m_properties;
 }
 
+bool
+S9sNode::hasProperty(
+        const S9sString &key) const
+{
+    return m_properties.contains(key);
+}
+
 S9sVariant
 S9sNode::property(
         const S9sString &name) const
@@ -96,6 +103,22 @@ S9sNode::property(
         return m_properties.at(name);
 
     return S9sVariant();
+}
+
+void
+S9sNode::setProperty(
+        const S9sString &name,
+        const S9sString &value)
+{
+    if (value.looksBoolean())
+    {
+        m_properties[name] = value.toBoolean();
+    } else if (value.looksInteger())
+    {
+        m_properties[name] = value.toInt();
+    } else {
+        m_properties[name] = value;
+    }
 }
 
 void

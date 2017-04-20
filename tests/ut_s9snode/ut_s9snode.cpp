@@ -23,7 +23,7 @@
 #include "S9sVariantMap"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 static const char *hostJson1 = 
@@ -211,7 +211,8 @@ UtS9sNode::testParse()
     S9sNode  node1("proxysql://10.10.10.23?db_username=bob&db_password=b0b");
     S9sNode  node2("psql://10.10.10.23?master&password=b0b&big=true");
 
-    //S9S_WARNING("node2: \n%s\n", STR(node2.toVariantMap().toString()));
+    S9S_WARNING("node1: \n%s\n", STR(node1.toVariantMap().toString()));
+    S9S_WARNING("node2: \n%s\n", STR(node2.toVariantMap().toString()));
     S9S_COMPARE(node1.property("db_username"), "bob");
     S9S_COMPARE(node1.property("db_password"), "b0b");
 

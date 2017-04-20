@@ -307,7 +307,9 @@ S9sString::toBoolean() const
     if (!strcasecmp(trimmed.c_str(), "yes") ||
         !strcasecmp(trimmed.c_str(), "true") ||
         !strcasecmp(trimmed.c_str(), "t"))
+    {
         return true;
+    }
 
     if (!strcasecmp(trimmed.c_str(), "on"))
         return true;
@@ -662,6 +664,29 @@ S9sString::baseName() const
         retval = retval.substr(lastsep + 1);
 
     return retval;
+}
+
+bool
+S9sString::looksBoolean() const
+{
+    std::string trimmed = trim();
+
+    if (trimmed.empty())
+        return false;
+
+    if (!strcasecmp(trimmed.c_str(), "yes") ||
+        !strcasecmp(trimmed.c_str(), "no"))
+    {
+        return true;
+    }
+
+    if (!strcasecmp(trimmed.c_str(), "true") ||
+        !strcasecmp(trimmed.c_str(), "false"))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 /**
