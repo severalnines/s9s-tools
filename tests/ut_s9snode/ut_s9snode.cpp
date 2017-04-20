@@ -109,6 +109,7 @@ UtS9sNode::runTest(const char *testName)
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
     PERFORM_TEST(testVariant01,       retval);
+    PERFORM_TEST(testParse,           retval);
 
     return retval;
 }
@@ -200,6 +201,23 @@ UtS9sNode::testVariant01()
     S9S_VERIFY(jsonString.contains("\"node\":"));
     S9S_VERIFY(jsonString.contains("\"hostname\": \"192.168.1.189\""));
     S9S_VERIFY(jsonString.contains("\"port\": 3306"));
+
+    return true;
+}
+
+bool
+UtS9sNode::testParse()
+{
+    S9sNode  node1("proxysql://10.10.10.23?db_username=bob&db_password=b0b");
+    S9sNode  node2("psql://10.10.10.23?master&password=b0b&big=true");
+
+    //S9S_WARNING("node2: \n%s\n", STR(node2.toVariantMap().toString()));
+    S9S_COMPARE(node1.property("db_username"), "bob");
+    S9S_COMPARE(node1.property("db_password"), "b0b");
+
+    S9S_COMPARE(node2.property("master"),      true);
+    S9S_COMPARE(node2.property("password"),    "b0b");
+    S9S_COMPARE(node2.property("big"),         true);
 
     return true;
 }

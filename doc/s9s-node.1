@@ -170,8 +170,9 @@ Controls which cluster to check.
 .TP
 .BI \-\^\-nodes= NODELIST
 The list of nodes or hosts enumerated in a special string using a semicolon as
-field separator (e.g. "192.168.1.1;192.168.1.2"). 
-The strings in the node list are urls that can have the following protocols:
+field separator (e.g. "192.168.1.1;192.168.1.2").  The strings in the node list
+are URLs (e.g.  "ndbd://192.168.1.1;ndb_mgmd://192.168.1.2"). The following
+protocols are recognized with special meaning:
 
 .\" 
 .\" Here is how we make a 7 character deep left indent from the .RS to the .RE
@@ -187,7 +188,17 @@ Someone has to write this part.
 .TP
 .B ndb_mgmd://
 Someone has to write this part. The mgmd:// notation is also accepted.
+.TP
+.B haproxy://
+Used to create and manipulate HaProxy servers.
+.TP
+.B proxysql://
+Use this to install and handle ProxySql servers.
+.TP
+.B maxscale://
+The protocol to install and handle MaxScale servers.
 .RE
+
 
 .\"
 .\"

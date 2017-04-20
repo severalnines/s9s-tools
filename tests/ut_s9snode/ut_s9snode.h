@@ -31,5 +31,6 @@ class UtS9sNode : public S9sUnitTest
         bool testSetProperties();
         bool testAssign();
         bool testVariant01();
+        bool testParse();
 };
 

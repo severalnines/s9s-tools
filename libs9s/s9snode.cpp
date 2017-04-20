@@ -49,6 +49,7 @@ S9sNode::S9sNode(
     success = m_properties.parse(STR(stringRep));
     if (success)
     {
+        S9S_WARNING("parsed as json");
         m_url = m_properties["hostname"].toString();
 
         if (m_properties.contains("port"))
@@ -56,6 +57,7 @@ S9sNode::S9sNode(
 
         m_url.setProperties(m_properties);
     } else {
+        S9S_WARNING("parsing as url");
         // If not ok then parsing as an URL.
         m_url = S9sUrl(stringRep);
 
@@ -84,6 +86,16 @@ const S9sVariantMap &
 S9sNode::toVariantMap() const
 {
     return m_properties;
+}
+
+S9sVariant
+S9sNode::property(
+        const S9sString &name) const
+{
+    if (m_properties.contains(name))
+        return m_properties.at(name);
+
+    return S9sVariant();
 }
 
 void

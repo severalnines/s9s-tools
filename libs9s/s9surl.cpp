@@ -22,7 +22,7 @@
 #include "S9sRegExp"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 S9sUrl::S9sUrl() :
@@ -378,6 +378,16 @@ S9sUrl::parse(
                 } else if (c == '=')
                 {
                     state = PropertyValue;
+                    m_parseCursor++;
+                } else if (c == '&')
+                {
+                    // We just had a name, then &, a field separator. Let's
+                    // store this as a boolean true value, easy to remember and
+                    // use.
+                    properties[propertyName] = true;
+                    propertyName.clear();
+                    propertyValue.clear();
+                    state = PropertyName;
                     m_parseCursor++;
                 } else {
                     propertyName += c;

@@ -223,6 +223,37 @@ function testCreateCluster()
 }
 
 #
+# This test will add one new node to the cluster.
+#
+function testAddNode()
+{
+    local nodes
+    local exitCode
+
+    pip-say "The test to add node is starting now."
+    printVerbose "Creating node..."
+    LAST_ADDED_NODE=$(create_node)
+    nodes+="$LAST_ADDED_NODE"
+    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+
+#
 # This function will check the basic getconfig/setconfig features that reads the
 # configuration of one node.
 #
@@ -592,6 +623,7 @@ else
     runFunctionalTest testPing
     
     runFunctionalTest testCreateCluster
+    runFunctionalTest testAddNode
     runFunctionalTest testConfig
 
     runFunctionalTest testCreateAccount
