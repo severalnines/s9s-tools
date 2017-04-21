@@ -2227,7 +2227,7 @@ S9sRpcReply::printNodeListLong()
         int           clusterId = hostMap["clusterid"].toInt();
         S9sString     status    = hostMap["hoststatus"].toString();
         S9sString     className = hostMap["class_name"].toString();
-        S9sString     nodeType  = hostMap["nodetype"].toString();
+        //S9sString     nodeType  = hostMap["nodetype"].toString();
         S9sString     message   = hostMap["message"].toString();
         S9sString     version   = hostMap["version"].toString();
         S9sString     clusterName = hostMap["cluster_name"].toString();
@@ -2282,7 +2282,7 @@ S9sRpcReply::printNodeListLong()
          * Printing.
          */
         printf("%c", node.nodeTypeFlag());
-        printf("%s", STR(nodeStateFlag(status)));
+        printf("%c", node.hostStatusFlag());
         printf("%c", node.roleFlag());
         printf("%c ", maintenance ? 'M' : '-');
 
@@ -3968,26 +3968,6 @@ S9sRpcReply::clusterMap(
     }
 
     return retval;
-}
-
-S9sString 
-S9sRpcReply::nodeStateFlag(
-        const S9sString &state)
-{
-    if (state == "CmonHostUnknown")
-        return "?";
-    else if (state == "CmonHostOnline")
-        return "o";
-    else if (state == "CmonHostOffLine")
-        return "l";
-    else if (state == "CmonHostFailed")
-        return "f";
-    else if (state == "CmonHostRecovery")
-        return "r";
-    else if (state == "CmonHostShutDown")
-        return "-";
-
-    return "?";
 }
 
 bool

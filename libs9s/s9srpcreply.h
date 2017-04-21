@@ -140,10 +140,6 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyListLong();
         void printMetaTypePropertyListBrief();
 
-        S9sString 
-            nodeStateFlag(
-                const S9sString &state);
-
         bool useSyntaxHighLight() const;
         
         const char *optNameColorBegin() const;

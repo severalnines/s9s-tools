@@ -360,6 +360,27 @@ S9sNode::hostStatus() const
     return S9sString();
 }
 
+char 
+S9sNode::hostStatusFlag() const
+{
+    S9sString theHostStatus = hostStatus();
+
+    if (theHostStatus == "CmonHostUnknown")
+        return '?';
+    else if (theHostStatus == "CmonHostOnline")
+        return 'o';
+    else if (theHostStatus == "CmonHostOffLine")
+        return 'l';
+    else if (theHostStatus == "CmonHostFailed")
+        return 'f';
+    else if (theHostStatus == "CmonHostRecovery")
+        return 'r';
+    else if (theHostStatus == "CmonHostShutDown")
+        return '-';
+
+    return '?';
+}
+
 /**
  * \returns The "nodetype" property string. It can be strings like "controller",
  *   "galera", "postgres".

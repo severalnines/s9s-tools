@@ -65,6 +65,7 @@ class S9sNode
         S9sString fullErrorString() const;
 
         S9sString hostStatus() const;
+        char hostStatusFlag() const;
         S9sString nodeType() const;
         char nodeTypeFlag() const;
         S9sString version() const;
