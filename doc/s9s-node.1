@@ -199,6 +199,93 @@ Use this to install and handle ProxySql servers.
 The protocol to install and handle MaxScale servers.
 .RE
 
+.\"
+.\"
+.\"
+.SH NODE LIST
+Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
+of the nodes can be printed. Here is an example of such a list:
+
+.nf
+# \fBs9s node --list --long '192.168.1.1*'\fP
+STAT VERSION CID CLUSTER             HOST          PORT COMMENT
+poM- 9.6.2     1 ft_postgresql_11794 192.168.1.117 8089 Up and running
+coC- 1.4.2     1 ft_postgresql_11794 192.168.1.127 9555 Up and running
+Total: 3
+
+.fi
+
+Please note that the list in the example is created using a filter (that
+is '192.168.1.1*' in the example). The last line shows a 3 as total, the number
+of nodes maintained by the controller, but only two of the nodes are printed in
+the list because of the filter.
+
+The list contains the following fields:
+.RS 5
+.TP
+.B STAT
+Some status information represented as individual letter. This field contains
+the following characters:
+.RS 5
+.TP
+.B nodetype
+This is the type of the node. It can be c for controller, g for Galera node, 
+x for MaxScale node, k for Keepalived node, p for PostgreSQL, m for Mongo, e for
+MemCached, y for ProxySql, h for HaProxy, a for Garbd and s for generic MySQl
+nodes.
+.TP
+.B hoststatus
+The status of the node. It can be o for on-line, l for off-line, f for failed
+nodes, r for nodes performing recovery, - for nodest that are shut down and ?
+for nodes in unknown state.
+.TP
+.B role
+This field shows the role of the node in the cluster. This can be M for master,
+S for Slave, C for controller and - for everything else.
+.TP 
+.B maintenance
+This field shows if the node is in maintenance mode. The character is M for
+nodes in maintenance mode and - for nodes that are not in maintenance mode.
+.RE
+.TP
+.B VERSION
+This field shows the version string of the software that provides the service
+represented in the given line. Check for the documentation of the PORT field 
+for more details.
+.TP
+.B CID
+The cluster ID of the cluster that holds the node as a member. Every node
+belongs to exactly one cluster.
+.TP
+.B CLUSTER 
+The name of the cluster that holds the node as a member.
+.TP
+.B HOST
+The host name of the host. This can be a real DNS host name, the IP address or
+the Cmon alias name of the node depending on the configuration and the command
+line options. The cluster is usually configured to use IP addresses (the Cmon
+configuration file contains IP addresses) so this field usually shows IP
+addresses.
+.TP 
+.B PORT
+The IP port on which the node accepts requests. The same DNS host name or IP
+address can be added multiple times to the same or to multiple clusters, but the
+host:port pair must be unique. In other words the same host with the same port
+can not be added to the same Cmon controller twice. Since the hostname:port pair
+is unique the nodes are identified by this and every line of the node list is
+representing a hostname:port node. There is one exception for this rule: the
+Cmon Controller can manage multiple clusters and so be a part of more than
+one clusters with the same hostname and port. 
+.TP 
+.B COMMENT
+A short human-readable description that the Cmon Controller sets automatically
+to describe the host state. A single '-' letter is shown if the controller did
+not set the message.
+.RE
+
+The color highlighting of the node list is controlled by the \fB\-\-color\fP
+command line option.
+
 
 .\"
 .\"
