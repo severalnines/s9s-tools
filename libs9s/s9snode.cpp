@@ -360,6 +360,10 @@ S9sNode::hostStatus() const
     return S9sString();
 }
 
+/**
+ * \returns The "nodetype" property string. It can be strings like "controller",
+ *   "galera", "postgres".
+ */
 S9sString
 S9sNode::nodeType() const
 {
@@ -367,6 +371,42 @@ S9sNode::nodeType() const
         return m_properties.at("nodetype").toString();
 
     return S9sString();
+}
+
+/**
+ * \returns A one character representation of the node type property. We use
+ *   this to print it out in node lists.
+ */
+char 
+S9sNode::nodeTypeFlag() const
+{
+    S9sString theNodeType = nodeType();
+    
+    if (theNodeType == "controller")
+        return 'c';
+    else if (theNodeType == "galera")
+        return 'g';
+    else if (theNodeType == "maxscale")
+        return 'x';
+    else if (theNodeType == "keepalived")
+        return 'k';
+    else if (theNodeType == "postgres")
+        return 'p';
+    else if (theNodeType == "mongo")
+        return 'm';
+    else if (theNodeType == "memcached")
+        return 'e';
+    else if (theNodeType == "proxysql")
+        return 'y';
+    else if (theNodeType == "haproxy")
+        return 'h';
+    else if (theNodeType == "garbd")
+        return 'a';
+
+    if (className() == "CmonMySqlHost")
+        return 's';
+    
+    return '?';
 }
 
 S9sString

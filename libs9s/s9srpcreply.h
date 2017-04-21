@@ -141,11 +141,6 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyListBrief();
 
         S9sString 
-            nodeTypeFlag(
-                const S9sString &className,
-                const S9sString &nodeType);
-        
-        S9sString 
             nodeStateFlag(
                 const S9sString &state);
 

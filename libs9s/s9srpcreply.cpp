@@ -2281,7 +2281,7 @@ S9sRpcReply::printNodeListLong()
         /*
          * Printing.
          */
-        printf("%s", STR(nodeTypeFlag(className, nodeType)));
+        printf("%c", node.nodeTypeFlag());
         printf("%s", STR(nodeStateFlag(status)));
         printf("%c", node.roleFlag());
         printf("%c ", maintenance ? 'M' : '-');
@@ -3968,38 +3968,6 @@ S9sRpcReply::clusterMap(
     }
 
     return retval;
-}
-
-S9sString 
-S9sRpcReply::nodeTypeFlag(
-        const S9sString &className,
-        const S9sString &nodeType)
-{
-    if (nodeType == "controller")
-        return "c";
-    else if (nodeType == "galera")
-        return "g";
-    else if (nodeType == "maxscale")
-        return "x";
-    else if (nodeType == "keepalived")
-        return "k";
-    else if (nodeType == "postgres")
-        return "p";
-    else if (nodeType == "mongo")
-        return "m";
-    else if (nodeType == "memcached")
-        return "e";
-    else if (nodeType == "proxysql")
-        return "y";
-    else if (nodeType == "haproxy")
-        return "h";
-    else if (nodeType == "garbd")
-        return "a";
-
-    if (className == "CmonMySqlHost")
-        return "s";
-    
-    return "?";
 }
 
 S9sString 
