@@ -221,6 +221,10 @@ class S9sRpcClient
         bool addNode(
                 const int             clusterId,
                 const S9sVariantList &hosts);
+        
+        bool addReplicationSlave(
+                const int             clusterId,
+                const S9sVariantList &hosts);
 
         bool addHaProxy(
                 const int             clusterId,

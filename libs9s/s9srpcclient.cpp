@@ -30,7 +30,7 @@
 #include <cstdio>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -1373,7 +1373,32 @@ S9sRpcClient::createNode()
     {
         success = addMaxScale(clusterId, hosts);
     } else {
-        success = addNode(clusterId, hosts);
+        int nSlaves  = 0;
+        int nMasters = 0;
+
+        for (uint idx = 0; idx < hosts.size(); ++idx)
+        {
+            const S9sNode &node = hosts[idx].toNode();
+            bool           master = node.property("master").toBoolean();
+            bool           slave = node.property("slave").toBoolean();
+
+            S9S_DEBUG("[%02u] %5s %s", 
+                    idx, 
+                    master ? "true" : "false",
+                    slave  ? "true" : "false",
+                    STR(node.hostName()));
+
+            if (slave)
+                nSlaves += 1;
+
+            if (master)
+                nMasters += 1;
+        }
+        
+        if (nSlaves == 0 && nMasters == 0)
+            success = addNode(clusterId, hosts);
+        else
+            success = addReplicationSlave(clusterId, hosts);
     }
 
     return success;
@@ -1424,6 +1449,111 @@ S9sRpcClient::addNode(
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = clusterId;
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    } else {
+        PRINT_ERROR(
+                "Either the --cluster-id or the --cluster-name command line "
+                "option has to be provided.");
+        return false;
+    }
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * This method is very similar to the addNode() method, but it adds a slave to
+ * an existing cluster.
+ */
+bool
+S9sRpcClient::addReplicationSlave(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+    S9sNode        master;
+    S9sNode        slave;
+    int            nSlaves  = 0;
+    int            nMasters = 0;
+    
+    /*
+     * Finding the slave and the master.
+     */
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        const S9sNode &node = hosts[idx].toNode();
+        bool           isMaster = node.property("master").toBoolean();
+        bool           isSlave = node.property("slave").toBoolean();
+
+        S9S_WARNING("[%02u] %5s %s", 
+                idx, 
+                isMaster ? "true" : "false",
+                isSlave  ? "true" : "false",
+                STR(node.hostName()));
+
+        if (isSlave)
+        {
+            nSlaves += 1;
+            slave = hosts[idx].toNode();
+        }
+
+        if (isMaster)
+        {
+            nMasters += 1;
+            master = hosts[idx].toNode();
+        }
+    }
+
+    if (nSlaves != 1 || nMasters != 1)
+    {
+        PRINT_ERROR("To add a slave to an existing master one slave and"
+                " one master has to be specified.");
+        return false;
+    }
+
+    // The job_data describing the cluster.
+    jobData["master_address"]   = master.hostName();
+    jobData["slave_address"]    = slave.hostName();
+
+    if (slave.hasPort())
+        jobData["port"]         = slave.port();
+
+    jobData["install_software"] = true;
+    jobData["disable_firewall"] = true;
+    jobData["disable_selinux"]  = true;
+   
+    // The jobspec describing the command.
+    jobSpec["command"]    = "add_replication_slave";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add Slave to Cluster";
     job["job_spec"]       = jobSpec;
     job["user_name"]      = options->userName();
     if (!options->schedule().empty())

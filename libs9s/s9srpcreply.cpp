@@ -2278,6 +2278,9 @@ S9sRpcReply::printNodeListLong()
             }
         }
 
+        /*
+         * Printing.
+         */
         printf("%s", STR(nodeTypeFlag(className, nodeType)));
         printf("%s", STR(nodeStateFlag(status)));
         printf("%c ", maintenance ? 'M' : '-');

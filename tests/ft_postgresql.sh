@@ -241,7 +241,7 @@ function testAddNode()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$LAST_ADDED_NODE?master" \
+        --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
     
     exitCode=$?
