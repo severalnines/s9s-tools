@@ -2204,7 +2204,7 @@ S9sRpcReply::printNodeListLong()
         portFormat.widen("PORT");
 
         printf("%s", headerColorBegin());
-        printf("ST  ");
+        printf("STAT ");
         versionFormat.printf("VERSION");
         cidFormat.printf("CID");
         clusterNameFormat.printf("CLUSTER");
@@ -2283,6 +2283,7 @@ S9sRpcReply::printNodeListLong()
          */
         printf("%s", STR(nodeTypeFlag(className, nodeType)));
         printf("%s", STR(nodeStateFlag(status)));
+        printf("%c", node.roleFlag());
         printf("%c ", maintenance ? 'M' : '-');
 
         versionFormat.printf(version);

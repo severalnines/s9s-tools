@@ -222,6 +222,9 @@ S9sNode::alias() const
     return S9sString();
 }
 
+/**
+ * \returns The "role" property.
+ */
 S9sString
 S9sNode::role() const
 {
@@ -229,6 +232,26 @@ S9sNode::role() const
         return m_properties.at("role").toString();
 
     return S9sString();
+}
+
+/**
+ * \returns A one character representation of the "role" property. We use this
+ *   in lists we print because it takes less space and so we can print compact
+ *   lists.
+ */
+char
+S9sNode::roleFlag() const
+{
+    S9sString theRole = role();
+
+    if (theRole == "master")
+        return 'M';
+    else if (theRole == "slave")
+        return 'S';
+    else if (theRole == "controller")
+        return 'C';
+
+    return '-';
 }
 
 S9sString
