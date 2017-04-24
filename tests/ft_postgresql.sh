@@ -251,6 +251,44 @@ function testAddNode()
     fi
 }
 
+#
+# This test will first call a --stop then a --start on a node. Pretty basic
+# stuff.
+#
+function testStopStartNode()
+{
+    local exitCode
+
+    #
+    # First stop.
+    #
+    mys9s node \
+        --stop \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$LAST_ADDED_NODE \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+    
+    #
+    # Then start.
+    #
+#    mys9s node \
+#        --start \
+#        --cluster-id=$CLUSTER_ID \
+#        --nodes=$LAST_ADDED_NODE \
+#        $LOG_OPTION
+#    
+#    exitCode=$?
+#    printVerbose "exitCode = $exitCode"
+#    if [ "$exitCode" -ne 0 ]; then
+#        failure "The exit code is ${exitCode}"
+#    fi
+}
 
 #
 # This function will check the basic getconfig/setconfig features that reads the
@@ -623,6 +661,7 @@ else
     
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testStopStartNode
 
     runFunctionalTest testConfig
 

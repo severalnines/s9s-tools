@@ -229,23 +229,25 @@ the following characters:
 .RS 5
 .TP
 .B nodetype
-This is the type of the node. It can be c for controller, g for Galera node, 
-x for MaxScale node, k for Keepalived node, p for PostgreSQL, m for Mongo, e for
-MemCached, y for ProxySql, h for HaProxy, a for Garbd and s for generic MySQl
-nodes.
+This is the type of the node. It can be \fBc\fP for controller, \fBg\fP for
+Galera node, \fBx\fP for MaxScale node, \fBk\fP for Keepalived node, \fBp\fP for
+PostgreSQL, \fBm\fP for Mongo, \fBe\fP for MemCached, \fBy\fP for ProxySql,
+\fBh\fP for HaProxy, \fBa\fP for Garbd and \fBs\fP for generic MySQL nodes.
 .TP
 .B hoststatus
-The status of the node. It can be o for on-line, l for off-line, f for failed
-nodes, r for nodes performing recovery, - for nodest that are shut down and ?
-for nodes in unknown state.
+The status of the node. It can be \fBo\fP for on-line, \fBl\fP for off-line,
+\fBf\fP for failed nodes, \fBr\fP for nodes performing recovery, \fB-\fP for
+nodest that are shut down and \fB?\fP for nodes in unknown state.
 .TP
 .B role
-This field shows the role of the node in the cluster. This can be M for master,
-S for Slave, C for controller and - for everything else.
+This field shows the role of the node in the cluster. This can be \fBM\fP for
+master, \fBS\fP for Slave, \fBC\fP for controller and \fB-\fP for everything
+else.
 .TP 
 .B maintenance
-This field shows if the node is in maintenance mode. The character is M for
-nodes in maintenance mode and - for nodes that are not in maintenance mode.
+This field shows if the node is in maintenance mode. The character is \fbM\fP
+for nodes in maintenance mode and \fB-\fP for nodes that are not in maintenance
+mode.
 .RE
 .TP
 .B VERSION
@@ -279,8 +281,8 @@ one clusters with the same hostname and port.
 .TP 
 .B COMMENT
 A short human-readable description that the Cmon Controller sets automatically
-to describe the host state. A single '-' letter is shown if the controller did
-not set the message.
+to describe the host state. A single '-' character is shown if the controller
+did not set the message.
 .RE
 
 The color highlighting of the node list is controlled by the \fB\-\-color\fP
@@ -312,13 +314,44 @@ command line option.
 List the nodes managed by the controller:
 
 .nf
-# \fBs9s node --list --long --controller=https://localhost:9556 --color=always\fR
+# \fBs9s node \\
+    --list \\
+    --long \\
+    --controller=https://localhost:9556 \\
+    --color=always\fR
 .fi
 
 List a few specific nodes from one specific cluster:
 
 .nf
-# \fBs9s node --list --long --cluster-name=ft_postgresql_36945 '*168.0*' '10.10*'\fR
+# \fBs9s node \\
+    --list \\
+    --long \\
+    --cluster-name=ft_postgresql_36945 \\
+    '*168.0*' '10.10*'\fR
+.fi
+
+Installing a new Galera cluster with three nodes:
+
+.nf
+# \fBs9s cluster \\
+    --create \\
+    --cluster-type=galera \\
+    --nodes=192.168.1.117;192.168.1.241;192.168.1.242 \\
+    --vendor=percona \\
+    --cluster-name=ft_galera_43788 \\
+    --provider-version=5.6 \\
+    --log\fR
+.fi
+
+The next example shows how to add a slave node to a cluster.
+
+.nf
+# \fBs9s cluster \\
+    --add-node \\
+    --cluster-id=1 \\
+    --nodes=192.168.1.117?master;192.168.1.240?slave \\
+    --log \fR
 .fi
 
 The following example shows how a node in a given cluster can be restarted. When
@@ -336,14 +369,21 @@ line tool will stop and show the job messages until the job is finished.
 Change a configuration value for a PostgreSQL server:
 
 .nf
-# \fBs9s node --change-config --nodes=192.168.1.115 --opt-name=log_line_prefix --opt-value='%m '\fR
+# \fBs9s node \\
+    --change-config \\
+    --nodes=192.168.1.115 \\
+    --opt-name=log_line_prefix \\
+    --opt-value='%m '\fR
 .fi
 
 Change the "alias" property for a host, giving it a "nickname" to be used in
 lists and command line options:
 
 .nf
-# \fBs9s node --set --nodes=192.168.1.127 --properties="alias=controller"\fR
+# \fBs9s node \\
+    --set \\
+    --nodes=192.168.1.127 \\
+    --properties="alias=controller"\fR
 .fi
 
 

@@ -1510,7 +1510,7 @@ S9sRpcClient::addReplicationSlave(
         bool           isMaster = node.property("master").toBoolean();
         bool           isSlave = node.property("slave").toBoolean();
 
-        S9S_WARNING("[%02u] %5s %s", 
+        S9S_DEBUG("[%02u] %5s %s", 
                 idx, 
                 isMaster ? "true" : "false",
                 isSlave  ? "true" : "false",
