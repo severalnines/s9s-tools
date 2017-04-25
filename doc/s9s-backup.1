@@ -194,15 +194,22 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-Here is an example showing how to create a new cluster:
+Here is an example showing how to create a new backup:
 
 .nf
-# \fBs9s backup --create --nodes=192.168.1.199 --cluster-id=1 --wait\fR
+# \fBs9s backup \\
+    --create \\
+    --nodes=192.168.1.199 \\
+    --cluster-id=1 \\
+    --wait\fR
 .fi
 
 Another example simply lists the backup files:
 
 .nf
-# \fBs9s backup --list --cluster-id=1 --long -h\fR
+# \fBs9s backup \\
+    --list \\
+    --cluster-id=1 \\
+    --long -h\fR
 .fi
 
