@@ -295,31 +295,49 @@ command line option.
 Here is an example showing how to create a new cluster:
 
 .nf
-# \fBs9s cluster --create --controller=https://localhost:9556 --cluster-type=galera --vendor=percona --nodes="192.168.1.104;192.168.1.107;192.168.1.108" --provider-version=5.6 --wait\fR
+# \fBs9s cluster \\
+    --create \\
+    --controller=https://localhost:9556 \\
+    --cluster-type=galera \\
+    --vendor=percona \\
+    --nodes="192.168.1.104;192.168.1.107;192.168.1.108" \\
+    --provider-version=5.6 \\
+    --wait\fR
 .fi
 
 This command will create a new job on the controller to create a new cluster.
-Since the --wait command line option was provided it will wait until the job is
-finished, but the command line tool can be aborted before the job is finished,
-the job remains there and will be executed by the controller anyway. It is also
-possible to attach to the job using the job ID later or use the --log option to
-print the messages of the job.
+Since the \fB--wait\fP command line option was provided it will wait until the
+job is finished, but the command line tool can be aborted before the job is
+finished, the job remains there and will be executed by the controller anyway.
+It is also possible to attach to the job using the job ID later or use the --log
+option to print the messages of the job.
 
 Another example simply lists the clusters managed by the controller:
 
 .nf
-# \fBs9s cluster --list --long --controller=https://localhost:9556 --color=always\fR
+# \fBs9s cluster \\
+    --list \\
+    --long \\
+    --controller=https://localhost:9556 \\
+    --color=always\fR
 .fi
 
 Schedule a rolling restart of the cluster 20 minutes from now:
 
 .nf
-# \fBs9s cluster --rolling-restart --cluster-id=1 --schedule="$(date -d 'now + 20 min')"\fR
+# \fBs9s cluster \\
+    --rolling-restart \\
+    --cluster-id=1 \\
+    --schedule="$(date -d 'now + 20 min')"\fR
 .fi
 
 Create a database account on the cluster and also create a new database to be
 used by the new user. Grant all access on the new database for the new user:
 
 .nf
-# \fBs9s cluster --create-account --cluster-id=1 --account=john:passwd@10.10.1.100 --with-database\fR
+# \fBs9s cluster \\
+    --create-account \\
+    --cluster-id=1 \\
+    --account=john:passwd@10.10.1.100 \\
+    --with-database\fR
 .fi

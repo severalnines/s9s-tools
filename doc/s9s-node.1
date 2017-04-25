@@ -3,7 +3,7 @@
 .SH NAME
 s9s-node \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
-.B s9s-cluster
+.B s9s-node
 .RI [OPTION]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
@@ -344,7 +344,8 @@ Installing a new Galera cluster with three nodes:
     --log\fR
 .fi
 
-The next example shows how to add a slave node to a cluster.
+The next example shows how to add a slave node to a cluster. Please note that
+adding a new node to an existing cluster is a cluster operation.
 
 .nf
 # \fBs9s cluster \\
