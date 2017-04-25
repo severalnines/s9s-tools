@@ -186,9 +186,20 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-The next example shows how to list the jobs of one specific cluster:
+The next example shows how to list the jobs of one specific cluster. It is also
+possible to print the list of all the jobs for all the clusters, and for this
+the \fB--cluster-id\fP option can simply be omitted.
 
 .nf
-# \fBs9s job --list --cluster-id=1 \fR
+# \fBs9s job \\
+    --list \\
+    --cluster-id=1 \fR
 .fi
 
+The following example shows how to list the job messages that belong to one
+specific job.
+
+.nf
+# \fBs9s job \\
+    --log \\
+    --job-id=5\fR

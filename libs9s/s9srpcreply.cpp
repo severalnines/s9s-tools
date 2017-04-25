@@ -2382,7 +2382,7 @@ S9sRpcReply::printJobListBrief()
         groupFormat.printf("GROUP");
         dateFormat.printf("CREATED");
         percentFormat.printf("RDY");
-        printf("COMMENT");
+        printf("TITLE");
 
         printf("%s", headerColorEnd());
 
