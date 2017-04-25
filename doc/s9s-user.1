@@ -147,7 +147,17 @@ acess to the system using a public SSL key that is created (if it is not yet
 created):
 
 .nf
-# \fBs9s user --create --generate-key --cmon-user=john --first-name="John" --last-name="Doe" --group=admins\fR
+# \fBs9s user \\
+    --create \\
+    --generate-key \\
+    --cmon-user=john \\
+    --first-name="John" \\
+    --last-name="Doe" \\
+    --group=admins\fR
 .fi
 
+Here is how to get a detailed list of the users managed by the controller.
 
+# \fBs9s user \\
+    --list \\
+    --long\fR
