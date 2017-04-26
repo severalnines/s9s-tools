@@ -865,23 +865,19 @@ S9sRpcClient::createCluster()
     if (options->clusterType() == "galera")
     {
         success = createGaleraCluster(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "mysqlreplication")
     {
         success = createMySqlReplication(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "group_replication" || 
             options->clusterType() == "groupreplication")
     {
         success = createGroupReplication(
-                hosts, osUserName, vendor, 
-                dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "postgresql")
     {
-        success = createPostgreSql(
-                hosts, osUserName, uninstall);
+        success = createPostgreSql(hosts, osUserName, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {

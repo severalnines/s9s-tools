@@ -637,21 +637,24 @@ S9sVariant::toString() const
     {
         //CmonJSonMessage map = toVariantMap();
         //retval = map.toString();
-    #if 0
+    } else if (m_type == Node)
+    {
+        retval = toNode().toVariantMap().toString();
     } else if (m_type == List)
     {
-        const CmonVariantList &list = toVariantList();
+        const S9sVariantList &list = toVariantList();
 
-        retval = "{";
+        retval = "[";
         for (uint idx = 0; idx < list.size(); ++idx)
         {
-            const CmonVariant &item = list[idx];
+            const S9sVariant &item = list[idx];
             if (idx > 0)
                 retval += ", ";
 
             retval += item.toString();
         }
-        retval += "}";
+        retval += "]";
+    #if 0
     } else if (m_type == Array)
     {
         // Converting an array into a string. This is only used in 

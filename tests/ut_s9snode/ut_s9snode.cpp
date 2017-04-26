@@ -22,8 +22,8 @@
 #include "S9sNode"
 #include "S9sVariantMap"
 
-//#define DEBUG
-//#define WARNING
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 static const char *hostJson1 = 
@@ -109,6 +109,7 @@ UtS9sNode::runTest(const char *testName)
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
     PERFORM_TEST(testVariant01,       retval);
+    PERFORM_TEST(testVariant02,       retval);
     PERFORM_TEST(testParse,           retval);
 
     return retval;
@@ -202,6 +203,24 @@ UtS9sNode::testVariant01()
     S9S_VERIFY(jsonString.contains("\"hostname\": \"192.168.1.189\""));
     S9S_VERIFY(jsonString.contains("\"port\": 3306"));
 
+    return true;
+}
+
+bool
+UtS9sNode::testVariant02()
+{
+    S9sVariantList theList;
+    S9sNode        theNode;
+    S9sVariant     theVariant;
+
+    theNode = S9sNode("10.10.10.23:3306?master");
+    theList << theNode;
+    
+    theNode = S9sNode("10.10.10.24:3306?slave");
+    theList << theNode;
+    
+    theVariant = theList;
+    S9S_WARNING("-> \n%s\n", STR(theVariant.toString()));
     return true;
 }
 
