@@ -471,6 +471,38 @@ function testAddNode()
 }
 
 #
+# This test will add one new node to the cluster.
+#
+function testAddMaster()
+{
+    local nodes
+    local exitCode
+
+    pip-say "The test to add master node is starting now."
+    printVerbose "Creating node..."
+    LAST_ADDED_NODE=$(create_node)
+    nodes+="$LAST_ADDED_NODE?master"
+    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+
+
+#
 # This test will remove the last added node.
 #
 function testRemoveNode()
@@ -602,6 +634,7 @@ else
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
+    runFunctionalTest testAddMaster
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop

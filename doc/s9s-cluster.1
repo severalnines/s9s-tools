@@ -191,6 +191,15 @@ Someone has to write this part.
 .TP
 .B ndb_mgmd://
 Someone has to write this part. The mgmd:// notation is also accepted.
+.TP
+.B haproxy://
+Used to create and manipulate HaProxy servers.
+.TP
+.B proxysql://
+Use this to install and handle ProxySql servers.
+.TP
+.B maxscale://
+The protocol to install and handle MaxScale servers.
 .RE
 
 .TP
@@ -269,6 +278,47 @@ The expression \fB"MyDb:INSERT,UPDATE;Other:SELECT"\fP for example defines
 \fB"INSERT,UPDATE"\fP on the other hand would specify \fBINSERT\fP and
 \fBUPDATE\fP privileges on all databases and all tables.
 
+.\"
+.\"
+.\"
+.SH CLUSTER LIST
+Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
+of the clusters can be printed. Here is an example of such a list:
+
+.nf
+# \fBs9s cluster --list --long\fP
+ID STATE   TYPE        OWNER GROUP NAME     COMMENT
+ 1 STARTED replication pipas users mysqlrep All nodes are operational.
+Total: 1
+
+.fi
+
+The list contains the following fields:
+.RS 5
+.TP
+.B ID
+The cluster ID of the given cluster.
+.TP
+.B STATE
+A short string describing the state of the cluster. Possible values are 
+MGMD_NO_CONTACT, STARTED, NOT_STARTED, DEGRADED, FAILURE, SHUTTING_DOWN,
+RECOVERING, STARTING, UNKNOWN, STOPPED.
+.TP
+.B TYPE
+The type of the cluster. Possible values are mysqlcluster, replication, 
+galera, group_repl, mongodb, mysql_single, postgresql_single.
+.TP
+.B OWNER
+The user name of the owner of the cluster.
+.TP
+.B GROUP
+The group owner's name.
+.TP
+.B NAME 
+The name of the cluster.
+.TP
+.B COMMENT
+A short human readable description of the current state of the cluster.
 
 .\"
 .\"
