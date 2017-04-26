@@ -164,6 +164,57 @@ shows only hours, minutes and seconds instead of the full date and time.
 .B %
 The '%' character itself. 
 
+
+.\"
+.\"
+.\"
+.SH JOB LIST
+Using the \fB\-\-list\fP command line option a detailed list
+of jobs can be printed (the \fB\-\-long\fP option results in even more details).
+Here is an example of such a list:
+
+.nf
+# \fBs9s job --list\fP
+ID CID STATE    OWNER  GROUP  CREATED             RDY  TITLE
+ 1   0 FINISHED pipas  users  2017-04-25 14:12:31 100% Create MySQL Cluster
+ 2   1 FINISHED system admins 03:00:15            100% Removing Old Backups
+Total: 2
+
+.fi
+The list contains the following fields:
+.RS 5
+.TP
+.B ID
+The numerical ID of the job. The \fB\-\-job-id\fP command line option can be
+used to pass such ID numbers.
+.TP 
+.B CID
+The cluster ID. Most of the jobs are related to one specific cluster so those
+have a cluster ID in this field. Some of the jobs are not related to any
+cluster, so they are shown with cluster ID 0.
+.TP
+.B STATE
+The state of the job. The possible values are DEFINED, DEQUEUED, RUNNING, 
+SCHEDULED, ABORTED, FINISHED and FAILED.
+.TP
+.B OWNER
+The user name of the user who owns the job.
+.TP
+.B GROUP
+The name of the group owner.
+.TP
+.B CREATED
+The date and time showing when the job was created. The format of this timestamp
+can be set using the \fB\-\^\-date\-format\fP command line option.
+.TP
+.B RDY
+A progress indicator showing how many percent of the job was done. Please note
+that some jobs has no estimation available and so this value remains 0% for the
+entire execution time.
+.TP
+.B TITLE
+A short, human readable description of the job.
+
 .\"
 .\"
 .\"
