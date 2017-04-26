@@ -238,9 +238,14 @@ class S9sRpcClient
                 const int             clusterId,
                 const S9sVariantList &hosts);
 
+        static S9sVariant 
+            topology(
+                const S9sVariantList &nodes);
+
     private:
         S9sRpcClientPrivate *m_priv;
 
         friend class UtS9sRpcClient;
+        friend class UtS9sNode;
 };
 

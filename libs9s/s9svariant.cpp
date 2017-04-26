@@ -635,8 +635,7 @@ S9sVariant::toString() const
         retval.sprintf("%g", m_union.dVal);
     } else if (m_type == Map)
     {
-        //CmonJSonMessage map = toVariantMap();
-        //retval = map.toString();
+        retval = toVariantMap().toString();
     } else if (m_type == Node)
     {
         retval = toNode().toVariantMap().toString();

@@ -1798,6 +1798,7 @@ S9sRpcClient::addMaxScale(
 
     return retval;
 }
+
 /**
  * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be removed from the cluster (variant list
@@ -2943,3 +2944,52 @@ S9sRpcClient::doExecuteRequest(
     return true;
 }
 
+S9sVariant
+S9sRpcClient::topology(
+        const S9sVariantList &nodes)
+{
+    S9sVariantList masterSlaveLinks;
+    S9sVariantMap  topology;
+    S9sVariant     retval;
+    S9sString      masterHostName;
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        const S9sNode &node = nodes[idx].toNode();
+        bool  isMaster      = node.property("master").toBoolean();
+        bool  isSlave       = node.property("slave").toBoolean();
+
+        S9S_WARNING("%-20s %-6s", 
+                STR(node.hostName()),
+                isMaster ? "master" : (isSlave ? "slave" : "-"));
+
+        if (isMaster)
+        {
+            if (!masterHostName.empty())
+            {
+                S9sVariantMap map1, map2;
+
+                map1[masterHostName]  = node.hostName();
+                map2[node.hostName()] = masterHostName;
+
+                masterSlaveLinks << map1;
+                masterSlaveLinks << map2;
+            }
+
+            masterHostName = node.hostName();
+        } else if (isSlave)
+        {
+            if (!masterHostName.empty())
+            {
+                S9sVariantMap map1;
+
+                map1[masterHostName] = node.hostName();
+                masterSlaveLinks << map1;
+            }
+        }
+    }
+
+    topology["master_slave_links"] = masterSlaveLinks;
+    retval = topology;
+    return retval;
+}

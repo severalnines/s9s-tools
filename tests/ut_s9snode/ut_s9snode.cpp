@@ -21,6 +21,7 @@
 
 #include "S9sNode"
 #include "S9sVariantMap"
+#include "S9sRpcClient"
 
 #define DEBUG
 #define WARNING
@@ -209,18 +210,27 @@ UtS9sNode::testVariant01()
 bool
 UtS9sNode::testVariant02()
 {
-    S9sVariantList theList;
+    S9sVariantList nodes;
     S9sNode        theNode;
     S9sVariant     theVariant;
+    S9sVariant     topology;
 
-    theNode = S9sNode("10.10.10.23:3306?master");
-    theList << theNode;
+
+    theNode = S9sNode("masterhost1:3306?master");
+    nodes << theNode;
     
-    theNode = S9sNode("10.10.10.24:3306?slave");
-    theList << theNode;
+    theNode = S9sNode("slavehost1:3306?slave");
+    nodes << theNode;
     
-    theVariant = theList;
-    S9S_WARNING("-> \n%s\n", STR(theVariant.toString()));
+    theNode = S9sNode("masterhost2:3306?master");
+    nodes << theNode;
+    
+    theVariant = nodes;
+    S9S_WARNING("nodes    -> \n%s\n", STR(theVariant.toString()));
+
+    topology = S9sRpcClient::topology(nodes);
+    S9S_WARNING("topology -> \n%s\n", STR(topology.toString()));
+
     return true;
 }
 
