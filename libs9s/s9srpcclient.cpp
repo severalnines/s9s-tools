@@ -2280,6 +2280,18 @@ S9sRpcClient::restoreBackup()
     // The job_data describing how the backup will be created.
     jobData["backupid"]   = backupId;
     jobData["bootstrap"]  = true;
+    if (!options->nodes().empty())
+    {
+        // on which node we want to restore the backup
+        S9sNode   node    = options->nodes()[0].toNode();
+        S9sString address = node.hostName();
+
+        // lets include also portNum if specified
+        if (node.hasPort())
+            address.sprintf("%s:%d", STR(node.hostName()), node.port());
+
+        jobData["server_address"] = address;
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = "restore_backup";
