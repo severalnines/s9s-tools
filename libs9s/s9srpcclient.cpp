@@ -2957,7 +2957,7 @@ S9sRpcClient::doExecuteRequest(
 }
 
 S9sVariant
-S9sRpcClient::topology(
+S9sRpcClient::topologyField(
         const S9sVariantList &nodes)
 {
     S9sVariantList masterSlaveLinks;
@@ -2971,9 +2971,11 @@ S9sRpcClient::topology(
         bool  isMaster      = node.property("master").toBoolean();
         bool  isSlave       = node.property("slave").toBoolean();
 
+        #if 0
         S9S_WARNING("%-20s %-6s", 
                 STR(node.hostName()),
                 isMaster ? "master" : (isSlave ? "slave" : "-"));
+        #endif
 
         if (isMaster)
         {
@@ -3003,5 +3005,15 @@ S9sRpcClient::topology(
 
     topology["master_slave_links"] = masterSlaveLinks;
     retval = topology;
+    return retval;
+}
+
+S9sVariant
+S9sRpcClient::nodesField(
+        const S9sVariantList &nodes)
+{
+    S9sVariant     retval;
+
+    retval = nodes;
     return retval;
 }

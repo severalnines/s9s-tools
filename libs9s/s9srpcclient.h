@@ -239,9 +239,13 @@ class S9sRpcClient
                 const S9sVariantList &hosts);
 
         static S9sVariant 
-            topology(
+            topologyField(
                 const S9sVariantList &nodes);
 
+        static S9sVariant
+            nodesField(
+                const S9sVariantList &nodes);
+        
     private:
         S9sRpcClientPrivate *m_priv;
 
