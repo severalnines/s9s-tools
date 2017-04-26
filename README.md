@@ -35,4 +35,7 @@ The repository files for each distribution:
 ![Screenshot03](screenshots/screen-03.png)
 ![Screenshot04](screenshots/screen-04.png)
 ![Screenshot05](screenshots/screen-05.png)
+![Screenshot06](screenshots/screen-06.png)
+![Screenshot07](screenshots/screen-07.png)
+![Screenshot08](screenshots/screen-08.png)
 
