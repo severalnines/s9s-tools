@@ -648,6 +648,7 @@ S9sRpcReply::printJobLogBrief()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->briefJobLogFormat();
+    bool            isDebug = options->isDebug();
     S9sVariantList  theList = operator[]("messages").toVariantList();
 
     if (options->hasLogFormat())
@@ -658,7 +659,7 @@ S9sRpcReply::printJobLogBrief()
         S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sMessage    message = theMap;
 
-        if (message.severity() == "DEBUG")
+        if (!isDebug && message.severity() == "DEBUG")
             continue;
 
         if (formatString.empty())

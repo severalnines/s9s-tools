@@ -124,7 +124,8 @@ enum S9sOptionType
     OptionLogFormat,
     OptionFrom,
     OptionUntil,
-    OptionForce
+    OptionForce,
+    OptionDebug,
 };
 
 /**
@@ -2063,6 +2064,15 @@ S9sOptions::isVerbose() const
     return m_options.at("verbose").toBoolean();
 }
 
+bool
+S9sOptions::isDebug() const
+{
+    if (!m_options.contains("debug"))
+        return false;
+
+    return m_options.at("debug").toBoolean();
+}
+
 /**
  * \returns true if client must use TLS for controller RPC connections
  */
@@ -2677,6 +2687,7 @@ S9sOptions::readOptionsNode(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -2742,6 +2753,11 @@ S9sOptions::readOptionsNode(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -2966,6 +2982,7 @@ S9sOptions::readOptionsBackup(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -3028,6 +3045,11 @@ S9sOptions::readOptionsBackup(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -3290,6 +3312,7 @@ S9sOptions::readOptionsLog(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -3350,6 +3373,11 @@ S9sOptions::readOptionsLog(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -3937,6 +3965,7 @@ S9sOptions::readOptionsProcess(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -3977,6 +4006,11 @@ S9sOptions::readOptionsProcess(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -4099,6 +4133,7 @@ S9sOptions::readOptionsUser(
     {
         // Generic Options
         { "help",             no_argument,       0, 'h'                },
+        { "debug",            no_argument,       0, OptionDebug        },
         { "verbose",          no_argument,       0, 'v'                },
         { "version",          no_argument,       0, 'V'                },
         { "controller",       required_argument, 0, 'c'                },
@@ -4148,6 +4183,11 @@ S9sOptions::readOptionsUser(
             case 'h':
                 // -h, --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -4313,6 +4353,7 @@ S9sOptions::readOptionsMaintenance(
     {
         // Generic Options
         { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -4362,6 +4403,11 @@ S9sOptions::readOptionsMaintenance(
             case 'h':
                 // -h, --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -4514,6 +4560,7 @@ S9sOptions::readOptionsMetaType(
     {
         // Generic Options
         { "help",             no_argument,       0, 'h'               },
+        { "debug",            no_argument,       0, OptionDebug       },
         { "verbose",          no_argument,       0, 'v'               },
         { "version",          no_argument,       0, 'V'               },
         { "controller",       required_argument, 0, 'c'               },
@@ -4555,6 +4602,11 @@ S9sOptions::readOptionsMetaType(
             case 'h':
                 // -h, --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -4682,6 +4734,7 @@ S9sOptions::readOptionsCluster(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -4758,6 +4811,11 @@ S9sOptions::readOptionsCluster(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -5044,6 +5102,7 @@ S9sOptions::readOptionsJob(
     {
         // Generic Options
         { "help",             no_argument,       0, OptionHelp        },
+        { "debug",            no_argument,       0, OptionDebug       },
         { "verbose",          no_argument,       0, 'v'               },
         { "version",          no_argument,       0, 'V'               },
         { "cmon-user",        required_argument, 0, 'u'               }, 
@@ -5088,6 +5147,11 @@ S9sOptions::readOptionsJob(
             case OptionHelp:
                 // --help
                 m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':
@@ -5214,6 +5278,7 @@ S9sOptions::readOptionsScript(
     {
         // Generic Options
         { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -5253,6 +5318,11 @@ S9sOptions::readOptionsScript(
             case 'h':
                 // -h, --help
                 m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
                 break;
 
             case 'v':

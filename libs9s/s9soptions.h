@@ -233,6 +233,7 @@ class S9sOptions
         void setExitStatus(const S9sOptions::ExitCodes exitStatus);
 
         bool isVerbose() const;
+        bool isDebug() const;
 
         static void printVerbose(const char *formatString, ...);
         static void printError(const char *formatString, ...);
