@@ -926,6 +926,7 @@ S9sRpcReply::printLogBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    bool            isDebug = options->isDebug();
     S9sString       formatString = options->briefLogFormat();
     S9sVariantList  theList = operator[]("log_entries").toVariantList();
 
@@ -936,6 +937,10 @@ S9sRpcReply::printLogBrief()
     {
         S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sMessage    message = theMap;
+        S9sString     severity = message.severity();
+
+        if (!isDebug && (severity == "DEBUG" || severity == "INFO"))
+            continue;
 
         if (formatString.empty())
             printf("%s\n", STR(S9sString::html2ansi(message.message())));
