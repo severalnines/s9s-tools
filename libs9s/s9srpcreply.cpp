@@ -658,9 +658,13 @@ S9sRpcReply::printJobLogBrief()
         S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sMessage    message = theMap;
 
+        if (message.severity() == "DEBUG")
+            continue;
+
         if (formatString.empty())
+        {
             printf("%s\n", STR(S9sString::html2ansi(message.message())));
-        else {
+        } else {
             printf("%s",
                     STR(message.toString(syntaxHighlight, formatString)));
         }
