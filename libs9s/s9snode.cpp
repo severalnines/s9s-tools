@@ -248,6 +248,8 @@ S9sNode::roleFlag() const
         return 'M';
     else if (theRole == "slave")
         return 'S';
+    else if (theRole == "multi")
+        return 'U';
     else if (theRole == "controller")
         return 'C';
 

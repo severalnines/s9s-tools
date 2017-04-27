@@ -179,17 +179,32 @@ function testCreateCluster()
 
     pip-say "The test to create My SQL replication cluster is starting now."
     nodeName=$(create_node)
-    nodes+="$nodeName;"
+    nodes+="$nodeName?master;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
     SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName;"
+    nodes+="$nodeName?slave;"
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
-    nodes+="$nodeName"
+    SECOND_ADDED_NODE=$nodeName
+    nodes+="$nodeName?slave;"
+    ALL_CREATED_IPS+=" $nodeName"
+    
+    nodeName=$(create_node)
+    nodes+="$nodeName?master;"
+    ALL_CREATED_IPS+=" $nodeName"
+    
+    nodeName=$(create_node)
+    SECOND_ADDED_NODE=$nodeName
+    nodes+="$nodeName?slave;"
+    ALL_CREATED_IPS+=" $nodeName"
+    
+    nodeName=$(create_node)
+    SECOND_ADDED_NODE=$nodeName
+    nodes+="$nodeName?slave;"
     ALL_CREATED_IPS+=" $nodeName"
     
     #
@@ -215,341 +230,6 @@ function testCreateCluster()
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
-    fi
-}
-
-#
-# This function will check the basic getconfig/setconfig features that reads the
-# configuration of one node.
-#
-function testConfig()
-{
-    local exitCode
-    local value
-    local newValue
-    local name
-
-    pip-say "The test to check configuration is starting now."
-
-    #
-    # Listing the configuration values. The exit code should be 0.
-    #
-    mys9s node \
-        --list-config \
-        --nodes=$FIRST_ADDED_NODE #\ >/dev/null
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
-    #
-    # Changing a configuration value.
-    #
-    newValue=200
-    name="max_connections"
-    
-    mys9s node \
-        --change-config \
-        --nodes=$FIRST_ADDED_NODE \
-        --opt-name=$name \
-        --opt-group=MYSQLD \
-        --opt-value=$newValue
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-    
-    #
-    # Reading the configuration back. This time we only read one value.
-    #
-    value=$($S9S node \
-            --batch \
-            --list-config \
-            --opt-name=$name \
-            --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
-    if [ "$value" != "$newValue" ]; then
-        failure "Configuration value should be $newValue not $value"
-    fi
-
-    mys9s node \
-        --list-config \
-        --nodes=$FIRST_ADDED_NODE \
-        $name
-}
-
-#
-# This test will set a configuration value that contains an SI prefixum,
-# ("54M").
-#
-function testSetConfig()
-{
-    local exitCode
-    local value
-    local newValue="64M"
-    local name="max_heap_table_size"
-
-    #
-    # Changing a configuration value.
-    #
-    mys9s node \
-        --change-config \
-        --nodes=$FIRST_ADDED_NODE \
-        --opt-name=$name \
-        --opt-group=MYSQLD \
-        --opt-value=$newValue
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-    
-    #
-    # Reading the configuration back. This time we only read one value.
-    #
-    value=$($S9S node \
-            --batch \
-            --list-config \
-            --opt-name=$name \
-            --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
-    if [ "$value" != "$newValue" ]; then
-        failure "Configuration value should be $newValue not $value"
-    fi
-
-    mys9s node \
-        --list-config \
-        --nodes=$FIRST_ADDED_NODE \
-        'max*'
-}
-
-#
-# This test will call a --restart on the node.
-#
-# The problem in mysqlreplication is that this test will try to stop the
-# read-write server and that's now really allowed here.
-#
-function testRestartNode()
-{
-    local exitCode
-
-    #
-    # Restarting a node. 
-    #
-    mys9s node \
-        --restart \
-        --force \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This test will first call a --stop then a --start on a node. Pretty basic
-# stuff.
-#
-# The problem in mysqlreplication is that this test will try to stop the
-# read-write server and that's now really allowed here.
-#
-function testStopStartNode()
-{
-    local exitCode
-
-    #
-    # First stop.
-    # FIXME: Restarting the first node won't work, but what about the second?
-    #
-    mys9s node \
-        --stop \
-        --force \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-   
-    #
-    # Then start.
-    #
-    mys9s node \
-        --start \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
-    #for (( q=0; q<10; q++)); do
-    #    s9s node --list --long 
-    #    s9s job  --list
-    #    sleep 10
-    #done
-}
-
-#
-# Creating a new account on the cluster.
-#
-function testCreateAccount()
-{
-    pip-say "Testing account creation."
-
-    #
-    # This command will create a new account on the cluster.
-    #
-    mys9s cluster \
-        --create-account \
-        --cluster-id=$CLUSTER_ID \
-        --account="john_doe:password@1.2.3.4" \
-        --with-database
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account."
-    fi
-}
-
-#
-# This test will add one new node to the cluster.
-#
-function testAddNode()
-{
-    local nodes
-    local exitCode
-
-    pip-say "The test to add node is starting now."
-    printVerbose "Creating node..."
-    LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE"
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
-
-    #
-    # Adding a node to the cluster.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This test will add one new node to the cluster.
-#
-function testAddMaster()
-{
-    local nodes
-    local exitCode
-
-    pip-say "The test to add master node is starting now."
-    printVerbose "Creating node..."
-    LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE?master"
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
-
-    #
-    # Adding a node to the cluster.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-
-
-#
-# This test will remove the last added node.
-#
-function testRemoveNode()
-{
-    if [ -z "$LAST_ADDED_NODE" ]; then
-        printVerbose "Skipping test."
-    fi
-    
-    pip-say "The test to remove node is starting now."
-    
-    #
-    # Removing the last added node.
-    #
-    mys9s cluster \
-        --remove-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$LAST_ADDED_NODE" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This will perform a rolling restart on the cluster
-#
-function testRollingRestart()
-{
-    local exitCode
-    
-    pip-say "The test of rolling restart is starting now."
-
-    #
-    # Calling for a rolling restart.
-    #
-    mys9s cluster \
-        --rolling-restart \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -626,17 +306,6 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
-    runFunctionalTest testConfig
-    runFunctionalTest testSetConfig
-
-    runFunctionalTest testRestartNode
-    runFunctionalTest testStopStartNode
-
-    runFunctionalTest testCreateAccount
-    runFunctionalTest testAddNode
-    runFunctionalTest testAddMaster
-    runFunctionalTest testRemoveNode
-    runFunctionalTest testRollingRestart
     runFunctionalTest testStop
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes

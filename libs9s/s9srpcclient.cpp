@@ -1011,7 +1011,7 @@ S9sRpcClient::createMySqlReplication(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
+    //S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
@@ -1022,7 +1022,7 @@ S9sRpcClient::createMySqlReplication(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
-    
+#if 0
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         if (hosts[idx].isNode())
@@ -1030,11 +1030,13 @@ S9sRpcClient::createMySqlReplication(
         else
             hostNames << hosts[idx];
     }
-
+#endif
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "replication";
-    jobData["mysql_hostnames"]  = hostNames;
-    jobData["master_address"]   = hostNames[0].toString();
+    //jobData["mysql_hostnames"]  = hostNames;
+    //jobData["master_address"]   = hostNames[0].toString();
+    jobData["topology"]         = topologyField(hosts);
+    jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["mysql_version"]    = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
@@ -2971,6 +2973,13 @@ S9sRpcClient::topologyField(
         bool  isMaster      = node.property("master").toBoolean();
         bool  isSlave       = node.property("slave").toBoolean();
 
+        // If the user did not provide information about the master/slave status
+        // we consider the first node a master and the others slave.
+        if (!isMaster && !isSlave)
+        {
+            isMaster = idx == 0u;
+            isSlave  = !isMaster;
+        }
         #if 0
         S9S_WARNING("%-20s %-6s", 
                 STR(node.hostName()),

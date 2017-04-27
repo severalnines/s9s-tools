@@ -362,6 +362,20 @@ finished, the job remains there and will be executed by the controller anyway.
 It is also possible to attach to the job using the job ID later or use the --log
 option to print the messages of the job.
 
+A similar example that wioll create a MySQL replication cluster with multiple
+master and slave nodes in it:
+
+.nf
+# \fBs9s cluster \\
+    --create \\
+    --cluster-type=mysqlreplication \\
+    --nodes=192.168.1.117?master;192.168.1.113?slave;192.168.1.115?slave;192.168.1.116?master;192.168.1.118?slave;192.168.1.119?slave; \\
+    --vendor=percona \\
+    --cluster-name=ft_replication_23986 \\
+    --provider-version=5.6 \\
+    --log\fR
+.fi
+
 Another example simply lists the clusters managed by the controller:
 
 .nf
