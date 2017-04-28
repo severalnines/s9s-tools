@@ -889,6 +889,8 @@ S9sRpcReply::printClusterList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
         printClusterListStat();
     else if (options->isLongRequested())

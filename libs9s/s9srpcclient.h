@@ -70,6 +70,7 @@ class S9sRpcClient
                 const S9sVariantMap  &properties);
 
         bool getCpuInfo(const int clusterId);
+        bool getInfo();
         bool getCpuStats(const int clusterId);
         bool getMetaTypes();
         bool getMetaTypeProperties(const S9sString &typeName);

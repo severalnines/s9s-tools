@@ -403,17 +403,7 @@ S9sBusinessLogic::executeClusterList(
     if (success)
     {
         reply = client.reply();
-
-        success = reply.isOk();
-        if (success)
-        {
-            reply.printClusterList();
-        } else {
-            if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-        }
+        reply.printClusterList();
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));

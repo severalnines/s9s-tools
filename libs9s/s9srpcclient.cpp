@@ -258,10 +258,11 @@ S9sRpcClient::getClusters()
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"]  = "getAllClusterInfo";
-    request["with_hosts"] = true;
-    request["user"]       = options->userName();
-    
+    request["operation"]       = "getAllClusterInfo";
+    request["with_hosts"]      = true;
+    request["with_sheet_info"] = true;
+    request["user"]            = options->userName();
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -485,7 +486,20 @@ S9sRpcClient::getCpuInfo(
     bool           retval;
 
     request["operation"] = "getCpuPhysicalInfo";
-    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::getInfo()
+{
+    S9sString      uri = "/v2/stat";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getInfo";
 
     retval = executeRequest(uri, request);
 
@@ -568,6 +582,29 @@ S9sRpcClient::getMetaTypeProperties(
     return retval;    
 }
 
+/**
+ * The reply will contain a lot of these:
+    {
+        "created": 1493297858,
+        "hostid": 2,
+        "interval": 67335,
+        "memoryutilization": 0.0959179,
+        "pgpgin": 0,
+        "pgpgout": 3124,
+        "pswpin": 0,
+        "pswpout": 0,
+        "rambuffers": 0,
+        "ramcached": 7168,
+        "ramfree": 15532005376,
+        "ramfreemin": 15531171840,
+        "ramtotal": 17179869184,
+        "sampleends": 1493297918,
+        "samplekey": "CmonMemoryStats-2",
+        "swapfree": 0,
+        "swaptotal": 0,
+        "swaputilization": 0
+    }, 
+ */
 bool
 S9sRpcClient::getMemoryStats(
         const int clusterId)
