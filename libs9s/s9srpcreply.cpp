@@ -1917,7 +1917,9 @@ S9sRpcReply::printNodeStat(
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
     S9sString   title;
-
+    S9sString   slavesAsString;
+    S9sString   message;
+    
     //
     // The title that is in inverse. 
     //
@@ -1999,10 +2001,21 @@ S9sRpcReply::printNodeStat(
     printf("\n");
 
 
+    message = node.message();
+    if (message.empty())
+        message = "-";
     printf("%s Message:%s ", greyBegin, greyEnd);
-    printf("%s", STR(node.message()));
+    printf("%s", STR(message));
     printf("\n");
-    
+   
+    slavesAsString = node.slavesAsString();
+    if (!slavesAsString.empty())
+    {
+        printf("%s  Slaves:%s ", greyBegin, greyEnd);
+        printf("%s", STR(slavesAsString));
+        printf("\n");
+    }
+
     /*
      * Last seen time and SSH fail count.
      */

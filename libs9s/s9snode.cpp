@@ -506,6 +506,9 @@ S9sNode::isMaintenanceActive() const
     return false;
 }
 
+/**
+ * \returns True if the node is read-only.
+ */
 bool
 S9sNode::readOnly() const
 {
@@ -515,6 +518,9 @@ S9sNode::readOnly() const
     return false;
 }
 
+/**
+ * \returns True if the node is connected (reachable).
+ */
 bool
 S9sNode::connected() const
 {
@@ -567,6 +573,26 @@ S9sNode::sshFailCount() const
         return m_properties.at("sshfailcount").toInt();
 
     return 0;
+}
+
+S9sString
+S9sNode::slavesAsString() const
+{
+    S9sVariantList list;
+    S9sString      retval;
+
+    if (m_properties.contains("slaves"))
+        list = m_properties.at("slaves").toVariantList();
+
+    for (uint idx = 0u; idx < list.size(); ++idx)
+    {
+        if (!retval.empty())
+            retval += "; ";
+
+        retval += list[idx].toString();
+    }
+
+    return retval;
 }
 
 /**

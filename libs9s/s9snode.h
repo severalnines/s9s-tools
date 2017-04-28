@@ -79,6 +79,7 @@ class S9sNode
         bool skipNameResolve() const;
         time_t lastSeen() const;
         int sshFailCount() const;
+        S9sString slavesAsString() const;
 
         static void 
             selectByProtocol(
