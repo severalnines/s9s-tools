@@ -1991,7 +1991,11 @@ S9sRpcReply::printNodeStat(
     
     
     printf("%s      OS:%s ", greyBegin, greyEnd);
-    printf("%s", STR(node.osVersionString()));
+    printf("%-24s", STR(node.osVersionString()));
+
+    printf("%s Access:%s ", greyBegin, greyEnd);
+    printf("%s", node.readOnly() ? "read-only" : "read-write");
+
     printf("\n");
 
 
