@@ -1898,6 +1898,12 @@ S9sRpcReply::printClusterStat(
 
     printf("\n");
 
+    printf("%s LogFile:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(cluster.logFile()),
+            STR(cluster.logFile()),
+            fileColorEnd());
+    printf("\n");
 
     printf("\n");
 }

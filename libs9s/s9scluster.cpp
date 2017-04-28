@@ -144,13 +144,26 @@ S9sCluster::state() const
     return 0;
 }
 
+/**
+ * \returns The configuration file for the cluster, that is the Cmon
+ * configuration file where this cluster is configured.
+ */
 S9sString
 S9sCluster::configFile() const
 {
     if (m_properties.contains("configuration_file"))
         return m_properties.at("configuration_file").toString();
 
-    return 0;
+    return S9sString();
+}
+
+S9sString
+S9sCluster::logFile() const
+{
+    if (m_properties.contains("log_file"))
+        return m_properties.at("log_file").toString();
+
+    return S9sString();
 }
 
 S9sString

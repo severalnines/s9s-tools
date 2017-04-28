@@ -41,6 +41,8 @@ class S9sCluster
         S9sString clusterType() const;
         S9sString state() const;
         S9sString configFile() const;
+        S9sString logFile() const;
+
         S9sString vendorAndVersion() const;
         S9sString statusText() const;
         int alarmsCritical() const;
