@@ -444,10 +444,15 @@ S9sNode::version() const
 S9sString
 S9sNode::message() const
 {
-    if (m_properties.contains("message"))
-        return m_properties.at("message").toString();
+    S9sString retval;
 
-    return S9sString();
+    if (m_properties.contains("message"))
+        retval = m_properties.at("message").toString();
+    
+    if (retval.empty() && m_properties.contains("errormsg"))
+        retval = m_properties.at("errormsg").toString();
+
+    return retval;
 }
 
 S9sString
@@ -514,6 +519,15 @@ S9sNode::readOnly() const
 {
     if (m_properties.contains("readonly"))
         return m_properties.at("readonly").toBoolean();
+
+    return false;
+}
+
+bool
+S9sNode::superReadOnly() const
+{
+    if (m_properties.contains("super_read_only"))
+        return m_properties.at("super_read_only").toBoolean();
 
     return false;
 }

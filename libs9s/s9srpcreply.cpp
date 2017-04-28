@@ -2000,7 +2000,13 @@ S9sRpcReply::printNodeStat(
 
     printf("\n");
 
+    // A line for the version.
+    printf("%s Version:%s ", greyBegin, greyEnd);
+    printf("%s", STR(node.version()));
+    printf("\n");
 
+
+    // A line for the humar readable message.
     message = node.message();
     if (message.empty())
         message = "-";
@@ -2032,29 +2038,30 @@ S9sRpcReply::printNodeStat(
     //
     // A line of switches.
     //
-    printf("%sReadonly:%s %c  ", 
+    printf("%sConnected:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.readOnly()));
 
-    printf("%sConnected:%s %c  ", 
-            greyBegin, greyEnd, 
-            BoolToHuman(node.readOnly()));
-
-    printf("%sMaintenance:%s %c  ", 
+    printf("%sMaintenance:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.isMaintenanceActive()));
     
-    printf("%sManaged:%s %c  ", 
+    printf("%sManaged:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.managed()));
     
-    printf("%sRecovery:%s %c  ", 
+    printf("%sRecovery:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.nodeAutoRecovery()));
 
-    printf("%sSkip DNS:%s %c", 
+    printf("%sSkip DNS:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.skipNameResolve()));
+    
+    printf("%sSuperReadOnly:%s %c ", 
+            greyBegin, greyEnd, 
+            BoolToHuman(node.superReadOnly()));
+
     
     printf("\n");
     
@@ -2067,7 +2074,7 @@ S9sRpcReply::printNodeStat(
                 greyBegin, greyEnd, 
                 node.pid());
     } else {
-        printf("%s     Pid:%s -", greyBegin, greyEnd);
+        printf("%s     PID:%s -", greyBegin, greyEnd);
     }
     
     printf("  %sUptime:%s %s", 

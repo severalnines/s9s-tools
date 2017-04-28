@@ -73,6 +73,7 @@ class S9sNode
         S9sString osVersionString() const;
         bool isMaintenanceActive() const;
         bool readOnly() const;
+        bool superReadOnly() const;
         bool connected() const;
         bool managed() const;
         bool nodeAutoRecovery() const;
