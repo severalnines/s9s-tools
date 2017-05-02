@@ -1810,11 +1810,20 @@ S9sRpcReply::printHostTable(
         S9sCluster &cluster)
 {
     S9sVariantList hostIds = cluster.hostIds();
+    
+    printf("%s", headerColorBegin());
+    printf("  HOSTNAME     ");
+    printf("CORES");
+    printf("%s", headerColorEnd());
+    printf("\n");
 
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
         int hostId = hostIds[idx].toInt();
-        printf("  %03d \n", hostId);
+        S9sString hostName = cluster.hostName(hostId);
+        int nCores = cluster.nCpuCores(hostId);
+
+        printf("  %12s %2d\n", STR(hostName), nCores);
     }
     
     printf("\n");

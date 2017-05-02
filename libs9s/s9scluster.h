@@ -56,10 +56,14 @@ class S9sCluster
         int jobsRunning() const;
 
         S9sVariantList hostIds() const;
+        S9sString hostName(const int hostId);
+        int nCpuCores(const int hostId);
+        ulonglong memTotal(const int hostId);
 
     private:
         S9sVariantMap jobStatistics() const;
-
+        S9sVariant sheetInfo(const S9sString &key) const;
+        
     private:
         S9sVariantMap    m_properties;
 };

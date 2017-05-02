@@ -293,3 +293,54 @@ S9sCluster::hostIds() const
 
     return retval;
 }
+
+S9sString 
+S9sCluster::hostName(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.hostname", hostId);
+
+    return sheetInfo(key).toString();
+}
+
+int
+S9sCluster::nCpuCores(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.cpucores", hostId);
+
+    return sheetInfo(key).toInt();
+}
+
+ulonglong
+S9sCluster::memTotal(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.memtotal", hostId);
+
+    return sheetInfo(key).toInt();
+
+}
+
+S9sVariant 
+S9sCluster::sheetInfo(
+        const S9sString &key) const
+{
+    S9sVariant retval;
+
+    if (m_properties.contains("info"))
+    {
+        const S9sVariantMap &infoMap = m_properties.at("info").toVariantMap();
+        
+        if (infoMap.contains(key))
+            retval = infoMap.at(key);
+    }
+
+    return retval;
+}
