@@ -305,7 +305,7 @@ S9sCluster::hostName(
     return sheetInfo(key).toString();
 }
 
-int
+S9sVariant
 S9sCluster::nCpuCores(
         const int hostId)
 {
@@ -313,8 +313,20 @@ S9sCluster::nCpuCores(
 
     key.sprintf("host.%d.cpucores", hostId);
 
-    return sheetInfo(key).toInt();
+    return sheetInfo(key);
 }
+
+S9sVariant
+S9sCluster::cpuUsagePercent(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.cpu_usage_percent", hostId);
+
+    return sheetInfo(key);
+}
+        
 
 S9sVariant
 S9sCluster::memTotal(
@@ -324,9 +336,30 @@ S9sCluster::memTotal(
 
     key.sprintf("host.%d.memtotal", hostId);
 
-    return sheetInfo(key);
-
+    return S9sVariant(sheetInfo(key).toULongLong() * 1024ull);
 }
+
+S9sVariant
+S9sCluster::memUsed(
+        const int hostId)
+{
+    S9sString key1, key2, key3, key4;
+    ulonglong retval;
+
+    key1.sprintf("host.%d.memtotal",  hostId);
+    key2.sprintf("host.%d.membuffer", hostId);
+    key3.sprintf("host.%d.memcached", hostId);
+    key4.sprintf("host.%d.memfree",   hostId);
+
+    retval = 
+        sheetInfo(key1).toULongLong() -
+        sheetInfo(key2).toULongLong() -
+        sheetInfo(key3).toULongLong() -
+        sheetInfo(key4).toULongLong();
+
+    return S9sVariant(retval * 1024ull);
+}
+
 
 S9sVariant 
 S9sCluster::sheetInfo(

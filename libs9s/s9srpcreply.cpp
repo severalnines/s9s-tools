@@ -1810,25 +1810,65 @@ S9sRpcReply::printHostTable(
         S9sCluster &cluster)
 {
     S9sVariantList hostIds = cluster.hostIds();
+    S9sFormat      hostNameFormat;
+    S9sFormat      coresFormat;
+    S9sFormat      memTotalFormat;
+    S9sFormat      memUsedFormat;
+
+    memUsedFormat.setRightJustify(true);
+    for (uint idx = 0u; idx < hostIds.size(); ++idx)
+    {
+        int        hostId   = hostIds[idx].toInt();
+        S9sString  hostName = cluster.hostName(hostId);
+        S9sVariant nCores   = cluster.nCpuCores(hostId);
+        S9sVariant memTotal = cluster.memTotal(hostId);
+        S9sVariant memUsed  = cluster.memUsed(hostId);
+        //S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
+
+        hostNameFormat.widen(hostName);
+        coresFormat.widen(nCores.toInt());
+        memTotalFormat.widen(memTotal.toString(S9sVariant::BytesShort));
+        memUsedFormat.widen(memUsed.toString(S9sVariant::BytesShort));
+        //printf("%2d ", nCores.toInt());
+        //printf("%3s%% ", STR(cpuUsage.toString(S9sVariant::IntegerNumber)));
+        //printf("%-4s ", STR(memTotal.toString(S9sVariant::BytesShort)));
+        //printf("%-4s ", STR(memUsed.toString(S9sVariant::BytesShort)));
+        //printf("\n");
+    }
     
+
+    hostNameFormat.widen("HOSTNAME");
+    coresFormat.widen("CR");
+
     printf("%s", headerColorBegin());
-    printf("  HOSTNAME     ");
-    printf("CORES");
+    printf("  ");
+    hostNameFormat.printf("HOSTNAME");
+    coresFormat.printf("CR");
+    
+    printf("CPU ");
+    printf("MEMORY "); 
     printf("%s", headerColorEnd());
     printf("\n");
 
+        
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
-        int hostId = hostIds[idx].toInt();
-        S9sString hostName = cluster.hostName(hostId);
-        int nCores = cluster.nCpuCores(hostId);
+        int        hostId   = hostIds[idx].toInt();
+        S9sString  hostName = cluster.hostName(hostId);
+        S9sVariant nCores   = cluster.nCpuCores(hostId);
+        S9sVariant memTotal = cluster.memTotal(hostId);
+        S9sVariant memUsed  = cluster.memUsed(hostId);
+        S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
 
-        printf("  %12s", STR(hostName));
-        printf("  %2d", nCores);
-        printf("  %s", STR(cluster.memTotal(hostId).toString(S9sVariant::Bytes)));
+        printf("  ");
+        hostNameFormat.printf(hostName);
+        coresFormat.printf(nCores.toInt());
+        printf("%3s%% ", STR(cpuUsage.toString(S9sVariant::IntegerNumber)));
+        memTotalFormat.printf(memTotal.toString(S9sVariant::BytesShort));
+        memUsedFormat.printf(memUsed.toString(S9sVariant::BytesShort));
         printf("\n");
     }
-    
+
     printf("\n");
 }
 

@@ -57,8 +57,10 @@ class S9sCluster
 
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
-        int nCpuCores(const int hostId);
+        S9sVariant nCpuCores(const int hostId);
+        S9sVariant cpuUsagePercent(const int hostId);
         S9sVariant memTotal(const int hostId);
+        S9sVariant memUsed(const int hostId);
 
     private:
         S9sVariantMap jobStatistics() const;
