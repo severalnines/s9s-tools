@@ -41,6 +41,21 @@ S9sFormat::S9sFormat() :
 {
 }
 
+S9sFormat 
+S9sFormat::operator+(
+        const S9sFormat &rhs)
+{
+    S9sFormat retval;
+
+    retval.m_width = m_width + rhs.m_width;
+
+    if (m_withFieldSeparator)
+        retval.m_width += 1;
+
+    return retval;
+}
+
+
 void
 S9sFormat::setRightJustify(
         const bool value)

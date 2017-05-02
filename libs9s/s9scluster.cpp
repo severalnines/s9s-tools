@@ -294,6 +294,9 @@ S9sCluster::hostIds() const
     return retval;
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ */
 S9sString 
 S9sCluster::hostName(
         const int hostId)
@@ -305,6 +308,9 @@ S9sCluster::hostName(
     return sheetInfo(key).toString();
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ */
 S9sVariant
 S9sCluster::nCpuCores(
         const int hostId)
@@ -316,6 +322,9 @@ S9sCluster::nCpuCores(
     return sheetInfo(key);
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ */
 S9sVariant
 S9sCluster::cpuUsagePercent(
         const int hostId)
@@ -327,7 +336,9 @@ S9sCluster::cpuUsagePercent(
     return sheetInfo(key);
 }
         
-
+/**
+ * \param hostId The ID of the host for which we return information.
+ */
 S9sVariant
 S9sCluster::memTotal(
         const int hostId)
@@ -339,6 +350,9 @@ S9sCluster::memTotal(
     return S9sVariant(sheetInfo(key).toULongLong() * 1024ull);
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ */
 S9sVariant
 S9sCluster::memUsed(
         const int hostId)
@@ -360,6 +374,37 @@ S9sCluster::memUsed(
     return S9sVariant(retval * 1024ull);
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \returns How many total disk bytes the memory stat collector found on the
+ *   host.
+ */
+S9sVariant
+S9sCluster::totalDiskBytes(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.total_disk_bytes", hostId);
+
+    return sheetInfo(key);
+}
+
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \returns How many free disk bytes the memory stat collector found on the
+ *   host.
+ */
+S9sVariant
+S9sCluster::freeDiskBytes(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.free_disk_bytes", hostId);
+
+    return sheetInfo(key);
+}
 
 S9sVariant 
 S9sCluster::sheetInfo(

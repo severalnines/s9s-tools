@@ -29,6 +29,8 @@ class S9sFormat
 {
     public:
         S9sFormat();
+       
+        S9sFormat operator+(const S9sFormat &rhs);
         
         void setColor(const char *colorStart, const char *colorEnd);
         void setRightJustify(const bool value);

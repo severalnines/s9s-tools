@@ -62,6 +62,9 @@ class S9sCluster
         S9sVariant memTotal(const int hostId);
         S9sVariant memUsed(const int hostId);
 
+        S9sVariant totalDiskBytes(const int hostId);
+        S9sVariant freeDiskBytes(const int hostId);
+
     private:
         S9sVariantMap jobStatistics() const;
         S9sVariant sheetInfo(const S9sString &key) const;

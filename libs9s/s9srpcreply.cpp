@@ -1815,57 +1815,67 @@ S9sRpcReply::printHostTable(
     S9sFormat      memTotalFormat;
     S9sFormat      memUsedFormat;
     S9sFormat      cpuUsageFormat;
+    S9sFormat      totalDiskFormat;
+    S9sFormat      freeDiskFormat;
+    S9sFormat      labelFormat;
 
     memUsedFormat.setRightJustify(true);
     cpuUsageFormat.setRightJustify(true);
 
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
-        int        hostId   = hostIds[idx].toInt();
-        S9sString  hostName = cluster.hostName(hostId);
-        S9sVariant nCores   = cluster.nCpuCores(hostId);
-        S9sVariant memTotal = cluster.memTotal(hostId);
-        S9sVariant memUsed  = cluster.memUsed(hostId);
-        S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
+        int        hostId    = hostIds[idx].toInt();
+        S9sString  hostName  = cluster.hostName(hostId);
+        S9sVariant nCores    = cluster.nCpuCores(hostId);
+        S9sVariant memTotal  = cluster.memTotal(hostId);
+        S9sVariant memUsed   = cluster.memUsed(hostId);
+        S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
+        S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
+        S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
 
         hostNameFormat.widen(hostName);
+
         coresFormat.widen(nCores.toInt());
+        cpuUsageFormat.widen(cpuUsage.toString(S9sVariant::IntegerNumber)+"%");
+
         memTotalFormat.widen(memTotal.toString(S9sVariant::BytesShort));
         memUsedFormat.widen(memUsed.toString(S9sVariant::BytesShort));
-        
-        cpuUsageFormat.widen(
-                cpuUsage.toString(S9sVariant::IntegerNumber) + "%");
 
-        //printf("%2d ", nCores.toInt(cpuUsage.toString(S9sVariant::IntegerNumber)));
-        //printf("%3s%% ", STR(cpuUsage.toString(S9sVariant::IntegerNumber)));
-        //printf("%-4s ", STR(memTotal.toString(S9sVariant::BytesShort)));
-        //printf("%-4s ", STR(memUsed.toString(S9sVariant::BytesShort)));
-        //printf("\n");
+        totalDiskFormat.widen(totalDisk.toString(S9sVariant::BytesShort));
+        freeDiskFormat.widen(freeDisk.toString(S9sVariant::BytesShort));
     }
     
 
     hostNameFormat.widen("HOSTNAME");
-    coresFormat.widen("CR");
 
     printf("%s", headerColorBegin());
     printf("  ");
-    hostNameFormat.printf("HOSTNAME");
-    coresFormat.printf("CR");
-    cpuUsageFormat.printf("CPU");
 
-    printf("MEMORY "); 
+    hostNameFormat.printf("HOSTNAME");
+    
+    labelFormat = coresFormat + cpuUsageFormat;
+    labelFormat.printf("CPU");
+
+    labelFormat = memTotalFormat + memUsedFormat;
+    labelFormat.printf("MEMORY");
+
+    labelFormat = totalDiskFormat + freeDiskFormat;
+    labelFormat.printf("DISK"); 
+
     printf("%s", headerColorEnd());
     printf("\n");
 
         
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
-        int        hostId   = hostIds[idx].toInt();
-        S9sString  hostName = cluster.hostName(hostId);
-        S9sVariant nCores   = cluster.nCpuCores(hostId);
-        S9sVariant memTotal = cluster.memTotal(hostId);
-        S9sVariant memUsed  = cluster.memUsed(hostId);
-        S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
+        int        hostId    = hostIds[idx].toInt();
+        S9sString  hostName  = cluster.hostName(hostId);
+        S9sVariant nCores    = cluster.nCpuCores(hostId);
+        S9sVariant memTotal  = cluster.memTotal(hostId);
+        S9sVariant memUsed   = cluster.memUsed(hostId);
+        S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
+        S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
+        S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
 
         printf("  ");
         hostNameFormat.printf(hostName);
@@ -1875,6 +1885,9 @@ S9sRpcReply::printHostTable(
 
         memTotalFormat.printf(memTotal.toString(S9sVariant::BytesShort));
         memUsedFormat.printf(memUsed.toString(S9sVariant::BytesShort));
+        
+        totalDiskFormat.printf(totalDisk.toString(S9sVariant::BytesShort));
+        freeDiskFormat.printf(freeDisk.toString(S9sVariant::BytesShort));
         printf("\n");
     }
 
