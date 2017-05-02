@@ -142,6 +142,10 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyListBrief();
 
         bool useSyntaxHighLight() const;
+
+        const char *clusterStateColorBegin(S9sString state);
+        const char *clusterStateColorEnd() const;
+
         
         const char *optNameColorBegin() const;
         const char *optNameColorEnd() const;

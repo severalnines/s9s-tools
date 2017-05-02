@@ -28,12 +28,20 @@
 class S9sFormat 
 {
     public:
+        enum Alignment 
+        {
+            AlignLeft,
+            AlignRight,
+            AlignCenter,
+        };
+
         S9sFormat();
        
         S9sFormat operator+(const S9sFormat &rhs);
         
         void setColor(const char *colorStart, const char *colorEnd);
-        void setRightJustify(const bool value);
+        void setRightJustify();
+        void setCenterJustify();
 
         int realWidth() const;
 
@@ -52,5 +60,5 @@ class S9sFormat
         bool        m_withFieldSeparator;
         const char *m_colorStart;
         const char *m_colorEnd;
-        bool        m_rightJustify;
+        Alignment   m_alignment;
 };

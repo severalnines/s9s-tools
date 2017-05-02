@@ -338,6 +338,7 @@ S9sCluster::cpuUsagePercent(
         
 /**
  * \param hostId The ID of the host for which we return information.
+ * \returns How many total memory bytes the given host has.
  */
 S9sVariant
 S9sCluster::memTotal(
@@ -350,8 +351,14 @@ S9sCluster::memTotal(
     return S9sVariant(sheetInfo(key).toULongLong() * 1024ull);
 }
 
+
+
 /**
  * \param hostId The ID of the host for which we return information.
+ * \returns How many memory bytes is actually used.
+ *
+ * In this function we don't consider the cache and disk buffer area as used
+ * memory for practical reasons.
  */
 S9sVariant
 S9sCluster::memUsed(
@@ -373,6 +380,29 @@ S9sCluster::memUsed(
 
     return S9sVariant(retval * 1024ull);
 }
+
+S9sVariant
+S9sCluster::swapTotal(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.swaptotal", hostId);
+
+    return sheetInfo(key).toULongLong();
+}
+
+S9sVariant
+S9sCluster::swapFree(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.swapfree", hostId);
+
+    return sheetInfo(key).toULongLong();
+}
+
 
 /**
  * \param hostId The ID of the host for which we return information.

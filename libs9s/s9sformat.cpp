@@ -37,7 +37,7 @@ S9sFormat::S9sFormat() :
     m_withFieldSeparator(true),
     m_colorStart(0),
     m_colorEnd(0),
-    m_rightJustify(false)
+    m_alignment(AlignLeft)
 {
 }
 
@@ -55,12 +55,16 @@ S9sFormat::operator+(
     return retval;
 }
 
+void
+S9sFormat::setRightJustify()
+{
+    m_alignment = AlignRight;
+}
 
 void
-S9sFormat::setRightJustify(
-        const bool value)
+S9sFormat::setCenterJustify()
 {
-    m_rightJustify = value;
+    m_alignment = AlignCenter;
 }
 
 void
@@ -159,16 +163,37 @@ S9sFormat::printf(
         const S9sString &value) const
 {
     S9sString formatString;
+    S9sString myValue = value;
 
-    S9S_WARNING("-> value          : %s", STR(value));
-    S9S_WARNING("-> width          : %d", m_width);
-    S9S_WARNING("-> m_rightJustify : %s", m_rightJustify ? "yes" : "no");
     if (m_width > 0)
     {
-        if (m_rightJustify)
-            formatString.sprintf("%%%ds", m_width);
-        else
-            formatString.sprintf("%%-%ds", m_width);
+        switch (m_alignment)
+        {
+            case AlignRight:
+                formatString.sprintf("%%%ds", m_width);
+                break;
+            
+            case AlignLeft:
+                formatString.sprintf("%%-%ds", m_width);
+                break;
+            
+            case AlignCenter:
+                {
+                    S9sString alignString;
+
+                    if (m_width > (int) value.length())
+                    {
+                        alignString = 
+                            S9sString(" ") * 
+                            ((m_width - value.length()) / 2);
+                    }
+               
+                    myValue = alignString + myValue;
+
+                    formatString.sprintf("%%-%ds", m_width);
+                }
+                break;
+        }
     } else {
         formatString = "%s";
     }
@@ -179,7 +204,7 @@ S9sFormat::printf(
     if (m_colorStart != NULL)
         ::printf("%s", m_colorStart);
 
-    ::printf(STR(formatString), STR(value));
+    ::printf(STR(formatString), STR(myValue));
 
     if (m_colorEnd != NULL)
         ::printf("%s", m_colorEnd);

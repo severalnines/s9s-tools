@@ -1809,6 +1809,8 @@ void
 S9sRpcReply::printHostTable(
         S9sCluster &cluster)
 {
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
     S9sVariantList hostIds = cluster.hostIds();
     S9sFormat      hostNameFormat;
     S9sFormat      coresFormat;
@@ -1818,9 +1820,13 @@ S9sRpcReply::printHostTable(
     S9sFormat      totalDiskFormat;
     S9sFormat      freeDiskFormat;
     S9sFormat      labelFormat;
+    S9sFormat      swapTotalFormat;
+    S9sFormat      swapFreeFormat;
+    int            tableWidth;
+    S9sString      indent;
 
-    memUsedFormat.setRightJustify(true);
-    cpuUsageFormat.setRightJustify(true);
+    memUsedFormat.setRightJustify();
+    cpuUsageFormat.setRightJustify();
 
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
@@ -1832,6 +1838,8 @@ S9sRpcReply::printHostTable(
         S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
         S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
         S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
+        S9sVariant swapTotal = cluster.swapTotal(hostId);
+        S9sVariant swapFree  = cluster.swapFree(hostId);
 
         hostNameFormat.widen(hostName);
 
@@ -1843,23 +1851,41 @@ S9sRpcReply::printHostTable(
 
         totalDiskFormat.widen(totalDisk.toString(S9sVariant::BytesShort));
         freeDiskFormat.widen(freeDisk.toString(S9sVariant::BytesShort));
+
+        swapTotalFormat.widen(swapTotal.toString(S9sVariant::BytesShort));
+        swapFreeFormat.widen(swapFree.toString(S9sVariant::BytesShort));
     }
     
+    tableWidth = 
+        hostNameFormat.realWidth() + coresFormat.realWidth() +
+        memTotalFormat.realWidth() + memUsedFormat.realWidth() +
+        cpuUsageFormat.realWidth() + totalDiskFormat.realWidth() +
+        freeDiskFormat.realWidth() + labelFormat.realWidth();
+
+    if (terminalWidth - tableWidth > 0)
+        indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
 
     hostNameFormat.widen("HOSTNAME");
 
     printf("%s", headerColorBegin());
-    printf("  ");
+    printf("%s", STR(indent));
 
     hostNameFormat.printf("HOSTNAME");
     
     labelFormat = coresFormat + cpuUsageFormat;
+    labelFormat.setCenterJustify();
     labelFormat.printf("CPU");
 
     labelFormat = memTotalFormat + memUsedFormat;
+    labelFormat.setCenterJustify();
     labelFormat.printf("MEMORY");
+    
+    labelFormat = swapTotalFormat + swapFreeFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("SWAP"); 
 
     labelFormat = totalDiskFormat + freeDiskFormat;
+    labelFormat.setCenterJustify();
     labelFormat.printf("DISK"); 
 
     printf("%s", headerColorEnd());
@@ -1876,8 +1902,10 @@ S9sRpcReply::printHostTable(
         S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
         S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
         S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
+        S9sVariant swapTotal = cluster.swapTotal(hostId);
+        S9sVariant swapFree  = cluster.swapFree(hostId);
 
-        printf("  ");
+        printf("%s", STR(indent));
         hostNameFormat.printf(hostName);
         coresFormat.printf(nCores.toInt());
         cpuUsageFormat.printf(
@@ -1885,6 +1913,9 @@ S9sRpcReply::printHostTable(
 
         memTotalFormat.printf(memTotal.toString(S9sVariant::BytesShort));
         memUsedFormat.printf(memUsed.toString(S9sVariant::BytesShort));
+        
+        swapTotalFormat.printf(swapTotal.toString(S9sVariant::BytesShort));
+        swapFreeFormat.printf(swapFree.toString(S9sVariant::BytesShort));
         
         totalDiskFormat.printf(totalDisk.toString(S9sVariant::BytesShort));
         freeDiskFormat.printf(freeDisk.toString(S9sVariant::BytesShort));
@@ -1936,7 +1967,10 @@ S9sRpcReply::printClusterStat(
     printf("%-32d ", cluster.clusterId());
     
     printf("%s   State:%s ", greyBegin, greyEnd);
-    printf("%s ", STR(cluster.state()));
+    printf("%s%s%s ", 
+            clusterStateColorBegin(cluster.state()), 
+            STR(cluster.state()),
+            clusterStateColorEnd());
     printf("\n");
     
     printf("%s    Type:%s ", greyBegin, greyEnd);
@@ -3185,7 +3219,7 @@ S9sRpcReply::printBackupListLong()
         printf("\n");
     }
     
-    sizeFormat.setRightJustify(true);
+    sizeFormat.setRightJustify();
 
     /*
      * Second run, we print things here.
@@ -4245,6 +4279,32 @@ S9sRpcReply::typeColorEnd() const
 }
 
 const char *
+S9sRpcReply::clusterStateColorBegin(
+        S9sString state)
+{
+    if (useSyntaxHighLight())
+    {
+        if (state == "DEGRADED")
+            return XTERM_COLOR_RED;
+        if (state == "STARTED")
+            return XTERM_COLOR_GREEN;
+        else
+            return TERM_NORMAL;
+    }
+
+    return "";
+}
+
+const char *
+S9sRpcReply::clusterStateColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sRpcReply::fileColorBegin(
         const S9sString &fileName) const
 {
@@ -4255,9 +4315,9 @@ S9sRpcReply::fileColorBegin(
         else if (fileName.endsWith(".tar"))
             return XTERM_COLOR_ORANGE;
         else if (fileName.endsWith(".log"))
-            return TERM_NORMAL;
+            return XTERM_COLOR_PURPLE;
         else if (fileName.endsWith(".cnf"))
-            return TERM_NORMAL;
+            return XTERM_COLOR_LIGHT_PURPLE;
         else
             return TERM_NORMAL;
     }
