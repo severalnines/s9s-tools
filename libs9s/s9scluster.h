@@ -55,6 +55,8 @@ class S9sCluster
         int jobsFinished() const;
         int jobsRunning() const;
 
+        S9sVariantList hostIds() const;
+
     private:
         S9sVariantMap jobStatistics() const;
 

@@ -273,3 +273,23 @@ S9sCluster::jobStatistics() const
 
     return jobsMap["by_state"].toVariantMap();
 }
+
+S9sVariantList 
+S9sCluster::hostIds() const
+{
+    S9sVariantList retval;
+    S9sVariantList tmpList;
+
+    if (m_properties.contains("hosts"))
+        tmpList = m_properties.at("hosts").toVariantList();
+
+    for (uint idx = 0u; idx < tmpList.size(); ++idx)
+    {
+        S9sVariantMap theMap = tmpList[idx].toVariantMap();
+        int           hostId = theMap["hostId"].toInt();
+
+        retval << S9sVariant(hostId);
+    }
+
+    return retval;
+}

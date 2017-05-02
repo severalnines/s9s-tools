@@ -1805,6 +1805,21 @@ compareHostMaps(
     return hostName1 < hostName2;
 }
 
+void 
+S9sRpcReply::printHostTable(
+        S9sCluster &cluster)
+{
+    S9sVariantList hostIds = cluster.hostIds();
+
+    for (uint idx = 0u; idx < hostIds.size(); ++idx)
+    {
+        int hostId = hostIds[idx].toInt();
+        printf("  %03d \n", hostId);
+    }
+    
+    printf("\n");
+}
+
 void
 S9sRpcReply::printClusterStat(
         S9sCluster &cluster)
@@ -1906,8 +1921,9 @@ S9sRpcReply::printClusterStat(
             STR(cluster.logFile()),
             fileColorEnd());
     printf("\n");
-
     printf("\n");
+
+    printHostTable(cluster);
 }
 
 

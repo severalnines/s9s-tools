@@ -115,6 +115,7 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterListBrief();
         void printClusterListLong();
         void printClusterListStat();
+        void printHostTable(S9sCluster &cluster);
         void printClusterStat(S9sCluster &cluster);
         
         void printNodeListStat();
