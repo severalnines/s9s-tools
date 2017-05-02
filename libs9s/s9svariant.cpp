@@ -30,9 +30,15 @@
 
 #include "S9sNode"
 #include "S9sAccount"
+#include "S9sDateTime"
 
 #define DEBUG
 #include "s9sdebug.h"
+
+static const double tbyte = 1024.0 * 1024.0 * 1024.0 * 1024.0;
+static const double gbyte = 1024.0 * 1024.0 * 1024.0;
+static const double mbyte = 1024.0 * 1024.0;
+static const double kbyte = 1024.0;
 
 const S9sVariantMap  S9sVariant::sm_emptyMap;
 const S9sVariantList S9sVariant::sm_emptyList = S9sVariantList();
@@ -701,6 +707,255 @@ S9sVariant::toString() const
     #endif
     } else {
         //CMON_WARNING("Not implemented for %s", STR(typeName()));
+    }
+
+    return retval;
+}
+
+/**
+ * This is the method that converts the content into string while giving a
+ * caller *some* flexibility on controlling the format. It is widely used in JS
+ * and in the spreadsheet system although it gives the user only a limited
+ * control.
+ */
+S9sString
+S9sVariant::toString(
+        const S9sVariant::TextFormat format) const
+{
+    S9sString retval;
+
+    switch (format)
+    {
+        case NotSpecified:
+        case StringFormat:
+            retval = toString();
+            break;
+
+        case GeneralNumber:
+            if (isNumber())
+                retval = toString();
+            else
+                retval = 0;
+            break;
+
+        case IntegerNumber:
+            if (isDouble())
+                retval.sprintf("%d", int(floor(toDouble() + 0.5)));
+            else
+                retval.sprintf("%d", toInt());
+
+            break;
+
+        case ScientificNumber:
+            retval.sprintf("%g", toDouble());
+            break;
+
+        case TwoDecimalNumber:
+            if (isNumber()) 
+            {
+                retval.sprintf("%.2f", toDouble());
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case FourDecimalNumber:
+            retval.sprintf("%.4f", toDouble());
+            break;
+
+        case HighPrecDecimalNumber:
+            retval.sprintf("%.16f", toDouble());
+            break;
+
+        case IntegerPercent:
+            if (isDouble())
+                retval.sprintf("%d%%", int(floor(100.0 * toDouble() + 0.5)));
+            else
+                retval.sprintf("%d%%", toInt() * 100);
+
+            break;
+
+        case TwoDecimalPercent:
+            if (isNumber()) 
+            {
+                retval.sprintf("%6.2f%%", toDouble() * 100.0);
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case Celsius:
+            if (isNumber()) 
+            {
+                retval.sprintf("%5.2f℃", toDouble());
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case Kelvin:
+            if (isNumber()) 
+            {
+                retval.sprintf("%.2fK", toDouble());
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case ShortTime:
+            retval = S9sDateTime(toTimeT()).toString(
+                    S9sDateTime::ShortTimeFormat);
+            break;
+
+        case LongTime:
+            retval = S9sDateTime(toTimeT()).toString(
+                    S9sDateTime::LongTimeFormat);
+            break;
+
+        case ShortDate:
+                retval = S9sDateTime(toTimeT()).toString(
+                        S9sDateTime::ShortDateFormat);
+            break;
+
+        case DateTime:
+                retval = S9sDateTime(toTimeT()).toString(
+                        S9sDateTime::LocalDateTimeFormat);
+            break;
+
+        case ElapsedTime:
+            if (isNumber())
+            {
+                int value = toInt() / 100;
+                int minutes, seconds, hundredths;
+
+                minutes  = value / 60;
+                value   -= minutes * 60;
+                seconds  = value;
+                hundredths = toInt() - 100 * (toInt() / 100);
+                retval.sprintf("%d:%02d.%02d", minutes, seconds, hundredths);
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case ElapsedTimeMicros:
+            if (isNumber())
+            {
+                ulonglong value = toULongLong();
+                
+                int minutes, seconds, ms, us;
+                if ( value < 1000)
+                    retval.sprintf("<1 sec");
+//                    retval.sprintf("%d us", value);
+                else if ( value >= 1000 && value < 1000000)
+                {
+                    ms = value / 1000;
+                    us = value - ms*1000 ;
+                    S9S_UNUSED(us)
+//                    retval.sprintf("%d.%d ms", ms, us);
+                    retval.sprintf("<1 sec");
+                }
+                else
+                {
+                    value = value / 1000 / 1000; //we have seconds
+                    minutes  = value / 60;
+                    value   -= minutes * 60;
+                    seconds  = value;
+                    if (minutes >= 60)                        
+                        retval.sprintf("%d m", minutes);
+                    else if ( minutes > 0 && minutes < 60)
+                        retval.sprintf("%d m %02d s", minutes, seconds);
+                    else
+                        retval.sprintf("%2d sec", seconds);
+                }
+            } else {
+                retval = toString();
+            }
+            break;
+
+        case Boolean:
+                retval = toBoolean() ? "true" : "false";
+            break;
+
+        case Bytes:
+            if (isString())
+            {
+                retval = toString();
+            } else {
+                double doubleVal = toDouble();
+
+                if (fabs(doubleVal) >= tbyte)
+                {
+                    doubleVal /= tbyte;
+
+                    retval.sprintf("%.2f TiB", doubleVal);
+                } else if (fabs(doubleVal) >= gbyte)
+                {
+                    doubleVal /= gbyte;
+                    retval.sprintf("%.2f GiB", doubleVal);
+                } else if (fabs(doubleVal) >= mbyte)
+                {
+                    doubleVal /= mbyte;
+                    retval.sprintf("%.2f MiB", doubleVal);
+                } else if (fabs(doubleVal) >= kbyte)
+                {
+                    doubleVal /= kbyte;
+                    retval.sprintf("%.2f KiB", doubleVal);
+                } else {
+                    int intVal = toInt();
+                    retval.sprintf("%d B", intVal);
+                }
+            }
+            break;
+
+        case BytesShort:
+            if (isString())
+            {
+                retval = toString();
+            } else {
+                double doubleVal = toDouble();
+
+                if (fabs(doubleVal) >= tbyte)
+                {
+                    doubleVal /= tbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fT", doubleVal);
+                    else
+                        retval.sprintf("%.1fT", doubleVal);
+                } else if (fabs(doubleVal) >= gbyte)
+                {
+                    doubleVal /= gbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fG", doubleVal);
+                    else
+                        retval.sprintf("%.1fG", doubleVal);
+                } else if (fabs(doubleVal) >= mbyte)
+                {
+                    doubleVal /= mbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fM", doubleVal);
+                    else
+                        retval.sprintf("%.1fM", doubleVal);
+                } else if (fabs(doubleVal) >= kbyte)
+                {
+                    doubleVal /= kbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fK", doubleVal);
+                    else
+                        retval.sprintf("%.1fK", doubleVal);
+                } else {
+                    int intVal = toInt();
+
+                    retval.sprintf("%d", intVal);
+                }
+            }
+
+            break;
+
     }
 
     return retval;

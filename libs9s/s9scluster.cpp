@@ -316,7 +316,7 @@ S9sCluster::nCpuCores(
     return sheetInfo(key).toInt();
 }
 
-ulonglong
+S9sVariant
 S9sCluster::memTotal(
         const int hostId)
 {
@@ -324,7 +324,7 @@ S9sCluster::memTotal(
 
     key.sprintf("host.%d.memtotal", hostId);
 
-    return sheetInfo(key).toInt();
+    return sheetInfo(key);
 
 }
 

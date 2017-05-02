@@ -1823,7 +1823,10 @@ S9sRpcReply::printHostTable(
         S9sString hostName = cluster.hostName(hostId);
         int nCores = cluster.nCpuCores(hostId);
 
-        printf("  %12s %2d\n", STR(hostName), nCores);
+        printf("  %12s", STR(hostName));
+        printf("  %2d", nCores);
+        printf("  %s", STR(cluster.memTotal(hostId).toString(S9sVariant::Bytes)));
+        printf("\n");
     }
     
     printf("\n");

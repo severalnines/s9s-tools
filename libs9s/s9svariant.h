@@ -29,6 +29,31 @@ class S9sVariantList;
 class S9sVariant
 {
     public:
+        enum TextFormat
+        {
+            NotSpecified       = 0,
+            StringFormat, 
+            GeneralNumber,
+            IntegerNumber,
+            ScientificNumber,
+            TwoDecimalNumber,
+            FourDecimalNumber,
+            HighPrecDecimalNumber,
+            IntegerPercent,
+            TwoDecimalPercent,
+            ShortTime,
+            LongTime,
+            ShortDate,
+            DateTime,
+            ElapsedTime,
+            ElapsedTimeMicros,
+            Boolean,
+            Celsius,
+            Kelvin,
+            Bytes,
+            BytesShort
+        };
+
         inline S9sVariant();
         S9sVariant(const S9sVariant &orig);
         inline S9sVariant(const int integerValue);
@@ -72,7 +97,10 @@ class S9sVariant
         time_t toTimeT() const;
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;
+        
         S9sString toString() const;
+        S9sString toString(const S9sVariant::TextFormat format) const;
+
         const S9sVariantMap &toVariantMap() const;
         const S9sNode &toNode() const;
         const S9sAccount &toAccount() const;
