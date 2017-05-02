@@ -1814,8 +1814,11 @@ S9sRpcReply::printHostTable(
     S9sFormat      coresFormat;
     S9sFormat      memTotalFormat;
     S9sFormat      memUsedFormat;
+    S9sFormat      cpuUsageFormat;
 
     memUsedFormat.setRightJustify(true);
+    cpuUsageFormat.setRightJustify(true);
+
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
         int        hostId   = hostIds[idx].toInt();
@@ -1823,13 +1826,17 @@ S9sRpcReply::printHostTable(
         S9sVariant nCores   = cluster.nCpuCores(hostId);
         S9sVariant memTotal = cluster.memTotal(hostId);
         S9sVariant memUsed  = cluster.memUsed(hostId);
-        //S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
+        S9sVariant cpuUsage = cluster.cpuUsagePercent(hostId);
 
         hostNameFormat.widen(hostName);
         coresFormat.widen(nCores.toInt());
         memTotalFormat.widen(memTotal.toString(S9sVariant::BytesShort));
         memUsedFormat.widen(memUsed.toString(S9sVariant::BytesShort));
-        //printf("%2d ", nCores.toInt());
+        
+        cpuUsageFormat.widen(
+                cpuUsage.toString(S9sVariant::IntegerNumber) + "%");
+
+        //printf("%2d ", nCores.toInt(cpuUsage.toString(S9sVariant::IntegerNumber)));
         //printf("%3s%% ", STR(cpuUsage.toString(S9sVariant::IntegerNumber)));
         //printf("%-4s ", STR(memTotal.toString(S9sVariant::BytesShort)));
         //printf("%-4s ", STR(memUsed.toString(S9sVariant::BytesShort)));
@@ -1844,8 +1851,8 @@ S9sRpcReply::printHostTable(
     printf("  ");
     hostNameFormat.printf("HOSTNAME");
     coresFormat.printf("CR");
-    
-    printf("CPU ");
+    cpuUsageFormat.printf("CPU");
+
     printf("MEMORY "); 
     printf("%s", headerColorEnd());
     printf("\n");
@@ -1863,7 +1870,9 @@ S9sRpcReply::printHostTable(
         printf("  ");
         hostNameFormat.printf(hostName);
         coresFormat.printf(nCores.toInt());
-        printf("%3s%% ", STR(cpuUsage.toString(S9sVariant::IntegerNumber)));
+        cpuUsageFormat.printf(
+                cpuUsage.toString(S9sVariant::IntegerNumber) + "%");
+
         memTotalFormat.printf(memTotal.toString(S9sVariant::BytesShort));
         memUsedFormat.printf(memUsed.toString(S9sVariant::BytesShort));
         printf("\n");
