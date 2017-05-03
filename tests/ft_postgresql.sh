@@ -277,17 +277,17 @@ function testStopStartNode()
     #
     # Then start.
     #
-#    mys9s node \
-#        --start \
-#        --cluster-id=$CLUSTER_ID \
-#        --nodes=$LAST_ADDED_NODE \
-#        $LOG_OPTION
-#    
-#    exitCode=$?
-#    printVerbose "exitCode = $exitCode"
-#    if [ "$exitCode" -ne 0 ]; then
-#        failure "The exit code is ${exitCode}"
-#    fi
+    mys9s node \
+        --start \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$LAST_ADDED_NODE \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
 }
 
 #
