@@ -292,7 +292,6 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testAddNode
-    runFunctionalTest testAddNode
     runFunctionalTest testStopMaster
 fi
 
