@@ -252,26 +252,30 @@ function testAddNode()
 }
 
 #
-#
+# This will stop the master node so we can observe what happens with the
+# failover.
 #
 function testStopMaster()
 {
     local exitCode
 
     #
-    # First stop.
+    # Stopping the first added node. 
     #
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$LAST_ADDED_NODE \
+        --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
-    fi    
+    fi
+
+    sleep 30
+    s9s job --log --job-id=5
 }
 
 #
