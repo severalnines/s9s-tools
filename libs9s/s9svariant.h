@@ -51,7 +51,8 @@ class S9sVariant
             Celsius,
             Kelvin,
             Bytes,
-            BytesShort
+            BytesShort,
+            BytesPerSecShort,
         };
 
         inline S9sVariant();

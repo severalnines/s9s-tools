@@ -1822,11 +1822,15 @@ S9sRpcReply::printHostTable(
     S9sFormat      labelFormat;
     S9sFormat      swapTotalFormat;
     S9sFormat      swapFreeFormat;
+    S9sFormat      rxSpeedFormat;
+    S9sFormat      txSpeedFormat;
     int            tableWidth;
     S9sString      indent;
 
     memUsedFormat.setRightJustify();
     cpuUsageFormat.setRightJustify();
+    rxSpeedFormat.setRightJustify();
+    txSpeedFormat.setRightJustify();
 
     for (uint idx = 0u; idx < hostIds.size(); ++idx)
     {
@@ -1840,6 +1844,9 @@ S9sRpcReply::printHostTable(
         S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
         S9sVariant swapTotal = cluster.swapTotal(hostId);
         S9sVariant swapFree  = cluster.swapFree(hostId);
+        S9sVariant rxSpeed   = cluster.rxBytesPerSecond(hostId);
+        S9sVariant txSpeed   = cluster.txBytesPerSecond(hostId);
+        
 
         hostNameFormat.widen(hostName);
 
@@ -1854,13 +1861,17 @@ S9sRpcReply::printHostTable(
 
         swapTotalFormat.widen(swapTotal.toString(S9sVariant::BytesShort));
         swapFreeFormat.widen(swapFree.toString(S9sVariant::BytesShort));
+
+        rxSpeedFormat.widen(rxSpeed.toString(S9sVariant::BytesPerSecShort));
+        txSpeedFormat.widen(txSpeed.toString(S9sVariant::BytesPerSecShort));
     }
     
     tableWidth = 
         hostNameFormat.realWidth() + coresFormat.realWidth() +
         memTotalFormat.realWidth() + memUsedFormat.realWidth() +
         cpuUsageFormat.realWidth() + totalDiskFormat.realWidth() +
-        freeDiskFormat.realWidth() + labelFormat.realWidth();
+        freeDiskFormat.realWidth() + labelFormat.realWidth() +
+        rxSpeedFormat.realWidth()  + txSpeedFormat.realWidth();
 
     if (terminalWidth - tableWidth > 0)
         indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
@@ -1887,6 +1898,10 @@ S9sRpcReply::printHostTable(
     labelFormat = totalDiskFormat + freeDiskFormat;
     labelFormat.setCenterJustify();
     labelFormat.printf("DISK"); 
+    
+    labelFormat = rxSpeedFormat + txSpeedFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("NICs"); 
 
     printf("%s", headerColorEnd());
     printf("\n");
@@ -1904,6 +1919,8 @@ S9sRpcReply::printHostTable(
         S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
         S9sVariant swapTotal = cluster.swapTotal(hostId);
         S9sVariant swapFree  = cluster.swapFree(hostId);
+        S9sVariant rxSpeed   = cluster.rxBytesPerSecond(hostId);
+        S9sVariant txSpeed   = cluster.txBytesPerSecond(hostId);
 
         printf("%s", STR(indent));
         hostNameFormat.printf(hostName);
@@ -1919,6 +1936,9 @@ S9sRpcReply::printHostTable(
         
         totalDiskFormat.printf(totalDisk.toString(S9sVariant::BytesShort));
         freeDiskFormat.printf(freeDisk.toString(S9sVariant::BytesShort));
+        
+        rxSpeedFormat.printf(rxSpeed.toString(S9sVariant::BytesPerSecShort));
+        txSpeedFormat.printf(txSpeed.toString(S9sVariant::BytesPerSecShort));
         printf("\n");
     }
 

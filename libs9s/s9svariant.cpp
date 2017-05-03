@@ -950,7 +950,55 @@ S9sVariant::toString(
                 } else {
                     int intVal = toInt();
 
-                    retval.sprintf("%d", intVal);
+                    retval.sprintf("%dB", intVal);
+                }
+            }
+
+            break;
+
+        case BytesPerSecShort:
+            if (isString())
+            {
+                retval = toString();
+            } else {
+                double doubleVal = toDouble();
+
+                if (fabs(doubleVal) >= tbyte)
+                {
+                    doubleVal /= tbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fT/s", doubleVal);
+                    else
+                        retval.sprintf("%.1fT/s", doubleVal);
+                } else if (fabs(doubleVal) >= gbyte)
+                {
+                    doubleVal /= gbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fG/s", doubleVal);
+                    else
+                        retval.sprintf("%.1fG/s", doubleVal);
+                } else if (fabs(doubleVal) >= mbyte)
+                {
+                    doubleVal /= mbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fM/s", doubleVal);
+                    else
+                        retval.sprintf("%.1fM/s", doubleVal);
+                } else if (fabs(doubleVal) >= kbyte)
+                {
+                    doubleVal /= kbyte;
+
+                    if (doubleVal >= 10.0)
+                        retval.sprintf("%.0fK/s", doubleVal);
+                    else
+                        retval.sprintf("%.1fK/s", doubleVal);
+                } else {
+                    int intVal = toInt();
+
+                    retval.sprintf("%dB/s", intVal);
                 }
             }
 
