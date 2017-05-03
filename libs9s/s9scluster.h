@@ -65,6 +65,9 @@ class S9sCluster
         S9sVariant swapTotal(const int hostId);
         S9sVariant swapFree(const int hostId);
 
+        S9sVariant rxBytesPerSecond(const int hostId);
+        S9sVariant txBytesPerSecond(const int hostId);
+
         S9sVariant totalDiskBytes(const int hostId);
         S9sVariant freeDiskBytes(const int hostId);
 

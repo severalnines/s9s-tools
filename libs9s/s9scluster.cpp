@@ -403,6 +403,27 @@ S9sCluster::swapFree(
     return sheetInfo(key).toULongLong();
 }
 
+S9sVariant
+S9sCluster::rxBytesPerSecond(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.rx_bytes_per_second", hostId);
+
+    return sheetInfo(key).toULongLong();
+}
+
+S9sVariant
+S9sCluster::txBytesPerSecond(
+        const int hostId)
+{
+    S9sString key;
+
+    key.sprintf("host.%d.tx_bytes_per_second", hostId);
+
+    return sheetInfo(key).toULongLong();
+}
 
 /**
  * \param hostId The ID of the host for which we return information.
