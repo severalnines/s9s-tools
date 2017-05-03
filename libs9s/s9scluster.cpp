@@ -310,6 +310,8 @@ S9sCluster::hostName(
 
 /**
  * \param hostId The ID of the host for which we return information.
+ * \returns The number of cores (actually the number of siblinkgs that is cores
+ *   time threads) in the given host.
  */
 S9sVariant
 S9sCluster::nCpuCores(
@@ -381,6 +383,11 @@ S9sCluster::memUsed(
     return S9sVariant(retval * 1024ull);
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \returns The size of the free the swap.
+ *
+ */
 S9sVariant
 S9sCluster::swapTotal(
         const int hostId)
@@ -392,6 +399,11 @@ S9sCluster::swapTotal(
     return sheetInfo(key).toULongLong();
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \returns The size of the free area on the swap.
+ *
+ */
 S9sVariant
 S9sCluster::swapFree(
         const int hostId)
@@ -403,6 +415,11 @@ S9sCluster::swapFree(
     return sheetInfo(key).toULongLong();
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \return The current download speed of the computer in bytes/sec.
+ *
+ */
 S9sVariant
 S9sCluster::rxBytesPerSecond(
         const int hostId)
@@ -414,6 +431,11 @@ S9sCluster::rxBytesPerSecond(
     return sheetInfo(key).toULongLong();
 }
 
+/**
+ * \param hostId The ID of the host for which we return information.
+ * \return The current upload speed of the computer in bytes/sec.
+ *
+ */
 S9sVariant
 S9sCluster::txBytesPerSecond(
         const int hostId)
