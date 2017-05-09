@@ -614,6 +614,30 @@ function testRunScript()
 }
 
 #
+# This will perform a rolling restart on the cluster
+#
+function testRollingRestart()
+{
+    local exitCode
+    
+    pip-say "The test of rolling restart is starting now."
+
+    #
+    # Calling for a rolling restart.
+    #
+    mys9s cluster \
+        --rolling-restart \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
 # Dropping the cluster from the controller.
 #
 function testDrop()
@@ -678,9 +702,10 @@ else
     runFunctionalTest testRemoveBackup
     
     runFunctionalTest testRunScript
+    runFunctionalTest testRollingRestart
 
-    runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
+    #runFunctionalTest testDrop
+    #runFunctionalTest testDestroyNodes
 fi
 
 if [ "$FAILED" == "no" ]; then
