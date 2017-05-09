@@ -259,6 +259,8 @@ function testStopMaster()
 {
     local exitCode
 
+    sleep 10
+
     #
     # Stopping the first added node. 
     #
@@ -276,6 +278,7 @@ function testStopMaster()
 
     sleep 30
     s9s job --log --job-id=5
+    s9s node --list --long
 }
 
 #
@@ -294,6 +297,7 @@ else
     runFunctionalTest testPing
     
     runFunctionalTest testCreateCluster
+    runFunctionalTest testAddNode
     runFunctionalTest testAddNode
     runFunctionalTest testAddNode
     runFunctionalTest testStopMaster

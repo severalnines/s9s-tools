@@ -38,6 +38,11 @@ Usage:
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
 
+EXAMPLES
+  Just quickly create a PostgreSQL cluster and add two slave nodes to it
+  together with the first node that is going to be the master:
+
+  ./ft_postgresql.sh --log --print-commands testCreateCluster testAddNode testAddNode
 EOF
     exit 1
 }
