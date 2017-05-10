@@ -4298,6 +4298,10 @@ S9sRpcReply::typeColorEnd() const
     return "";
 }
 
+/**
+ * This method returns the ANSI color sequence for the beginning of a cluster
+ * state string. The color of course depends on the state itself.
+ */
 const char *
 S9sRpcReply::clusterStateColorBegin(
         S9sString state)
@@ -4305,9 +4309,13 @@ S9sRpcReply::clusterStateColorBegin(
     if (useSyntaxHighLight())
     {
         if (state == "DEGRADED")
+            return XTERM_COLOR_YELLOW;
+        if (state == "FAILURE")
             return XTERM_COLOR_RED;
         if (state == "STARTED")
             return XTERM_COLOR_GREEN;
+        if (state == "STOPPED")
+            return XTERM_COLOR_YELLOW;
         else
             return TERM_NORMAL;
     }
