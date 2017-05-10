@@ -2644,6 +2644,7 @@ S9sOptions::printHelpCluster()
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
 "  --opt-value=VALUE          The value for the configuration item.\n"
+"  --cluster-format=FORMAT    The format string used to print clusters.\n"
 "\n");
 }
 

@@ -70,6 +70,10 @@ class S9sCluster
 
         S9sVariant totalDiskBytes(const int hostId);
         S9sVariant freeDiskBytes(const int hostId);
+        
+        S9sString toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
 
     private:
         S9sVariantMap jobStatistics() const;

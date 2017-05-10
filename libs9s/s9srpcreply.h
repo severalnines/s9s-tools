@@ -84,6 +84,17 @@ class S9sRpcReply : public S9sVariantMap
         static S9sString progressBar(double percent, bool syntaxHighlight);
         static S9sString progressBar(bool syntaxHighlight);
 
+        static bool useSyntaxHighLight() ;
+
+        static const char *clusterStateColorBegin(S9sString state);
+        static const char *clusterStateColorEnd();
+        
+        static const char *userColorBegin();
+        static const char *userColorEnd();
+        
+        static const char *groupColorBegin(const S9sString &groupName);
+        static const char *groupColorEnd();
+        
     protected:
         S9sVariantMap clusterMap(const int clusterId);
         
@@ -141,23 +152,11 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyListLong();
         void printMetaTypePropertyListBrief();
 
-        bool useSyntaxHighLight() const;
-
-        const char *clusterStateColorBegin(S9sString state);
-        const char *clusterStateColorEnd() const;
-
-        
         const char *optNameColorBegin() const;
         const char *optNameColorEnd() const;
 
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
-
-        const char *groupColorBegin(const S9sString &groupName) const;
-        const char *groupColorEnd() const;
-        
-        const char *userColorBegin() const;
-        const char *userColorEnd() const;
 
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;

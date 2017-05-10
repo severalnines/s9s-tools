@@ -253,6 +253,14 @@ S9sMessage::toString() const
     return retval;
 }
 
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the message to a string using a special format string that may
+ * contain field names of message properties.
+ */
 S9sString
 S9sMessage::toString(
         const bool       syntaxHighlight,

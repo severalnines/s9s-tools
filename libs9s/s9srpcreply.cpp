@@ -1318,13 +1318,17 @@ S9sRpcReply::saveConfig(
 void 
 S9sRpcReply::printClusterListBrief()
 {
-    S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
-    int             nPrinted = 0;
+    S9sOptions     *options   = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       format    = options->clusterFormat();
+    bool            hasFormat = options->hasClusterFormat();
+    S9sVariantList  theList   = operator[]("clusters").toVariantList();
+    int             nPrinted  = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap = theList[idx].toVariantMap();
+        S9sCluster    cluster(theMap);
         S9sString     clusterName = theMap["cluster_name"].toString();
         int           clusterId   = theMap["cluster_id"].toInt();
         
@@ -1346,16 +1350,24 @@ S9sRpcReply::printClusterListBrief()
         if (!options->isStringMatchExtraArguments(clusterName))
             continue;
 
+        //
+        // The actual printing.
+        //
+        if (hasFormat)
+        {
+            printf("%s", STR(cluster.toString(syntaxHighlight, format)));
+        } else {
+            printf("%s%s%s ", 
+                    clusterColorBegin(), 
+                    STR(clusterName), 
+                    clusterColorEnd());
+        }
 
-        printf("%s%s%s ", 
-                clusterColorBegin(), 
-                STR(clusterName), 
-                clusterColorEnd());
 
         ++nPrinted;
     }
 
-    if (nPrinted > 0)
+    if (nPrinted > 0 && !hasFormat)
     {
         printf("\n");
         fflush(stdout);
@@ -4157,7 +4169,7 @@ S9sRpcReply::clusterMap(
 }
 
 bool
-S9sRpcReply::useSyntaxHighLight() const
+S9sRpcReply::useSyntaxHighLight()
 {
     S9sOptions *options = S9sOptions::instance();
    
@@ -4200,9 +4212,8 @@ S9sRpcReply::clusterColorEnd() const
     return "";
 }
 
-
 const char *
-S9sRpcReply::userColorBegin() const
+S9sRpcReply::userColorBegin() 
 {
     if (useSyntaxHighLight())
         return XTERM_COLOR_ORANGE;
@@ -4211,7 +4222,7 @@ S9sRpcReply::userColorBegin() const
 }
 
 const char *
-S9sRpcReply::userColorEnd() const
+S9sRpcReply::userColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
@@ -4221,7 +4232,7 @@ S9sRpcReply::userColorEnd() const
 
 const char *
 S9sRpcReply::groupColorBegin(
-        const S9sString &groupName) const
+        const S9sString &groupName) 
 {
     if (useSyntaxHighLight())
     {
@@ -4235,7 +4246,7 @@ S9sRpcReply::groupColorBegin(
 }
 
 const char *
-S9sRpcReply::groupColorEnd() const
+S9sRpcReply::groupColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
@@ -4326,7 +4337,7 @@ S9sRpcReply::clusterStateColorBegin(
 }
 
 const char *
-S9sRpcReply::clusterStateColorEnd() const
+S9sRpcReply::clusterStateColorEnd()
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

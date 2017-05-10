@@ -18,6 +18,7 @@
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9scluster.h"
+#include "S9sRpcReply"
 
 //#define DEBUG
 //#define WARNING
@@ -126,6 +127,11 @@ S9sCluster::clusterId() const
     return 0;
 }
 
+/**
+ * \returns The type of the cluster as in "MYSQLCLUSTER", "REPLICATION", 
+ *   "GALERA", "MYSQL_SINGLE", "MONGODB", "POSTGRESQL_SINGLE" or "GROUP_REPL".
+ *
+ */
 S9sString
 S9sCluster::clusterType() const
 {
@@ -135,6 +141,11 @@ S9sCluster::clusterType() const
     return 0;
 }
 
+/**
+ * \returns The state of the cluster as "MGMD_NO_CONTACT", "STARTED",
+ *   "NOT_STARTED", "DEGRADED", "FAILURE", "SHUTTING_DOWN", "RECOVERING",
+ *   "STARTING", "UNKNOWN" or "STOPPED".
+ */
 S9sString
 S9sCluster::state() const
 {
@@ -495,3 +506,186 @@ S9sCluster::sheetInfo(
 
     return retval;
 }
+
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the message to a string using a special format string that may
+ * contain field names of message properties.
+ */
+S9sString
+S9sCluster::toString(
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sString    retval;
+    S9sString    tmp;
+    char         c;
+    S9sString    partFormat;
+    bool         percent = false;
+    bool         escaped = false;
+    
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+        
+        if (c == '%')
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+        } else if (c == '\\')
+        {
+            escaped = true;
+            continue;
+        }
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'G':
+                    // The name of the group owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(groupOwnerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorBegin(groupOwnerName());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorEnd();
+
+                    break;
+
+                case 'I':
+                    // The ID of the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), clusterId());
+
+                    retval += tmp;
+                    break;
+
+                case 'N':
+                    // The name of the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(name()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
+                
+                case 'O':
+                    // The name of the owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(ownerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorEnd();
+
+                    break;
+
+                case 'S':
+                    // The state of the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(state()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::clusterStateColorBegin(state());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::clusterStateColorEnd();
+
+                    break;
+                
+                case 'T':
+                    // The state of the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(clusterType()));
+                    retval += tmp;
+                    break;
+
+                case '%':
+                    retval += '%';
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent = false;
+        escaped    = false;
+    }
+
+    return retval;
+}
+
+
