@@ -4316,6 +4316,8 @@ S9sRpcReply::clusterStateColorBegin(
             return XTERM_COLOR_GREEN;
         if (state == "STOPPED")
             return XTERM_COLOR_YELLOW;
+        if (state == "SHUTTING_DOWN")
+            return XTERM_COLOR_YELLOW;
         else
             return TERM_NORMAL;
     }
