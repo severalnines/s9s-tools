@@ -2432,12 +2432,12 @@ S9sRpcReply::printNodeListLong()
 
         if (syntaxHighlight)
         {
-            if (status == "CmonHostRecovery")
+            if (status == "CmonHostRecovery" ||
+                    status == "CmonHostShutDown")
             {
                 hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
             } else if (status == "CmonHostUnknown" ||
-                    status == "CmonHostOffLine" || 
-                    status == "CmonHostShutDown")
+                    status == "CmonHostOffLine")
             {
                 hostNameFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
             } else {

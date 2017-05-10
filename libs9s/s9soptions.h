@@ -119,6 +119,9 @@ class S9sOptions
 
         bool hasLogFormat() const;
         S9sString logFormat() const;
+        
+        bool hasClusterFormat() const;
+        S9sString clusterFormat() const;
 
         S9sString userName( const bool tryLocalUserToo = false) const;
 

@@ -126,6 +126,7 @@ enum S9sOptionType
     OptionUntil,
     OptionForce,
     OptionDebug,
+    OptionClusterFormat,
 };
 
 /**
@@ -1013,6 +1014,22 @@ S9sOptions::logFormat() const
 
     return S9sString();
 }
+
+bool
+S9sOptions::hasClusterFormat() const
+{
+    return m_options.contains("cluster_format");
+}
+
+S9sString
+S9sOptions::clusterFormat() const
+{
+    if (m_options.contains("cluster_format"))
+        return m_options.at("cluster_format").toString();
+
+    return S9sString();
+}
+
 
 /**
  * \param tryLocalUserToo if the user name could not be determined use the local
@@ -4791,6 +4808,7 @@ S9sOptions::readOptionsCluster(
         { "opt-group",        required_argument, 0, OptionOptGroup        },
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
+        { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { 0, 0, 0, 0 }
     };
 
@@ -5057,6 +5075,11 @@ S9sOptions::readOptionsCluster(
             case OptionOptValue:
                 // --opt-value=VALUE
                 m_options["opt_value"] = optarg;
+                break;
+            
+            case OptionClusterFormat:
+                // --cluster-format=VALUE
+                m_options["cluster_format"] = optarg;
                 break;
 
             case '?':
