@@ -473,6 +473,11 @@ S9sOptions::configFile() const
     return retval;
 }
 
+/**
+ * \returns The value for the "brief_job_log_format" config variable that
+ *   controls the format of the job log lines printed when the --long option is
+ *   not provided and the --log-format option is not used either.
+ */
 S9sString 
 S9sOptions::briefJobLogFormat() const
 {
@@ -492,6 +497,11 @@ S9sOptions::briefJobLogFormat() const
     return retval;
 }
 
+/**
+ * \returns The value for the "brief_job_log_format" config variable that
+ *   controls the format of the log lines printed when the --long option is not
+ *   provided.
+ */
 S9sString 
 S9sOptions::briefLogFormat() const
 {
@@ -512,7 +522,11 @@ S9sOptions::briefLogFormat() const
 }
 
 
-
+/**
+ * \returns The value for the "long_job_log_format" config variable that
+ *   controls the format of the job log lines printed when the --long option is
+ *   provided and the --log-format option is not used.
+ */
 S9sString 
 S9sOptions::longJobLogFormat() const
 {
@@ -1000,12 +1014,19 @@ S9sOptions::jobId() const
     return -1;
 }
 
+/**
+ * \returns True if the --log-format command line option is provided.
+ */
 bool
 S9sOptions::hasLogFormat() const
 {
     return m_options.contains("log_format");
 }
 
+/**
+ * \returns The "--log-format" command line option argument if the option was
+ *   used, the empty string if it was not.
+ */
 S9sString
 S9sOptions::logFormat() const
 {
