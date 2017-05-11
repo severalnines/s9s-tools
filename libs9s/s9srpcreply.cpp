@@ -688,6 +688,9 @@ S9sRpcReply::printJobLogLong()
     if (options->hasLogFormat())
         formatString = options->logFormat();
 
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
     if (!formatString.empty())
     {
         for (uint idx = 0; idx < theList.size(); ++idx)
@@ -1386,11 +1389,57 @@ S9sRpcReply::printClusterListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       requestedName = options->clusterName();
     int             terminalWidth = options->terminalWidth();
+    S9sString       formatString = options->longClusterFormat();
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
     S9sFormat       ownerFormat, groupFormat;
     S9sFormat       nameFormat;
+
+    if (options->hasClusterFormat())
+        formatString = options->clusterFormat();
+
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap clusterMap  = theList[idx].toVariantMap();
+            S9sCluster    cluster     = S9sCluster(clusterMap); 
+            S9sString     clusterName = clusterMap["cluster_name"].toString();
+            int           clusterId   = clusterMap["cluster_id"].toInt();
+        
+            //
+            // Filtering.
+            //
+            if (options->hasClusterIdOption())
+            {
+                if (clusterId != options->clusterId())
+                    continue;
+            }
+        
+            if (options->hasClusterNameOption())
+            {
+                if (clusterName != options->clusterName())
+                    continue;
+            }
+
+            if (!options->isStringMatchExtraArguments(clusterName))
+                continue;
+
+            /*
+             * Printing using the formatstring.
+             */
+            printf("%s", STR(cluster.toString(syntaxHighlight, formatString)));
+        }
+
+        if (!options->isBatchRequested())
+            printf("Total: %lu\n", (unsigned long int) theList.size());
+
+        return;
+    }
 
     /*
      * First run-through: collecting some information.

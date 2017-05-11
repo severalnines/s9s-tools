@@ -475,13 +475,13 @@ S9sOptions::configFile() const
 
 /**
  * \returns The value for the "brief_job_log_format" config variable that
- *   controls the format of the job log lines printed when the --long option is
- *   not provided and the --log-format option is not used either.
+ *   controls the format of the log lines printed when the --long option is not
+ *   provided.
  */
 S9sString 
-S9sOptions::briefJobLogFormat() const
+S9sOptions::briefLogFormat() const
 {
-    const char *key = "brief_job_log_format";
+    const char *key = "brief_log_format";
     S9sString   retval;
 
     if (m_options.contains(key))
@@ -499,13 +499,13 @@ S9sOptions::briefJobLogFormat() const
 
 /**
  * \returns The value for the "brief_job_log_format" config variable that
- *   controls the format of the log lines printed when the --long option is not
- *   provided.
+ *   controls the format of the job log lines printed when the --long option is
+ *   not provided and the --log-format option is not used either.
  */
 S9sString 
-S9sOptions::briefLogFormat() const
+S9sOptions::briefJobLogFormat() const
 {
-    const char *key = "brief_log_format";
+    const char *key = "brief_job_log_format";
     S9sString   retval;
 
     if (m_options.contains(key))
@@ -546,6 +546,29 @@ S9sOptions::longJobLogFormat() const
     return retval;
 }
 
+/**
+ * \returns The value for the "long_cluster_format" config variable that
+ *   controls the format of the cluster lines printed when the --long option is
+ *   provided and the --log-format option is not used.
+ */
+S9sString 
+S9sOptions::longClusterFormat() const
+{
+    const char *key = "long_cluster_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
 
 /**
  * \param assignments The argument of the --properties command line option.
