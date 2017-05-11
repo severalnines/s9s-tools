@@ -463,3 +463,16 @@ used by the new user. Grant all access on the new database for the new user:
     --account=john:passwd@10.10.1.100 \\
     --with-database\fR
 .fi
+
+The following example shows how the cluster format string can be used to print
+a customized the cluster list. The \fB\-\-cluster\-format\fR command line option
+is used here to produce a multi-line output:
+
+.nf
+# \fBs9s cluster --list --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n"\fR
+    ID : 00001 
+Status : STOPPED 
+  Name : ft_postgresqlstop_48273
+  Type : POSTGRESQL_SINGLE
+ Owner : pipas/users
+.fi
