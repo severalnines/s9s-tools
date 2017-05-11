@@ -164,28 +164,6 @@ function grant_user()
 }
 
 #
-#
-#
-function testPing()
-{
-    pip-say "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
-    fi
-}
-
-#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster()
@@ -263,9 +241,10 @@ function testAddNode()
 function testStopStartNode()
 {
     local exitCode
+    local state 
 
     #
-    # First stop.
+    # First stop the node.
     #
     mys9s node \
         --stop \
@@ -279,6 +258,11 @@ function testStopStartNode()
         failure "The exit code is ${exitCode}"
     fi
     
+    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    if [ "$state" != "DEGRADED" ]; then
+        failure "The cluster should be in 'DEGRADED' state, it is '$state'."
+    fi
+
     #
     # Then start.
     #
@@ -293,6 +277,12 @@ function testStopStartNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    if [ "$state" != "STARTED" ]; then
+        failure "The cluster should be in 'STARTED' state, it is '$state'."
+    fi
+
 }
 
 #
