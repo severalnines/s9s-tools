@@ -651,7 +651,7 @@ S9sCluster::toString(
                     break;
                 
                 case 'T':
-                    // The state of the cluster.
+                    // The type of the cluster.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(clusterType()));
                     retval += tmp;

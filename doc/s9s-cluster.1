@@ -227,6 +227,60 @@ supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
 
 .TP
+.BR \-\^\-cluster\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed information about clusters.
+When this command line option is used the specified information will be printed
+instead of the default columns. The format string uses the '%' character to mark
+variable fields, flag characters as they are specified in the standard printf()
+C library functions and its own field name letters to refer to the various
+properties of the clusters.
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number.
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The properties of the message are encoded by letters. The in the "%-5I" for
+example the letter "I" encodes the "cluster ID" field, so the numerical ID of
+the cluster will be substituted. The program supports the following fields:
+
+.RS 7
+.TP
+.B G
+The name of the group owner of the cluster. 
+
+.TP
+.B I
+The numerical ID of the cluster.
+
+.TP
+.B N
+The name of the cluster.
+
+.TP
+.B O
+The name of the owner of the cluster.
+
+.TP
+.B S
+The state of the cluster.
+
+.TP
+.B T 
+The type of the cluster.
+
+.TP
+.B %
+The '%' character itself. 
+
+.RE
+
+.\"
+.\"
+.\"
+.TP
 .BI \-\^\-db\-admin= USERNAME
 The user name of the database administrator (e.g. 'root').
 
