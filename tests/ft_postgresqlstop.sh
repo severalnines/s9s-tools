@@ -29,7 +29,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check various error conditions.
+  $MYNAME - PostgreSQL cluster stop/start test script.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -38,11 +38,6 @@ Usage:
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
 
-EXAMPLES
-  Just quickly create a PostgreSQL cluster and add two slave nodes to it
-  together with the first node that is going to be the master:
-
-  ./ft_postgresql.sh --log --print-commands testCreateCluster testAddNode testAddNode
 EOF
     exit 1
 }
@@ -159,30 +154,11 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key \
+    mys9s user \
+        --create \
+        --cmon-user=$USER \
+        --generate-key \
         >/dev/null 2>/dev/null
-}
-
-#
-#
-#
-function testPing()
-{
-    pip-say "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
-    fi
 }
 
 #
@@ -257,8 +233,7 @@ function testAddNode()
 }
 
 #
-# This test will first call a --stop then a --start on a node. Pretty basic
-# stuff.
+# This test will call a --stop on the cluster. 
 #
 function testStopCluster()
 {
@@ -283,6 +258,48 @@ function testStopCluster()
     if [ "$state" != "STOPPED" ]; then
         failure "The state should be 'STOPPED' instead of '$state'."
     fi
+
+    #
+    # We then show the cluster stat so that the user can see the state.
+    #
+    #mys9s cluster \
+    #    --stat \
+    #    --cluster-id=$CLUSTER_ID 
+}
+
+#
+# This test will call a --start on the cluster. 
+#
+function testStartCluster()
+{
+    local exitCode
+    local state
+
+    #
+    # Starting the cluster and checking if the cluster state is 'STARTED'.
+    #
+    mys9s cluster \
+        --start \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    if [ "$state" != "STARTED" ]; then
+        failure "The state should be 'STARTED' instead of '$state'."
+    fi
+
+    #
+    # We then show the cluster stat so that the user can see the state.
+    #
+    #mys9s cluster \
+    #    --stat \
+    #    --cluster-id=$CLUSTER_ID 
 }
 
 #
@@ -334,14 +351,13 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
-    
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testStopCluster
+    runFunctionalTest testStartCluster
 
-    #runFunctionalTest testDrop
-    #runFunctionalTest testDestroyNodes
+    runFunctionalTest testDrop
+    runFunctionalTest testDestroyNodes
 fi
 
 if [ "$FAILED" == "no" ]; then
