@@ -282,7 +282,6 @@ function testStopStartNode()
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
     fi
-
 }
 
 #
