@@ -1,7 +1,8 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYBASENAME=$(basename $0 .sh)
-MYDIR=$(dirname $0)
+MYNAME=$(basename "$0")
+MYBASENAME=$(basename "$MYNAME" .sh)
+MYDIR=$(dirname "$0")
+VERSION="0.0.1"
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
@@ -9,6 +10,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
 OPTION_INSTALL=""
+OPTION_RESET_CONFIG=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
@@ -37,6 +39,7 @@ Usage:
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -45,7 +48,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -87,6 +90,11 @@ while true; do
             OPTION_INSTALL="--install"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -99,7 +107,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
@@ -107,8 +115,39 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
 #
-# Creates and starts a new 
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
+
+#
+# Creates and starts a new virtual machine.
 #
 function create_node()
 {
@@ -130,6 +169,7 @@ function find_cluster_id()
     local retval
     local nTry=0
 
+    printVerbose "Finding existing cluster ID."
     while true; do
         retval=$($S9S cluster --list --long --batch --cluster-name="$name")
         retval=$(echo "$retval" | awk '{print $1}')
@@ -154,6 +194,7 @@ function find_cluster_id()
 
 function grant_user()
 {
+    printVerbose "Creating Cmon user ${USER}."
     mys9s user \
         --create \
         --cmon-user=$USER \
@@ -342,6 +383,8 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
