@@ -1,7 +1,8 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYBASENAME=$(basename $0 .sh)
-MYDIR=$(dirname $0)
+MYNAME=$(basename "$0")
+MYBASENAME=$(basename "$MYNAME" .sh)
+MYDIR=$(dirname "$0")
+VERSION="0.0.1"
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
@@ -9,6 +10,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
 OPTION_INSTALL=""
+OPTION_RESET_CONFIG=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
@@ -29,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check various error conditions.
+  $MYNAME - PostgreSQL failover script.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -37,6 +39,7 @@ Usage:
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -45,7 +48,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -87,6 +90,11 @@ while true; do
             OPTION_INSTALL="--install"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -99,7 +107,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
@@ -107,8 +115,39 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
 #
-# Creates and starts a new 
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
+
+#
+# Creates and starts a new virtual machine.
 #
 function create_node()
 {
@@ -130,6 +169,7 @@ function find_cluster_id()
     local retval
     local nTry=0
 
+    printVerbose "Finding existing cluster ID."
     while true; do
         retval=$($S9S cluster --list --long --batch --cluster-name="$name")
         retval=$(echo "$retval" | awk '{print $1}')
@@ -154,30 +194,12 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key \
+    printVerbose "Creating Cmon user ${USER}."
+    mys9s user \
+        --create \
+        --cmon-user=$USER \
+        --generate-key \
         >/dev/null 2>/dev/null
-}
-
-#
-#
-#
-function testPing()
-{
-    pip-say "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
-    fi
 }
 
 #
@@ -258,8 +280,7 @@ function testAddNode()
 function testStopMaster()
 {
     local exitCode
-
-    sleep 10
+    local timeLoop="0"
 
     #
     # Stopping the first added node. 
@@ -276,15 +297,64 @@ function testStopMaster()
         failure "The exit code is ${exitCode}"
     fi
 
-    sleep 30
-    s9s job --log --job-id=5
-    s9s node --list --long
+    while true; do
+        if [ "$timeLoop" -gt 60 ]; then
+            failure "No master is elected after $timeLoop seconds."
+            mys9s node --list --long
+            return 1
+        fi
+
+        if s9s node --list --long | grep --quiet ^poM; then
+            break
+        fi
+    done
+
+    mys9s node --list --long
+    return 0
+}
+
+#
+# Dropping the cluster from the controller.
+#
+function testDrop()
+{
+    local exitCode
+
+    pip-say "The test to drop the cluster is starting now."
+
+    #
+    # Starting the cluster.
+    #
+    mys9s cluster \
+        --drop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
+#
+# This will destroy the containers we created.
+#
+function testDestroyNodes()
+{
+    pip-say "The test is now destroying the nodes."
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
@@ -294,13 +364,14 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
-    
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testAddNode
-    runFunctionalTest testAddNode
+
     runFunctionalTest testStopMaster
+    
+    runFunctionalTest testDrop
+    runFunctionalTest testDestroyNodes
 fi
 
 if [ "$FAILED" == "no" ]; then
