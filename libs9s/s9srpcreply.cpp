@@ -4465,7 +4465,7 @@ S9sRpcReply::clusterStateColorEnd()
 
 const char *
 S9sRpcReply::fileColorBegin(
-        const S9sString &fileName) const
+        const S9sString &fileName) 
 {
     if (useSyntaxHighLight())
     {
@@ -4477,6 +4477,12 @@ S9sRpcReply::fileColorBegin(
             return XTERM_COLOR_PURPLE;
         else if (fileName.endsWith(".cnf"))
             return XTERM_COLOR_LIGHT_PURPLE;
+        else if (fileName.endsWith(".conf"))
+            return XTERM_COLOR_LIGHT_PURPLE;
+        else if (fileName.endsWith(".ini"))
+            return XTERM_COLOR_LIGHT_PURPLE;
+        else if (fileName.endsWith(".pid"))
+            return XTERM_COLOR_LIGHT_RED;
         else
             return TERM_NORMAL;
     }
@@ -4485,7 +4491,7 @@ S9sRpcReply::fileColorBegin(
 }
 
 const char *
-S9sRpcReply::fileColorEnd() const
+S9sRpcReply::fileColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

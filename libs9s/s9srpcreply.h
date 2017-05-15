@@ -98,6 +98,10 @@ class S9sRpcReply : public S9sVariantMap
         static const char *groupColorBegin(const S9sString &groupName);
         static const char *groupColorEnd();
         
+        static const char *fileColorBegin(const S9sString &fileName);
+        static const char *fileColorEnd();
+
+        
     protected:
         S9sVariantMap clusterMap(const int clusterId);
         
@@ -167,9 +171,6 @@ class S9sRpcReply : public S9sVariantMap
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
         
-        const char *fileColorBegin(const S9sString &fileName) const;
-        const char *fileColorEnd() const;
-
         const char *greyColorBegin() const;
         const char *greyColorEnd() const;
 };

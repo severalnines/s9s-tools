@@ -256,6 +256,21 @@ S9sNode::toString(
                         retval += TERM_NORMAL;
 
                     break;
+                
+                case 'c':
+                    // The log file. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(configFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(configFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
 
                 case 'D':
                     // The data directory.
@@ -269,6 +284,21 @@ S9sNode::toString(
 
                     if (syntaxHighlight)
                         retval += TERM_NORMAL;
+
+                    break;
+                
+                case 'd':
+                    // The data directory.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(pidFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(pidFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
 
                     break;
 #if 0
@@ -287,6 +317,21 @@ S9sNode::toString(
 
                     break;
 #endif
+                
+                case 'g':
+                    // The log file. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(logFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(logFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
 
                 case 'I':
                     // The ID of the node.
@@ -320,13 +365,23 @@ S9sNode::toString(
                     break;
                 
                 case 'M':
-                    // The name of the node.
+                    // The message describing the node's status. 
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(message()));
                     retval += tmp;
                     break;
-                
-                case 'o':
+
+                case 'm':
+                    // Maintenance flag.
+                    partFormat += 's';
+                    
+                    tmp.sprintf(STR(partFormat), 
+                            isMaintenanceActive() ? "M" : "-");
+
+                    retval += tmp;
+                    break;
+ 
+                case 'O':
                     // The OS version string.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(osVersionString()));
@@ -381,6 +436,14 @@ S9sNode::toString(
                     // The role.
                     partFormat += "s";
                     tmp.sprintf(STR(partFormat), STR(role()));
+                    retval += tmp;
+                    break;
+                
+                case 'r':
+                    // A string 'read-only' or 'read-write'.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), 
+                            readOnly() ? "read-only" : "read-write");
                     retval += tmp;
                     break;
 
@@ -456,6 +519,9 @@ S9sNode::toString(
     return retval;
 }
 
+/**
+ * \returns The host ID, a unique ID that identifies the host itself.
+ */
 int
 S9sNode::id() const
 {
@@ -591,6 +657,10 @@ S9sNode::logFile() const
     return S9sString();
 }
 
+/**
+ * \returns The PID file of the host, the full path of the file that on the host
+ *   stores the PID of the most important process (e.g. the mysql daemon).
+ */
 S9sString
 S9sNode::pidFile() const
 {
