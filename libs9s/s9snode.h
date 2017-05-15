@@ -51,6 +51,7 @@ class S9sNode
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;
 
+        int id() const;
         S9sString name() const;
         S9sString hostName() const;
         S9sString ipAddress() const;
@@ -80,6 +81,8 @@ class S9sNode
         bool isMaintenanceActive() const;
         bool readOnly() const;
         bool superReadOnly() const;
+        S9sString receivedLocation() const;
+        S9sString replayLocation() const;
         bool connected() const;
         bool managed() const;
         bool nodeAutoRecovery() const;

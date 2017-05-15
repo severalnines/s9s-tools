@@ -287,15 +287,15 @@ S9sNode::toString(
 
                     break;
 #endif
-#if 0
+
                 case 'I':
-                    // The ID of the cluster.
+                    // The ID of the node.
                     partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), clusterId());
+                    tmp.sprintf(STR(partFormat), id());
 
                     retval += tmp;
                     break;
-#endif
+
                 case 'i':
                     // The ip address of the node.
                     partFormat += 's';
@@ -323,6 +323,27 @@ S9sNode::toString(
                     // The name of the node.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(message()));
+                    retval += tmp;
+                    break;
+                
+                case 'o':
+                    // The OS version string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(osVersionString()));
+                    retval += tmp;
+                    break;
+                
+                case 'L':
+                    // The replay location.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(replayLocation()));
+                    retval += tmp;
+                    break;
+                
+                case 'l':
+                    // The replay location.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(receivedLocation()));
                     retval += tmp;
                     break;
 
@@ -353,6 +374,13 @@ S9sNode::toString(
                     // The PID.
                     partFormat += "d";
                     tmp.sprintf(STR(partFormat), pid());
+                    retval += tmp;
+                    break;
+                
+                case 'R':
+                    // The role.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(role()));
                     retval += tmp;
                     break;
 
@@ -388,6 +416,13 @@ S9sNode::toString(
                     tmp.sprintf(STR(partFormat), STR(nodeType()));
                     retval += tmp;
                     break;
+                
+                case 'V':
+                    // The role.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(version()));
+                    retval += tmp;
+                    break;
 
                 case '%':
                     retval += '%';
@@ -419,6 +454,16 @@ S9sNode::toString(
     }
 
     return retval;
+}
+
+int
+S9sNode::id() const
+{
+    if (m_properties.contains("unique_id"))
+        return m_properties.at("unique_id").toInt();
+
+    return 0;
+
 }
 
 /**
@@ -799,6 +844,29 @@ S9sNode::connected() const
     return false;
 }
 
+S9sString
+S9sNode::receivedLocation() const
+{
+    if (m_properties.contains("received_location"))
+        return m_properties.at("received_location").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sNode::replayLocation() const
+{
+    if (m_properties.contains("replay_location"))
+        return m_properties.at("replay_location").toString();
+
+    return S9sString();
+}
+
+
+/**
+ * \returns The value of the "managed" property, that shows if the node is
+ *   actually managed by cmon.
+ */
 bool
 S9sNode::managed() const
 {
