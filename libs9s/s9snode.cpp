@@ -242,6 +242,35 @@ S9sNode::toString(
         {
             switch (c)
             {
+                case 'C':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
+
+                case 'D':
+                    // The data directory.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(dataDir()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
 #if 0
                 case 'G':
                     // The name of the group owner.
@@ -267,6 +296,14 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 #endif
+                case 'i':
+                    // The ip address of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(ipAddress()));
+                    retval += tmp;
+
+                    break;
+
                 case 'N':
                     // The name of the node.
                     partFormat += 's';
@@ -281,6 +318,14 @@ S9sNode::toString(
                         retval += TERM_NORMAL;
 
                     break;
+                
+                case 'M':
+                    // The name of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(message()));
+                    retval += tmp;
+                    break;
+
 #if 0 
                 case 'O':
                     // The name of the owner.
@@ -297,6 +342,20 @@ S9sNode::toString(
 
                     break;
 #endif
+                case 'P':
+                    // The Port.
+                    partFormat += "d";
+                    tmp.sprintf(STR(partFormat), port());
+                    retval += tmp;
+                    break;
+                
+                case 'p':
+                    // The PID.
+                    partFormat += "d";
+                    tmp.sprintf(STR(partFormat), pid());
+                    retval += tmp;
+                    break;
+
                 case 'S':
                     // The state of the node.
                     partFormat += 's';
@@ -315,6 +374,14 @@ S9sNode::toString(
 
                     break;
                 
+                case 's':
+                    // The list of slaves in one string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(slavesAsString()));
+                    retval += tmp;
+                
+                    break;
+
                 case 'T':
                     // The type of the cluster.
                     partFormat += 's';
@@ -339,6 +406,7 @@ S9sNode::toString(
                 case '-':
                 case '+':
                 case '.':
+                case '\'':
                     partFormat += c;
                     continue;
             }
@@ -776,6 +844,9 @@ S9sNode::sshFailCount() const
     return 0;
 }
 
+/**
+ * \returns One string that contains the names of all slaves.
+ */
 S9sString
 S9sNode::slavesAsString() const
 {
