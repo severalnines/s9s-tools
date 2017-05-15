@@ -86,6 +86,9 @@ class S9sRpcReply : public S9sVariantMap
 
         static bool useSyntaxHighLight() ;
 
+        static const char *hostStateColorBegin(const S9sString state);
+        static const char *hostStateColorEnd();
+
         static const char *clusterStateColorBegin(S9sString state);
         static const char *clusterStateColorEnd();
         

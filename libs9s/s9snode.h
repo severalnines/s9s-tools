@@ -45,6 +45,12 @@ class S9sNode
 
         S9sString protocol() const { return m_url.protocol(); };
         S9sString className() const;
+
+        S9sString 
+            toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
+
         S9sString name() const;
         S9sString hostName() const;
         S9sString ipAddress() const;

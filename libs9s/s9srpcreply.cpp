@@ -2383,6 +2383,7 @@ S9sRpcReply::printNodeListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sString       formatString = options->longNodeFormat();
     S9sVariantList  hostList;
     S9sFormat       cidFormat;
     S9sFormat       hostNameFormat;
@@ -2392,6 +2393,44 @@ S9sRpcReply::printNodeListLong()
     int             total = 0;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
+
+    if (options->hasNodeFormat())
+        formatString = options->nodeFormat();
+
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap      = theList[idx].toVariantMap();
+            S9sVariantList hosts       = theMap["hosts"].toVariantList();
+            S9sString      clusterName = theMap["cluster_name"].toString();
+
+            total += hosts.size();
+    
+            if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
+                continue;
+
+            for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
+            {
+                S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
+                S9sNode       node      = hostMap;
+                S9sString     hostName  = node.name();
+
+                if (!options->isStringMatchExtraArguments(hostName))
+                    continue;
+
+                printf("%s", STR(node.toString(syntaxHighlight, formatString)));
+            }
+        }
+    
+        if (!options->isBatchRequested())
+            printf("Total: %d\n", total); 
+
+        return;
+    }
 
     /*
      * First run-through: collecting some information.
@@ -4357,6 +4396,36 @@ S9sRpcReply::typeColorEnd() const
 
     return "";
 }
+
+const char *
+S9sRpcReply::hostStateColorBegin(
+        const S9sString status)
+{
+    if (useSyntaxHighLight())
+    {
+        if (status == "CmonHostRecovery" || status == "CmonHostShutDown")
+        {
+            return XTERM_COLOR_YELLOW;
+        } else if (status == "CmonHostUnknown" || status == "CmonHostOffLine")
+        {
+            return XTERM_COLOR_RED;
+        } else {
+            return XTERM_COLOR_GREEN;
+        }
+    }
+
+    return "";
+}
+
+const char *
+S9sRpcReply::hostStateColorEnd()
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
 
 /**
  * This method returns the ANSI color sequence for the beginning of a cluster
