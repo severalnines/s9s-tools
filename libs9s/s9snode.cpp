@@ -462,6 +462,14 @@ S9sNode::toString(
                     retval += tmp;
                     break;
                 
+                case 'U':
+                    // The uptime.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), 
+                            STR(S9sString::uptime(uptime())));
+                    retval += tmp;
+                    break;
+                
                 case 'V':
                     // The role.
                     partFormat += "s";
@@ -547,6 +555,9 @@ S9sNode::hostName() const
     return S9sString();
 }
 
+/**
+ * \returns The IP address of the node.
+ */
 S9sString
 S9sNode::ipAddress() const
 {
@@ -571,7 +582,8 @@ S9sNode::alias() const
 }
 
 /**
- * \returns The "role" property.
+ * \returns The "role" property (e.g. "controller", "master", "slave" or 
+ * "none").
  */
 S9sString
 S9sNode::role() const
@@ -604,6 +616,9 @@ S9sNode::roleFlag() const
     return '-';
 }
 
+/**
+ * \returns The full path of the configuration file of the node.
+ */
 S9sString
 S9sNode::configFile() const
 {
@@ -630,6 +645,9 @@ S9sNode::configFile() const
     return retval;
 }
 
+/**
+ * \returns The full path of the log file for the node.
+ */
 S9sString
 S9sNode::logFile() const
 {
@@ -652,6 +670,9 @@ S9sNode::pidFile() const
     return S9sString();
 }
 
+/**
+ * \returns The data directory of the node.
+ */
 S9sString
 S9sNode::dataDir() const
 {
@@ -662,7 +683,7 @@ S9sNode::dataDir() const
 }
 
 /**
- * \returns true if the node has a port number set.
+ * \returns True if the node has a port number set.
  */
 bool
 S9sNode::hasPort() const
@@ -714,6 +735,9 @@ S9sNode::hostStatus() const
     return S9sString();
 }
 
+/**
+ * \returns The host status encoded into one character.
+ */
 char 
 S9sNode::hostStatusFlag() const
 {
@@ -784,6 +808,9 @@ S9sNode::nodeTypeFlag() const
     return '?';
 }
 
+/**
+ * \returns The software version of the node.
+ */
 S9sString
 S9sNode::version() const
 {
@@ -793,6 +820,9 @@ S9sNode::version() const
     return S9sString();
 }
 
+/**
+ * \returns A human readable message about the current status of the node.
+ */
 S9sString
 S9sNode::message() const
 {
@@ -807,6 +837,9 @@ S9sNode::message() const
     return retval;
 }
 
+/**
+ * \returns A string encodes the operating system name and version.
+ */
 S9sString
 S9sNode::osVersionString() const
 {
@@ -829,6 +862,10 @@ S9sNode::osVersionString() const
     return retval;
 }
 
+/**
+ * \returns The process ID of the most important process on the node (e.g. the
+ *   PID of MySQL daemon on a Galera host).
+ */
 int
 S9sNode::pid() const
 {
