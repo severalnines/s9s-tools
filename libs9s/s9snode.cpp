@@ -242,6 +242,20 @@ S9sNode::toString(
         {
             switch (c)
             {
+                case 'A':
+                    // The alias of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(alias()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
                 case 'C':
                     // The class name.
                     partFormat += 's';
@@ -301,22 +315,6 @@ S9sNode::toString(
                         retval += S9sRpcReply::fileColorEnd();
 
                     break;
-#if 0
-                case 'G':
-                    // The name of the group owner.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(groupOwnerName()));
-
-                    if (syntaxHighlight)
-                        retval += S9sRpcReply::groupColorBegin(groupOwnerName());
-
-                    retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += S9sRpcReply::groupColorEnd();
-
-                    break;
-#endif
                 
                 case 'g':
                     // The log file. 
@@ -402,22 +400,6 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
-#if 0 
-                case 'O':
-                    // The name of the owner.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(ownerName()));
-
-                    if (syntaxHighlight)
-                        retval += S9sRpcReply::userColorBegin();
-
-                    retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += S9sRpcReply::userColorEnd();
-
-                    break;
-#endif
                 case 'P':
                     // The Port.
                     partFormat += "d";
