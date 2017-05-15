@@ -127,6 +127,7 @@ enum S9sOptionType
     OptionForce,
     OptionDebug,
     OptionClusterFormat,
+    OptionNodeFormat,
 };
 
 /**
@@ -549,12 +550,36 @@ S9sOptions::longJobLogFormat() const
 /**
  * \returns The value for the "long_cluster_format" config variable that
  *   controls the format of the cluster lines printed when the --long option is
- *   provided and the --log-format option is not used.
+ *   provided and the --cluster-format option is not used.
  */
 S9sString 
 S9sOptions::longClusterFormat() const
 {
     const char *key = "long_cluster_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The value for the "long_node_format" config variable that
+ *   controls the format of the node lines printed when the --long option is
+ *   provided and the --node-format option is not used.
+ */
+S9sString 
+S9sOptions::longNodeFormat() const
+{
+    const char *key = "long_node_format";
     S9sString   retval;
 
     if (m_options.contains(key))
@@ -1059,17 +1084,46 @@ S9sOptions::logFormat() const
     return S9sString();
 }
 
+/**
+ * \returns True if the --cluster-format command line option was provided.
+ */
 bool
 S9sOptions::hasClusterFormat() const
 {
     return m_options.contains("cluster_format");
 }
 
+/**
+ * \returns The command line option argument for the --cluster-format option or
+ *   the empty string if the option was not used.
+ */
 S9sString
 S9sOptions::clusterFormat() const
 {
     if (m_options.contains("cluster_format"))
         return m_options.at("cluster_format").toString();
+
+    return S9sString();
+}
+
+/**
+ * \returns True if the --node-format command line option was provided.
+ */
+bool
+S9sOptions::hasNodeFormat() const
+{
+    return m_options.contains("node_format");
+}
+
+/**
+ * \returns The command line option argument for the --node-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::nodeFormat() const
+{
+    if (m_options.contains("node_format"))
+        return m_options.at("node_format").toString();
 
     return S9sString();
 }
@@ -2717,6 +2771,7 @@ S9sOptions::printHelpNode()
 "  --opt-value=VALUE          The value of the configuration option.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --force                    Force to execute dangerous operations.\n"
+"  --node-format=FORMAT       The format string used to print nodes.\n"
 "\n");
 }
 
@@ -2794,6 +2849,7 @@ S9sOptions::readOptionsNode(
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "output-dir",       required_argument, 0, OptionOutputDir       },
+        { "node-format",      required_argument, 0, OptionNodeFormat      }, 
 
         { 0, 0, 0, 0 }
     };
@@ -2999,6 +3055,11 @@ S9sOptions::readOptionsNode(
             case OptionForce:
                 // --force
                 m_options["force"] = true;
+                break;
+            
+            case OptionNodeFormat:
+                // --node-format=VALUE
+                m_options["node_format"] = optarg;
                 break;
 
             case '?':

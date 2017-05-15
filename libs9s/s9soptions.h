@@ -93,6 +93,7 @@ class S9sOptions
 
         S9sString longJobLogFormat() const;
         S9sString longClusterFormat() const;
+        S9sString longNodeFormat() const;
         
         S9sString vendor() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
@@ -125,6 +126,9 @@ class S9sOptions
         
         bool hasClusterFormat() const;
         S9sString clusterFormat() const;
+
+        bool hasNodeFormat() const;
+        S9sString nodeFormat() const;
 
         S9sString userName( const bool tryLocalUserToo = false) const;
 
