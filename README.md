@@ -18,6 +18,20 @@ sudo apt-get update
 sudo apt-get install s9s-tools
 ```
 
+## Debian (+Ubuntu) DEB repositories
+
+See http://download.opensuse.org/repositories/home:/kedazo/ 
+
+To add debian/ubuntu repos the following needs to be done
+```
+# See possible distros from URL: http://download.opensuse.org/repositories/home:/kedazo/ 
+DISTRO=Debian_8.0
+wget -qO - http://download.opensuse.org/repositories/home:/kedazo/${DISTRO}/Release.key | sudo apt-key add -
+echo "deb http://download.opensuse.org/repositories/home:/kedazo/${DISTRO}/ ./" | sudo tee /etc/apt/sources.list.d/s9s-tools.list
+sudo apt-get update
+sudo apt-get install s9s-tools
+```
+
 ## YUM Repositories for CentOS 6/7 and RHEL 6/7
 
 LINK: https://build.opensuse.org/repositories/home:kedazo/s9s-tools
