@@ -231,20 +231,22 @@ supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or
 The string that controls the format of the printed information about clusters.
 When this command line option is used the specified information will be printed
 instead of the default columns. The format string uses the '%' character to mark
-variable fields, flag characters as they are specified in the standard printf()
-C library functions and its own field name letters to refer to the various
-properties of the clusters.
+variable fields and flag characters as they are specified in the standard
+printf() C library functions. The '%' specifiers are ended by field name letters
+to refer to various properties of the clusters.
 
 The "%+12I" format string for example has the "+12" flag characters in it with
 the standard meaning: the field will be 12 character wide and the "+" or "-"
-sign will always be printed with the number.
+sign will always be printed with the number. 
+
+The properties of the message are encoded by letters. The in the "%-5I" for
+example the letter "I" encodes the "cluster ID" field, so the numerical ID of
+the cluster will be substituted. 
 
 Standard '\\' notation is also available, \\n for example encodes a new-line 
 character.
 
-The properties of the message are encoded by letters. The in the "%-5I" for
-example the letter "I" encodes the "cluster ID" field, so the numerical ID of
-the cluster will be substituted. The program supports the following fields:
+The s9s-tools support the following fields:
 
 .RS 7
 .TP

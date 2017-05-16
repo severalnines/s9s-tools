@@ -456,7 +456,7 @@ S9sNode::toString(
                     break;
 
                 case 'T':
-                    // The type of the cluster.
+                    // The type of the node.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(nodeType()));
                     retval += tmp;
