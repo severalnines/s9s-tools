@@ -37,10 +37,10 @@ sudo apt-get install s9s-tools
 See http://repo.severalnines.com/s9s-tools/
 
 The repository files for each distribution:
-- http://repo.severalnines.com/s9s-tools/CentOS_6/home:kedazo.repo
-- http://repo.severalnines.com/s9s-tools/CentOS_7/home:kedazo.repo
-- http://repo.severalnines.com/s9s-tools/RHEL_6/home:kedazo.repo
-- http://repo.severalnines.com/s9s-tools/RHEL_7/home:kedazo.repo
+- http://repo.severalnines.com/s9s-tools/CentOS_6/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/RHEL_6/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/RHEL_7/s9s-tools.repo
 
 # Some screenshots
 
