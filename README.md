@@ -18,15 +18,29 @@ sudo apt-get update
 sudo apt-get install s9s-tools
 ```
 
+## Debian (+Ubuntu) DEB repositories
+
+See http://repo.severalnines.com/s9s-tools/
+
+To add debian/ubuntu repos the following needs to be done
+```
+# Available distros: wheezy, jessie, precise, trusty, xenial, yakkety, zesty
+DISTRO=jessie
+wget -qO - http://repo.severalnines.com/s9s-tools/${DISTRO}/Release.key | sudo apt-key add -
+echo "deb http://repo.severalnines.com/s9s-tools/${DISTRO}/ ./" | sudo tee /etc/apt/sources.list.d/s9s-tools.list
+sudo apt-get update
+sudo apt-get install s9s-tools
+```
+
 ## YUM Repositories for CentOS 6/7 and RHEL 6/7
 
-LINK: https://build.opensuse.org/repositories/home:kedazo/s9s-tools
+See http://repo.severalnines.com/s9s-tools/
 
 The repository files for each distribution:
-- http://download.opensuse.org/repositories/home:/kedazo/CentOS_6/home:kedazo.repo
-- http://download.opensuse.org/repositories/home:/kedazo/CentOS_7/home:kedazo.repo
-- http://download.opensuse.org/repositories/home:/kedazo/RHEL_6/home:kedazo.repo
-- http://download.opensuse.org/repositories/home:/kedazo/RHEL_7/home:kedazo.repo
+- http://repo.severalnines.com/s9s-tools/CentOS_6/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/RHEL_6/s9s-tools.repo
+- http://repo.severalnines.com/s9s-tools/RHEL_7/s9s-tools.repo
 
 # Some screenshots
 
