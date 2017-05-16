@@ -398,6 +398,36 @@ MySQL daemon on a Galera node).
 The role of the node (e.g. "controller", "master", "slave" or "none").
 
 .TP
+.B r
+The work "read-only" or "read-write" indicating if the server is in read only
+mode or not.
+
+.TP
+.B S
+The status of the host (e.g. CmonHostUnknown, CmonHostOnline, CmonHostOffLine,
+CmonHostFailed, CmonHostRecovery, CmonHostShutDown).
+
+.TP
+.B s
+The list of slaves of the given host in one string.
+
+.TP
+.B T
+The type of the node, e.g. "controller", "galera", "postgres".
+
+.TP
+.B U
+The uptime of the service on the host. Please note that this is not the uptime
+of the host, it is the uptime of the most important service (e.g. the uptime of
+the PostgreSQL server software).
+
+.TP
+.B V
+The version string of the most important software (e.g. the version of the
+PostgreSQL installed on a PostgreSQL node).
+
+
+.TP
 .B %
 The '%' character itself.
 
