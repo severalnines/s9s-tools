@@ -297,6 +297,25 @@ command line option.
 .\"
 .TP
 .BR \-\^\-node\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed information about the nodes.
+When this command line option is used the specified information will be printed
+instead of the default columns. The format string uses the '%' character to mark
+variable fields and flag characters as they are specified in the standard
+printf() C library functions. The '%' specifiers are ended by field name letters
+to refer to various properties of the clusters.
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the message are encoded by letters. The in the "%16D" for
+example the letter "D" encodes the "data directory" field, so the full path of
+the data directory on the node will be substituted. 
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The s9s-tools support the following fields:
 
 .RS 7
 .TP
@@ -304,6 +323,25 @@ command line option.
 The alias of the node. The alias is a secondary name that the user can assign 
 to the node. Please check the "examples" section to see how an alias can be
 assigned to a specific host.
+
+.TP
+.B C
+The class name of the node. This is mostly for debugging purposes, but it can
+also help applications classify the nodes.
+
+.TP
+.B c
+The configuration file for the most important process on the node (e.g. the
+configuration file of the MySQL daemon on a Galera node).
+
+.TP
+.B D
+The data directory of the node. This is usually the data directory of the SQL
+server.
+
+.TP
+.B d
+The PID file on the node.
 
 .TP
 .B %
