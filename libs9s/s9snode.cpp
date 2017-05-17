@@ -256,6 +256,7 @@ S9sNode::toString(
                         retval += TERM_NORMAL;
 
                     break;
+
                 case 'C':
                     // The class name.
                     partFormat += 's';
@@ -272,7 +273,7 @@ S9sNode::toString(
                     break;
                 
                 case 'c':
-                    // The log file. 
+                    // The configuration file. 
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(configFile()));
 
@@ -302,7 +303,7 @@ S9sNode::toString(
                     break;
                 
                 case 'd':
-                    // The data directory.
+                    // The PID file.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(pidFile()));
 
@@ -394,7 +395,7 @@ S9sNode::toString(
                     break;
                 
                 case 'l':
-                    // The replay location.
+                    // The received location.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(receivedLocation()));
                     retval += tmp;
@@ -471,7 +472,7 @@ S9sNode::toString(
                     break;
                 
                 case 'V':
-                    // The role.
+                    // The version.
                     partFormat += "s";
                     tmp.sprintf(STR(partFormat), STR(version()));
                     retval += tmp;
@@ -877,6 +878,10 @@ S9sNode::pid() const
     return retval;
 }
 
+/**
+ * \returns How many seconds elapsed since the most important service on the
+ *   host was started.
+ */
 ulonglong
 S9sNode::uptime() const
 {

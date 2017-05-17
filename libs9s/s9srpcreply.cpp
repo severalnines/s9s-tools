@@ -4556,9 +4556,64 @@ S9sRpcReply::printMetaTypeListLong()
     }
 }
 
+/**
+ * Lists the available types in brief format.
+ */
 void 
 S9sRpcReply::printMetaTypeListBrief()
 {
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    int             terminalWidth = options->terminalWidth();
+    S9sFormat       nameFormat;
+    int             currentPosition = 0;
+    
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["type_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+        
+        // There is a bug in the metatype system.
+        if (typeName.contains(" "))
+            continue;
+
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
+
+        nameFormat.widen(typeName);
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["type_name"].toString();
+        S9sString     description  = typeMap["description"].toString();
+        
+        // There is a bug in the metatype system.
+        if (typeName.contains(" "))
+            continue;
+
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
+
+        printf("%s", typeColorBegin());
+        nameFormat.printf(typeName);
+        printf("%s", typeColorEnd());
+
+        currentPosition += nameFormat.realWidth();
+        if (currentPosition + nameFormat.realWidth() > terminalWidth)
+        {
+            printf("\n");
+            currentPosition = 0;
+        }
+    }
+
+    if (currentPosition > 0)
+        printf("\n");
 }
 
 void 
