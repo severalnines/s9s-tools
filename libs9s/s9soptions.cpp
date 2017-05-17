@@ -2413,8 +2413,13 @@ S9sOptions::executeInfoRequest()
 
     if (m_options["print-version"].toBoolean())
     {
+        printf("      ___            _              _     \n"
+               " ___ / _ \\ ___      | |_ ___   ___ | |___ \n"
+               "/ __| (_) / __|_____| __/ _ \\ / _ \\| / __|\n"
+               "\\__ \\\\__, \\__ \\_____| || (_) | (_) | \\__ \\\n"
+               "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-        printf("Copyright (C) 2016...\n");
+        printf("Copyright (C) 2016-2017 Severalnines AB\n");
         printf("\n");
         printf("Written by ...\n");
         return true;
