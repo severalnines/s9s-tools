@@ -2100,12 +2100,17 @@ S9sOptions::setHumanReadable(
     m_options["human_readable"] = value;
 }
 
+bool
+S9sOptions::isTerminal() 
+{
+    return isatty(fileno(stdout));
+}
 
 /**
  * \returns How many characters the terminal can show in one line.
  */
 int 
-S9sOptions::terminalWidth() const
+S9sOptions::terminalWidth() 
 {
     struct winsize win;
     int            retcode;
@@ -2122,7 +2127,7 @@ S9sOptions::terminalWidth() const
  * \returns How many lines the terminal can show in one screen.
  */
 int 
-S9sOptions::terminalHeight() const
+S9sOptions::terminalHeight() 
 {
     struct winsize win;
     int            retcode;
@@ -2421,7 +2426,7 @@ S9sOptions::executeInfoRequest()
         printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
         printf("Copyright (C) 2016-2017 Severalnines AB\n");
         printf("\n");
-        printf("Written by ...\n");
+        //printf("Written by ...\n");
         return true;
     } else if (m_options.contains("help") && m_options["help"].toBoolean())
     {

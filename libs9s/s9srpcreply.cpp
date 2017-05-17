@@ -4398,6 +4398,24 @@ S9sRpcReply::typeColorEnd() const
 }
 
 const char *
+S9sRpcReply::propertyColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_LIGHT_GREEN;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::propertyColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sRpcReply::hostStateColorBegin(
         const S9sString status)
 {
@@ -4564,6 +4582,7 @@ S9sRpcReply::printMetaTypeListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
     S9sFormat       nameFormat;
     int             currentPosition = 0;
@@ -4591,7 +4610,6 @@ S9sRpcReply::printMetaTypeListBrief()
     {
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
-        S9sString     description  = typeMap["description"].toString();
         
         // There is a bug in the metatype system.
         if (typeName.contains(" "))
@@ -4605,7 +4623,8 @@ S9sRpcReply::printMetaTypeListBrief()
         printf("%s", typeColorEnd());
 
         currentPosition += nameFormat.realWidth();
-        if (currentPosition + nameFormat.realWidth() > terminalWidth)
+        if (currentPosition + nameFormat.realWidth() > terminalWidth ||
+                !isTerminal)
         {
             printf("\n");
             currentPosition = 0;
@@ -4664,9 +4683,9 @@ S9sRpcReply::printMetaTypePropertyListLong()
         if (description.empty())
             description = "-";
 
-        //printf("%s", typeColorBegin());
+        printf("%s", propertyColorBegin());
         nameFormat.printf(typeName);
-        //printf("%s", typeColorEnd());
+        printf("%s", propertyColorEnd());
 
         printf("%s", STR(description));
         printf("\n");
@@ -4676,4 +4695,48 @@ S9sRpcReply::printMetaTypePropertyListLong()
 void 
 S9sRpcReply::printMetaTypePropertyListBrief()
 {
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    int             isTerminal    = options->isTerminal();
+    int             terminalWidth = options->terminalWidth();
+    S9sFormat       nameFormat;
+    int             currentPosition = 0;
+
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["property_name"].toString();
+        
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
+
+        nameFormat.widen(typeName);
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap typeMap      = theList[idx].toVariantMap();
+        S9sString     typeName     = typeMap["property_name"].toString();
+        
+        if (!options->isStringMatchExtraArguments(typeName))
+            continue;
+
+        printf("%s", propertyColorBegin());
+        nameFormat.printf(typeName);
+        printf("%s", propertyColorEnd());
+        
+        currentPosition += nameFormat.realWidth();
+        if (currentPosition + nameFormat.realWidth() > terminalWidth ||
+                !isTerminal)
+        {
+            printf("\n");
+            currentPosition = 0;
+        }
+    }
+    
+    if (currentPosition > 0)
+        printf("\n");
 }

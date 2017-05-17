@@ -171,6 +171,9 @@ class S9sRpcReply : public S9sVariantMap
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
         
+        const char *propertyColorBegin() const;
+        const char *propertyColorEnd() const;
+        
         const char *greyColorBegin() const;
         const char *greyColorEnd() const;
 };

@@ -234,8 +234,9 @@ class S9sOptions
         S9sString from() const;
         S9sString until() const;
 
-        int terminalWidth() const;
-        int terminalHeight() const;
+        static bool isTerminal();
+        static int terminalWidth();
+        static int terminalHeight();
         S9sString binaryName() const;
         S9sString errorString() const;
         
