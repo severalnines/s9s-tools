@@ -2647,6 +2647,8 @@ S9sRpcReply::printJobListBrief()
     S9sFormat       dateFormat;
     S9sFormat       percentFormat;
 
+    theList.reverse();
+
     //
     // First run, collecting some information. 
     //
@@ -2858,6 +2860,8 @@ S9sRpcReply::printJobListLong()
     S9sString       userNameFormat;
     unsigned int    statusLength    = 0;
     S9sString       statusFormat;
+
+    theList.reverse();
 
     //
     // The width of certain columns are variable.

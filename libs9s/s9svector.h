@@ -48,6 +48,7 @@ class S9sVector : public std::vector<T>
 
         S9sVector<T> unique() const;
         void sort();
+        void reverse();
 
         T takeLast();
         T takeFirst();
@@ -219,3 +220,14 @@ S9sVector<T>::sort()
 {
     std::sort(this->begin(), this->end());
 }
+
+/**
+ * Reverse order. 
+ */
+template <typename T>
+void
+S9sVector<T>::reverse()
+{
+    std::reverse(this->begin(), this->end());
+}
+
