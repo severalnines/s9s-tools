@@ -670,7 +670,8 @@ S9sRpcClient::getJobInstances()
 
     request["operation"] = "getJobInstances";
     request["ascending"] = true;
-    
+    request["limit"]     = 10000;
+
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
     
