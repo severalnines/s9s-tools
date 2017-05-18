@@ -14,3 +14,16 @@ S9sGraph::S9sGraph()
 S9sGraph::~S9sGraph()
 {
 }
+
+void
+S9sGraph::appendValue(
+        const S9sVariant &value)
+{
+    m_rawData << value;
+}
+
+void
+S9sGraph::transformWidth(
+        int width)
+{
+}
