@@ -48,7 +48,27 @@ UtS9sGraph::runTest(const char *testName)
 bool
 UtS9sGraph::testCreate01()
 {
-    S9sGraph graph1();
+    S9sGraph graph;
+
+    for (double y = 0.0; y < 2.3; y += .75)
+        graph.appendValue(y);
+    
+    for (double y = 2.3; y > 0.0; y -= .75)
+        graph.appendValue(y);
+
+    graph.appendValue(1.2);
+    graph.appendValue(1.3);
+    graph.appendValue(1.4);
+    graph.appendValue(1.5);
+    graph.appendValue(1.6);
+    graph.appendValue(1.7);
+    graph.appendValue(1.0);
+    graph.appendValue(1.2);
+    graph.appendValue(1.3);
+    graph.appendValue(1.4);
+    graph.appendValue(1.5);
+
+    graph.transformWidth(12);
 
     return true;
 }
