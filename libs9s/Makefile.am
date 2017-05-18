@@ -87,6 +87,7 @@ libs9s_a_SOURCES =            \
 	s9svariant.cpp            \
 	s9svariantmap.cpp         \
 	s9svariantlist.cpp        \
+	s9svariantarray.cpp       \
 	s9sstringlist.cpp         \
 	s9sparsecontextstate.cpp  \
 	s9sparsecontext.cpp       \
