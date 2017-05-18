@@ -208,6 +208,41 @@ S9sVariant::operator== (
     return false;
 }
 
+S9sVariant & 
+S9sVariant::operator+=(
+        const S9sVariant &rhs) 
+{
+    if (this->isInt() && rhs.isInt())
+    {
+        additionWithOverflow(toInt(), rhs.toInt());
+    } else if (this->isNumber() && rhs.isNumber())
+    {
+        *this = toDouble() + rhs.toDouble();
+    } else {
+        *this = toString() + rhs.toString();
+    }
+
+    return *this;
+}
+
+S9sVariant &
+S9sVariant::operator/=(
+        const int rhs)
+{
+    if (isInt())
+    {
+        *this = toInt() / rhs;
+    } else if (isULongLong())
+    {
+        *this = toULongLong() / rhs;
+    } else if (isNumber())
+    {
+        *this = toDouble() / rhs;
+    }
+
+    return *this;
+}
+
 bool 
 S9sVariant::operator< (
         const S9sVariant &rhs) const
@@ -1068,3 +1103,23 @@ S9sVariant::fuzzyCompare(
         10 * std::numeric_limits<double>::epsilon();
 }
 
+/**
+ * Sets the value of the variant to the sum of arg1 and arg2 considering the
+ * case that the addition can lead to overflow.
+ */
+void 
+S9sVariant::additionWithOverflow(
+        const int arg1, 
+        const int arg2)
+{
+    if (((arg1 ^ arg2) | 
+                (((arg1 ^ (~(arg1 ^ arg2) & INT_MIN)) + arg2) ^ arg2)) >= 0)
+    {
+        // The result is a double because an int would overflow.
+        this->operator=(ulonglong(arg1) + ulonglong(arg2));
+    }
+    else 
+    {
+        this->operator=(arg1 + arg2);
+    }
+}

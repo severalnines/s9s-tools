@@ -3,3 +3,17 @@
  */
 #include "s9svariantlist.h"
 
+S9sVariant 
+S9sVariantList::average() const
+{
+    S9sVariant sum;
+
+    if (size() == 0u)
+        return sum;
+
+    for (uint idx = 0u; idx < size(); ++idx)
+        sum += operator[](idx);
+
+    sum /= (int) size();
+    return sum;
+}

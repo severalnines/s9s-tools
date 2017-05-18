@@ -9,4 +9,5 @@
 class S9sVariantList : public S9sVector<S9sVariant>
 {
     public:
+        S9sVariant average() const;
 };

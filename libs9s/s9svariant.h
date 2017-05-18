@@ -74,6 +74,8 @@ class S9sVariant
 
         S9sVariant &operator=(const S9sVariant &rhs);
         bool operator==(const S9sVariant &rhs) const;
+        S9sVariant &operator+=(const S9sVariant &rhs);
+        S9sVariant &operator/=(const int rhs);
         bool operator<(const S9sVariant &rhs) const;
         S9sVariant &operator[] (const S9sString &index);
 
@@ -111,6 +113,7 @@ class S9sVariant
 
     protected:
         static bool fuzzyCompare(double first, double second);
+        void additionWithOverflow(const int arg1, const int arg2);
 
     private:
         static const S9sVariantMap  sm_emptyMap;
