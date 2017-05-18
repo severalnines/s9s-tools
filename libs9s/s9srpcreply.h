@@ -140,6 +140,8 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeListBrief();
         void printNodeListLong();
         void printNodeStat(S9sCluster &cluster, S9sNode &node);
+        void printCpuGraph();
+
         
         void printJobListBrief();
         void printJobListLong();

@@ -128,6 +128,7 @@ enum S9sOptionType
     OptionDebug,
     OptionClusterFormat,
     OptionNodeFormat,
+    OptionGraph,
 };
 
 /**
@@ -1128,6 +1129,14 @@ S9sOptions::nodeFormat() const
     return S9sString();
 }
 
+S9sString
+S9sOptions::graph() const
+{
+    if (m_options.contains("graph"))
+        return m_options.at("graph").toString();
+
+    return S9sString();
+}
 
 /**
  * \param tryLocalUserToo if the user name could not be determined use the local
@@ -2861,6 +2870,9 @@ S9sOptions::readOptionsNode(
         { "output-dir",       required_argument, 0, OptionOutputDir       },
         { "node-format",      required_argument, 0, OptionNodeFormat      }, 
 
+        // Graphs...
+        { "graph",            required_argument, 0, OptionGraph           }, 
+
         { 0, 0, 0, 0 }
     };
 
@@ -3070,6 +3082,11 @@ S9sOptions::readOptionsNode(
             case OptionNodeFormat:
                 // --node-format=VALUE
                 m_options["node_format"] = optarg;
+                break;
+
+            case OptionGraph:
+                // --graph=GRAPH
+                m_options["graph"] = optarg;
                 break;
 
             case '?':

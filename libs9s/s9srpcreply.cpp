@@ -2115,10 +2115,20 @@ S9sRpcReply::printClusterStat(
     printHostTable(cluster);
 }
 
+void
+S9sRpcReply::printCpuGraph()
+{
+    printf("▃\n");
+    printf("██▅\n");
+    printf("████▅▅▃▁\n");
+    printf("████████\n");
+}
 
 /**
  * Prints one host in the "stat" format, the format that print every single
  * detail.
+ * ▃
+ * █
  */
 void
 S9sRpcReply::printNodeStat(
@@ -4655,6 +4665,7 @@ S9sRpcReply::printMetaTypePropertyListLong()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
     S9sFormat       nameFormat;
+    S9sFormat       unitFormat;
 
     /*
      * First run-through: collecting some information.
@@ -4664,21 +4675,52 @@ S9sRpcReply::printMetaTypePropertyListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["property_name"].toString();
         S9sString     description  = typeMap["description"].toString();
-        
+        S9sString     unit         = typeMap["unit"].toString();
+
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
+        if (unit.empty())
+            unit = "-";
+
         nameFormat.widen(typeName);
+        unitFormat.widen(unit);
     }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        nameFormat.widen("NAME");
+        unitFormat.widen("UNIT");
+
+        printf("%s", headerColorBegin());
+         
+        nameFormat.printf("NAME");
+        unitFormat.printf("UNIT");
+        printf("DESCRIPTION");
+
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
     
+    /*
+     * Printing the actual data.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["property_name"].toString();
+        S9sString     unit         = typeMap["unit"].toString();
         S9sString     description  = typeMap["description"].toString();
         
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
+
+        if (unit.empty())
+            unit = "-";
 
         if (description.empty())
             description = "-";
@@ -4686,6 +4728,8 @@ S9sRpcReply::printMetaTypePropertyListLong()
         printf("%s", propertyColorBegin());
         nameFormat.printf(typeName);
         printf("%s", propertyColorEnd());
+
+        unitFormat.printf(unit);
 
         printf("%s", STR(description));
         printf("\n");
