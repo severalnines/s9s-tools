@@ -2118,6 +2118,30 @@ S9sRpcReply::printClusterStat(
 void
 S9sRpcReply::printCpuGraph()
 {
+    S9sOptions      *options = S9sOptions::instance();
+    S9sVariantList   data = operator[]("data").toVariantList();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    for (uint idx = 0u; idx < data.size(); ++idx)
+    {
+        S9sVariantMap map    = data[idx].toVariantMap();
+        double        load   = map["loadavg1"].toDouble();
+        int           hostId = map["hostid"].toInt();
+        S9sDateTime   created(map["created"].toTimeT());
+
+        if (hostId != 1)
+            continue;
+
+        printf("%3u %3d %8.2f %s\n", 
+                idx, hostId, load,
+                STR(created.toString()));
+    }
+
     printf("▃\n");
     printf("██▅\n");
     printf("████▅▅▃▁\n");

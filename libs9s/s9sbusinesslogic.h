@@ -65,6 +65,7 @@ class S9sBusinessLogic
         void executePing(S9sRpcClient &client);
 
         void executeNodeList(S9sRpcClient &client);
+        void executeNodeStat(S9sRpcClient &client);
         void executeNodeSet(S9sRpcClient &client);
         void executeConfigList(S9sRpcClient &client);
         void executeSetConfig(S9sRpcClient &client);

@@ -165,7 +165,10 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isNodeOperation())
     {
-        if (options->isListRequested() || options->isStatRequested())
+        if (options->isStatRequested() && !options->graph().empty())
+        {
+            executeNodeStat(client);
+        } else if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);
         } else if (options->isSetRequested())
@@ -411,10 +414,40 @@ S9sBusinessLogic::executeClusterList(
             PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
+
+void 
+S9sBusinessLogic::executeNodeStat(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options   = S9sOptions::instance();
+    int          clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+
+    success = client.getCpuStats(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printCpuGraph();
+        } else {
+            if (options->isJsonRequested())
+                printf("%s\n", STR(reply.toString()));
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
  
 /**
  * \param client A client for the communication.
- *
+ * 
+ * Executing the node --list and node --stat if no graph is requested.
  */
 void 
 S9sBusinessLogic::executeNodeList(

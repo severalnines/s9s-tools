@@ -100,6 +100,8 @@ class S9sRpcReply : public S9sVariantMap
         
         static const char *fileColorBegin(const S9sString &fileName);
         static const char *fileColorEnd();
+        
+        void printCpuGraph();
 
         
     protected:
@@ -140,7 +142,6 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeListBrief();
         void printNodeListLong();
         void printNodeStat(S9sCluster &cluster, S9sNode &node);
-        void printCpuGraph();
 
         
         void printJobListBrief();
