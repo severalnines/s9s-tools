@@ -542,10 +542,13 @@ S9sRpcClient::getCpuStats(
     S9sString      uri = "/v2/stat";
     S9sVariantMap  request;
     bool           retval;
+    time_t         now = time(NULL);
 
     request["operation"]  = "statByName";
     request["name"]       = "cpustat";
     request["cluster_id"] = clusterId;
+    request["startdate"]      = (ulonglong) now - 30 * 60;
+    request["enddate"]        = (ulonglong) now;
 
     retval = executeRequest(uri, request);
     

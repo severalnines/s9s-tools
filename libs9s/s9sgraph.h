@@ -16,6 +16,7 @@ class S9sGraph
         void appendValue(const S9sVariant &value);
 
         void transform(int newWidth, int newHeight);
+        int nValues() { return (int) m_rawData.size(); };
 
     private:
         S9sVariantList  m_rawData;

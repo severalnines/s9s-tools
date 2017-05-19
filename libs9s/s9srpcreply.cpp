@@ -2147,13 +2147,9 @@ S9sRpcReply::printCpuGraph()
         #endif
     }
 
+    printf("n values: %4d\n", graph.nValues());
+    printf("\m");
     graph.transform(40, 10);
-    #if 0
-    printf("▃\n");
-    printf("██▅\n");
-    printf("████▅▅▃▁\n");
-    printf("████████\n");
-    #endif
 }
 
 /**
