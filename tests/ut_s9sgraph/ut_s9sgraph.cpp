@@ -21,6 +21,8 @@
 
 #include "S9sGraph"
 
+#include <math.h>
+
 //#define DEBUG
 #include "s9sdebug.h"
 
@@ -50,40 +52,10 @@ UtS9sGraph::testCreate01()
 {
     S9sGraph graph;
 
-    for (double y = 0.0; y < 2.3; y += .10)
-        graph.appendValue(y * 10);
+    for (double x = 0.0; x < 6.28; x += .1)
+        graph.appendValue(sin(x));
     
-    graph.appendValue(12);
-    graph.appendValue(13);
-    graph.appendValue(14);
-    graph.appendValue(15);
-    graph.appendValue(16);
-    graph.appendValue(17);
-    graph.appendValue(10);
-    graph.appendValue(12);
-    graph.appendValue(13);
-    graph.appendValue(14);
-    graph.appendValue(15);
-    
-    for (double y = 2.3; y > 0.0; y -= .15)
-        graph.appendValue(y * 10);
-
-    for (double y = 0.0; y < 2.3; y += .05)
-        graph.appendValue(y * 10);
-    
-    graph.appendValue(12);
-    graph.appendValue(13);
-    graph.appendValue(14);
-    graph.appendValue(15);
-    graph.appendValue(16);
-    graph.appendValue(17);
-    graph.appendValue(10);
-    graph.appendValue(12);
-    graph.appendValue(13);
-    graph.appendValue(14);
-    graph.appendValue(15);
-
-    graph.transform(80, 15);
+    graph.transform(40, 10);
 
     return true;
 }
