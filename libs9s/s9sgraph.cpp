@@ -4,7 +4,7 @@
 #include "s9sgraph.h"
 #include "stdio.h"
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -66,31 +66,29 @@ S9sGraph::transform(
             break;
     }
 
-    S9sVariant biggest = transformed.max();
+    S9sVariant biggest;
+    double     mult;
 
-    S9S_DEBUG("");
+    
+    biggest = transformed.max();
+    mult    = (newHeight / biggest.toDouble());
+
     S9S_DEBUG("  biggest : %g", biggest.toDouble());
-    for (uint idx = 0; idx < transformed.size(); ++idx)
-    {
-        double value = transformed[idx].toDouble();
-
-        value = value * (newHeight / biggest.toDouble());
-        transformed[idx] = value;
-        S9S_DEBUG("%5u %5.2f", idx, transformed[idx].toDouble());
-
-    }
+    S9S_DEBUG("  mult    : %g", mult);
 
     for (int y = newHeight; y >= 0; --y)
     {
+        double baseLine = y / mult;
+
         if (y % 5 == 0)
-            printf("%04d ", y);
+            printf("%4.2f ", baseLine);
         else
             printf("     ");
 
         for (int x = 0; x < newWidth; ++x)
         {
-            double  value = transformed[x].toDouble();
-            const char   *c = " ";
+            double value = transformed[x].toDouble() * mult;
+            const char *c = " ";
 
             if (value >= y)
                 c = "█";

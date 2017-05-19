@@ -2132,11 +2132,16 @@ S9sRpcReply::printCpuGraph()
     for (uint idx = 0u; idx < data.size(); ++idx)
     {
         S9sVariantMap map    = data[idx].toVariantMap();
+        //double        load   = map["user"].toDouble();
         double        load   = map["loadavg1"].toDouble();
         int           hostId = map["hostid"].toInt();
+        int           cpuid  = map["cpuid"].toInt();
         S9sDateTime   created(map["created"].toTimeT());
 
         if (hostId != 1)
+            continue;
+
+        if (cpuid != 0)
             continue;
 
         graph.appendValue(load);
@@ -2148,7 +2153,8 @@ S9sRpcReply::printCpuGraph()
     }
 
     printf("n values: %4d\n", graph.nValues());
-    printf("\m");
+    printf("    max : %g\n", graph.max());
+    printf("\n");
     graph.transform(40, 10);
 }
 
