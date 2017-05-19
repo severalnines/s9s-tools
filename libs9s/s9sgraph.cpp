@@ -33,6 +33,7 @@ S9sGraph::transform(
     int            origIndex;
     double         origPercent;
     double         newPercent;
+    S9sVariant     average;
 
     S9S_DEBUG("");
     S9S_DEBUG("            width : %d", newWidth);
@@ -51,7 +52,10 @@ S9sGraph::transform(
 
         if (newPercent < origPercent)
         {
-            transformed << tmp.average();
+            if (tmp.size() > 0u)
+                average = tmp.average();
+
+            transformed << average;
             tmp.clear();
         } else {
             if (origIndex < (int) m_rawData.size())
@@ -71,7 +75,7 @@ S9sGraph::transform(
 
     
     biggest  = transformed.max();
-    smallest = transformed.max();
+    smallest = transformed.min();
     mult     = (newHeight / biggest.toDouble());
 
     S9S_DEBUG("   biggest : %g", biggest.toDouble());

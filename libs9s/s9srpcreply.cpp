@@ -2138,7 +2138,7 @@ S9sRpcReply::printCpuGraph()
         int           cpuid  = map["cpuid"].toInt();
         S9sDateTime   created(map["created"].toTimeT());
 
-        if (hostId != 1)
+        if (hostId != 2)
             continue;
 
         if (cpuid != 0)
