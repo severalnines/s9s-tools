@@ -66,7 +66,10 @@ S9sGraph::transformWidth(
             break;
     }
 
+    S9sVariant biggest = transformed.max();
+
     S9S_WARNING("");
+    S9S_WARNING("  biggest : %g", biggest.toDouble());
     for (uint idx = 0; idx < transformed.size(); ++idx)
     {
         S9S_WARNING("%5u %f", idx, transformed[idx].toDouble());

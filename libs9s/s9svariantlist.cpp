@@ -17,3 +17,17 @@ S9sVariantList::average() const
     sum /= (int) size();
     return sum;
 }
+
+S9sVariant
+S9sVariantList::max() const
+{
+    S9sVariant biggest;
+    
+    for (uint idx = 0u; idx < size(); ++idx)
+    {
+        if (idx == 0u || biggest < operator[](idx))
+            biggest = operator[](idx);
+    }
+
+    return biggest;
+}
