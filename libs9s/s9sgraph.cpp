@@ -2,8 +2,9 @@
  * Copyright (C) 2011-2017 severalnines.com
  */
 #include "s9sgraph.h"
+#include "stdio.h"
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -24,7 +25,8 @@ S9sGraph::appendValue(
 
 void
 S9sGraph::transform(
-        int newWidth)
+        int newWidth,
+        int newHeight)
 {
     S9sVariantList transformed;
     S9sVariantList tmp;
@@ -66,10 +68,36 @@ S9sGraph::transform(
 
     S9sVariant biggest = transformed.max();
 
-    S9S_WARNING("");
-    S9S_WARNING("  biggest : %g", biggest.toDouble());
+    S9S_DEBUG("");
+    S9S_DEBUG("  biggest : %g", biggest.toDouble());
     for (uint idx = 0; idx < transformed.size(); ++idx)
     {
-        S9S_WARNING("%5u %f", idx, transformed[idx].toDouble());
+        double value = transformed[idx].toDouble();
+
+        value = value * (newHeight / biggest.toDouble());
+        transformed[idx] = value;
+        S9S_DEBUG("%5u %5.2f", idx, transformed[idx].toDouble());
+
+    }
+
+    for (int y = newHeight; y >= 0; --y)
+    {
+        if (y % 5 == 0)
+            printf("%04d ", y);
+        else
+            printf("     ");
+
+        for (int x = 0; x < newWidth; ++x)
+        {
+            double  value = transformed[x].toDouble();
+            const char   *c = " ";
+
+            if (value >= y)
+                c = "█";
+
+            printf("%s", c);
+        }
+
+        printf("\n");
     }
 }

@@ -50,25 +50,40 @@ UtS9sGraph::testCreate01()
 {
     S9sGraph graph;
 
-    for (double y = 0.0; y < 2.3; y += .75)
-        graph.appendValue(y);
+    for (double y = 0.0; y < 2.3; y += .10)
+        graph.appendValue(y * 10);
     
-    for (double y = 2.3; y > 0.0; y -= .75)
-        graph.appendValue(y);
+    graph.appendValue(12);
+    graph.appendValue(13);
+    graph.appendValue(14);
+    graph.appendValue(15);
+    graph.appendValue(16);
+    graph.appendValue(17);
+    graph.appendValue(10);
+    graph.appendValue(12);
+    graph.appendValue(13);
+    graph.appendValue(14);
+    graph.appendValue(15);
+    
+    for (double y = 2.3; y > 0.0; y -= .15)
+        graph.appendValue(y * 10);
 
-    graph.appendValue(1.2);
-    graph.appendValue(1.3);
-    graph.appendValue(1.4);
-    graph.appendValue(1.5);
-    graph.appendValue(1.6);
-    graph.appendValue(1.7);
-    graph.appendValue(1.0);
-    graph.appendValue(1.2);
-    graph.appendValue(1.3);
-    graph.appendValue(1.4);
-    graph.appendValue(1.5);
+    for (double y = 0.0; y < 2.3; y += .05)
+        graph.appendValue(y * 10);
+    
+    graph.appendValue(12);
+    graph.appendValue(13);
+    graph.appendValue(14);
+    graph.appendValue(15);
+    graph.appendValue(16);
+    graph.appendValue(17);
+    graph.appendValue(10);
+    graph.appendValue(12);
+    graph.appendValue(13);
+    graph.appendValue(14);
+    graph.appendValue(15);
 
-    graph.transform(12);
+    graph.transform(80, 15);
 
     return true;
 }

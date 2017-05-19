@@ -29,6 +29,7 @@
 #include "S9sNode"
 #include "S9sCluster"
 #include "S9sMessage"
+#include "S9sGraph"
 
 //#define DEBUG
 //#define WARNING
@@ -2120,6 +2121,7 @@ S9sRpcReply::printCpuGraph()
 {
     S9sOptions      *options = S9sOptions::instance();
     S9sVariantList   data = operator[]("data").toVariantList();
+    S9sGraph         graph;
 
     if (options->isJsonRequested())
     {
@@ -2137,15 +2139,21 @@ S9sRpcReply::printCpuGraph()
         if (hostId != 1)
             continue;
 
+        graph.appendValue(load);
+        #if 0
         printf("%3u %3d %8.2f %s\n", 
                 idx, hostId, load,
                 STR(created.toString()));
+        #endif
     }
 
+    graph.transform(40, 10);
+    #if 0
     printf("▃\n");
     printf("██▅\n");
     printf("████▅▅▃▁\n");
     printf("████████\n");
+    #endif
 }
 
 /**
