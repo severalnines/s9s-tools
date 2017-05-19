@@ -27,6 +27,7 @@ S9sGraph::transformWidth(
         int newWidth)
 {
     S9sVariantList transformed;
+    S9sVariantList tmp;
     int            origIndex;
     double         origPercent;
     double         newPercent;
@@ -52,12 +53,22 @@ S9sGraph::transformWidth(
 
         if (origPercent < newPercent)
         {
+            if (origIndex < (int) m_rawData.size())
+                tmp << m_rawData[origIndex];
+
             ++origIndex;
         } else {
-            transformed << 0.0;
+            transformed << tmp.average();
+            tmp.clear();
         }
 
         if (transformed.size() == (uint) newWidth)
             break;
+    }
+
+    S9S_WARNING("");
+    for (uint idx = 0; idx < transformed.size(); ++idx)
+    {
+        S9S_WARNING("%5u %f", idx, transformed[idx].toDouble());
     }
 }
