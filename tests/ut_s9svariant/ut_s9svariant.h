@@ -34,6 +34,7 @@ class UtS9sVariant : public S9sUnitTest
         bool testToBoolean();
         bool testToInt();
         bool testToULongLong();
+        bool testOperators01();
 };
 
 

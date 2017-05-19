@@ -68,7 +68,7 @@ UtS9sGraph::testCreate01()
     graph.appendValue(1.4);
     graph.appendValue(1.5);
 
-    graph.transformWidth(12);
+    graph.transform(12);
 
     return true;
 }

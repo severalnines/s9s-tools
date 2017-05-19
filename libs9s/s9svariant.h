@@ -77,6 +77,7 @@ class S9sVariant
         S9sVariant &operator+=(const S9sVariant &rhs);
         S9sVariant &operator/=(const int rhs);
         bool operator<(const S9sVariant &rhs) const;
+        bool operator>(const S9sVariant &rhs) const;
         S9sVariant &operator[] (const S9sString &index);
 
         S9sBasicType type() const { return m_type; };
@@ -149,7 +150,7 @@ S9sVariant::S9sVariant(
 inline 
 S9sVariant::S9sVariant(
         double doubleValue) :
-    m_type (Double)
+    m_type(Double)
 {
     m_union.dVal = doubleValue;
 }

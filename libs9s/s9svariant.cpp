@@ -33,6 +33,7 @@
 #include "S9sDateTime"
 
 #define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 static const double tbyte = 1024.0 * 1024.0 * 1024.0 * 1024.0;
@@ -125,7 +126,7 @@ S9sVariant::~S9sVariant()
  * object as right hand side argument.
  */
 S9sVariant &
-S9sVariant::operator= (
+S9sVariant::operator=(
         const S9sVariant &rhs)
 {
     if (this == &rhs)
@@ -212,7 +213,10 @@ S9sVariant &
 S9sVariant::operator+=(
         const S9sVariant &rhs) 
 {
-    if (this->isInt() && rhs.isInt())
+    if (this->isInvalid())
+    {
+        *this = rhs;
+    } else if (this->isInt() && rhs.isInt())
     {
         additionWithOverflow(toInt(), rhs.toInt());
     } else if (this->isNumber() && rhs.isNumber())
@@ -255,6 +259,30 @@ S9sVariant::operator< (
         return toDouble() < rhs.toDouble();
     else if (isString() && rhs.isString())
         return toString() < rhs.toString();
+
+    return false;
+}
+
+bool 
+S9sVariant::operator> (
+        const S9sVariant &rhs) const
+{
+    if (rhs.isInvalid())
+    {
+        return true;
+    } else if (isInt() && rhs.isInt())
+    {
+        return toInt() > rhs.toInt();
+    } else if (isULongLong() && rhs.isULongLong())
+    {
+        return toULongLong() > rhs.toULongLong();
+    } else if (isNumber() && rhs.isNumber())
+    {
+        return toDouble() > rhs.toDouble();
+    } else if (isString() && rhs.isString())
+    {
+        return toString() > rhs.toString();
+    }
 
     return false;
 }

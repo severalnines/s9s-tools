@@ -46,6 +46,7 @@ UtS9sVariant::runTest(const char *testName)
     PERFORM_TEST(testToBoolean,   retval);
     PERFORM_TEST(testToInt,       retval);
     PERFORM_TEST(testToULongLong, retval);
+    PERFORM_TEST(testOperators01, retval);
 
     return retval;
 }
@@ -217,6 +218,20 @@ UtS9sVariant::testToULongLong()
     S9S_COMPARE(S9sVariant("42").toULongLong(), 42ull);
     S9S_COMPARE(S9sVariant("").toULongLong(), 0ull);
     
+    return true;
+}
+
+bool
+UtS9sVariant::testOperators01()
+{
+    S9sVariant variant;
+
+    variant = 0.125;
+    S9S_COMPARE(variant.typeName(), "double");
+
+    variant += 0.125;
+    S9S_COMPARE(variant.typeName(), "double");
+
     return true;
 }
 

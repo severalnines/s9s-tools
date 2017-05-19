@@ -23,7 +23,7 @@ S9sGraph::appendValue(
 }
 
 void
-S9sGraph::transformWidth(
+S9sGraph::transform(
         int newWidth)
 {
     S9sVariantList transformed;
@@ -47,19 +47,17 @@ S9sGraph::transformWidth(
             transformed.size() == 0u ? 0.0 :
             (double) transformed.size() / (double) newWidth;
 
-        S9S_DEBUG("orig: %.6f new: %.6f (%3u, %3u)", 
-                origPercent, newPercent,
-                origIndex, transformed.size());
-
-        if (origPercent < newPercent)
+        if (newPercent < origPercent)
         {
-            if (origIndex < (int) m_rawData.size())
-                tmp << m_rawData[origIndex];
-
-            ++origIndex;
-        } else {
             transformed << tmp.average();
             tmp.clear();
+        } else {
+            if (origIndex < (int) m_rawData.size())
+            {
+                tmp << m_rawData[origIndex];
+            }
+
+            ++origIndex;
         }
 
         if (transformed.size() == (uint) newWidth)
