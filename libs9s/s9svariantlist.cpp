@@ -36,3 +36,18 @@ S9sVariantList::max() const
 
     return biggest;
 }
+
+S9sVariant
+S9sVariantList::min() const
+{
+    S9sVariant smallest;
+
+    for (uint idx = 0u; idx < size(); ++idx)
+    {
+        if (idx == 0u || smallest > operator[](idx))
+            smallest = operator[](idx);
+    }
+
+    return smallest;
+}
+

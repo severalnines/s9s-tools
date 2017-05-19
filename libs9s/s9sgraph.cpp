@@ -66,15 +66,18 @@ S9sGraph::transform(
             break;
     }
 
-    S9sVariant biggest;
+    S9sVariant biggest, smallest;
     double     mult;
 
     
-    biggest = transformed.max();
-    mult    = (newHeight / biggest.toDouble());
+    biggest  = transformed.max();
+    smallest = transformed.max();
+    mult     = (newHeight / biggest.toDouble());
 
-    S9S_DEBUG("  biggest : %g", biggest.toDouble());
-    S9S_DEBUG("  mult    : %g", mult);
+    S9S_DEBUG("   biggest : %g", biggest.toDouble());
+    S9S_DEBUG("  smallest : %g", smallest.toDouble());
+    S9S_DEBUG("      mult : %g", mult);
+    S9S_DEBUG("   x range : 0 - %u", transformed.size() - 1);
 
     for (int y = newHeight; y >= 0; --y)
     {
@@ -87,11 +90,16 @@ S9sGraph::transform(
 
         for (int x = 0; x < newWidth; ++x)
         {
-            double value = transformed[x].toDouble() * mult;
-            const char *c = " ";
+            double value;
+            const char *c;
+
+            value  = transformed[x].toDouble();
+            value *= mult;
 
             if (value >= y)
                 c = "█";
+            else
+                c = " ";
 
             printf("%s", c);
         }

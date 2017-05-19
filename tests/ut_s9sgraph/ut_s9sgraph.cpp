@@ -53,7 +53,7 @@ UtS9sGraph::testCreate01()
     S9sGraph graph;
 
     for (double x = 0.0; x < 6.28; x += .1)
-        graph.appendValue(sin(x));
+        graph.appendValue(sin(x) + 1.0);
     
     graph.transform(40, 10);
 
