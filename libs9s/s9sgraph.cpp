@@ -85,12 +85,12 @@ S9sGraph::transform(
 
     for (int y = newHeight; y >= 0; --y)
     {
-        double baseLine = y / mult;
+        double baseLine = y / mult + ((double) y + 0.5) / mult;
 
         if (y % 5 == 0)
-            printf("%4.2f ", baseLine);
+            printf("%6.2f ", baseLine);
         else
-            printf("     ");
+            printf("       ");
 
         for (int x = 0; x < newWidth; ++x)
         {

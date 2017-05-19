@@ -41,6 +41,7 @@ UtS9sGraph::runTest(const char *testName)
 
     PERFORM_TEST(testCreate01,      retval);
     PERFORM_TEST(testCreate02,      retval);
+    PERFORM_TEST(testCreate03,      retval);
 
     return retval;
 }
@@ -63,6 +64,19 @@ UtS9sGraph::testCreate01()
 
 bool
 UtS9sGraph::testCreate02()
+{
+    S9sGraph graph;
+
+    for (double x = 0.0; x < 5.0; x += .1)
+        graph.appendValue(x * x);
+    
+    graph.transform(40, 10);
+
+    return true;
+}
+
+bool
+UtS9sGraph::testCreate03()
 {
     S9sGraph graph;
 
