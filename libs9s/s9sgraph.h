@@ -20,6 +20,8 @@ class S9sGraph
         S9sGraph();
         virtual ~S9sGraph();
 
+        void setAggregateType(S9sGraph::AggregateType type);
+
         void appendValue(const S9sVariant &value);
 
         int nValues() const;

@@ -18,7 +18,14 @@ S9sGraph::S9sGraph() :
 S9sGraph::~S9sGraph()
 {
 }
- 
+
+void
+S9sGraph::setAggregateType(
+        S9sGraph::AggregateType type)
+{
+    m_aggregateType = type;
+}
+
 /**
  * \returns The number of the original data.
  */

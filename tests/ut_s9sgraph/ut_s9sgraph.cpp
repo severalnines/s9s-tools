@@ -74,6 +74,13 @@ UtS9sGraph::testCreate02()
 
     graph.appendValue(10.0);
 
+    printf("\n");
+    graph.setAggregateType(S9sGraph::Max);
+    graph.realize();
+    graph.print();
+    
+    printf("\n");
+    graph.setAggregateType(S9sGraph::Min);
     graph.realize();
     graph.print();
 
