@@ -52,6 +52,13 @@ S9sGraph::appendValue(
 }
 
 void
+S9sGraph::setTitle(
+        const S9sString &title)
+{
+    m_title = title;
+}
+
+void
 S9sGraph::realize()
 {
     transform(m_width, m_height);
@@ -122,6 +129,20 @@ S9sGraph::createLines(
    
     m_lines.clear();
 
+    /*
+     * Indenting and adding the title.
+     */
+    if (!m_title.empty())
+    {
+        int extraSpaces = m_width + 6 - m_title.length();
+
+        if (extraSpaces > 0)
+            m_lines << (S9sString(" ") * (extraSpaces / 2)) + m_title;
+    }
+
+    /*
+     *
+     */
     biggest  = m_transformed.max();
     smallest = m_transformed.min();
     mult     = (newHeight / biggest.toDouble());
@@ -210,7 +231,15 @@ S9sGraph::createLines(
                         c = " ";
                 }
             } else {
-                c = " ";
+                if (y != 0.0)
+                {
+                    if ((int) y == ((int) y / 5) * 5)
+                        c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
+                    else
+                        c = " ";
+                } else {
+                    c = "▁";
+                }
             }
 
             line += c;

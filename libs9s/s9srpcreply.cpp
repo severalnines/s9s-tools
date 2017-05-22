@@ -2122,6 +2122,7 @@ S9sRpcReply::printCpuGraph(
 {
     S9sVariantList   data = operator[]("data").toVariantList();
     S9sGraph         graph;
+    S9sString        title;
 
     /*
      *
@@ -2152,7 +2153,9 @@ S9sRpcReply::printCpuGraph(
     //printf("n values: %4d\n", graph.nValues());
     //printf("    max : %g\n", graph.max());
     //printf("\n");
-    printf("  Load on %s\n", STR(host.hostName()));
+    title.sprintf("Load on %s", STR(host.hostName()));
+
+    graph.setTitle(title);
     graph.realize();
     graph.print();
 
@@ -2191,8 +2194,8 @@ S9sRpcReply::printCpuGraph()
 /**
  * Prints one host in the "stat" format, the format that print every single
  * detail.
- * ▃
- * █
+ * 
+ * 
  */
 void
 S9sRpcReply::printNodeStat(

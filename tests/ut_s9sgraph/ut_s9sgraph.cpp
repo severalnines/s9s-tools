@@ -57,9 +57,12 @@ UtS9sGraph::testCreate01()
 
     for (double x = 0.0; x < 6.28; x += .1)
         graph.appendValue(sin(x) + 1.0);
-   
+ 
+    printf("\n");
+    graph.setTitle("y = sin(x) + 1 test");
     graph.realize();
     graph.print();
+    printf("\n");
 
     return true;
 }
@@ -78,11 +81,13 @@ UtS9sGraph::testCreate02()
     graph.setAggregateType(S9sGraph::Max);
     graph.realize();
     graph.print();
+    printf("\n");
     
     printf("\n");
     graph.setAggregateType(S9sGraph::Min);
     graph.realize();
     graph.print();
+    printf("\n");
 
     return true;
 }
@@ -96,8 +101,10 @@ UtS9sGraph::testCreate03()
     graph.appendValue(2.0);
     graph.appendValue(4.0);
     
+    printf("\n");
     graph.realize();
     graph.print();
+    printf("\n");
 
     return true;
 }
@@ -110,8 +117,10 @@ UtS9sGraph::testCreate04()
     for (double value = 0; value < 40; value += 1)
         graph.appendValue(value);
     
+    printf("\n");
     graph.realize();
     graph.print();
+    printf("\n");
 
     return true;
 }

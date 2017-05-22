@@ -23,6 +23,7 @@ class S9sGraph
         void setAggregateType(S9sGraph::AggregateType type);
 
         void appendValue(const S9sVariant &value);
+        void setTitle(const S9sString &title);
 
         int nValues() const;
         S9sVariant max() const;
@@ -45,4 +46,5 @@ class S9sGraph
         S9sVariantList  m_transformed;
         int             m_width, m_height;
         S9sVariantList  m_lines;
+        S9sString       m_title;
 };
