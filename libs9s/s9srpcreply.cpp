@@ -2152,10 +2152,11 @@ S9sRpcReply::printCpuGraph()
         #endif
     }
 
-    printf("n values: %4d\n", graph.nValues());
-    printf("    max : %g\n", graph.max());
-    printf("\n");
+    //printf("n values: %4d\n", graph.nValues());
+    //printf("    max : %g\n", graph.max());
+    //printf("\n");
     graph.realize();
+    graph.print();
 }
 
 /**

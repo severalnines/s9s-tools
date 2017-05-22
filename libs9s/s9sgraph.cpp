@@ -9,6 +9,7 @@
 #include "s9sdebug.h"
 
 S9sGraph::S9sGraph() :
+    m_aggregateType(Average),
     m_width(40),
     m_height(10)
 {
@@ -16,6 +17,24 @@ S9sGraph::S9sGraph() :
 
 S9sGraph::~S9sGraph()
 {
+}
+ 
+/**
+ * \returns The number of the original data.
+ */
+int 
+S9sGraph::nValues() const
+{ 
+    return (int) m_rawData.size(); 
+}
+
+/**
+ * \returns The maximum value of the original data.
+ */
+S9sVariant
+S9sGraph::max() const
+{ 
+    return m_rawData.max(); 
 }
 
 void
@@ -29,7 +48,16 @@ void
 S9sGraph::realize()
 {
     transform(m_width, m_height);
-    print(m_width, m_height);
+    createLines(m_width, m_height);
+}
+
+void
+S9sGraph::print() const
+{
+    for (uint idx = 0u; idx < m_lines.size(); ++idx)
+    {
+        printf("%s\n", STR(m_lines[idx].toString()));
+    }
 }
 
 void
@@ -58,23 +86,10 @@ S9sGraph::transform(
             m_transformed.size() == 0u ? 0.0 :
             (double) (m_transformed.size()) / (double) newWidth;
 
-            #if 0
-            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
-                    (int)m_transformed.size(), newPercent * 100.0, 
-                    (int)origIndex, origPercent * 100.0, 
-                    tmp.max().toDouble());
-            #endif
         while (newPercent <= origPercent && 
                 (int) m_transformed.size() < newWidth) 
         { 
-            #if 0   
-            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
-                    (int)m_transformed.size(), newPercent * 100.0, 
-                    (int)origIndex, origPercent * 100.0, 
-                    tmp.max().toDouble());
-            #endif
-            m_transformed << tmp.max();
-            //S9S_WARNING("<< %g", tmp.max().toDouble());
+            m_transformed << aggregate(tmp);
             
             origPercent = 
                 origIndex == 0 ? 0.0 :
@@ -83,13 +98,6 @@ S9sGraph::transform(
             newPercent  = 
                 m_transformed.size() == 0u ? 0.0 :
                 (double) (m_transformed.size()) / (double) newWidth;
-            
-            #if 0
-            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
-                    (int)m_transformed.size(), newPercent * 100.0, 
-                    (int)origIndex, origPercent * 100.0, 
-                    tmp.max().toDouble());
-            #endif
         }
         
         tmp.clear();
@@ -97,14 +105,16 @@ S9sGraph::transform(
 }
 
 void
-S9sGraph::print(
+S9sGraph::createLines(
         int newWidth,
         int newHeight)
 {
+    S9sString  line, tmp;
     S9sVariant biggest, smallest;
     double     mult;
+   
+    m_lines.clear();
 
-    
     biggest  = m_transformed.max();
     smallest = m_transformed.min();
     mult     = (newHeight / biggest.toDouble());
@@ -120,9 +130,13 @@ S9sGraph::print(
         double topLine  = (y + 1) / mult;
 
         if (y % 5 == 0)
-            printf(yLabelFormat(), baseLine);
-        else
-            printf("      ");
+        {
+            tmp.sprintf(yLabelFormat(), baseLine);
+            line += tmp;
+        } else {
+            tmp.sprintf("      ");
+            line += tmp;
+        }
 
         for (int x = 0; x < newWidth; ++x)
         {
@@ -192,11 +206,13 @@ S9sGraph::print(
                 c = " ";
             }
 
-            printf("%s", c);
+            line += c;
         }
 
         //printf(" %6g - %6g", baseLine, topLine);
-        printf("\n");
+        //printf("\n");
+        m_lines << line;
+        line.clear();
     }
 }
 
@@ -211,4 +227,28 @@ S9sGraph::yLabelFormat() const
     } else {
         return "%5.1f ";
     }
+}
+
+S9sVariant 
+S9sGraph::aggregate(
+        const S9sVariantList &data) const
+{
+    S9sVariant retval;
+
+    switch (m_aggregateType)
+    {
+        case Max:
+            retval = data.max();
+            break;
+
+        case Min:
+            retval = data.min();
+            break;
+
+        case Average:
+            retval = data.average();
+            break;
+    }
+
+    return retval;
 }

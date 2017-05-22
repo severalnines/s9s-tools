@@ -10,24 +10,37 @@
 class S9sGraph
 {
     public:
+        enum AggregateType 
+        {
+            Max,
+            Min,
+            Average
+        };
+
         S9sGraph();
         virtual ~S9sGraph();
 
         void appendValue(const S9sVariant &value);
 
-        int nValues() { return (int) m_rawData.size(); };
-        double max() { return m_rawData.max().toDouble(); };
+        int nValues() const;
+        S9sVariant max() const;
 
         void realize();
+        void print() const;
 
     protected:
         void transform(int newWidth, int newHeight);
-        void print(int newWidth, int newHeight);
+        void createLines(int newWidth, int newHeight);
 
         const char *yLabelFormat() const;
 
     private:
+        S9sVariant aggregate(const S9sVariantList &data) const;
+
+    private:
+        AggregateType   m_aggregateType;
         S9sVariantList  m_rawData;
         S9sVariantList  m_transformed;
         int             m_width, m_height;
+        S9sVariantList  m_lines;
 };

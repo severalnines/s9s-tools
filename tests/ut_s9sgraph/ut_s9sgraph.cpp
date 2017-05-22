@@ -59,6 +59,7 @@ UtS9sGraph::testCreate01()
         graph.appendValue(sin(x) + 1.0);
    
     graph.realize();
+    graph.print();
 
     return true;
 }
@@ -74,6 +75,7 @@ UtS9sGraph::testCreate02()
     graph.appendValue(10.0);
 
     graph.realize();
+    graph.print();
 
     return true;
 }
@@ -88,6 +90,7 @@ UtS9sGraph::testCreate03()
     graph.appendValue(4.0);
     
     graph.realize();
+    graph.print();
 
     return true;
 }
@@ -101,6 +104,7 @@ UtS9sGraph::testCreate04()
         graph.appendValue(value);
     
     graph.realize();
+    graph.print();
 
     return true;
 }
