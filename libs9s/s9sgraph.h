@@ -18,6 +18,11 @@ class S9sGraph
         void transform(int newWidth, int newHeight);
         int nValues() { return (int) m_rawData.size(); };
         double max() { return m_rawData.max().toDouble(); };
+
+    protected:
+        const char *yLabelFormat() const;
+
     private:
         S9sVariantList  m_rawData;
+        S9sVariantList  m_transformed;
 };

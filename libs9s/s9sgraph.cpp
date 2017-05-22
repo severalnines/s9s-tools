@@ -28,86 +28,152 @@ S9sGraph::transform(
         int newWidth,
         int newHeight)
 {
-    S9sVariantList transformed;
     S9sVariantList tmp;
-    int            origIndex;
     double         origPercent;
     double         newPercent;
-    S9sVariant     average;
 
     S9S_DEBUG("");
     S9S_DEBUG("            width : %d", newWidth);
     S9S_DEBUG(" m_rawData.size() : %u", m_rawData.size());
+    m_transformed.clear();
     
-    origIndex = 0;
-    while (true)
-    {
+    for (uint origIndex = 0u; origIndex < m_rawData.size(); ++origIndex)
+    {     
+        tmp << m_rawData[origIndex];
+
         origPercent = 
             origIndex == 0 ? 0.0 :
             (double) origIndex / (double) m_rawData.size();
 
         newPercent  = 
-            transformed.size() == 0u ? 0.0 :
-            (double) transformed.size() / (double) newWidth;
+            m_transformed.size() == 0u ? 0.0 :
+            (double) m_transformed.size() / (double) newWidth;
 
-        if (newPercent < origPercent)
-        {
-            if (tmp.size() > 0u)
-                average = tmp.average();
+        while (newPercent < origPercent) 
+        {  
+            //S9S_WARNING("%8f %8f", origPercent, newPercent);
+            m_transformed << tmp.average();
+            
+            origPercent = 
+                origIndex == 0 ? 0.0 :
+                (double) origIndex / (double) m_rawData.size();
 
-            transformed << average;
-            tmp.clear();
-        } else {
-            if (origIndex < (int) m_rawData.size())
-            {
-                tmp << m_rawData[origIndex];
-            }
-
-            ++origIndex;
+            newPercent  = 
+                m_transformed.size() == 0u ? 0.0 :
+                (double) m_transformed.size() / (double) newWidth;
         }
-
-        if (transformed.size() == (uint) newWidth)
-            break;
+            
+        tmp.clear();
     }
 
     S9sVariant biggest, smallest;
     double     mult;
 
     
-    biggest  = transformed.max();
-    smallest = transformed.min();
+    biggest  = m_transformed.max();
+    smallest = m_transformed.min();
     mult     = (newHeight / biggest.toDouble());
 
     S9S_DEBUG("   biggest : %g", biggest.toDouble());
     S9S_DEBUG("  smallest : %g", smallest.toDouble());
     S9S_DEBUG("      mult : %g", mult);
-    S9S_DEBUG("   x range : 0 - %u", transformed.size() - 1);
+    S9S_DEBUG("   x range : 0 - %u", m_transformed.size() - 1);
 
     for (int y = newHeight; y >= 0; --y)
     {
-        double baseLine = y / mult + ((double) y + 0.5) / mult;
+        double baseLine = y / mult;
+        double topLine  = (y + 1) / mult;
 
         if (y % 5 == 0)
-            printf("%6.2f ", baseLine);
+            printf(yLabelFormat(), baseLine);
         else
-            printf("       ");
+            printf("      ");
 
         for (int x = 0; x < newWidth; ++x)
         {
             double value;
             const char *c;
 
-            value  = transformed[x].toDouble();
-            value *= mult;
+            value  = m_transformed[x].toDouble();
+            //value *= mult;
 
-            if (value >= y)
+            if (value >= topLine)
+            {
                 c = "█";
-            else
+            } else if (value > baseLine && value < topLine)
+            {
+                double remainder;
+                int    fraction;
+
+                remainder  = value - baseLine;
+                remainder  = remainder / (topLine - baseLine);
+                remainder *= 10;
+                fraction   = remainder;
+
+                //printf("-> %g / %d\n", remainder, fraction);
+                switch (fraction)
+                {
+                    case 0:
+                        if (remainder == 0.0)
+                        {
+                            c = " ";
+                            break;
+                        }
+
+                    case 1:
+                    case 2:
+                        c = "▁";
+                        break;
+
+                    case 3:
+                        c = "▂";
+                        break;
+
+                    case 4:
+                        c = "▃";
+                        break;
+
+                    case 5:
+                        c = "▄";
+                        break;
+
+                    case 6:
+                        c = "▅";
+                        break;
+                    
+                    case 7:
+                        c = "▆";
+                        break;
+                    
+                    case 8:
+                    case 9:
+                        c = "▇";
+                        break;
+
+                    default:
+                        c = " ";
+                }
+            } else {
                 c = " ";
+            }
 
             printf("%s", c);
         }
 
+        //printf(" %6g - %6g", baseLine, topLine);
         printf("\n");
+    }
+}
+
+const char *
+S9sGraph::yLabelFormat() const
+{
+    double maxValue = m_transformed.max().toDouble();
+
+    if (maxValue < 10.0)
+    {
+        return "%5.2f ";
+    } else {
+        return "%5.1f ";
     }
 }

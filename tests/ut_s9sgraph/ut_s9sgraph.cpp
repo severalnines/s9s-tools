@@ -56,7 +56,7 @@ UtS9sGraph::testCreate01()
 
     for (double x = 0.0; x < 6.28; x += .1)
         graph.appendValue(sin(x) + 1.0);
-    
+   
     graph.transform(40, 10);
 
     return true;
@@ -69,7 +69,9 @@ UtS9sGraph::testCreate02()
 
     for (double x = 0.0; x < 5.0; x += .1)
         graph.appendValue(x * x);
-    
+
+    graph.appendValue(10.0);
+
     graph.transform(40, 10);
 
     return true;
