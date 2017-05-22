@@ -8,7 +8,9 @@
 #define WARNING
 #include "s9sdebug.h"
 
-S9sGraph::S9sGraph()
+S9sGraph::S9sGraph() :
+    m_width(40),
+    m_height(10)
 {
 }
 
@@ -21,6 +23,13 @@ S9sGraph::appendValue(
         const S9sVariant &value)
 {
     m_rawData << value;
+}
+
+void
+S9sGraph::realize()
+{
+    transform(m_width, m_height);
+    print(m_width, m_height);
 }
 
 void
@@ -37,35 +46,61 @@ S9sGraph::transform(
     S9S_DEBUG(" m_rawData.size() : %u", m_rawData.size());
     m_transformed.clear();
     
-    for (uint origIndex = 0u; origIndex < m_rawData.size(); ++origIndex)
+    for (uint origIndex = 0u; origIndex < m_rawData.size(); /*++origIndex*/)
     {     
-        tmp << m_rawData[origIndex];
+        tmp << m_rawData[origIndex++];
 
         origPercent = 
             origIndex == 0 ? 0.0 :
-            (double) origIndex / (double) m_rawData.size();
+            ((double) origIndex) / ((double) m_rawData.size());
 
         newPercent  = 
             m_transformed.size() == 0u ? 0.0 :
-            (double) m_transformed.size() / (double) newWidth;
+            (double) (m_transformed.size()) / (double) newWidth;
 
-        while (newPercent < origPercent) 
-        {  
-            //S9S_WARNING("%8f %8f", origPercent, newPercent);
-            m_transformed << tmp.average();
+            #if 0
+            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
+                    (int)m_transformed.size(), newPercent * 100.0, 
+                    (int)origIndex, origPercent * 100.0, 
+                    tmp.max().toDouble());
+            #endif
+        while (newPercent <= origPercent && 
+                (int) m_transformed.size() < newWidth) 
+        { 
+            #if 0   
+            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
+                    (int)m_transformed.size(), newPercent * 100.0, 
+                    (int)origIndex, origPercent * 100.0, 
+                    tmp.max().toDouble());
+            #endif
+            m_transformed << tmp.max();
+            //S9S_WARNING("<< %g", tmp.max().toDouble());
             
             origPercent = 
                 origIndex == 0 ? 0.0 :
-                (double) origIndex / (double) m_rawData.size();
+                ((double) origIndex) / ((double) m_rawData.size());
 
             newPercent  = 
                 m_transformed.size() == 0u ? 0.0 :
-                (double) m_transformed.size() / (double) newWidth;
-        }
+                (double) (m_transformed.size()) / (double) newWidth;
             
+            #if 0
+            S9S_WARNING("%3d (%2.0f%%) %3d (%2.0f%%) %g",
+                    (int)m_transformed.size(), newPercent * 100.0, 
+                    (int)origIndex, origPercent * 100.0, 
+                    tmp.max().toDouble());
+            #endif
+        }
+        
         tmp.clear();
     }
+}
 
+void
+S9sGraph::print(
+        int newWidth,
+        int newHeight)
+{
     S9sVariant biggest, smallest;
     double     mult;
 

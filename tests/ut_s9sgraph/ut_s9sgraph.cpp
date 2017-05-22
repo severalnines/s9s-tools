@@ -42,6 +42,7 @@ UtS9sGraph::runTest(const char *testName)
     PERFORM_TEST(testCreate01,      retval);
     PERFORM_TEST(testCreate02,      retval);
     PERFORM_TEST(testCreate03,      retval);
+    PERFORM_TEST(testCreate04,      retval);
 
     return retval;
 }
@@ -57,7 +58,7 @@ UtS9sGraph::testCreate01()
     for (double x = 0.0; x < 6.28; x += .1)
         graph.appendValue(sin(x) + 1.0);
    
-    graph.transform(40, 10);
+    graph.realize();
 
     return true;
 }
@@ -72,7 +73,7 @@ UtS9sGraph::testCreate02()
 
     graph.appendValue(10.0);
 
-    graph.transform(40, 10);
+    graph.realize();
 
     return true;
 }
@@ -82,11 +83,24 @@ UtS9sGraph::testCreate03()
 {
     S9sGraph graph;
 
-    graph.appendValue(3.0);
+    graph.appendValue(1.0);
+    graph.appendValue(2.0);
     graph.appendValue(4.0);
-    graph.appendValue(5.0);
     
-    graph.transform(40, 10);
+    graph.realize();
+
+    return true;
+}
+
+bool
+UtS9sGraph::testCreate04()
+{
+    S9sGraph graph;
+
+    for (double value = 0; value < 40; value += 1)
+        graph.appendValue(value);
+    
+    graph.realize();
 
     return true;
 }

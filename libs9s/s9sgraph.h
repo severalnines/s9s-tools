@@ -15,14 +15,19 @@ class S9sGraph
 
         void appendValue(const S9sVariant &value);
 
-        void transform(int newWidth, int newHeight);
         int nValues() { return (int) m_rawData.size(); };
         double max() { return m_rawData.max().toDouble(); };
 
+        void realize();
+
     protected:
+        void transform(int newWidth, int newHeight);
+        void print(int newWidth, int newHeight);
+
         const char *yLabelFormat() const;
 
     private:
         S9sVariantList  m_rawData;
         S9sVariantList  m_transformed;
+        int             m_width, m_height;
 };
