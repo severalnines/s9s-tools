@@ -234,7 +234,8 @@ S9sGraph::createLines(
                 if (y != 0.0)
                 {
                     if ((int) y == ((int) y / 5) * 5)
-                        c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
+                        //c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
+                        c = "." ;
                     else
                         c = " ";
                 } else {
