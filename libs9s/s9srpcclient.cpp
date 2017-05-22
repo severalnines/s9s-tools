@@ -546,9 +546,10 @@ S9sRpcClient::getCpuStats(
 
     request["operation"]  = "statByName";
     request["name"]       = "cpustat";
+    request["with_hosts"] = true;
     request["cluster_id"] = clusterId;
-    request["startdate"]      = (ulonglong) now - 60 * 60;
-    request["enddate"]        = (ulonglong) now;
+    request["startdate"]  = (ulonglong) now - 60 * 60;
+    request["enddate"]    = (ulonglong) now;
 
     retval = executeRequest(uri, request);
     

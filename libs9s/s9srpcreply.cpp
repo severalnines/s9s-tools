@@ -2117,18 +2117,15 @@ S9sRpcReply::printClusterStat(
 }
 
 void
-S9sRpcReply::printCpuGraph()
+S9sRpcReply::printCpuGraph(
+        S9sNode &host)
 {
-    S9sOptions      *options = S9sOptions::instance();
     S9sVariantList   data = operator[]("data").toVariantList();
     S9sGraph         graph;
 
-    if (options->isJsonRequested())
-    {
-        printf("%s\n", STR(toString()));
-        return;
-    }
-
+    /*
+     *
+     */
     for (uint idx = 0u; idx < data.size(); ++idx)
     {
         S9sVariantMap map    = data[idx].toVariantMap();
@@ -2138,7 +2135,7 @@ S9sRpcReply::printCpuGraph()
         int           cpuid  = map["cpuid"].toInt();
         S9sDateTime   created(map["created"].toTimeT());
 
-        if (hostId != 2)
+        if (hostId != host.id())
             continue;
 
         if (cpuid != 0)
@@ -2155,8 +2152,40 @@ S9sRpcReply::printCpuGraph()
     //printf("n values: %4d\n", graph.nValues());
     //printf("    max : %g\n", graph.max());
     //printf("\n");
+    printf("  Load on %s\n", STR(host.hostName()));
     graph.realize();
     graph.print();
+
+    printf("\n");
+}
+
+void
+S9sRpcReply::printCpuGraph()
+{
+    S9sOptions      *options = S9sOptions::instance();
+    S9sVariantList   hostList = operator[]("hosts").toVariantList();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    /*
+     * Getting the host information.
+     */
+    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    {
+        S9sVariantMap hostMap = hostList[idx].toVariantMap();
+        S9sNode       host    = hostMap;
+
+        // Filtering...
+        if (!options->isStringMatchExtraArguments(host.hostName()))
+            continue;
+
+        //printf("h: %s id: %d\n", STR(host.hostName()), host.id());
+        printCpuGraph(host);
+    }
 }
 
 /**
