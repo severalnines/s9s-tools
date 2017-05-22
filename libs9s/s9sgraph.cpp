@@ -4,8 +4,8 @@
 #include "s9sgraph.h"
 #include "stdio.h"
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sGraph::S9sGraph() :
