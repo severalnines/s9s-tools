@@ -23,7 +23,9 @@ class S9sCmonGraph : public S9sGraph
         void setGraphType(S9sCmonGraph::GraphTemplate type);
 
         virtual void appendValue(S9sVariant value);
-
+        virtual void realize();
+        
     private:
-        GraphTemplate m_graphType;
+        GraphTemplate  m_graphType;
+        S9sVariantList m_values;
 };

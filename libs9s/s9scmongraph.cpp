@@ -41,7 +41,14 @@ S9sCmonGraph::appendValue(
             break;
 
         case LoadAverage:
+            m_values << value;
             S9sGraph::appendValue(value["loadavg1"]);
             break;
     }
+}
+
+void
+S9sCmonGraph::realize()
+{
+    S9sGraph::realize();
 }

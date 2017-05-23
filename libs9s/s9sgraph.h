@@ -26,6 +26,8 @@ class S9sGraph
         void setColor(const bool useColor);
 
         virtual void appendValue(S9sVariant value);
+        virtual void realize();
+
         void setTitle(const S9sString &title);
 
         int nColumns() const;
@@ -35,7 +37,6 @@ class S9sGraph
         int nValues() const;
         S9sVariant max() const;
 
-        void realize();
         void print() const;
 
     protected:

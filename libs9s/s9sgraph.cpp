@@ -86,17 +86,18 @@ S9sGraph::appendValue(
 }
 
 void
-S9sGraph::setTitle(
-        const S9sString &title)
-{
-    m_title = title;
-}
-
-void
 S9sGraph::realize()
 {
     transform(m_width, m_height);
     createLines(m_width, m_height);
+}
+
+
+void
+S9sGraph::setTitle(
+        const S9sString &title)
+{
+    m_title = title;
 }
 
 void
