@@ -43,6 +43,9 @@ S9sCmonGraph::realize()
 {
     S9sCmonGraph::clearValues();
 
+    /*
+     * Setting up the graph to look like the type suggests.
+     */
     switch (m_graphType)
     {
         case Unknown:
@@ -50,11 +53,15 @@ S9sCmonGraph::realize()
             break;
 
         case LoadAverage:
-            setAggregateType(S9sGraph::Average);
+            setAggregateType(S9sGraph::Max);
+            setWarningLevel(5.0);
+            setErrorLevel(10.0);
+            setTitle("Load on %s", STR(m_node.hostName()));
             break;
 
         case CpuGhz:
             setAggregateType(S9sGraph::Max);
+            setTitle("CPU clock of %s (GHz)", STR(m_node.hostName()));
             break;
     }
 

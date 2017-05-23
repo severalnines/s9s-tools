@@ -2121,52 +2121,28 @@ S9sRpcReply::printCpuGraph(
         S9sNode &host)
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       graphType = options->graph().toLower();
     S9sVariantList  data = operator[]("data").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sCmonGraph    graph;
-    S9sString       title;
 
     graph.setNode(host);
     graph.setColor(syntaxHighlight);
-    graph.setGraphType(S9sCmonGraph::CpuGhz);
+
+    if (graphType == "cpuclock" || graphType == "cpughz")
+    {
+        graph.setGraphType(S9sCmonGraph::CpuGhz);
+    } else {
+        graph.setGraphType(S9sCmonGraph::LoadAverage);
+    }
 
     /*
      *
      */
     for (uint idx = 0u; idx < data.size(); ++idx)
-    {
-        S9sVariantMap map    = data[idx].toVariantMap();
+        graph.appendValue(data[idx].toVariantMap());
 
-        // The CPU temperature.
-        // double        value   = map["cputemp"].toDouble();
-        //double        value   = map["cpumhz"].toDouble() / 1000.0;
-        // The load.
-        //double        value   = map["loadavg1"].toDouble();
-        
-        // Busy
-        //double value = 100.0 * (1.0 - map["idle"].toDouble());
-        
-        // Idle
-        //double value = 100.0 * map["idle"].toDouble();
 
-        
-        //int           hostId = map["hostid"].toInt();
-        //int           cpuid  = map["cpuid"].toInt();
-        S9sDateTime   created(map["created"].toTimeT());
-
-        //if (cpuid != 0)
-        //    continue;
-
-        graph.appendValue(map);
-        //graph.appendValue(value);
-    }
-
-    //printf("n values: %4d\n", graph.nValues());
-    //printf("    max : %g\n", graph.max());
-    //printf("\n");
-    title.sprintf("Load on %s", STR(host.hostName()));
-
-    graph.setTitle(title);
     graph.realize();
     graph.print();
 

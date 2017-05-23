@@ -199,7 +199,7 @@ S9sString::sprintf(
     va_list arguments;
 
     va_start(arguments, formatString);
-    vsprintf (formatString, arguments);
+    vsprintf(formatString, arguments);
     va_end(arguments);
 }
 

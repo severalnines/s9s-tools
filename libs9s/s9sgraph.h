@@ -24,11 +24,15 @@ class S9sGraph
 
         void setAggregateType(S9sGraph::AggregateType type);
         void setColor(const bool useColor);
+        void setWarningLevel(double level);
+        void setErrorLevel(double level);
 
         virtual void appendValue(S9sVariant value);
         virtual void realize();
         
-        void setTitle(const S9sString &title);
+        void setTitle(
+                const char *formatString,
+                ...);
 
         int nColumns() const;
         int nRows() const;
@@ -38,7 +42,7 @@ class S9sGraph
         S9sVariant max() const;
 
         void print() const;
-
+        
     protected:
         void clearValues();
         void transform(int newWidth, int newHeight);
@@ -58,6 +62,8 @@ class S9sGraph
         S9sVariantList  m_lines;
         S9sString       m_title;
         bool            m_color;
+        double          m_warningLevel;
+        double          m_errorLevel;
 };
 
 template<typename T>

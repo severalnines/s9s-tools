@@ -16,7 +16,9 @@ S9sGraph::S9sGraph() :
     m_aggregateType(Average),
     m_width(40),
     m_height(10),
-    m_color(true)
+    m_color(true),
+    m_warningLevel(0.0),
+    m_errorLevel(0.0)
 {
 }
 
@@ -36,6 +38,20 @@ S9sGraph::setColor(
         const bool useColor)
 {
     m_color = useColor;
+}
+
+void
+S9sGraph::setWarningLevel(
+        double level)
+{
+    m_warningLevel = level;
+}
+
+void
+S9sGraph::setErrorLevel(
+        double level)
+{
+    m_errorLevel = level;
 }
 
 int 
@@ -95,9 +111,14 @@ S9sGraph::realize()
 
 void
 S9sGraph::setTitle(
-        const S9sString &title)
+        const char *formatString,
+        ...)        
 {
-    m_title = title;
+    va_list arguments;
+        
+    va_start(arguments, formatString);
+    m_title.vsprintf(formatString, arguments);
+    va_end(arguments);
 }
 
 void
@@ -298,7 +319,26 @@ S9sGraph::createLines(
                 }
             }
 
-            line += c;
+            if (m_color && m_errorLevel > 0.0)
+            {
+                if (baseLine > m_errorLevel)
+                {
+                    line += XTERM_COLOR_RED;
+                    line += c;
+                    line += TERM_NORMAL;
+                } else if (baseLine > m_warningLevel)
+                {
+                    line += XTERM_COLOR_ORANGE;
+                    line += c;
+                    line += TERM_NORMAL;
+                } else {
+                    line += XTERM_COLOR_GREEN;
+                    line += c;
+                    line += TERM_NORMAL;
+                }
+            } else {
+                line += c;
+            }
         }
 
         //printf(" %6g - %6g", baseLine, topLine);
