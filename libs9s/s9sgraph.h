@@ -27,7 +27,7 @@ class S9sGraph
 
         virtual void appendValue(S9sVariant value);
         virtual void realize();
-
+        
         void setTitle(const S9sString &title);
 
         int nColumns() const;
@@ -40,6 +40,7 @@ class S9sGraph
         void print() const;
 
     protected:
+        void clearValues();
         void transform(int newWidth, int newHeight);
         void createLines(int newWidth, int newHeight);
 

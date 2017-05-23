@@ -2126,8 +2126,10 @@ S9sRpcReply::printCpuGraph(
     S9sCmonGraph    graph;
     S9sString       title;
 
+    graph.setNode(host);
     graph.setColor(syntaxHighlight);
-    graph.setGraphType(S9sCmonGraph::LoadAverage);
+    graph.setGraphType(S9sCmonGraph::CpuGhz);
+
     /*
      *
      */
@@ -2148,15 +2150,12 @@ S9sRpcReply::printCpuGraph(
         //double value = 100.0 * map["idle"].toDouble();
 
         
-        int           hostId = map["hostid"].toInt();
-        int           cpuid  = map["cpuid"].toInt();
+        //int           hostId = map["hostid"].toInt();
+        //int           cpuid  = map["cpuid"].toInt();
         S9sDateTime   created(map["created"].toTimeT());
 
-        if (hostId != host.id())
-            continue;
-
-        if (cpuid != 0)
-            continue;
+        //if (cpuid != 0)
+        //    continue;
 
         graph.appendValue(map);
         //graph.appendValue(value);

@@ -110,6 +110,12 @@ S9sGraph::print() const
 }
 
 void
+S9sGraph::clearValues()
+{
+    m_rawData.clear();
+}
+
+void
 S9sGraph::transform(
         int newWidth,
         int newHeight)
