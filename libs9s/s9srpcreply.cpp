@@ -2120,9 +2120,13 @@ void
 S9sRpcReply::printCpuGraph(
         S9sNode &host)
 {
-    S9sVariantList   data = operator[]("data").toVariantList();
-    S9sGraph         graph;
-    S9sString        title;
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  data = operator[]("data").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sGraph        graph;
+    S9sString       title;
+
+    graph.setColor(syntaxHighlight);
 
     /*
      *
@@ -2143,11 +2147,6 @@ S9sRpcReply::printCpuGraph(
             continue;
 
         graph.appendValue(load);
-        #if 0
-        printf("%3u %3d %8.2f %s\n", 
-                idx, hostId, load,
-                STR(created.toString()));
-        #endif
     }
 
     //printf("n values: %4d\n", graph.nValues());

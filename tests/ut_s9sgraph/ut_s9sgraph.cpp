@@ -43,6 +43,7 @@ UtS9sGraph::runTest(const char *testName)
     PERFORM_TEST(testCreate02,      retval);
     PERFORM_TEST(testCreate03,      retval);
     PERFORM_TEST(testCreate04,      retval);
+    PERFORM_TEST(testLabel01,       retval);
 
     return retval;
 }
@@ -122,6 +123,15 @@ UtS9sGraph::testCreate04()
     graph.print();
     printf("\n");
 
+    return true;
+}
+
+bool
+UtS9sGraph::testLabel01()
+{
+    S9S_COMPARE(roundMultiple(14.8,  5.0), 15.0);
+    S9S_COMPARE(roundMultiple(1.48,  0.5), 1.5);
+    S9S_COMPARE(roundMultiple(1.443, 0.05), 1.45);
     return true;
 }
 

@@ -5,6 +5,8 @@
 
 #include "S9sVariant"
 #include "S9sVariantList"
+
+#include <math.h>
 #include <vector>
 
 class S9sGraph
@@ -21,6 +23,7 @@ class S9sGraph
         virtual ~S9sGraph();
 
         void setAggregateType(S9sGraph::AggregateType type);
+        void setColor(const bool useColor);
 
         void appendValue(const S9sVariant &value);
         void setTitle(const S9sString &title);
@@ -51,4 +54,18 @@ class S9sGraph
         int             m_width, m_height;
         S9sVariantList  m_lines;
         S9sString       m_title;
+        bool            m_color;
 };
+
+template<typename T>
+T roundMultiple( T value, T multiple )
+{
+    if (multiple == 0) 
+        return value;
+
+    return static_cast<T>(
+            round(
+                static_cast<double>(value) / 
+                static_cast<double>(multiple)) * 
+            static_cast<double>(multiple));
+}

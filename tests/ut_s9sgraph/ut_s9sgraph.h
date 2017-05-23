@@ -31,5 +31,6 @@ class UtS9sGraph : public S9sUnitTest
         bool testCreate02();
         bool testCreate03();
         bool testCreate04();
+        bool testLabel01();
 };
 

@@ -4,9 +4,30 @@
 #include "s9sgraph.h"
 #include "stdio.h"
 
+#include "math.h"
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
+
+#define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
+
+#if 0
+double 
+S9sGraph::round_up(double number, double fixedBase) 
+{
+    if (fixedBase != 0 && number != 0) 
+    {
+        double sign = number > 0 ? 1 : -1;
+        number *= sign;
+        number /= fixedBase;
+        int fixedPoint = (int) ceil(number);
+        number = fixedPoint * fixedBase;
+        number *= sign;
+    }
+    return number;
+}
+#endif
 
 S9sGraph::S9sGraph() :
     m_aggregateType(Average),
@@ -27,7 +48,13 @@ S9sGraph::setAggregateType(
     m_aggregateType = type;
 }
 
-        
+void
+S9sGraph::setColor(
+        const bool useColor)
+{
+    m_color = useColor;
+}
+
 int 
 S9sGraph::nColumns() const
 {
@@ -168,7 +195,12 @@ S9sGraph::createLines(
         if (extraSpaces > 0)
             indent += S9sString(" ") * (extraSpaces / 2);
 
-        m_lines << indent + m_title;
+        if (m_color)
+        {
+            m_lines << indent + TERM_BOLD + m_title + TERM_NORMAL;
+        } else {
+            m_lines << indent + m_title;
+        }
     }
 
     /*
@@ -264,11 +296,15 @@ S9sGraph::createLines(
             } else {
                 if (y != 0.0)
                 {
-                    if ((int) y == ((int) y / 5) * 5)
-                        //c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
-                        c = "." ;
-                    else
+                    if (IS_DIVISIBLE_BY(y, 5))
+                    {
+                        if (m_color)
+                            c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
+                        else
+                            c = "." ;
+                    } else {
                         c = " ";
+                    }
                 } else {
                     c = "▁";
                 }
