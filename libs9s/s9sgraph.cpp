@@ -11,7 +11,8 @@
 S9sGraph::S9sGraph() :
     m_aggregateType(Average),
     m_width(40),
-    m_height(10)
+    m_height(10),
+    m_color(true)
 {
 }
 
@@ -24,6 +25,29 @@ S9sGraph::setAggregateType(
         S9sGraph::AggregateType type)
 {
     m_aggregateType = type;
+}
+
+        
+int 
+S9sGraph::nColumns() const
+{
+    return m_transformed.size() + 6;
+}
+
+int 
+S9sGraph::nRows() const
+{
+    return (int) m_lines.size();
+}
+
+S9sString
+S9sGraph::line(
+        const int idx)
+{
+    if (idx >= 0 && idx < (int) m_lines.size())
+        return m_lines[idx].toString();
+
+    return S9sString();
 }
 
 /**
@@ -134,10 +158,17 @@ S9sGraph::createLines(
      */
     if (!m_title.empty())
     {
-        int extraSpaces = m_width + 6 - m_title.length();
+        int       extraSpaces = m_width - m_title.length();
+        S9sString indent;
 
+        // Y labels.
+        indent = S9sString(" ") * 6;
+
+        // 
         if (extraSpaces > 0)
-            m_lines << (S9sString(" ") * (extraSpaces / 2)) + m_title;
+            indent += S9sString(" ") * (extraSpaces / 2);
+
+        m_lines << indent + m_title;
     }
 
     /*

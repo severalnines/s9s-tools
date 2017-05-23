@@ -25,6 +25,10 @@ class S9sGraph
         void appendValue(const S9sVariant &value);
         void setTitle(const S9sString &title);
 
+        int nColumns() const;
+        int nRows() const;
+        S9sString line(const int idx);
+
         int nValues() const;
         S9sVariant max() const;
 
