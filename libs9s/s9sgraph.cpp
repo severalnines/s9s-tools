@@ -12,23 +12,6 @@
 
 #define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
 
-#if 0
-double 
-S9sGraph::round_up(double number, double fixedBase) 
-{
-    if (fixedBase != 0 && number != 0) 
-    {
-        double sign = number > 0 ? 1 : -1;
-        number *= sign;
-        number /= fixedBase;
-        int fixedPoint = (int) ceil(number);
-        number = fixedPoint * fixedBase;
-        number *= sign;
-    }
-    return number;
-}
-#endif
-
 S9sGraph::S9sGraph() :
     m_aggregateType(Average),
     m_width(40),
@@ -97,7 +80,7 @@ S9sGraph::max() const
 
 void
 S9sGraph::appendValue(
-        const S9sVariant &value)
+        S9sVariant value)
 {
     m_rawData << value;
 }
@@ -222,11 +205,9 @@ S9sGraph::createLines(
 
         if (y % 5 == 0)
         {
-            tmp.sprintf(yLabelFormat(), baseLine);
-            line += tmp;
+            line += yLabel(baseLine);
         } else {
-            tmp.sprintf("      ");
-            line += tmp;
+            line += "      ";
         }
 
         for (int x = 0; x < newWidth; ++x)
@@ -320,17 +301,23 @@ S9sGraph::createLines(
     }
 }
 
-const char *
-S9sGraph::yLabelFormat() const
+S9sString
+S9sGraph::yLabel(
+        double baseLine) const
 {
-    double maxValue = m_transformed.max().toDouble();
+    double     maxValue = m_transformed.max().toDouble();
+    S9sString  retval;
 
     if (maxValue < 10.0)
     {
-        return "%5.2f ";
+        baseLine = roundMultiple(baseLine, 0.05);
+        retval.sprintf("%5.2f ", baseLine);
     } else {
-        return "%5.1f ";
+        baseLine = roundMultiple(baseLine, 0.5);
+        retval.sprintf("%5.1f ", baseLine);
     }
+
+    return retval;
 }
 
 S9sVariant 

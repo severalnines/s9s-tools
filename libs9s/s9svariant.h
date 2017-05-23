@@ -59,7 +59,7 @@ class S9sVariant
         S9sVariant(const S9sVariant &orig);
         inline S9sVariant(const int integerValue);
         inline S9sVariant(const ulonglong ullValue);
-        inline S9sVariant(double doubleValue);
+        inline S9sVariant(const double doubleValue);
         inline S9sVariant(const bool boolValue);
         inline S9sVariant(const char *stringValue);
         inline S9sVariant(const std::string &stringValue);
@@ -149,7 +149,7 @@ S9sVariant::S9sVariant(
 
 inline 
 S9sVariant::S9sVariant(
-        double doubleValue) :
+        const double doubleValue) :
     m_type(Double)
 {
     m_union.dVal = doubleValue;

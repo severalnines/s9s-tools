@@ -25,7 +25,7 @@ class S9sGraph
         void setAggregateType(S9sGraph::AggregateType type);
         void setColor(const bool useColor);
 
-        void appendValue(const S9sVariant &value);
+        virtual void appendValue(S9sVariant value);
         void setTitle(const S9sString &title);
 
         int nColumns() const;
@@ -43,6 +43,7 @@ class S9sGraph
         void createLines(int newWidth, int newHeight);
 
         const char *yLabelFormat() const;
+        S9sString yLabel(double baseLine) const;
 
     private:
         S9sVariant aggregate(const S9sVariantList &data) const;
