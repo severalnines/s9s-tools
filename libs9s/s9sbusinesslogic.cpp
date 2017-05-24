@@ -427,6 +427,8 @@ S9sBusinessLogic::executeNodeStat(
 
     if (graphName.startsWith("cpu") || graphName.startsWith("load"))
         success = client.getCpuStats(clusterId);
+    else if (graphName.startsWith("mem"))
+        success = client.getMemStats(clusterId);
     else 
         success = client.getSqlStats(clusterId);
 

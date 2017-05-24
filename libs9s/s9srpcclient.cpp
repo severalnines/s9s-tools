@@ -528,6 +528,14 @@ S9sRpcClient::getSqlStats(
 }
 
 bool
+S9sRpcClient::getMemStats(
+        const int clusterId)
+{
+    return getStats(clusterId, "memorystat");
+}
+
+
+bool
 S9sRpcClient::getMetaTypes()
 {
     S9sString      uri = "/v2/metatype/";

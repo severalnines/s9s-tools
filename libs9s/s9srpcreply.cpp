@@ -2147,6 +2147,12 @@ S9sRpcReply::printGraph(
     } else if (graphType == "sqlconnections")
     {
         graph.setGraphType(S9sCmonGraph::SqlConnections);
+    } else if (graphType == "sqlconnections")
+    {
+        graph.setGraphType(S9sCmonGraph::SqlConnections);
+    } else if (graphType == "memfree" || graphType == "ramfree")
+    {
+        graph.setGraphType(S9sCmonGraph::MemFree);
     }
 
     /*

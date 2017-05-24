@@ -20,6 +20,7 @@ class S9sCmonGraph : public S9sGraph
             CpuTemp,
             SqlStatements,
             SqlConnections,
+            MemFree,
         };
 
         S9sCmonGraph();

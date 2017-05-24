@@ -96,6 +96,11 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             setTitle("SQL connections on %s", STR(m_node.hostName()));
             break;
+        
+        case MemFree:
+            setAggregateType(S9sGraph::Min);
+            setTitle("Free memory on %s (GBytes)", STR(m_node.hostName()));
+            break;
     }
 
     /*
@@ -199,6 +204,15 @@ S9sCmonGraph::realize()
                 else
                     S9sGraph::appendValue(value["connections"].toDouble());
 
+                break;
+
+            case MemFree:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["ramfree"].toDouble() / 
+                        (1024.0 * 1024.0 * 1024.0));
                 break;
         }
 
