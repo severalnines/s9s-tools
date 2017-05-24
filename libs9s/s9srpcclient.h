@@ -181,6 +181,10 @@ class S9sRpcClient
                 const S9sString &payload);
 
     private:
+        bool getStats(
+                const int        clusterId,
+                const S9sString &statName);
+
         // Low level methods that create new clusters.
         bool createGaleraCluster(
                 const S9sVariantList &hosts,

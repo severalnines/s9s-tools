@@ -517,19 +517,9 @@ bool
 S9sRpcClient::getCpuStats(
         const int clusterId)
 {
-    S9sString      uri = "/v2/stat";
-    S9sVariantMap  request;
     bool           retval;
-    time_t         now = time(NULL);
 
-    request["operation"]  = "statByName";
-    request["name"]       = "cpustat";
-    request["with_hosts"] = true;
-    request["cluster_id"] = clusterId;
-    request["startdate"]  = (ulonglong) now - 60 * 60;
-    request["enddate"]    = (ulonglong) now;
-
-    retval = executeRequest(uri, request);
+    retval = getStats(clusterId, "cpustat");
     
     return retval;
 }
@@ -934,6 +924,37 @@ S9sRpcClient::createCluster()
 
     return success;
 }
+
+/**
+ * \param clusterId the ID of the cluster for which the CPU information will be
+ *   fetched.
+ * \param statName cpustat sqlstatsum sqlstat
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::getStats(
+        const int        clusterId,
+        const S9sString &statName)
+{
+    S9sString      uri = "/v2/stat";
+    S9sVariantMap  request;
+    bool           retval;
+    time_t         now = time(NULL);
+
+    request["operation"]  = "statByName";
+    request["name"]       = "cpustat";
+    request["with_hosts"] = true;
+    request["cluster_id"] = clusterId;
+    request["startdate"]  = (ulonglong) now - 60 * 60;
+    request["enddate"]    = (ulonglong) now;
+
+    retval = executeRequest(uri, request);
+    
+    return retval;
+}
+
 
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
