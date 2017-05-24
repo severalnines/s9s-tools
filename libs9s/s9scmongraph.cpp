@@ -65,8 +65,19 @@ S9sCmonGraph::realize()
             break;
         
         case SqlStatements:
-            setAggregateType(S9sGraph::Average);
-            setTitle("SQL statements on %s (1/sec)", STR(m_node.hostName()));
+            setAggregateType(S9sGraph::Max);
+            if (!m_values.empty())
+            {
+                if (m_values[0].contains("COM_INSERT"))
+                {
+                    setTitle("SQL statements on %s (1/sec)", 
+                            STR(m_node.hostName()));
+                } else if (m_values[0].contains("rows-inserted"))
+                {
+                    setTitle("SQL activity on %s (rows/sec)", 
+                            STR(m_node.hostName()));
+                }
+            }
             break;
     }
 
@@ -107,6 +118,9 @@ S9sCmonGraph::realize()
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
+                //S9S_WARNING("[%3u] interval : %g", 
+                //        idx, value["interval"].toDouble());
+
                 if (value.contains("COM_INSERT"))
                 {
                     double dval;
@@ -117,6 +131,29 @@ S9sCmonGraph::realize()
                         value["COM_REPLACE"].toDouble() + 
                         value["COM_SELECT"].toDouble() + 
                         value["COM_UPDATE"].toDouble();
+               
+                    #if 0
+                    S9S_WARNING("");
+                    S9S_WARNING("[%3u]     dval : %g", idx, dval);
+                    S9S_WARNING("[%3u] interval : %g", 
+                            idx, value["interval"].toDouble());
+                    #endif
+
+                    dval /= value["interval"].toDouble() / 1000.0;
+                    #if 0
+                    S9S_WARNING("[%3u]    speed : %6.4f", idx, dval);
+                    #endif
+                    
+                    S9sGraph::appendValue(dval);
+                } else if (value.contains("rows-inserted"))
+                {
+                    double dval;
+
+                    dval = 
+                        value["rows-deleted"].toDouble() +
+                        value["rows-fetched"].toDouble() + 
+                        value["rows-inserted"].toDouble() + 
+                        value["rows-updated"].toDouble();
 
                     dval /= value["interval"].toDouble() / 1000.0;
                     

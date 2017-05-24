@@ -185,7 +185,7 @@ S9sGraph::createLines(
         int newWidth,
         int newHeight)
 {
-    S9sString  line, tmp;
+    S9sString  line;
     S9sVariant biggest, smallest;
     double     mult;
    
