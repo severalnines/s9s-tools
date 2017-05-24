@@ -96,6 +96,11 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             setTitle("SQL connections on %s", STR(m_node.hostName()));
             break;
+
+        case MemUtil:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Memory utilization on %s (%%)", STR(m_node.hostName()));
+            break;
         
         case MemFree:
             setAggregateType(S9sGraph::Min);
@@ -204,6 +209,14 @@ S9sCmonGraph::realize()
                 else
                     S9sGraph::appendValue(value["connections"].toDouble());
 
+                break;
+            
+            case MemUtil:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["memoryutilization"].toDouble() * 100.0);
                 break;
 
             case MemFree:

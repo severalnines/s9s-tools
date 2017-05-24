@@ -43,6 +43,7 @@ UtS9sGraph::runTest(const char *testName)
     PERFORM_TEST(testCreate02,      retval);
     PERFORM_TEST(testCreate03,      retval);
     PERFORM_TEST(testCreate04,      retval);
+    PERFORM_TEST(testCreate05,      retval);
     PERFORM_TEST(testLabel01,       retval);
 
     return retval;
@@ -117,6 +118,22 @@ UtS9sGraph::testCreate04()
 
     for (double value = 0; value < 40; value += 1)
         graph.appendValue(value);
+    
+    printf("\n");
+    graph.realize();
+    graph.print();
+    printf("\n");
+
+    return true;
+}
+
+bool
+UtS9sGraph::testCreate05()
+{
+    S9sGraph graph;
+
+    for (double value = 0; value < 40; value += 1)
+        graph.appendValue(3000.0 + 10 * value);
     
     printf("\n");
     graph.realize();

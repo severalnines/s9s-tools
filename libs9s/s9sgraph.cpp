@@ -412,6 +412,10 @@ S9sGraph::yLabel(
     {
         baseLine = roundMultiple(baseLine, 0.05);
         retval.sprintf("%5.2f ", baseLine);
+    } else if (maxValue >= 1000.0) 
+    {
+        baseLine = roundMultiple(baseLine, 10.0);
+        retval.sprintf("%5.0f ", baseLine);
     } else {
         baseLine = roundMultiple(baseLine, 0.5);
         retval.sprintf("%5.1f ", baseLine);
