@@ -517,11 +517,14 @@ bool
 S9sRpcClient::getCpuStats(
         const int clusterId)
 {
-    bool           retval;
+    return getStats(clusterId, "cpustat");
+}
 
-    retval = getStats(clusterId, "cpustat");
-    
-    return retval;
+bool
+S9sRpcClient::getSqlStats(
+        const int clusterId)
+{
+    return getStats(clusterId, "sqlstat");
 }
 
 bool
@@ -944,7 +947,7 @@ S9sRpcClient::getStats(
     time_t         now = time(NULL);
 
     request["operation"]  = "statByName";
-    request["name"]       = "cpustat";
+    request["name"]       = statName;
     request["with_hosts"] = true;
     request["cluster_id"] = clusterId;
     request["startdate"]  = (ulonglong) now - 60 * 60;

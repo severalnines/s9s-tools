@@ -421,11 +421,15 @@ S9sBusinessLogic::executeNodeStat(
 {
     S9sOptions  *options   = S9sOptions::instance();
     int          clusterId = options->clusterId();
-    S9sRpcReply reply;
-    bool        success;
+    S9sString    graphName = options->graph().toLower();
+    S9sRpcReply  reply;
+    bool         success;
 
+    if (graphName.startsWith("cpu") || graphName.startsWith("load"))
+        success = client.getCpuStats(clusterId);
+    else 
+        success = client.getSqlStats(clusterId);
 
-    success = client.getCpuStats(clusterId);
     if (success)
     {
         reply = client.reply();
@@ -851,36 +855,6 @@ void
 S9sBusinessLogic::executeTop(
         S9sRpcClient &client)
 {
-    #if 0
-    //
-    // A small test to get the cpu info.
-    //
-    client.getCpuInfo(options->clusterId());
-    reply = client.reply();
-    printf("%s\n", STR(reply.toString()));
-    #endif
-    
-    #if 0
-    //
-    // A small test to get the cpu info.
-    //
-    client.getCpuStats(options->clusterId());
-    reply = client.reply();
-    printf("%s\n", STR(reply.toString()));
-    exit(0);
-    #endif
-    
-    #if 0
-    //
-    // A small test to get the memory info.
-    //
-    client.getMemoryStats(options->clusterId());
-    reply = client.reply();
-    printf("%s\n", STR(reply.toString()));
-    reply.printMemoryStatLine1();
-    exit(0);
-    #endif
-
     S9sTopUi ui;
 
     ui.executeTop(client);

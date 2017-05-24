@@ -238,7 +238,7 @@ S9sGraph::createLines(
             line += "      ";
         }
 
-        for (int x = 0; x < newWidth; ++x)
+        for (int x = 0; x < (int) m_transformed.size(); ++x)
         {
             double value;
             const char *c;
