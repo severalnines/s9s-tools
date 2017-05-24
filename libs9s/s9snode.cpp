@@ -522,6 +522,9 @@ S9sNode::id() const
     return 0;
 }
 
+/**
+ * \returns The ID of the cluster holding the node.
+ */
 int
 S9sNode::clusterId() const
 {

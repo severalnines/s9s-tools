@@ -149,6 +149,14 @@ S9sGraph::transform(
     S9S_DEBUG("            width : %d", newWidth);
     S9S_DEBUG(" m_rawData.size() : %u", m_rawData.size());
     m_transformed.clear();
+
+    if (m_rawData.empty())
+    {
+        for (int x = 0; x < newWidth; ++x)
+            m_transformed << 0.0;
+
+        return;
+    }
     
     for (uint origIndex = 0u; origIndex < m_rawData.size(); /*++origIndex*/)
     {    
@@ -224,6 +232,10 @@ S9sGraph::createLines(
      */
     biggest  = m_transformed.max();
     smallest = m_transformed.min();
+
+    if (biggest.toDouble() == 0.0)
+        biggest = 1.0;
+    
     mult     = (newHeight / biggest.toDouble());
 
     S9S_DEBUG("   biggest : %g", biggest.toDouble());
@@ -243,13 +255,15 @@ S9sGraph::createLines(
             line += "      ";
         }
 
-        for (int x = 0; x < (int) m_transformed.size(); ++x)
+        for (int x = 0; x < /*(int) m_transformed.size()*/m_width; ++x)
         {
             double value;
             const char *c;
 
-            value  = m_transformed[x].toDouble();
-            //value *= mult;
+            if (x < (int) m_transformed.size())
+                value = m_transformed[x].toDouble();
+            else 
+                value = 0.0;
 
             if (value >= topLine)
             {

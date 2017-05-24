@@ -2184,6 +2184,8 @@ S9sRpcReply::printGraph()
         if (!options->isStringMatchExtraArguments(host.hostName()))
             continue;
 
+        // This should be filtered by the controller, but it might not. Well, we
+        // had a problem with this.
         if (clusterId != host.clusterId())
             continue;
 
