@@ -110,6 +110,7 @@ class S9sVariant
         const S9sAccount &toAccount() const;
         const S9sVariantList &toVariantList() const;
 
+        bool contains(const S9sString &key) const;
         void clear();
 
     protected:

@@ -17,6 +17,7 @@ class S9sCmonGraph : public S9sGraph
             Unknown,
             LoadAverage,
             CpuGhz,
+            SqlStatements
         };
 
         S9sCmonGraph();

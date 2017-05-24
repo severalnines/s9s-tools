@@ -436,7 +436,7 @@ S9sBusinessLogic::executeNodeStat(
         success = reply.isOk();
         if (success)
         {
-            reply.printCpuGraph();
+            reply.printGraph();
         } else {
             if (options->isJsonRequested())
                 printf("%s\n", STR(reply.toString()));

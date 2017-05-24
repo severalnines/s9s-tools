@@ -101,8 +101,8 @@ class S9sRpcReply : public S9sVariantMap
         static const char *fileColorBegin(const S9sString &fileName);
         static const char *fileColorEnd();
        
-        void printCpuGraph();
-        void printCpuGraph(S9sNode &host);
+        void printGraph();
+        void printGraph(S9sNode &host);
 
         
     protected:

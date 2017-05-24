@@ -2116,8 +2116,11 @@ S9sRpcReply::printClusterStat(
     printHostTable(cluster);
 }
 
+/**
+ * Under construction.
+ */
 void
-S9sRpcReply::printCpuGraph(
+S9sRpcReply::printGraph(
         S9sNode &host)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -2132,8 +2135,12 @@ S9sRpcReply::printCpuGraph(
     if (graphType == "cpuclock" || graphType == "cpughz")
     {
         graph.setGraphType(S9sCmonGraph::CpuGhz);
-    } else {
+    } else if (graphType == "load") 
+    {
         graph.setGraphType(S9sCmonGraph::LoadAverage);
+    } else if (graphType == "sqlcommands" || graphType == "sqlstatements")
+    {
+        graph.setGraphType(S9sCmonGraph::SqlStatements);
     }
 
     /*
@@ -2149,8 +2156,11 @@ S9sRpcReply::printCpuGraph(
     printf("\n");
 }
 
+/**
+ * Under construction.
+ */
 void
-S9sRpcReply::printCpuGraph()
+S9sRpcReply::printGraph()
 {
     S9sOptions      *options = S9sOptions::instance();
     S9sVariantList   hostList = operator[]("hosts").toVariantList();
@@ -2174,7 +2184,7 @@ S9sRpcReply::printCpuGraph()
             continue;
 
         //printf("h: %s id: %d\n", STR(host.hostName()), host.id());
-        printCpuGraph(host);
+        printGraph(host);
     }
 }
 

@@ -1072,6 +1072,16 @@ S9sVariant::toString(
     return retval;
 }
 
+bool
+S9sVariant::contains(
+        const S9sString &key) const
+{
+    if (m_type == Map)
+        return m_union.mapValue->contains(key);
+
+    return false;
+}
+
 /**
  * Drops the value from the variant, sets its type to "Invalid" and releases all
  * resources that the variant might hold. This function is also called from the

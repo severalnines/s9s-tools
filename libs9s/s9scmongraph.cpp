@@ -63,6 +63,11 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             setTitle("CPU clock of %s (GHz)", STR(m_node.hostName()));
             break;
+        
+        case SqlStatements:
+            setAggregateType(S9sGraph::Average);
+            setTitle("SQL statements on %s (1/sec)", STR(m_node.hostName()));
+            break;
     }
 
     /*
@@ -98,6 +103,27 @@ S9sCmonGraph::realize()
                 S9sGraph::appendValue(value["cpumhz"].toDouble() / 1000.0);
                 break;
 
+            case SqlStatements:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value.contains("COM_INSERT"))
+                {
+                    double dval;
+
+                    dval = 
+                        value["COM_DELETE"].toDouble() +
+                        value["COM_INSERT"].toDouble() + 
+                        value["COM_REPLACE"].toDouble() + 
+                        value["COM_SELECT"].toDouble() + 
+                        value["COM_UPDATE"].toDouble();
+
+                    dval /= value["interval"].toDouble() / 1000.0;
+                    
+                    S9sGraph::appendValue(dval);
+                } else {
+                    S9sGraph::appendValue(0.0);
+                }
         }
     }
 
