@@ -2163,6 +2163,7 @@ void
 S9sRpcReply::printGraph()
 {
     S9sOptions      *options = S9sOptions::instance();
+    int              clusterId = options->clusterId();
     S9sVariantList   hostList = operator[]("hosts").toVariantList();
 
     if (options->isJsonRequested())
@@ -2181,6 +2182,9 @@ S9sRpcReply::printGraph()
 
         // Filtering...
         if (!options->isStringMatchExtraArguments(host.hostName()))
+            continue;
+
+        if (clusterId != host.clusterId())
             continue;
 
         //printf("h: %s id: %d\n", STR(host.hostName()), host.id());

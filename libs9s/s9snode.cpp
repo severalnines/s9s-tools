@@ -520,8 +520,17 @@ S9sNode::id() const
         return m_properties.at("unique_id").toInt();
 
     return 0;
-
 }
+
+int
+S9sNode::clusterId() const
+{
+    if (m_properties.contains("clusterid"))
+        return m_properties.at("clusterid").toInt();
+
+    return 0;
+}
+
 
 /**
  * \returns The name of the node that shall be used to represent it in user

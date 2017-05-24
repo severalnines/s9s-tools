@@ -52,6 +52,7 @@ class S9sNode
                 const S9sString &formatString) const;
 
         int id() const;
+        int clusterId() const;
         S9sString name() const;
         S9sString hostName() const;
         S9sString ipAddress() const;
