@@ -2,8 +2,10 @@
  * Copyright (C) 2011-2017 severalnines.com
  */
 #include "s9sgraph.h"
-#include "stdio.h"
 
+#include "S9sDateTime"
+
+#include "stdio.h"
 #include "math.h"
 
 //#define DEBUG
@@ -18,7 +20,9 @@ S9sGraph::S9sGraph() :
     m_height(10),
     m_color(true),
     m_warningLevel(0.0),
-    m_errorLevel(0.0)
+    m_errorLevel(0.0),
+    m_started(0),
+    m_ended(0)
 {
 }
 
@@ -31,6 +35,15 @@ S9sGraph::setAggregateType(
         S9sGraph::AggregateType type)
 {
     m_aggregateType = type;
+}
+
+void
+S9sGraph::setInterval(
+        const time_t start,
+        const time_t end)
+{
+    m_started = start;
+    m_ended   = end;
 }
 
 void
@@ -228,7 +241,7 @@ S9sGraph::createLines(
     }
 
     /*
-     *
+     * The Y labels and the body of the graph.
      */
     biggest  = m_transformed.max();
     smallest = m_transformed.min();
@@ -364,6 +377,27 @@ S9sGraph::createLines(
         //printf("\n");
         m_lines << line;
         line.clear();
+    }
+
+    /*
+     * The X labels.
+     */
+    if (m_started != 0 && m_ended != 0)
+    {
+        S9sDateTime start(m_started);
+        S9sDateTime end(m_ended);
+        S9sString   startString = start.toString(S9sDateTime::CompactFormat);
+        S9sString   endString = end.toString(S9sDateTime::CompactFormat);
+        S9sString   indentString;
+        int         indent;
+
+        indent = m_width - startString.length() - endString.length();
+    
+        if (indent > 0)
+            indentString = S9sString(" ") * indent;
+
+        m_lines << 
+            "      " + startString + indentString + endString;
     }
 }
 

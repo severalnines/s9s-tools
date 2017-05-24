@@ -36,8 +36,6 @@ the node (e.g. the MySql daemon on a Galera node) will be start.
 Stop the node. This means the process that provides the main functionality on
 the node (e.g. the MySql daemon on a Galera node) will be stopped.
 
-
-
 .TP
 .B \-\-stat
 Print the details of one or more nodes.
@@ -202,6 +200,36 @@ Use this to install and handle ProxySql servers.
 .B maxscale://
 The protocol to install and handle MaxScale servers.
 .RE
+
+.\"
+.\"
+.\"
+.SH Graph options
+.TP 
+.BI \-\-graph= GRAPH_NAME
+When providing a valid graph name together with the \fB--stat\fP option a graph
+will be printed with statistical data. Currently the following graphs are
+available:
+
+.RS 7
+.TP
+.B cpughz
+The graph will show the CPU clock frequency measured in GHz.
+.TP
+.B cpuload
+Shows the average CPU load of the host computer.
+.TP
+.B cputemp
+The temperature of the CPU measured in degree Celsius. Please note that to
+measure the CPU temperature some kernel module might be needed (e.g. it might be
+necessary to run \fBsudo modprobe coretemp\fP). On multiprocessor systems the
+graph might show only the first processor.
+.TP
+.B sqlcommands
+Shows the number of SQL commands executed measured in 1/s.
+.TP
+.B sqlconnections
+Shows the number of SQL connections.
 
 .\"
 .\"

@@ -38,11 +38,18 @@ S9sCmonGraph::appendValue(
     m_values << value;
 }
 
+/**
+ * This method is very similar to the realize() method of widgets in GUI
+ * libraries: it will calculate and create various data sets needed to show the
+ * graph. This method can be called multiple times to refresh the data.
+ */
 void
 S9sCmonGraph::realize()
 {
-    S9sCmonGraph::clearValues();
+    time_t start = 0;
+    time_t end   = 0;
 
+    S9sCmonGraph::clearValues();
     /*
      * Setting up the graph to look like the type suggests.
      */
@@ -59,13 +66,18 @@ S9sCmonGraph::realize()
             setTitle("Load on %s", STR(m_node.hostName()));
             break;
 
+        case CpuTemp:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Cpu temperature on %s (℃ )", STR(m_node.hostName()));
+            break;
+
         case CpuGhz:
             setAggregateType(S9sGraph::Max);
             setTitle("CPU clock of %s (GHz)", STR(m_node.hostName()));
             break;
         
         case SqlStatements:
-            setAggregateType(S9sGraph::Average);
+            setAggregateType(S9sGraph::Max);
             if (!m_values.empty())
             {
                 if (m_values[0].contains("COM_INSERT"))
@@ -78,6 +90,11 @@ S9sCmonGraph::realize()
                             STR(m_node.hostName()));
                 }
             }
+            break;
+
+        case SqlConnections:
+            setAggregateType(S9sGraph::Max);
+            setTitle("SQL connections on %s", STR(m_node.hostName()));
             break;
     }
 
@@ -102,6 +119,16 @@ S9sCmonGraph::realize()
                     continue;
 
                 S9sGraph::appendValue(value["loadavg1"]);
+                break;
+
+            case CpuTemp:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value["cpuid"].toInt() != 0)
+                    continue;
+
+                S9sGraph::appendValue(value["cputemp"]);
                 break;
 
             case CpuGhz:
@@ -161,8 +188,55 @@ S9sCmonGraph::realize()
                 } else {
                     S9sGraph::appendValue(0.0);
                 }
+                break;
+
+            case SqlConnections:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+               
+                if (value.contains("CONNECTIONS"))
+                    S9sGraph::appendValue(value["CONNECTIONS"].toDouble());
+                else
+                    S9sGraph::appendValue(value["connections"].toDouble());
+
+                break;
+        }
+
+        /*
+         *
+         */
+        if (value.contains("created"))
+        {
+            time_t created = value["created"].toTimeT();
+            time_t ended   = created + (value["interval"].toInt() / 1000);
+
+            if (start == 0)
+                start = created;
+
+            if (end == 0)
+                end = ended;
+
+            if (start > created)
+                start = created;
+
+            if (end < ended)
+                end = ended;
         }
     }
+
+    /*
+     * Setting the start time and end time for the graph so that the user can
+     * have an idea what time interval is shown.
+     */
+    if (start == 0 && end == 0)
+    {
+        // If we had no timestamp that's because we had no statistics. No
+        // matter, we set the last 1 minute showing some labels anyway.
+        end = time(NULL);
+        start = end - 60;
+    }
+
+    setInterval(start, end);
 
     /*
      * Linking up to the parent class.

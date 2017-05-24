@@ -23,6 +23,8 @@ class S9sGraph
         virtual ~S9sGraph();
 
         void setAggregateType(S9sGraph::AggregateType type);
+        void setInterval(const time_t start, const time_t end);
+
         void setColor(const bool useColor);
         void setWarningLevel(double level);
         void setErrorLevel(double level);
@@ -64,6 +66,8 @@ class S9sGraph
         bool            m_color;
         double          m_warningLevel;
         double          m_errorLevel;
+        time_t          m_started;
+        time_t          m_ended;
 };
 
 template<typename T>
