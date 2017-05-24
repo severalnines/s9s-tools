@@ -65,7 +65,7 @@ S9sCmonGraph::realize()
             break;
         
         case SqlStatements:
-            setAggregateType(S9sGraph::Max);
+            setAggregateType(S9sGraph::Average);
             if (!m_values.empty())
             {
                 if (m_values[0].contains("COM_INSERT"))

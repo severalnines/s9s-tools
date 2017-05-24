@@ -151,7 +151,9 @@ S9sGraph::transform(
     m_transformed.clear();
     
     for (uint origIndex = 0u; origIndex < m_rawData.size(); /*++origIndex*/)
-    {     
+    {    
+        bool added = false;
+
         tmp << m_rawData[origIndex++];
 
         origPercent = 
@@ -174,9 +176,12 @@ S9sGraph::transform(
             newPercent  = 
                 m_transformed.size() == 0u ? 0.0 :
                 (double) (m_transformed.size()) / (double) newWidth;
+
+            added = true;
         }
         
-        tmp.clear();
+        if (added)
+            tmp.clear();
     }
 }
 
@@ -387,6 +392,15 @@ S9sGraph::aggregate(
             retval = data.average();
             break;
     }
+   
+    #if 0
+    printf("size: %lu\n", data.size());
+    printf("{%6.4f} = ", retval.toDouble());
+    for (uint idx = 0u; idx < data.size(); ++idx)
+    {
+        printf("%4.2f ", data[idx].toDouble());
+    }
+    #endif
 
     return retval;
 }
