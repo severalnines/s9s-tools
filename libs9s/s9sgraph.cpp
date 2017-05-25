@@ -211,6 +211,7 @@ S9sGraph::createLines(
         int newWidth,
         int newHeight)
 {
+    bool       ascii = true;
     S9sString  line;
     S9sVariant biggest, smallest;
     double     mult;
@@ -280,7 +281,7 @@ S9sGraph::createLines(
 
             if (value >= topLine)
             {
-                c = "█";
+                c = ascii ? "#" : "█";
             } else if (value > baseLine && value < topLine)
             {
                 double remainder;
@@ -303,32 +304,32 @@ S9sGraph::createLines(
 
                     case 1:
                     case 2:
-                        c = "▁";
+                        c = ascii ? " " : "▁";
                         break;
 
                     case 3:
-                        c = "▂";
+                        c = ascii ? " " : "▂";
                         break;
 
                     case 4:
-                        c = "▃";
+                        c = ascii ? " " : "▃";
                         break;
 
                     case 5:
-                        c = "▄";
+                        c = ascii ? " " : "▄";
                         break;
 
                     case 6:
-                        c = "▅";
+                        c = ascii ? " " : "▅";
                         break;
                     
                     case 7:
-                        c = "▆";
+                        c = ascii ? " " : "▆";
                         break;
                     
                     case 8:
                     case 9:
-                        c = "▇";
+                        c = ascii ? " " : "▇";
                         break;
 
                     default:
