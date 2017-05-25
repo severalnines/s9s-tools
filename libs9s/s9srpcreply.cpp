@@ -4222,9 +4222,11 @@ S9sRpcReply::progressBar(
         double percent,
         bool   syntaxHighlight)
 {
-    S9sString retval;
-    int       nBars;
-    int       remain;
+    S9sOptions *options = S9sOptions::instance();
+    bool        ascii = options->onlyAscii();
+    S9sString   retval;
+    int         nBars;
+    int         remain;
 
     if (percent < 0.0)
         percent = 0.0;
@@ -4240,7 +4242,7 @@ S9sRpcReply::progressBar(
         retval += XTERM_COLOR_BLUE;
 
     for (int n = 1; n <= nBars; ++n)
-        retval += "█";
+        retval += ascii ? "#" : "█";
 
     if (percent < 100.0)
     {
@@ -4251,33 +4253,33 @@ S9sRpcReply::progressBar(
                 break;
 
         	case 1:
-                retval += "▏";
+                retval += ascii ? " " : "▏";
                 break;
 
         	case 2:
-                retval += "▎";
+                retval += ascii ? " " : "▎";
                 break;
 
         	case 3:
-                retval += "▍";
+                retval += ascii ? " " : "▍";
                 break;
 
         	case 4:
-                retval += "▌";
+                retval += ascii ? " " : "▌";
                 break;
 
         	case 5:
-                retval += "▋";
+                retval += ascii ? " " : "▋";
                 break;
 
         	case 6:
         	case 7:
-                retval += "▊";
+                retval += ascii ? " " : "▊";
                 break;
 
         	case 8:
         	case 9:
-                retval += "▉";
+                retval += ascii ? " " : "▉";
                 break;
         }
     }
