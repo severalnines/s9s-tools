@@ -2131,32 +2131,7 @@ S9sRpcReply::printGraph(
 
     graph.setNode(host);
     graph.setColor(syntaxHighlight);
-
-    if (graphType == "cpuclock" || graphType == "cpughz")
-    {
-        graph.setGraphType(S9sCmonGraph::CpuGhz);
-    } else if (graphType == "cpuload" || graphType == "load") 
-    {
-        graph.setGraphType(S9sCmonGraph::LoadAverage);
-    } else if (graphType == "cputemp") 
-    {
-        graph.setGraphType(S9sCmonGraph::CpuTemp);
-    } else if (graphType == "sqlcommands" || graphType == "sqlstatements")
-    {
-        graph.setGraphType(S9sCmonGraph::SqlStatements);
-    } else if (graphType == "sqlconnections")
-    {
-        graph.setGraphType(S9sCmonGraph::SqlConnections);
-    } else if (graphType == "sqlconnections")
-    {
-        graph.setGraphType(S9sCmonGraph::SqlConnections);
-    } else if (graphType == "memutil")
-    {
-        graph.setGraphType(S9sCmonGraph::MemUtil);
-    } else if (graphType == "memfree" || graphType == "ramfree")
-    {
-        graph.setGraphType(S9sCmonGraph::MemFree);
-    }
+    graph.setGraphType(graphType);
 
     /*
      * Pushing the data into the graph.

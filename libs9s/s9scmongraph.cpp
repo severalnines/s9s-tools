@@ -17,13 +17,47 @@ S9sCmonGraph::~S9sCmonGraph()
 {
 }
         
-void 
+bool
 S9sCmonGraph::setGraphType(
         S9sCmonGraph::GraphTemplate type)
 {
     m_graphType = type;
+    return true;
 }
-      
+
+bool
+S9sCmonGraph::setGraphType(
+        const S9sString &graphType)
+{
+    if (graphType == "cpuclock" || graphType == "cpughz")
+    {
+        return setGraphType(S9sCmonGraph::CpuGhz);
+    } else if (graphType == "cpuload" || graphType == "load") 
+    {
+        return setGraphType(S9sCmonGraph::LoadAverage);
+    } else if (graphType == "cputemp") 
+    {
+        return setGraphType(S9sCmonGraph::CpuTemp);
+    } else if (graphType == "sqlcommands" || graphType == "sqlstatements")
+    {
+        return setGraphType(S9sCmonGraph::SqlStatements);
+    } else if (graphType == "sqlconnections")
+    {
+        return setGraphType(S9sCmonGraph::SqlConnections);
+    } else if (graphType == "sqlconnections")
+    {
+        return setGraphType(S9sCmonGraph::SqlConnections);
+    } else if (graphType == "memutil")
+    {
+        return setGraphType(S9sCmonGraph::MemUtil);
+    } else if (graphType == "memfree" || graphType == "ramfree")
+    {
+        return setGraphType(S9sCmonGraph::MemFree);
+    }    
+
+    return false;
+}
+
 void
 S9sCmonGraph::setNode(
         const S9sNode &node)

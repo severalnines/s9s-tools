@@ -359,7 +359,7 @@ S9sGraph::createLines(
                         c = " ";
                     }
                 } else {
-                    c = "▁";
+                    c = ascii ? "_" : "▁";
                 }
             }
 
