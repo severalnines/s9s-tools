@@ -22,6 +22,7 @@ class S9sCmonGraph : public S9sGraph
             SqlConnections,
             MemUtil,
             MemFree,
+            SwapFree,
         };
 
         S9sCmonGraph();

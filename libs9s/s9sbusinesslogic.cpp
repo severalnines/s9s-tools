@@ -426,11 +426,14 @@ S9sBusinessLogic::executeNodeStat(
     bool         success;
 
     if (graphName.startsWith("cpu") || graphName.startsWith("load"))
+    {
         success = client.getCpuStats(clusterId);
-    else if (graphName.startsWith("mem"))
+    } else if (graphName.startsWith("mem") || graphName.startsWith("swap"))
+    {
         success = client.getMemStats(clusterId);
-    else 
+    } else {
         success = client.getSqlStats(clusterId);
+    }
 
     if (success)
     {

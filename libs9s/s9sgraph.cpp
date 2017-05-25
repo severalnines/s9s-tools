@@ -31,6 +31,12 @@ S9sGraph::~S9sGraph()
 {
 }
 
+/**
+ * \param type The aggragation type to be set.
+ *
+ * When there are more values in the graph than we have room for the data points
+ * must be aggregated. This function controls how this will be done.
+ */
 void
 S9sGraph::setAggregateType(
         S9sGraph::AggregateType type)
@@ -38,6 +44,12 @@ S9sGraph::setAggregateType(
     m_aggregateType = type;
 }
 
+/**
+ * \param start The timestamp showing where the first data point starts.
+ * \param end The timestamp showing where the last data point ends in time.
+ *
+ * Sets the interval for the X axis.
+ */
 void
 S9sGraph::setInterval(
         const time_t start,
@@ -47,6 +59,11 @@ S9sGraph::setInterval(
     m_ended   = end;
 }
 
+/**
+ * \param useColor True if the graph should use colors, false for monochrome.
+ *
+ * Sets if the graph should be color or not.
+ */
 void
 S9sGraph::setColor(
         const bool useColor)
@@ -68,18 +85,28 @@ S9sGraph::setErrorLevel(
     m_errorLevel = level;
 }
 
+/**
+ * \returns How wide the graph will be measured in characters.
+ */
 int 
 S9sGraph::nColumns() const
 {
     return m_transformed.size() + 6;
 }
 
+/**
+ * \returns The height of the graph measured as the number of lines.
+ */
 int 
 S9sGraph::nRows() const
 {
     return (int) m_lines.size();
 }
 
+/**
+ * \param idx The index of the line, 0 for the first line, 1 for the second, and
+ *   so forth.
+ */
 S9sString
 S9sGraph::line(
         const int idx)
@@ -91,7 +118,7 @@ S9sGraph::line(
 }
 
 /**
- * \returns The number of the original data.
+ * \returns The number of the original data points.
  */
 int 
 S9sGraph::nValues() const
@@ -115,6 +142,11 @@ S9sGraph::appendValue(
     m_rawData << value;
 }
 
+/**
+ * This method is very similar to the realize() method of widgets in GUI
+ * libraries: it will calculate and create various data sets needed to show the
+ * graph. This method can be called multiple times to refresh the data.
+ */
 void
 S9sGraph::realize()
 {
@@ -122,7 +154,9 @@ S9sGraph::realize()
     createLines(m_width, m_height);
 }
 
-
+/**
+ * Sets the title of the graph.
+ */
 void
 S9sGraph::setTitle(
         const char *formatString,
@@ -299,9 +333,13 @@ S9sGraph::createLines(
                 if (IS_DIVISIBLE_BY(y, 5))
                 {
                     if (m_color)
-                        bg = y == 0 ? "_" : XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
-                    else
+                    {
+                        bg = y == 0 ? 
+                            "_" : 
+                            XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
+                    } else {
                         bg = y == 0 ? "_" : "-";
+                    }
                 }
 
                 remainder  = value - baseLine;
@@ -419,6 +457,11 @@ S9sGraph::createLines(
     }
 }
 
+/**
+ * \param baseLine The value the label shows.
+ *
+ * This function will create a text intended to be shown on the Y axis.
+ */
 S9sString
 S9sGraph::yLabel(
         double baseLine) const
@@ -463,18 +506,16 @@ S9sGraph::aggregate(
             break;
     }
    
-    #if 0
-    printf("size: %lu\n", data.size());
-    printf("{%6.4f} = ", retval.toDouble());
-    for (uint idx = 0u; idx < data.size(); ++idx)
-    {
-        printf("%4.2f ", data[idx].toDouble());
-    }
-    #endif
-
     return retval;
 }
 
+/**
+ * \param graphs The graphs to print.
+ * \param columnSeparator The string that will be printed between the graphs.
+ *
+ * Static function that prints one or more graphs horizontally. The graphs will
+ * be shown side by side.
+ */
 void 
 S9sGraph::printRow(
         S9sVector<S9sGraph *> graphs,

@@ -17,6 +17,12 @@ S9sCmonGraph::~S9sCmonGraph()
 {
 }
         
+/**
+ * \param type The type to set.
+ *
+ * Sets the type of the graph. The type controls how the data will be
+ * interpreted, what the title will show and how the graph will look like.
+ */
 bool
 S9sCmonGraph::setGraphType(
         S9sCmonGraph::GraphTemplate type)
@@ -25,6 +31,12 @@ S9sCmonGraph::setGraphType(
     return true;
 }
 
+/**
+ * \param graphType The string representing of the graph type as it is described
+ *   in the manual page.
+ *
+ * Overloaded version that accepts UI strings to set the graph type.
+ */
 bool
 S9sCmonGraph::setGraphType(
         const S9sString &graphType)
@@ -53,11 +65,20 @@ S9sCmonGraph::setGraphType(
     } else if (graphType == "memfree" || graphType == "ramfree")
     {
         return setGraphType(S9sCmonGraph::MemFree);
+    } else if (graphType == "swapfree")
+    {
+        return setGraphType(S9sCmonGraph::SwapFree);
     }    
 
     return false;
 }
 
+/**
+ * \param node The node to set.
+ *
+ * Sets the node for the graph. When the node shows data for one specific node
+ * this is going to be the node to be used to filter the dataset.
+ */
 void
 S9sCmonGraph::setNode(
         const S9sNode &node)
@@ -65,6 +86,13 @@ S9sCmonGraph::setNode(
     m_node = node;
 }
 
+/**
+ * \param value The data to be appended to the data in the graph.
+ *
+ * This is the function where the data received from the Cmon Controller should
+ * be added to the graph. The value should be a map with a statistical sample 
+ * in it as it is received from the controller.
+ */
 void 
 S9sCmonGraph::appendValue(
         S9sVariant value)
@@ -141,6 +169,11 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Min);
             setTitle("Free memory on %s (GBytes)", STR(m_node.hostName()));
             break;
+        
+        case SwapFree:
+            setAggregateType(S9sGraph::Min);
+            setTitle("Free swap on %s (GBytes)", STR(m_node.hostName()));
+            break;
     }
 
     /*
@@ -190,9 +223,6 @@ S9sCmonGraph::realize()
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                //S9S_WARNING("[%3u] interval : %g", 
-                //        idx, value["interval"].toDouble());
-
                 if (value.contains("COM_SELECT") || 
                         value.contains("COM_INSERT"))
                 {
@@ -205,17 +235,7 @@ S9sCmonGraph::realize()
                         value["COM_SELECT"].toDouble() + 
                         value["COM_UPDATE"].toDouble();
                
-                    #if 0
-                    S9S_WARNING("");
-                    S9S_WARNING("[%3u]     dval : %g", idx, dval);
-                    S9S_WARNING("[%3u] interval : %g", 
-                            idx, value["interval"].toDouble());
-                    #endif
-
                     dval /= value["interval"].toDouble() / 1000.0;
-                    #if 0
-                    S9S_WARNING("[%3u]    speed : %6.4f", idx, dval);
-                    #endif
                     
                     S9sGraph::appendValue(dval);
                 } else if (value.contains("rows-inserted"))
@@ -263,10 +283,19 @@ S9sCmonGraph::realize()
                         value["ramfree"].toDouble() / 
                         (1024.0 * 1024.0 * 1024.0));
                 break;
+            
+            case SwapFree:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["swapfree"].toDouble() / 
+                        (1024.0 * 1024.0 * 1024.0));
+                break;
         }
 
         /*
-         *
+         * Finding the timestamps of the first and last samples.
          */
         if (value.contains("created"))
         {
