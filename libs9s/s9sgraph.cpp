@@ -284,8 +284,17 @@ S9sGraph::createLines(
                 c = ascii ? "#" : "█";
             } else if (value > baseLine && value < topLine)
             {
-                double remainder;
-                int    fraction;
+                const char *bg = " ";
+                double      remainder;
+                int         fraction;
+
+                if (IS_DIVISIBLE_BY(y, 5))
+                {
+                    if (m_color)
+                        bg = XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
+                    else
+                        bg = "-";
+                }
 
                 remainder  = value - baseLine;
                 remainder  = remainder / (topLine - baseLine);
@@ -298,38 +307,38 @@ S9sGraph::createLines(
                     case 0:
                         if (remainder == 0.0)
                         {
-                            c = " ";
+                            c = bg;
                             break;
                         }
 
                     case 1:
                     case 2:
-                        c = ascii ? " " : "▁";
+                        c = ascii ? bg : "▁";
                         break;
 
                     case 3:
-                        c = ascii ? " " : "▂";
+                        c = ascii ? bg : "▂";
                         break;
 
                     case 4:
-                        c = ascii ? " " : "▃";
+                        c = ascii ? bg : "▃";
                         break;
 
                     case 5:
-                        c = ascii ? " " : "▄";
+                        c = ascii ? bg : "▄";
                         break;
 
                     case 6:
-                        c = ascii ? " " : "▅";
+                        c = ascii ? bg : "▅";
                         break;
                     
                     case 7:
-                        c = ascii ? " " : "▆";
+                        c = ascii ? bg : "▆";
                         break;
                     
                     case 8:
                     case 9:
-                        c = ascii ? " " : "▇";
+                        c = ascii ? "." : "▇";
                         break;
 
                     default:
@@ -341,9 +350,9 @@ S9sGraph::createLines(
                     if (IS_DIVISIBLE_BY(y, 5))
                     {
                         if (m_color)
-                            c = XTERM_COLOR_DARK_GRAY "." TERM_NORMAL;
+                            c = XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
                         else
-                            c = "." ;
+                            c = "-" ;
                     } else {
                         c = " ";
                     }
