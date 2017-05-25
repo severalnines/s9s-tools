@@ -2201,26 +2201,41 @@ S9sRpcReply::printGraph()
 
     int sumWidth = 0; 
     S9sVector<S9sGraph *> selectedGraphs;
+    S9sString columnSeparator = "  ";
+
     for (uint idx = 0u; idx < graphs.size(); ++idx)
     {
         S9sCmonGraph *graph = graphs[idx];
         int           thisWidth = graph->nColumns();
+        int           separatorWidth = 0;
 
-        if (sumWidth + thisWidth <= terminalWidth)
+        if (sumWidth > 0)
+            separatorWidth = columnSeparator.length();
+
+        if (sumWidth + thisWidth + separatorWidth <= terminalWidth)
         {
             selectedGraphs << graph;
             sumWidth += thisWidth;
+            sumWidth += separatorWidth;
         } else {
-            S9sGraph::printRow(selectedGraphs);
+            S9sGraph::printRow(selectedGraphs, columnSeparator);
+
+            if (idx + 1 < graphs.size())
+                printf("\n\n");
 
             selectedGraphs.clear();
             sumWidth = 0;
+
+            selectedGraphs << graph;
+            sumWidth += thisWidth;
         }
     }
 
     if (!selectedGraphs.empty())
-        S9sGraph::printRow(selectedGraphs);
+        S9sGraph::printRow(selectedGraphs, columnSeparator);
 
+    if (graphs.size() > 0u)
+        printf("\n\n");
 
     /*
      * Destroying the graph objects.

@@ -471,7 +471,8 @@ S9sGraph::aggregate(
 
 void 
 S9sGraph::printRow(
-        S9sVector<S9sGraph *>graphs)
+        S9sVector<S9sGraph *> graphs,
+        S9sString             columnSeparator)
 {
     for (uint lineIdx = 0; ; ++lineIdx)
     {
@@ -483,6 +484,9 @@ S9sGraph::printRow(
 
             if (lineIdx < graph->m_lines.size())
             {
+                if (hadLine)
+                    printf("%s", STR(columnSeparator));
+
                 printf("%s", STR(graph->m_lines[lineIdx].toString()));
                 hadLine = true;
             }
