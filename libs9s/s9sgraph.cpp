@@ -227,6 +227,7 @@ S9sGraph::createLines(
     {
         int       extraSpaces = m_width - m_title.length();
         S9sString indent;
+        S9sString titleLine;
 
         // Y labels.
         indent = S9sString(" ") * 6;
@@ -235,12 +236,15 @@ S9sGraph::createLines(
         if (extraSpaces > 0)
             indent += S9sString(" ") * (extraSpaces / 2);
 
+        titleLine = indent + m_title;
+
+        if ((int)titleLine.length() < nColumns())
+            titleLine += S9sString(" ") * (nColumns() - titleLine.length());
+
         if (m_color)
-        {
-            m_lines << indent + TERM_BOLD + m_title + TERM_NORMAL;
-        } else {
-            m_lines << indent + m_title;
-        }
+            titleLine = TERM_BOLD + titleLine + TERM_NORMAL;
+        
+        m_lines << titleLine;
     }
 
     /*

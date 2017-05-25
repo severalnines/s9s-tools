@@ -2235,7 +2235,7 @@ S9sRpcReply::printGraph()
         S9sGraph::printRow(selectedGraphs, columnSeparator);
 
     if (graphs.size() > 0u)
-        printf("\n\n");
+        printf("\n");
 
     /*
      * Destroying the graph objects.
