@@ -2120,21 +2120,23 @@ S9sRpcReply::printClusterStat(
  * Under construction.
  */
 bool
-S9sRpcReply::printGraph(
-        S9sNode &host)
+S9sRpcReply::createGraph(
+        S9sVector<S9sCmonGraph *> &graphs,
+        S9sNode                   &host)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sString       graphType = options->graph().toLower();
     S9sVariantList  data = operator[]("data").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sCmonGraph    graph;
+    S9sCmonGraph   *graph = new S9sCmonGraph;
     bool            success;
 
-    graph.setNode(host);
-    graph.setColor(syntaxHighlight);
-    success = graph.setGraphType(graphType);
+    graph->setNode(host);
+    graph->setColor(syntaxHighlight);
+    success = graph->setGraphType(graphType);
     if (!success)
     {
+        delete graph;
         PRINT_ERROR("The graph type '%s' is unrecognized.", STR(graphType));
         return false;
     }
@@ -2143,13 +2145,14 @@ S9sRpcReply::printGraph(
      * Pushing the data into the graph.
      */
     for (uint idx = 0u; idx < data.size(); ++idx)
-        graph.appendValue(data[idx].toVariantMap());
+        graph->appendValue(data[idx].toVariantMap());
 
 
-    graph.realize();
-    graph.print();
-
+    graph->realize();
+    graph->print();
     printf("\n");
+
+    graphs << graph;
     return true;
 }
 
@@ -2162,6 +2165,7 @@ S9sRpcReply::printGraph()
     S9sOptions      *options = S9sOptions::instance();
     int              clusterId = options->clusterId();
     S9sVariantList   hostList = operator[]("hosts").toVariantList();
+    S9sVector<S9sCmonGraph *> graphs;
     bool             success  = false;
 
     if (options->isJsonRequested())
@@ -2171,7 +2175,7 @@ S9sRpcReply::printGraph()
     }
 
     /*
-     * Getting the host information.
+     * Going through the hosts, creating graphs for them.
      */
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
@@ -2188,9 +2192,19 @@ S9sRpcReply::printGraph()
             continue;
 
         //printf("h: %s id: %d\n", STR(host.hostName()), host.id());
-        success = printGraph(host);
+        success = createGraph(graphs, host);
         if (!success)
             break;
+    }
+
+    /*
+     * Destroying the graph objects.
+     */
+    for (uint idx = 0u; idx < graphs.size(); ++idx)
+    {
+        S9sCmonGraph *graph = graphs[idx];
+
+        delete graph;
     }
 
     return success;

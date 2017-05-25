@@ -24,6 +24,7 @@
 class S9sNode;
 class S9sCluster;
 class S9sFormat;
+class S9sCmonGraph;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -101,8 +102,8 @@ class S9sRpcReply : public S9sVariantMap
         static const char *fileColorBegin(const S9sString &fileName);
         static const char *fileColorEnd();
        
+        bool createGraph(S9sVector<S9sCmonGraph *> &graphs, S9sNode &host);
         bool printGraph();
-        bool printGraph(S9sNode &host);
         
     protected:
         S9sVariantMap clusterMap(const int clusterId);

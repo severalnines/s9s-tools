@@ -114,7 +114,8 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             if (!m_values.empty())
             {
-                if (m_values[0].contains("COM_INSERT"))
+                if (m_values[0].contains("COM_SELECT") || 
+                        m_values[0].contains("COM_INSERT"))
                 {
                     setTitle("SQL statements on %s (1/sec)", 
                             STR(m_node.hostName()));
@@ -192,7 +193,8 @@ S9sCmonGraph::realize()
                 //S9S_WARNING("[%3u] interval : %g", 
                 //        idx, value["interval"].toDouble());
 
-                if (value.contains("COM_INSERT"))
+                if (value.contains("COM_SELECT") || 
+                        value.contains("COM_INSERT"))
                 {
                     double dval;
 
