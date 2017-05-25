@@ -10,7 +10,7 @@
 #include "math.h"
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
@@ -287,9 +287,11 @@ S9sGraph::createLines(
 
             if (value >= topLine)
             {
+                // The shown value is above this character position.
                 c = ascii ? "#" : "█";
             } else if (value > baseLine && value < topLine)
             {
+                // The shown value is at this position.
                 const char *bg = " ";
                 double      remainder;
                 int         fraction;
@@ -297,9 +299,9 @@ S9sGraph::createLines(
                 if (IS_DIVISIBLE_BY(y, 5))
                 {
                     if (m_color)
-                        bg = XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
+                        bg = y == 0 ? "_" : XTERM_COLOR_DARK_GRAY "-" TERM_NORMAL;
                     else
-                        bg = "-";
+                        bg = y == 0 ? "_" : "-";
                 }
 
                 remainder  = value - baseLine;
@@ -307,7 +309,6 @@ S9sGraph::createLines(
                 remainder *= 10;
                 fraction   = remainder;
 
-                //printf("-> %g / %d\n", remainder, fraction);
                 switch (fraction)
                 {
                     case 0:
@@ -351,7 +352,8 @@ S9sGraph::createLines(
                         c = " ";
                 }
             } else {
-                if (y != 0.0)
+                // The shown value is under or at this baseline.
+                if (y != 0)
                 {
                     if (IS_DIVISIBLE_BY(y, 5))
                     {

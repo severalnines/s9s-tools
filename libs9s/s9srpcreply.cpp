@@ -2200,6 +2200,7 @@ S9sRpcReply::printGraph()
 
 
     int sumWidth = 0; 
+    int nPrinted = 0;
     S9sVector<S9sGraph *> selectedGraphs;
     S9sString columnSeparator = "  ";
 
@@ -2218,10 +2219,11 @@ S9sRpcReply::printGraph()
             sumWidth += thisWidth;
             sumWidth += separatorWidth;
         } else {
-            S9sGraph::printRow(selectedGraphs, columnSeparator);
-
-            if (idx + 1 < graphs.size())
+            if (nPrinted > 0)
                 printf("\n\n");
+
+            S9sGraph::printRow(selectedGraphs, columnSeparator);
+            nPrinted += selectedGraphs.size();
 
             selectedGraphs.clear();
             sumWidth = 0;
@@ -2232,9 +2234,15 @@ S9sRpcReply::printGraph()
     }
 
     if (!selectedGraphs.empty())
-        S9sGraph::printRow(selectedGraphs, columnSeparator);
+    {
+        if (nPrinted > 0)
+            printf("\n\n");
 
-    if (graphs.size() > 0u)
+        S9sGraph::printRow(selectedGraphs, columnSeparator);
+        nPrinted += selectedGraphs.size();
+    }
+
+    if (nPrinted > 0)
         printf("\n");
 
     /*
