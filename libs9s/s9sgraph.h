@@ -44,7 +44,8 @@ class S9sGraph
         S9sVariant max() const;
 
         void print() const;
-        
+        static void printRow(S9sVector<S9sGraph *>graphs);
+
     protected:
         void clearValues();
         void transform(int newWidth, int newHeight);

@@ -2149,8 +2149,8 @@ S9sRpcReply::createGraph(
 
 
     graph->realize();
-    graph->print();
-    printf("\n");
+    //graph->print();
+    //printf("\n");
 
     graphs << graph;
     return true;
@@ -2162,11 +2162,12 @@ S9sRpcReply::createGraph(
 bool
 S9sRpcReply::printGraph()
 {
-    S9sOptions      *options = S9sOptions::instance();
-    int              clusterId = options->clusterId();
-    S9sVariantList   hostList = operator[]("hosts").toVariantList();
+    S9sOptions      *options       = S9sOptions::instance();
+    int              terminalWidth = options->terminalWidth();
+    int              clusterId     = options->clusterId();
+    S9sVariantList   hostList      = operator[]("hosts").toVariantList();
+    bool             success       = false;
     S9sVector<S9sCmonGraph *> graphs;
-    bool             success  = false;
 
     if (options->isJsonRequested())
     {
@@ -2196,6 +2197,30 @@ S9sRpcReply::printGraph()
         if (!success)
             break;
     }
+
+
+    int sumWidth = 0; 
+    S9sVector<S9sGraph *> selectedGraphs;
+    for (uint idx = 0u; idx < graphs.size(); ++idx)
+    {
+        S9sCmonGraph *graph = graphs[idx];
+        int           thisWidth = graph->nColumns();
+
+        if (sumWidth + thisWidth <= terminalWidth)
+        {
+            selectedGraphs << graph;
+            sumWidth += thisWidth;
+        } else {
+            S9sGraph::printRow(selectedGraphs);
+
+            selectedGraphs.clear();
+            sumWidth = 0;
+        }
+    }
+
+    if (!selectedGraphs.empty())
+        S9sGraph::printRow(selectedGraphs);
+
 
     /*
      * Destroying the graph objects.

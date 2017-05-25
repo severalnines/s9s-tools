@@ -468,3 +468,29 @@ S9sGraph::aggregate(
 
     return retval;
 }
+
+void 
+S9sGraph::printRow(
+        S9sVector<S9sGraph *>graphs)
+{
+    for (uint lineIdx = 0; ; ++lineIdx)
+    {
+        bool  hadLine = false;
+
+        for (uint idx = 0u; idx < graphs.size(); ++idx)
+        {
+            S9sGraph *graph = graphs[idx];
+
+            if (lineIdx < graph->m_lines.size())
+            {
+                printf("%s", STR(graph->m_lines[lineIdx].toString()));
+                hadLine = true;
+            }
+        }
+
+        if (hadLine)
+            printf("\n");
+        else
+            break;
+    }
+}
