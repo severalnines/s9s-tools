@@ -4,6 +4,7 @@
 #include "s9sgraph.h"
 
 #include "S9sDateTime"
+#include "S9sOptions"
 
 #include "stdio.h"
 #include "math.h"
@@ -211,10 +212,11 @@ S9sGraph::createLines(
         int newWidth,
         int newHeight)
 {
-    bool       ascii = true;
-    S9sString  line;
-    S9sVariant biggest, smallest;
-    double     mult;
+    S9sOptions *options = S9sOptions::instance();
+    bool        ascii = options->onlyAscii();
+    S9sString   line;
+    S9sVariant  biggest, smallest;
+    double      mult;
    
     m_lines.clear();
 

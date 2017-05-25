@@ -80,7 +80,8 @@ class S9sOptions
         S9sString controllerProtocol();
 
         S9sString configFile() const;
-        
+       
+        bool onlyAscii() const;
         bool setPropertiesOption(const S9sString &assignments);
         S9sVariantMap propertiesOption() const;
 

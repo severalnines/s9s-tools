@@ -475,6 +475,26 @@ S9sOptions::configFile() const
     return retval;
 }
 
+bool
+S9sOptions::onlyAscii() const
+{
+    const char *key = "only_ascii";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval.toBoolean();
+}
+
+
 /**
  * \returns The value for the "brief_job_log_format" config variable that
  *   controls the format of the log lines printed when the --long option is not
