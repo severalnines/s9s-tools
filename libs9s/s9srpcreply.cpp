@@ -2119,7 +2119,7 @@ S9sRpcReply::printClusterStat(
 /**
  * Under construction.
  */
-void
+bool
 S9sRpcReply::printGraph(
         S9sNode &host)
 {
@@ -2128,10 +2128,16 @@ S9sRpcReply::printGraph(
     S9sVariantList  data = operator[]("data").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sCmonGraph    graph;
+    bool            success;
 
     graph.setNode(host);
     graph.setColor(syntaxHighlight);
-    graph.setGraphType(graphType);
+    success = graph.setGraphType(graphType);
+    if (!success)
+    {
+        PRINT_ERROR("The graph type '%s' is unrecognized.", STR(graphType));
+        return false;
+    }
 
     /*
      * Pushing the data into the graph.
@@ -2144,22 +2150,24 @@ S9sRpcReply::printGraph(
     graph.print();
 
     printf("\n");
+    return true;
 }
 
 /**
  * Under construction.
  */
-void
+bool
 S9sRpcReply::printGraph()
 {
     S9sOptions      *options = S9sOptions::instance();
     int              clusterId = options->clusterId();
     S9sVariantList   hostList = operator[]("hosts").toVariantList();
+    bool             success  = false;
 
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
-        return;
+        return true;
     }
 
     /*
@@ -2180,8 +2188,12 @@ S9sRpcReply::printGraph()
             continue;
 
         //printf("h: %s id: %d\n", STR(host.hostName()), host.id());
-        printGraph(host);
+        success = printGraph(host);
+        if (!success)
+            break;
     }
+
+    return success;
 }
 
 /**
