@@ -516,8 +516,8 @@ S9sNode::toString(
 int
 S9sNode::id() const
 {
-    if (m_properties.contains("unique_id"))
-        return m_properties.at("unique_id").toInt();
+    if (m_properties.contains("hostId"))
+        return m_properties.at("hostId").toInt();
 
     return 0;
 }
