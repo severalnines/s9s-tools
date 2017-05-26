@@ -129,6 +129,7 @@ enum S9sOptionType
     OptionClusterFormat,
     OptionNodeFormat,
     OptionGraph,
+    OptionBegin,
 };
 
 /**
@@ -2892,6 +2893,8 @@ S9sOptions::readOptionsNode(
 
         // Graphs...
         { "graph",            required_argument, 0, OptionGraph           }, 
+        { "begin",            required_argument, 0, OptionBegin           },
+        { "end",              required_argument, 0, OptionEnd             },
 
         { 0, 0, 0, 0 }
     };
@@ -3107,6 +3110,16 @@ S9sOptions::readOptionsNode(
             case OptionGraph:
                 // --graph=GRAPH
                 m_options["graph"] = optarg;
+                break;
+            
+            case OptionBegin:
+                // --begin=DATE
+                m_options["begin"] = optarg;
+                break;
+            
+            case OptionEnd:
+                // --end=DATE
+                m_options["end"] = optarg;
                 break;
 
             case '?':
