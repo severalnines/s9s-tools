@@ -4357,9 +4357,11 @@ S9sString
 S9sRpcReply::progressBar(
         bool   syntaxHighlight)
 {
-    S9sString retval;
-    int       timeCycle = time(NULL) % 20;
-    int       position;
+    S9sOptions *options = S9sOptions::instance();
+    bool        ascii = options->onlyAscii();
+    S9sString   retval;
+    int         timeCycle = time(NULL) % 20;
+    int         position;
 
     if (timeCycle < 10)
         position = timeCycle;
@@ -4378,7 +4380,7 @@ S9sRpcReply::progressBar(
     if (syntaxHighlight)
         retval += XTERM_COLOR_BLUE;
 
-    retval += "█";
+    retval += ascii ? "#" : "█";
 
     if (syntaxHighlight)
         retval += TERM_NORMAL;
