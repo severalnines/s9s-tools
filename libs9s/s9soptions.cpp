@@ -733,6 +733,18 @@ S9sOptions::start() const
 }
 
 /**
+ * \returns The option argument passed to the --begin command line option.
+ */
+S9sString
+S9sOptions::begin() const
+{
+    if (m_options.contains("begin"))
+        return m_options.at("begin").toString();
+
+    return S9sString();
+}
+
+/**
  * \returns The option argument passed to the --end command line option.
  */
 S9sString

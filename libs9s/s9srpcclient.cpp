@@ -949,17 +949,27 @@ S9sRpcClient::getStats(
         const int        clusterId,
         const S9sString &statName)
 {
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      begin   = options->begin();
+    S9sString      end     = options->end();
     S9sString      uri = "/v2/stat";
     S9sVariantMap  request;
     bool           retval;
-    time_t         now = time(NULL);
+    //time_t         now = time(NULL);
 
     request["operation"]  = "statByName";
     request["name"]       = statName;
     request["with_hosts"] = true;
     request["cluster_id"] = clusterId;
-    request["startdate"]  = (ulonglong) now - 30 * 60;
-    request["enddate"]    = (ulonglong) now;
+
+    if (!begin.empty())
+        request["start_datetime"] = begin;
+
+    if (!end.empty())
+        request["end_datetime"] = end;
+
+    //request["startdate"]  = (ulonglong) now - 30 * 60;
+    //request["enddate"]    = (ulonglong) now;
 
     retval = executeRequest(uri, request);
     
