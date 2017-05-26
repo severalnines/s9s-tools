@@ -3,6 +3,8 @@
  */
 #include "s9scmongraph.h"
 
+#include "S9sOptions"
+
 #define DEBUG
 #define WARNING
 #include "s9sdebug.h"
@@ -108,10 +110,25 @@ S9sCmonGraph::appendValue(
 void
 S9sCmonGraph::realize()
 {
-    time_t start = 0;
-    time_t end   = 0;
+    S9sOptions *options    = S9sOptions::instance();
+    S9sString   nodeFormat = "%N";
+    S9sString   hostName;
+    time_t      start = 0;
+    time_t      end   = 0;
 
+    /*
+     * Finding out how the user would like to see the node names.
+     */
+    if (options->hasNodeFormat())
+        nodeFormat = options->nodeFormat();
+
+    hostName = m_node.toString(false, nodeFormat);
+    
+    /*
+     *
+     */
     S9sCmonGraph::clearValues();
+
     /*
      * Setting up the graph to look like the type suggests.
      */
@@ -125,17 +142,17 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             setWarningLevel(5.0);
             setErrorLevel(10.0);
-            setTitle("Load on %s", STR(m_node.hostName()));
+            setTitle("Load on %s", STR(hostName));
             break;
 
         case CpuTemp:
             setAggregateType(S9sGraph::Max);
-            setTitle("Cpu temperature on %s (℃ )", STR(m_node.hostName()));
+            setTitle("Cpu temperature on %s (℃ )", STR(hostName));
             break;
 
         case CpuGhz:
             setAggregateType(S9sGraph::Max);
-            setTitle("CPU clock of %s (GHz)", STR(m_node.hostName()));
+            setTitle("CPU clock of %s (GHz)", STR(hostName));
             break;
         
         case SqlStatements:
@@ -145,34 +162,32 @@ S9sCmonGraph::realize()
                 if (m_values[0].contains("COM_SELECT") || 
                         m_values[0].contains("COM_INSERT"))
                 {
-                    setTitle("SQL statements on %s (1/sec)", 
-                            STR(m_node.hostName()));
+                    setTitle("SQL statements on %s (1/sec)", STR(hostName));
                 } else if (m_values[0].contains("rows-inserted"))
                 {
-                    setTitle("SQL activity on %s (rows/sec)", 
-                            STR(m_node.hostName()));
+                    setTitle("SQL activity on %s (rows/sec)", STR(hostName));
                 }
             }
             break;
 
         case SqlConnections:
             setAggregateType(S9sGraph::Max);
-            setTitle("SQL connections on %s", STR(m_node.hostName()));
+            setTitle("SQL connections on %s", STR(hostName));
             break;
 
         case MemUtil:
             setAggregateType(S9sGraph::Max);
-            setTitle("Memory utilization on %s (%%)", STR(m_node.hostName()));
+            setTitle("Memory utilization on %s (%%)", STR(hostName));
             break;
         
         case MemFree:
             setAggregateType(S9sGraph::Min);
-            setTitle("Free memory on %s (GBytes)", STR(m_node.hostName()));
+            setTitle("Free memory on %s (GBytes)", STR(hostName));
             break;
         
         case SwapFree:
             setAggregateType(S9sGraph::Min);
-            setTitle("Free swap on %s (GBytes)", STR(m_node.hostName()));
+            setTitle("Free swap on %s (GBytes)", STR(hostName));
             break;
     }
 
