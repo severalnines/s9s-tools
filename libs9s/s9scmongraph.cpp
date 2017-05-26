@@ -147,7 +147,7 @@ S9sCmonGraph::realize()
 
         case CpuTemp:
             setAggregateType(S9sGraph::Max);
-            setTitle("Cpu temperature on %s (℃ )", STR(hostName));
+            setTitle("Cpu temperature (℃ ) on %s", STR(hostName));
             break;
 
         case CpuGhz:
@@ -162,10 +162,10 @@ S9sCmonGraph::realize()
                 if (m_values[0].contains("COM_SELECT") || 
                         m_values[0].contains("COM_INSERT"))
                 {
-                    setTitle("SQL statements on %s (1/sec)", STR(hostName));
+                    setTitle("SQL statements (1/sec) on %s", STR(hostName));
                 } else if (m_values[0].contains("rows-inserted"))
                 {
-                    setTitle("SQL activity on %s (rows/sec)", STR(hostName));
+                    setTitle("SQL activity (rows/sec) on %s", STR(hostName));
                 }
             }
             break;
@@ -182,7 +182,7 @@ S9sCmonGraph::realize()
         
         case MemFree:
             setAggregateType(S9sGraph::Min);
-            setTitle("Free memory on %s (GBytes)", STR(hostName));
+            setTitle("Free memory (GBytes) on %s", STR(hostName));
             break;
         
         case SwapFree:

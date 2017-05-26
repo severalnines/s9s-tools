@@ -2154,6 +2154,7 @@ S9sOptions::isTerminal()
 int 
 S9sOptions::terminalWidth() 
 {
+    S9sString      theString;
     struct winsize win;
     int            retcode;
 
@@ -2162,7 +2163,11 @@ S9sOptions::terminalWidth()
     if (retcode == 0)
         return win.ws_col;
 
-    return 60;
+    theString = getenv("COLUMNS");
+    if (!theString.empty())
+        return theString.toInt();
+
+    return 80;
 }
 
 /**
