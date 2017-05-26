@@ -259,12 +259,20 @@ S9sGraph::createLines(
      */
     if (!m_title.empty())
     {
-        int       extraSpaces = m_width - m_title.length();
+        int       extraSpaces;
         S9sString indent;
         S9sString titleLine;
 
-        // Y labels.
-        indent = S9sString(" ") * 6;
+        if (m_width >= (int) m_title.length())
+        {
+            // We can align the title into the middle of the graphics.
+            extraSpaces = m_width - m_title.length();
+            indent = S9sString(" ") * 6;
+        } else {
+            // We need to indent into the middle of the entire graph including
+            // the left labels.
+            extraSpaces = m_width + 6 - m_title.length();
+        }
 
         // 
         if (extraSpaces > 0)
