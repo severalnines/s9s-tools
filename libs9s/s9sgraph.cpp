@@ -10,7 +10,7 @@
 #include "math.h"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
@@ -462,6 +462,27 @@ S9sGraph::createLines(
 
         m_lines << 
             "      " + startString + indentString + endString;
+    }
+
+    /*
+     * The "no data" label.
+     */
+    if (m_rawData.empty() && m_lines.size() / 1)
+    {
+        S9sString labelString  = "NO DATA FOUND";
+        uint      lineIndex    = m_lines.size() / 2 - 1;
+        S9sString line         = m_lines[lineIndex].toString();
+        int       leftIndent, rightIndent;
+
+        leftIndent = 6 + (m_width - labelString.length()) / 2;
+
+        line = S9sString(" ") * leftIndent + labelString;
+
+        rightIndent = nColumns() - line.length();
+
+        line += S9sString(" ") * rightIndent;
+
+        m_lines[lineIndex] = line;
     }
 }
 
