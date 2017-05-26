@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 

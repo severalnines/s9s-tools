@@ -2131,6 +2131,7 @@ S9sRpcReply::createGraph(
     S9sCmonGraph   *graph = new S9sCmonGraph;
     bool            success;
 
+    S9S_DEBUG("Creating graph for %s.", STR(host.hostName()));
     graph->setNode(host);
     graph->setColor(syntaxHighlight);
     success = graph->setGraphType(graphType);
@@ -2169,6 +2170,7 @@ S9sRpcReply::printGraph()
     bool             success       = false;
     S9sVector<S9sCmonGraph *> graphs;
 
+    S9S_DEBUG("Printing graphs.");
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
@@ -2184,13 +2186,20 @@ S9sRpcReply::printGraph()
         S9sNode       host    = hostMap;
 
         // Filtering...
+        S9S_DEBUG("  host : %s", STR(host.hostName()));
         if (!options->isStringMatchExtraArguments(host.hostName()))
+        {
+            S9S_DEBUG("  filtered...");
             continue;
+        }
 
         // This should be filtered by the controller, but it might not. Well, we
         // had a problem with this.
         if (clusterId != host.clusterId())
+        {
+            S9S_DEBUG("  in other cluster...");
             continue;
+        }
 
         //printf("h: %s id: %d\n", STR(host.hostName()), host.id());
         success = createGraph(graphs, host);
