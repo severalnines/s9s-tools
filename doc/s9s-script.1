@@ -1,0 +1,119 @@
+.TH S9S-NODE 1 "May 29, 2017"
+
+.SH NAME
+s9s-node \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-script
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+
+.\"
+.\"
+.\"
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-\-execute
+Execute a script from a local file.
+
+.TP
+.B \-\-tree
+Print the names of the scripts stored on the controller in tree format.
+
+.\"
+.\"
+.\"
+.SS Generic Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+The name of the user that is going to be used to authenticate on the Cmon
+Controller. This can also be set as the \fBcmon_user\fP configuration file 
+value, but the command line option of course has precedence over the
+configuration file. 
+
+.TP
+.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
+The RPC token to be used when authenticating on the Cmon Controller.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\-no\-header
+Do not print headers for tables.
+
+.\"
+.\"
+.\"
+.SS Cluster Related Options
+
+.TP
+.BI \-i " INTEGER" "\fR,\fP \-\^\-cluster-id=" INTEGER
+Controls which cluster to check.
+
+.TP
+.BI \-n " NAME" "\fR,\fP \-\^\-cluster-name=" NAME
+Controls which cluster to check.
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+Execute a script stored in a local file:
+
+.nf
+# \fBs9s script \\
+    --execute \\
+    --cluster-id=1 \\
+    test005.js\fR
+.fi

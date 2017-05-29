@@ -20,12 +20,21 @@ function printUtil(host, startTime, endTime)
     print("------------------------------------------------------------");
     for (column = 0; column < array.columns(); ++column)
     {
+        /*
+        for (format = 0; format < 21; ++format)
+        {
+            print(
+                    "format: ", format, 
+                    " result: ", array[4, column].toString(format));
+        }
+        */
+
         print(
-                array[0, column].toString(Bytes).rightAlign(12),
-                array[1, column].toString(Bytes).rightAlign(12),
-                array[2, column].toString(Bytes).rightAlign(12),
-                array[3, column].toString(Bytes).rightAlign(12),
-                array[4, column].toString(LongTime).rightAlign(12)
+                array[0, column].toString(19).rightAlign(12),
+                array[1, column].toString(19).rightAlign(12),
+                array[2, column].toString(19).rightAlign(12),
+                array[3, column].toString(19).rightAlign(12),
+                array[4, column].toString(10).rightAlign(12)
                 );
 
         if (array[0, column] == 0) 
