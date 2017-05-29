@@ -222,7 +222,7 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "script" ]]; then
             main_opt+="--help "
-            main_opt+="--execute"
+            main_opt+="--tree --execute "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
