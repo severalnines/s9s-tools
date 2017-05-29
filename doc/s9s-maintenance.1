@@ -121,6 +121,38 @@ This will help the users to understand what happens.
 .\"
 .\"
 .\"
+.SH NODE LIST
+Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
+of the registered maintenance periods can be printed:
+
+.nf
+# \fBs9s maint --list --long\fP
+ST UUID    OWNER  GROUP  START    END      HOST/CLUSTER  REASON
+Ah a7e037a system admins 11:21:24 11:41:24 192.168.1.113 Rolling restart job. 
+Total: 1
+
+.fi
+
+The list contains the following fields:
+.RS 5
+.TP
+.B ST 
+The short status information, where at the first character position 'A' stands 
+for 'active' and '-' stands for 'inactive'. At the second character position 'h'
+stands for 'host related maintenance' and 'c' stands for 'cluster related
+maintenence'.
+.TP
+.B UUID
+The unique string that identifies the maintenance period. Normally only the
+first few characters of the UUID is shown, but if the \-\-full\-uuid command
+line option is provided the full length string will be printed.
+.RE
+
+
+
+.\"
+.\"
+.\"
 .SH ENVIRONMENT
 The s9s application will read and consider the following environment variables:
 .TP 5 

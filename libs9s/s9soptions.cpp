@@ -2843,8 +2843,8 @@ S9sOptions::printHelpScript()
 
     printf(
 "Options for the \"script\" command:\n"
-"  --tree                     Print the scripts available on the controller.\n"
 "  --execute                  Execute a script.\n"
+"  --tree                     Print the scripts available on the controller.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"

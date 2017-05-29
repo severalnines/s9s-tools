@@ -30,7 +30,7 @@
 #include <cstdio>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512

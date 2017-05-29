@@ -33,8 +33,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 /**
