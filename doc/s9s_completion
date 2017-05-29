@@ -97,13 +97,17 @@ function _s9s()
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
         elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
-            main_opt="--list --stat --create --ping --rolling-restart --add-node --remove-node --drop --start --crate-account --delete-account --create-database"
+            main_opt+="--help "
+            main_opt+="--add-node --create-account --create --create-database "
+            main_opt+="--delete-account --drop --list --ping --remove-node "
+            main_opt+="--rolling-restart --start --stat --stop "
+
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "
             elif [ "$prev" == "--cluster-id" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
-                opts=$(s9s cluster --list --long --batch | awk '{print $1}')
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             elif [ "$prev" == "--cluster-name" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
@@ -139,18 +143,31 @@ function _s9s()
                 opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
-            main_opt="--list --set --help --list-config --change-config "
-            main_opt+="--pull-config --push-config"
+            main_opt+="--help "
+            main_opt+="--change-config --list-config --list --pull-config "
+            main_opt+="--push-config --set --stat "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
+            elif [ "$prev" == "--graph" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts="cpughz cpuload cputemp "
+                opts+="memfree memutil "
+                opts+="sqlcommands sqlconnections "
+                opts+="swapfree"
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
-                opts+="--help --verbose --version " 
-                opts+="--config-file= --controller= "
-                opts+="--controller-port= "
-                opts+="--long --print-json --color= --batch --no-header "
-                opts+="--wait --log --schedule= "
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch"
+                opts+="--no-header --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+                opts+="--begin --end --force --graph= --node-format= "
+                opts+="--opt-group= --opt-name= --opt-value= --output-dir= "
+                opts+="--properties="
             fi
         elif [[ ${COMP_WORDS[i]} == "script" ]]; then
             main_opt="--execute"
