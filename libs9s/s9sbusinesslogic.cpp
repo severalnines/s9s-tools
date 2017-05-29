@@ -29,6 +29,7 @@
 #include "S9sFile"
 #include "S9sRsaKey"
 #include "S9sDir"
+#include "S9sCmonGraph"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -167,7 +168,7 @@ S9sBusinessLogic::execute()
     {
         if (options->isStatRequested() && !options->graph().empty())
         {
-            executeNodeStat(client);
+            executeNodeGraph(client);
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);
@@ -415,15 +416,26 @@ S9sBusinessLogic::executeClusterList(
     }
 }
 
+/**
+ *
+ */
 void 
-S9sBusinessLogic::executeNodeStat(
+S9sBusinessLogic::executeNodeGraph(
         S9sRpcClient &client)
 {
     S9sOptions  *options   = S9sOptions::instance();
     int          clusterId = options->clusterId();
     S9sString    graphName = options->graph().toLower();
+    S9sCmonGraph::GraphTemplate graphTemplate;
     S9sRpcReply  reply;
     bool         success;
+
+    graphTemplate = S9sCmonGraph::stringToGraphTemplate(graphName);
+    if (graphTemplate == S9sCmonGraph::Unknown)
+    {
+        PRINT_ERROR("Graph type '%s' is invalid.", STR(graphName));
+        return;
+    }
 
     if (graphName.startsWith("cpu") || graphName.startsWith("load"))
     {
