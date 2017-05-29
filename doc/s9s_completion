@@ -169,10 +169,27 @@ function _s9s()
                 opts+="--job-id= --from= --until= "
             fi
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
-            main_opt="--list --create --delete --help"
+            main_opt="--help "
+            main_opt="--list --create --delete "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+
+                opts+="--date-format= end= --full-uuid --reason= --start= "
+                opts+="--cmon-user= --uuid="
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt+="--help "
