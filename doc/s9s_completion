@@ -226,6 +226,14 @@ function _s9s()
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version " 
                 opts+="--config-file= --controller= "
