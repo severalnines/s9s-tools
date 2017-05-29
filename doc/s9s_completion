@@ -88,10 +88,25 @@ function _s9s()
 
     for (( i=0; i < COMP_CWORD; i++ )); do
         if [[ ${COMP_WORDS[i]} == "backup" ]]; then
-            main_opt="--list --create --restore --delete --help"
+            main_opt+="--help "
+            main_opt+="--create --delete --list --restore "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch"
+                opts+="--no-header --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+
+                opts+="--backup-id= "
+                opts+="--backup-directory= --backup-method= --databases= "
+                opts+="--full-path= --no-compression --on-node "
+                opts+="--parallellism= --use-pigz "
             fi
             
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -164,10 +179,11 @@ function _s9s()
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch"
                 opts+="--no-header --wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= --properties= "
-                opts+="--begin --end --force --graph= --node-format= "
-                opts+="--opt-group= --opt-name= --opt-value= --output-dir= "
-                opts+="--properties="
+                opts+="--cluster-id= --cluster-name= --nodes= "
+
+                opts+="--properties= --begin --end --force --graph= "
+                opts+="--node-format= --opt-group= --opt-name= --opt-value= "
+                opts+="--output-dir= --properties="
             fi
         elif [[ ${COMP_WORDS[i]} == "script" ]]; then
             main_opt="--execute"
