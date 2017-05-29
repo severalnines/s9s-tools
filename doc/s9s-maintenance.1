@@ -128,7 +128,7 @@ of the registered maintenance periods can be printed:
 .nf
 # \fBs9s maint --list --long\fP
 ST UUID    OWNER  GROUP  START    END      HOST/CLUSTER  REASON
-Ah a7e037a system admins 11:21:24 11:41:24 192.168.1.113 Rolling restart job. 
+Ah a7e037a system admins 11:21:24 11:41:24 192.168.1.113 Rolling restart. 
 Total: 1
 
 .fi
@@ -146,9 +146,25 @@ maintenence'.
 The unique string that identifies the maintenance period. Normally only the
 first few characters of the UUID is shown, but if the \-\-full\-uuid command
 line option is provided the full length string will be printed.
+.TP
+.B OWNER
+The name of the owner of the given maintenance period.
+.TP 
+.B GROUP
+The name of the group owner of the maintenance period.
+.TP
+.B START
+The date and time when the maintenance period starts.
+.TP 
+.B END
+The date and time when the maintenance period expires.
+.TP
+.B HOST/CLUSTER
+The name of the cluster or host under maintenance.
+.TP
+.B REASON 
+A short human readable description showing why the maintenance is required.
 .RE
-
-
 
 .\"
 .\"
