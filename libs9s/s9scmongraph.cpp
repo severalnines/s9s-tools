@@ -367,3 +367,31 @@ S9sCmonGraph::stringToGraphTemplate(
     return retval;
 }
 
+S9sString
+S9sCmonGraph::statName(
+        const S9sCmonGraph::GraphTemplate graphTemplate)
+{
+    S9sString retval;
+
+    switch (graphTemplate)
+    {
+        case Unknown:
+            return "";
+
+        case LoadAverage:
+        case CpuGhz:
+        case CpuTemp:
+            return "cpustat";
+
+        case SqlStatements:
+        case SqlConnections:
+            return "sqlstat";
+
+        case MemUtil:
+        case MemFree:
+        case SwapFree:
+            return "memorystat";
+    }
+
+    return "";
+}

@@ -432,6 +432,11 @@ S9sGraph::createLines(
                     line += c;
                     line += TERM_NORMAL;
                 }
+            } else if (m_color) 
+            {
+                line += XTERM_COLOR_GREEN;
+                line += c;
+                line += TERM_NORMAL;
             } else {
                 line += c;
             }

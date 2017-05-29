@@ -39,7 +39,11 @@ class S9sCmonGraph : public S9sGraph
         static S9sCmonGraph::GraphTemplate 
             stringToGraphTemplate(
                     const S9sString &theString);
-        
+
+        static S9sString
+            statName(
+                    const S9sCmonGraph::GraphTemplate graphTemplate);
+
     private:
         GraphTemplate  m_graphType;
         S9sVariantList m_values;

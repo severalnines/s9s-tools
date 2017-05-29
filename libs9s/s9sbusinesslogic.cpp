@@ -437,15 +437,7 @@ S9sBusinessLogic::executeNodeGraph(
         return;
     }
 
-    if (graphName.startsWith("cpu") || graphName.startsWith("load"))
-    {
-        success = client.getCpuStats(clusterId);
-    } else if (graphName.startsWith("mem") || graphName.startsWith("swap"))
-    {
-        success = client.getMemStats(clusterId);
-    } else {
-        success = client.getSqlStats(clusterId);
-    }
+    success = client.getStats(clusterId, S9sCmonGraph::statName(graphTemplate));
 
     if (success)
     {

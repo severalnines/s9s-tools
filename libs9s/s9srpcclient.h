@@ -71,9 +71,16 @@ class S9sRpcClient
 
         bool getCpuInfo(const int clusterId);
         bool getInfo();
+        
+        
+        bool getStats(
+                const int        clusterId,
+                const S9sString &statName);
+
         bool getCpuStats(const int clusterId);
         bool getSqlStats(const int clusterId);
         bool getMemStats(const int clusterId);
+
         bool getMetaTypes();
         bool getMetaTypeProperties(const S9sString &typeName);
         bool getMemoryStats(const int clusterId);
@@ -183,10 +190,6 @@ class S9sRpcClient
                 const S9sString &payload);
 
     private:
-        bool getStats(
-                const int        clusterId,
-                const S9sString &statName);
-
         // Low level methods that create new clusters.
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
