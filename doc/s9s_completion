@@ -235,12 +235,11 @@ function _s9s()
                 cur=${cur#*=}
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
-                opts+="--help --verbose --version " 
-                opts+="--config-file= --controller= "
-                opts+="--controller-port= "
-                opts+="--long --print-json --color= --batch --no-header "
-                opts+="--wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= --properties= "
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+                
                 opts+=$(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" )
             fi
         elif [[ ${COMP_WORDS[i]} == "process" ]]; then

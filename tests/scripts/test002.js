@@ -8,6 +8,6 @@ function main()
     }
 
     print("Hello world!!!");
-    return hosts.size();
+    return 0; //hosts.size();
 }
 
