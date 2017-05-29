@@ -53,7 +53,8 @@ function _s9s_has_options()
 #
 function _s9s_no_command()
 {
-    if ! _s9s_has_options backup cluster job maint node process user script;
+    if ! _s9s_has_options "backup" "cluster" "job" "maint" "node" "process" \
+        "user" "script" "metatype"; 
     then
         return 0
     fi
@@ -81,7 +82,7 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="backup cluster job maint node process user script"
+        opts+="backup cluster job maint node process user script metatype"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -220,7 +221,8 @@ function _s9s()
                 opts+="--output-dir= --properties="
             fi
         elif [[ ${COMP_WORDS[i]} == "script" ]]; then
-            main_opt="--execute"
+            main_opt+="--help "
+            main_opt+="--execute"
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -263,6 +265,28 @@ function _s9s()
 
                 opts+="--cmon-user="
                 opts+=$(s9s user --list)
+            fi
+        elif [[ ${COMP_WORDS[i]} == "metatype" ]]; then
+            main_opt+="--help "
+            main_opt+="--list --list-properties "
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            elif [ "$prev" == "--type" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s metatype --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+
+                opts+="--type= "
             fi
         fi
     done
