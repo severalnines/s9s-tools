@@ -37,6 +37,7 @@ Usage:
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EXAMPLES
   Just quickly create a PostgreSQL cluster and add two slave nodes to it
@@ -50,7 +51,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -92,6 +93,11 @@ while true; do
             OPTION_INSTALL="--install"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -104,13 +110,44 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
+
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
 
 #
 # Creates and starts a new 
@@ -666,6 +703,8 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
