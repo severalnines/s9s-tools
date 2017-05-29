@@ -35,6 +35,10 @@ class S9sCmonGraph : public S9sGraph
 
         virtual void appendValue(S9sVariant value);
         virtual void realize();
+       
+        static S9sCmonGraph::GraphTemplate 
+            stringToGraphTemplate(
+                    const S9sString &theString);
         
     private:
         GraphTemplate  m_graphType;
