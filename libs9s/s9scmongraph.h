@@ -53,6 +53,9 @@ class S9sCmonGraph : public S9sGraph
                     const S9sCmonGraph::GraphTemplate graphTemplate);
 
     private:
+        static S9sVariantMap sm_templateNames;
+        
+    private:
         GraphTemplate  m_graphType;
         S9sVariantList m_values;
         S9sNode        m_node;

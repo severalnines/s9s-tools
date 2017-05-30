@@ -9,6 +9,8 @@
 #define WARNING
 #include "s9sdebug.h"
 
+S9sVariantMap S9sCmonGraph::sm_templateNames;
+
 S9sCmonGraph::S9sCmonGraph() :
     S9sGraph(),
     m_graphType(Unknown)
@@ -411,53 +413,35 @@ S9sCmonGraph::realize()
     S9sGraph::realize();
 }
 
-        
+ 
 S9sCmonGraph::GraphTemplate 
 S9sCmonGraph::stringToGraphTemplate(
         const S9sString &theString)
 {
     GraphTemplate retval = Unknown;
 
-    if (theString == "cpuclock" || theString == "cpughz")
+    if (sm_templateNames.empty())
     {
-        retval = S9sCmonGraph::CpuGhz;
-    } else if (theString == "cpuload" || theString == "load") 
-    {
-        retval = S9sCmonGraph::LoadAverage;
-    } else if (theString == "cputemp") 
-    {
-        retval = S9sCmonGraph::CpuTemp;
-    } else if (theString == "sqlcommands" || theString == "sqlstatements")
-    {
-        retval = S9sCmonGraph::SqlStatements;
-    } else if (theString == "sqlconnections")
-    {
-        retval = S9sCmonGraph::SqlConnections;
-    } else if (theString == "sqlconnections")
-    {
-        retval = S9sCmonGraph::SqlConnections;
-    } else if (theString == "memutil")
-    {
-        retval = S9sCmonGraph::MemUtil;
-    } else if (theString == "memfree" || theString == "ramfree")
-    {
-        retval = S9sCmonGraph::MemFree;
-    } else if (theString == "swapfree")
-    {
-        retval = S9sCmonGraph::SwapFree;
-    } else if (theString == "diskfree")
-    {
-        retval = S9sCmonGraph::DiskFree;
-    } else if (theString == "diskreadspeed")
-    {
-        retval = S9sCmonGraph::DiskReadSpeed;
-    } else if (theString == "diskwritespeed")
-    {
-        retval = S9sCmonGraph::DiskWriteSpeed;
-    } else if (theString == "diskreadwritespeed")
-    {
-        retval = S9sCmonGraph::DiskReadWriteSpeed;
-    } 
+        sm_templateNames["cpuclock"]           = CpuGhz;
+        sm_templateNames["cpughz"]             = CpuGhz;
+        sm_templateNames["cpuload"]            = LoadAverage;
+        sm_templateNames["load"]               = LoadAverage;
+        sm_templateNames["cputemp"]            = CpuTemp;
+        sm_templateNames["sqlcommands"]        = SqlStatements;
+        sm_templateNames["sqlstatements"]      = SqlStatements;
+        sm_templateNames["sqlconnections"]     = SqlConnections;
+        sm_templateNames["memutil"]            = MemUtil;
+        sm_templateNames["memfree"]            = MemFree;
+        sm_templateNames["ramfree"]            = MemFree;
+        sm_templateNames["swapfree"]           = SwapFree;
+        sm_templateNames["diskfree"]           = DiskFree;
+        sm_templateNames["diskreadspeed"]      = DiskReadSpeed;
+        sm_templateNames["diskwritespeed"]     = DiskWriteSpeed;
+        sm_templateNames["diskreadwritespeed"] = DiskReadWriteSpeed;
+    }
+
+    if (sm_templateNames.contains(theString))
+        retval = (GraphTemplate) sm_templateNames[theString].toInt();
 
     return retval;
 }
