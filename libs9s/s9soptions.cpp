@@ -130,6 +130,7 @@ enum S9sOptionType
     OptionNodeFormat,
     OptionGraph,
     OptionBegin,
+    OptionOnlyAscii,
 };
 
 /**
@@ -2878,6 +2879,7 @@ S9sOptions::readOptionsNode(
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -3052,6 +3054,11 @@ S9sOptions::readOptionsNode(
             case OptionNoHeader:
                 // --no-header
                 m_options["no_header"] = true;
+                break;
+            
+            case OptionOnlyAscii:
+                // --only-ascii
+                m_options["only_ascii"] = true;
                 break;
            
             case OptionSchedule:
