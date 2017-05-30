@@ -955,7 +955,7 @@ S9sRpcClient::getStats(
     S9sString      uri = "/v2/stat";
     S9sVariantMap  request;
     bool           retval;
-    //time_t         now = time(NULL);
+    time_t         now = time(NULL);
 
     request["operation"]  = "statByName";
     request["name"]       = statName;
@@ -968,8 +968,11 @@ S9sRpcClient::getStats(
     if (!end.empty())
         request["end_datetime"] = end;
 
-    //request["startdate"]  = (ulonglong) now - 30 * 60;
-    //request["enddate"]    = (ulonglong) now;
+    if (begin.empty() && end.empty())
+    {
+        request["startdate"]  = (ulonglong) now - 60 * 60;
+        request["enddate"]    = (ulonglong) now;
+    }
 
     retval = executeRequest(uri, request);
     
