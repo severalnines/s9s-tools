@@ -24,6 +24,9 @@ class S9sCmonGraph : public S9sGraph
             MemFree,
             SwapFree,
             DiskFree,
+            DiskReadSpeed,
+            DiskWriteSpeed,
+            DiskReadWriteSpeed,
         };
 
         S9sCmonGraph();

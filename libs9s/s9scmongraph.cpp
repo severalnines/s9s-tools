@@ -178,17 +178,30 @@ S9sCmonGraph::realize()
 
         case DiskFree:
             setAggregateType(S9sGraph::Min);
-            if (!m_filterValue.toString().empty() && 
-                    m_filterName == "mountpoint")
-            {
-                setTitle("Free disk on %s at %s (GBytes)",
-                        STR(hostName), 
-                        STR(m_filterValue.toString()));
-            } else {
-                setTitle("Free disk on %s (GBytes)", 
-                        STR(hostName));
-            }
+            
+            setTitle("Free disk on %s at %s (GBytes)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
 
+        case DiskReadSpeed:
+            setAggregateType(S9sGraph::Max);
+            
+            setTitle("Disk read %s at %s (MBytes/sec)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+
+        case DiskWriteSpeed:
+            setAggregateType(S9sGraph::Max);
+            
+            setTitle("Disk write %s at %s (MBytes/sec)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+
+        case DiskReadWriteSpeed:
+            setAggregateType(S9sGraph::Max);
+            
+            setTitle("Disk read&write %s at %s (MBytes/sec)",
+                    STR(hostName), STR(m_filterValue.toString()));
             break;
     }
 
@@ -323,6 +336,36 @@ S9sCmonGraph::realize()
                         value["free"].toDouble() / 
                         (1024.0 * 1024.0 * 1024.0));
                 break;
+
+            case DiskReadSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["reads"].toDouble() * 
+                        value["blocksize"].toDouble() / 
+                        (1024.0 * 1024.0));
+                break;
+            
+            case DiskWriteSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["writes"].toDouble() * 
+                        value["blocksize"].toDouble() / 
+                        (1024.0 * 1024.0));
+                break;
+            
+            case DiskReadWriteSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        (value["writes"].toDouble() + 
+                         value["reads"].toDouble()) * 
+                        value["blocksize"].toDouble() / 
+                        (1024.0 * 1024.0));
                 break;
         }
 
@@ -405,7 +448,16 @@ S9sCmonGraph::stringToGraphTemplate(
     } else if (theString == "diskfree")
     {
         retval = S9sCmonGraph::DiskFree;
-    }
+    } else if (theString == "diskreadspeed")
+    {
+        retval = S9sCmonGraph::DiskReadSpeed;
+    } else if (theString == "diskwritespeed")
+    {
+        retval = S9sCmonGraph::DiskWriteSpeed;
+    } else if (theString == "diskreadwritespeed")
+    {
+        retval = S9sCmonGraph::DiskReadWriteSpeed;
+    } 
 
     return retval;
 }
@@ -436,6 +488,9 @@ S9sCmonGraph::statName(
             return "memorystat";
 
         case DiskFree:
+        case DiskReadSpeed:
+        case DiskWriteSpeed:
+        case DiskReadWriteSpeed:
             return "diskstat";
     }
 
