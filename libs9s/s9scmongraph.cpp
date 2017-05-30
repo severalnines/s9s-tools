@@ -178,7 +178,8 @@ S9sCmonGraph::realize()
 
         case DiskFree:
             setAggregateType(S9sGraph::Min);
-            if (!m_filterValue.toString().empty())
+            if (!m_filterValue.toString().empty() && 
+                    m_filterName == "mountpoint")
             {
                 setTitle("Free disk on %s at %s (GBytes)",
                         STR(hostName), 
