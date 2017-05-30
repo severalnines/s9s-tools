@@ -188,21 +188,39 @@ S9sCmonGraph::realize()
         case DiskReadSpeed:
             setAggregateType(S9sGraph::Max);
             
-            setTitle("Disk read %s at %s (MBytes/sec)",
+            setTitle("Disk read %s at %s (MByte/s)",
                     STR(hostName), STR(m_filterValue.toString()));
             break;
 
         case DiskWriteSpeed:
             setAggregateType(S9sGraph::Max);
             
-            setTitle("Disk write %s at %s (MBytes/sec)",
+            setTitle("Disk write %s at %s (MByte/s)",
                     STR(hostName), STR(m_filterValue.toString()));
             break;
 
         case DiskReadWriteSpeed:
             setAggregateType(S9sGraph::Max);
             
-            setTitle("Disk read&write %s at %s (MBytes/sec)",
+            setTitle("Disk read&write %s at %s (MByte/s)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+
+        case NetReceivedSpeed:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net read %s at %s (MByte/s)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
+        case NetSentSpeed:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net write %s at %s (MByte/s)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
+        case NetSpeed:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net read&write %s at %s (MByte/s)",
                     STR(hostName), STR(m_filterValue.toString()));
             break;
     }
@@ -344,9 +362,9 @@ S9sCmonGraph::realize()
                     continue;
 
                 S9sGraph::appendValue(
-                        value["reads"].toDouble() * 
-                        value["blocksize"].toDouble() / 
-                        (1024.0 * 1024.0));
+                        value["reads"].toDouble() /
+                        (value["interval"].toDouble() / 1000.0) *
+                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
                 break;
             
             case DiskWriteSpeed:
@@ -354,9 +372,9 @@ S9sCmonGraph::realize()
                     continue;
 
                 S9sGraph::appendValue(
-                        value["writes"].toDouble() * 
-                        value["blocksize"].toDouble() / 
-                        (1024.0 * 1024.0));
+                        value["writes"].toDouble() / 
+                        (value["interval"].toDouble() / 1000.0) *
+                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
                 break;
             
             case DiskReadWriteSpeed:
@@ -365,8 +383,38 @@ S9sCmonGraph::realize()
 
                 S9sGraph::appendValue(
                         (value["writes"].toDouble() + 
-                         value["reads"].toDouble()) * 
-                        value["blocksize"].toDouble() / 
+                         value["reads"].toDouble()) / 
+                        (value["interval"].toDouble() / 1000.0) *
+                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
+                break;
+
+            case NetSentSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["txBytes"].toDouble() / 
+                        (value["interval"].toDouble() / 1000.0) /
+                        (1024.0 * 1024.0));
+                break;
+            
+            case NetReceivedSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["rxBytes"].toDouble() / 
+                        (value["interval"].toDouble() / 1000.0) /
+                        (1024.0 * 1024.0));
+                break;
+            
+            case NetSpeed:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        (value["rxBytes"].toDouble() + value["txBytes"].toDouble()) / 
+                        (value["interval"].toDouble() / 1000.0) /
                         (1024.0 * 1024.0));
                 break;
         }
@@ -438,6 +486,9 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["diskreadspeed"]      = DiskReadSpeed;
         sm_templateNames["diskwritespeed"]     = DiskWriteSpeed;
         sm_templateNames["diskreadwritespeed"] = DiskReadWriteSpeed;
+        sm_templateNames["netreceivedspeed"]   = NetReceivedSpeed;
+        sm_templateNames["netsentspeed"]       = NetSentSpeed;
+        sm_templateNames["netspeed"]           = NetSpeed;
     }
 
     if (sm_templateNames.contains(theString))
@@ -476,6 +527,11 @@ S9sCmonGraph::statName(
         case DiskWriteSpeed:
         case DiskReadWriteSpeed:
             return "diskstat";
+
+        case NetReceivedSpeed:
+        case NetSentSpeed:
+        case NetSpeed:
+            return "netstat";
     }
 
     return "";

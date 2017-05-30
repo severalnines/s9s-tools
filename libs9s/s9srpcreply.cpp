@@ -2178,6 +2178,13 @@ S9sRpcReply::createGraph(
     if (firstSample.contains("mountpoint"))
     {
         filterName = "mountpoint";
+    } else if (firstSample.contains("interface"))
+    {
+        filterName = "interface";
+    }
+
+    if (!filterName.empty())
+    {
         for (uint idx = 0u; idx < data.size(); ++idx)
         {
             S9sVariant map   = data[idx].toVariantMap();

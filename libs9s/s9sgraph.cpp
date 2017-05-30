@@ -295,8 +295,8 @@ S9sGraph::createLines(
     biggest  = m_transformed.max();
     smallest = m_transformed.min();
 
-    if (biggest.toDouble() == 0.0)
-        biggest = 1.0;
+    if (biggest.toDouble() < 0.1)
+        biggest = 0.1;
     
     mult     = (newHeight / biggest.toDouble());
 

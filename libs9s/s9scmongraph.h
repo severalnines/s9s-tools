@@ -27,6 +27,9 @@ class S9sCmonGraph : public S9sGraph
             DiskReadSpeed,
             DiskWriteSpeed,
             DiskReadWriteSpeed,
+            NetReceivedSpeed,
+            NetSentSpeed,
+            NetSpeed,
         };
 
         S9sCmonGraph();

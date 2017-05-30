@@ -207,8 +207,9 @@ function _s9s()
                 opts+="diskfree diskreadspeed diskreadwritespeed "
                 opts+="diskwritespeed "
                 opts+="memfree memutil "
+                opts+="netreceivedspeed netsentspeed netspeed"
                 opts+="sqlcommands sqlconnections "
-                opts+="swapfree"
+                opts+="swapfree "
             elif [ "$prev" == "--cluster-id" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
