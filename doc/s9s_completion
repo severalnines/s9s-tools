@@ -101,7 +101,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
                 opts+="--backup-id= "
@@ -139,6 +139,7 @@ function _s9s()
                 opts+="--controller= --controller-port= "
                 opts+="--rpc-tls "
                 opts+="--long --print-json --color= --batch --no-header "
+                opts+="--only-ascii "
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--properties= "
@@ -163,7 +164,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --cmon-user= "
            
                 opts+="--date-format= "
@@ -186,7 +187,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
                 opts+="--date-format= end= --full-uuid --reason= --start= "
@@ -203,7 +204,8 @@ function _s9s()
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts+="cpughz cpuload cputemp "
-                opts+="diskfree "
+                opts+="diskfree diskreadspeed diskreadwritespeed "
+                opts+="diskwritespeed "
                 opts+="memfree memutil "
                 opts+="sqlcommands sqlconnections "
                 opts+="swapfree"
@@ -214,7 +216,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= --cmon-user= "
 
                 opts+="--properties= --begin --end --force --graph= "
@@ -238,7 +240,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 
                 opts+=$(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" )
@@ -264,6 +266,7 @@ function _s9s()
                 opts+="--controller= --controller-port= "
                 opts+="--rpc-tls "
                 opts+="--long --print-json --color= --batch --no-header "
+                opts+="--only-ascii "
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--properties= "
@@ -291,7 +294,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
-                opts+="--no-header --wait --log --schedule= "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
                 opts+="--type= "
