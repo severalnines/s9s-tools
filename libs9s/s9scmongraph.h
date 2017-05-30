@@ -32,6 +32,10 @@ class S9sCmonGraph : public S9sGraph
         bool setGraphType(S9sCmonGraph::GraphTemplate type);
         bool setGraphType(const S9sString &graphType);
 
+        void setFilter(
+                const S9sString  &filterName,
+                const S9sVariant &filterValue);
+
         void setNode(const S9sNode &node);
 
         virtual void appendValue(S9sVariant value);
@@ -49,4 +53,6 @@ class S9sCmonGraph : public S9sGraph
         GraphTemplate  m_graphType;
         S9sVariantList m_values;
         S9sNode        m_node;
+        S9sString      m_filterName;
+        S9sVariant     m_filterValue;
 };

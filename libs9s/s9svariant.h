@@ -74,6 +74,7 @@ class S9sVariant
 
         S9sVariant &operator=(const S9sVariant &rhs);
         bool operator==(const S9sVariant &rhs) const;
+        bool operator!=(const S9sVariant &rhs) const;
         S9sVariant &operator+=(const S9sVariant &rhs);
         S9sVariant &operator/=(const int rhs);
         bool operator<(const S9sVariant &rhs) const;
@@ -110,7 +111,9 @@ class S9sVariant
         const S9sAccount &toAccount() const;
         const S9sVariantList &toVariantList() const;
 
+        bool contains(const S9sVariant &value) const;
         bool contains(const S9sString &key) const;
+        bool contains(const char *key) const;
         void clear();
 
     protected:

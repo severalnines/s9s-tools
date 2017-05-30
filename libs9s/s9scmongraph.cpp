@@ -33,6 +33,15 @@ S9sCmonGraph::setGraphType(
     return true;
 }
 
+void
+S9sCmonGraph::setFilter(
+        const S9sString  &filterName,
+        const S9sVariant &filterValue)
+{
+    m_filterName  = filterName;
+    m_filterValue = filterValue;
+}
+
 /**
  * \param graphType The string representing of the graph type as it is described
  *   in the manual page.
@@ -168,7 +177,17 @@ S9sCmonGraph::realize()
             break;
 
         case DiskFree:
-            setTitle("Under construction");
+            setAggregateType(S9sGraph::Min);
+            if (!m_filterValue.toString().empty())
+            {
+                setTitle("Free disk on %s at %s (GBytes)",
+                        STR(hostName), 
+                        STR(m_filterValue.toString()));
+            } else {
+                setTitle("Free disk on %s (GBytes)", 
+                        STR(hostName));
+            }
+
             break;
     }
 
@@ -178,7 +197,13 @@ S9sCmonGraph::realize()
     for (uint idx = 0u; idx < m_values.size(); ++idx)
     {
         S9sVariant value = m_values[idx];
-    
+   
+        if (!m_filterName.empty())
+        {
+            if (value[m_filterName] != m_filterValue)
+                continue;
+        }
+
         switch (m_graphType)
         {
             case Unknown:

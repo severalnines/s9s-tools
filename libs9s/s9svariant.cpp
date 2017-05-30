@@ -209,6 +209,44 @@ S9sVariant::operator== (
     return false;
 }
 
+bool 
+S9sVariant::operator!= (
+        const S9sVariant &rhs) const
+{
+    if (isInt() && rhs.isInt())
+    {
+        return toInt() != rhs.toInt();
+    } else if (isULongLong() && rhs.isULongLong()) 
+    {
+        return toULongLong() != rhs.toULongLong();
+    } else if (isDouble() && rhs.isDouble()) 
+    {
+        return !fuzzyCompare(toDouble(), rhs.toDouble());
+    } else if (isString() && rhs.isString())
+    {
+        return toString() != rhs.toString();
+    } else if (isNumber() && rhs.isNumber())
+    {
+        return !fuzzyCompare(toDouble(), rhs.toDouble());
+    } else if (isBoolean() && rhs.isBoolean())
+    {
+        return toBoolean() != rhs.toBoolean();
+    } else if ((isString() && !rhs.isString())
+            || (!isString() && rhs.isString()))
+    {
+        // It seems that comparing a string with other than a string returning
+        // true is rather counterintuitive. 
+        return false;
+    } else {
+        //S9S_WARNING("TBD: (%s)%s == (%s)%s", 
+        //        STR(toString()), STR(typeName()),
+        //        STR(rhs.toString()), STR(rhs.typeName()));
+        return false;
+    }
+
+    return false;
+}
+
 S9sVariant & 
 S9sVariant::operator+=(
         const S9sVariant &rhs) 
@@ -1071,13 +1109,45 @@ S9sVariant::toString(
 
     return retval;
 }
+        
+bool 
+S9sVariant::contains(
+        const S9sVariant &value) const
+{
+    if (isVariantList())
+    {
+        for (uint idx = 0u; idx < m_union.listValue->size(); ++idx)
+        {
+            const S9sVariant &thisValue = (*m_union.listValue)[idx];
+
+            if (thisValue == value)
+                return true;
+        }
+    }
+
+    return false;
+}
 
 bool
 S9sVariant::contains(
         const S9sString &key) const
 {
     if (m_type == Map)
+    {
         return m_union.mapValue->contains(key);
+    }
+
+    return false;
+}
+
+bool
+S9sVariant::contains(
+        const char *key) const
+{
+    if (m_type == Map)
+    {
+        return m_union.mapValue->contains(key);
+    }
 
     return false;
 }

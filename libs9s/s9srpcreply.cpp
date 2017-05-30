@@ -2115,25 +2115,31 @@ S9sRpcReply::printClusterStat(
 
     printHostTable(cluster);
 }
-
-/**
- * Under construction.
- */
-bool
+        
+bool 
 S9sRpcReply::createGraph(
-        S9sVector<S9sCmonGraph *> &graphs,
-        S9sNode                   &host)
+        S9sVector<S9sCmonGraph *> &graphs, 
+        S9sNode                   &host,
+        const S9sString           &filterName,
+        const S9sVariant          &filterValue)
 {
-    S9sOptions     *options = S9sOptions::instance();
-    S9sString       graphType = options->graph().toLower();
-    S9sVariantList  data = operator[]("data").toVariantList();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sCmonGraph   *graph = new S9sCmonGraph;
-    bool            success;
+    S9sOptions           *options = S9sOptions::instance();
+    S9sString             graphType = options->graph().toLower();
+    bool                  syntaxHighlight = options->useSyntaxHighlight();
+    const S9sVariantList &data = operator[]("data").toVariantList();
+    S9sCmonGraph         *graph = NULL;
+    bool                  success;
 
+    /*
+     *
+     */
     S9S_DEBUG("Creating graph for %s.", STR(host.hostName()));
+    graph = new S9sCmonGraph;
     graph->setNode(host);
     graph->setColor(syntaxHighlight);
+    graph->setFilter(filterName, filterValue);
+
+
     success = graph->setGraphType(graphType);
     if (!success)
     {
@@ -2150,10 +2156,57 @@ S9sRpcReply::createGraph(
 
 
     graph->realize();
-    //graph->print();
-    //printf("\n");
-
     graphs << graph;
+
+    return true;
+}
+
+/**
+ * Under construction.
+ */
+bool
+S9sRpcReply::createGraph(
+        S9sVector<S9sCmonGraph *> &graphs,
+        S9sNode                   &host)
+{
+    const S9sVariantList &data = operator[]("data").toVariantList();
+    S9sVariant            firstSample = data.empty() ? S9sVariant() : data[0];
+    S9sString             filterName;
+    S9sVariantList        filterValues;
+    bool                  success = true;
+
+    if (firstSample.contains("mountpoint"))
+    {
+        filterName = "mountpoint";
+        for (uint idx = 0u; idx < data.size(); ++idx)
+        {
+            S9sVariant map   = data[idx].toVariantMap();
+            S9sVariant value = map[filterName];
+
+            if (map["hostid"].toInt() != host.id())
+                continue;
+
+            if (!filterValues.contains(value))
+            {
+                S9S_DEBUG("-> '%s'", STR(value.toString()));
+                filterValues << value;
+            }
+        }
+    }
+
+    S9S_DEBUG("filterValues.size() = %u", filterValues.size());
+    if (filterValues.empty())
+    {
+        success = createGraph(graphs, host, filterName, S9sVariant());
+    } else {
+        for (uint idx = 0; idx < filterValues.size(); ++idx)
+        {
+            success = createGraph(graphs, host, filterName, filterValues[idx]);
+            if (!success)
+                break;
+        }
+    }
+
     return true;
 }
 

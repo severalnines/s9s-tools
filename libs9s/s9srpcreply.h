@@ -102,8 +102,16 @@ class S9sRpcReply : public S9sVariantMap
         static const char *fileColorBegin(const S9sString &fileName);
         static const char *fileColorEnd();
        
-        bool createGraph(S9sVector<S9sCmonGraph *> &graphs, S9sNode &host);
         bool printGraph();
+        bool createGraph(
+                S9sVector<S9sCmonGraph *> &graphs, 
+                S9sNode                   &host);
+
+        bool createGraph(
+                S9sVector<S9sCmonGraph *> &graphs, 
+                S9sNode                   &host,
+                const S9sString           &filterName,
+                const S9sVariant          &filterValue);
         
     protected:
         S9sVariantMap clusterMap(const int clusterId);
