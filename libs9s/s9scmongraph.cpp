@@ -166,6 +166,10 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Min);
             setTitle("Free swap on %s (GBytes)", STR(hostName));
             break;
+
+        case DiskFree:
+            setTitle("Under construction");
+            break;
     }
 
     /*
@@ -284,6 +288,16 @@ S9sCmonGraph::realize()
                         value["swapfree"].toDouble() / 
                         (1024.0 * 1024.0 * 1024.0));
                 break;
+
+            case DiskFree:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                S9sGraph::appendValue(
+                        value["free"].toDouble() / 
+                        (1024.0 * 1024.0 * 1024.0));
+                break;
+                break;
         }
 
         /*
@@ -362,6 +376,9 @@ S9sCmonGraph::stringToGraphTemplate(
     } else if (theString == "swapfree")
     {
         retval = S9sCmonGraph::SwapFree;
+    } else if (theString == "diskfree")
+    {
+        retval = S9sCmonGraph::DiskFree;
     }
 
     return retval;
@@ -391,6 +408,9 @@ S9sCmonGraph::statName(
         case MemFree:
         case SwapFree:
             return "memorystat";
+
+        case DiskFree:
+            return "diskstat";
     }
 
     return "";

@@ -23,6 +23,7 @@ class S9sCmonGraph : public S9sGraph
             MemUtil,
             MemFree,
             SwapFree,
+            DiskFree,
         };
 
         S9sCmonGraph();

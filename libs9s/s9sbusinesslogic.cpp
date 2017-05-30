@@ -438,7 +438,6 @@ S9sBusinessLogic::executeNodeGraph(
     }
 
     success = client.getStats(clusterId, S9sCmonGraph::statName(graphTemplate));
-
     if (success)
     {
         reply = client.reply();
