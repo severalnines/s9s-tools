@@ -132,6 +132,7 @@ enum S9sOptionType
     OptionBegin,
     OptionOnlyAscii,
     OptionRollingRestart,
+    OptionCreateReport,
 };
 
 /**
@@ -1823,6 +1824,21 @@ S9sOptions::isRollingRestartRequested() const
 }
 
 /**
+ * \returns true if the --create-report command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCreateReportRequested() const
+{
+    bool retval = false;
+
+    if (m_options.contains("create_report"))
+        retval = m_options.at("create_report").toBoolean();
+
+    return retval;
+}
+
+/**
  * \returns true if the add node operation was requested using the "--add-node"
  *   command line option.
  */
@@ -2772,6 +2788,7 @@ S9sOptions::printHelpCluster()
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
+"  --create-report            Starts a job that will create a report.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --drop                     Drop cluster from the controller.\n"
 "  --list                     List the clusters.\n"
@@ -3892,6 +3909,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isRollingRestartRequested())
         countOptions++;
+    
+    if (isCreateReportRequested())
+        countOptions++;
 
     if (isAddNodeRequested())
         countOptions++;
@@ -3926,6 +3946,7 @@ S9sOptions::checkOptionsCluster()
             "The following options are mutually exclusive: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
+            " --create-report,"
             " --delete-account, --create-database, --grant"
             ".";
 
@@ -3936,6 +3957,7 @@ S9sOptions::checkOptionsCluster()
         m_errorMessage = 
             "One of the following options is mandatory: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
+            " --create-report,"
             " --remove-node, --drop, --stop, --start, --create-account,"
             " --delete-account, --create-database, --grant"
             ".";
@@ -4965,6 +4987,7 @@ S9sOptions::readOptionsCluster(
         { "stat",             no_argument,       0, OptionStat            },
         { "create",           no_argument,       0, OptionCreate          },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
+        { "create-report",    no_argument,       0, OptionCreateReport    },
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "drop",             no_argument,       0, OptionDrop            },
@@ -5079,6 +5102,11 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
+                break;
+            
+            case OptionCreateReport:
+                // --create-report
+                m_options["create_report"] = true;
                 break;
 
             case OptionAddNode:
