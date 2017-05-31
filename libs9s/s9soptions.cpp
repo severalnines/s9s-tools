@@ -2799,26 +2799,27 @@ S9sOptions::printHelpCluster()
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
 "\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
+"  --cluster-format=FORMAT    The format string used to print clusters.\n"
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
-"  --nodes=NODE_LIST          List of nodes to work with.\n"
-"  --vendor=VENDOR            The name of the software vendor.\n"
-"  --provider-version=VER     The version of the software.\n"
-"  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
-"    the following types are supported: galera, mysqlreplication,\n"
-"    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
-"    postgresql.\n"
-"  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
-"  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
-"  --with-database            Create a database for the user too.\n"
+"  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
+"    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
+"  --nodes=NODE_LIST          List of nodes to work with.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
 "  --opt-value=VALUE          The value for the configuration item.\n"
-"  --cluster-format=FORMAT    The format string used to print clusters.\n"
+"  --os-user=USERNAME         The name of the user for the SSH commands.\n"
+"  --output-dir=DIR           The directory where the files are created.\n"
+"    postgresql.\n"
+"  --provider-version=VER     The version of the software.\n"
+"    the following types are supported: galera, mysqlreplication,\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  --vendor=VENDOR            The name of the software vendor.\n"
+"  --with-database            Create a database for the user too.\n"
 "\n");
 }
 
@@ -5027,6 +5028,7 @@ S9sOptions::readOptionsCluster(
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
+        { "output-dir",       required_argument, 0, OptionOutputDir       },
         { 0, 0, 0, 0 }
     };
 
@@ -5303,6 +5305,11 @@ S9sOptions::readOptionsCluster(
             case OptionClusterFormat:
                 // --cluster-format=VALUE
                 m_options["cluster_format"] = optarg;
+                break;
+            
+            case OptionOutputDir:
+                // --output-dir=DIRECTORY
+                m_options["output_dir"] = optarg;
                 break;
 
             case '?':

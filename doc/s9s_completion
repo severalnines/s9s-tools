@@ -147,6 +147,7 @@ function _s9s()
                 opts+="--vendor= --provider-version= --os-user= "
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "
+                opts+="--output-dir= "
             fi 
         elif [[ ${COMP_WORDS[i]} == "job" ]]; then
             main_opt+="--help "

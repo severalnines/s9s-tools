@@ -37,7 +37,8 @@ Create a new account to be used on the cluster to access the database(s).
 .B \-\-create-report
 When this command line option is provided a new job will be started that will
 create a report. After the job is executed the report will be available on the 
-controller.
+controller. If the \fB\-\-output-dir\fP command line option is provided the
+report will be created in the given directory on the controller host.
 
 .TP
 .B \-\-add\-node
@@ -140,6 +141,10 @@ totals, only the pure table to be processed using filters.
 .TP
 .B \-\-no\-header
 Do not print headers for tables.
+
+.TP
+.BI \-\^\-output-dir= DIRECTORY
+The directory where the output file(s) will be created.
 
 .\"
 .\"

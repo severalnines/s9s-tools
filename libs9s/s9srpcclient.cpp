@@ -823,12 +823,14 @@ S9sRpcClient::createReport(
         const int clusterId)
 {
     S9sOptions    *options = S9sOptions::instance();
+    S9sString      outputDir = options->outputDir();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    jobData["report_dir"] = "/tmp";
+    if (!outputDir.empty())
+        jobData["report_dir"] = outputDir;
 
     jobSpec["command"]    = "error_report";
     jobSpec["job_data"]   = jobData;
