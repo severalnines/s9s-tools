@@ -145,6 +145,7 @@ class S9sRpcClient
 
         bool getLog();
         bool rollingRestart(const int clusterId);
+        bool createReport(const int clusterId);
 
         bool createCluster();
         bool createNode();

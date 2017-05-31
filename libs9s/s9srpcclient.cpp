@@ -816,6 +816,45 @@ S9sRpcClient::rollingRestart(
 
 /**
  * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::createReport(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+    
+    jobData["report_dir"] = "/tmp";
+
+    jobSpec["command"]    = "error_report";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Error Report";
+    job["job_spec"]       = jobSpec;
+    job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+/**
+ * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply), false if the request was
  *   not even sent.
  *

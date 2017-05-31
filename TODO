@@ -1,3 +1,6 @@
+o 
+  curl -XPOST -d '{ "token":"0CrxAHFdq8yKzv2h","operation": "createJob", "job": {"command":"error_report", "job_data": {"report_dir":"/tmp/"} }}' http://localhost:9500/2/j
+
 o DONE
   Make screenshots about CLI.
 
