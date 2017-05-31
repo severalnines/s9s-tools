@@ -117,6 +117,7 @@ function _s9s()
             main_opt+="--add-node --create-account --create --create-database "
             main_opt+="--delete-account --drop --list --ping --remove-node "
             main_opt+="--rolling-restart --start --stat --stop "
+            main_opt+="--create-report "
 
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "
