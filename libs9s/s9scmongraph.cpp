@@ -35,6 +35,16 @@ S9sCmonGraph::setGraphType(
     return true;
 }
 
+/**
+ * \param filterName The name of the sample property on which the filter will
+ *   operate.
+ * \param filterValue The value of the sample property on which the filter will
+ *   operate.
+ *
+ * Sometimes the samples we receive about one particular host belongs to
+ * multiple groups. For example the host might have multiple disks or network
+ * interfaces so we might want to filter them here.
+ */
 void
 S9sCmonGraph::setFilter(
         const S9sString  &filterName,
@@ -103,6 +113,7 @@ S9sCmonGraph::realize()
     S9sString   hostName;
     time_t      start = 0;
     time_t      end   = 0;
+    double      dval;
 
     /*
      * Finding out how the user would like to see the node names.
@@ -131,6 +142,13 @@ S9sCmonGraph::realize()
             setWarningLevel(5.0);
             setErrorLevel(10.0);
             setTitle("Load on %s", STR(hostName));
+            break;
+        
+        case CpuSysLoad:
+            setAggregateType(S9sGraph::Max);
+            setWarningLevel(10.0);
+            setErrorLevel(20.0);
+            setTitle("System Load on %s (%%)", STR(hostName));
             break;
 
         case CpuTemp:
@@ -182,6 +200,13 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Min);
             
             setTitle("Free disk on %s at %s (GBytes)",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
+        case DiskUtilization:
+            setAggregateType(S9sGraph::Min);
+            
+            setTitle("Disk utilization on %s at %s (%%)",
                     STR(hostName), STR(m_filterValue.toString()));
             break;
 
@@ -253,6 +278,16 @@ S9sCmonGraph::realize()
 
                 S9sGraph::appendValue(value["loadavg1"]);
                 break;
+            
+            case CpuSysLoad:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value["cpuid"].toInt() != 0)
+                    continue;
+
+                S9sGraph::appendValue(value["sys"].toDouble() * 100.0);
+                break;
 
             case CpuTemp:
                 if (value["hostid"].toInt() != m_node.id())
@@ -295,8 +330,6 @@ S9sCmonGraph::realize()
                     S9sGraph::appendValue(dval);
                 } else if (value.contains("rows-inserted"))
                 {
-                    double dval;
-
                     dval = 
                         value["rows-deleted"].toDouble() +
                         value["rows-fetched"].toDouble() + 
@@ -326,96 +359,121 @@ S9sCmonGraph::realize()
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["memoryutilization"].toDouble() * 100.0);
+                dval  = value["memoryutilization"].toDouble();
+                dval *= 100.0;
+
+                S9sGraph::appendValue(dval);
                 break;
 
             case MemFree:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["ramfree"].toDouble() / 
-                        (1024.0 * 1024.0 * 1024.0));
+                dval  = value["ramfree"].toDouble();
+                dval /= 1024.0 * 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
             
             case SwapFree:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["swapfree"].toDouble() / 
-                        (1024.0 * 1024.0 * 1024.0));
+                dval  = value["swapfree"].toDouble();
+                dval /= 1024.0 * 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
 
             case DiskFree:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["free"].toDouble() / 
-                        (1024.0 * 1024.0 * 1024.0));
+                dval  = value["free"].toDouble();
+                dval /= 1024.0 * 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
 
             case DiskReadSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
+                
+                dval  = value["reads"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval *= value["blocksize"].toDouble();
+                dval /= 1024.0 * 1024.0;
 
-                S9sGraph::appendValue(
-                        value["reads"].toDouble() /
-                        (value["interval"].toDouble() / 1000.0) *
-                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
+                S9sGraph::appendValue(dval);
                 break;
             
             case DiskWriteSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["writes"].toDouble() / 
-                        (value["interval"].toDouble() / 1000.0) *
-                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
+                dval  = value["writes"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval *= value["blocksize"].toDouble();
+                dval /= 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
             
             case DiskReadWriteSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        (value["writes"].toDouble() + 
-                         value["reads"].toDouble()) / 
-                        (value["interval"].toDouble() / 1000.0) *
-                        value["blocksize"].toDouble() / (1024.0 * 1024.0));
+                dval  = value["writes"].toDouble();
+                dval += value["reads"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval *= value["blocksize"].toDouble();
+                dval /= 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
+                break;
+            
+            case DiskUtilization:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                dval  = value["utilization"].toDouble();
+                dval *= 100.0;
+
+                S9sGraph::appendValue(dval);
                 break;
 
             case NetSentSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["txBytes"].toDouble() / 
-                        (value["interval"].toDouble() / 1000.0) /
-                        (1024.0 * 1024.0));
+                dval  = value["txBytes"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval /= 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
             
             case NetReceivedSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        value["rxBytes"].toDouble() / 
-                        (value["interval"].toDouble() / 1000.0) /
-                        (1024.0 * 1024.0));
+                dval  = value["rxBytes"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval /= 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
             
             case NetSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
-                S9sGraph::appendValue(
-                        (value["rxBytes"].toDouble() + value["txBytes"].toDouble()) / 
-                        (value["interval"].toDouble() / 1000.0) /
-                        (1024.0 * 1024.0));
+                dval  = value["rxBytes"].toDouble();
+                dval += value["txBytes"].toDouble();
+                dval /= value["interval"].toDouble() / 1000.0;
+                dval /= 1024.0 * 1024.0;
+
+                S9sGraph::appendValue(dval);
                 break;
         }
 
@@ -474,6 +532,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["cpughz"]             = CpuGhz;
         sm_templateNames["cpuload"]            = LoadAverage;
         sm_templateNames["load"]               = LoadAverage;
+        sm_templateNames["cpusysload"]         = CpuSysLoad;
         sm_templateNames["cputemp"]            = CpuTemp;
         sm_templateNames["sqlcommands"]        = SqlStatements;
         sm_templateNames["sqlstatements"]      = SqlStatements;
@@ -486,6 +545,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["diskreadspeed"]      = DiskReadSpeed;
         sm_templateNames["diskwritespeed"]     = DiskWriteSpeed;
         sm_templateNames["diskreadwritespeed"] = DiskReadWriteSpeed;
+        sm_templateNames["diskutilization"]    = DiskUtilization;
         sm_templateNames["netreceivedspeed"]   = NetReceivedSpeed;
         sm_templateNames["netsentspeed"]       = NetSentSpeed;
         sm_templateNames["netspeed"]           = NetSpeed;
@@ -511,6 +571,7 @@ S9sCmonGraph::statName(
         case LoadAverage:
         case CpuGhz:
         case CpuTemp:
+        case CpuSysLoad:
             return "cpustat";
 
         case SqlStatements:
@@ -526,6 +587,7 @@ S9sCmonGraph::statName(
         case DiskReadSpeed:
         case DiskWriteSpeed:
         case DiskReadWriteSpeed:
+        case DiskUtilization:
             return "diskstat";
 
         case NetReceivedSpeed:
