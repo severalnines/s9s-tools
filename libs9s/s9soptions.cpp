@@ -131,6 +131,7 @@ enum S9sOptionType
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
+    OptionRollingRestart,
 };
 
 /**
@@ -4963,7 +4964,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
         { "create",           no_argument,       0, OptionCreate          },
-        { "rolling-restart",  no_argument,       0, 12                    },
+        { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "drop",             no_argument,       0, OptionDrop            },
@@ -5075,7 +5076,7 @@ S9sOptions::readOptionsCluster(
                 m_options["stat"] = true;
                 break;
             
-            case 12:
+            case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
                 break;
