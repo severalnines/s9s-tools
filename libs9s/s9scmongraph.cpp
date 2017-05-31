@@ -237,6 +237,24 @@ S9sCmonGraph::realize()
                     STR(hostName), STR(m_filterValue.toString()));
             break;
         
+        case NetReceiveErrors:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net Receive Errors %s at %s",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
+        case NetTransmitErrors:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net Transmit Errors %s at %s",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
+        case NetErrors:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Net Errors %s at %s",
+                    STR(hostName), STR(m_filterValue.toString()));
+            break;
+        
         case NetSentSpeed:
             setAggregateType(S9sGraph::Max);
             setTitle("Net write %s at %s (MByte/s)",
@@ -464,6 +482,31 @@ S9sCmonGraph::realize()
                 S9sGraph::appendValue(dval);
                 break;
             
+            case NetReceiveErrors:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                dval  = value["rxErrors"].toDouble();
+                S9sGraph::appendValue(dval);
+                break;
+            
+            case NetTransmitErrors:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                dval  = value["txErrors"].toDouble();
+                S9sGraph::appendValue(dval);
+                break;
+            
+            case NetErrors:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                dval  = value["txErrors"].toDouble();
+                dval += value["rxErrors"].toDouble();
+                S9sGraph::appendValue(dval);
+                break;
+            
             case NetSpeed:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
@@ -549,6 +592,9 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["netreceivedspeed"]   = NetReceivedSpeed;
         sm_templateNames["netsentspeed"]       = NetSentSpeed;
         sm_templateNames["netspeed"]           = NetSpeed;
+        sm_templateNames["netreceiveerrors"]   = NetReceiveErrors;
+        sm_templateNames["nettransmiterrors"]  = NetTransmitErrors;
+        sm_templateNames["neterrors"]          = NetErrors;
     }
 
     if (sm_templateNames.contains(theString))
@@ -593,6 +639,9 @@ S9sCmonGraph::statName(
         case NetReceivedSpeed:
         case NetSentSpeed:
         case NetSpeed:
+        case NetReceiveErrors:
+        case NetTransmitErrors:
+        case NetErrors:
             return "netstat";
     }
 

@@ -209,7 +209,8 @@ function _s9s()
                 opts+="diskfree diskreadspeed diskreadwritespeed "
                 opts+="diskwritespeed diskutilization "
                 opts+="memfree memutil "
-                opts+="netreceivedspeed netsentspeed netspeed"
+                opts+="netreceivedspeed netsentspeed netspeed "
+                opts+="netreceiveerrors nettransmiterrors neterrors "
                 opts+="sqlcommands sqlconnections "
                 opts+="swapfree "
             elif [ "$prev" == "--cluster-id" ]; then

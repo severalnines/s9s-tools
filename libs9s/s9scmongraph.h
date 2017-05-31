@@ -31,6 +31,9 @@ class S9sCmonGraph : public S9sGraph
             DiskUtilization,
             NetReceivedSpeed,
             NetSentSpeed,
+            NetReceiveErrors,
+            NetTransmitErrors,
+            NetErrors,
             NetSpeed,
         };
 
