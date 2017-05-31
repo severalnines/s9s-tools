@@ -121,6 +121,10 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isCreateReportRequested())
+        {
+            success = client.createReport(clusterId);
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isAddNodeRequested())
         {
             success = client.createNode();
