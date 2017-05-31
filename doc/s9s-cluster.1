@@ -30,6 +30,16 @@ will contact the controller and register a new job that will eventually create
 a new cluster. 
 
 .TP
+.B \-\-create-account
+Create a new account to be used on the cluster to access the database(s).
+
+.TP
+.B \-\-create-report
+When this command line option is provided a new job will be started that will
+create a report. After the job is executed the report will be available on the 
+controller.
+
+.TP
 .B \-\-add\-node
 Adds a new node (server) to the cluster or to be more precise creates a new
 job that will eventually add a new node to the cluster. The name (or IP 
@@ -59,10 +69,6 @@ Creates a new job to start the cluster.
 .B \-\-drop
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
-
-.TP
-.B \-\-create-account
-Create a new account to be used on the cluster to access the database(s).
 
 .TP
 .B \-\-delete-account
