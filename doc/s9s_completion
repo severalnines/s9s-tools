@@ -210,7 +210,7 @@ function _s9s()
             elif [ "$prev" == "--graph" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
-                opts+="cpughz cpuload cputemp cpusysload "
+                opts+="cpughz cpuload cputemp cpusys "
                 opts+="diskfree diskreadspeed diskreadwritespeed "
                 opts+="diskwritespeed diskutilization "
                 opts+="memfree memutil "

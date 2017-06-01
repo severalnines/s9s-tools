@@ -144,7 +144,7 @@ S9sCmonGraph::realize()
             setTitle("Load on %s", STR(hostName));
             break;
         
-        case CpuSysLoad:
+        case CpuSys:
             setAggregateType(S9sGraph::Max);
             setWarningLevel(10.0);
             setErrorLevel(20.0);
@@ -323,7 +323,7 @@ S9sCmonGraph::realize()
                 S9sGraph::appendValue(value["loadavg1"]);
                 break;
             
-            case CpuSysLoad:
+            case CpuSys:
                 if (value["hostid"].toInt() != m_node.id())
                     continue;
 
@@ -661,7 +661,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["cpughz"]             = CpuGhz;
         sm_templateNames["cpuload"]            = LoadAverage;
         sm_templateNames["load"]               = LoadAverage;
-        sm_templateNames["cpusysload"]         = CpuSysLoad;
+        sm_templateNames["cpusys"]             = CpuSys;
         sm_templateNames["cputemp"]            = CpuTemp;
         sm_templateNames["sqlcommands"]        = SqlStatements;
         sm_templateNames["sqlstatements"]      = SqlStatements;
@@ -708,7 +708,7 @@ S9sCmonGraph::statName(
         case LoadAverage:
         case CpuGhz:
         case CpuTemp:
-        case CpuSysLoad:
+        case CpuSys:
             return "cpustat";
 
         case SqlStatements:
