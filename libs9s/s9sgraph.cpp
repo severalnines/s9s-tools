@@ -150,7 +150,7 @@ S9sGraph::appendValue(
 void
 S9sGraph::realize()
 {
-    transform(m_width, m_height);
+    normalize(m_width);
     createLines(m_width, m_height);
 }
 
@@ -185,9 +185,8 @@ S9sGraph::clearValues()
 }
 
 void
-S9sGraph::transform(
-        int newWidth,
-        int newHeight)
+S9sGraph::normalize(
+        int newWidth)
 {
     S9sVariantList tmp;
     double         origPercent;
