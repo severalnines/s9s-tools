@@ -212,6 +212,7 @@ function _s9s()
                 opts+="netreceivedspeed netsentspeed netspeed "
                 opts+="netreceiveerrors nettransmiterrors neterrors "
                 opts+="sqlcommands sqlstatements sqlconnections "
+                opts+="sqlreplicationlag "
                 opts+="swapfree "
             elif [ "$prev" == "--cluster-id" ]; then
                 prev="${cur%%=*}="

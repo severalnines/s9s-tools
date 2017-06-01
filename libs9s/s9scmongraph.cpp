@@ -181,6 +181,12 @@ S9sCmonGraph::realize()
             setTitle("SQL connections on %s", STR(hostName));
             break;
 
+        case SqlReplicationLag:
+            setAggregateType(S9sGraph::Max);
+            setTitle("SQL replication lag on %s (s)", STR(hostName));
+            break;
+
+
         case MemUtil:
             setAggregateType(S9sGraph::Max);
             setTitle("Memory utilization on %s (%%)", STR(hostName));
@@ -372,6 +378,15 @@ S9sCmonGraph::realize()
                     S9sGraph::appendValue(value["connections"].toDouble());
 
                 break;
+
+            case SqlReplicationLag:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+               
+                if (value.contains("REPLICATION_LAG"))
+                    S9sGraph::appendValue(value["REPLICATION_LAG"].toDouble());
+                break;
+
             
             case MemUtil:
                 if (value["hostid"].toInt() != m_node.id())
@@ -580,6 +595,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["sqlcommands"]        = SqlStatements;
         sm_templateNames["sqlstatements"]      = SqlStatements;
         sm_templateNames["sqlconnections"]     = SqlConnections;
+        sm_templateNames["sqlreplicationlag"]  = SqlReplicationLag;
         sm_templateNames["memutil"]            = MemUtil;
         sm_templateNames["memfree"]            = MemFree;
         sm_templateNames["ramfree"]            = MemFree;
@@ -622,6 +638,7 @@ S9sCmonGraph::statName(
 
         case SqlStatements:
         case SqlConnections:
+        case SqlReplicationLag:
             return "sqlstat";
 
         case MemUtil:
