@@ -148,12 +148,22 @@ S9sCmonGraph::realize()
             setAggregateType(S9sGraph::Max);
             setWarningLevel(10.0);
             setErrorLevel(20.0);
-            setTitle("System Load on %s (%%)", STR(hostName));
+            setTitle("CPU System on %s (%%)", STR(hostName));
+            break;
+        
+        case CpuIdle:
+            setAggregateType(S9sGraph::Min);
+            setTitle("CPU Idle on %s (%%)", STR(hostName));
+            break;
+        
+        case CpuIoWait:
+            setAggregateType(S9sGraph::Max);
+            setTitle("CPU IO Wait on %s (%%)", STR(hostName));
             break;
 
         case CpuTemp:
             setAggregateType(S9sGraph::Max);
-            setTitle("Cpu temperature (℃ ) on %s", STR(hostName));
+            setTitle("Cpu Temperature (℃ ) on %s", STR(hostName));
             break;
 
         case CpuGhz:
@@ -331,6 +341,26 @@ S9sCmonGraph::realize()
                     continue;
 
                 S9sGraph::appendValue(value["sys"].toDouble() * 100.0);
+                break;
+            
+            case CpuIdle:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value["cpuid"].toInt() != 0)
+                    continue;
+
+                S9sGraph::appendValue(value["idle"].toDouble() * 100.0);
+                break;
+            
+            case CpuIoWait:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value["cpuid"].toInt() != 0)
+                    continue;
+
+                S9sGraph::appendValue(value["iowait"].toDouble() * 100.0);
                 break;
 
             case CpuTemp:
@@ -662,6 +692,8 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["cpuload"]            = LoadAverage;
         sm_templateNames["load"]               = LoadAverage;
         sm_templateNames["cpusys"]             = CpuSys;
+        sm_templateNames["cpuidle"]            = CpuIdle;
+        sm_templateNames["cpuiowait"]          = CpuIoWait;
         sm_templateNames["cputemp"]            = CpuTemp;
         sm_templateNames["sqlcommands"]        = SqlStatements;
         sm_templateNames["sqlstatements"]      = SqlStatements;
@@ -709,6 +741,8 @@ S9sCmonGraph::statName(
         case CpuGhz:
         case CpuTemp:
         case CpuSys:
+        case CpuIdle:
+        case CpuIoWait:
             return "cpustat";
 
         case SqlStatements:

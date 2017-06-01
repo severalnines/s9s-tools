@@ -19,6 +19,8 @@ class S9sCmonGraph : public S9sGraph
             CpuGhz,
             CpuTemp,
             CpuSys,
+            CpuIdle,
+            CpuIoWait,
             SqlStatements,
             SqlConnections,
             SqlCommits,
