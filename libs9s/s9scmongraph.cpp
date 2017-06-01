@@ -183,7 +183,17 @@ S9sCmonGraph::realize()
         
         case SqlCommits:
             setAggregateType(S9sGraph::Max);
-            setTitle("SQL commits on %s (1/s)", STR(hostName));
+            setTitle("SQL Commits on %s (1/s)", STR(hostName));
+            break;
+        
+        case SqlQueries:
+            setAggregateType(S9sGraph::Max);
+            setTitle("SQL Queries on %s (1/s)", STR(hostName));
+            break;
+        
+        case SqlSlowQueries:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Slow SQL Queries on %s (1/s)", STR(hostName));
             break;
 
         case SqlReplicationLag:
@@ -404,6 +414,32 @@ S9sCmonGraph::realize()
                 }
 
                 break;
+            
+            case SqlQueries:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value.contains("QUERIES"))
+                {
+                    dval  = value["QUERIES"].toDouble();
+                    dval /= value["interval"].toDouble() / 1000.0;
+                    S9sGraph::appendValue(dval);
+                }
+
+                break;
+            
+            case SqlSlowQueries:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value.contains("SLOW_QUERIES"))
+                {
+                    dval  = value["SLOW_QUERIES"].toDouble();
+                    dval /= value["interval"].toDouble() / 1000.0;
+                    S9sGraph::appendValue(dval);
+                }
+
+                break;
 
             case MemUtil:
                 if (value["hostid"].toInt() != m_node.id())
@@ -614,6 +650,8 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["sqlconnections"]     = SqlConnections;
         sm_templateNames["sqlcommits"]         = SqlCommits;
         sm_templateNames["sqlreplicationlag"]  = SqlReplicationLag;
+        sm_templateNames["sqlqueries"]         = SqlQueries;
+        sm_templateNames["sqlslowqueries"]     = SqlSlowQueries;
         sm_templateNames["memutil"]            = MemUtil;
         sm_templateNames["memfree"]            = MemFree;
         sm_templateNames["ramfree"]            = MemFree;
@@ -658,6 +696,8 @@ S9sCmonGraph::statName(
         case SqlConnections:
         case SqlReplicationLag:
         case SqlCommits:
+        case SqlQueries:
+        case SqlSlowQueries:
             return "sqlstat";
 
         case MemUtil:

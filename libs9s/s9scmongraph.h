@@ -23,6 +23,8 @@ class S9sCmonGraph : public S9sGraph
             SqlConnections,
             SqlCommits,
             SqlReplicationLag,
+            SqlQueries,
+            SqlSlowQueries,
             MemUtil,
             MemFree,
             SwapFree,
