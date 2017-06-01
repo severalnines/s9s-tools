@@ -196,6 +196,12 @@ S9sCmonGraph::realize()
             setTitle("Slow SQL Queries on %s (1/s)", STR(hostName));
             break;
 
+        case SqlOpenTables:
+            setAggregateType(S9sGraph::Max);
+            setTitle("Open Tables on %s", STR(hostName));
+            break;
+
+
         case SqlReplicationLag:
             setAggregateType(S9sGraph::Max);
             setTitle("SQL replication lag on %s (s)", STR(hostName));
@@ -440,6 +446,18 @@ S9sCmonGraph::realize()
                 }
 
                 break;
+            
+            case SqlOpenTables:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value.contains("OPEN_TABLES"))
+                {
+                    dval  = value["OPEN_TABLES"].toDouble();
+                    S9sGraph::appendValue(dval);
+                }
+
+                break;
 
             case MemUtil:
                 if (value["hostid"].toInt() != m_node.id())
@@ -652,6 +670,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["sqlreplicationlag"]  = SqlReplicationLag;
         sm_templateNames["sqlqueries"]         = SqlQueries;
         sm_templateNames["sqlslowqueries"]     = SqlSlowQueries;
+        sm_templateNames["sqlopentables"]      = SqlOpenTables;
         sm_templateNames["memutil"]            = MemUtil;
         sm_templateNames["memfree"]            = MemFree;
         sm_templateNames["ramfree"]            = MemFree;
@@ -698,6 +717,7 @@ S9sCmonGraph::statName(
         case SqlCommits:
         case SqlQueries:
         case SqlSlowQueries:
+        case SqlOpenTables:
             return "sqlstat";
 
         case MemUtil:

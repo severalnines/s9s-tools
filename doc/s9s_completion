@@ -218,7 +218,7 @@ function _s9s()
                 opts+="netreceiveerrors nettransmiterrors neterrors "
                 opts+="sqlcommands sqlstatements sqlconnections "
                 opts+="sqlreplicationlag sqlcommits "
-                opts+="sqlqueries sqlslowqueries "
+                opts+="sqlqueries sqlslowqueries sqlopentables "
                 opts+="swapfree "
             elif [ "$prev" == "--cluster-id" ]; then
                 prev="${cur%%=*}="
