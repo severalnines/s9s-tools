@@ -129,6 +129,11 @@ function _s9s()
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts=$(s9s cluster --list)
+            elif [ "$prev" == "--cluster-type" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts+="galera mysqlreplication groupreplication "
+                opts+="group_replication ndb ndbcluster postgresql "
             elif [ "$prev" == "--color" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
