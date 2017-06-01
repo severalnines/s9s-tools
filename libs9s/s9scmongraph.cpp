@@ -156,6 +156,13 @@ S9sCmonGraph::realize()
             setTitle("CPU Idle on %s (%%)", STR(hostName));
             break;
         
+        case CpuUser:
+            setAggregateType(S9sGraph::Max);
+            setWarningLevel(80.0);
+            setErrorLevel(90.0);
+            setTitle("CPU User on %s (%%)", STR(hostName));
+            break;
+        
         case CpuIoWait:
             setAggregateType(S9sGraph::Max);
             setTitle("CPU IO Wait on %s (%%)", STR(hostName));
@@ -351,6 +358,16 @@ S9sCmonGraph::realize()
                     continue;
 
                 S9sGraph::appendValue(value["idle"].toDouble() * 100.0);
+                break;
+            
+            case CpuUser:
+                if (value["hostid"].toInt() != m_node.id())
+                    continue;
+
+                if (value["cpuid"].toInt() != 0)
+                    continue;
+
+                S9sGraph::appendValue(value["user"].toDouble() * 100.0);
                 break;
             
             case CpuIoWait:
@@ -693,6 +710,7 @@ S9sCmonGraph::stringToGraphTemplate(
         sm_templateNames["load"]               = LoadAverage;
         sm_templateNames["cpusys"]             = CpuSys;
         sm_templateNames["cpuidle"]            = CpuIdle;
+        sm_templateNames["cpuuser"]            = CpuUser;
         sm_templateNames["cpuiowait"]          = CpuIoWait;
         sm_templateNames["cputemp"]            = CpuTemp;
         sm_templateNames["sqlcommands"]        = SqlStatements;
@@ -743,6 +761,7 @@ S9sCmonGraph::statName(
         case CpuSys:
         case CpuIdle:
         case CpuIoWait:
+        case CpuUser:
             return "cpustat";
 
         case SqlStatements:
