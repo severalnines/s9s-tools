@@ -21,6 +21,7 @@ class S9sCmonGraph : public S9sGraph
             CpuSysLoad,
             SqlStatements,
             SqlConnections,
+            SqlCommits,
             SqlReplicationLag,
             MemUtil,
             MemFree,
