@@ -668,7 +668,11 @@ S9sGraph::xLabel(
 {
     S9sString  retval;
 
-    if (maxValue < 10.0)
+    if (maxValue < 1.0)
+    {
+        value = roundMultiple(value, 0.001);
+        retval.sprintf("%5.3f", value);
+    } else if (maxValue < 10.0)
     {
         value = roundMultiple(value, 0.05);
         retval.sprintf("%5.2f", value);
