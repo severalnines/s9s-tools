@@ -150,7 +150,7 @@ S9sGraph::appendValue(
 void
 S9sGraph::realize()
 {
-    normalize(m_width);
+    normalize(m_rawData, m_transformed, m_width);
     createLines(m_width, m_height);
 }
 
@@ -186,7 +186,9 @@ S9sGraph::clearValues()
 
 void
 S9sGraph::normalize(
-        int newWidth)
+        S9sVariantList &original,
+        S9sVariantList &normalized,
+        int             newWidth)
 {
     S9sVariantList tmp;
     double         origPercent;
@@ -194,43 +196,43 @@ S9sGraph::normalize(
 
     S9S_DEBUG("");
     S9S_DEBUG("            width : %d", newWidth);
-    S9S_DEBUG(" m_rawData.size() : %u", m_rawData.size());
-    m_transformed.clear();
+    S9S_DEBUG(" original.size() : %u",  original.size());
+    normalized.clear();
 
-    if (m_rawData.empty())
+    if (original.empty())
     {
         for (int x = 0; x < newWidth; ++x)
-            m_transformed << 0.0;
+            normalized << 0.0;
 
         return;
     }
     
-    for (uint origIndex = 0u; origIndex < m_rawData.size(); /*++origIndex*/)
+    for (uint origIndex = 0u; origIndex < original.size(); /*++origIndex*/)
     {    
         bool added = false;
 
-        tmp << m_rawData[origIndex++];
+        tmp << original[origIndex++];
 
         origPercent = 
             origIndex == 0 ? 0.0 :
-            ((double) origIndex) / ((double) m_rawData.size());
+            ((double) origIndex) / ((double) original.size());
 
         newPercent  = 
-            m_transformed.size() == 0u ? 0.0 :
-            (double) (m_transformed.size()) / (double) newWidth;
+            normalized.size() == 0u ? 0.0 :
+            (double) (normalized.size()) / (double) newWidth;
 
         while (newPercent <= origPercent && 
-                (int) m_transformed.size() < newWidth) 
+                (int) normalized.size() < newWidth) 
         { 
-            m_transformed << aggregate(tmp);
+            normalized << aggregate(tmp);
             
             origPercent = 
                 origIndex == 0 ? 0.0 :
-                ((double) origIndex) / ((double) m_rawData.size());
+                ((double) origIndex) / ((double) original.size());
 
             newPercent  = 
-                m_transformed.size() == 0u ? 0.0 :
-                (double) (m_transformed.size()) / (double) newWidth;
+                normalized.size() == 0u ? 0.0 :
+                (double) (normalized.size()) / (double) newWidth;
 
             added = true;
         }

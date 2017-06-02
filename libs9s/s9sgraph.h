@@ -51,7 +51,12 @@ class S9sGraph
 
     protected:
         void clearValues();
-        void normalize(int newWidth);
+
+        void normalize(
+                S9sVariantList &original,
+                S9sVariantList &normalized,
+                int             newWidth);
+
         void createLines(int newWidth, int newHeight);
 
         const char *yLabelFormat() const;
