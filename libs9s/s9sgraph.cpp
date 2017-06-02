@@ -9,7 +9,7 @@
 #include "stdio.h"
 #include "math.h"
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
