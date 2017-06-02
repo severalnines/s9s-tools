@@ -32,6 +32,10 @@ S9sGraph::~S9sGraph()
 {
 }
 
+/**
+ * \param showDensity True to show the density function, false to show time
+ *   series data.
+ */
 void
 S9sGraph::setShowDensity(
         bool showDensity)
@@ -143,6 +147,12 @@ S9sGraph::max() const
     return m_rawData.max(); 
 }
 
+/**
+ * \param value The data that will be added to the graph.
+ *
+ * Adds a new data point to the graph. The value will later be processed as a
+ * double precision floating point number.
+ */
 void
 S9sGraph::appendValue(
         S9sVariant value)
@@ -183,6 +193,9 @@ S9sGraph::setTitle(
     va_end(arguments);
 }
 
+/**
+ * Prints the graph to the standard output.
+ */
 void
 S9sGraph::print() const
 {
@@ -192,12 +205,24 @@ S9sGraph::print() const
     }
 }
 
+/**
+ * Drops the data the graph object has.
+ */
 void
 S9sGraph::clearValues()
 {
     m_rawData.clear();
 }
 
+/**
+ * \param original The vector with the original data.
+ * \param normalized The vector where the density function data vector will be 
+ *   placed.
+ * \param newWidth Controls the size of the normalized vector.
+ *
+ * This function is called to create a density function data set from a given
+ * set of data.
+ */
 void
 S9sGraph::createDensityFunction(
         S9sVariantList &original,
@@ -260,6 +285,14 @@ S9sGraph::createDensityFunction(
     }
 }
 
+/**
+ * \param original The vector with the original data.
+ * \param normalized The vector where the normalized vector will be placed.
+ * \param newWidth Controls the size of the normalized vector.
+ *
+ * This function is used to resample the data and produce a version that has
+ * the given number of data points.
+ */
 void
 S9sGraph::normalize(
         S9sVariantList &original,
@@ -318,6 +351,12 @@ S9sGraph::normalize(
     }
 }
 
+/**
+ * \param newWidth The width of the graph measured in character positions.
+ * \param newHeight The height of the graph measured in character lines.
+ *
+ * This function is called to create the character lines of the graph.
+ */
 void
 S9sGraph::createLines(
         int newWidth,
@@ -568,6 +607,14 @@ S9sGraph::createLines(
     }
 }
 
+/**
+ * \param newWidth The width of the graph measured in character positions.
+ * \param newHeight The height of the graph measured in character lines.
+ *
+ * This function will create and append a character line to the graph that
+ * represents the X axis labels. We call this function only if the X axis shows
+ * numbers of a density function.
+ */
 void
 S9sGraph::createXLabelsDensity(
         int newWidth,
@@ -605,6 +652,14 @@ S9sGraph::createXLabelsDensity(
     m_lines << line;
 }
 
+/**
+ * \param newWidth The width of the graph measured in character positions.
+ * \param newHeight The height of the graph measured in character lines.
+ *
+ * This function will create and append a character line to the graph that
+ * represents the X axis labels. We call this function only if the X axis shows
+ * time.
+ */
 void
 S9sGraph::createXLabelsTime(
         int newWidth,
@@ -661,6 +716,12 @@ S9sGraph::yLabel(
     return retval;
 }
 
+/**
+ * \param maxValue The biggest value we show on the X axis.
+ * \param value The value we want to convert to a string.
+ *
+ * This function is used to create strings shown on the X axis.
+ */
 S9sString
 S9sGraph::xLabel(
         double maxValue,
