@@ -9,8 +9,8 @@
 #include "stdio.h"
 #include "math.h"
 
-//#define DEBUG
-//#define WARNING
+#define DEBUG
+#define WARNING
 #include "s9sdebug.h"
 
 #define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
@@ -151,8 +151,14 @@ S9sGraph::appendValue(
 void
 S9sGraph::realize()
 {
-    normalize(m_rawData, m_normalized, m_width);
-    createLines(m_width, m_height);
+    if (m_showDensityFunction)
+    {
+        createDensityFunction(m_rawData, m_normalized, m_width);
+        createLines(m_width, m_height);
+    } else {
+        normalize(m_rawData, m_normalized, m_width);
+        createLines(m_width, m_height);
+    }
 }
 
 /**
@@ -183,6 +189,45 @@ void
 S9sGraph::clearValues()
 {
     m_rawData.clear();
+}
+
+void
+S9sGraph::createDensityFunction(
+        S9sVariantList &original,
+        S9sVariantList &normalized,
+        int             newWidth)
+{
+    S9sVariant minimum = original.min();
+    S9sVariant maximum = original.max();
+    double     delta;
+
+    if (minimum == maximum)
+        maximum = minimum.toDouble() + 1.0;
+
+    delta = (maximum.toDouble() - minimum.toDouble()) / (newWidth - 1);
+    S9S_DEBUG("------------------------------------");
+    S9S_DEBUG("*** minimum : %g", minimum.toDouble());
+    S9S_DEBUG("*** maximum : %g", maximum.toDouble());
+    S9S_DEBUG("***   delta : %g", delta);
+
+    for (int idx = 0; idx < newWidth; ++idx)
+        normalized << 0.0;
+
+    for (uint idx = 0; idx < original.size(); ++idx)
+    {
+        double value = original[idx].toDouble();
+        int    targetIdx;
+
+        targetIdx = (value - minimum.toDouble()) / delta;
+        S9S_DEBUG("targetIdx : %u", targetIdx);
+        if (targetIdx < 0 || targetIdx >= (int) normalized.size())
+        {
+            S9S_WARNING("Target index %u is out of range.", targetIdx);
+            continue;
+        }
+
+        normalized[targetIdx] += 1.0;
+    }
 }
 
 void
@@ -302,10 +347,12 @@ S9sGraph::createLines(
     
     mult     = (newHeight / biggest.toDouble());
 
+    #if 0
     S9S_DEBUG("   biggest : %g", biggest.toDouble());
     S9S_DEBUG("  smallest : %g", smallest.toDouble());
     S9S_DEBUG("      mult : %g", mult);
     S9S_DEBUG("   x range : 0 - %u", m_normalized.size() - 1);
+    #endif
 
     for (int y = newHeight; y >= 0; --y)
     {
