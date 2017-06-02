@@ -16,6 +16,7 @@
 #define IS_DIVISIBLE_BY(a,b) ((int) (a) == ((int) (a) / (b)) * (b))
 
 S9sGraph::S9sGraph() :
+    m_showDensityFunction(false),
     m_aggregateType(Average),
     m_width(40),
     m_height(10),
@@ -91,7 +92,7 @@ S9sGraph::setErrorLevel(
 int 
 S9sGraph::nColumns() const
 {
-    return m_transformed.size() + 6;
+    return m_normalized.size() + 6;
 }
 
 /**
@@ -150,7 +151,7 @@ S9sGraph::appendValue(
 void
 S9sGraph::realize()
 {
-    normalize(m_rawData, m_transformed, m_width);
+    normalize(m_rawData, m_normalized, m_width);
     createLines(m_width, m_height);
 }
 
@@ -293,8 +294,8 @@ S9sGraph::createLines(
     /*
      * The Y labels and the body of the graph.
      */
-    biggest  = m_transformed.max();
-    smallest = m_transformed.min();
+    biggest  = m_normalized.max();
+    smallest = m_normalized.min();
 
     if (biggest.toDouble() < 0.1)
         biggest = 0.1;
@@ -304,7 +305,7 @@ S9sGraph::createLines(
     S9S_DEBUG("   biggest : %g", biggest.toDouble());
     S9S_DEBUG("  smallest : %g", smallest.toDouble());
     S9S_DEBUG("      mult : %g", mult);
-    S9S_DEBUG("   x range : 0 - %u", m_transformed.size() - 1);
+    S9S_DEBUG("   x range : 0 - %u", m_normalized.size() - 1);
 
     for (int y = newHeight; y >= 0; --y)
     {
@@ -318,13 +319,13 @@ S9sGraph::createLines(
             line += "      ";
         }
 
-        for (int x = 0; x < /*(int) m_transformed.size()*/m_width; ++x)
+        for (int x = 0; x < m_width; ++x)
         {
             double value;
             const char *c;
 
-            if (x < (int) m_transformed.size())
-                value = m_transformed[x].toDouble();
+            if (x < (int) m_normalized.size())
+                value = m_normalized[x].toDouble();
             else 
                 value = 0.0;
 
@@ -501,7 +502,7 @@ S9sString
 S9sGraph::yLabel(
         double baseLine) const
 {
-    double     maxValue = m_transformed.max().toDouble();
+    double     maxValue = m_normalized.max().toDouble();
     S9sString  retval;
 
     if (maxValue < 10.0)

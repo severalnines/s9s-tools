@@ -57,6 +57,11 @@ class S9sGraph
                 S9sVariantList &normalized,
                 int             newWidth);
 
+        void createDensityFunction(
+                S9sVariantList &original,
+                S9sVariantList &normalized,
+                int             newWidth);
+
         void createLines(int newWidth, int newHeight);
 
         const char *yLabelFormat() const;
@@ -66,9 +71,8 @@ class S9sGraph
         S9sVariant aggregate(const S9sVariantList &data) const;
 
     private:
+        bool            m_showDensityFunction;
         AggregateType   m_aggregateType;
-        S9sVariantList  m_rawData;
-        S9sVariantList  m_transformed;
         int             m_width, m_height;
         S9sVariantList  m_lines;
         S9sString       m_title;
@@ -77,6 +81,8 @@ class S9sGraph
         double          m_errorLevel;
         time_t          m_started;
         time_t          m_ended;
+        S9sVariantList  m_rawData;
+        S9sVariantList  m_normalized;
 };
 
 template<typename T>
