@@ -22,6 +22,7 @@ class S9sGraph
         S9sGraph();
         virtual ~S9sGraph();
 
+        void setShowDensity(bool showDensity);
         void setAggregateType(S9sGraph::AggregateType type);
         void setInterval(const time_t start, const time_t end);
 
@@ -63,9 +64,12 @@ class S9sGraph
                 int             newWidth);
 
         void createLines(int newWidth, int newHeight);
+        void createXLabelsTime(int newWidth, int newHeight);
+        void createXLabelsDensity(int newWidth, int newHeight);
 
         const char *yLabelFormat() const;
         S9sString yLabel(double baseLine) const;
+        S9sString xLabel(double maxValue, double value) const;
 
     private:
         S9sVariant aggregate(const S9sVariantList &data) const;
@@ -83,6 +87,7 @@ class S9sGraph
         time_t          m_ended;
         S9sVariantList  m_rawData;
         S9sVariantList  m_normalized;
+        S9sVariant      m_minValue, m_maxValue;
 };
 
 template<typename T>

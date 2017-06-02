@@ -2138,7 +2138,7 @@ S9sRpcReply::createGraph(
     graph->setNode(host);
     graph->setColor(syntaxHighlight);
     graph->setFilter(filterName, filterValue);
-
+    graph->setShowDensity(options->density());
 
     success = graph->setGraphType(graphType);
     if (!success)

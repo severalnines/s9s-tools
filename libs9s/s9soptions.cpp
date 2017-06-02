@@ -131,6 +131,7 @@ enum S9sOptionType
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
+    OptionDensity,
     OptionRollingRestart,
     OptionCreateReport,
 };
@@ -498,6 +499,19 @@ S9sOptions::onlyAscii() const
     return retval.toBoolean();
 }
 
+bool
+S9sOptions::density() const
+{
+    const char *key = "density";
+    bool        retval = false;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toBoolean();
+    }
+
+    return retval;
+}
 
 /**
  * \returns The value for the "brief_job_log_format" config variable that
@@ -2899,6 +2913,7 @@ S9sOptions::readOptionsNode(
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
+        { "density",          no_argument,       0, OptionDensity         },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -3078,6 +3093,11 @@ S9sOptions::readOptionsNode(
             case OptionOnlyAscii:
                 // --only-ascii
                 m_options["only_ascii"] = true;
+                break;
+            
+            case OptionDensity:
+                // --density
+                m_options["density"] = true;
                 break;
            
             case OptionSchedule:

@@ -32,6 +32,13 @@ S9sGraph::~S9sGraph()
 {
 }
 
+void
+S9sGraph::setShowDensity(
+        bool showDensity)
+{
+    m_showDensityFunction = showDensity;
+}
+
 /**
  * \param type The aggragation type to be set.
  *
@@ -205,10 +212,12 @@ S9sGraph::createDensityFunction(
         maximum = minimum.toDouble() + 1.0;
 
     delta = (maximum.toDouble() - minimum.toDouble()) / (newWidth - 1);
+    #if 0
     S9S_DEBUG("------------------------------------");
     S9S_DEBUG("*** minimum : %g", minimum.toDouble());
     S9S_DEBUG("*** maximum : %g", maximum.toDouble());
     S9S_DEBUG("***   delta : %g", delta);
+    #endif
 
     for (int idx = 0; idx < newWidth; ++idx)
         normalized << 0.0;
@@ -219,7 +228,7 @@ S9sGraph::createDensityFunction(
         int    targetIdx;
 
         targetIdx = (value - minimum.toDouble()) / delta;
-        S9S_DEBUG("targetIdx : %u", targetIdx);
+        //S9S_DEBUG("targetIdx : %u", targetIdx);
         if (targetIdx < 0 || targetIdx >= (int) normalized.size())
         {
             S9S_WARNING("Target index %u is out of range.", targetIdx);
@@ -228,6 +237,9 @@ S9sGraph::createDensityFunction(
 
         normalized[targetIdx] += 1.0;
     }
+
+    m_minValue = minimum;
+    m_maxValue = maximum;
 }
 
 void
@@ -464,30 +476,42 @@ S9sGraph::createLines(
                 }
             }
 
-            if (m_color && m_errorLevel > 0.0)
+            if (m_showDensityFunction)
             {
-                if (baseLine > m_errorLevel)
+                if (m_color)
                 {
-                    line += XTERM_COLOR_RED;
-                    line += c;
-                    line += TERM_NORMAL;
-                } else if (baseLine > m_warningLevel)
-                {
-                    line += XTERM_COLOR_ORANGE;
+                    line += XTERM_COLOR_LIGHT_PURPLE;
                     line += c;
                     line += TERM_NORMAL;
                 } else {
+                    line += c;
+                }
+            } else {
+                if (m_color && m_errorLevel > 0.0)
+                {
+                    if (baseLine > m_errorLevel)
+                    {
+                        line += XTERM_COLOR_RED;
+                        line += c;
+                        line += TERM_NORMAL;
+                    } else if (baseLine > m_warningLevel)
+                    {
+                        line += XTERM_COLOR_ORANGE;
+                        line += c;
+                        line += TERM_NORMAL;
+                    } else {
+                        line += XTERM_COLOR_GREEN;
+                        line += c;
+                        line += TERM_NORMAL;
+                    }
+                } else if (m_color) 
+                {
                     line += XTERM_COLOR_GREEN;
                     line += c;
                     line += TERM_NORMAL;
+                } else {
+                    line += c;
                 }
-            } else if (m_color) 
-            {
-                line += XTERM_COLOR_GREEN;
-                line += c;
-                line += TERM_NORMAL;
-            } else {
-                line += c;
             }
         }
 
@@ -497,25 +521,11 @@ S9sGraph::createLines(
         line.clear();
     }
 
-    /*
-     * The X labels.
-     */
-    if (m_started != 0 && m_ended != 0)
+    if (m_showDensityFunction)
     {
-        S9sDateTime start(m_started);
-        S9sDateTime end(m_ended);
-        S9sString   startString = start.toString(S9sDateTime::CompactFormat);
-        S9sString   endString = end.toString(S9sDateTime::CompactFormat);
-        S9sString   indentString;
-        int         indent;
-
-        indent = m_width - startString.length() - endString.length();
-    
-        if (indent > 0)
-            indentString = S9sString(" ") * indent;
-
-        m_lines << 
-            "      " + startString + indentString + endString;
+        createXLabelsDensity(newWidth, newHeight);
+    } else {
+        createXLabelsTime(newWidth, newHeight);
     }
 
     /*
@@ -540,6 +550,71 @@ S9sGraph::createLines(
     }
 }
 
+void
+S9sGraph::createXLabelsDensity(
+        int newWidth,
+        int newHeight)
+{
+    double    minValue, maxValue, middleValue;
+    S9sString minString;
+    S9sString maxString;
+    S9sString middleString;
+    S9sString line;
+    
+    minValue = m_minValue.toDouble();
+    maxValue = m_maxValue.toDouble();
+    middleValue = minValue + (maxValue - minValue) / 2.0;
+
+    minString = xLabel(maxValue, minValue);
+    maxString = xLabel(maxValue, maxValue);
+    middleString = xLabel(maxValue, middleValue);
+
+    line  = "      ";
+    line += minString;
+    line += 
+        S9sString(" ") * 
+        ((m_width / 2 ) - minString.length() - middleString.length() / 2);
+
+    line += middleString;
+    line += 
+        S9sString(" ") * 
+        (m_width + 6 - line.length() - maxString.length());
+
+    line += maxString;
+
+
+
+    m_lines << line;
+}
+
+void
+S9sGraph::createXLabelsTime(
+        int newWidth,
+        int newHeight)
+{
+    /*
+     * The X labels.
+     */
+    if (m_started != 0 && m_ended != 0)
+    {
+        S9sDateTime start(m_started);
+        S9sDateTime end(m_ended);
+        S9sString   startString = start.toString(S9sDateTime::CompactFormat);
+        S9sString   endString = end.toString(S9sDateTime::CompactFormat);
+        S9sString   indentString;
+        int         indent;
+
+        indent = m_width - startString.length() - endString.length();
+    
+        if (indent > 0)
+            indentString = S9sString(" ") * indent;
+
+        m_lines << 
+            "      " + startString + indentString + endString;
+    }
+}
+
+
 /**
  * \param baseLine The value the label shows.
  *
@@ -563,6 +638,29 @@ S9sGraph::yLabel(
     } else {
         baseLine = roundMultiple(baseLine, 0.5);
         retval.sprintf("%5.1f ", baseLine);
+    }
+
+    return retval;
+}
+
+S9sString
+S9sGraph::xLabel(
+        double maxValue,
+        double value) const
+{
+    S9sString  retval;
+
+    if (maxValue < 10.0)
+    {
+        value = roundMultiple(value, 0.05);
+        retval.sprintf("%5.2f", value);
+    } else if (maxValue >= 1000.0) 
+    {
+        value = roundMultiple(value, 10.0);
+        retval.sprintf("%5.0f", value);
+    } else {
+        value = roundMultiple(value, 0.5);
+        retval.sprintf("%5.1f", value);
     }
 
     return retval;
