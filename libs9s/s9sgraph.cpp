@@ -83,6 +83,9 @@ S9sGraph::setColor(
     m_color = useColor;
 }
 
+/**
+ * \param level The number from where the graph is yellow.
+ */
 void
 S9sGraph::setWarningLevel(
         double level)
@@ -90,6 +93,9 @@ S9sGraph::setWarningLevel(
     m_warningLevel = level;
 }
 
+/**
+ * \param level The number from where the graph is red.
+ */
 void
 S9sGraph::setErrorLevel(
         double level)
