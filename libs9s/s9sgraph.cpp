@@ -206,6 +206,7 @@ S9sGraph::createDensityFunction(
 {
     S9sVariant minimum = original.min();
     S9sVariant maximum = original.max();
+    double     sum;
     double     delta;
 
     if (minimum == maximum)
@@ -240,6 +241,23 @@ S9sGraph::createDensityFunction(
 
     m_minValue = minimum;
     m_maxValue = maximum;
+
+    /*
+     * Normalizing to percent.
+     */
+    sum = normalized.sum().toDouble();
+    
+    if (sum == 0.0)
+        sum = 1.0;
+
+    for (uint idx = 0u; idx < normalized.size(); ++idx)
+    {
+        double newValue;
+        
+        newValue  = normalized[idx].toDouble() / sum;
+        newValue *= 100.0;
+        normalized[idx] = newValue;
+    }
 }
 
 void

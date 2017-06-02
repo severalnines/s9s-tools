@@ -8,6 +8,20 @@
 #include "s9sdebug.h"
 
 S9sVariant 
+S9sVariantList::sum() const
+{
+    S9sVariant sum;
+
+    if (size() == 0u)
+        return sum;
+
+    for (uint idx = 0u; idx < size(); ++idx)
+        sum += operator[](idx);
+
+    return sum;
+}
+
+S9sVariant 
 S9sVariantList::average() const
 {
     S9sVariant sum;
@@ -50,4 +64,5 @@ S9sVariantList::min() const
 
     return smallest;
 }
+
 
