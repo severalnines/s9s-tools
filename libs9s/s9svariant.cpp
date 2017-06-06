@@ -516,6 +516,23 @@ S9sVariant::toVariantList() const
     return sm_emptyList;
 }
 
+int
+S9sVariant::size() const
+{
+    if (m_type == Invalid)
+    {
+        return 0;
+    } else if (m_type == List)
+    {
+        return m_union.listValue->size();
+    }
+    
+    S9S_WARNING("");
+    S9S_WARNING("Unhandled type %s", STR(typeName()));
+    S9S_WARNING("*** value: %s", STR(toString()));
+    return 0;
+}
+
 /**
  * \param defaultValue the value to be returned if the variant can't be
  *   converted to an integer.

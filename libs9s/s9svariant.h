@@ -98,6 +98,8 @@ class S9sVariant
         bool isNode() const { return m_type == Node; };
         bool isAccount() const { return m_type == Account; };
 
+        int size() const;
+
         int toInt(const int defaultValue = 0) const;
         ulonglong toULongLong(ulonglong defaultValue = 0ull) const; 
         time_t toTimeT() const;

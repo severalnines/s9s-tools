@@ -208,6 +208,10 @@ UtS9sNode::testVariant01()
     return true;
 }
 
+/**
+ * This test will check the S9sRpcClient::nodesField() and
+ * S9sRpcClient::topologyField() functions.
+ */
 bool
 UtS9sNode::testVariant02()
 {
@@ -250,7 +254,22 @@ UtS9sNode::testVariant02()
 
 
     topology = S9sRpcClient::topologyField(options->nodes());
-    S9S_WARNING("topology -> \n%s\n", STR(topology.toString()));
+    //S9S_WARNING("topology -> \n%s\n", STR(topology.toString()));
+    S9S_COMPARE(topology.typeName(), "map");
+    S9S_COMPARE(topology["master_slave_links"].typeName(), "list");
+    S9S_COMPARE(topology["master_slave_links"].size(), 3);
+    S9S_COMPARE(topology["master_slave_links"][0].typeName(), "map");
+    S9S_COMPARE(topology["master_slave_links"][1].typeName(), "map");
+    S9S_COMPARE(topology["master_slave_links"][2].typeName(), "map");
+    
+    S9S_COMPARE(
+            topology["master_slave_links"][0]["masterhost1"], "slavehost1");
+
+    S9S_COMPARE(
+            topology["master_slave_links"][1]["masterhost1"], "masterhost2");
+
+    S9S_COMPARE(
+            topology["master_slave_links"][2]["masterhost2"], "masterhost1");
 
     return true;
 }
