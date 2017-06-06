@@ -138,7 +138,7 @@ static const char *clusterJson1 =
 "    {\n"
 "        'cluster.status': 2,\n"
 "        'cluster.statustext': 'Cluster started.',\n"
-"        'cmon.domainname': '',\n"
+"        'cmon.domainname': 'mydomain.com',\n"
 "        'cmon.hostname': 't7500',\n"
 "        'cmon.running': true,\n"
 "        'cmon.starttime': 1496406208,\n"
@@ -434,6 +434,9 @@ UtS9sCluster::testToString()
     
     theString = theCluster.toString(false, "%M");
     S9S_COMPARE(theString, "All nodes are operational.");
+    
+    theString = theCluster.toString(false, "%c.%d");
+    S9S_COMPARE(theString, "t7500.mydomain.com");
 
     return true;
 }

@@ -45,6 +45,9 @@ class S9sCluster
 
         S9sString vendorAndVersion() const;
         S9sString statusText() const;
+        S9sString controllerName() const;
+        S9sString controllerDomainName() const;
+
         int alarmsCritical() const;
         int alarmsWarning() const;
 

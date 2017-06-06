@@ -197,7 +197,27 @@ S9sCluster::statusText() const
     if (m_properties.contains("status_text"))
         return m_properties.at("status_text").toString();
 
-    return 0;
+    return S9sString();
+}
+
+/**
+ * \returns The host name one would get if executed the "hostname" command on
+ *   the controller host.
+ */
+S9sString
+S9sCluster::controllerName() const
+{
+    return sheetInfo("cmon.hostname").toString();
+}
+
+/**
+ * \returns The host name one would get if executed the "domainname" command on
+ *   the controller host.
+ */
+S9sString
+S9sCluster::controllerDomainName() const
+{
+    return sheetInfo("cmon.domainname").toString();
 }
 
 int
@@ -594,6 +614,24 @@ S9sCluster::toString(
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+                
+                case 'c':
+                    // The controller name for the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(controllerName()));
+                    
+                    retval += tmp;
+
+                    break;
+                
+                case 'd':
+                    // The controller domain name for the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(controllerDomainName()));
+                    
+                    retval += tmp;
 
                     break;
 
