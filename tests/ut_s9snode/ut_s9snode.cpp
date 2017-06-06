@@ -150,14 +150,36 @@ UtS9sNode::testSetProperties()
     S9S_VERIFY(theMap.parse(hostJson1));
     theNode.setProperties(theMap);
 
-    S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
-    S9S_COMPARE(theNode.port(),        3306);
-    S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
     S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
+    S9S_COMPARE(theNode.id(),         3);
+    S9S_COMPARE(theNode.clusterId(),  1);
+    S9S_COMPARE(theNode.name(),       "192.168.1.189");
+    S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
+    S9S_COMPARE(theNode.ipAddress(),  "192.168.1.189");
+    S9S_COMPARE(theNode.alias(),      "");
+    S9S_COMPARE(theNode.role(),       "none");
+    S9S_COMPARE(theNode.isMaster(),   false);
+    S9S_COMPARE(theNode.isSlave(),    false);
+    S9S_COMPARE(theNode.configFile(), "/etc/mysql/my.cnf");
+    S9S_COMPARE(theNode.logFile(),    "/var/log/mysql/mysqld.log");
+    S9S_COMPARE(theNode.pidFile(),    "/var/lib/mysql/mysql.pid");
+    S9S_COMPARE(theNode.dataDir(),    "/var/lib/mysql/");
+    S9S_COMPARE(theNode.pid(),        8272);
+    S9S_COMPARE(theNode.port(),       3306);
+    S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
     S9S_COMPARE(theNode.nodeType(),   "galera");
     S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
     S9S_COMPARE(theNode.message(),    "Up and running.");
+    S9S_COMPARE(theNode.osVersionString(), "ubuntu 16.04 xenial");
     S9S_COMPARE(theNode.isMaintenanceActive(), true);
+    S9S_COMPARE(theNode.hasPort(),     true);
+    S9S_COMPARE(theNode.hasError(),    false);
+    S9S_COMPARE(theNode.readOnly(),    false);
+    S9S_COMPARE(theNode.superReadOnly(), false);
+    S9S_COMPARE(theNode.connected(),   false);
+    S9S_COMPARE(theNode.managed(),     false);
+    S9S_COMPARE(theNode.nodeAutoRecovery(), false);
+    S9S_COMPARE(theNode.skipNameResolve(), false);
 
     return true;
 }
@@ -173,15 +195,37 @@ UtS9sNode::testAssign()
 
     S9S_VERIFY(theMap.parse(hostJson1));
     theNode = theMap;
-
-    S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
-    S9S_COMPARE(theNode.port(),        3306);
-    S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
+    
     S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
+    S9S_COMPARE(theNode.id(),         3);
+    S9S_COMPARE(theNode.clusterId(),  1);
+    S9S_COMPARE(theNode.name(),       "192.168.1.189");
+    S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
+    S9S_COMPARE(theNode.ipAddress(),  "192.168.1.189");
+    S9S_COMPARE(theNode.alias(),      "");
+    S9S_COMPARE(theNode.role(),       "none");
+    S9S_COMPARE(theNode.isMaster(),   false);
+    S9S_COMPARE(theNode.isSlave(),    false);
+    S9S_COMPARE(theNode.configFile(), "/etc/mysql/my.cnf");
+    S9S_COMPARE(theNode.logFile(),    "/var/log/mysql/mysqld.log");
+    S9S_COMPARE(theNode.pidFile(),    "/var/lib/mysql/mysql.pid");
+    S9S_COMPARE(theNode.dataDir(),    "/var/lib/mysql/");
+    S9S_COMPARE(theNode.pid(),        8272);
+    S9S_COMPARE(theNode.port(),       3306);
+    S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
     S9S_COMPARE(theNode.nodeType(),   "galera");
     S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
     S9S_COMPARE(theNode.message(),    "Up and running.");
+    S9S_COMPARE(theNode.osVersionString(), "ubuntu 16.04 xenial");
     S9S_COMPARE(theNode.isMaintenanceActive(), true);
+    S9S_COMPARE(theNode.hasPort(),     true);
+    S9S_COMPARE(theNode.hasError(),    false);
+    S9S_COMPARE(theNode.readOnly(),    false);
+    S9S_COMPARE(theNode.superReadOnly(), false);
+    S9S_COMPARE(theNode.connected(),   false);
+    S9S_COMPARE(theNode.managed(),     false);
+    S9S_COMPARE(theNode.nodeAutoRecovery(), false);
+    S9S_COMPARE(theNode.skipNameResolve(), false);
 
     return true;
 }
@@ -281,9 +325,6 @@ UtS9sNode::testParse()
     S9sNode  node2("psql://10.10.10.23?master&password=b0b&big=true");
     S9sNode  node3("10.10.10.23?master");
 
-    S9S_WARNING("node1: \n%s\n", STR(node1.toVariantMap().toString()));
-    S9S_WARNING("node2: \n%s\n", STR(node2.toVariantMap().toString()));
-    S9S_WARNING("node3: \n%s\n", STR(node3.toVariantMap().toString()));
     S9S_COMPARE(node1.property("db_username"), "bob");
     S9S_COMPARE(node1.property("db_password"), "b0b");
 

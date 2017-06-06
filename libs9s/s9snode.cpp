@@ -607,6 +607,9 @@ S9sNode::role() const
     return S9sString();
 }
 
+/**
+ * \returns True if the host is a master.
+ */
 bool
 S9sNode::isMaster() const
 {
@@ -618,6 +621,9 @@ S9sNode::isMaster() const
     return false;
 }
 
+/**
+ * \returns True if the host is a slave.
+ */
 bool
 S9sNode::isSlave() const
 {
