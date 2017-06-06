@@ -392,7 +392,16 @@ UtS9sCluster::testAssign()
     S9S_COMPARE(hostIds.size(),   2);
 
     hostId  = hostIds[0].toInt();
-    S9S_COMPARE(theCluster.hostName(hostId), "192.168.1.129");
+    S9S_COMPARE(theCluster.hostName(hostId),         "192.168.1.129");
+    S9S_COMPARE(theCluster.nCpuCores(hostId),        "16");
+    S9S_COMPARE(theCluster.cpuUsagePercent(hostId),  "5.08688");
+    S9S_COMPARE(theCluster.memTotal(hostId),         "17179869184");
+    S9S_COMPARE(theCluster.memUsed(hostId),          "1885625344");
+    S9S_COMPARE(theCluster.swapTotal(hostId),        "0");
+    S9S_COMPARE(theCluster.swapFree(hostId),         "0");
+    S9S_COMPARE(theCluster.rxBytesPerSecond(hostId), "2474");
+    S9S_COMPARE(theCluster.txBytesPerSecond(hostId), "4532");
+    S9S_COMPARE(theCluster.totalDiskBytes(hostId),   "208033853440");
 
     return true;
 }
