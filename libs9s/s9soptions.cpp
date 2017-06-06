@@ -480,6 +480,10 @@ S9sOptions::configFile() const
     return retval;
 }
 
+/**
+ * \return True if the --only-ascii command line option was provided or the
+ *   only_ascii configuration value set to true.
+ */
 bool
 S9sOptions::onlyAscii() const
 {
@@ -499,6 +503,9 @@ S9sOptions::onlyAscii() const
     return retval.toBoolean();
 }
 
+/**
+ * \returns True if the --density command line option was provided.
+ */
 bool
 S9sOptions::density() const
 {
