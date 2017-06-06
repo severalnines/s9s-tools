@@ -49,6 +49,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions02, retval);
     PERFORM_TEST(testReadOptions03, retval);
     PERFORM_TEST(testReadOptions04, retval);
+    PERFORM_TEST(testReadOptions05, retval);
 
     return retval;
 }
@@ -241,6 +242,30 @@ UtS9sOptions::testReadOptions04()
     S9S_COMPARE(options->configFile(),     "/home/johan/.s9s/s9s.conf");
     S9S_COMPARE(options->rpcToken(),       "THE_TOKEN");
     S9S_VERIFY(options->isListRequested());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testReadOptions05()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool  success;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "node", "--stat", "--graph=load", "--density", NULL 
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),     "s9s");
+    S9S_COMPARE(options->m_operationMode,  S9sOptions::Node);
+    S9S_COMPARE(options->graph(),          "load");
+    S9S_VERIFY(options->density());
 
     S9sOptions::uninit();
     return true;

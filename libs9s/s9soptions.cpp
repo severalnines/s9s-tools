@@ -423,6 +423,10 @@ S9sOptions::controllerHostName()
     return retval;
 }
 
+/**
+ * \returns The protocol part of the url passed as command line option argument
+ *   for the --controller command line option.
+ */
 S9sString
 S9sOptions::controllerProtocol()
 {
@@ -1186,6 +1190,9 @@ S9sOptions::nodeFormat() const
     return S9sString();
 }
 
+/**
+ * \returns The command line option argument for the --graph option.
+ */
 S9sString
 S9sOptions::graph() const
 {
