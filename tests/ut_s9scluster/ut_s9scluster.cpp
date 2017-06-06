@@ -359,14 +359,40 @@ UtS9sCluster::testCreate()
 bool
 UtS9sCluster::testAssign()
 {
-    S9sVariantMap theMap;
-    S9sCluster    theCluster;
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+    S9sVariantList hostIds; 
+    int            hostId;
 
     S9S_VERIFY(theMap.parse(clusterJson1));
     theCluster = theMap;
 
-    S9S_COMPARE(theCluster.className(), "CmonClusterInfo");
-    S9S_COMPARE(theCluster.name(),      "ft_postgresql_19203");
+    S9S_COMPARE(theCluster.className(),    "CmonClusterInfo");
+    S9S_COMPARE(theCluster.name(),         "ft_postgresql_19203");
+    S9S_COMPARE(theCluster.ownerName(),    "pipas");
+    S9S_COMPARE(theCluster.groupOwnerName(),  "users");
+    S9S_COMPARE(theCluster.clusterId(),    1);
+    S9S_COMPARE(theCluster.clusterType(),  "POSTGRESQL_SINGLE");
+    S9S_COMPARE(theCluster.state(),        "STARTED");
+    S9S_COMPARE(theCluster.configFile(),   "/tmp/cmon_1.cnf");
+    S9S_COMPARE(theCluster.logFile(),      "/tmp/cmon_1.log");
+    S9S_COMPARE(theCluster.vendorAndVersion(),  "postgres 9.6");
+    S9S_COMPARE(theCluster.statusText(),   "All nodes are operational.");
+    
+    S9S_COMPARE(theCluster.alarmsCritical(),   2);
+    S9S_COMPARE(theCluster.alarmsWarning(),    0);
+    S9S_COMPARE(theCluster.jobsAborted(),      0);
+    S9S_COMPARE(theCluster.jobsDefined(),      0);
+    S9S_COMPARE(theCluster.jobsDequeued(),     0);
+    S9S_COMPARE(theCluster.jobsFailed(),       0);
+    S9S_COMPARE(theCluster.jobsFinished(),     4);
+    S9S_COMPARE(theCluster.jobsRunning(),      0);
+
+    hostIds = theCluster.hostIds();
+    S9S_COMPARE(hostIds.size(),   2);
+
+    hostId  = hostIds[0].toInt();
+    S9S_COMPARE(theCluster.hostName(hostId), "192.168.1.129");
 
     return true;
 }
