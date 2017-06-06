@@ -690,6 +690,14 @@ S9sCluster::toString(
                     retval += tmp;
                     break;
 
+                case 'V':
+                    // The vendor and version of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(vendorAndVersion()));
+                    retval += tmp;
+
+                    break;
+
                 case '%':
                     retval += '%';
                     break;

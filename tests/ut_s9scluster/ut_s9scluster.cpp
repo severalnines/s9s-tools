@@ -428,6 +428,9 @@ UtS9sCluster::testToString()
     
     theString = theCluster.toString(false, "%C %L");
     S9S_COMPARE(theString, "/tmp/cmon_1.cnf /tmp/cmon_1.log");
+    
+    theString = theCluster.toString(false, "%V");
+    S9S_COMPARE(theString, "");
 
     return true;
 }
