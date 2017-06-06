@@ -618,6 +618,17 @@ S9sNode::isMaster() const
     return false;
 }
 
+bool
+S9sNode::isSlave() const
+{
+    if (m_properties.contains("slave"))
+        return m_properties.at("slave").toBoolean();
+    else if (m_properties.contains("role"))
+        return m_properties.at("role") == "slave";
+
+    return false;
+}
+
 /**
  * \returns A one character representation of the "role" property. We use this
  *   in lists we print because it takes less space and so we can print compact

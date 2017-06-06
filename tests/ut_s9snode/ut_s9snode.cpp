@@ -223,9 +223,12 @@ UtS9sNode::testVariant02()
         "masterhost2:3306?master";
 
     options->setNodes(nodesString);
-    
+   
+    /*
+     * Checking the nodesField() method.
+     */
     theVariant = S9sRpcClient::nodesField(options->nodes());
-    S9S_WARNING("nodes    -> \n%s\n", STR(theVariant.toString()));
+    //S9S_WARNING("nodes    -> \n%s\n", STR(theVariant.toString()));
     S9S_VERIFY(theVariant.isVariantList());
     S9S_COMPARE(theVariant[0].typeName(), "node");
     S9S_COMPARE(theVariant.toVariantList().size(), 3);
@@ -234,10 +237,20 @@ UtS9sNode::testVariant02()
     S9S_COMPARE(node.hostName(), "masterhost1");
     S9S_COMPARE(node.isMaster(),  true);
     S9S_COMPARE(node.port(),      3306);
+    
+    node = theVariant[1].toNode();
+    S9S_COMPARE(node.hostName(), "slavehost1");
+    S9S_COMPARE(node.isSlave(),   true);
+    S9S_COMPARE(node.port(),      3306);
+    
+    node = theVariant[2].toNode();
+    S9S_COMPARE(node.hostName(), "masterhost2");
+    S9S_COMPARE(node.isMaster(),  true);
+    S9S_COMPARE(node.port(),      3306);
 
 
-    //topology = S9sRpcClient::topologyField(options->nodes());
-    //S9S_WARNING("topology -> \n%s\n", STR(topology.toString()));
+    topology = S9sRpcClient::topologyField(options->nodes());
+    S9S_WARNING("topology -> \n%s\n", STR(topology.toString()));
 
     return true;
 }
