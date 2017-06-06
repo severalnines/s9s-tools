@@ -638,6 +638,14 @@ S9sCluster::toString(
 
                     break;
 
+                case 'M':
+                    // The ID of the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(statusText()));
+
+                    retval += tmp;
+                    break;
+                    
                 case 'N':
                     // The name of the cluster.
                     partFormat += 's';

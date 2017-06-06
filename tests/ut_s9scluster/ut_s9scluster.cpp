@@ -430,7 +430,10 @@ UtS9sCluster::testToString()
     S9S_COMPARE(theString, "/tmp/cmon_1.cnf /tmp/cmon_1.log");
     
     theString = theCluster.toString(false, "%V");
-    S9S_COMPARE(theString, "");
+    S9S_COMPARE(theString, "postgres 9.6");
+    
+    theString = theCluster.toString(false, "%M");
+    S9S_COMPARE(theString, "All nodes are operational.");
 
     return true;
 }
