@@ -265,6 +265,7 @@ UtS9sOptions::testReadOptions05()
     S9S_COMPARE(options->binaryName(),     "s9s");
     S9S_COMPARE(options->m_operationMode,  S9sOptions::Node);
     S9S_COMPARE(options->graph(),          "load");
+    S9S_VERIFY(options->isStatRequested());
     S9S_VERIFY(options->density());
 
     S9sOptions::uninit();

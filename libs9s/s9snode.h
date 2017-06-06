@@ -58,6 +58,7 @@ class S9sNode
         S9sString ipAddress() const;
         S9sString alias() const;
         S9sString role() const;
+        bool isMaster() const;
         char roleFlag() const;
         S9sString configFile() const;
         S9sString logFile() const;

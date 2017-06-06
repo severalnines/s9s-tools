@@ -607,6 +607,17 @@ S9sNode::role() const
     return S9sString();
 }
 
+bool
+S9sNode::isMaster() const
+{
+    if (m_properties.contains("master"))
+        return m_properties.at("master").toBoolean();
+    else if (m_properties.contains("role"))
+        return m_properties.at("role") == "master";
+
+    return false;
+}
+
 /**
  * \returns A one character representation of the "role" property. We use this
  *   in lists we print because it takes less space and so we can print compact

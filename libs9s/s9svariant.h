@@ -80,6 +80,7 @@ class S9sVariant
         bool operator<(const S9sVariant &rhs) const;
         bool operator>(const S9sVariant &rhs) const;
         S9sVariant &operator[] (const S9sString &index);
+        S9sVariant &operator[] (const int &index);
 
         S9sBasicType type() const { return m_type; };
         S9sString typeName() const;

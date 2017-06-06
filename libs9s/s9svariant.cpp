@@ -327,20 +327,39 @@ S9sVariant::operator> (
 
 S9sVariant &
 S9sVariant::operator[] (
+        const int &index)
+{
+    if (m_type == Invalid)
+    {
+        *this = S9sVariantList();
+        return this->operator[](index);
+    } else if (m_type == List)
+    {
+        return m_union.listValue->S9sVariantList::operator[](index);
+    }
+    
+    S9S_WARNING("");
+    S9S_WARNING("Unhandled type %s", STR(typeName()));
+    S9S_WARNING("*** value: %s", STR(toString()));
+    assert(false);
+}
+
+S9sVariant &
+S9sVariant::operator[] (
         const S9sString &index)
 {
     if (m_type == Invalid)
     {
         *this = S9sVariantMap();
         return this->operator[](index);
-    }
-
-    if (m_type == Map)
+    } else if (m_type == Map)
     {
         return m_union.mapValue->S9sMap<
                 S9sString, S9sVariant>::operator[](index);
     } 
-    
+   
+    S9S_WARNING("Unhandled type %s", STR(typeName()));
+    S9S_WARNING("*** value: %s", STR(toString()));
     assert(false);
 }
 
