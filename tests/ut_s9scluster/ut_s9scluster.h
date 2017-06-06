@@ -29,5 +29,6 @@ class UtS9sCluster : public S9sUnitTest
     protected:
         bool testCreate();
         bool testAssign();
+        bool testToString();
 };
 

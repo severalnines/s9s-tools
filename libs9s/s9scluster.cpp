@@ -582,13 +582,31 @@ S9sCluster::toString(
         {
             switch (c)
             {
+                case 'C':
+                    // The configuration file for the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(configFile()));
+                    
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(configFile());
+                    
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+
                 case 'G':
                     // The name of the group owner.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(groupOwnerName()));
 
                     if (syntaxHighlight)
-                        retval += S9sRpcReply::groupColorBegin(groupOwnerName());
+                    {
+                        retval += S9sRpcReply::groupColorBegin(
+                                groupOwnerName());
+                    }
 
                     retval += tmp;
 
@@ -603,6 +621,21 @@ S9sCluster::toString(
                     tmp.sprintf(STR(partFormat), clusterId());
 
                     retval += tmp;
+                    break;
+                
+                case 'L':
+                    // The log file for the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(logFile()));
+                    
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(logFile());
+                    
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
                     break;
 
                 case 'N':

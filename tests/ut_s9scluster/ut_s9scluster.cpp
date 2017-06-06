@@ -336,6 +336,7 @@ UtS9sCluster::runTest(const char *testName)
 
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testAssign,          retval);
+    PERFORM_TEST(testToString,        retval);
 
     return retval;
 }
@@ -402,6 +403,31 @@ UtS9sCluster::testAssign()
     S9S_COMPARE(theCluster.rxBytesPerSecond(hostId), "2474");
     S9S_COMPARE(theCluster.txBytesPerSecond(hostId), "4532");
     S9S_COMPARE(theCluster.totalDiskBytes(hostId),   "208033853440");
+
+    return true;
+}
+
+bool
+UtS9sCluster::testToString()
+{
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+    S9sString      theString;
+
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+
+    theString = theCluster.toString(false, "%O/%G");
+    S9S_COMPARE(theString, "pipas/users");
+
+    theString = theCluster.toString(false, "%I %N");
+    S9S_COMPARE(theString, "1 ft_postgresql_19203");
+    
+    theString = theCluster.toString(false, "%S %T");
+    S9S_COMPARE(theString, "STARTED POSTGRESQL_SINGLE");
+    
+    theString = theCluster.toString(false, "%C %L");
+    S9S_COMPARE(theString, "/tmp/cmon_1.cnf /tmp/cmon_1.log");
 
     return true;
 }
