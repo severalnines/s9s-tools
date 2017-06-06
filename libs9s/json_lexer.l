@@ -43,6 +43,7 @@ DOUBLESPECIAL   ({NAN}|{INF})
 
 %x C_COMMENT
 %x C_STRING
+%x S_STRING
 
 %%
 
@@ -128,6 +129,35 @@ DOUBLESPECIAL   ({NAN}|{INF})
 }
 
 <C_STRING>[^\\\n\"]* {
+    S9S_DEBUG("JSON_STRING1    : '%s'", yytext);
+    yymore();
+}
+
+\' {
+    S9S_DEBUG("START SNGL QUOTE : %s", yytext);
+    yymore();
+    BEGIN(S_STRING);
+}
+
+<S_STRING>\' {
+    S9S_DEBUG("END SNGL QTE     : '%s'", yytext);
+    S9sString theString = yytext;
+
+    theString = theString.unQuote();
+    theString = theString.unEscape();
+
+    yylval->vval = new S9sVariant(theString);
+    BEGIN(INITIAL);
+
+    return JSON_STRING;
+}
+
+<S_STRING>\\. {
+    S9S_DEBUG("ESCAPED CHAR    : '%s'", yytext);
+    yymore();
+}
+
+<S_STRING>[^\\\n\']* {
     S9S_DEBUG("JSON_STRING1    : '%s'", yytext);
     yymore();
 }

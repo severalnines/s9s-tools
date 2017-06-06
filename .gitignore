@@ -57,4 +57,5 @@ tests/ut_s9srpcclient/ut_s9srpcclient
 tests/ut_s9surl/ut_s9surl
 tests/ut_s9saccount/ut_s9saccount
 tests/ut_s9sgraph/ut_s9sgraph
+tests/ut_s9scluster/ut_s9scluster
 y.tab.c

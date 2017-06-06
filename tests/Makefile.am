@@ -7,6 +7,7 @@ SUBDIRS =     	     \
 	ut_s9sstring     \
 	ut_s9surl        \
 	ut_s9snode       \
+	ut_s9scluster    \
 	ut_s9saccount    \
 	ut_s9svariant    \
 	ut_s9svariantmap \
