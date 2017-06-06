@@ -8,6 +8,7 @@ LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
+OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # This is the name of the server that will hold the linux containers.
@@ -26,14 +27,18 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+ 
+  $MYNAME - Test script for s9s to check Galera clusters.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
+ --install        Just install the cluster and exit.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -42,7 +47,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -79,6 +84,16 @@ while true; do
             PRINT_COMMANDS="true"
             ;;
 
+        --install)
+            shift
+            OPTION_INSTALL="--install"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -91,13 +106,44 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-if [ -z "$PIP_CONTAINER_CREATE" ]; then
+if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
+
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
 
 #
 # Creates and starts a new 
@@ -106,7 +152,10 @@ function create_node()
 {
     local ip
 
+    printVerbose "Creating container..."
     ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    printVerbose "Created '$ip'."
+
     echo $ip
 }
 
@@ -763,22 +812,31 @@ function testStart()
 function testDestroyNodes()
 {
     pip-say "The test is now destroying the nodes."
-    pip-container-destroy --server=$CONTAINER_SERVER $ALL_CREATED_IPS
+    pip-container-destroy \
+        --server=$CONTAINER_SERVER \
+        $ALL_CREATED_IPS \
+        >/dev/null 2>/dev/null
 }
 
 #
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateCluster
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
     runFunctionalTest testPing
+
     runFunctionalTest testCreateCluster
+
     runFunctionalTest testConfig
     runFunctionalTest testSetConfig
 
@@ -801,7 +859,7 @@ else
 fi
 
 if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were found."
+    pip-say "The test script is now finished. No errors were detected."
 else
     pip-say "The test script is now finished. Some failures were detected."
 fi
