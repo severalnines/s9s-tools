@@ -279,6 +279,10 @@ get if executed the "domainname" command on the controller host.
 The name of the group owner of the cluster. 
 
 .TP
+.B h
+The number of the hosts in the cluster including the controller itself.
+
+.TP
 .B I
 The numerical ID of the cluster.
 
@@ -289,6 +293,12 @@ The log file of the cluster.
 .TP
 .B M
 A human readable short message that discribes the state of the cluster.
+
+.TP
+.B m
+The size of memory of all the hosts in the cluster added together, measured in
+GBytes. This value is represented by a double precision floating pointer number,
+so formatting it with precision (e.g. "%6.2m") is possible.
 
 .TP
 .B N

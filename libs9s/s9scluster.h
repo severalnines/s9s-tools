@@ -59,11 +59,14 @@ class S9sCluster
         int jobsRunning() const;
 
         int nHosts() const;
+        S9sVariant memTotal() const;
+
+
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
         S9sVariant nCpuCores(const int hostId);
         S9sVariant cpuUsagePercent(const int hostId);
-        S9sVariant memTotal(const int hostId);
+        S9sVariant memTotal(const int hostId) const;
         S9sVariant memUsed(const int hostId);
 
         S9sVariant swapTotal(const int hostId);

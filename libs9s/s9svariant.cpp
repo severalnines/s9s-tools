@@ -677,6 +677,12 @@ S9sVariant::toDouble(
     return retval;
 }
 
+double
+S9sVariant::toGBytes() const
+{
+    return toDouble() / (1024.0 * 1024.0 * 1024.0);
+}
+
 /**
  * \param defaultValue the value that shall be returned if the variant can't be
  *   converted to a boolean.

@@ -440,6 +440,9 @@ UtS9sCluster::testToString()
     
     theString = theCluster.toString(false, "%h");
     S9S_COMPARE(theString, "2");
+    
+    theString = theCluster.toString(false, "%6.2mG %N");
+    S9S_COMPARE(theString, " 63.16G ft_postgresql_19203");
 
     return true;
 }

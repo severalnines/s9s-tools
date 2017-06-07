@@ -105,7 +105,8 @@ class S9sVariant
         time_t toTimeT() const;
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;
-        
+        double toGBytes() const;
+
         S9sString toString() const;
         S9sString toString(const S9sVariant::TextFormat format) const;
 

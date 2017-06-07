@@ -305,6 +305,20 @@ S9sCluster::jobStatistics() const
     return jobsMap["by_state"].toVariantMap();
 }
 
+S9sVariant
+S9sCluster::memTotal() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += memTotal(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
 /**
  * \returns How many hosts the cluster have including the controller.
  */
@@ -388,7 +402,7 @@ S9sCluster::cpuUsagePercent(
  */
 S9sVariant
 S9sCluster::memTotal(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -704,7 +718,15 @@ S9sCluster::toString(
 
                     retval += tmp;
                     break;
-                    
+                
+                case 'm':
+                    // The ID of the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), memTotal().toGBytes());
+
+                    retval += tmp;
+                    break;
+
                 case 'N':
                     // The name of the cluster.
                     partFormat += 's';
