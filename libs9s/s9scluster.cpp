@@ -750,6 +750,15 @@ S9sCluster::toString(
                     retval += tmp;
 
                     break;
+                
+                case 'd':
+                    // The total disk size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
+
+                    retval += tmp;
+                    break;
+
 
                 case 'G':
                     // The name of the group owner.

@@ -106,6 +106,7 @@ class S9sVariant
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;
         double toGBytes() const;
+        double toTBytes() const;
 
         S9sString toString() const;
         S9sString toString(const S9sVariant::TextFormat format) const;
