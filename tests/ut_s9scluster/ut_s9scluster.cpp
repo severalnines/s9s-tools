@@ -437,6 +437,9 @@ UtS9sCluster::testToString()
     
     theString = theCluster.toString(false, "%c.%d");
     S9S_COMPARE(theString, "t7500.mydomain.com");
+    
+    theString = theCluster.toString(false, "%h");
+    S9S_COMPARE(theString, "2");
 
     return true;
 }

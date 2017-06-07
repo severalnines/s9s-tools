@@ -58,6 +58,7 @@ class S9sCluster
         int jobsFinished() const;
         int jobsRunning() const;
 
+        int nHosts() const;
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
         S9sVariant nCpuCores(const int hostId);

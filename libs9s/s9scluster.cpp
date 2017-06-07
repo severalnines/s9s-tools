@@ -305,6 +305,19 @@ S9sCluster::jobStatistics() const
     return jobsMap["by_state"].toVariantMap();
 }
 
+/**
+ * \returns How many hosts the cluster have including the controller.
+ */
+int
+S9sCluster::nHosts() const
+{
+    return hostIds().size();
+}
+
+/**
+ * \returns A list with all the host IDs of the cluster including the
+ *   controller.
+ */
 S9sVariantList 
 S9sCluster::hostIds() const
 {
@@ -651,6 +664,14 @@ S9sCluster::toString(
                     if (syntaxHighlight)
                         retval += S9sRpcReply::groupColorEnd();
 
+                    break;
+
+                case 'h':
+                    // The number of the hosts in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nHosts());
+
+                    retval += tmp;
                     break;
 
                 case 'I':
