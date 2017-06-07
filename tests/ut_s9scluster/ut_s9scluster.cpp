@@ -435,7 +435,7 @@ UtS9sCluster::testToString()
     theString = theCluster.toString(false, "%M");
     S9S_COMPARE(theString, "All nodes are operational.");
     
-    theString = theCluster.toString(false, "%c.%d");
+    theString = theCluster.toString(false, "%H.%D");
     S9S_COMPARE(theString, "t7500.mydomain.com");
     
     theString = theCluster.toString(false, "%h");

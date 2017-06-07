@@ -305,6 +305,9 @@ S9sCluster::jobStatistics() const
     return jobsMap["by_state"].toVariantMap();
 }
 
+/**
+ * \returns The total memory size of the hosts in the cluster.
+ */
 S9sVariant
 S9sCluster::memTotal() const
 {
@@ -359,6 +362,34 @@ S9sCluster::nDevices() const
     for (uint idx = 0u; idx < ids.size(); ++idx)
     {
         retval += nDevices(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+S9sVariant
+S9sCluster::totalDiskBytes() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += totalDiskBytes(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+S9sVariant
+S9sCluster::freeDiskBytes() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += freeDiskBytes(ids[idx].toInt());
     }
 
     return retval;
@@ -579,7 +610,7 @@ S9sCluster::txBytesPerSecond(
  */
 S9sVariant
 S9sCluster::totalDiskBytes(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -595,7 +626,7 @@ S9sCluster::totalDiskBytes(
  */
 S9sVariant
 S9sCluster::freeDiskBytes(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -711,16 +742,7 @@ S9sCluster::toString(
 
                     break;
                 
-                case 'c':
-                    // The controller name for the cluster.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(controllerName()));
-                    
-                    retval += tmp;
-
-                    break;
-                
-                case 'd':
+                case 'D':
                     // The controller domain name for the cluster.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(controllerDomainName()));
@@ -747,6 +769,15 @@ S9sCluster::toString(
 
                     break;
 
+                case 'H':
+                    // The controller host name for the cluster.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(controllerName()));
+                    
+                    retval += tmp;
+
+                    break;
+                
                 case 'h':
                     // The number of the hosts in the cluster.
                     partFormat += 'd';
@@ -795,7 +826,7 @@ S9sCluster::toString(
                     break;
                 
                 case 'm':
-                    // The ID of the cluster.
+                    // The total memory size found in the cluster.
                     partFormat += 'f';
                     tmp.sprintf(STR(partFormat), memTotal().toGBytes());
 

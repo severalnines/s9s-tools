@@ -63,6 +63,8 @@ class S9sCluster
         S9sVariant nCpuCores() const;
         S9sVariant nNics() const;
         S9sVariant nDevices() const;
+        S9sVariant totalDiskBytes() const;
+        S9sVariant freeDiskBytes() const;
 
 
         S9sVariantList hostIds() const;
@@ -80,8 +82,8 @@ class S9sCluster
         S9sVariant rxBytesPerSecond(const int hostId);
         S9sVariant txBytesPerSecond(const int hostId);
 
-        S9sVariant totalDiskBytes(const int hostId);
-        S9sVariant freeDiskBytes(const int hostId);
+        S9sVariant totalDiskBytes(const int hostId) const;
+        S9sVariant freeDiskBytes(const int hostId) const;
         
         S9sString toString(
                 const bool       syntaxHighlight,
