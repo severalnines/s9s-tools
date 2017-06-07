@@ -452,6 +452,9 @@ UtS9sCluster::testToString()
     
     theString = theCluster.toString(false, "%.2d");
     S9S_COMPARE(theString, "2.12");
+    
+    theString = theCluster.toString(false, "%a");
+    S9S_COMPARE(theString, "2");
 
     return true;
 }

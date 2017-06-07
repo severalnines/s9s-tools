@@ -66,7 +66,7 @@ S9sCluster::className() const
 }
 
 /**
- * \returns the "cluster_name" property Cmon uses to represent the name of the
+ * \returns The "cluster_name" property Cmon uses to represent the name of the
  *   cluster.
  */
 S9sString
@@ -78,6 +78,9 @@ S9sCluster::name() const
     return S9sString();
 }
 
+/**
+ * \returns The name of the user that owns the cluster.
+ */
 S9sString
 S9sCluster::ownerName() const
 {
@@ -98,6 +101,9 @@ S9sCluster::ownerName() const
     return retval;
 }
 
+/**
+ * \returns The name of the group that owns the cluster.
+ */
 S9sString
 S9sCluster::groupOwnerName() const
 {
@@ -118,6 +124,9 @@ S9sCluster::groupOwnerName() const
     return retval;
 }
 
+/**
+ * \returns The cluster ID of the cluster.
+ */
 int 
 S9sCluster::clusterId() const
 {
@@ -168,6 +177,9 @@ S9sCluster::configFile() const
     return S9sString();
 }
 
+/**
+ * \returns The full path of the Cmon log file for the cluster.
+ */
 S9sString
 S9sCluster::logFile() const
 {
@@ -177,6 +189,9 @@ S9sCluster::logFile() const
     return S9sString();
 }
 
+/**
+ * \returns The vendor name and the version number of the cluster software.
+ */
 S9sString
 S9sCluster::vendorAndVersion() const
 {
@@ -191,6 +206,9 @@ S9sCluster::vendorAndVersion() const
     return retval;
 }
 
+/**
+ * \returns A short human readable string describing the cluster state.
+ */
 S9sString
 S9sCluster::statusText() const
 {
@@ -220,6 +238,9 @@ S9sCluster::controllerDomainName() const
     return sheetInfo("cmon.domainname").toString();
 }
 
+/**
+ * \returns The number of critical alarms active on the cluster.
+ */
 int
 S9sCluster::alarmsCritical() const
 {
@@ -231,6 +252,9 @@ S9sCluster::alarmsCritical() const
     return statMap["critical"].toInt();
 }
 
+/**
+ * \returns The number of warning level alarms active on the cluster.
+ */
 int
 S9sCluster::alarmsWarning() const
 {
@@ -727,6 +751,15 @@ S9sCluster::toString(
         {
             switch (c)
             {
+                case 'a':
+                    // The number of active alarms on the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), 
+                            alarmsCritical() + alarmsWarning());
+
+                    retval += tmp;
+                    break;
+
                 case 'C':
                     // The configuration file for the cluster.
                     partFormat += 's';
@@ -758,7 +791,6 @@ S9sCluster::toString(
 
                     retval += tmp;
                     break;
-
 
                 case 'G':
                     // The name of the group owner.
