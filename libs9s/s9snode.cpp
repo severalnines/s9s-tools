@@ -402,6 +402,14 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
+                case 'n':
+                    // The total number of monitored network interfaces.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nNics().toInt());
+
+                    retval += tmp;
+                    break;
+
                 case 'O':
                     // The OS version string.
                     partFormat += 's';
@@ -492,7 +500,14 @@ S9sNode::toString(
                             STR(S9sString::uptime(uptime())));
                     retval += tmp;
                     break;
-                
+
+                case 'u':
+                    // The total number of CPU cores in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
+                    retval += tmp;
+                    break;
+
                 case 'V':
                     // The version.
                     partFormat += "s";

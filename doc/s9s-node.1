@@ -471,6 +471,16 @@ The numerical ID of the node.
 The IP address of the node.
 
 .TP
+.B L
+The replay location. This field currently only has valid value in PostgreSQL
+clusters.
+
+.TP
+.B l
+The received location. This field currently only has valid value in PostgreSQL
+clusters.
+
+.TP
 .B M
 A message, describing the node's status un human readable format.
 
@@ -485,18 +495,8 @@ of the node is used. If the node is registered using the IP address the IP
 address is the name.
 
 .TP
-.B O
-The name and version of the operating system together with the codename.
-
-.TP
-.B L
-The replay location. This field currently only has valid value in PostgreSQL
-clusters.
-
-.TP
-.B l
-The received location. This field currently only has valid value in PostgreSQL
-clusters.
+.B n
+The total number of monitored network interfaces in the host.
 
 .TP
 .B P
@@ -506,6 +506,10 @@ The port on which the most important service is awaiting for requests.
 .B p
 The PID (process ID) on the node that presents the service (e.g. the PID of the
 MySQL daemon on a Galera node).
+
+.TP
+.B O
+The name and version of the operating system together with the codename.
 
 .TP
 .B R 
@@ -534,6 +538,12 @@ The type of the node, e.g. "controller", "galera", "postgres".
 The uptime of the service on the host. Please note that this is not the uptime
 of the host, it is the uptime of the most important service (e.g. the uptime of
 the PostgreSQL server software).
+
+.TP
+.B u
+The total number of CPU cores in the host. Please note that this number may
+be affected by hyper-threading. When a computer has 2 identical CPUs, with four
+cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
 
 .TP
 .B V
