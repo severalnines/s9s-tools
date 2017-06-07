@@ -336,6 +336,34 @@ S9sCluster::nCpuCores() const
     return retval;
 }
 
+S9sVariant
+S9sCluster::nNics() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += nNics(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+S9sVariant
+S9sCluster::nDevices() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += nDevices(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
 /**
  * \returns How many hosts the cluster have including the controller.
  */
@@ -381,6 +409,28 @@ S9sCluster::hostName(
     key.sprintf("host.%d.hostname", hostId);
 
     return sheetInfo(key).toString();
+}
+
+S9sVariant
+S9sCluster::nNics(
+        const int hostId) const
+{
+    S9sString key;
+
+    key.sprintf("host.%d.interfaces", hostId);
+
+    return sheetInfo(key).size();
+}
+
+S9sVariant
+S9sCluster::nDevices(
+        const int hostId) const
+{
+    S9sString key;
+
+    key.sprintf("host.%d.devices", hostId);
+
+    return sheetInfo(key).size();
 }
 
 /**
@@ -713,6 +763,14 @@ S9sCluster::toString(
                     retval += tmp;
                     break;
                 
+                case 'i':
+                    // The total number of monitored disk devices.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nDevices().toInt());
+
+                    retval += tmp;
+                    break;
+                
                 case 'L':
                     // The log file for the cluster.
                     partFormat += 's';
@@ -757,6 +815,14 @@ S9sCluster::toString(
                     if (syntaxHighlight)
                         retval += TERM_NORMAL;
 
+                    break;
+                
+                case 'n':
+                    // The total number of monitored network interfaces.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nNics().toInt());
+
+                    retval += tmp;
                     break;
                 
                 case 'O':
