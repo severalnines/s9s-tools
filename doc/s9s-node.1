@@ -435,6 +435,11 @@ to the node. Please check the "examples" section to see how an alias can be
 assigned to a specific host.
 
 .TP
+.B a
+Maintenance mode flag. If the node is in maintenance mode a letter 'M',
+otherwise '-'.
+
+.TP
 .B C
 The class name of the node. This is mostly for debugging purposes, but it can
 also help applications classify the nodes.
@@ -466,19 +471,18 @@ The numerical ID of the node.
 The IP address of the node.
 
 .TP
-.B N
-The name of the name. If the node has an alias that is used, otherwise the name
-of the node is used. If the node is registered using the IP address the IP
-address is the name.
-
-.TP
 .B M
 A message, describing the node's status un human readable format.
 
 .TP
 .B m
-Maintenance mode flag. If the node is in maintenance mode a letter 'M',
-otherwise '-'.
+The total memory size found in the host.
+
+.TP
+.B N
+The name of the name. If the node has an alias that is used, otherwise the name
+of the node is used. If the node is registered using the IP address the IP
+address is the name.
 
 .TP
 .B O

@@ -155,6 +155,19 @@ S9sNode::setProperties(
     m_properties = properties;
 }
 
+void
+S9sNode::setCluster(
+        const S9sCluster &cluster)
+{
+    m_cluster = cluster;
+}
+
+const S9sCluster &
+S9sNode::cluster() const
+{
+    return m_cluster;
+}
+
 /**
  * \returns the "class_name" property Cmon uses to represent the object type.
  */
@@ -256,6 +269,17 @@ S9sNode::toString(
                         retval += TERM_NORMAL;
 
                     break;
+                
+                case 'a':
+                    // Maintenance flag.
+                    partFormat += 's';
+                    
+                    tmp.sprintf(STR(partFormat), 
+                            isMaintenanceActive() ? "M" : "-");
+
+                    retval += tmp;
+                    break;
+ 
 
                 case 'C':
                     // The class name.
@@ -371,15 +395,13 @@ S9sNode::toString(
                     break;
 
                 case 'm':
-                    // Maintenance flag.
-                    partFormat += 's';
-                    
-                    tmp.sprintf(STR(partFormat), 
-                            isMaintenanceActive() ? "M" : "-");
+                    // The total memory size found on the host.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), memTotal().toGBytes());
 
                     retval += tmp;
                     break;
- 
+
                 case 'O':
                     // The OS version string.
                     partFormat += 's';
@@ -1069,6 +1091,42 @@ S9sNode::slavesAsString() const
     return retval;
 }
 
+S9sVariant 
+S9sNode::memTotal() const
+{
+    return m_cluster.memTotal(id());
+}
+        
+S9sVariant 
+S9sNode::nCpuCores() const
+{
+    return m_cluster.nCpuCores(id());
+}
+
+S9sVariant 
+S9sNode::nNics() const
+{
+    return m_cluster.nNics(id());
+}
+
+S9sVariant 
+S9sNode::nDevices() const
+{
+    return m_cluster.nDevices(id());
+}
+
+S9sVariant 
+S9sNode::totalDiskBytes() const
+{
+    return m_cluster.totalDiskBytes(id());
+}
+
+S9sVariant 
+S9sNode::freeDiskBytes() const
+{
+    return m_cluster.freeDiskBytes(id());
+}
+        
 /**
  * \param theList List of S9sNode objects to select from.
  * \param matchedNodes The list where the matching nodes will be placed.

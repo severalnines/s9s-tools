@@ -2630,10 +2630,14 @@ S9sRpcReply::printNodeListLong()
             {
                 S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
                 S9sNode       node      = hostMap;
+                int           clusterId = node.clusterId();
+                S9sCluster    cluster   = clusterMap(clusterId);
                 S9sString     hostName  = node.name();
 
                 if (!options->isStringMatchExtraArguments(hostName))
                     continue;
+
+                node.setCluster(cluster);
 
                 printf("%s", STR(node.toString(syntaxHighlight, formatString)));
             }

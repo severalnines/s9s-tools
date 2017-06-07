@@ -21,6 +21,7 @@
 
 #include "S9sVariantMap"
 #include "S9sUrl"
+#include "S9sCluster"
 
 /**
  * A class that represents a node/host/server. 
@@ -42,6 +43,9 @@ class S9sNode
 
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
+
+        void setCluster(const S9sCluster &cluster);
+        const S9sCluster &cluster() const;
 
         S9sString protocol() const { return m_url.protocol(); };
         S9sString className() const;
@@ -93,6 +97,13 @@ class S9sNode
         time_t lastSeen() const;
         int sshFailCount() const;
         S9sString slavesAsString() const;
+        
+        S9sVariant memTotal() const;
+        S9sVariant nCpuCores() const;
+        S9sVariant nNics() const;
+        S9sVariant nDevices() const;
+        S9sVariant totalDiskBytes() const;
+        S9sVariant freeDiskBytes() const;
 
         static void 
             selectByProtocol(
@@ -104,4 +115,5 @@ class S9sNode
     private:
         S9sVariantMap    m_properties;
         S9sUrl           m_url;
+        S9sCluster       m_cluster;
 };
