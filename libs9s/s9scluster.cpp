@@ -266,6 +266,9 @@ S9sCluster::alarmsWarning() const
     return statMap["warning"].toInt();
 }
 
+/**
+ * \returns The number of jobs in aborted state.
+ */
 int
 S9sCluster::jobsAborted() const
 {
@@ -274,6 +277,9 @@ S9sCluster::jobsAborted() const
     return stateMap["ABORTED"].toInt();
 }
 
+/**
+ * \returns The number of jobs in defined state.
+ */
 int
 S9sCluster::jobsDefined() const
 {
@@ -282,6 +288,9 @@ S9sCluster::jobsDefined() const
     return stateMap["DEFINED"].toInt();
 }
 
+/**
+ * \returns The number of jobs dequeued.
+ */
 int
 S9sCluster::jobsDequeued() const
 {
@@ -290,6 +299,9 @@ S9sCluster::jobsDequeued() const
     return stateMap["DEQUEUED"].toInt();
 }
 
+/**
+ * \returns The number of jobs in failed state.
+ */
 int
 S9sCluster::jobsFailed() const
 {
@@ -298,6 +310,9 @@ S9sCluster::jobsFailed() const
     return stateMap["FAILED"].toInt();
 }
 
+/**
+ * \returns The number of finished jobs.
+ */
 int
 S9sCluster::jobsFinished() const
 {
@@ -306,6 +321,9 @@ S9sCluster::jobsFinished() const
     return stateMap["FINISHED"].toInt();
 }
 
+/**
+ * \returns The number of running jobs.
+ */
 int
 S9sCluster::jobsRunning() const
 {
@@ -363,6 +381,10 @@ S9sCluster::nCpuCores() const
     return retval;
 }
 
+/**
+ * \returns The number of monitored network interface controllers in the
+ *   cluster.
+ */
 S9sVariant
 S9sCluster::nNics() const
 {
@@ -377,6 +399,9 @@ S9sCluster::nNics() const
     return retval;
 }
 
+/**
+ * \returns The number of monitored disk devices in the cluster.
+ */
 S9sVariant
 S9sCluster::nDevices() const
 {
@@ -391,6 +416,9 @@ S9sCluster::nDevices() const
     return retval;
 }
 
+/**
+ * \returns The total size of monitored disk devices in the cluster.
+ */
 S9sVariant
 S9sCluster::totalDiskBytes() const
 {
@@ -405,6 +433,9 @@ S9sCluster::totalDiskBytes() const
     return retval;
 }
 
+/**
+ * \returns The total free size on the monitored disk devices of the cluster.
+ */
 S9sVariant
 S9sCluster::freeDiskBytes() const
 {
@@ -466,6 +497,9 @@ S9sCluster::hostName(
     return sheetInfo(key).toString();
 }
 
+/**
+ * \returns The number of monitored network interfaces on the host.
+ */
 S9sVariant
 S9sCluster::nNics(
         const int hostId) const
@@ -477,6 +511,9 @@ S9sCluster::nNics(
     return sheetInfo(key).size();
 }
 
+/**
+ * \returns The number of the monitored disk devices on the host.
+ */
 S9sVariant
 S9sCluster::nDevices(
         const int hostId) const
@@ -659,6 +696,12 @@ S9sCluster::freeDiskBytes(
     return sheetInfo(key);
 }
 
+/**
+ * \param key The name that identifies the information to return.
+ * \returns The value for the given key.
+ *
+ * This private function returns data collected by the sheet manager.
+ */
 S9sVariant 
 S9sCluster::sheetInfo(
         const S9sString &key) const
@@ -980,5 +1023,3 @@ S9sCluster::toString(
 
     return retval;
 }
-
-
