@@ -280,23 +280,7 @@ S9sNode::toString(
                     retval += tmp;
                     break;
  
-
                 case 'C':
-                    // The class name.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(className()));
-
-                    if (syntaxHighlight)
-                        retval += XTERM_COLOR_GREEN;
-
-                    retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += TERM_NORMAL;
-
-                    break;
-                
-                case 'c':
                     // The configuration file. 
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(configFile()));
@@ -308,6 +292,21 @@ S9sNode::toString(
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+
+                case 'c':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
 
                     break;
 
@@ -370,6 +369,14 @@ S9sNode::toString(
                     tmp.sprintf(STR(partFormat), STR(ipAddress()));
                     retval += tmp;
 
+                    break;
+
+                case 'k':
+                    // The total disk size found in the node.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
+
+                    retval += tmp;
                     break;
 
                 case 'N':

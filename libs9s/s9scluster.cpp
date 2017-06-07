@@ -826,14 +826,6 @@ S9sCluster::toString(
                     retval += tmp;
 
                     break;
-                
-                case 'd':
-                    // The total disk size found in the cluster.
-                    partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
-
-                    retval += tmp;
-                    break;
 
                 case 'G':
                     // The name of the group owner.
@@ -885,7 +877,15 @@ S9sCluster::toString(
 
                     retval += tmp;
                     break;
-                
+                 
+                case 'k':
+                    // The total disk size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
+
+                    retval += tmp;
+                    break;
+
                 case 'L':
                     // The log file for the cluster.
                     partFormat += 's';
@@ -982,7 +982,6 @@ S9sCluster::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(vendorAndVersion()));
                     retval += tmp;
-
                     break;
                 
                 case 'u':
@@ -990,7 +989,6 @@ S9sCluster::toString(
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), nCpuCores().toInt());
                     retval += tmp;
-
                     break;
 
                 case '%':

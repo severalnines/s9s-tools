@@ -441,13 +441,13 @@ otherwise '-'.
 
 .TP
 .B C
-The class name of the node. This is mostly for debugging purposes, but it can
-also help applications classify the nodes.
+The configuration file for the most important process on the node (e.g. the
+configuration file of the MySQL daemon on a Galera node).
 
 .TP
 .B c
-The configuration file for the most important process on the node (e.g. the
-configuration file of the MySQL daemon on a Galera node).
+The class name of the node. This is mostly for debugging purposes, but it can
+also help applications classify the nodes.
 
 .TP
 .B D
@@ -469,6 +469,11 @@ The numerical ID of the node.
 .TP
 .B i
 The IP address of the node.
+
+.TP
+.B k
+The total number of disk bytes found on the monitored devices in the node.
+This is a double precision floating point number measured in Terabytes.
 
 .TP
 .B L

@@ -450,7 +450,7 @@ UtS9sCluster::testToString()
     theString = theCluster.toString(false, "%n %i");
     S9S_COMPARE(theString, "2 2");
     
-    theString = theCluster.toString(false, "%.2d");
+    theString = theCluster.toString(false, "%.2k");
     S9S_COMPARE(theString, "2.12");
     
     theString = theCluster.toString(false, "%a");
