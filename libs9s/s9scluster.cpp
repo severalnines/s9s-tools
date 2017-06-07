@@ -319,6 +319,9 @@ S9sCluster::memTotal() const
     return retval;
 }
 
+/**
+ * \returns The total number of CPU cores (siblings actually) in the cluster.
+ */
 S9sVariant
 S9sCluster::nCpuCores() const
 {
