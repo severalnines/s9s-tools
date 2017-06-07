@@ -411,6 +411,21 @@ S9sNode::toString(
                     break;
 
                 case 'O':
+                    // The name of the owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(m_cluster.ownerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorEnd();
+
+                    break;
+
+                case 'o':
                     // The OS version string.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(osVersionString()));
