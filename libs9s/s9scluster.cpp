@@ -319,6 +319,20 @@ S9sCluster::memTotal() const
     return retval;
 }
 
+S9sVariant
+S9sCluster::nCpuCores() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += nCpuCores(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
 /**
  * \returns How many hosts the cluster have including the controller.
  */
@@ -373,7 +387,7 @@ S9sCluster::hostName(
  */
 S9sVariant
 S9sCluster::nCpuCores(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -783,6 +797,14 @@ S9sCluster::toString(
                     // The vendor and version of the node.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(vendorAndVersion()));
+                    retval += tmp;
+
+                    break;
+                
+                case 'u':
+                    // The total number of CPU cores in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
                     retval += tmp;
 
                     break;

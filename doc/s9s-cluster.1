@@ -322,6 +322,12 @@ The vendor and the version of the main software (e.g. the SQL server) on the
 node.
 
 .TP
+.B u
+The total number of CPU cores in the cluster. Please note that this number may
+be affected by hyper-threading. When a computer has 2 identical CPUs, with four
+cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
+
+.TP
 .B %
 The '%' character itself. 
 
