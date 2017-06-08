@@ -468,6 +468,42 @@ S9sOptions::controllerPort()
     return retval;
 }
 
+S9sString
+S9sOptions::controllerUrl()
+{
+    S9sString retval;
+    S9sString protocol;
+
+    /*
+     * The protocol.
+     */
+    protocol = controllerProtocol();
+    if (!protocol.empty())
+    {
+        retval = protocol;
+
+        if (!retval.endsWith("://"))
+            retval += "://";
+    } else if (useTls())
+    {
+        retval = "https://";
+    } else {
+        retval += "http://";
+    }
+
+    /*
+     * The hostname.
+     */
+    retval += controllerHostName();
+
+    /*
+     * The port.
+     */
+    if (controllerPort() != 0)
+        retval.sprintf("%s:%d", STR(retval), controllerPort());
+
+    return retval;
+}
 
 /**
  * \returns The value of the --config-file command line option or teh empty

@@ -1315,11 +1315,11 @@ void
 S9sBusinessLogic::executeUser(
         S9sRpcClient        &client)
 {
-    S9sString    errorString;
-    S9sOptions  *options  = S9sOptions::instance();
-    S9sString    userName = options->userName();
-    S9sString    keyFilePath;
-    S9sConfigFile config;
+    S9sString      errorString;
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      userName = options->userName();
+    S9sString      keyFilePath;
+    S9sConfigFile  config;
 
     if (userName.empty())
     {
@@ -1349,6 +1349,7 @@ S9sBusinessLogic::executeUser(
     }
 
     config.setVariable("global", "cmon_user", userName);
+    config.setVariable("global", "controller", options->controllerUrl());
 
     if (!config.save(errorString))
     {

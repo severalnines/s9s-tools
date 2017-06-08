@@ -78,6 +78,8 @@ class S9sOptions
         S9sString controllerHostName();
         int controllerPort();
         S9sString controllerProtocol();
+        S9sString controllerUrl();
+
 
         S9sString configFile() const;
        

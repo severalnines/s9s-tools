@@ -4,6 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+VERSION="0.0.3"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -32,6 +33,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --print-json    Print the JSON messages sent and received.
  --log           Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -39,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands" \
+        -l "help,verbose,print-json,log,print-commands,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -76,6 +78,11 @@ while true; do
             PRINT_COMMANDS="true"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -88,7 +95,38 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
 
 #
 # 
@@ -420,6 +458,7 @@ function testCreateUsers()
 # Running the requested tests.
 #
 startTests
+reset_config
 
 if [ "$1" ]; then
     for testName in $*; do
