@@ -514,7 +514,16 @@ S9sNode::toString(
                     tmp.sprintf(STR(partFormat), STR(nodeType()));
                     retval += tmp;
                     break;
-                
+
+                case 't':
+                    // The network traffic found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), 
+                            netBytesPerSecond().toMBytes());
+
+                    retval += tmp;
+                    break;
+
                 case 'U':
                     // The uptime.
                     partFormat += "s";
@@ -1179,6 +1188,12 @@ S9sNode::netBytesPerSecond() const
     retval += txBytesPerSecond();
 
     return retval;
+}
+
+S9sVariant
+S9sNode::cpuUsagePercent() const
+{
+    return m_cluster.cpuUsagePercent(id());
 }
 
 /**

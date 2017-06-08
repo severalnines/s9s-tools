@@ -71,16 +71,16 @@ class S9sCluster
         S9sVariant totalDiskBytes() const;
         // %f
         S9sVariant freeDiskBytes() const;
-
+        // %t
         S9sVariant netBytesPerSecond() const;
-
+        S9sVariant cpuUsagePercent() const;
 
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
         S9sVariant nNics(const int hostId) const;
         S9sVariant nDevices(const int hostId) const;
         S9sVariant nCpuCores(const int hostId) const;
-        S9sVariant cpuUsagePercent(const int hostId);
+        S9sVariant cpuUsagePercent(const int hostId) const;
         S9sVariant memTotal(const int hostId) const;
         S9sVariant memUsed(const int hostId);
 

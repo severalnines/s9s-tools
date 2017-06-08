@@ -464,6 +464,20 @@ S9sCluster::netBytesPerSecond() const
     return retval;
 }
 
+S9sVariant
+S9sCluster::cpuUsagePercent() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariantList values;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        values << cpuUsagePercent(ids[idx].toInt());
+    }
+
+    return values.average();
+}
+
 
 /**
  * \returns How many hosts the cluster have including the controller.
@@ -561,7 +575,7 @@ S9sCluster::nCpuCores(
  */
 S9sVariant
 S9sCluster::cpuUsagePercent(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -1013,6 +1027,15 @@ S9sCluster::toString(
                     // The type of the cluster.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(clusterType()));
+                    retval += tmp;
+                    break;
+
+                case 't':
+                    // The total network traffic found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), 
+                            netBytesPerSecond().toMBytes());
+
                     retval += tmp;
                     break;
 

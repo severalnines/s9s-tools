@@ -110,8 +110,11 @@ class S9sNode
         S9sVariant totalDiskBytes() const;
         // %f
         S9sVariant freeDiskBytes() const;
-
+        // %t
         S9sVariant netBytesPerSecond() const;
+        
+        S9sVariant cpuUsagePercent() const;
+
         S9sVariant rxBytesPerSecond() const;
         S9sVariant txBytesPerSecond() const;
 
