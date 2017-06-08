@@ -444,7 +444,7 @@ UtS9sCluster::testToString()
     theString = theCluster.toString(false, "%6.2mG %N");
     S9S_COMPARE(theString, " 63.16G ft_postgresql_19203");
 
-    theString = theCluster.toString(false, "%3ucores %N");
+    theString = theCluster.toString(false, "%3ccores %N");
     S9S_COMPARE(theString, " 40cores ft_postgresql_19203");
     
     theString = theCluster.toString(false, "%n %i");

@@ -451,6 +451,37 @@ S9sCluster::freeDiskBytes() const
 }
 
 S9sVariant
+S9sCluster::swapTotal() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += swapTotal(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+S9sVariant
+S9sCluster::swapFree() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += swapTotal(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The sum of incoming and outgoing network traffic speed.
+ */
+S9sVariant
 S9sCluster::netBytesPerSecond() const
 {
     S9sVariantList ids = hostIds();
@@ -464,6 +495,9 @@ S9sCluster::netBytesPerSecond() const
     return retval;
 }
 
+/**
+ * \returns The sum of the CPU usage percent on all the hosts, all the cores.
+ */
 S9sVariant
 S9sCluster::cpuUsagePercent() const
 {
@@ -475,7 +509,7 @@ S9sCluster::cpuUsagePercent() const
         values << cpuUsagePercent(ids[idx].toInt());
     }
 
-    return values.average();
+    return values.sum();
 }
 
 
@@ -636,7 +670,7 @@ S9sCluster::memUsed(
  */
 S9sVariant
 S9sCluster::swapTotal(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -652,7 +686,7 @@ S9sCluster::swapTotal(
  */
 S9sVariant
 S9sCluster::swapFree(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -860,8 +894,15 @@ S9sCluster::toString(
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::fileColorEnd();
-
                     break;
+                
+                case 'c':
+                    // The total number of CPU cores in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
+                    retval += tmp;
+                    break;
+
                 
                 case 'D':
                     // The controller domain name for the cluster.
@@ -1047,12 +1088,19 @@ S9sCluster::toString(
                     break;
                 
                 case 'u':
-                    // The total number of CPU cores in the cluster.
-                    partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
+                    // The total disk size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), cpuUsagePercent().toDouble());
                     retval += tmp;
                     break;
-
+                
+                case 'w':
+                    // The total swap space size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+                    retval += tmp;
+                    break;
+                
                 case '%':
                     retval += '%';
                     break;

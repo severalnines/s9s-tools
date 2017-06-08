@@ -204,7 +204,7 @@ S9sNode::toString(
     {
         c = formatString[n];
         
-        if (c == '%')
+        if (c == '%' && !percent)
         {
             percent    = true;
             partFormat = "%";
@@ -288,19 +288,12 @@ S9sNode::toString(
                     break;
 
                 case 'c':
-                    // The class name.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(className()));
-
-                    if (syntaxHighlight)
-                        retval += XTERM_COLOR_GREEN;
-
+                    // The total number of CPU cores in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
                     retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += TERM_NORMAL;
-
                     break;
+
 
                 case 'D':
                     // The data directory.
@@ -532,17 +525,24 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
-                case 'u':
-                    // The total number of CPU cores in the cluster.
-                    partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
-                    retval += tmp;
-                    break;
-
                 case 'V':
                     // The version.
                     partFormat += "s";
                     tmp.sprintf(STR(partFormat), STR(version()));
+                    retval += tmp;
+                    break;
+
+                case 'u':
+                    // The total disk size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), cpuUsagePercent().toDouble());
+                    retval += tmp;
+                    break;
+
+                case 'w':
+                    // The total swap space found in the host.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
                     retval += tmp;
                     break;
 
@@ -1194,6 +1194,18 @@ S9sVariant
 S9sNode::cpuUsagePercent() const
 {
     return m_cluster.cpuUsagePercent(id());
+}
+
+S9sVariant
+S9sNode::swapTotal() const
+{
+    return m_cluster.swapTotal(id());
+}
+
+S9sVariant
+S9sNode::swapFree() const
+{
+    return m_cluster.swapFree(id());
 }
 
 /**

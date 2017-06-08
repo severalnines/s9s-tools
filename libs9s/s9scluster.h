@@ -58,6 +58,7 @@ class S9sCluster
         int jobsFinished() const;
         int jobsRunning() const;
 
+        // %h
         int nHosts() const;
         // %m 
         S9sVariant memTotal() const;
@@ -73,7 +74,11 @@ class S9sCluster
         S9sVariant freeDiskBytes() const;
         // %t
         S9sVariant netBytesPerSecond() const;
+        // %u
         S9sVariant cpuUsagePercent() const;
+        
+        S9sVariant swapTotal() const;
+        S9sVariant swapFree() const;
 
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
@@ -84,8 +89,8 @@ class S9sCluster
         S9sVariant memTotal(const int hostId) const;
         S9sVariant memUsed(const int hostId);
 
-        S9sVariant swapTotal(const int hostId);
-        S9sVariant swapFree(const int hostId);
+        S9sVariant swapTotal(const int hostId) const;
+        S9sVariant swapFree(const int hostId) const;
 
         S9sVariant netBytesPerSecond(const int hostId) const;
         S9sVariant rxBytesPerSecond(const int hostId) const;

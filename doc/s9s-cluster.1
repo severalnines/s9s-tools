@@ -268,6 +268,12 @@ The number of active alarms on the cluster.
 .B C
 The configuration file for the cluster.
 
+.TP
+.B c
+The total number of CPU cores in the cluster. Please note that this number may
+be affected by hyper-threading. When a computer has 2 identical CPUs, with four
+cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
+
 .TP 
 .B D
 The domain name of the controller of the cluster. This is the string one would
@@ -350,9 +356,11 @@ node.
 
 .TP
 .B u
-The total number of CPU cores in the cluster. Please note that this number may
-be affected by hyper-threading. When a computer has 2 identical CPUs, with four
-cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
+The CPU usage percent found on the cluster.
+
+.TP
+.B w
+The total swap space found in the cluster measured in GigaBytes.
 
 .TP
 .B %

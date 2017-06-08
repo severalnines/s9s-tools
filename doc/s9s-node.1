@@ -444,8 +444,9 @@ configuration file of the MySQL daemon on a Galera node).
 
 .TP
 .B c
-The class name of the node. This is mostly for debugging purposes, but it can
-also help applications classify the nodes.
+The total number of CPU cores in the host. Please note that this number may
+be affected by hyper-threading. When a computer has 2 identical CPUs, with four
+cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
 
 .TP
 .B D
@@ -559,15 +560,16 @@ the PostgreSQL server software).
 
 .TP
 .B u
-The total number of CPU cores in the host. Please note that this number may
-be affected by hyper-threading. When a computer has 2 identical CPUs, with four
-cores each and uses 2x hyperthreading it will count as 2x4x2 = 16.
+The CPU usage percent found on the host.
 
 .TP
 .B V
 The version string of the most important software (e.g. the version of the
 PostgreSQL installed on a PostgreSQL node).
 
+.TP
+.B w
+The total swap space found in the host.
 
 .TP
 .B %
