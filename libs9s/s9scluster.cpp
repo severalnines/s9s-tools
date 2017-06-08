@@ -633,13 +633,29 @@ S9sCluster::swapFree(
 }
 
 /**
+ * \returns The measured network traffic both sent and received.
+ */
+S9sVariant
+S9sCluster::netBytesPerSecond(
+        const int hostId) const
+{
+    S9sVariant retval;
+
+    retval  = rxBytesPerSecond(hostId);
+    retval += txBytesPerSecond(hostId);
+
+    return retval;
+}
+
+
+/**
  * \param hostId The ID of the host for which we return information.
  * \return The current download speed of the computer in bytes/sec.
  *
  */
 S9sVariant
 S9sCluster::rxBytesPerSecond(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
@@ -655,7 +671,7 @@ S9sCluster::rxBytesPerSecond(
  */
 S9sVariant
 S9sCluster::txBytesPerSecond(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 
