@@ -918,14 +918,6 @@ S9sCluster::toString(
 
                     break;
 
-                case 'f':
-                    // The free disk size found in the cluster.
-                    partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), freeDiskBytes().toTBytes());
-
-                    retval += tmp;
-                    break;
-
                 case 'G':
                     // The name of the group owner.
                     partFormat += 's';
@@ -980,7 +972,17 @@ S9sCluster::toString(
                 case 'k':
                     // The total disk size found in the cluster.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
+
+                    if (modifierFree)
+                    {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                freeDiskBytes().toTBytes());
+                    } else {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                totalDiskBytes().toTBytes());
+                    }
 
                     retval += tmp;
                     break;

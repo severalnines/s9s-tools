@@ -204,7 +204,7 @@ S9sNode::toString(
     for (uint n = 0; n < formatString.size(); ++n)
     {
         c = formatString[n];
-        
+       
         if (c == '%' && !percent)
         {
             percent    = true;
@@ -330,14 +330,6 @@ S9sNode::toString(
 
                     break;
 
-                case 'f':
-                    // The free disk size found in the cluster.
-                    partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), freeDiskBytes().toTBytes());
-
-                    retval += tmp;
-                    break;
-
                 case 'g':
                     // The log file. 
                     partFormat += 's';
@@ -372,7 +364,17 @@ S9sNode::toString(
                 case 'k':
                     // The total disk size found in the node.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), totalDiskBytes().toTBytes());
+
+                    if (modifierFree)
+                    {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                freeDiskBytes().toTBytes());
+                    } else {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                totalDiskBytes().toTBytes());
+                    }
 
                     retval += tmp;
                     break;
@@ -580,8 +582,9 @@ S9sNode::toString(
             retval += c;
         }
 
-        percent = false;
-        escaped    = false;
+        percent      = false;
+        escaped      = false;
+        modifierFree = false;
     }
 
     return retval;

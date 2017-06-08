@@ -70,13 +70,13 @@ class S9sCluster
         S9sVariant nDevices() const;
         // %k
         S9sVariant totalDiskBytes() const;
-        // %f
         S9sVariant freeDiskBytes() const;
+
         // %t
         S9sVariant netBytesPerSecond() const;
         // %u
         S9sVariant cpuUsagePercent() const;
-        
+        // %w 
         S9sVariant swapTotal() const;
         S9sVariant swapFree() const;
 

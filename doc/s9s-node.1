@@ -458,11 +458,6 @@ server.
 The PID file on the node.
 
 .TP
-.B f
-The free disk bytes found on the monitored devices in the host.  This is a
-double precision floating point number measured in Terabytes.
-
-.TP
 .B g
 The log file on the node.
 
@@ -473,7 +468,6 @@ The numerical ID of the node.
 .TP
 .B i
 The total number of monitored disk devices (partitions) in the cluster.
-
 
 .TP
 .B k
@@ -569,7 +563,8 @@ PostgreSQL installed on a PostgreSQL node).
 
 .TP
 .B w
-The total swap space found in the host.
+The total swap space found in the host measured in GigaBytes. With the 'f'
+modifier (e.g. "%6.2fw") this reports the free swap space in GigaBytes.
 
 .TP
 .B %
