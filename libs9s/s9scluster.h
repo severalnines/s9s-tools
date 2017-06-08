@@ -59,8 +59,11 @@ class S9sCluster
         int jobsRunning() const;
 
         int nHosts() const;
+        // %m 
         S9sVariant memTotal() const;
+        // %u
         S9sVariant nCpuCores() const;
+        // %n
         S9sVariant nNics() const;
         S9sVariant nDevices() const;
         S9sVariant totalDiskBytes() const;

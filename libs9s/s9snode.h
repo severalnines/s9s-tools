@@ -97,9 +97,12 @@ class S9sNode
         time_t lastSeen() const;
         int sshFailCount() const;
         S9sString slavesAsString() const;
-        
+       
+        // %m
         S9sVariant memTotal() const;
+        // %u
         S9sVariant nCpuCores() const;
+        // %n
         S9sVariant nNics() const;
         S9sVariant nDevices() const;
         S9sVariant totalDiskBytes() const;

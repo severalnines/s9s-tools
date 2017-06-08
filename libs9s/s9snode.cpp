@@ -256,18 +256,10 @@ S9sNode::toString(
             switch (c)
             {
                 case 'A':
-                    // The alias of the node.
+                    // The ip address of the node.
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(alias()));
-
-                    if (syntaxHighlight)
-                        retval += XTERM_COLOR_BLUE;
-
+                    tmp.sprintf(STR(partFormat), STR(ipAddress()));
                     retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += TERM_NORMAL;
-
                     break;
                 
                 case 'a':
@@ -364,11 +356,11 @@ S9sNode::toString(
                     break;
 
                 case 'i':
-                    // The ip address of the node.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(ipAddress()));
-                    retval += tmp;
+                    // The total number of monitored disk devices.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nDevices().toInt());
 
+                    retval += tmp;
                     break;
 
                 case 'k':
@@ -1146,6 +1138,9 @@ S9sNode::nNics() const
     return m_cluster.nNics(id());
 }
 
+/**
+ * \returns The number of monitored disk devices on the host.
+ */
 S9sVariant 
 S9sNode::nDevices() const
 {
