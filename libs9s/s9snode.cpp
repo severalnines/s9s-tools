@@ -197,9 +197,10 @@ S9sNode::toString(
     S9sString    tmp;
     char         c;
     S9sString    partFormat;
-    bool         percent = false;
-    bool         escaped = false;
-    
+    bool         percent      = false;
+    bool         escaped      = false;
+    bool         modifierFree = false;
+
     for (uint n = 0; n < formatString.size(); ++n)
     {
         c = formatString[n];
@@ -208,6 +209,10 @@ S9sNode::toString(
         {
             percent    = true;
             partFormat = "%";
+            continue;
+        } else if (percent && c == 'f')
+        {
+            modifierFree = true;
             continue;
         } else if (c == '\\')
         {
@@ -542,7 +547,11 @@ S9sNode::toString(
                 case 'w':
                     // The total swap space found in the host.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+                    if (modifierFree)
+                        tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+                    else
+                        tmp.sprintf(STR(partFormat), swapFree().toGBytes());
+
                     retval += tmp;
                     break;
 

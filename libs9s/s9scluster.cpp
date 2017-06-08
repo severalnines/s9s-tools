@@ -815,17 +815,22 @@ S9sCluster::toString(
     S9sString    tmp;
     char         c;
     S9sString    partFormat;
-    bool         percent = false;
-    bool         escaped = false;
-    
+    bool         percent      = false;
+    bool         escaped      = false;
+    bool         modifierFree = false;
+
     for (uint n = 0; n < formatString.size(); ++n)
     {
         c = formatString[n];
         
-        if (c == '%')
+        if (c == '%' && !percent)
         {
             percent    = true;
             partFormat = "%";
+            continue;
+        } else if (percent && c == 'f')
+        {
+            modifierFree = true;
             continue;
         } else if (c == '\\')
         {
@@ -1097,7 +1102,11 @@ S9sCluster::toString(
                 case 'w':
                     // The total swap space size found in the cluster.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+                    if (modifierFree)
+                        tmp.sprintf(STR(partFormat), swapFree().toGBytes());
+                    else
+                        tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+
                     retval += tmp;
                     break;
                 
@@ -1125,8 +1134,9 @@ S9sCluster::toString(
             retval += c;
         }
 
-        percent = false;
-        escaped    = false;
+        percent      = false;
+        escaped      = false;
+        modifierFree = false;
     }
 
     return retval;
