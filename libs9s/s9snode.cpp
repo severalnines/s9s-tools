@@ -331,7 +331,15 @@ S9sNode::toString(
                         retval += S9sRpcReply::fileColorEnd();
 
                     break;
-                
+
+                case 'f':
+                    // The free disk size found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), freeDiskBytes().toTBytes());
+
+                    retval += tmp;
+                    break;
+
                 case 'g':
                     // The log file. 
                     partFormat += 's';

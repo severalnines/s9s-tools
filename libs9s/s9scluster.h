@@ -65,8 +65,11 @@ class S9sCluster
         S9sVariant nCpuCores() const;
         // %n
         S9sVariant nNics() const;
+        // %i
         S9sVariant nDevices() const;
+        // %k
         S9sVariant totalDiskBytes() const;
+        // %f
         S9sVariant freeDiskBytes() const;
 
 
