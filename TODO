@@ -1,3 +1,15 @@
+o [vagrant@n1 ~]$ s9s user --create --generate-key --controller=”https://localhost:9501” --cmon-user=dba
+Grant user 'dba' succeeded.
+
+[vagrant@n1 ~]$ s9s cluster --create-account --account=sysbench:sysbench@10.10.10.10 --privileges=*.*:'ALL PRIVILEGES' --cluster-id=1
+Authentication failed: Controller host name is not set.
+
+
+[vagrant@n1 ~]$ sudo vi /home/vagrant/.s9s/s9s.conf
+
+
+Can we do something about the “Authentication failed: Controller host name is not set.”, i.e create a working config file with this set when i create my user?
+
 o 
   curl -XPOST -d '{ "token":"0CrxAHFdq8yKzv2h","operation": "createJob", "job": {"command":"error_report", "job_data": {"report_dir":"/tmp/"} }}' http://localhost:9500/2/j
 

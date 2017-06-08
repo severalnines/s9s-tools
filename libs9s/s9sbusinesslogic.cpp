@@ -1348,15 +1348,7 @@ S9sBusinessLogic::executeUser(
         return;
     }
 
-    if (config.hasVariable("global", "cmon_user"))
-    {
-        config.changeVariable("global", "cmon_user", userName);
-    } else if (config.hasVariable("", "cmon_user"))
-    {
-        config.changeVariable("cmon_user", userName);
-    } else {
-        config.addVariable("global", "cmon_user", userName);
-    }
+    config.setVariable("global", "cmon_user", userName);
 
     if (!config.save(errorString))
     {

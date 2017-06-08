@@ -329,6 +329,11 @@ class S9sConfigFile
                 const S9sString &variableName,
                 bool              includingDisabled = false);
 
+        bool setVariable(
+                const S9sString &sectionName,
+                const S9sString &variableName,
+                const S9sString &variableValue);
+
         bool hasSection(const S9sString &sectionName);
         S9sString errorString() const;
         

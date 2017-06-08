@@ -1662,6 +1662,27 @@ S9sConfigFile::hasVariable(
     return false;
 }
 
+bool
+S9sConfigFile::setVariable(
+        const S9sString &sectionName,
+        const S9sString &variableName,
+        const S9sString &variableValue)
+{
+    bool retval = false;
+
+    if (hasVariable(sectionName, variableName))
+    {
+        retval = changeVariable(sectionName, variableName, variableValue);
+    } else if (hasVariable("", variableName))
+    {
+        retval = changeVariable(variableName, variableValue);
+    } else {
+        retval = addVariable(sectionName, variableName, variableValue);
+    }
+
+    return retval;
+}
+
 /**
  * \returns true if the parsing was succesful, false otherwise
  *

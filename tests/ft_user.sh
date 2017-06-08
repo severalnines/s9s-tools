@@ -147,6 +147,7 @@ function testGrantUser()
         --create \
         --cmon-user=$USER \
         --generate-key \
+        --controller="https://localhost:9556" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch

@@ -197,7 +197,11 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key \
+    $S9S user \
+        --create \
+        --cmon-user=$USER \
+        --controller="https://localhost:9556" \
+        --generate-key \
         >/dev/null 2>/dev/null
 }
 
