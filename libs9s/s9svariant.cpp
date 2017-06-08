@@ -678,15 +678,21 @@ S9sVariant::toDouble(
 }
 
 double
+S9sVariant::toMBytes() const
+{
+    return toDouble() / mbyte;
+}
+
+double
 S9sVariant::toGBytes() const
 {
-    return toDouble() / (1024.0 * 1024.0 * 1024.0);
+    return toDouble() / gbyte;
 }
 
 double
 S9sVariant::toTBytes() const
 {
-    return toDouble() / (1024.0 * 1024.0 * 1024.0 * 1024.0);
+    return toDouble() / tbyte;
 }
 
 /**

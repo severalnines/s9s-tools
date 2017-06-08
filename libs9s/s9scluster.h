@@ -72,6 +72,8 @@ class S9sCluster
         // %f
         S9sVariant freeDiskBytes() const;
 
+        S9sVariant netBytesPerSecond() const;
+
 
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);

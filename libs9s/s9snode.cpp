@@ -1166,7 +1166,41 @@ S9sNode::freeDiskBytes() const
 {
     return m_cluster.freeDiskBytes(id());
 }
-        
+
+/**
+ * \returns The measured network traffic both sent and received.
+ */
+S9sVariant
+S9sNode::netBytesPerSecond() const
+{
+    S9sVariant retval;
+
+    retval  = rxBytesPerSecond();
+    retval += txBytesPerSecond();
+
+    return retval;
+}
+
+/**
+ * \return The current download speed of the computer in bytes/sec.
+ *
+ */
+S9sVariant
+S9sNode::rxBytesPerSecond() const
+{
+    return m_cluster.rxBytesPerSecond(id());
+}
+
+/**
+ * \return The current upload speed of the computer in bytes/sec.
+ *
+ */
+S9sVariant
+S9sNode::txBytesPerSecond() const
+{
+    return m_cluster.txBytesPerSecond(id());
+}
+
 /**
  * \param theList List of S9sNode objects to select from.
  * \param matchedNodes The list where the matching nodes will be placed.

@@ -111,6 +111,10 @@ class S9sNode
         // %f
         S9sVariant freeDiskBytes() const;
 
+        S9sVariant netBytesPerSecond() const;
+        S9sVariant rxBytesPerSecond() const;
+        S9sVariant txBytesPerSecond() const;
+
         static void 
             selectByProtocol(
                     const S9sVariantList &theList,

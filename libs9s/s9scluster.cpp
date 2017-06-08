@@ -450,6 +450,21 @@ S9sCluster::freeDiskBytes() const
     return retval;
 }
 
+S9sVariant
+S9sCluster::netBytesPerSecond() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += netBytesPerSecond(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+
 /**
  * \returns How many hosts the cluster have including the controller.
  */
