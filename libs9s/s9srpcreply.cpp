@@ -28,6 +28,7 @@
 #include "S9sRegExp"
 #include "S9sNode"
 #include "S9sCluster"
+#include "S9sBackup"
 #include "S9sMessage"
 #include "S9sCmonGraph"
 
@@ -3480,8 +3481,9 @@ S9sRpcReply::printBackupListLong()
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
         S9sVariantMap  theMap    = dataList[idx].toVariantMap();
+        S9sBackup      backup    = theMap;
         S9sVariantList backups   = theMap["backup"].toVariantList();
-        S9sString      hostName  = theMap["backup_host"].toString();
+        S9sString      hostName  = backup.backupHost();//theMap["backup_host"].toString();
         int            clusterId = theMap["cid"].toInt();
         S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = configMap["createdBy"].toString();
