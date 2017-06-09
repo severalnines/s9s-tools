@@ -3484,11 +3484,11 @@ S9sRpcReply::printBackupListLong()
         S9sBackup      backup    = theMap;
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();//theMap["backup_host"].toString();
-        int            clusterId = theMap["cid"].toInt();
+        int            clusterId = backup.clusterId(); //theMap["cid"].toInt();
         S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = configMap["createdBy"].toString();
-        int            id        = theMap["id"].toInt();
-        S9sString      status    = theMap["status"].toString().toUpper();
+        int            id        = backup.id(); //theMap["id"].toInt();
+        S9sString      status    = backup.status(); //theMap["status"].toString().toUpper();
 
         cidFormat.widen(clusterId);
         stateFormat.widen(status);

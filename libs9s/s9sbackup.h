@@ -42,6 +42,10 @@ class S9sBackup
         void setProperties(const S9sVariantMap &properties);
 
         S9sString backupHost() const;
+        int id() const;
+        int clusterId() const;
+        S9sString status() const;
+        S9sVariant config() const;
 
     private:
         S9sVariantMap    m_properties;

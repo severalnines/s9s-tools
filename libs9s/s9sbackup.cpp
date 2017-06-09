@@ -128,3 +128,39 @@ S9sBackup::backupHost() const
 
     return S9sString();    
 }
+
+int
+S9sBackup::id() const
+{
+    if (m_properties.contains("id"))
+        return m_properties.at("id").toInt();
+
+    return 0;
+}
+
+int
+S9sBackup::clusterId() const
+{
+    if (m_properties.contains("cid"))
+        return m_properties.at("cid").toInt();
+
+    return 0;
+}
+
+S9sString
+S9sBackup::status() const
+{
+    if (m_properties.contains("status"))
+        return m_properties.at("status").toString().toUpper();
+
+    return S9sString();    
+}
+
+S9sVariant
+S9sBackup::config() const
+{
+    if (m_properties.contains("config"))
+        return m_properties.at("config").toInt();
+
+    return S9sVariantMap();
+}
