@@ -45,7 +45,13 @@ class S9sBackup
         int id() const;
         int clusterId() const;
         S9sString status() const;
+        S9sString rootDir() const;
+
+        S9sString owner() const;
+
+    private:
         S9sVariant config() const;
+        S9sVariant configValue(const S9sString &key) const;
 
     private:
         S9sVariantMap    m_properties;

@@ -156,11 +156,36 @@ S9sBackup::status() const
     return S9sString();    
 }
 
+S9sString
+S9sBackup::rootDir() const
+{
+    if (m_properties.contains("root_dir"))
+        return m_properties.at("root_dir").toString().toUpper();
+
+    return S9sString();    
+}
+
+
+S9sString
+S9sBackup::owner() const
+{
+    return configValue("createdBy").toString();
+}
+
 S9sVariant
 S9sBackup::config() const
 {
     if (m_properties.contains("config"))
-        return m_properties.at("config").toInt();
+        return m_properties.at("config");
 
     return S9sVariantMap();
+}
+
+S9sVariant
+S9sBackup::configValue(
+        const S9sString &key) const
+{
+    S9sVariantMap configMap = config().toVariantMap();
+
+    return configMap[key];
 }
