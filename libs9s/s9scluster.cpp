@@ -644,7 +644,7 @@ S9sCluster::memTotal(
  */
 S9sVariant
 S9sCluster::memUsed(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key1, key2, key3, key4;
     ulonglong retval;
@@ -662,6 +662,26 @@ S9sCluster::memUsed(
 
     return S9sVariant(retval * 1024ull);
 }
+
+S9sVariant
+S9sCluster::memFree(
+        const int hostId) const
+{
+    S9sString key1, key2, key3;
+    ulonglong retval;
+
+    key1.sprintf("host.%d.membuffer", hostId);
+    key2.sprintf("host.%d.memcached", hostId);
+    key3.sprintf("host.%d.memfree",   hostId);
+
+    retval = 
+        sheetInfo(key1).toULongLong() +
+        sheetInfo(key2).toULongLong() +
+        sheetInfo(key3).toULongLong();
+
+    return S9sVariant(retval * 1024ull);
+}
+
 
 /**
  * \param hostId The ID of the host for which we return information.
@@ -1005,6 +1025,7 @@ S9sCluster::toString(
                 case 'M':
                     // The ID of the cluster.
                     partFormat += 's';
+                    
                     tmp.sprintf(STR(partFormat), STR(statusText()));
 
                     retval += tmp;

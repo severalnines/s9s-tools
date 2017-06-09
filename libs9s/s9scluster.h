@@ -87,7 +87,8 @@ class S9sCluster
         S9sVariant nCpuCores(const int hostId) const;
         S9sVariant cpuUsagePercent(const int hostId) const;
         S9sVariant memTotal(const int hostId) const;
-        S9sVariant memUsed(const int hostId);
+        S9sVariant memUsed(const int hostId) const;
+        S9sVariant memFree(const int hostId) const;
 
         S9sVariant swapTotal(const int hostId) const;
         S9sVariant swapFree(const int hostId) const;
