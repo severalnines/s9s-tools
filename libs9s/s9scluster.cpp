@@ -396,6 +396,24 @@ S9sCluster::nCpuCores() const
 }
 
 /**
+ * \returns The number of physical CPUs in the cluster including the CPUs of the
+ *   controller.
+ */
+S9sVariant
+S9sCluster::nCpus() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += nCpus(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
+/**
  * \returns The number of monitored network interface controllers in the
  *   cluster.
  */
@@ -617,6 +635,21 @@ S9sCluster::nCpuCores(
     key.sprintf("host.%d.cpucores", hostId);
 
     return sheetInfo(key);
+}
+
+/**
+ * \returns The number of ohysical CPUs found in the host.
+ */
+S9sVariant 
+S9sCluster::nCpus(
+        const int hostId) const
+{
+    S9sString  key;
+    S9sVariant cpuInfo;
+
+    key.sprintf("host.%d.cpuinfo", hostId);
+    cpuInfo = sheetInfo(key);
+    return cpuInfo.size();
 }
 
 /**
@@ -1132,9 +1165,16 @@ S9sCluster::toString(
                     tmp.sprintf(STR(partFormat), STR(vendorAndVersion()));
                     retval += tmp;
                     break;
-                
+               
+                case 'U':
+                    // The number of CPUs.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpus().toInt());
+                    retval += tmp;
+                    break;
+
                 case 'u':
-                    // The total disk size found in the cluster.
+                    // The CPU usage percent. 
                     partFormat += 'f';
                     tmp.sprintf(STR(partFormat), cpuUsagePercent().toDouble());
                     retval += tmp;

@@ -63,8 +63,10 @@ class S9sCluster
         // %m 
         S9sVariant memTotal() const;
         S9sVariant memFree() const;
-        // %u
+        // %c
         S9sVariant nCpuCores() const;
+        // ??
+        S9sVariant nCpus() const;
         // %n
         S9sVariant nNics() const;
         // %i
@@ -86,6 +88,7 @@ class S9sCluster
         S9sVariant nNics(const int hostId) const;
         S9sVariant nDevices(const int hostId) const;
         S9sVariant nCpuCores(const int hostId) const;
+        S9sVariant nCpus(const int hostId) const;
         S9sVariant cpuUsagePercent(const int hostId) const;
         S9sVariant memTotal(const int hostId) const;
         S9sVariant memUsed(const int hostId) const;

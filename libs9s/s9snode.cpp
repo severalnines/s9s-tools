@@ -527,6 +527,7 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
+#if 0
                 case 'U':
                     // The uptime.
                     partFormat += "s";
@@ -534,7 +535,7 @@ S9sNode::toString(
                             STR(S9sString::uptime(uptime())));
                     retval += tmp;
                     break;
-
+#endif
                 case 'V':
                     // The version.
                     partFormat += "s";
@@ -542,8 +543,15 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
+                case 'U':
+                    // The number of CPUs.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpus().toInt());
+                    retval += tmp;
+                    break;
+
                 case 'u':
-                    // The total disk size found in the cluster.
+                    // The cpu usage percent. 
                     partFormat += 'f';
                     tmp.sprintf(STR(partFormat), cpuUsagePercent().toDouble());
                     retval += tmp;
@@ -1163,11 +1171,23 @@ S9sNode::memFree() const
 {
     return m_cluster.memFree(id());
 }
-        
+
+/**
+ * \returns The number of CPU cores (siblings actually) in the host.
+ */
 S9sVariant 
 S9sNode::nCpuCores() const
 {
     return m_cluster.nCpuCores(id());
+}
+
+/**
+ * \returns The number of physical CPUs in the host.
+ */
+S9sVariant 
+S9sNode::nCpus() const
+{
+    return m_cluster.nCpus(id());
 }
 
 S9sVariant 
