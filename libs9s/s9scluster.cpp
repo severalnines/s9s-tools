@@ -364,6 +364,20 @@ S9sCluster::memTotal() const
     return retval;
 }
 
+S9sVariant
+S9sCluster::memFree() const
+{
+    S9sVariantList ids = hostIds();
+    S9sVariant     retval;
+
+    for (uint idx = 0u; idx < ids.size(); ++idx)
+    {
+        retval += memFree(ids[idx].toInt());
+    }
+
+    return retval;
+}
+
 /**
  * \returns The total number of CPU cores (siblings actually) in the cluster.
  */
@@ -449,6 +463,7 @@ S9sCluster::freeDiskBytes() const
 
     return retval;
 }
+
 
 S9sVariant
 S9sCluster::swapTotal() const
@@ -1034,7 +1049,10 @@ S9sCluster::toString(
                 case 'm':
                     // The total memory size found in the cluster.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), memTotal().toGBytes());
+                    if (modifierFree)
+                        tmp.sprintf(STR(partFormat), memFree().toGBytes());
+                    else
+                        tmp.sprintf(STR(partFormat), memTotal().toGBytes());
 
                     retval += tmp;
                     break;

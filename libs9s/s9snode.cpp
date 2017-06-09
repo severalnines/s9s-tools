@@ -404,7 +404,10 @@ S9sNode::toString(
                 case 'm':
                     // The total memory size found on the host.
                     partFormat += 'f';
-                    tmp.sprintf(STR(partFormat), memTotal().toGBytes());
+                    if (modifierFree)
+                        tmp.sprintf(STR(partFormat), memFree().toGBytes());
+                    else
+                        tmp.sprintf(STR(partFormat), memTotal().toGBytes());
 
                     retval += tmp;
                     break;
@@ -1153,6 +1156,12 @@ S9sVariant
 S9sNode::memTotal() const
 {
     return m_cluster.memTotal(id());
+}
+
+S9sVariant 
+S9sNode::memFree() const
+{
+    return m_cluster.memFree(id());
 }
         
 S9sVariant 

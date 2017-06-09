@@ -100,6 +100,7 @@ class S9sNode
        
         // %m
         S9sVariant memTotal() const;
+        S9sVariant memFree() const;
         // %u
         S9sVariant nCpuCores() const;
         // %n

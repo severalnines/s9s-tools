@@ -62,6 +62,7 @@ class S9sCluster
         int nHosts() const;
         // %m 
         S9sVariant memTotal() const;
+        S9sVariant memFree() const;
         // %u
         S9sVariant nCpuCores() const;
         // %n
