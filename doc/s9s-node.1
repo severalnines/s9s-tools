@@ -490,7 +490,12 @@ A message, describing the node's status un human readable format.
 
 .TP
 .B m
-The total memory size found in the host.
+The total memory size found in the host, measured in GBytes. This value is
+represented by a double precision floating pointer number, so formatting it with
+precision (e.g. "%6.2m") is possible.
+
+When used with the 'f' modifier (e.g. "%6.2fm") this reports the free memory,
+the memory that available for allocation, used for cache or used for buffers.
 
 .TP
 .B N
