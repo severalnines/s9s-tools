@@ -568,6 +568,13 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
+                case 'Z':
+                    // The CPU model.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cpuModel()));
+                    retval += tmp;
+                    break;
+
                 case '%':
                     retval += '%';
                     break;
@@ -1158,6 +1165,12 @@ S9sNode::slavesAsString() const
     }
 
     return retval;
+}
+
+S9sString
+S9sNode::cpuModel() const
+{
+    return m_cluster.cpuModel(id());
 }
 
 S9sVariant 

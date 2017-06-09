@@ -97,13 +97,15 @@ class S9sNode
         time_t lastSeen() const;
         int sshFailCount() const;
         S9sString slavesAsString() const;
-       
+
+        // %Z
+        S9sString cpuModel() const;
         // %m
         S9sVariant memTotal() const;
         S9sVariant memFree() const;
         // %c
         S9sVariant nCpuCores() const;
-        // ??
+        // %U
         S9sVariant nCpus() const;
         // %n
         S9sVariant nNics() const;

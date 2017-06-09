@@ -65,7 +65,7 @@ class S9sCluster
         S9sVariant memFree() const;
         // %c
         S9sVariant nCpuCores() const;
-        // ??
+        // %U
         S9sVariant nCpus() const;
         // %n
         S9sVariant nNics() const;
@@ -85,6 +85,7 @@ class S9sCluster
 
         S9sVariantList hostIds() const;
         S9sString hostName(const int hostId);
+        S9sString cpuModel(const int hostId) const;
         S9sVariant nNics(const int hostId) const;
         S9sVariant nDevices(const int hostId) const;
         S9sVariant nCpuCores(const int hostId) const;

@@ -593,6 +593,22 @@ S9sCluster::hostName(
     return sheetInfo(key).toString();
 }
 
+S9sString
+S9sCluster::cpuModel(
+        const int hostId) const
+{
+    S9sString key;
+    S9sString retval;
+
+    key.sprintf("host.%d.cpumodel", hostId);
+
+    retval = sheetInfo(key).toString();
+    while (retval.contains("  "))
+        retval.replace("  ", " ");
+
+    return retval;
+}
+
 /**
  * \returns The number of monitored network interfaces on the host.
  */
