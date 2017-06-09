@@ -46,12 +46,28 @@ class S9sBackup
         int clusterId() const;
         S9sString status() const;
         S9sString rootDir() const;
-
         S9sString owner() const;
 
+        int nBackups() const;
+        int nFiles(const int backupIndex) const;
+
+        S9sString filePath(
+                const int backupIndex,
+                const int fileIndex);
+
+        S9sVariant fileSize(
+                const int backupIndex,
+                const int fileIndex);
+
+        S9sVariant fileCreated(
+                const int backupIndex,
+                const int fileIndex);
+
     private:
-        S9sVariant config() const;
         S9sVariant configValue(const S9sString &key) const;
+        S9sVariant config() const;
+        S9sVariantMap backupMap(const int backupIndex) const;
+        S9sVariantMap fileMap(const int backupIndex, const int fileIndex);
 
     private:
         S9sVariantMap    m_properties;

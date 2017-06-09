@@ -120,6 +120,9 @@ S9sBackup::setProperties(
     m_properties = properties;
 }
 
+/**
+ * \returns The host on which the backup was created.
+ */
 S9sString
 S9sBackup::backupHost() const
 {
@@ -129,6 +132,9 @@ S9sBackup::backupHost() const
     return S9sString();    
 }
 
+/**
+ * \returns The ID of the backup.
+ */
 int
 S9sBackup::id() const
 {
@@ -138,6 +144,9 @@ S9sBackup::id() const
     return 0;
 }
 
+/**
+ * \returns The ID of the cluster.
+ */
 int
 S9sBackup::clusterId() const
 {
@@ -147,6 +156,9 @@ S9sBackup::clusterId() const
     return 0;
 }
 
+/**
+ * \returns The status of the backup as a string.
+ */
 S9sString
 S9sBackup::status() const
 {
@@ -156,6 +168,10 @@ S9sBackup::status() const
     return S9sString();    
 }
 
+/**
+ * \returns The absolute path of the root directory where these backup files are
+ * placed.
+ */
 S9sString
 S9sBackup::rootDir() const
 {
@@ -165,11 +181,115 @@ S9sBackup::rootDir() const
     return S9sString();    
 }
 
-
+/**
+ * \returns The name of the user that created these backups.
+ */
 S9sString
 S9sBackup::owner() const
 {
     return configValue("createdBy").toString();
+}
+
+int 
+S9sBackup::nBackups() const
+{
+    if (m_properties.contains("backup"))
+        return m_properties.at("backup").size();
+
+    return 0;
+}
+
+int 
+S9sBackup::nFiles(
+        const int backupIndex) const
+{
+    S9sVariantMap theMap = backupMap(backupIndex);
+
+    if (theMap.contains("files"))
+        return theMap.at("files").size();
+
+    return 0;
+}
+
+S9sString
+S9sBackup::filePath(
+        const int backupIndex,
+        const int fileIndex)
+{
+    S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
+
+    if (theFileMap.contains("path"))
+        return theFileMap.at("path").toString();
+
+    return S9sString();
+}
+
+S9sVariant
+S9sBackup::fileSize(
+        const int backupIndex,
+        const int fileIndex)
+{
+    S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
+
+    if (theFileMap.contains("size"))
+        return theFileMap.at("size");
+
+    return S9sVariant();
+}
+
+S9sVariant
+S9sBackup::fileCreated(
+        const int backupIndex,
+        const int fileIndex)
+{
+    S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
+
+    if (theFileMap.contains("created"))
+        return theFileMap.at("created");
+
+    return S9sVariant();
+}
+
+S9sVariantMap
+S9sBackup::fileMap(
+        const int backupIndex,
+        const int fileIndex)
+{
+    S9sVariantMap  theBackupMap = backupMap(backupIndex);
+    S9sVariantList theFileList;
+
+    if (theBackupMap.contains("files"))
+        theFileList = theBackupMap.at("files").toVariantList();
+
+    if (fileIndex >= 0 && fileIndex < (int) theFileList.size())
+        return theFileList[fileIndex].toVariantMap();
+
+    return S9sVariantMap();
+}
+
+S9sVariantMap
+S9sBackup::backupMap(
+        const int backupIndex) const
+{
+    S9sVariant backups;
+
+    if (m_properties.contains("backup"))
+        backups = m_properties.at("backup");
+
+    if (backupIndex >= 0 && backupIndex < backups.size())
+        return backups[backupIndex].toVariantMap();
+    
+    return S9sVariantMap();
+}
+
+
+S9sVariant
+S9sBackup::configValue(
+        const S9sString &key) const
+{
+    S9sVariantMap configMap = config().toVariantMap();
+
+    return configMap[key];
 }
 
 S9sVariant
@@ -181,11 +301,3 @@ S9sBackup::config() const
     return S9sVariantMap();
 }
 
-S9sVariant
-S9sBackup::configValue(
-        const S9sString &key) const
-{
-    S9sVariantMap configMap = config().toVariantMap();
-
-    return configMap[key];
-}

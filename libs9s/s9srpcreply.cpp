@@ -3485,7 +3485,6 @@ S9sRpcReply::printBackupListLong()
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId(); 
-        //S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = backup.owner();
         int            id        = backup.id(); 
         S9sString      status    = backup.status(); 
@@ -3506,20 +3505,16 @@ S9sRpcReply::printBackupListLong()
             continue;
         }
 
-        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
-
             idFormat.widen(id);
 
-            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
+            for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
-                S9sVariantMap file = files[idx1].toVariantMap();
-                ulonglong     size = file["size"].toULongLong();
-                S9sString     sizeString;
-                S9sString     createdString = file["created"].toString();
-                S9sDateTime   created;
+                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toULongLong();
+                S9sString   sizeString;
+                S9sString   createdString = backup.fileCreated(backupIdx, fileIdx).toString();
+                S9sDateTime created;
         
                 created.parse(createdString);
                 createdString = options->formatDateTime(created);
@@ -3596,19 +3591,15 @@ S9sRpcReply::printBackupListLong()
             continue;
         }
 
-        for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
+        for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
-
-            for (uint idx1 = 0; idx1 < files.size(); ++idx1)
+            for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
-                S9sVariantMap file = files[idx1].toVariantMap();
-                S9sString     path = file["path"].toString();
-                ulonglong     size = file["size"].toULongLong();
-                S9sString     sizeString;
-                S9sString     createdString = file["created"].toString();
-                S9sDateTime   created;
+                S9sString   path = backup.filePath(backupIdx, fileIdx);
+                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toULongLong();
+                S9sString   sizeString;
+                S9sString   createdString = backup.fileCreated(backupIdx, fileIdx).toString();
+                S9sDateTime created;
 
                 if (options->fullPathRequested())
                 {
