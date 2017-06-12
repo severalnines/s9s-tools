@@ -566,7 +566,7 @@ S9sBackup::toString(
 
                     retval += tmp;
                     break;
-
+                
                 case 'D':
                     // The description.
                     partFormat += 's';
@@ -623,6 +623,13 @@ S9sBackup::toString(
                     // The numerical ID of the backup.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), id());
+                    retval += tmp;
+                    break;
+                
+                case 'i':
+                    // The cluster ID of the backup.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), clusterId());
                     retval += tmp;
                     break;
                
