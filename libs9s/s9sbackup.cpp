@@ -287,10 +287,13 @@ S9sBackup::fileName(
     return S9sString();
 }
 
+/**
+ * \returns The size of the backup file measured in bytes.
+ */
 S9sVariant
 S9sBackup::fileSize(
         const int backupIndex,
-        const int fileIndex)
+        const int fileIndex) const
 {
     S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
 
@@ -538,6 +541,22 @@ S9sBackup::toString(
                     // The root directory of the backup.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(rootDir()));
+                    retval += tmp;
+                    break;
+                
+                case 'S':
+                    // The storage host. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(storageHost()));
+                    retval += tmp;
+                    break;
+                
+                case 's':
+                    // The storage host. 
+                    partFormat += "llu";
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            fileSize(backupIndex, fileIndex).toULongLong());
                     retval += tmp;
                     break;
                 

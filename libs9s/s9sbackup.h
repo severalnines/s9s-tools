@@ -66,7 +66,7 @@ class S9sBackup
 
         S9sVariant fileSize(
                 const int backupIndex,
-                const int fileIndex);
+                const int fileIndex) const;
 
         S9sVariant fileCreated(
                 const int backupIndex,
