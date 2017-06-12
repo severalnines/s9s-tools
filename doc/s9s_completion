@@ -104,7 +104,7 @@ function _s9s()
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
-                opts+="--backup-id= "
+                opts+="--backup-id= --backup-format= "
                 opts+="--backup-directory= --backup-method= --databases= "
                 opts+="--full-path= --no-compression --on-node "
                 opts+="--parallellism= --use-pigz "

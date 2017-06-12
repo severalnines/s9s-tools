@@ -98,6 +98,7 @@ class S9sOptions
         S9sString longJobLogFormat() const;
         S9sString longClusterFormat() const;
         S9sString longNodeFormat() const;
+        S9sString longBackupFormat() const;
         
         S9sString vendor() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
@@ -134,6 +135,7 @@ class S9sOptions
         bool hasNodeFormat() const;
         S9sString nodeFormat() const;
 
+        bool hasBackupFormat() const;
         S9sString backupFormat() const;
 
         S9sString graph() const;

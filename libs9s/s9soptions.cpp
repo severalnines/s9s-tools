@@ -683,6 +683,30 @@ S9sOptions::longNodeFormat() const
 }
 
 /**
+ * \returns The value for the "long_backup_format" config variable that
+ *   controls the format of the backup lines printed when the --long option is
+ *   provided and the --backup-format option is not used.
+ */
+S9sString 
+S9sOptions::longBackupFormat() const
+{
+    const char *key = "long_backup_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
  * \param assignments The argument of the --properties command line option.
  * \returns true if the format of the optarg is valid.
  *
@@ -1212,6 +1236,15 @@ bool
 S9sOptions::hasNodeFormat() const
 {
     return m_options.contains("node_format");
+}
+
+/**
+ * \returns True if the --backup-format command line option was provided.
+ */
+bool
+S9sOptions::hasBackupFormat() const
+{
+    return m_options.contains("backup_format");
 }
 
 /**
