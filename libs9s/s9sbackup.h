@@ -41,17 +41,24 @@ class S9sBackup
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
+        /*
+         * Getters for simple properties.
+         */
         S9sString backupHost() const;
         S9sString storageHost() const;
         int id() const;
         int clusterId() const;
         S9sString status() const;
         S9sString rootDir() const;
-        S9sString owner() const;
         bool isCompressed() const;
+        S9sString method() const;
+        S9sString description() const;
+
+        /*
+         * Properties by actual backups and files.
+         */
         int nBackups() const;
         int nFiles(const int backupIndex) const;
-        S9sString method() const;
 
         S9sString filePath(
                 const int backupIndex,
@@ -64,6 +71,14 @@ class S9sBackup
         S9sVariant fileCreated(
                 const int backupIndex,
                 const int fileIndex);
+        
+        /*
+         * The configuration values.
+         */
+        S9sString configOwner() const;
+        S9sString configBackupHost() const;
+        S9sString configMethod() const;
+        S9sString configDescription() const;
 
         S9sString toString(
                 const int        backupIndex,

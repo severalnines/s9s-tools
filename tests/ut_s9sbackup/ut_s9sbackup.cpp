@@ -76,7 +76,7 @@ static const char *backupJson1 =
 "    },\n"
 "    'created': '2017-06-09T09:15:15.000Z',\n"
 "    'created_by': '',\n"
-"    'description': '',\n"
+"    'description': 'The description',\n"
 "    'finished': '2017-06-09T09:15:19.108Z',\n"
 "    'id': 2,\n"
 "    'job_id': 4,\n"
@@ -148,7 +148,7 @@ UtS9sBackup::testSetProperties()
     S9S_COMPARE(theBackup.clusterId(),        1);
     S9S_COMPARE(theBackup.status(),           "COMPLETED");
     S9S_COMPARE(theBackup.rootDir(),          "/tmp/BACKUP-2");
-    S9S_COMPARE(theBackup.owner(),            "pipas");
+    S9S_COMPARE(theBackup.configOwner(),      "pipas");
     S9S_COMPARE(theBackup.nBackups(),         1);
     S9S_COMPARE(theBackup.nFiles(0),          1);
     S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
@@ -177,12 +177,19 @@ UtS9sBackup::testAssign()
     S9S_COMPARE(theBackup.clusterId(),        1);
     S9S_COMPARE(theBackup.status(),           "COMPLETED");
     S9S_COMPARE(theBackup.rootDir(),          "/tmp/BACKUP-2");
-    S9S_COMPARE(theBackup.owner(),            "pipas");
+    
+    S9S_COMPARE(theBackup.method(),           "pgdump");
+    S9S_COMPARE(theBackup.description(),      "The description");
+
     S9S_COMPARE(theBackup.nBackups(),         1);
     S9S_COMPARE(theBackup.nFiles(0),          1);
     S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
+    
+    S9S_COMPARE(theBackup.configOwner(),       "pipas");
+    S9S_COMPARE(theBackup.configBackupHost(),  "192.168.1.134");
+    S9S_COMPARE(theBackup.configMethod(),      "-");
 
     theString = theBackup.toString(0, 0, false, "%I %H");
     S9S_COMPARE(theString, "2 192.168.1.134");

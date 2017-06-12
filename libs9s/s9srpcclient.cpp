@@ -2315,6 +2315,7 @@ S9sRpcClient::createBackup()
 
     // The job_data describing how the backup will be created.
     jobData["hostname"]          = backupHost.hostName();
+    jobData["description"]       = "Backup created by s9s-tools.";
 
     if (backupHost.hasPort())
         jobData["port"]          = backupHost.port();

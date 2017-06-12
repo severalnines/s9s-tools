@@ -194,12 +194,51 @@ S9sBackup::rootDir() const
 }
 
 /**
- * \returns The name of the user that created these backups.
+ * \returns The name of the user that is created the configuration.
  */
 S9sString
-S9sBackup::owner() const
+S9sBackup::configOwner() const
 {
     return configValue("createdBy").toString();
+}
+
+/**
+ * \returns The configured backup host.
+ */
+S9sString
+S9sBackup::configBackupHost() const
+{
+    return configValue("backupHost").toString();
+}
+
+/**
+ * \returns The configured backup method or '-' if the backup method is not
+ *   configured.
+ */
+S9sString
+S9sBackup::configMethod() const
+{
+    S9sString retval = configValue("backupMethod").toString();
+
+    if (retval.empty())
+        retval = "-";
+
+    return retval;
+}
+
+/**
+ * \returns The configured description or '-' if the backup description is not
+ *   configured.
+ */
+S9sString
+S9sBackup::configDescription() const
+{
+    S9sString retval = configValue("description").toString();
+
+    if (retval.empty())
+        retval = "-";
+
+    return retval;
 }
 
 bool
@@ -284,6 +323,21 @@ S9sBackup::method() const
     return S9sString();
 }
 
+S9sString
+S9sBackup::description() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("description"))
+        retval = m_properties.at("description").toString();
+
+    if (retval.empty())
+        retval = S9sString("-");
+
+    return retval;
+}
+
+
 /**
  * \param syntaxHighlight Controls if the string will have colors or not.
  * \param formatString The formatstring with markup.
@@ -303,9 +357,9 @@ S9sBackup::toString(
     S9sString    tmp;
     char         c;
     S9sString    partFormat;
-    bool         percent      = false;
-    bool         escaped      = false;
-    bool         modifierFree = false;
+    bool         percent        = false;
+    bool         escaped        = false;
+    bool         modifierConfig = false;
 
     for (uint n = 0; n < formatString.size(); ++n)
     {
@@ -316,9 +370,9 @@ S9sBackup::toString(
             percent    = true;
             partFormat = "%";
             continue;
-        } else if (percent && c == 'f')
+        } else if (percent && c == 'c')
         {
-            modifierFree = true;
+            modifierConfig = true;
             continue;
         } else if (c == '\\')
         {
@@ -327,8 +381,8 @@ S9sBackup::toString(
         }
 
         // FIXME: just to avoid unused veriable message.
-        if (modifierFree)
-            modifierFree = modifierFree;
+        if (modifierConfig)
+            modifierConfig = modifierConfig;
 
         if (escaped)
         {
@@ -370,17 +424,46 @@ S9sBackup::toString(
         {
             switch (c)
             {
+                case 'D':
+                    // The description.
+                    partFormat += 's';
+
+                    if (modifierConfig)
+                        tmp.sprintf(STR(partFormat), STR(configDescription()));
+                    else
+                        tmp.sprintf(STR(partFormat), STR(description()));
+
+                    retval += tmp;
+                    break;
+
                 case 'H':
                     // The backup host.
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(backupHost()));
+
+                    if (modifierConfig)
+                        tmp.sprintf(STR(partFormat), STR(configBackupHost()));
+                    else
+                        tmp.sprintf(STR(partFormat), STR(backupHost()));
+
+                    retval += tmp;
+                    break;
+                
+                case 'M':
+                    // The backup method.
+                    partFormat += 's';
+
+                    if (modifierConfig)
+                        tmp.sprintf(STR(partFormat), STR(configMethod()));
+                    else
+                        tmp.sprintf(STR(partFormat), STR(method()));
+
                     retval += tmp;
                     break;
                 
                 case 'O':
                     // The owner.
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(owner()));
+                    tmp.sprintf(STR(partFormat), STR(configOwner()));
                     retval += tmp;
                     break;
                 
@@ -423,9 +506,9 @@ S9sBackup::toString(
             retval += c;
         }
 
-        percent      = false;
-        escaped      = false;
-        modifierFree = false;
+        percent        = false;
+        escaped        = false;
+        modifierConfig = false;
     }
 
     return retval;

@@ -3523,7 +3523,7 @@ S9sRpcReply::printBackupListLong()
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId(); 
-        S9sString      owner     = backup.owner();
+        S9sString      owner     = backup.configOwner();
         int            id        = backup.id(); 
         S9sString      status    = backup.status(); 
 
@@ -3605,7 +3605,7 @@ S9sRpcReply::printBackupListLong()
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId();
         //S9sVariantMap  configMap = theMap["config"].toVariantMap();
-        S9sString      owner     = backup.owner();
+        S9sString      owner     = backup.configOwner();
         int            id        = backup.id();
         S9sString      status    = backup.status();
         S9sString      root      = backup.rootDir();
