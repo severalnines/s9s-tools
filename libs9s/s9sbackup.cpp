@@ -375,6 +375,22 @@ S9sBackup::fileName(
     return S9sString();
 }
 
+S9sString
+S9sBackup::filePath(
+        const int backupIndex,
+        const int fileIndex) const
+{
+    S9sString retval;
+
+    retval = rootDir();
+
+    if (!retval.empty() && !retval.endsWith("/"))
+        retval += "/";
+
+    retval += fileName(backupIndex, fileIndex);
+    return retval;
+}
+
 /**
  * \returns The size of the backup file measured in bytes.
  */
@@ -657,6 +673,27 @@ S9sBackup::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(configOwner()));
                     retval += tmp;
+                    break;
+
+                case 'P':
+                    // The file name.
+                    partFormat += 's';
+
+                    if (syntaxHighlight)
+                    {
+                        retval += S9sRpcReply::fileColorBegin(
+                                fileName(backupIndex, fileIndex));
+                    }
+
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(filePath(backupIndex, fileIndex)));
+                    
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+                    
                     break;
                 
                 case 'R':

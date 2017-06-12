@@ -69,6 +69,10 @@ class S9sBackup
                 const int backupIndex,
                 const int fileIndex) const;
 
+        S9sString filePath(
+                const int backupIndex,
+                const int fileIndex) const;
+
         S9sVariant fileSize(
                 const int backupIndex,
                 const int fileIndex) const;
