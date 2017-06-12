@@ -58,6 +58,11 @@ value, but the command line option of course has precedence over the
 configuration file. 
 
 .TP
+.BR \-\^\-date\-format =\fIFORMATSTRING\fP "]
+Set the date and time format for the output of the program. The format string 
+is as it is specified for the strftime() standard C library function. 
+
+.TP
 .B \-h, \-\-human-readable
 Print the sizes of files in human readable format.
 
@@ -139,14 +144,48 @@ The strings in the node list are urls that can have the following protocols:
 .SS Backup Related Options
 
 .TP
+.BI \-\^\-backup\-directory= DIR
+Sets where the created archive files are going to be placed.
+
+.\"
+.\" The backup format string.
+.\"
+.TP
+.BR \-\^\-backup\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed information about the
+backups.  When this command line option is used the specified information will
+be printed instead of the default columns. The format string uses the '%'
+character to mark variable fields and flag characters as they are specified in
+the standard printf() C library functions. The '%' specifiers are ended by field
+name letters to refer to various properties of the backups.
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the backup are encoded by letters. The in the "%16H" for
+example the letter "H" encodes the "host name". 
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The s9s-tools support the following fields:
+
+.RS 7
+.TP
+.B C
+The backup file creation date and time.
+
+.RE
+
+.\"
+.\"
+.\"
+.TP
 .BI \-\^\-backup\-method= METHOD
 Controls what backup software is going to be used to create the backup. The
 Cmon controller currently supports the following methods: ndb, mysqldump, 
 xtrabackupfull, xtrabackupincr, mongodump, pg_dump, mysqlpump.
-
-.TP
-.BI \-\^\-backup\-directory= DIR
-Sets where the created archive files are going to be placed.
 
 .TP
 .BI \-\^\-databases= LIST

@@ -70,7 +70,11 @@ class S9sBackup
 
         S9sVariant fileCreated(
                 const int backupIndex,
-                const int fileIndex);
+                const int fileIndex) const;
+
+        S9sString fileCreatedString(
+                const int backupIndex,
+                const int fileIndex) const;
         
         /*
          * The configuration values.

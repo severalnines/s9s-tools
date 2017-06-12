@@ -22,6 +22,8 @@
 #include <S9sUrl>
 #include <S9sVariantMap>
 #include <S9sRpcReply>
+#include <S9sOptions>
+#include <S9sDateTime>
 
 //#define DEBUG
 //#define WARNING
@@ -298,10 +300,17 @@ S9sBackup::fileSize(
     return S9sVariant();
 }
 
+/**
+ * \returns The "created" field of the file.
+ *
+ * This function will return the "created" property of the file as it is found
+ * in the JSon reply from the controller, so most probably as a date and time
+ * string.
+ */
 S9sVariant
 S9sBackup::fileCreated(
         const int backupIndex,
-        const int fileIndex)
+        const int fileIndex) const
 {
     S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
 
@@ -309,6 +318,23 @@ S9sBackup::fileCreated(
         return theFileMap.at("created");
 
     return S9sVariant();
+}
+
+S9sString
+S9sBackup::fileCreatedString(
+        const int backupIndex,
+        const int fileIndex) const
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sString    rawString = fileCreated(backupIndex, fileIndex).toString();
+    S9sDateTime  created;
+    S9sString    retval;
+
+    if (!created.parse(rawString))
+        return "-";
+
+    retval = options->formatDateTime(created);
+    return retval;
 }
 
 /**
@@ -426,6 +452,17 @@ S9sBackup::toString(
         {
             switch (c)
             {
+                case 'C':
+                    // The file creation date and time.
+                    partFormat += 's';
+
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(fileCreatedString(backupIndex, fileIndex)));
+
+                    retval += tmp;
+                    break;
+
                 case 'D':
                     // The description.
                     partFormat += 's';
@@ -471,6 +508,13 @@ S9sBackup::toString(
                     retval += tmp;
                     break;
                 
+                case 'I':
+                    // The numerical ID of the backup.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), id());
+                    retval += tmp;
+                    break;
+                
                 case 'M':
                     // The backup method.
                     partFormat += 's';
@@ -487,13 +531,6 @@ S9sBackup::toString(
                     // The owner.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(configOwner()));
-                    retval += tmp;
-                    break;
-                
-                case 'I':
-                    // The numerical ID of the backup.
-                    partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), id());
                     retval += tmp;
                     break;
                 

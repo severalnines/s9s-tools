@@ -2819,6 +2819,7 @@ S9sOptions::printHelpBackup()
 "  --backup-format            The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
+"  --date-format=FORMAT       The format of the dates printed.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -3345,6 +3346,7 @@ S9sOptions::readOptionsBackup(
         { "human-readable",   no_argument,       0, 'h'                   },
         { "time-style",       required_argument, 0, OptionTimeStyle       },
         { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "date-format",      required_argument, 0, OptionDateFormat      },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -3480,6 +3482,11 @@ S9sOptions::readOptionsBackup(
             case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
+                break;
+            
+            case OptionDateFormat:
+                // --date-format=FORMAT
+                m_options["date_format"] = optarg;
                 break;
             
             case OptionColor:

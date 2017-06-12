@@ -403,7 +403,7 @@ The color highlighting of the node list is controlled by the \fB\-\-color\fP
 command line option.
 
 .\"
-.\"
+.\" The node format string.
 .\"
 .TP
 .BR \-\^\-node\-format [ =\fIFORMATSTRING\fP "]
@@ -412,13 +412,13 @@ When this command line option is used the specified information will be printed
 instead of the default columns. The format string uses the '%' character to mark
 variable fields and flag characters as they are specified in the standard
 printf() C library functions. The '%' specifiers are ended by field name letters
-to refer to various properties of the clusters.
+to refer to various properties of the nodes.
 
 The "%+12i" format string for example has the "+12" flag characters in it with
 the standard meaning: the field will be 12 character wide and the "+" or "-"
 sign will always be printed with the number. 
 
-The properties of the message are encoded by letters. The in the "%16D" for
+The properties of the node are encoded by letters. The in the "%16D" for
 example the letter "D" encodes the "data directory" field, so the full path of
 the data directory on the node will be substituted. 
 
