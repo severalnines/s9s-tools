@@ -336,10 +336,31 @@ S9sBackup::toString(
         {
             switch (c)
             {
-                case 'h':
+                case 'H':
                     // The backup host.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(backupHost()));
+                    retval += tmp;
+                    break;
+                
+                case 'O':
+                    // The owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(owner()));
+                    retval += tmp;
+                    break;
+                
+                case 'I':
+                    // The numerical ID of the backup.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), id());
+                    retval += tmp;
+                    break;
+                
+                case 'R':
+                    // The root direcrtory of the backup.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(rootDir()));
                     retval += tmp;
                     break;
                 
