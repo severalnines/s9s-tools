@@ -195,6 +195,10 @@ S9sBackup::status() const
     return S9sString();    
 }
 
+/**
+ * \returns The date and time when the backup creation was started as it is in
+ *   the JSon reply.
+ */
 S9sVariant
 S9sBackup::begin() const
 {
@@ -204,6 +208,10 @@ S9sBackup::begin() const
     return S9sVariant();
 }
 
+/**
+ * \returns The date and time when the backup creation was started formatted as
+ *   the command line options are set.
+ */
 S9sString
 S9sBackup::beginAsString() const
 {
@@ -219,6 +227,10 @@ S9sBackup::beginAsString() const
     return retval;
 }
 
+/**
+ * \returns The date and time when the backup creation was finished as it is in
+ *   the JSon reply.
+ */
 S9sVariant
 S9sBackup::end() const
 {
@@ -228,6 +240,10 @@ S9sBackup::end() const
     return S9sVariant();
 }
 
+/**
+ * \returns The date and time when the backup creation was finished formatted as
+ *   the command line options was set.
+ */
 S9sString
 S9sBackup::endAsString() const
 {
@@ -304,6 +320,9 @@ S9sBackup::configDescription() const
     return retval;
 }
 
+/**
+ * \returns True if the archive file(s) are compressed.
+ */
 bool
 S9sBackup::isCompressed() const
 {
@@ -313,6 +332,9 @@ S9sBackup::isCompressed() const
     return false;
 }
 
+/**
+ * \returns How many backups the object contains, how many backups was created.
+ */
 int 
 S9sBackup::nBackups() const
 {
@@ -322,6 +344,9 @@ S9sBackup::nBackups() const
     return 0;
 }
 
+/**
+ * \returns How many files the given backup contains.
+ */
 int 
 S9sBackup::nFiles(
         const int backupIndex) const
@@ -334,6 +359,9 @@ S9sBackup::nFiles(
     return 0;
 }
 
+/**
+ * \returns The file name of the archive where the backup is stored.
+ */
 S9sString
 S9sBackup::fileName(
         const int backupIndex,
@@ -383,6 +411,9 @@ S9sBackup::fileCreated(
     return S9sVariant();
 }
 
+/**
+ * \returns The last modification date and time of the archive file.
+ */
 S9sString
 S9sBackup::fileCreatedString(
         const int backupIndex,
@@ -413,6 +444,9 @@ S9sBackup::method() const
     return S9sString();
 }
 
+/**
+ * \returns The description of the backup.
+ */
 S9sString
 S9sBackup::description() const
 {
