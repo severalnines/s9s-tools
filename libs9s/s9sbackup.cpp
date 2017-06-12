@@ -133,6 +133,18 @@ S9sBackup::backupHost() const
 }
 
 /**
+ * \returns The host on which the backup was stored.
+ */
+S9sString
+S9sBackup::storageHost() const
+{
+    if (m_properties.contains("storage_host"))
+        return m_properties.at("storage_host").toString();
+
+    return S9sString();    
+}
+
+/**
  * \returns The ID of the backup.
  */
 int
@@ -188,6 +200,15 @@ S9sString
 S9sBackup::owner() const
 {
     return configValue("createdBy").toString();
+}
+
+bool
+S9sBackup::isCompressed() const
+{
+    if (m_properties.contains("compressed"))
+        return m_properties.at("compressed").toBoolean();
+
+    return false;
 }
 
 int 
@@ -248,6 +269,19 @@ S9sBackup::fileCreated(
         return theFileMap.at("created");
 
     return S9sVariant();
+}
+
+/**
+ * \returns The string representing the method which is used to create the
+ *   backup.
+ */
+S9sString
+S9sBackup::method() const
+{
+    if (m_properties.contains("method"))
+        return m_properties.at("method").toString();
+
+    return S9sString();
 }
 
 /**

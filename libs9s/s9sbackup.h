@@ -42,14 +42,16 @@ class S9sBackup
         void setProperties(const S9sVariantMap &properties);
 
         S9sString backupHost() const;
+        S9sString storageHost() const;
         int id() const;
         int clusterId() const;
         S9sString status() const;
         S9sString rootDir() const;
         S9sString owner() const;
-
+        bool isCompressed() const;
         int nBackups() const;
         int nFiles(const int backupIndex) const;
+        S9sString method() const;
 
         S9sString filePath(
                 const int backupIndex,

@@ -143,6 +143,7 @@ UtS9sBackup::testSetProperties()
     theBackup.setProperties(theMap);
 
     S9S_COMPARE(theBackup.backupHost(),       "192.168.1.134");
+    S9S_COMPARE(theBackup.storageHost(),      "192.168.1.127");
     S9S_COMPARE(theBackup.id(),               2);
     S9S_COMPARE(theBackup.clusterId(),        1);
     S9S_COMPARE(theBackup.status(),           "COMPLETED");
@@ -153,6 +154,7 @@ UtS9sBackup::testSetProperties()
     S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
+    S9S_COMPARE(theBackup.method(),            "pgdump");
 
     return true;
 }
@@ -182,8 +184,8 @@ UtS9sBackup::testAssign()
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
 
-    theString = theBackup.toString(0, 0, false, "%h");
-    S9S_COMPARE(theString, "192.168.1.134");
+    theString = theBackup.toString(0, 0, false, "%I %H");
+    S9S_COMPARE(theString, "2 192.168.1.134");
 
     return true;
 }
