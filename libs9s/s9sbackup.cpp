@@ -172,6 +172,18 @@ S9sBackup::clusterId() const
 }
 
 /**
+ * \returns The ID of the job that created the backup.
+ */
+int
+S9sBackup::jobId() const
+{
+    if (m_properties.contains("job_id"))
+        return m_properties.at("job_id").toInt();
+
+    return 0;
+}
+
+/**
  * \returns The status of the backup as a string.
  */
 S9sString
@@ -181,6 +193,54 @@ S9sBackup::status() const
         return m_properties.at("status").toString().toUpper();
 
     return S9sString();    
+}
+
+S9sVariant
+S9sBackup::begin() const
+{
+    if (m_properties.contains("created"))
+        return m_properties.at("created");
+
+    return S9sVariant();
+}
+
+S9sString
+S9sBackup::beginAsString() const
+{
+    S9sOptions  *options   = S9sOptions::instance();
+    S9sString    rawString = begin().toString();
+    S9sDateTime  created;
+    S9sString    retval;
+
+    if (!created.parse(rawString))
+        return "-";
+
+    retval = options->formatDateTime(created);
+    return retval;
+}
+
+S9sVariant
+S9sBackup::end() const
+{
+    if (m_properties.contains("finished"))
+        return m_properties.at("finished");
+
+    return S9sVariant();
+}
+
+S9sString
+S9sBackup::endAsString() const
+{
+    S9sOptions  *options   = S9sOptions::instance();
+    S9sString    rawString = end().toString();
+    S9sDateTime  created;
+    S9sString    retval;
+
+    if (!created.parse(rawString))
+        return "-";
+
+    retval = options->formatDateTime(created);
+    return retval;
 }
 
 /**
@@ -455,6 +515,13 @@ S9sBackup::toString(
         {
             switch (c)
             {
+                case 'B':
+                    // The time when the backup creation was started.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(beginAsString()));
+                    retval += tmp;
+                    break;
+
                 case 'C':
                     // The file creation date and time.
                     partFormat += 's';
@@ -475,6 +542,13 @@ S9sBackup::toString(
                     else
                         tmp.sprintf(STR(partFormat), STR(description()));
 
+                    retval += tmp;
+                    break;
+                
+                case 'E':
+                    // The time when the backup creation was finished.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(endAsString()));
                     retval += tmp;
                     break;
                 
@@ -517,7 +591,14 @@ S9sBackup::toString(
                     tmp.sprintf(STR(partFormat), id());
                     retval += tmp;
                     break;
-                
+               
+                case 'J':
+                    // The ID of the job.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), jobId());
+                    retval += tmp;
+                    break;
+
                 case 'M':
                     // The backup method.
                     partFormat += 's';

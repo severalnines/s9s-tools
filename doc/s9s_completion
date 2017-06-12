@@ -103,6 +103,7 @@ function _s9s()
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--date-format= "
 
                 opts+="--backup-id= --backup-format= "
                 opts+="--backup-directory= --backup-method= --databases= "

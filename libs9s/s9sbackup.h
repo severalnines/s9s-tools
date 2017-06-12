@@ -48,7 +48,12 @@ class S9sBackup
         S9sString storageHost() const;
         int id() const;
         int clusterId() const;
+        int jobId() const;
         S9sString status() const;
+        S9sVariant begin() const;
+        S9sString beginAsString() const;
+        S9sVariant end() const;
+        S9sString endAsString() const;
         S9sString rootDir() const;
         bool isCompressed() const;
         S9sString method() const;
