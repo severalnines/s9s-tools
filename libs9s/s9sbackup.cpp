@@ -535,7 +535,7 @@ S9sBackup::toString(
                     break;
                 
                 case 'R':
-                    // The root direcrtory of the backup.
+                    // The root directory of the backup.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(rootDir()));
                     retval += tmp;

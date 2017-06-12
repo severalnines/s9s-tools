@@ -63,7 +63,7 @@ Set the date and time format for the output of the program. The format string
 is as it is specified for the strftime() standard C library function. 
 
 .TP
-.B \-h, \-\-human-readable
+.B \-h, \-\-human\-readable
 Print the sizes of files in human readable format.
 
 .TP
@@ -172,9 +172,43 @@ character.
 The s9s-tools support the following fields:
 
 .RS 7
+
 .TP
 .B C
-The backup file creation date and time.
+The backup file creation date and time. The format used to print the dates and
+times can be set using the \fB\-\-date\-format\fP
+
+.TP
+.B D
+The description of the backup. If the "c" modifier is used (e.g. "%cD") the
+configured description is shown.
+
+.TP
+.B F
+The archive file name.
+
+.TP
+.B H
+The backup host (the host that created the backup). If the "c" modifier is used
+(e.g. "%cH") the configured backup host is shown.
+
+.TP 
+.B I
+The numerical ID of the backup.
+
+.TP
+.B M
+The backup method used. If the "c" modifier is used the configured backup method
+will be shown.
+
+.TP
+.B O
+The name of the owner of the backup.
+
+.TP
+.B R
+The root directory of the backup.
+
 
 .RE
 
