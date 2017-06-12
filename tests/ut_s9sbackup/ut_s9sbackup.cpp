@@ -138,6 +138,7 @@ UtS9sBackup::testSetProperties()
 {
     S9sVariantMap theMap;
     S9sBackup     theBackup;
+    S9sString     theString;
 
     S9S_VERIFY(theMap.parse(backupJson1));
     theBackup.setProperties(theMap);
@@ -155,6 +156,30 @@ UtS9sBackup::testSetProperties()
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
     S9S_COMPARE(theBackup.method(),            "pgdump");
+
+    theString = theBackup.toString(0, 0, false, "%B %C");
+    S9S_COMPARE(theString, "2017-06-09 11:15:15 2017-06-09 11:15:19");
+    
+    theString = theBackup.toString(0, 0, false, "%D %E");
+    S9S_COMPARE(theString, "The description 2017-06-09 11:15:19");
+    
+    theString = theBackup.toString(0, 0, false, "%F %H");
+    S9S_COMPARE(theString, "pg_dump_2017-06-09_111515.sql.gz 192.168.1.134");
+    
+    theString = theBackup.toString(0, 0, false, "%I %J");
+    S9S_COMPARE(theString, "2 4");
+    
+    theString = theBackup.toString(0, 0, false, "%M %O");
+    S9S_COMPARE(theString, "pgdump pipas");
+    
+    theString = theBackup.toString(0, 0, false, "%R %S");
+    S9S_COMPARE(theString, "/tmp/BACKUP-2 192.168.1.127");
+    
+    theString = theBackup.toString(0, 0, false, "%s");
+    S9S_COMPARE(theString, "856");
+
+    theString = theBackup.toString(0, 0, false, "%I %H");
+    S9S_COMPARE(theString, "2 192.168.1.134");
 
     return true;
 }
@@ -190,6 +215,27 @@ UtS9sBackup::testAssign()
     S9S_COMPARE(theBackup.configOwner(),       "pipas");
     S9S_COMPARE(theBackup.configBackupHost(),  "192.168.1.134");
     S9S_COMPARE(theBackup.configMethod(),      "-");
+    
+    theString = theBackup.toString(0, 0, false, "%B %C");
+    S9S_COMPARE(theString, "2017-06-09 11:15:15 2017-06-09 11:15:19");
+    
+    theString = theBackup.toString(0, 0, false, "%D %E");
+    S9S_COMPARE(theString, "The description 2017-06-09 11:15:19");
+    
+    theString = theBackup.toString(0, 0, false, "%F %H");
+    S9S_COMPARE(theString, "pg_dump_2017-06-09_111515.sql.gz 192.168.1.134");
+    
+    theString = theBackup.toString(0, 0, false, "%I %J");
+    S9S_COMPARE(theString, "2 4");
+    
+    theString = theBackup.toString(0, 0, false, "%M %O");
+    S9S_COMPARE(theString, "pgdump pipas");
+    
+    theString = theBackup.toString(0, 0, false, "%R %S");
+    S9S_COMPARE(theString, "/tmp/BACKUP-2 192.168.1.127");
+    
+    theString = theBackup.toString(0, 0, false, "%s");
+    S9S_COMPARE(theString, "856");
 
     theString = theBackup.toString(0, 0, false, "%I %H");
     S9S_COMPARE(theString, "2 192.168.1.134");
