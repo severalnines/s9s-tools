@@ -60,9 +60,9 @@ class S9sBackup
         int nBackups() const;
         int nFiles(const int backupIndex) const;
 
-        S9sString filePath(
+        S9sString fileName(
                 const int backupIndex,
-                const int fileIndex);
+                const int fileIndex) const;
 
         S9sVariant fileSize(
                 const int backupIndex,
@@ -90,7 +90,7 @@ class S9sBackup
         S9sVariant configValue(const S9sString &key) const;
         S9sVariant config() const;
         S9sVariantMap backupMap(const int backupIndex) const;
-        S9sVariantMap fileMap(const int backupIndex, const int fileIndex);
+        S9sVariantMap fileMap(const int backupIndex, const int fileIndex) const;
 
     private:
         S9sVariantMap    m_properties;

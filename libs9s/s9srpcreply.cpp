@@ -3633,7 +3633,7 @@ S9sRpcReply::printBackupListLong()
         {
             for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
-                S9sString   path = backup.filePath(backupIdx, fileIdx);
+                S9sString   path = backup.fileName(backupIdx, fileIdx);
                 ulonglong   size = backup.fileSize(backupIdx, fileIdx).toULongLong();
                 S9sString   sizeString;
                 S9sString   createdString = backup.fileCreated(backupIdx, fileIdx).toString();

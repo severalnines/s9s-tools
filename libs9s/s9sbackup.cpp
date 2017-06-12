@@ -21,6 +21,7 @@
 
 #include <S9sUrl>
 #include <S9sVariantMap>
+#include <S9sRpcReply>
 
 //#define DEBUG
 //#define WARNING
@@ -272,9 +273,9 @@ S9sBackup::nFiles(
 }
 
 S9sString
-S9sBackup::filePath(
+S9sBackup::fileName(
         const int backupIndex,
-        const int fileIndex)
+        const int fileIndex) const
 {
     S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
 
@@ -361,6 +362,7 @@ S9sBackup::toString(
     bool         escaped        = false;
     bool         modifierConfig = false;
 
+    S9S_WARNING("syntaxHighlight : %s", syntaxHighlight ? "true" : "false");
     for (uint n = 0; n < formatString.size(); ++n)
     {
         c = formatString[n];
@@ -434,6 +436,27 @@ S9sBackup::toString(
                         tmp.sprintf(STR(partFormat), STR(description()));
 
                     retval += tmp;
+                    break;
+                
+                case 'F':
+                    // The file name.
+                    partFormat += 's';
+
+                    if (syntaxHighlight)
+                    {
+                        retval += S9sRpcReply::fileColorBegin(
+                                fileName(backupIndex, fileIndex));
+                    }
+
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(fileName(backupIndex, fileIndex)));
+                    
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+                    
                     break;
 
                 case 'H':
@@ -514,13 +537,10 @@ S9sBackup::toString(
     return retval;
 }
 
-
-
-
 S9sVariantMap
 S9sBackup::fileMap(
         const int backupIndex,
-        const int fileIndex)
+        const int fileIndex) const
 {
     S9sVariantMap  theBackupMap = backupMap(backupIndex);
     S9sVariantList theFileList;

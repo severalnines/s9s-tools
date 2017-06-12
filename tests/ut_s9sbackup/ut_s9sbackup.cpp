@@ -151,7 +151,7 @@ UtS9sBackup::testSetProperties()
     S9S_COMPARE(theBackup.configOwner(),      "pipas");
     S9S_COMPARE(theBackup.nBackups(),         1);
     S9S_COMPARE(theBackup.nFiles(0),          1);
-    S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
+    S9S_COMPARE(theBackup.fileName(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
     S9S_COMPARE(theBackup.method(),            "pgdump");
@@ -183,7 +183,7 @@ UtS9sBackup::testAssign()
 
     S9S_COMPARE(theBackup.nBackups(),         1);
     S9S_COMPARE(theBackup.nFiles(0),          1);
-    S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
+    S9S_COMPARE(theBackup.fileName(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
     S9S_COMPARE(theBackup.fileSize(0, 0),     856);
     S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
     
