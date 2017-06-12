@@ -30,62 +30,74 @@
 
 static const char *backupJson1 = 
 "{\n"
-"    \"class_name\": \"CmonGaleraHost\",\n"
-"    \"clusterid\": 1,\n"
-"    \"configfile\": [ \"/etc/mysql/my.cnf\" ],\n"
-"    \"datadir\": \"/var/lib/mysql/\",\n"
-"    \"distribution\":\n" 
+"    'backup': [ \n"
 "    {\n"
-"        \"codename\": \"xenial\",\n"
-"        \"name\": \"ubuntu\",\n"
-"        \"release\": \"16.04\",\n"
-"        \"type\": \"debian\"\n"
-"    },\n"
-"    \"errormsg\": \"Up and running.\",\n"
-"    \"galera\": \n"
+"        'db': 'all',\n"
+"        'files': [ \n"
+"        {\n"
+"            'class_name': 'CmonBackupFile',\n"
+"            'created': '2017-06-09T09:15:19.000Z',\n"
+"            'hash': 'md5:f670d738bcb318fa8d50a5b5f899c5bb',\n"
+"            'path': 'pg_dump_2017-06-09_111515.sql.gz',\n"
+"            'size': 856,\n"
+"            'type': 'full'\n"
+"        } ],\n"
+"        'start_time': '2017-06-09T09:15:19.000Z'\n"
+"    } ],\n"
+"    'backup_host': '192.168.1.134',\n"
+"    'chain_up': 0,\n"
+"    'cid': 1,\n"
+"    'class_name': 'CmonBackupRecord',\n"
+"    'compressed': true,\n"
+"    'config': \n"
 "    {\n"
-"        \"certsdepsdistance\": 0,\n"
-"        \"clustersize\": 2,\n"
-"        \"flowctrlpaused\": 0,\n"
-"        \"flowctrlrecv\": 0,\n"
-"        \"flowctrlsent\": 0,\n"
-"        \"galerastatus\": \"Primary\",\n"
-"        \"lastcommitted\": 7,\n"
-"        \"localrecvqueueavg\": 0,\n"
-"        \"localsendqueueavg\": 0.333333,\n"
-"        \"localstatus\": 4,\n"
-"        \"localstatusstr\": \"Synced\",\n"
-"        \"ready\": \"ON\"\n"
+"        'backupDir': '/tmp',\n"
+"        'backupHost': '192.168.1.134',\n"
+"        'backupMethod': '',\n"
+"        'backupToIndividualFiles': false,\n"
+"        'backup_failover': false,\n"
+"        'backup_failover_host': '',\n"
+"        'ccStorage': true,\n"
+"        'compression': true,\n"
+"        'createdBy': 'pipas',\n"
+"        'description': 'null',\n"
+"        'includeDatabases': '',\n"
+"        'netcat_port': 9999,\n"
+"        'origBackupDir': '/tmp',\n"
+"        'scheduleId': 0,\n"
+"        'set_gtid_purged_off': true,\n"
+"        'storageHost': '',\n"
+"        'throttle_rate_iops': 0,\n"
+"        'throttle_rate_netbw': 0,\n"
+"        'usePigz': false,\n"
+"        'wsrep_desync': false,\n"
+"        'xtrabackupParallellism': 1,\n"
+"        'xtrabackup_locks': false\n"
 "    },\n"
-"    \"hostId\": 3,\n"
-"    \"hostname\": \"192.168.1.189\",\n"
-"    \"hoststatus\": \"CmonHostOnline\",\n"
-"    \"ip\": \"192.168.1.189\",\n"
-"    \"isgalera\": true,\n"
-"    \"lastseen\": 1473936903,\n"
-"    \"logfile\": \"/var/log/mysql/mysqld.log\",\n"
-"    \"maintenance_mode_active\": true,\n"
-"    \"message\": \"Up and running.\",\n"
-"    \"mysqlstatus\": 0,\n"
-"    \"nodeid\": 3,\n"
-"    \"nodetype\": \"galera\",\n"
-"    \"pid\": 8272,\n"
-"    \"pidfile\": \"/var/lib/mysql/mysql.pid\",\n"
-"    \"pingstatus\": 0,\n"
-"    \"port\": 3306,\n"
-"    \"replication_master\": \n"
+"    'created': '2017-06-09T09:15:15.000Z',\n"
+"    'created_by': '',\n"
+"    'description': '',\n"
+"    'finished': '2017-06-09T09:15:19.108Z',\n"
+"    'id': 2,\n"
+"    'job_id': 4,\n"
+"    'log_file': '',\n"
+"    'lsn': 0,\n"
+"    'method': 'pgdump',\n"
+"    'parent_id': 0,\n"
+"    'root_dir': '/tmp/BACKUP-2',\n"
+"    'schedule_id': 0,\n"
+"    'status': 'Completed',\n"
+"    'storage_host': '192.168.1.127',\n"
+"    'total_datadir_size': 72663848,\n"
+"    'verified': \n"
 "    {\n"
-"        \"position\": \"\"\n"
-"    },\n"
-"    \"role\": \"none\",\n"
-"    \"serverid\": 2,\n"
-"    \"timestamp\": 1473936903,\n"
-"    \"uptime\": 55,\n"
-"    \"version\": \"5.6.30-76.3-56\",\n"
-"    \"wallclock\": 1473936985,\n"
-"    \"wallclocktimestamp\": 1473936847\n"
+"        'message': '',\n"
+"        'status': 'Unverified',\n"
+"        'verified_time': '1969-12-31T23:59:59.000Z'\n"
+"    }\n"
 "}\n"
 ;
+
 
 UtS9sBackup::UtS9sBackup()
 {
@@ -130,9 +142,17 @@ UtS9sBackup::testSetProperties()
     S9S_VERIFY(theMap.parse(backupJson1));
     theBackup.setProperties(theMap);
 
-    #if 0
-    S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
-    #endif
+    S9S_COMPARE(theBackup.backupHost(),       "192.168.1.134");
+    S9S_COMPARE(theBackup.id(),               2);
+    S9S_COMPARE(theBackup.clusterId(),        1);
+    S9S_COMPARE(theBackup.status(),           "COMPLETED");
+    S9S_COMPARE(theBackup.rootDir(),          "/tmp/BACKUP-2");
+    S9S_COMPARE(theBackup.owner(),            "pipas");
+    S9S_COMPARE(theBackup.nBackups(),         1);
+    S9S_COMPARE(theBackup.nFiles(0),          1);
+    S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
+    S9S_COMPARE(theBackup.fileSize(0, 0),     856);
+    S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
 
     return true;
 }
@@ -149,9 +169,17 @@ UtS9sBackup::testAssign()
     S9S_VERIFY(theMap.parse(backupJson1));
     theBackup = theMap;
 
-    #if 0
-    S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
-    #endif
+    S9S_COMPARE(theBackup.backupHost(),       "192.168.1.134");
+    S9S_COMPARE(theBackup.id(),               2);
+    S9S_COMPARE(theBackup.clusterId(),        1);
+    S9S_COMPARE(theBackup.status(),           "COMPLETED");
+    S9S_COMPARE(theBackup.rootDir(),          "/tmp/BACKUP-2");
+    S9S_COMPARE(theBackup.owner(),            "pipas");
+    S9S_COMPARE(theBackup.nBackups(),         1);
+    S9S_COMPARE(theBackup.nFiles(0),          1);
+    S9S_COMPARE(theBackup.filePath(0, 0), "pg_dump_2017-06-09_111515.sql.gz");
+    S9S_COMPARE(theBackup.fileSize(0, 0),     856);
+    S9S_COMPARE(theBackup.fileCreated(0, 0),   "2017-06-09T09:15:19.000Z");
 
     return true;
 }

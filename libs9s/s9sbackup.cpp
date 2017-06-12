@@ -176,7 +176,7 @@ S9sString
 S9sBackup::rootDir() const
 {
     if (m_properties.contains("root_dir"))
-        return m_properties.at("root_dir").toString().toUpper();
+        return m_properties.at("root_dir").toString();
 
     return S9sString();    
 }
