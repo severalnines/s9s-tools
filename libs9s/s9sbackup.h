@@ -63,6 +63,12 @@ class S9sBackup
                 const int backupIndex,
                 const int fileIndex);
 
+        S9sString toString(
+                const int        backupIndex,
+                const int        fileIndex,
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
+
     private:
         S9sVariant configValue(const S9sString &key) const;
         S9sVariant config() const;

@@ -133,6 +133,9 @@ class S9sOptions
 
         bool hasNodeFormat() const;
         S9sString nodeFormat() const;
+
+        S9sString backupFormat() const;
+
         S9sString graph() const;
 
         S9sString userName( const bool tryLocalUserToo = false) const;

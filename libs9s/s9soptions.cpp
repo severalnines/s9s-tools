@@ -128,6 +128,7 @@ enum S9sOptionType
     OptionDebug,
     OptionClusterFormat,
     OptionNodeFormat,
+    OptionBackupFormat,
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
@@ -1225,6 +1226,20 @@ S9sOptions::nodeFormat() const
 
     return S9sString();
 }
+
+/**
+ * \returns The command line option argument for the --backup-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::backupFormat() const
+{
+    if (m_options.contains("backup_format"))
+        return m_options.at("backup_format").toString();
+
+    return S9sString();
+}
+
 
 /**
  * \returns The command line option argument for the --graph option.
@@ -2768,6 +2783,7 @@ S9sOptions::printHelpBackup()
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
+"  --backup-format            The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --full-path                Print the full path of the files.\n"
@@ -3325,6 +3341,7 @@ S9sOptions::readOptionsBackup(
         { "databases",        required_argument, 0, OptionDatabases       },
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "full-path",        no_argument,       0, OptionFullPath        },
+        { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
         { 0, 0, 0, 0 }
     };
 
@@ -3525,6 +3542,11 @@ S9sOptions::readOptionsBackup(
             case OptionFullPath:
                 // full-path
                 m_options["full_path"] = true;
+                break;
+
+            case OptionBackupFormat:
+                // --backup-format=VALUE
+                m_options["backup_format"] = optarg;
                 break;
 
             case '?':

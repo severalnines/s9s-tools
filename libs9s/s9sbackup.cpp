@@ -250,6 +250,135 @@ S9sBackup::fileCreated(
     return S9sVariant();
 }
 
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the message to a string using a special format string that may
+ * contain field names of message properties.
+ */
+S9sString
+S9sBackup::toString(
+        const int        backupIndex,
+        const int        fileIndex,
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sString    retval;
+    S9sString    tmp;
+    char         c;
+    S9sString    partFormat;
+    bool         percent      = false;
+    bool         escaped      = false;
+    bool         modifierFree = false;
+
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+       
+        if (c == '%' && !percent)
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+        } else if (percent && c == 'f')
+        {
+            modifierFree = true;
+            continue;
+        } else if (c == '\\')
+        {
+            escaped = true;
+            continue;
+        }
+
+        // FIXME: just to avoid unused veriable message.
+        if (modifierFree)
+            modifierFree = modifierFree;
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'h':
+                    // The backup host.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(backupHost()));
+                    retval += tmp;
+                    break;
+                
+                case '%':
+                    retval += '%';
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                case '\'':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent      = false;
+        escaped      = false;
+        modifierFree = false;
+    }
+
+    return retval;
+}
+
+
+
+
 S9sVariantMap
 S9sBackup::fileMap(
         const int backupIndex,
