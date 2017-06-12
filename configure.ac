@@ -85,6 +85,7 @@ AC_CONFIG_FILES(Makefile                          \
                 tests/ut_s9surl/Makefile          \
                 tests/ut_s9snode/Makefile         \
                 tests/ut_s9scluster/Makefile      \
+                tests/ut_s9sbackup/Makefile       \
                 tests/ut_s9saccount/Makefile      \
                 tests/ut_s9svariant/Makefile      \
                 tests/ut_s9svariantmap/Makefile   \

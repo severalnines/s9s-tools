@@ -69,6 +69,7 @@ runTest ut_s9sstring $@
 runTest ut_s9surl $@
 runTest ut_s9snode $@
 runTest ut_s9scluster $@
+runTest ut_s9sbackup $@
 runTest ut_s9saccount $@
 runTest ut_s9svariant $@
 runTest ut_s9svariantmap $@

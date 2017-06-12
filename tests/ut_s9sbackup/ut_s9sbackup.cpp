@@ -87,13 +87,6 @@ static const char *backupJson1 =
 "}\n"
 ;
 
-static const char *hostJson2 = 
-"{\n"
-"    \"hostname\": \"192.168.1.189\",\n"
-"    \"port\": 3306\n"
-"}"
-;
-
 UtS9sBackup::UtS9sBackup()
 {
 }
@@ -134,7 +127,7 @@ UtS9sBackup::testSetProperties()
     S9sVariantMap theMap;
     S9sBackup     theBackup;
 
-    S9S_VERIFY(theMap.parse(hostJson1));
+    S9S_VERIFY(theMap.parse(backupJson1));
     theBackup.setProperties(theMap);
 
     #if 0
@@ -145,7 +138,7 @@ UtS9sBackup::testSetProperties()
 }
 
 /**
- * Testing the S9sNode::operator=(const S9sVariantMap &) operator.
+ * Testing the S9sBackup::operator=(const S9sVariantMap &) operator.
  */
 bool
 UtS9sBackup::testAssign()
@@ -153,7 +146,7 @@ UtS9sBackup::testAssign()
     S9sVariantMap theMap;
     S9sBackup     theBackup;
 
-    S9S_VERIFY(theMap.parse(hostJson1));
+    S9S_VERIFY(theMap.parse(backupJson1));
     theBackup = theMap;
 
     #if 0
