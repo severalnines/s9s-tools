@@ -577,6 +577,13 @@ S9sVariant::toInt(
     return defaultValue;
 }
 
+ulonglong
+S9sVariant::toUll(
+        ulonglong defaultValue) const
+{
+    return toULongLong(defaultValue);
+}
+
 /**
  * \param defaultValue the value to be returned if the variant can't be
  *   converted to unsigned long long.

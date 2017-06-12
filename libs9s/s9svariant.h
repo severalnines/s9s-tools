@@ -102,6 +102,7 @@ class S9sVariant
 
         int toInt(const int defaultValue = 0) const;
         ulonglong toULongLong(ulonglong defaultValue = 0ull) const; 
+        ulonglong toUll(ulonglong defaultValue = 0ull) const; 
         time_t toTimeT() const;
         bool toBoolean(const bool defaultValue = false) const;
         double toDouble(const double defaultValue = 0.0) const;

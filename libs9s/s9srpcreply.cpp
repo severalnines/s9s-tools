@@ -3490,7 +3490,8 @@ S9sRpcReply::printBackupListLong()
             
             for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
             {
-                for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
+                for (int fileIdx = 0; 
+                        fileIdx < backup.nFiles(backupIdx); ++fileIdx)
                 {
                     S9sString outString;
                     
@@ -3547,19 +3548,16 @@ S9sRpcReply::printBackupListLong()
         {
             idFormat.widen(id);
 
-            for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
+            for (int fileIdx = 0; 
+                    fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
-                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toULongLong();
-                S9sString   sizeString;
-                S9sString   createdString = backup.fileCreated(backupIdx, fileIdx).toString();
-                S9sDateTime created;
+                ulonglong size = backup.fileSize(backupIdx, fileIdx).toUll();
+                S9sString sizeString;
+                S9sString created = backup.fileCreatedString(
+                        backupIdx, fileIdx);
         
-                created.parse(createdString);
-                createdString = options->formatDateTime(created);
-                
                 sizeString = S9sFormat::toSizeString(size);
-                
-                createdFormat.widen(createdString);
+                createdFormat.widen(created);
                 sizeFormat.widen(sizeString);
             }
         }
@@ -3604,7 +3602,6 @@ S9sRpcReply::printBackupListLong()
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId();
-        //S9sVariantMap  configMap = theMap["config"].toVariantMap();
         S9sString      owner     = backup.configOwner();
         int            id        = backup.id();
         S9sString      status    = backup.status();
@@ -3634,10 +3631,10 @@ S9sRpcReply::printBackupListLong()
             for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
                 S9sString   path = backup.fileName(backupIdx, fileIdx);
-                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toULongLong();
+                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toUll();
                 S9sString   sizeString;
-                S9sString   createdString = backup.fileCreated(backupIdx, fileIdx).toString();
-                S9sDateTime created;
+                S9sString   created = backup.fileCreatedString(
+                        backupIdx, fileIdx);
 
                 if (options->fullPathRequested())
                 {
@@ -3646,9 +3643,6 @@ S9sRpcReply::printBackupListLong()
 
                     path = root + path;
                 }
-
-                created.parse(createdString);
-                createdString = options->formatDateTime(created);
 
                 sizeString = S9sFormat::toSizeString(size);
 
@@ -3670,7 +3664,7 @@ S9sRpcReply::printBackupListLong()
                 printf("%s", userColorEnd());
 
                 hostNameFormat.printf(hostName);
-                createdFormat.printf(createdString);
+                createdFormat.printf(created);
                 sizeFormat.printf(sizeString);
                 printf("%s%s%s", colorBegin, STR(path), colorEnd);
                 printf("\n");
