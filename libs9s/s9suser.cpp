@@ -381,10 +381,45 @@ S9sUser::toString(
         {
             switch (c)
             {
+                case 'G':
+                    // The full name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(groupNames()));
+                    retval += tmp;
+                    break;
+
                 case 'F':
                     // The full name of the user.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(fullName()));
+                    retval += tmp;
+                    break;
+                
+                case 'f':
+                    // The first name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(firstName()));
+                    retval += tmp;
+                    break;
+                
+                case 'I':
+                    // The user ID.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), userId());
+                    retval += tmp;
+                    break;
+                
+                case 'j':
+                    // The job title of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(jobTitle()));
+                    retval += tmp;
+                    break;
+                
+                case 'l':
+                    // The last name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(lastName()));
                     retval += tmp;
                     break;
 
@@ -395,12 +430,27 @@ S9sUser::toString(
                     retval += tmp;
                     break;
                 
+                case 'm':
+                    // The middle name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(middleName()));
+                    retval += tmp;
+                    break;
+                
                 case 'N':
                     // The username of the user.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(userName()));
                     retval += tmp;
                     break;
+                
+                case 't':
+                    // The title of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(title()));
+                    retval += tmp;
+                    break;
+
                 
                 case '%':
                     retval += '%';
