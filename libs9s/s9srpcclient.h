@@ -135,6 +135,7 @@ class S9sRpcClient
          * Requests related to the cmon users.
          */
         bool getUsers();
+        bool setUser();
 
         bool getJobInstance(const int jobId);
         

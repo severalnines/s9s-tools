@@ -2736,6 +2736,20 @@ S9sRpcClient::getUsers()
     return retval;
 }
 
+bool
+S9sRpcClient::setUser()
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "setUser";
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

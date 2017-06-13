@@ -59,7 +59,9 @@ class S9sBusinessLogic
                 const int     jobId, 
                 S9sRpcClient &client);
 
-        void executeUser(S9sRpcClient &client);
+        void executeUserList(S9sRpcClient &client);
+        void executeSetUser(S9sRpcClient &client);
+        void executeCreateUser(S9sRpcClient &client);
 
         void executeClusterList(S9sRpcClient &client);
         void executePing(S9sRpcClient &client);
@@ -76,7 +78,6 @@ class S9sBusinessLogic
         void executeTop(S9sRpcClient &client);
         void executeProcessList(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
-        void executeUserList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
         void executeLogList(S9sRpcClient &client);

@@ -57,7 +57,6 @@ S9sBusinessLogic::execute()
     /*
      * Here is a fucked up version and a version that I try to clean up.
      */
-    //if (!options->isUserOperation() || !options->rpcToken().empty())
     if (options->isUserOperation() && options->isCreateRequested())
     {
         PRINT_VERBOSE("No authentication required");
@@ -263,8 +262,11 @@ S9sBusinessLogic::execute()
         if (options->isListRequested() || options->isWhoAmIRequested())
         {
             executeUserList(client);
+        } else if (options->isSetRequested())
+        {
+            executeSetUser(client);
         } else {
-            executeUser(client);
+            executeCreateUser(client);
         }
     } else if (options->isMaintenanceOperation())
     {
@@ -1312,7 +1314,14 @@ S9sBusinessLogic::waitForJobWithLog(
 }
 
 void
-S9sBusinessLogic::executeUser(
+S9sBusinessLogic::executeSetUser(
+        S9sRpcClient &client)
+{
+}
+
+
+void
+S9sBusinessLogic::executeCreateUser(
         S9sRpcClient        &client)
 {
     S9sString      errorString;
