@@ -50,8 +50,12 @@ class S9sUser
         S9sString middleName() const;
         S9sString title() const;
         S9sString jobTitle() const;
-        S9sString groupNames() const;
+        S9sString groupNames(const S9sString separator = ",") const;
         S9sString fullName() const;
+
+        S9sString toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
 
     private:
         S9sVariantMap    m_properties;

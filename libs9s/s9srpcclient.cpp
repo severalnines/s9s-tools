@@ -509,7 +509,7 @@ S9sRpcClient::getInfo()
 /**
  * \param clusterId the ID of the cluster for which the CPU information will be
  *   fetched.
- * \returns true if the request sent and a return is received (even if the reply
+ * \returns true if the request sent and a reply is received (even if the reply
  *   is an error message).
  *
  */
@@ -2736,6 +2736,12 @@ S9sRpcClient::getUsers()
     return retval;
 }
 
+/**
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ *
+ * This method is used to modify an existing Cmon User on the controller.
+ */
 bool
 S9sRpcClient::setUser()
 {
