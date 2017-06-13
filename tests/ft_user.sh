@@ -129,7 +129,8 @@ EOF
 }
 
 #
-# 
+# This function is used to cut one cell (of a given row and column) from a table
+# formatted text.
 #
 function index_table()
 {
