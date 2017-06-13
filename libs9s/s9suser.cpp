@@ -48,6 +48,23 @@ S9sUser::operator=(
 
 /**
  * \returns The S9sUser converted to a variant map.
+ *
+\code{.js}
+    {
+        "class_name": "CmonUser",
+        "email_address": "warrior@ds9.com",
+        "first_name": "Worf",
+        "groups": [ 
+        {
+            "class_name": "CmonGroup",
+            "group_id": 4,
+            "group_name": "ds9"
+        } ],
+        "title": "Lt.",
+        "user_id": 12,
+        "user_name": "worf"
+    }
+\endcode
  */
 const S9sVariantMap &
 S9sUser::toVariantMap() const
@@ -117,4 +134,81 @@ S9sUser::setProperties(
     m_properties = properties;
 }
 
+/**
+ * \returns The username of the user.
+ */
+S9sString
+S9sUser::userName() const
+{
+    if (m_properties.contains("user_name"))
+        return m_properties.at("user_name").toString();
+
+    return S9sString();
+}
+
+/**
+ * \returns The email address of the user.
+ */
+S9sString
+S9sUser::emailAddress() const
+{
+    if (m_properties.contains("email_address"))
+        return m_properties.at("email_address").toString();
+
+    return S9sString();
+}
+
+int
+S9sUser::userId() const
+{
+    if (m_properties.contains("user_id"))
+        return m_properties.at("user_id").toInt();
+
+    return 0;
+}
+
+S9sString
+S9sUser::firstName() const
+{
+    if (m_properties.contains("first_name"))
+        return m_properties.at("first_name").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sUser::lastName() const
+{
+    if (m_properties.contains("last_name"))
+        return m_properties.at("last_name").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sUser::middleName() const
+{
+    if (m_properties.contains("middle_name"))
+        return m_properties.at("middle_name").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sUser::title() const
+{
+    if (m_properties.contains("title"))
+        return m_properties.at("title").toString();
+
+    return S9sString();
+}
+
+S9sString
+S9sUser::jobTitle() const
+{
+    if (m_properties.contains("job_title"))
+        return m_properties.at("job_title").toString();
+
+    return S9sString();
+}
 

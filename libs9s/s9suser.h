@@ -42,6 +42,15 @@ class S9sUser
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
+        S9sString userName() const;
+        S9sString emailAddress() const;
+        int userId() const;
+        S9sString firstName() const;
+        S9sString lastName() const;
+        S9sString middleName() const;
+        S9sString title() const;
+        S9sString jobTitle() const;
+
     private:
         S9sVariantMap    m_properties;
 };
