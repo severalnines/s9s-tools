@@ -308,7 +308,6 @@ function _s9s()
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
-
                 opts+="--type= "
             fi
         fi

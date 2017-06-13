@@ -31,6 +31,7 @@
 #include "S9sBackup"
 #include "S9sMessage"
 #include "S9sCmonGraph"
+#include "S9sUser"
 
 //#define DEBUG
 //#define WARNING
@@ -3932,9 +3933,10 @@ S9sRpcReply::printUserListBrief()
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  userMap    = userList[idx].toVariantMap();
-        S9sString      userName   = userMap["user_name"].toString();
-        int            userId     = userMap["user_id"].toInt();
+        S9sVariantMap  userMap      = userList[idx].toVariantMap();
+        S9sUser        user         = userMap;
+        S9sString      userName     = user.userName();
+        int            userId       = user.userId();
         
         //
         // Filtering.
@@ -3988,13 +3990,13 @@ S9sRpcReply::printUserListLong()
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  userMap    = userList[idx].toVariantMap();
-        S9sVariantList groupList  = userMap["groups"].toVariantList();
-        S9sString      userName   = userMap["user_name"].toString();
-        S9sString      emailAddress = userMap["email_address"].toString();
-        int            userId     = userMap["user_id"].toInt();
-        S9sString      groupNames; 
-
+        S9sVariantMap  userMap      = userList[idx].toVariantMap();
+        S9sUser        user         = userMap;
+        S9sString      userName     = user.userName();
+        S9sString      emailAddress = user.emailAddress();
+        int            userId       = user.userId();
+        S9sString      groupNames   = user.groupNames(); 
+        
         /*
          * Filtering.
          */
@@ -4003,20 +4005,6 @@ S9sRpcReply::printUserListLong()
         
         if (!options->isStringMatchExtraArguments(userName))
             continue;
-
-        /*
-         * Groups.
-         */
-        for (uint idx = 0u; idx < groupList.size(); ++idx)
-        {
-            S9sVariantMap groupMap  = groupList[idx].toVariantMap();
-            S9sString     groupName = groupMap["group_name"].toString();
-
-            if (!groupNames.empty())
-                groupNames += ",";
-
-            groupNames += groupName;
-        }
 
         if (groupNames.empty())
             groupNames = "-";
@@ -4057,16 +4045,13 @@ S9sRpcReply::printUserListLong()
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
-        S9sVariantMap  userMap    = userList[idx].toVariantMap();
-        S9sVariantList groupList  = userMap["groups"].toVariantList();
-        S9sString      userName   = userMap["user_name"].toString();
-        int            userId     = userMap["user_id"].toInt();
-        S9sString      title      = userMap["title"].toString();
-        S9sString      firstName  = userMap["first_name"].toString();
-        S9sString      lastName   = userMap["last_name"].toString();
-        S9sString      emailAddress = userMap["email_address"].toString();
-        S9sString      fullName;
-        S9sString      groupNames; 
+        S9sVariantMap  userMap      = userList[idx].toVariantMap();
+        S9sUser        user         = userMap;
+        S9sString      userName     = user.userName();
+        int            userId       = user.userId();
+        S9sString      emailAddress = user.emailAddress();
+        S9sString      fullName     = user.fullName();
+        S9sString      groupNames   = user.groupNames(); 
        
         //
         // Filtering.
@@ -4076,53 +4061,12 @@ S9sRpcReply::printUserListLong()
         
         if (!options->isStringMatchExtraArguments(userName))
             continue;
-
-        //
-        // Concatenating the group names into one string.
-        //
-        for (uint idx = 0u; idx < groupList.size(); ++idx)
-        {
-            S9sVariantMap groupMap  = groupList[idx].toVariantMap();
-            S9sString     groupName = groupMap["group_name"].toString();
-
-            if (!groupNames.empty())
-                groupNames += ",";
-
-            groupNames += groupName;
-        }
-        
+       
         if (groupNames.empty())
             groupNames = "-";
         
         if (emailAddress.empty())
             emailAddress = "-";
-
-        /*
-         * Concatenating the real-world names.
-         */
-        if (!title.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += title;
-        }
-
-        if (!firstName.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += firstName;
-        }
-
-        if (!lastName.empty())
-        {
-            if (!fullName.empty())
-                fullName += " ";
-
-            fullName += lastName;
-        }
 
         if (fullName.empty())
             fullName = "-";
@@ -4942,6 +4886,7 @@ S9sRpcReply::printMetaTypePropertyListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
+    S9sFormat       statFormat;
     S9sFormat       nameFormat;
     S9sFormat       unitFormat;
 
@@ -4970,11 +4915,13 @@ S9sRpcReply::printMetaTypePropertyListLong()
      */
     if (!options->isNoHeaderRequested())
     {
+        statFormat.widen("STAT");
         nameFormat.widen("NAME");
         unitFormat.widen("UNIT");
 
         printf("%s", headerColorBegin());
          
+        statFormat.printf("STAT");
         nameFormat.printf("NAME");
         unitFormat.printf("UNIT");
         printf("DESCRIPTION");
@@ -4993,7 +4940,10 @@ S9sRpcReply::printMetaTypePropertyListLong()
         S9sString     typeName     = typeMap["property_name"].toString();
         S9sString     unit         = typeMap["unit"].toString();
         S9sString     description  = typeMap["description"].toString();
-        
+        bool          isReadable   = typeMap["is_public"].toBoolean();
+        bool          isWritable   = typeMap["is_writable"].toBoolean();
+        S9sString     stat;
+
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
@@ -5003,6 +4953,10 @@ S9sRpcReply::printMetaTypePropertyListLong()
         if (description.empty())
             description = "-";
 
+        stat += isReadable ? "r" : "-";
+        stat += isWritable ? "w" : "-";
+
+        statFormat.printf(stat);
         printf("%s", propertyColorBegin());
         nameFormat.printf(typeName);
         printf("%s", propertyColorEnd());
