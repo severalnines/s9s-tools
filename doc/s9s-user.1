@@ -129,9 +129,51 @@ The email address for the user.
 .SH USER LIST
 Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
 of the users can be printed. Here is an example of such a list:
+
 .nf
-# \fBs9s user --list --long\fP
+# \fBs9s user --list --long worf jadzia\fP
+A ID UNAME  GNAME EMAIL           REALNAME
+- 11 jadzia ds9   dax@ds9.com     Lt. Jadzia Dax
+A 12 worf   ds9   warrior@ds9.com Lt. Worf
+Total: 12
+
 .fi
+
+Please note that there are a total of 12 users defined on the system, but only
+two of those are printed because we filtered the list with the command line
+arguments.
+
+The list contain the following fields:
+.RS 5
+
+.TP
+.B A
+Shows the authentication status. If this field shows the letter 'A' the user is
+authenticated with the current connection.
+
+.TP 
+.B ID
+Shows the user ID, a unique numerical ID identifying the user.
+
+.TP 
+.B UNAME
+The username.
+
+.TP
+.B GNAME
+The name of the primary group of the user. All user belongs to at least one
+group, the primary group.
+
+.TP
+.B EMAIL
+The email address of the user.
+
+.TP
+.B REALNAME
+The real name of the user that consists first name, last name and some other
+parts, printed here as a single string composed all the available components.
+
+.RE
 
 .\"
 .\"
