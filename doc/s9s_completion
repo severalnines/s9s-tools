@@ -264,7 +264,7 @@ function _s9s()
                 opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
-            main_opt="--list --whoami --create --help"
+            main_opt="--list --whoami --create --help --set"
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -278,15 +278,11 @@ function _s9s()
                 opts+="--controller= --controller-port= "
                 opts+="--rpc-tls "
                 opts+="--long --print-json --color= --batch --no-header "
-                opts+="--only-ascii "
-                opts+="--wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= "
-                opts+="--properties= "
-                opts+="--vendor= --provider-version= --os-user= "
-                opts+="--cluster-type= --db-admin= --db-admin-passwd= "
+                opts+="--group= --create-group --first-name= --last-name= "
+                opts+="--title= --email-address= "
                 opts+="--account= --with-database --db-name= "
 
-                opts+="--cmon-user="
+                opts+="--cmon-user= "
                 opts+=$(s9s user --list)
             fi
         elif [[ ${COMP_WORDS[i]} == "metatype" ]]; then

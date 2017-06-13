@@ -2875,9 +2875,10 @@ S9sOptions::printHelpUser()
 
     printf(
 "Options for the \"user\" command:\n"
-"  --list                     List the users.\n"
-"  --whoami                   List the current user only.\n"
 "  --create                   Create a new Cmon user.\n"
+"  --list                     List the users.\n"
+"  --set                      Change the properties of a user.\n"
+"  --whoami                   List the current user only.\n"
 ""
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
@@ -4251,6 +4252,9 @@ S9sOptions::checkOptionsUser()
     if (isCreateRequested())
         countOptions++;
     
+    if (isSetRequested())
+        countOptions++;
+    
     if (isWhoAmIRequested())
         countOptions++;
 
@@ -4258,7 +4262,7 @@ S9sOptions::checkOptionsUser()
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --whoami and --create options are mutually"
+            "The --list, --whoami, --set and --create options are mutually"
             " exclusive.";
 
         m_exitStatus = BadOptions;
@@ -4267,7 +4271,8 @@ S9sOptions::checkOptionsUser()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --whoami and --create options is mandatory.";
+            "One of the --list, --whoami, --set and --create options"
+            " is mandatory.";
 
         m_exitStatus = BadOptions;
 

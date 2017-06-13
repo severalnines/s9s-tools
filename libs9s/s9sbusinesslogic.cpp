@@ -1317,6 +1317,10 @@ void
 S9sBusinessLogic::executeSetUser(
         S9sRpcClient &client)
 {
+    bool            success;
+
+    success = client.setUser();
+    client.printMessages("Ok.\n", success);
 }
 
 

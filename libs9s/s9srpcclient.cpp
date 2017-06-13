@@ -422,7 +422,7 @@ S9sRpcClient::setHost(
 {
     S9sString      uri = "/v2/host";
     S9sVariantMap  request;
-
+    
     if (hosts.size() != 1u)
     {
         PRINT_ERROR("setHost is currently implemented only for one node.");
@@ -2739,11 +2739,41 @@ S9sRpcClient::getUsers()
 bool
 S9sRpcClient::setUser()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/users/";
     S9sVariantMap  request;
+    S9sVariantMap  properties;
     bool           retval;
 
-    request["operation"] = "setUser";
+    if (options->nExtraArguments() == 0)
+    {
+        PRINT_ERROR(
+                "To modify a user a username must be provided in the "
+                "command line.");
+        return false;
+    } else if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR(
+                "To modify a user only one username must be provided in the "
+                "command line.");
+        return false;
+    }
+
+    if (!options->firstName().empty())
+        properties["first_name"] = options->firstName();
+    
+    if (!options->lastName().empty())
+        properties["last_name"] = options->lastName();
+    
+    if (!options->title().empty())
+        properties["title"] = options->title();
+    
+    if (!options->emailAddress().empty())
+        properties["email_address"] = options->emailAddress();
+
+    request["operation"]  = "setUser";
+    request["user_name"]  = options->extraArgument(0);
+    request["properties"] = properties;
 
     retval = executeRequest(uri, request);
 
