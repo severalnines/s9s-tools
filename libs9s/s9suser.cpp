@@ -212,3 +212,63 @@ S9sUser::jobTitle() const
     return S9sString();
 }
 
+S9sString
+S9sUser::fullName() const
+{
+    S9sString retval;
+
+    if (!title().empty())
+    {
+        if (!retval.empty())
+            retval += " ";
+
+        retval += title();
+    }
+
+    if (!firstName().empty())
+    {
+        if (!retval.empty())
+            retval += " ";
+
+        retval += firstName();
+    }
+
+    if (!lastName().empty())
+    {
+        if (!retval.empty())
+            retval += " ";
+
+        retval += lastName();
+    }
+
+    return retval;
+}
+
+/**
+ * \returns All the group names concatenated with a field separator.
+ */
+S9sString
+S9sUser::groupNames() const
+{
+    S9sVariantList groupList;
+    S9sString      retval;
+
+    if (m_properties.contains("groups"))
+        groupList = m_properties.at("groups").toVariantList();
+
+    //
+    // Concatenating the group names into one string.
+    //
+    for (uint idx = 0u; idx < groupList.size(); ++idx)
+    {
+        S9sVariantMap groupMap  = groupList[idx].toVariantMap();
+        S9sString     groupName = groupMap["group_name"].toString();
+
+        if (!retval.empty())
+            retval += ",";
+
+        retval += groupName;
+    }
+
+    return retval;
+}
