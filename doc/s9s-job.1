@@ -97,8 +97,24 @@ accepted as specified in the strftime(3) man page.
 .SS Job Related Options
 
 .TP
-.BR \-\^\-job-id =\fIID\fP
+.BR \-\^\-job\-id =\fIID\fP
 The job ID of the job to handle or view.
+
+.TP
+.BR \-\^\-from= \fIDATE&TIME\fP
+Controls the start time of the period that will be printed in the job list.
+
+.TP
+.BR \-\^\-limit= \fINUMBER\fP
+Limits the number of jobs printed.
+
+.TP
+.BR \-\^\-offset= \fINUMBER\fP
+Controls the relative index of the first item printed.
+
+.TP
+.BR \-\^\-until= \fIDATE&TIME\fP
+Controls the end time of the period that will be printed in the job list.
 
 .TP
 .BR \-\^\-log\-format [ =\fIFORMATSTRING\fP "]
