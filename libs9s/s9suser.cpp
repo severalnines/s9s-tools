@@ -426,7 +426,7 @@ S9sUser::toString(
                     break;
 
                 case 'M':
-                    // The username of the user.
+                    // The email address. 
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(emailAddress()));
                     retval += tmp;
