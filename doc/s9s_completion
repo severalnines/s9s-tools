@@ -176,7 +176,7 @@ function _s9s()
                 opts+="--cluster-id= --cluster-name= --nodes= --cmon-user= "
            
                 opts+="--date-format= "
-                opts+="--job-id= --from= --until= "
+                opts+="--job-id= --from= --until= --limit= --offset= "
             fi
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
             main_opt="--help "

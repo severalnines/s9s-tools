@@ -1116,6 +1116,10 @@ S9sOptions::schedule() const
     return retval;
 }
 
+/**
+ * \returns The numerical value of the command line option argument for --limit
+ *   or -1 if the option was not provided.
+ */
 int
 S9sOptions::limit() const
 {
@@ -1127,6 +1131,10 @@ S9sOptions::limit() const
     return retval;
 }
 
+/**
+ * \returns The numerical value of the command line option argument for --offset
+ *   or -1 if the option was not provided.
+ */
 int
 S9sOptions::offset() const
 {
@@ -2870,6 +2878,8 @@ S9sOptions::printHelpJob()
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
+"  --limit=NUMBER             Controls how many jobs are printed max.\n"
+"  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
 "\n"
     );
