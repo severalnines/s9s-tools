@@ -520,10 +520,11 @@ if [ "$1" ]; then
 else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
+    runFunctionalTest testSetUser
+
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
     runFunctionalTest testCreateUsers
-    runFunctionalTest testSetUser
 fi
 
 endTests
