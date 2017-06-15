@@ -280,7 +280,7 @@ function _s9s()
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--group= --create-group --first-name= --last-name= "
                 opts+="--title= --email-address= "
-                opts+="--account= --with-database --db-name= "
+                opts+="--account= --with-database --db-name= --user-format= "
 
                 opts+="--cmon-user= "
                 opts+=$(s9s user --list)
