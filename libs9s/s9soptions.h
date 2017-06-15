@@ -272,7 +272,6 @@ class S9sOptions
 
     private:
         void checkController();
-
         void printHelpGeneric();
         void printHelpCluster();
         void printHelpNode();
@@ -317,6 +316,7 @@ class S9sOptions
 
         bool setMode(const S9sString &modeName);
 
+        bool getBool(const char *key) const;
         S9sOptions();
         ~S9sOptions();
 

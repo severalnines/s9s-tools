@@ -553,15 +553,7 @@ S9sOptions::onlyAscii() const
 bool
 S9sOptions::density() const
 {
-    const char *key = "density";
-    bool        retval = false;
-
-    if (m_options.contains(key))
-    {
-        retval = m_options.at(key).toBoolean();
-    }
-
-    return retval;
+    return getBool("density");
 }
 
 /**
@@ -1087,10 +1079,7 @@ S9sOptions::formatDateTime(
 bool
 S9sOptions::fullUuid() const
 {
-    if (m_options.contains("full_uuid"))
-        return m_options.at("full_uuid").toBoolean();
-
-    return false;
+    return getBool("full_uuid");
 }
 
 /**
@@ -1540,13 +1529,7 @@ S9sOptions::outputDir() const
 bool
 S9sOptions::force() const
 {
-    bool retval = false;
-
-    if (m_options.contains("force"))
-        retval = m_options.at("force").toBoolean();
-
-    return retval;
-
+    return getBool("force");
 }
 
 /**
@@ -1555,12 +1538,7 @@ S9sOptions::force() const
 bool
 S9sOptions::withDatabase() const
 {
-    bool retval = false;
-
-    if (m_options.contains("with_database"))
-        retval = m_options.at("with_database").toBoolean();
-
-    return retval;
+    return getBool("with_database");
 }
 
 S9sString
@@ -1597,10 +1575,7 @@ S9sOptions::backupDir() const
 bool
 S9sOptions::noCompression() const
 {
-    if (m_options.contains("no_compression"))
-        return m_options.at("no_compression").toBoolean();
-
-    return false;
+    return getBool("no_compression");
 }
 
 /**
@@ -1609,10 +1584,7 @@ S9sOptions::noCompression() const
 bool
 S9sOptions::usePigz() const
 {
-    if (m_options.contains("use_pigz"))
-        return m_options.at("use_pigz").toBoolean();
-
-    return false;
+    return getBool("use_pigz");
 }
 
 /**
@@ -1621,10 +1593,7 @@ S9sOptions::usePigz() const
 bool
 S9sOptions::onNode() const
 {
-    if (m_options.contains("on_node"))
-        return m_options.at("on_node").toBoolean();
-
-    return false;
+    return getBool("on_node");
 }
 
 
@@ -1715,12 +1684,7 @@ S9sOptions::parallellism() const
 bool
 S9sOptions::fullPathRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("full_path"))
-        retval = m_options.at("full_path").toBoolean();
-
-    return retval;
+    return getBool("full_path");
 }
 
 /**
@@ -1813,10 +1777,7 @@ S9sOptions::isMetaTypeOperation() const
 bool
 S9sOptions::isHelpRequested() const
 {
-    if (m_options.contains("help"))
-        return m_options.at("help").toBoolean();
-
-    return false;
+    return getBool("help");
 }
 
 /**
@@ -1826,10 +1787,7 @@ S9sOptions::isHelpRequested() const
 bool
 S9sOptions::isListRequested() const
 {
-    if (m_options.contains("list"))
-        return m_options.at("list").toBoolean();
-
-    return false;
+    return getBool("list");
 }
 
 /**
@@ -1839,10 +1797,7 @@ S9sOptions::isListRequested() const
 bool
 S9sOptions::isStatRequested() const
 {
-    if (m_options.contains("stat"))
-        return m_options.at("stat").toBoolean();
-
-    return false;
+    return getBool("stat");
 }
 
 /**
@@ -1852,10 +1807,7 @@ S9sOptions::isStatRequested() const
 bool
 S9sOptions::isListConfigRequested() const
 {
-    if (m_options.contains("list_config"))
-        return m_options.at("list_config").toBoolean();
-
-    return false;
+    return getBool("list_config");
 }
 
 /**
@@ -1865,10 +1817,7 @@ S9sOptions::isListConfigRequested() const
 bool
 S9sOptions::isChangeConfigRequested() const
 {
-    if (m_options.contains("change_config"))
-        return m_options.at("change_config").toBoolean();
-
-    return false;
+    return getBool("change_config");
 }
 
 /**
@@ -1878,10 +1827,7 @@ S9sOptions::isChangeConfigRequested() const
 bool
 S9sOptions::isPullConfigRequested() const
 {
-    if (m_options.contains("pull_config"))
-        return m_options.at("pull_config").toBoolean();
-
-    return false;
+    return getBool("pull_config");
 }
 
 /**
@@ -1891,10 +1837,7 @@ S9sOptions::isPullConfigRequested() const
 bool
 S9sOptions::isPushConfigRequested() const
 {
-    if (m_options.contains("push_config"))
-        return m_options.at("push_config").toBoolean();
-
-    return false;
+    return getBool("push_config");
 }
 
 /**
@@ -1903,10 +1846,7 @@ S9sOptions::isPushConfigRequested() const
 bool
 S9sOptions::isListPropertiesRequested() const
 {
-    if (m_options.contains("list-properties"))
-        return m_options.at("list-properties").toBoolean();
-
-    return false;
+    return getBool("list_properties");
 }
 
 /**
@@ -1916,10 +1856,7 @@ S9sOptions::isListPropertiesRequested() const
 bool
 S9sOptions::isWhoAmIRequested() const
 {
-    if (m_options.contains("whoami"))
-        return m_options.at("whoami").toBoolean();
-
-    return false;
+    return getBool("whoami");
 }
 
 /**
@@ -1929,10 +1866,7 @@ S9sOptions::isWhoAmIRequested() const
 bool
 S9sOptions::isSetRequested() const
 {
-    if (m_options.contains("set"))
-        return m_options.at("set").toBoolean();
-
-    return false;
+    return getBool("set");
 }
 
 /**
@@ -1942,10 +1876,7 @@ S9sOptions::isSetRequested() const
 bool
 S9sOptions::isLogRequested() const
 {
-    if (m_options.contains("log"))
-        return m_options.at("log").toBoolean();
-
-    return false;
+    return getBool("log");
 }
 
 /**
@@ -1955,10 +1886,7 @@ S9sOptions::isLogRequested() const
 bool
 S9sOptions::isCreateRequested() const
 {
-    if (m_options.contains("create"))
-        return m_options.at("create").toBoolean();
-
-    return false;
+    return getBool("create");
 }
 
 /**
@@ -1968,10 +1896,7 @@ S9sOptions::isCreateRequested() const
 bool
 S9sOptions::isExecuteRequested() const
 {
-    if (m_options.contains("execute"))
-        return m_options.at("execute").toBoolean();
-
-    return false;
+    return getBool("execute");
 }
 
 /**
@@ -2835,10 +2760,11 @@ S9sOptions::printHelpGeneric()
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
 "    maint - to view and manipulate maintenance periods.\n"
+" metatype - to print metatype information.\n"
 "     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
+"   script - to manage and execute scripts.\n"
 "     user - to manage users.\n"
-"   script - manage and execute scripts.\n"
 "\n"
 "Generic options:\n"
 "  -h, --help                 Show help message and exit.\n" 
@@ -5167,7 +5093,7 @@ S9sOptions::readOptionsMetaType(
            
             case OptionListProperties:
                 // --list-properties
-                m_options["list-properties"] = true;
+                m_options["list_properties"] = true;
                 break;
 
             case OptionType:
@@ -6131,3 +6057,16 @@ S9sOptions::emailAddress() const
 
     return S9sString();
 }
+
+bool 
+S9sOptions::getBool(
+        const char *key) const
+{
+    bool retval = false;
+
+    if (m_options.contains(key))
+        retval = m_options.at(key).toBoolean();
+
+    return retval;
+}
+
