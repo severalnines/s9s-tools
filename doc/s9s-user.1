@@ -124,6 +124,76 @@ The title prefix (e.g. Dr.) for the user.
 The email address for the user.
 
 .\"
+.\" The user format string.
+.\"
+.TP
+.BR \-\^\-user\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed information about the users.
+When this command line option is used the specified information will be printed
+instead of the default columns. The format string uses the '%' character to mark
+variable fields and flag characters as they are specified in the standard
+printf() C library functions. The '%' specifiers are ended by field name letters
+to refer to various properties of the users.
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the user are encoded by letters. The in the "%16N" for
+example the letter "N" encodes the "username" field, so username of the user
+will be substituted. 
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The s9s-tools support the following fields:
+
+.RS 7
+
+.TP
+.B F
+The full name of the user.
+
+.TP
+.B f
+The first name of the user.
+
+.TP
+.B G
+The names of groups the given user belongs to.
+
+.TP
+.B I
+The unique numerical ID of the user.
+
+.TP 
+.B j
+The job title of the user.
+
+.TP
+.B l
+The last name of the user.
+
+.TP
+.B M
+The email address of the user.
+
+.TP
+.B m
+The middle name of the user.
+
+.TP
+.B N
+The username for the user.
+
+.TP
+.B t
+The title of the user (e.g. "Dr.").
+
+.RE
+
+
+.\"
 .\"
 .\"
 .SH USER LIST

@@ -326,10 +326,12 @@ S9sUser::toString(
             percent    = true;
             partFormat = "%";
             continue;
+#if 0
         } else if (percent && c == 'f')
         {
             modifierFree = true;
             continue;
+#endif
         } else if (c == '\\')
         {
             escaped = true;
@@ -381,13 +383,6 @@ S9sUser::toString(
         {
             switch (c)
             {
-                case 'G':
-                    // The full name of the user.
-                    partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(groupNames()));
-                    retval += tmp;
-                    break;
-
                 case 'F':
                     // The full name of the user.
                     partFormat += 's';
@@ -402,6 +397,13 @@ S9sUser::toString(
                     retval += tmp;
                     break;
                 
+                case 'G':
+                    // The group names of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(groupNames()));
+                    retval += tmp;
+                    break;
+
                 case 'I':
                     // The user ID.
                     partFormat += 'd';
