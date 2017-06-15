@@ -129,6 +129,7 @@ enum S9sOptionType
     OptionClusterFormat,
     OptionNodeFormat,
     OptionBackupFormat,
+    OptionUserFormat,
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
@@ -707,6 +708,30 @@ S9sOptions::longBackupFormat() const
 }
 
 /**
+ * \returns The value for the "long_user_format" config variable that controls
+ *  the format of the user info lines printed when the --long option is provided
+ *  and the --user-format option is not used.
+ */
+S9sString 
+S9sOptions::longUserFormat() const
+{
+    const char *key = "long_user_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
  * \param assignments The argument of the --properties command line option.
  * \returns true if the format of the optarg is valid.
  *
@@ -1239,15 +1264,6 @@ S9sOptions::hasNodeFormat() const
 }
 
 /**
- * \returns True if the --backup-format command line option was provided.
- */
-bool
-S9sOptions::hasBackupFormat() const
-{
-    return m_options.contains("backup_format");
-}
-
-/**
  * \returns The command line option argument for the --node-format option or
  *   the empty string if the option was not used.
  */
@@ -1258,6 +1274,15 @@ S9sOptions::nodeFormat() const
         return m_options.at("node_format").toString();
 
     return S9sString();
+}
+
+/**
+ * \returns True if the --backup-format command line option was provided.
+ */
+bool
+S9sOptions::hasBackupFormat() const
+{
+    return m_options.contains("backup_format");
 }
 
 /**
@@ -1273,6 +1298,27 @@ S9sOptions::backupFormat() const
     return S9sString();
 }
 
+/**
+ * \returns True if the --user-format command line option was provided.
+ */
+bool
+S9sOptions::hasUserFormat() const
+{
+    return m_options.contains("user_format");
+}
+
+/**
+ * \returns The command line option argument for the --user-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::userFormat() const
+{
+    if (m_options.contains("user_format"))
+        return m_options.at("user_format").toString();
+
+    return S9sString();
+}
 
 /**
  * \returns The command line option argument for the --graph option.
@@ -2889,6 +2935,7 @@ S9sOptions::printHelpUser()
 "  --last-name=NAME           The last name of the user.\n"
 "  --title=TITLE              The prefix title for the user.\n"
 "  --email-address=ADDRESS    The email address for the user.\n"
+"  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
 }
 
@@ -4534,6 +4581,7 @@ S9sOptions::readOptionsUser(
         { "last-name",        required_argument, 0, OptionLastName     },
         { "title",            required_argument, 0, OptionTitle        },
         { "email-address",    required_argument, 0, OptionEmailAddress },
+        { "user-format",      required_argument, 0, OptionUserFormat   }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4683,6 +4731,11 @@ S9sOptions::readOptionsUser(
             case OptionEmailAddress:
                 // --email-address=ADDRESSS
                 m_options["email_address"] = optarg;
+                break;
+            
+            case OptionUserFormat:
+                // --user-format=VALUE
+                m_options["user_format"] = optarg;
                 break;
             
             case '?':
