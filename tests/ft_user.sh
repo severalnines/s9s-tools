@@ -456,6 +456,10 @@ function testCreateUsers()
     return 0
 }
 
+#
+# This test will change some properties of some user(s) and check if the change
+# registered.
+#
 function testSetUser()
 {
     local userName="system"

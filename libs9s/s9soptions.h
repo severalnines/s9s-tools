@@ -98,6 +98,8 @@ class S9sOptions
         S9sString longJobLogFormat() const;
         S9sString longClusterFormat() const;
         S9sString longNodeFormat() const;
+        S9sString shortNodeFormat() const;
+
         S9sString longBackupFormat() const;
         S9sString longUserFormat() const;
         

@@ -1625,14 +1625,54 @@ S9sRpcReply::printNodeListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sString       formatString = options->shortNodeFormat();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       clusterNameFilter = options->clusterName();
     int             nPrinted = 0;
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
     int             column = 0;
+        
+    if (options->hasNodeFormat())
+        formatString = options->nodeFormat();
+
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap      = theList[idx].toVariantMap();
+            S9sVariantList hosts       = theMap["hosts"].toVariantList();
+            S9sString      clusterName = theMap["cluster_name"].toString();
+
+            if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
+                continue;
+
+            for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
+            {
+                S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
+                S9sNode       node      = hostMap;
+                int           clusterId = node.clusterId();
+                S9sCluster    cluster   = clusterMap(clusterId);
+                S9sString     hostName  = node.name();
+
+                if (!options->isStringMatchExtraArguments(hostName))
+                    continue;
+
+                node.setCluster(cluster);
+
+                printf("%s", STR(node.toString(syntaxHighlight, formatString)));
+            }
+        }
     
+        return;
+    }
+
+
     /*
      * First run: some data collecting.
      */

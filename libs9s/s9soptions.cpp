@@ -684,6 +684,30 @@ S9sOptions::longNodeFormat() const
 }
 
 /**
+ * \returns The value for the "short_node_format" config variable that
+ *   controls the format of the node lines printed when the --long option is
+ *   not provided and the --node-format option is not used.
+ */
+S9sString 
+S9sOptions::shortNodeFormat() const
+{
+    const char *key = "short_node_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
  * \returns The value for the "long_backup_format" config variable that
  *   controls the format of the backup lines printed when the --long option is
  *   provided and the --backup-format option is not used.
