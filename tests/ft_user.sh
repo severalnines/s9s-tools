@@ -453,6 +453,54 @@ function testCreateUsers()
     fi
 
     s9s user --list --long
+    return 0
+}
+
+function testSetUser()
+{
+    local userName="system"
+    local emailAddress
+    local exitCode
+
+    #
+    # Setting the email address for a user and checking if it set.
+    #
+    mys9s user \
+        --set \
+        --batch \
+        --email-address=system@mydomain.com \
+        system
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" system)
+    if [ "$emailAddress" != "system@mydomain.com" ]; then
+        failure "The email address is ${emailAddress} instead of 'system@mydomain.com'."
+    fi
+
+    #
+    # Setting the email address again.
+    #
+    mys9s user \
+        --set \
+        --batch \
+        --email-address=system@mynewdomain.com \
+        system
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" system)
+    if [ "$emailAddress" != "system@mynewdomain.com" ]; then
+        failure "The email address is ${emailAddress} instead of 'system@mynewdomain.com'."
+    fi
+
+    return 0
 }
 
 #
@@ -471,6 +519,7 @@ else
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
     runFunctionalTest testCreateUsers
+    runFunctionalTest testSetUser
 fi
 
 endTests

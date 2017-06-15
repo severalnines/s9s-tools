@@ -3919,6 +3919,7 @@ void
 S9sRpcReply::printUserListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  userList = operator[]("users").toVariantList();
     int             authUserId = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
@@ -3926,7 +3927,33 @@ S9sRpcReply::printUserListBrief()
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
 
-    userList = operator[]("users").toVariantList();
+    if (options->hasUserFormat())
+        formatString = options->userFormat();
+
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < userList.size(); ++idx)
+        {
+            S9sVariantMap  userMap      = userList[idx].toVariantMap();
+            S9sUser        user         = userMap;
+            int            userId       = user.userId();
+            S9sString      userName     = user.userName();
+
+            /*
+             * Filtering.
+             */
+            if (whoAmIRequested && userId != authUserId)
+                continue;
+        
+            if (!options->isStringMatchExtraArguments(userName))
+                continue;
+   
+            printf("%s", STR(user.toString(syntaxHighlight, formatString)));
+            
+        }
+
+        return;
+    }
 
     /*
      * 
