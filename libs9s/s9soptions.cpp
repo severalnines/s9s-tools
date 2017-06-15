@@ -136,6 +136,8 @@ enum S9sOptionType
     OptionDensity,
     OptionRollingRestart,
     OptionCreateReport,
+    OptionLimit,
+    OptionOffset,
 };
 
 /**
@@ -1110,6 +1112,28 @@ S9sOptions::schedule() const
 
     if (m_options.contains("schedule"))
         retval = m_options.at("schedule").toString();
+
+    return retval;
+}
+
+int
+S9sOptions::limit() const
+{
+    int retval = -1;
+
+    if (m_options.contains("limit"))
+        retval = m_options.at("limit").toInt();
+
+    return retval;
+}
+
+int
+S9sOptions::offset() const
+{
+    int retval = -1;
+
+    if (m_options.contains("offset"))
+        retval = m_options.at("offset").toInt();
 
     return retval;
 }
@@ -5592,6 +5616,8 @@ S9sOptions::readOptionsJob(
         { "cluster-id",       required_argument, 0, 'i'               },
         { "job-id",           required_argument, 0, OptionJobId       },
         { "log-format",       required_argument, 0, OptionLogFormat   },
+        { "limit",            required_argument, 0, OptionLimit       },
+        { "offset",           required_argument, 0, OptionOffset      },
 
         { 0, 0, 0, 0 }
     };
@@ -5712,6 +5738,16 @@ S9sOptions::readOptionsJob(
             case OptionLogFormat:
                 // --log-format=FORMAT
                 m_options["log_format"] = optarg;
+                break;
+
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
 
             case '?':

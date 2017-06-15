@@ -652,6 +652,13 @@ S9sRpcClient::getJobInstances()
     bool           retval;
 
     request["operation"] = "getJobInstances";
+
+    if (options->limit() >= 0)
+        request["limit"] = options->limit();
+
+    if (options->offset() >= 0)
+        request["offset"] = options->offset();
+
     //request["ascending"] = true;
     //request["limit"]     = 10000;
 

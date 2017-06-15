@@ -114,8 +114,9 @@ class S9sOptions
         S9sString formatDateTime(S9sDateTime value) const;
         bool fullUuid() const;
 
-        
         S9sString schedule() const;
+        int limit() const;
+        int offset() const;
         
         int clusterId() const;
         bool hasClusterIdOption() const;
