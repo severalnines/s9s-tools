@@ -680,3 +680,58 @@ lists and command line options:
 .fi
 
 
+Create a set of graphs, one for each node shown in the terminal about the load
+on the hosts. If the terminal is wide enough the graphs will be shown side by
+side for a compact view.
+
+.nf
+# \fBs9s node \\
+    --stat \\
+    --cluster-id=1 \\
+    --begin="08:00" \\
+    --end="14:00" \\
+    --graph=load\fR
+.fi
+
+Density functions can also be printed to show what were the typical values for
+the given statistical data. The following example shows what was the typical
+values for the user mode CPU usage percent
+
+.nf
+# \fBs9s node \\
+    --stat \\
+    --cluster-id=2 \\
+    --begin=00:00 \\
+    --end=16:00 \\
+    --density \\
+    --graph=cpuuser\fR
+.fi
+
+The following example shows how a custom list can be created to show some
+information about the CPU(s) in some specific hosts:
+
+.nf
+# \fBs9s node \\
+    --list \\
+    --node-format="%N %U CPU %c Cores %6.2u%% %Z\\n" \\
+    192.168.1.191 \\
+    192.168.1.195\fR
+
+192.168.1.191 2 CPU 16 Cores  22.54% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+192.168.1.195 2 CPU 16 Cores  23.12% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+.fi
+
+
+The following list shows some information about the memory, the total memory and
+the memory available for the applications to allocate (including cache and
+buffer with the free memory):
+
+.nf
+# \fBs9s node \\
+    --list \\
+    --node-format="%4.2m GBytes %4.2fm GBytes %N\\n"\fR
+
+16.00 GBytes 15.53 GBytes 192.168.1.191
+47.16 GBytes 38.83 GBytes 192.168.1.127
+.fi
+

@@ -1906,10 +1906,7 @@ S9sOptions::isExecuteRequested() const
 bool
 S9sOptions::isTreeRequested() const
 {
-    if (m_options.contains("tree"))
-        return m_options.at("tree").toBoolean();
-
-    return false;
+    return getBool("tree");
 }
 
 /**
@@ -1919,19 +1916,13 @@ S9sOptions::isTreeRequested() const
 bool
 S9sOptions::isDeleteRequested() const
 {
-    if (m_options.contains("delete"))
-        return m_options.at("delete").toBoolean();
-
-    return false;
+    return getBool("delete");
 }
 
 bool
 S9sOptions::isPingRequested() const
 {
-    if (m_options.contains("ping"))
-        return m_options.at("ping").toBoolean();
-
-    return false;
+    return getBool("ping");
 }
 
 /**
@@ -1941,10 +1932,7 @@ S9sOptions::isPingRequested() const
 bool
 S9sOptions::isRestoreRequested() const
 {
-    if (m_options.contains("restore"))
-        return m_options.at("restore").toBoolean();
-
-    return false;
+    return getBool("restore");
 }
 
 /**
@@ -1954,12 +1942,7 @@ S9sOptions::isRestoreRequested() const
 bool
 S9sOptions::isRollingRestartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("rolling_restart"))
-        retval = m_options.at("rolling_restart").toBoolean();
-
-    return retval;
+    return getBool("rolling_restart");
 }
 
 /**
@@ -1969,12 +1952,7 @@ S9sOptions::isRollingRestartRequested() const
 bool
 S9sOptions::isCreateReportRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_report"))
-        retval = m_options.at("create_report").toBoolean();
-
-    return retval;
+    return getBool("create_report");
 }
 
 /**
@@ -1984,12 +1962,7 @@ S9sOptions::isCreateReportRequested() const
 bool
 S9sOptions::isAddNodeRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("add_node"))
-        retval = m_options.at("add_node").toBoolean();
-
-    return retval;
+    return getBool("add_node");
 }
 
 /**
@@ -1999,12 +1972,7 @@ S9sOptions::isAddNodeRequested() const
 bool
 S9sOptions::isRemoveNodeRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("remove_node"))
-        retval = m_options.at("remove_node").toBoolean();
-
-    return retval;
+    return getBool("remove_node");
 }
 
 /**
@@ -2014,12 +1982,7 @@ S9sOptions::isRemoveNodeRequested() const
 bool
 S9sOptions::isDropRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("drop"))
-        retval = m_options.at("drop").toBoolean();
-
-    return retval;
+    return getBool("drop");
 }
 
 /**
@@ -2029,12 +1992,7 @@ S9sOptions::isDropRequested() const
 bool
 S9sOptions::isStopRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("stop"))
-        retval = m_options.at("stop").toBoolean();
-
-    return retval;
+    return getBool("stop");
 }
 
 /**
@@ -2044,12 +2002,7 @@ S9sOptions::isStopRequested() const
 bool
 S9sOptions::isStartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("start"))
-        retval = m_options.at("start").toBoolean();
-
-    return retval;
+    return getBool("start");
 }
 
 /**
@@ -2059,12 +2012,7 @@ S9sOptions::isStartRequested() const
 bool
 S9sOptions::isRestartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("restart"))
-        retval = m_options.at("restart").toBoolean();
-
-    return retval;
+    return getBool("restart");
 }
 
 /**
@@ -2074,12 +2022,7 @@ S9sOptions::isRestartRequested() const
 bool
 S9sOptions::isCreateAccountRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_account"))
-        retval = m_options.at("create_account").toBoolean();
-
-    return retval;
+    return getBool("create_account");
 }
 
 /**
@@ -2089,12 +2032,7 @@ S9sOptions::isCreateAccountRequested() const
 bool
 S9sOptions::isGrantRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("grant"))
-        retval = m_options.at("grant").toBoolean();
-
-    return retval;
+    return getBool("grant");
 }
 
 /**
@@ -2104,12 +2042,7 @@ S9sOptions::isGrantRequested() const
 bool
 S9sOptions::isDeleteAccountRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("delete_account"))
-        retval = m_options.at("delete_account").toBoolean();
-
-    return retval;
+    return getBool("delete_account");
 }
 
 /**
@@ -2119,12 +2052,7 @@ S9sOptions::isDeleteAccountRequested() const
 bool
 S9sOptions::isCreateDatabaseRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_database"))
-        retval = m_options.at("create_database").toBoolean();
-
-    return retval;
+    return getBool("create_database");
 }
 
 /**
@@ -2133,10 +2061,7 @@ S9sOptions::isCreateDatabaseRequested() const
 bool
 S9sOptions::isLongRequested() const
 {
-    if (m_options.contains("long"))
-        return m_options.at("long").toBoolean();
-
-    return false;
+    return getBool("long");
 }
 
 /**
@@ -2146,10 +2071,7 @@ S9sOptions::isLongRequested() const
 bool
 S9sOptions::isJsonRequested() const
 {
-    if (m_options.contains("print_json"))
-        return m_options.at("print_json").toBoolean();
-
-    return false;
+    return getBool("print_json");
 }
 
 /**
@@ -2159,10 +2081,7 @@ S9sOptions::isJsonRequested() const
 bool
 S9sOptions::isTopRequested() const
 {
-    if (m_options.contains("top"))
-        return m_options.at("top").toBoolean();
-
-    return false;
+    return getBool("top");
 }
 
 /**
@@ -2171,10 +2090,7 @@ S9sOptions::isTopRequested() const
 bool
 S9sOptions::isWaitRequested() const
 {
-    if (m_options.contains("wait"))
-        return m_options.at("wait").toBoolean();
-
-    return false;
+    return getBool("wait");
 }
 
 /**
@@ -2183,10 +2099,7 @@ S9sOptions::isWaitRequested() const
 bool
 S9sOptions::isBatchRequested() const
 {
-    if (m_options.contains("batch"))
-        return m_options.at("batch").toBoolean();
-
-    return false;
+    return getBool("batch");
 }
 
 /**
@@ -2199,10 +2112,7 @@ S9sOptions::isNoHeaderRequested() const
     if (isBatchRequested())
         return true;
     
-    if (m_options.contains("no_header"))
-        return m_options.at("no_header").toBoolean();
-
-    return false;
+    return getBool("no_header");
 }
 
 /**
@@ -2272,12 +2182,7 @@ S9sOptions::useSyntaxHighlight() const
 bool
 S9sOptions::humanReadable() const
 {
-    bool retval = false;
-
-    if (m_options.contains("human_readable"))
-        retval = m_options.at("human_readable").toBoolean();
-
-    return retval;
+    return getBool("human_readable");
 }
 
 
@@ -2382,19 +2287,13 @@ S9sOptions::setExitStatus(
 bool
 S9sOptions::isVerbose() const
 {
-    if (!m_options.contains("verbose"))
-        return false;
-
-    return m_options.at("verbose").toBoolean();
+    return getBool("verbose");
 }
 
 bool
 S9sOptions::isDebug() const
 {
-    if (!m_options.contains("debug"))
-        return false;
-
-    return m_options.at("debug").toBoolean();
+    return getBool("debug");
 }
 
 /**
@@ -5991,10 +5890,7 @@ S9sOptions::privateKeyPath() const
 bool
 S9sOptions::isGenerateKeyRequested() const
 {
-    if (m_options.contains("generate_key"))
-        return m_options.at("generate_key").toBoolean();
-
-    return false;
+    return getBool("generate_key");
 }
 
 /**
@@ -6016,10 +5912,7 @@ S9sOptions::group() const
 bool
 S9sOptions::createGroup() const
 {
-    if (m_options.contains("create_group"))
-        return m_options.at("create_group").toBoolean();
-
-    return false;
+    return getBool("create_group");
 }
 
 S9sString

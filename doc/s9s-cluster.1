@@ -516,7 +516,7 @@ finished, the job remains there and will be executed by the controller anyway.
 It is also possible to attach to the job using the job ID later or use the --log
 option to print the messages of the job.
 
-A similar example that wioll create a MySQL replication cluster with multiple
+A similar example that will create a MySQL replication cluster with multiple
 master and slave nodes in it:
 
 .nf
@@ -565,7 +565,9 @@ a customized the cluster list. The \fB\-\-cluster\-format\fR command line option
 is used here to produce a multi-line output:
 
 .nf
-# \fBs9s cluster --list --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n"\fR
+# \fBs9s cluster \\
+    --list \\
+    --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n\\n"\fR
     ID : 00001 
 Status : STOPPED 
   Name : ft_postgresqlstop_48273
