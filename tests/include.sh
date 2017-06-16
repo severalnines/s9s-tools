@@ -226,6 +226,21 @@ function printError()
     fi
 }
 
+
+function cluster_state()
+{
+    local clusterId="$1"
+
+    s9s cluster --list --cluster-id=$clusterId --cluster-format="%S"
+}        
+
+function node_state()
+{
+    local nodeName="$1"
+        
+    s9s node --list --batch --long --node-format="%S" "$nodeName"
+}
+
 function wait_for_node_state()
 {
     local nodeName="$1"
@@ -245,19 +260,23 @@ function wait_for_node_state()
     fi
 
     while true; do
-        state=$(s9s node --list --batch --long --node-format="%S" "$nodeName")
+        state=$(node_state "$nodeName")
         if [ "$state" == $expectedState ]; then
             let stayed+=1
         else
             let stayed=0
+
+            #
+            # Would be crazy to timeout when we are in the expected state, so we
+            # do check the timeout only when we are not in the expected state.
+            #
+            if [ "$waited" -gt 120 ]; then
+                return 1
+            fi
         fi
 
         if [ "$stayed" -gt 10 ]; then
             return 0
-        fi
-
-        if [ "$waited" -gt 120 ]; then
-            return 1
         fi
 
         let waited+=1
@@ -278,4 +297,9 @@ function wait_for_node_shut_down()
     return $?
 }
 
+function wait_for_node_online()
+{
+    wait_for_node_state "$1" "CmonHostOnline"
+    return $?
+}
 

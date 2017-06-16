@@ -20,7 +20,7 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 
 #
 # Prints usage information and exits.
@@ -31,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - PostgreSQL failover script.
+  $MYNAME - PostgreSQL slave stop test script.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -274,8 +274,7 @@ function testAddNode()
 }
 
 #
-# This will stop the master node so we can observe what happens with the
-# failover.
+# This will stop the slave node and checks what happens with the cluster state.
 #
 function testStopSlave()
 {
@@ -292,17 +291,20 @@ function testStopSlave()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
 
-    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
     fi
+    
+    if ! wait_for_node_shut_down "$LAST_ADDED_NODE"; then
+        state=$(node_state "$nodeName")
+        failure "Host state is '$state' instead of 'CmonHostShutDown'."
+    fi
 
-    #mys9s cluster --list --long
     return 0
 }
 
@@ -325,17 +327,20 @@ function testStartSlave()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
 
-    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
     fi
 
-    #mys9s cluster --list --long
+    if ! wait_for_node_online "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
+    fi
+
     return 0
 }
 
