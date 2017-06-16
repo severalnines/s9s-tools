@@ -30,7 +30,7 @@
 #include <cstdio>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -231,11 +231,15 @@ S9sRpcClient::getCluster(
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
+    S9sVariantList clusterIds;
 
-    request["operation"]  = "getAllClusterInfo";
-    request["with_hosts"] = true;
-    request["cluster_id"] = clusterId;
-    request["user"]       = options->userName();
+    clusterIds << clusterId;
+
+    request["operation"]       = "getAllClusterInfo";
+    request["with_hosts"]      = true;
+    request["with_sheet_info"] = true;
+    request["cluster_ids"]     = clusterIds;
+    request["user"]            = options->userName();
     
     retval = executeRequest(uri, request);
     
@@ -257,11 +261,15 @@ S9sRpcClient::getClusters()
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
+   
+    if (options->hasClusterIdOption())
+        return getCluster(options->clusterId());
 
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
     request["with_sheet_info"] = true;
     request["user"]            = options->userName();
+
 
     retval = executeRequest(uri, request);
 
