@@ -299,7 +299,6 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
-
                 case 'D':
                     // The data directory.
                     partFormat += 's';
@@ -329,6 +328,13 @@ S9sNode::toString(
                         retval += S9sRpcReply::fileColorEnd();
 
                     break;
+                
+                case 'E':
+                    // The replication state.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(replicationState()));
+                    retval += tmp;
+                    break; 
 
                 case 'g':
                     // The log file. 
@@ -573,6 +579,21 @@ S9sNode::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(cpuModel()));
                     retval += tmp;
+                    break;
+                
+                case 'z':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+                    
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+                    
                     break;
 
                 case '%':
@@ -1027,6 +1048,40 @@ S9sNode::uptime() const
 
     if (m_properties.contains("uptime"))
         retval = m_properties.at("uptime").toULongLong();
+
+    return retval;
+}
+
+S9sString
+S9sNode::replicationState() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("replication_state"))
+        retval = m_properties.at("replication_state").toString();
+
+    if (m_properties.contains("replication_master"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("replication_master").toVariantMap();
+
+        if (map["semisync_status"] == "ON")
+            retval = "semisync";
+    } 
+    
+    if (m_properties.contains("replication_slave"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("replication_slave").toVariantMap();
+
+        if (map["semisync_status"] == "ON")
+            retval = "semisync";
+    } 
+
+    if (retval.empty())
+        retval = "-";
 
     return retval;
 }

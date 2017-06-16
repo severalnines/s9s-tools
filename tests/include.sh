@@ -241,6 +241,10 @@ function node_state()
     s9s node --list --batch --long --node-format="%S" "$nodeName"
 }
 
+#
+# This function will wait for a node to pick up a state and stay in that state
+# for a while.
+#
 function wait_for_node_state()
 {
     local nodeName="$1"
@@ -297,18 +301,33 @@ function wait_for_node_shut_down()
     return $?
 }
 
+#
+# This function waits until the host goes into CmonHostOnline state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostOnline state.
+#
 function wait_for_node_online()
 {
     wait_for_node_state "$1" "CmonHostOnline"
     return $?
 }
 
+#
+# This function waits until the host goes into CmonHostOffLine state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostOffLine state.
+#
 function wait_for_node_offline()
 {
     wait_for_node_state "$1" "CmonHostOffLine"
     return $?
 }
 
+#
+# This function waits until the host goes into CmonHostFailed state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostFailed state.
+#
 function wait_for_node_failed()
 {
     wait_for_node_state "$1" "CmonHostFailed"
