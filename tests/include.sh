@@ -303,3 +303,15 @@ function wait_for_node_online()
     return $?
 }
 
+function wait_for_node_offline()
+{
+    wait_for_node_state "$1" "CmonHostOffLine"
+    return $?
+}
+
+function wait_for_node_failed()
+{
+    wait_for_node_state "$1" "CmonHostFailed"
+    return $?
+}
+

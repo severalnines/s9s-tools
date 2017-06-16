@@ -231,7 +231,6 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
     fi
@@ -267,7 +266,6 @@ function testAddNode()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
@@ -344,6 +342,37 @@ function testStartSlave()
     return 0
 }
 
+#
+# This function will stop the Postgresql daemon on the slave manually and check
+# if the node goes into failed state. Then the daemon is restarted and it is
+# cehcked that it comes back online.
+#
+function testStopDaemon()
+{
+    local state
+
+    #
+    # Stopping the daemon manually.
+    #
+    printVerbose "Stopping postgresql on $LAST_ADDED_NODE"
+    ssh "$LAST_ADDED_NODE" sudo /etc/init.d/postgresql stop
+
+    if ! wait_for_node_offline "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOffLine'."
+    fi
+
+    #
+    # Starting the daemon manually.
+    #
+    printVerbose "Starting postgresql on $LAST_ADDED_NODE"
+    ssh "$LAST_ADDED_NODE" sudo /etc/init.d/postgresql start 
+
+    if ! wait_for_node_online "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
+    fi
+}
 
 #
 # Dropping the cluster from the controller.
@@ -363,7 +392,6 @@ function testDrop()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
@@ -401,6 +429,7 @@ else
 
     runFunctionalTest testStopSlave
     runFunctionalTest testStartSlave
+    runFunctionalTest testStopDaemon
     
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
