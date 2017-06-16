@@ -1,0 +1,100 @@
+       ------------------------------------------------------------------------
+
+       I believe it is important to show that we have a really good
+       documentation in the man pages:
+
+       # man s9s-node
+       # man s9s-cluster
+
+       ------------------------------------------------------------------------
+
+       List a few specific nodes from one specific cluster:
+
+       # s9s node \
+           --list \
+           --long \
+           --cluster-name=ft_postgresql_36945 \
+           '*168.0*' '10.10*'
+
+       ------------------------------------------------------------------------
+
+       The  following  example shows how the cluster format string can be used
+       to print a customized the cluster list.  The  --cluster-format  command
+       line option is used here to produce a multi-line output:
+
+       # s9s cluster \
+           --list \
+           --cluster-format="    ID : %05I \nStatus : %S \n  Name : %N\n  Type : %T\n Owner : %O/%G\n\n"
+           ID : 00001
+       Status : STOPPED
+         Name : ft_postgresqlstop_48273
+         Type : POSTGRESQL_SINGLE
+        Owner : pipas/users
+
+       ------------------------------------------------------------------------
+
+       Create a set of graphs, one for each node shown in the  terminal  about
+       the  load  on the hosts. If the terminal is wide enough the graphs will
+       be shown side by side for a compact view.
+
+       # s9s node \
+           --stat \
+           --cluster-id=1 \
+           --begin="08:00" \
+           --end="14:00" \
+           --graph=load
+
+       ------------------------------------------------------------------------
+
+       Density functions can also be printed to show  what  were  the  typical
+       values for the given statistical data. The following example shows what
+       was the typical values for the user mode CPU usage percent
+
+       # s9s node \
+           --stat \
+           --cluster-id=2 \
+           --begin=00:00 \
+           --end=16:00 \
+           --density \
+           --graph=cpuuser
+
+       ------------------------------------------------------------------------
+
+       The following example shows how a  node  in  a  given  cluster  can  be
+       restarted.  When  this  command  executed  a new job will be created to
+       restart a node. The command line tool will stop and show the  job  mes‐
+       sages until the job is finished.
+
+       # s9s node \
+           --restart \
+           --cluster-id=1 \
+           --nodes=192.168.1.117 \
+           --log
+
+       ------------------------------------------------------------------------
+
+       The following example shows how a custom list can be  created  to  show
+       some information about the CPU(s) in some specific hosts:
+
+       # s9s node \
+           --list \
+           --node-format="%N %U CPU %c Cores %6.2u%% %Z\n" \
+           192.168.1.191 \
+           192.168.1.195
+
+       192.168.1.191 2 CPU 16 Cores  22.54% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+       192.168.1.195 2 CPU 16 Cores  23.12% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+
+       ------------------------------------------------------------------------
+
+       The  following  list shows some information about the memory, the total
+       memory and the  memory  available  for  the  applications  to  allocate
+       (including cache and buffer with the free memory):
+
+       # s9s node \
+           --list \
+           --node-format="%4.2m GBytes %4.2fm GBytes %N\n"
+
+       16.00 GBytes 15.53 GBytes 192.168.1.191
+       47.16 GBytes 38.83 GBytes 192.168.1.127
+

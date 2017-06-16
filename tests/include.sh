@@ -225,3 +225,57 @@ function printError()
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
     fi
 }
+
+function wait_for_node_state()
+{
+    local nodeName="$1"
+    local expectedState="$2"
+    local state
+    local waited=0
+    local stayed=0
+
+    if [ -z "$nodeName" ]; then
+        printError "Expected a node name."
+        return 6
+    fi
+
+    if [ -z "$expectedState" ]; then 
+        printError "Expected state name."
+        return 6
+    fi
+
+    while true; do
+        state=$(s9s node --list --batch --long --node-format="%S" "$nodeName")
+        if [ "$state" == $expectedState ]; then
+            let stayed+=1
+        else
+            let stayed=0
+        fi
+
+        if [ "$stayed" -gt 10 ]; then
+            return 0
+        fi
+
+        if [ "$waited" -gt 120 ]; then
+            return 1
+        fi
+
+        let waited+=1
+        sleep 1
+    done
+
+    return 2
+}
+
+#
+# This function waits until the host goes into CmonHostShutDown state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostShutDown state.
+#
+function wait_for_node_shut_down()
+{
+    wait_for_node_state "$1" "CmonHostShutDown"
+    return $?
+}
+
+

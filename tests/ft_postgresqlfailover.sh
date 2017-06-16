@@ -258,36 +258,6 @@ function wait_for_node_online()
     return 2
 }
 
-function wait_for_node_shut_down()
-{
-    local nodeName="$1"
-    local state
-    local waited=0
-    local stayed=0
-
-    while true; do
-        state=$(s9s node --list --batch --long --node-format="%S" "$nodeName")
-        if [ "$state" == "CmonHostShutDown" ]; then
-            let stayed+=1
-        else
-            let stayed=0
-        fi
-
-        if [ "$stayed" -gt 10 ]; then
-            return 0
-        fi
-
-        if [ "$waited" -gt 120 ]; then
-            return 1
-        fi
-
-        let waited+=1
-        sleep 1
-    done
-
-    return 2
-}
-
 function grant_user()
 {
     printVerbose "Creating Cmon user ${USER}."
