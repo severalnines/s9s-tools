@@ -204,12 +204,12 @@ function testGrantUser()
 #
 function testTypes()
 {
-    local types
+    local output
     local cmonAccountFound
     local cmonVerbatimFound
 
-    types=$(s9s metatype --list)
-    for typeName in $types; do
+    output=$(s9s metatype --list)
+    for typeName in $output; do
         if [ "$typeName" == "CmonAccount" ]; then
             cmonAccountFound="true"
         fi
@@ -225,6 +225,11 @@ function testTypes()
     
     if [ -z "$cmonVerbatimFound" ]; then
         failure "The type 'CmonVerbatim' was not found."
+    fi
+
+    output=$(s9s metatype --list --long --no-header CmonStats)
+    if ! echo "$output" | grep -q "Basic type for"; then
+        failure "Long list does not match."
     fi
 
     return 0

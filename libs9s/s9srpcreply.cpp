@@ -1391,8 +1391,9 @@ S9sRpcReply::printClusterListLong()
     S9sVariantList  theList = operator[]("clusters").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       requestedName = options->clusterName();
+    int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
-    S9sString       formatString = options->longClusterFormat();
+    S9sString       formatString  = options->longClusterFormat();
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
@@ -1572,7 +1573,7 @@ S9sRpcReply::printClusterListLong()
         nColumns += groupFormat.realWidth();
         nColumns += nameFormat.realWidth();
 
-        if (nColumns < terminalWidth)
+        if (isTerminal && nColumns < terminalWidth)
         {
             int remaining  = terminalWidth - nColumns;
             
@@ -4875,18 +4876,43 @@ S9sRpcReply::printMetaTypeListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
-        
+       
+        if (typeName.contains("*"))
+            continue;
+
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
         nameFormat.widen(typeName);
     }
     
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        nameFormat.widen("NAME");
+            
+        printf("%s", headerColorBegin());
+         
+        nameFormat.printf("NAME");
+        printf("DESCRIPTION");
+
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    /*
+     * Printing the actual list.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+
+        if (typeName.contains("*"))
+            continue;
 
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
@@ -4977,11 +5003,16 @@ S9sRpcReply::printMetaTypePropertyList()
         printMetaTypePropertyListBrief();
 }
 
-
+/**
+ * This function will print the properties of a type from the metatype system in
+ * a detailed long list.
+ */
 void 
 S9sRpcReply::printMetaTypePropertyListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             isTerminal    = options->isTerminal();
+    int             terminalWidth = options->terminalWidth();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
     S9sFormat       statFormat;
     S9sFormat       nameFormat;
@@ -5027,7 +5058,6 @@ S9sRpcReply::printMetaTypePropertyListLong()
         printf("\n");
     }
 
-    
     /*
      * Printing the actual data.
      */
@@ -5040,7 +5070,8 @@ S9sRpcReply::printMetaTypePropertyListLong()
         bool          isReadable   = typeMap["is_public"].toBoolean();
         bool          isWritable   = typeMap["is_writable"].toBoolean();
         S9sString     stat;
-
+        int           nColumns    = 0;
+    
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
@@ -5053,6 +5084,21 @@ S9sRpcReply::printMetaTypePropertyListLong()
         stat += isReadable ? "r" : "-";
         stat += isWritable ? "w" : "-";
 
+        nColumns += statFormat.realWidth();
+        nColumns += nameFormat.realWidth();
+        nColumns += unitFormat.realWidth();
+        
+        if (isTerminal && nColumns < terminalWidth)
+        {
+            int remaining  = terminalWidth - nColumns;
+            
+            if (remaining < (int) description.length())
+            {
+                description.resize(remaining - 1);
+                description += "…";
+            }
+        }
+        
         statFormat.printf(stat);
         printf("%s", propertyColorBegin());
         nameFormat.printf(typeName);
@@ -5065,6 +5111,10 @@ S9sRpcReply::printMetaTypePropertyListLong()
     }
 }
 
+/**
+ * This function will print the properties of a type from the metatype system in
+ * a brief list.
+ */
 void 
 S9sRpcReply::printMetaTypePropertyListBrief()
 {
