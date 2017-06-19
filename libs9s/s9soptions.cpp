@@ -5804,24 +5804,36 @@ S9sOptions::createGroup() const
     return getBool("create_group");
 }
 
+/**
+ * \returns The argument of the --title command line option.
+ */
 S9sString
 S9sOptions::title() const
 {
     return getString("title");
 }
 
+/**
+ * \returns The argument of the --last-name command line option.
+ */
 S9sString
 S9sOptions::lastName() const
 {
     return getString("last_name");
 }
 
+/**
+ * \returns The argument of the --first-name command line option.
+ */
 S9sString
 S9sOptions::firstName() const
 {
     return getString("first_name");
 }
 
+/**
+ * \returns The argument of the --email-address command line option.
+ */
 S9sString
 S9sOptions::emailAddress() const
 {
