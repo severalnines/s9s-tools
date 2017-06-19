@@ -317,6 +317,8 @@ class S9sOptions
         bool setMode(const S9sString &modeName);
 
         bool getBool(const char *key) const;
+        S9sString getString(const char *key) const;
+
         S9sOptions();
         ~S9sOptions();
 

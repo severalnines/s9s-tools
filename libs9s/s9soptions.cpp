@@ -5963,3 +5963,14 @@ S9sOptions::getBool(
     return retval;
 }
 
+S9sString
+S9sOptions::getString(
+        const char *key) const
+{
+    S9sString retval;
+
+    if (m_options.contains(key))
+        retval = m_options.at(key).toString();
+
+    return retval;
+}

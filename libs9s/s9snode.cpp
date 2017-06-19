@@ -1060,7 +1060,15 @@ S9sNode::replicationState() const
     if (m_properties.contains("replication_state"))
         retval = m_properties.at("replication_state").toString();
 
-    if (m_properties.contains("replication_master"))
+    if (m_properties.contains("galera"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("galera").toVariantMap();
+        retval = map["localstatusstr"].toString().toLower();
+    }
+
+    if (retval.empty() && m_properties.contains("replication_master"))
     {
         S9sVariantMap map;
         
@@ -1070,7 +1078,7 @@ S9sNode::replicationState() const
             retval = "semisync";
     } 
     
-    if (m_properties.contains("replication_slave"))
+    if (retval.empty() && m_properties.contains("replication_slave"))
     {
         S9sVariantMap map;
         
@@ -1079,6 +1087,12 @@ S9sNode::replicationState() const
         if (map["semisync_status"] == "ON")
             retval = "semisync";
     } 
+
+    if (retval.empty() && m_properties.contains("connected_slaves"))
+    {
+        if (m_properties.at("connected_slaves").toInt() > 0)
+            retval = "connected";
+    }
 
     if (retval.empty())
         retval = "-";
