@@ -204,6 +204,7 @@ function testGrantUser()
 #
 function testTypes()
 {
+    local typeName
     local output
     local cmonAccountFound
     local cmonVerbatimFound
@@ -229,7 +230,42 @@ function testTypes()
 
     output=$(s9s metatype --list --long --no-header CmonStats)
     if ! echo "$output" | grep -q "Basic type for"; then
-        failure "Long list does not match."
+        failure "Metatype Long list does not match."
+    fi
+
+    return 0
+}
+
+function testProperties()
+{
+    local output
+    local userFound
+    local hostNameFound
+    local propertyName
+
+    output=$(s9s metatype --list-properties --type=CmonFile)
+    for propertyName in $output; do
+        #echo "-> $propertyName"
+        if [ "$propertyName" == "user" ]; then
+            userFound="true"
+        fi
+
+        if [ "$propertyName" == "host_name" ]; then
+            hostNameFound="true"
+        fi
+    done
+
+    if [ -z "$userFound" ]; then
+        failure "The property 'user' was not found."
+    fi
+    
+    if [ -z "$hostNameFound" ]; then
+        failure "The property 'host_name' was not found."
+    fi
+    
+    output=$(s9s metatype --list-properties --type=CmonFile --long --batch user )
+    if ! echo "$output" | grep -q "The name of the owner"; then
+        failure "Property long list does not match."
     fi
 
     return 0
@@ -249,6 +285,8 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testGrantUser
     runFunctionalTest testTypes
+    runFunctionalTest testProperties
+
 fi
 
 endTests
