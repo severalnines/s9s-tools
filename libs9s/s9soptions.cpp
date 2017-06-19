@@ -1011,7 +1011,7 @@ S9sOptions::dbAdminPassword()
 S9sString
 S9sOptions::clusterType() const
 {
-    return getString("cluster_type");
+    return getString("cluster_type").toLower();
 }
 
 /**

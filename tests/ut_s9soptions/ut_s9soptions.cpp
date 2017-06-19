@@ -50,6 +50,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions03, retval);
     PERFORM_TEST(testReadOptions04, retval);
     PERFORM_TEST(testReadOptions05, retval);
+    PERFORM_TEST(testReadOptions06, retval);
 
     return retval;
 }
@@ -267,6 +268,39 @@ UtS9sOptions::testReadOptions05()
     S9S_COMPARE(options->graph(),          "load");
     S9S_VERIFY(options->isStatRequested());
     S9S_VERIFY(options->density());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testReadOptions06()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool  success;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "user", "--create", "--group=GROUPNAME", "--create-group",
+        "--first-name=FIRSTNAME", "--last-name=LASTNAME", "--title=TITLE",
+        "--email-address=EMAIL", "--user-format=FORMAT", NULL
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),     "s9s");
+    S9S_COMPARE(options->m_operationMode,  S9sOptions::User);
+    S9S_VERIFY(options->isCreateRequested());
+    S9S_COMPARE(options->group(), "GROUPNAME");
+    S9S_VERIFY(options->createGroup());
+    S9S_COMPARE(options->firstName(), "FIRSTNAME");
+    S9S_COMPARE(options->lastName(), "LASTNAME");
+    S9S_COMPARE(options->title(), "TITLE");
+    S9S_COMPARE(options->emailAddress(), "EMAIL");
+    S9S_VERIFY(options->hasUserFormat());
+    S9S_COMPARE(options->userFormat(), "FORMAT");
 
     S9sOptions::uninit();
     return true;
