@@ -51,6 +51,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions04, retval);
     PERFORM_TEST(testReadOptions05, retval);
     PERFORM_TEST(testReadOptions06, retval);
+    PERFORM_TEST(testReadOptions07, retval);
 
     return retval;
 }
@@ -306,6 +307,33 @@ UtS9sOptions::testReadOptions06()
     return true;
 }
 
+bool
+UtS9sOptions::testReadOptions07()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool  success;
+    const char *argv[] = 
+    { 
+        "/bin/s9s", "maint", "--create", "--cluster-id=1", "--start=START",
+        "--end=END", "--reason=REASON", NULL
+    };
+    int   argc   = sizeof(argv) / sizeof(char *) - 1;
+
+
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+    
+    S9S_COMPARE(options->binaryName(),     "s9s");
+    S9S_COMPARE(options->m_operationMode,  S9sOptions::Maintenance);
+    S9S_VERIFY(options->isCreateRequested());
+    S9S_COMPARE(options->clusterId(), 1);
+    S9S_COMPARE(options->start(),     "START");
+    S9S_COMPARE(options->end(),       "END");
+    S9S_COMPARE(options->reason(),    "REASON");
+
+    S9sOptions::uninit();
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sOptions)
 

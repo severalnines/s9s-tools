@@ -35,6 +35,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testReadOptions04();
         bool testReadOptions05();
         bool testReadOptions06();
+        bool testReadOptions07();
 };
 
 

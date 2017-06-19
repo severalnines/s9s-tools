@@ -461,6 +461,11 @@ function testCreateAccount()
     #
     # This command will create a new account on the cluster.
     #
+    if [ -z "$CLUSTER_ID" ]; then
+        failure "No cluster ID found."
+        return 1
+    fi
+
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
