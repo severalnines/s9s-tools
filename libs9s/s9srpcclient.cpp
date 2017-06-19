@@ -270,7 +270,6 @@ S9sRpcClient::getClusters()
     request["with_sheet_info"] = true;
     request["user"]            = options->userName();
 
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -315,6 +314,10 @@ S9sRpcClient::getConfig(
     return retval;
 }
 
+/**
+ * This function is for changing the configuration through the controller for 
+ * one node.
+ */
 bool
 S9sRpcClient::setConfig(
         const S9sVariantList &hosts)
@@ -336,7 +339,7 @@ S9sRpcClient::setConfig(
         if (node.hasPort())
             request["port"] = node.port();
     } else {
-        PRINT_ERROR("getConfig only implemented for one host.");
+        PRINT_ERROR("setConfig only implemented for one host.");
         return false;
     }
 
@@ -353,10 +356,10 @@ S9sRpcClient::setConfig(
         optionMap["group"] = options->optGroup();
 
     optionList << optionMap;
+
     request["configuration"] = optionList;
 
     retval = executeRequest(uri, request);
-
     return retval;
 }
 
@@ -418,7 +421,6 @@ S9sRpcClient::setHost()
 
 
 /**
- * \param clusterId The cluster where the request will be sent.
  * \param hosts The list of hosts to change (currently only one host is
  *   supported).
  * \param properties The names and values of the host properties to change.
@@ -515,11 +517,10 @@ S9sRpcClient::getInfo()
 }
 
 /**
- * \param clusterId the ID of the cluster for which the CPU information will be
+ * \param clusterId the ID of the cluster for which the statistics will be
  *   fetched.
  * \returns true if the request sent and a reply is received (even if the reply
  *   is an error message).
- *
  */
 bool
 S9sRpcClient::getCpuStats(
@@ -528,6 +529,12 @@ S9sRpcClient::getCpuStats(
     return getStats(clusterId, "cpustat");
 }
 
+/**
+ * \param clusterId the ID of the cluster for which the statistics will be
+ *   fetched.
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ */
 bool
 S9sRpcClient::getSqlStats(
         const int clusterId)
@@ -535,13 +542,18 @@ S9sRpcClient::getSqlStats(
     return getStats(clusterId, "sqlstat");
 }
 
+/**
+ * \param clusterId the ID of the cluster for which the statistics will be
+ *   fetched.
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ */
 bool
 S9sRpcClient::getMemStats(
         const int clusterId)
 {
     return getStats(clusterId, "memorystat");
 }
-
 
 bool
 S9sRpcClient::getMetaTypes()
