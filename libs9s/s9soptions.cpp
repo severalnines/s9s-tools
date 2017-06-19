@@ -889,28 +889,19 @@ S9sOptions::from() const
 S9sString
 S9sOptions::until() const
 {
-    if (m_options.contains("until"))
-        return m_options.at("until").toString();
-
-    return S9sString();
+    return getString("until");
 }
 
 S9sString
 S9sOptions::reason() const
 {
-    if (m_options.contains("reason"))
-        return m_options.at("reason").toString();
-
-    return S9sString();
+    return getString("reason");
 }
 
 S9sString
 S9sOptions::uuid() const
 {
-    if (m_options.contains("uuid"))
-        return m_options.at("uuid").toString();
-
-    return S9sString();
+    return getString("uuid");
 }
 
 /**
@@ -1007,12 +998,7 @@ S9sOptions::dbAdminUserName(
 S9sString 
 S9sOptions::dbAdminPassword()
 {
-    S9sString retval;
-
-    if (m_options.contains("db_admin_password"))
-        retval = m_options.at("db_admin_password").toString();
-
-    return retval;
+    return getString("db_admin_password");
 }
 
 /**
@@ -1025,10 +1011,7 @@ S9sOptions::dbAdminPassword()
 S9sString
 S9sOptions::clusterType() const
 {
-    if (m_options.contains("cluster_type"))
-        return m_options.at("cluster_type").toString().toLower();
-
-    return S9sString();
+    return getString("cluster_type");
 }
 
 /**
@@ -1071,21 +1054,13 @@ S9sOptions::fullUuid() const
 S9sString
 S9sOptions::rpcToken() const
 {
-    if (m_options.contains("rpc_token"))
-        return m_options.at("rpc_token").toString();
-
-    return S9sString();
+    return getString("rpc_token");
 }
 
 S9sString
 S9sOptions::schedule() const
 {
-    S9sString retval;
-
-    if (m_options.contains("schedule"))
-        retval = m_options.at("schedule").toString();
-
-    return retval;
+    return getString("schedule");
 }
 
 /**
@@ -1169,10 +1144,7 @@ S9sOptions::backupId() const
 S9sString
 S9sOptions::type() const
 {
-    if (m_options.contains("type"))
-        return m_options.at("type").toString();
-
-    return S9sString();
+    return getString("type");
 }
 
 int
@@ -1203,12 +1175,7 @@ S9sOptions::updateFreq() const
 S9sString
 S9sOptions::clusterName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("cluster_name"))
-        return m_options.at("cluster_name").toString();
-
-    return retval;
+    return getString("cluster_name");
 }
 
 bool
@@ -1254,10 +1221,7 @@ S9sOptions::hasLogFormat() const
 S9sString
 S9sOptions::logFormat() const
 {
-    if (m_options.contains("log_format"))
-        return m_options.at("log_format").toString();
-
-    return S9sString();
+    return getString("log_format");
 }
 
 /**
@@ -1276,10 +1240,7 @@ S9sOptions::hasClusterFormat() const
 S9sString
 S9sOptions::clusterFormat() const
 {
-    if (m_options.contains("cluster_format"))
-        return m_options.at("cluster_format").toString();
-
-    return S9sString();
+    return getString("cluster_format");
 }
 
 /**
@@ -1298,10 +1259,7 @@ S9sOptions::hasNodeFormat() const
 S9sString
 S9sOptions::nodeFormat() const
 {
-    if (m_options.contains("node_format"))
-        return m_options.at("node_format").toString();
-
-    return S9sString();
+    return getString("node_format");
 }
 
 /**
@@ -1320,10 +1278,7 @@ S9sOptions::hasBackupFormat() const
 S9sString
 S9sOptions::backupFormat() const
 {
-    if (m_options.contains("backup_format"))
-        return m_options.at("backup_format").toString();
-
-    return S9sString();
+    return getString("backup_format");
 }
 
 /**
@@ -1342,10 +1297,7 @@ S9sOptions::hasUserFormat() const
 S9sString
 S9sOptions::userFormat() const
 {
-    if (m_options.contains("user_format"))
-        return m_options.at("user_format").toString();
-
-    return S9sString();
+    return getString("user_format");
 }
 
 /**
@@ -1354,10 +1306,7 @@ S9sOptions::userFormat() const
 S9sString
 S9sOptions::graph() const
 {
-    if (m_options.contains("graph"))
-        return m_options.at("graph").toString();
-
-    return S9sString();
+    return getString("graph");
 }
 
 /**
@@ -1442,12 +1391,7 @@ S9sOptions::setAccount(
 S9sString
 S9sOptions::privileges() const
 {
-    S9sString retval;
-
-    if (m_options.contains("privileges"))
-        retval = m_options.at("privileges").toString();
-
-    return retval;
+    return getString("privileges");
 }
 
 /**
@@ -1456,12 +1400,7 @@ S9sOptions::privileges() const
 S9sString
 S9sOptions::optGroup() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_group"))
-        retval = m_options.at("opt_group").toString();
-
-    return retval;
+    return getString("opt_group");
 }
 
 /**
@@ -1470,12 +1409,7 @@ S9sOptions::optGroup() const
 S9sString
 S9sOptions::optName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_name"))
-        retval = m_options.at("opt_name").toString();
-
-    return retval;
+    return getString("opt_name");
 }
 
 /**
@@ -1484,12 +1418,7 @@ S9sOptions::optName() const
 S9sString
 S9sOptions::optValue() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_value"))
-        retval = m_options.at("opt_value").toString();
-
-    return retval;
+    return getString("opt_value");
 }
 
 /**
@@ -1498,12 +1427,7 @@ S9sOptions::optValue() const
 S9sString
 S9sOptions::outputDir() const
 {
-    S9sString retval;
-
-    if (m_options.contains("output_dir"))
-        retval = m_options.at("output_dir").toString();
-
-    return retval;
+    return getString("output_dir");
 }
 
 /**
@@ -1527,12 +1451,7 @@ S9sOptions::withDatabase() const
 S9sString
 S9sOptions::dbName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("db_name"))
-        retval = m_options.at("db_name").toString();
-
-    return retval;
+    return getString("db_name");
 }
 
 S9sString
@@ -1611,12 +1530,7 @@ S9sOptions::backupMethod() const
 S9sString
 S9sOptions::databases() const
 {
-    S9sString retval;
-
-    if (m_options.contains("databases"))
-        retval = m_options.at("databases").toString();
-
-    return retval;
+    return getString("databases");
 }
 
 bool
@@ -2172,12 +2086,7 @@ S9sOptions::humanReadable() const
 S9sString 
 S9sOptions::timeStyle() const
 {
-    S9sString retval;
-
-    if (m_options.contains("time_style"))
-        retval = m_options.at("time_style").toString();
-
-    return retval;
+    return getString("time_style");
 }
 
 void
@@ -5883,10 +5792,7 @@ S9sOptions::isGenerateKeyRequested() const
 S9sString
 S9sOptions::group() const
 {
-    if (m_options.contains("group"))
-        return m_options.at("group").toString();
-
-    return S9sString();
+    return getString("group");
 }
 
 /**
@@ -5901,37 +5807,25 @@ S9sOptions::createGroup() const
 S9sString
 S9sOptions::title() const
 {
-    if (m_options.contains("title"))
-        return m_options.at("title").toString();
-
-    return S9sString();
+    return getString("title");
 }
 
 S9sString
 S9sOptions::lastName() const
 {
-    if (m_options.contains("last_name"))
-        return m_options.at("last_name").toString();
-
-    return S9sString();
+    return getString("last_name");
 }
 
 S9sString
 S9sOptions::firstName() const
 {
-    if (m_options.contains("first_name"))
-        return m_options.at("first_name").toString();
-
-    return S9sString();
+    return getString("first_name");
 }
 
 S9sString
 S9sOptions::emailAddress() const
 {
-    if (m_options.contains("email_address"))
-        return m_options.at("email_address").toString();
-
-    return S9sString();
+    return getString("email_address");
 }
 
 bool 
