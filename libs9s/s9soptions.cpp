@@ -516,12 +516,7 @@ S9sOptions::controllerUrl()
 S9sString
 S9sOptions::configFile() const
 {
-    S9sString retval;
-
-    if (m_options.contains("config_file"))
-        retval = m_options.at("config_file").toString();
-
-    return retval;
+    return getString("config_file");
 }
 
 /**
@@ -858,10 +853,7 @@ S9sOptions::vendor() const
 S9sString
 S9sOptions::start() const
 {
-    if (m_options.contains("start"))
-        return m_options.at("start").toString();
-
-    return S9sString();
+    return getString("start");
 }
 
 /**
@@ -870,10 +862,7 @@ S9sOptions::start() const
 S9sString
 S9sOptions::begin() const
 {
-    if (m_options.contains("begin"))
-        return m_options.at("begin").toString();
-
-    return S9sString();
+    return getString("begin");
 }
 
 /**
@@ -882,10 +871,7 @@ S9sOptions::begin() const
 S9sString
 S9sOptions::end() const
 {
-    if (m_options.contains("end"))
-        return m_options.at("end").toString();
-
-    return S9sString();
+    return getString("end");
 }
 
 /**
@@ -894,10 +880,7 @@ S9sOptions::end() const
 S9sString
 S9sOptions::from() const
 {
-    if (m_options.contains("from"))
-        return m_options.at("from").toString();
-
-    return S9sString();
+    return getString("from");
 }
 
 /**
