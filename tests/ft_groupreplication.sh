@@ -40,7 +40,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -71,6 +71,22 @@ while true; do
             shift
             ;;
 
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -95,15 +111,35 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-#
-# Creates and starts a new 
-#
-function create_node()
+function reset_config()
 {
-    local ip
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
 
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
 }
 
 #
@@ -139,7 +175,11 @@ function find_cluster_id()
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key \
+    $S9S user \
+        --create \
+        --cmon-user=$USER \
+        --controller="https://localhost:9556" \
+        --generate-key \
         >/dev/null 2>/dev/null
 }
 
@@ -153,7 +193,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -191,19 +231,7 @@ function testCreateCluster()
     #
     # Creating a MySQL replication cluster.
     #
-clear
-cat <<EOF
-# s9s cluster \\
-    --create \\
-    --cluster-type=group_replication \\
-    --nodes="$nodes" \\
-    --vendor=oracle \\
-    --cluster-name="$CLUSTER_NAME" \\
-    --provider-version=5.7 \\
-    --wait
-EOF
-
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=group_replication \
         --nodes="$nodes" \
@@ -241,13 +269,7 @@ function testConfig()
     #
     # Listing the configuration values.
     #
-    cat <<EOF
-    $S9S node 
-        --list-config 
-        --nodes=$FIRST_ADDED_NODE:3306
-EOF
-
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE:3306 
 
@@ -281,7 +303,7 @@ function testAddNode()
     # Adding a node to the cluster.
     #
     printVerbose "Adding node:"
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -308,7 +330,7 @@ function testRemoveNode()
     #
     # Removing the last added node.
     #
-    $S9S cluster \
+    mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
@@ -333,7 +355,7 @@ function testRollingRestart()
     #
     # Calling for a rolling restart.
     #
-    $S9S cluster \
+    mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -357,7 +379,7 @@ function testStop()
     #
     # Stopping the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -381,7 +403,7 @@ function testDrop()
     #
     # Starting the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -409,9 +431,13 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateCluster
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
@@ -426,6 +452,12 @@ else
     #runFunctionalTest testStop
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
+fi
+
+if [ "$FAILED" == "no" ]; then
+    pip-say "The test script is now finished. No errors were detected."
+else
+    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests
