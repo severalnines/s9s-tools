@@ -44,6 +44,8 @@ class S9sRpcClient
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
 
         const S9sRpcReply &reply() const;
+        void setExitStatus();
+
         S9sString errorString() const;
         void printMessages(
                 const S9sString &defaultMessage,

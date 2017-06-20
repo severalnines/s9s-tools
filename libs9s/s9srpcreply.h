@@ -29,7 +29,20 @@ class S9sCmonGraph;
 class S9sRpcReply : public S9sVariantMap
 {
     public:
+        enum ErrorCode
+        {
+            Ok                = 0,
+            InvalidRequest    = 100,
+            ObjectNotFound    = 101,
+            TryAgain          = 102,
+            ClusterNotFound   = 103,
+            UnknownError      = 104,
+            AccessDenied      = 105,
+            AuthRequired      = 106
+        };
+
         bool isOk() const;
+        S9sRpcReply::ErrorCode requestStatus() const;
         bool isAuthRequired() const;
         S9sString errorString() const;
         S9sString uuid() const;

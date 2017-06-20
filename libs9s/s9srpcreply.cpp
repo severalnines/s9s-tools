@@ -39,6 +39,37 @@
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
+S9sRpcReply::ErrorCode
+S9sRpcReply::requestStatus() const
+{
+    S9sString errorCodeString = "ok";
+    ErrorCode retval = Ok;
+
+    if (contains("requestStatus"))
+        errorCodeString = at("requestStatus").toString().toLower();
+    else if (contains("request_status"))
+        errorCodeString = at("request_status").toString().toLower();
+
+    if (errorCodeString == "ok")
+        retval = Ok;
+    else if (errorCodeString == "invalidrequest")
+        retval = InvalidRequest;
+    else if (errorCodeString == "tryagain")
+        retval = TryAgain;
+    else if (errorCodeString == "clusternotfound")
+        retval = ClusterNotFound;
+    else if (errorCodeString == "unknownerror")
+        retval = UnknownError;
+    else if (errorCodeString == "accessdenied")
+        retval = AccessDenied;
+    else if (errorCodeString == "authrequeired")
+        retval = AuthRequired;
+    else 
+        retval = UnknownError;
+
+    return retval;
+}
+
 /**
  * \returns true if the reply states that the request status is 'ok'.
  */

@@ -65,6 +65,7 @@ class S9sOptions
             JobFailed    = 1,
             Failed       = 2,
             AccessDenied = 3,
+            NotFound     = 4,
             BadOptions   = 6,
         };
 

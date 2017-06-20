@@ -128,6 +128,56 @@ S9sRpcClient::reply() const
 }
 
 /**
+ * Takes the request status from the reply and sets the exit code of the
+ * program accordingly. If the request status is "ok" the exit code is not going
+ * to be changed.
+ */
+void
+S9sRpcClient::setExitStatus() 
+{
+    S9sRpcReply::ErrorCode errorCode = reply().requestStatus();
+
+    if (errorCode != S9sRpcReply::Ok)
+    {
+        S9sOptions *options = S9sOptions::instance();
+
+        switch (errorCode)
+        {
+            case S9sRpcReply::Ok:
+                break;
+
+            case S9sRpcReply::InvalidRequest:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::ObjectNotFound:
+                options->setExitStatus(S9sOptions::NotFound);
+                break;
+
+            case S9sRpcReply::TryAgain:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::ClusterNotFound:
+                options->setExitStatus(S9sOptions::NotFound);
+                break;
+
+            case S9sRpcReply::UnknownError:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::AccessDenied:
+                options->setExitStatus(S9sOptions::AccessDenied);
+                break;
+
+            case S9sRpcReply::AuthRequired:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+        }
+    }
+}
+
+/**
  * \returns the human readable error string stored in the object.
  */
 S9sString 
