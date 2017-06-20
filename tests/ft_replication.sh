@@ -25,14 +25,17 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+ 
+  $MYNAME - Test script for mysql replication.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -41,7 +44,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands" \
+        -l "help,verbose,log,server:,print-commands,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -78,6 +81,11 @@ while true; do
             PRINT_COMMANDS="true"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -98,15 +106,35 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-#
-# Creates and starts a new 
-#
-function create_node()
+function reset_config()
 {
-    local ip
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
 
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
 }
 
 #
@@ -297,6 +325,8 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
 if [ "$1" ]; then
