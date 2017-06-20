@@ -169,6 +169,25 @@ S9sRpcReply::isJobFailed() const
     return retval;
 }
 
+/**
+ * The reply to getClusterInfo and getAllClusterInfo replies are similar, one
+ * contains a single cluster, the other contains a list of clusters. This
+ * function returns the cluster(s) as a list of maps no matter which way the
+ * reply is built.
+ */
+S9sVariantList
+S9sRpcReply::clusters()
+{
+    S9sVariantList  theList;
+    
+    if (contains("clusters"))
+        theList = operator[]("clusters").toVariantList();
+    else if (contains("cluster"))
+        theList << operator[]("cluster");
+
+    return theList;
+}
+
 S9sString
 S9sRpcReply::clusterName(
         const int clusterId)
@@ -1328,7 +1347,7 @@ S9sRpcReply::printClusterListBrief()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       format    = options->clusterFormat();
     bool            hasFormat = options->hasClusterFormat();
-    S9sVariantList  theList   = operator[]("clusters").toVariantList();
+    S9sVariantList  theList   = clusters();
     int             nPrinted  = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -1388,7 +1407,7 @@ void
 S9sRpcReply::printClusterListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       requestedName = options->clusterName();
     int             isTerminal    = options->isTerminal();
@@ -1625,7 +1644,7 @@ void
 S9sRpcReply::printNodeListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     S9sString       formatString = options->shortNodeFormat();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
@@ -2589,7 +2608,7 @@ void
 S9sRpcReply::printNodeListStat()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2614,7 +2633,7 @@ void
 S9sRpcReply::printClusterListStat()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2638,7 +2657,7 @@ S9sRpcReply::printNodeListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     S9sString       formatString = options->longNodeFormat();
     S9sVariantList  hostList;
     S9sFormat       cidFormat;
@@ -4569,7 +4588,7 @@ S9sVariantMap
 S9sRpcReply::clusterMap(
         const int clusterId)
 {
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     S9sVariantMap   retval;
 
     for (uint idx = 0; idx < theList.size(); ++idx)

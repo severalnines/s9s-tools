@@ -56,7 +56,7 @@ class S9sRpcClient
          * the server.
          */
         bool getClusters();
-        bool getCluster(int clusterId);
+        bool getCluster();
         
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);

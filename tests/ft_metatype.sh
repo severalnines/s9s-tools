@@ -236,6 +236,9 @@ function testTypes()
     return 0
 }
 
+#
+# Testing the metatype properties.
+#
 function testProperties()
 {
     local output

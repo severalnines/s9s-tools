@@ -86,7 +86,7 @@ S9sTopUi::executeTopOnce(
     //
     // The cluster information.
     //
-    success = client.getCluster(clusterId);
+    success = client.getCluster();
     reply = client.reply();
     if (!success)
         return success;
