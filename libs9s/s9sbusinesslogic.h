@@ -60,7 +60,6 @@ class S9sBusinessLogic
                 S9sRpcClient &client);
 
         void executeUserList(S9sRpcClient &client);
-        void executeSetUser(S9sRpcClient &client);
         void executeCreateUser(S9sRpcClient &client);
 
         void executeClusterList(S9sRpcClient &client);
@@ -84,15 +83,8 @@ class S9sBusinessLogic
         void executeJobLog(S9sRpcClient &client);
 
         void executeDropCluster(S9sRpcClient &client);
-        void executeCreateAccount(S9sRpcClient &client);
-        void executeGrant(S9sRpcClient &client);
-        void executeDeleteAccount(S9sRpcClient &client);
-        void executeCreateDatabase(S9sRpcClient &client);
 
-        void executeDeleteBackup(S9sRpcClient &client);
-        
         void executeMaintenanceCreate(S9sRpcClient &client);
-        void executeMaintenanceDelete(S9sRpcClient &client);
         void executeMaintenanceList(S9sRpcClient &client);
         void executeMetaTypeList(S9sRpcClient &client);
         void executeMetaTypePropertyList(S9sRpcClient &client);

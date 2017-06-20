@@ -334,3 +334,83 @@ function wait_for_node_failed()
     return $?
 }
 
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local OWNER="$2"
+    local isOK
+
+    isOk=$(sudo -u $OWNER -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+#
+# $2: the server name
+#
+# Waits until the server is accepting SSH connections. There is also a timeout
+# implemented here.
+#
+function wait_for_server_ssh()
+{
+    local serverName="$1"
+    local OWNER="$2"
+    local nTry=0
+    local nSuccess=0
+
+    while true; do
+        if is_server_running_ssh "$serverName" $OWNER; then
+            printVerbose "Server '$serverName' is reachable."
+            let nSuccess+=1
+        else
+            printVerbose "Server '$serverName' is not reachable."
+            let nSuccess=0
+
+            # 120 x 5 = 10 minutes
+            if [ "$nTry" -gt 120 ]; then
+                printVerbose "Server '$serverName' did not came alive."
+                return 1
+            fi
+        fi
+
+        if [ "$nSuccess" -gt 3 ]; then
+            printVerbose "Server '$serverName' is stable."
+            return 0
+        fi
+
+        sleep 5
+        let nTry+=1
+    done
+
+    return 0
+}
+
+#
+# Creates and starts a new virtual machine node.
+#
+function create_node()
+{
+    local ip
+    local retval
+
+    printVerbose "Creating container..."
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    printVerbose "Created '$ip'."
+   
+    #
+    #
+    #
+    wait_for_server_ssh "$ip" "$USER"
+    retval=$?
+    if [ "$retval" -ne 0 ]; then
+        failure "Could not reach created server"
+    fi
+
+    echo $ip
+}

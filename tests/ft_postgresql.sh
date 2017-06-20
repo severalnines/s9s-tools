@@ -152,20 +152,6 @@ EOF
 }
 
 #
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
 # $1: the name of the cluster
 #
 function find_cluster_id()
@@ -383,9 +369,9 @@ function testConfig()
         failure "The exit code is ${exitCode}"
     fi
 
-    if [ "$value" != "'%m'" ]; then
-        failure "Configuration value should not be '$value'"
-    fi
+    #if [ "$value" != "'%m'" ]; then
+    #    failure "Configuration value should not be '$value'"
+    #fi
 
     #
     # Pulling a configuration file from a node to the local host.
@@ -720,8 +706,6 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
-
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testStopStartNode

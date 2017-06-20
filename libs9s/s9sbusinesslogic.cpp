@@ -146,16 +146,27 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateAccountRequested())
         {
-            executeCreateAccount(client);
+            success = client.createAccount();
+            client.printMessages("Created.\n", success);
+            client.setExitStatus();
         } else if (options->isGrantRequested())
         {
-            executeGrant(client);
+            success = client.grantPrivileges(
+                    options->account(), 
+                    options->privileges());
+
+            client.printMessages("Grant.\n", success);
+            client.setExitStatus();
         } else if (options->isDeleteAccountRequested())
         {
-            executeDeleteAccount(client);
+            success = client.deleteAccount();
+            client.printMessages("Created.\n", success);
+            client.setExitStatus();
         } else if (options->isCreateDatabaseRequested())
         {
-            executeCreateDatabase(client);
+            success = client.createDatabase();
+            client.printMessages("Created.\n", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -242,7 +253,9 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isDeleteRequested())
         {
-            executeDeleteBackup(client);
+            success = client.deleteBackupRecord(options->backupId());
+            client.printMessages("Deleted.\n", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
@@ -264,7 +277,9 @@ S9sBusinessLogic::execute()
             executeUserList(client);
         } else if (options->isSetRequested())
         {
-            executeSetUser(client);
+            success = client.setUser();
+            client.printMessages("Ok.\n", success);
+            client.setExitStatus();
         } else {
             executeCreateUser(client);
         }
@@ -278,7 +293,9 @@ S9sBusinessLogic::execute()
             executeMaintenanceCreate(client);
         } else if (options->isDeleteRequested())
         {
-            executeMaintenanceDelete(client);
+            success = client.deleteMaintenance();
+            client.printMessages("Created.\n", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
         }
@@ -795,78 +812,6 @@ S9sBusinessLogic::executeNodeSet(
     client.setExitStatus();
 }
 
-void
-S9sBusinessLogic::executeCreateAccount(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.createAccount();
-    client.printMessages("Created.\n", success);
-    client.setExitStatus();
-}
-
-void
-S9sBusinessLogic::executeGrant(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.grantPrivileges(options->account(), options->privileges());
-    client.printMessages("Grant.\n", success);
-    client.setExitStatus();
-}
-
-void
-S9sBusinessLogic::executeDeleteAccount(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteAccount();
-    client.printMessages("Created.\n", success);
-    client.setExitStatus();
-}
-
-void
-S9sBusinessLogic::executeCreateDatabase(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.createDatabase();
-    client.printMessages("Created.\n", success);
-    client.setExitStatus();
-}
-
-void
-S9sBusinessLogic::executeDeleteBackup(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteBackupRecord(options->backupId());
-    client.printMessages("Deleted.\n", success);
-    client.setExitStatus();
-}
-
 /**
  * This method provides a continuous display of one specific cluster that is
  * similar to the "top" utility.
@@ -1320,17 +1265,6 @@ S9sBusinessLogic::waitForJobWithLog(
 }
 
 void
-S9sBusinessLogic::executeSetUser(
-        S9sRpcClient &client)
-{
-    bool            success;
-
-    success = client.setUser();
-    client.printMessages("Ok.\n", success);
-}
-
-
-void
 S9sBusinessLogic::executeCreateUser(
         S9sRpcClient        &client)
 {
@@ -1582,18 +1516,5 @@ S9sBusinessLogic::executeMaintenanceCreate(
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
-}
-
-void
-S9sBusinessLogic::executeMaintenanceDelete(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteMaintenance();
-    client.printMessages("Created.\n", success);
 }
 

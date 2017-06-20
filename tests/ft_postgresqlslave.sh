@@ -147,20 +147,6 @@ EOF
 }
 
 #
-# Creates and starts a new virtual machine.
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
 # $1: the name of the cluster
 #
 function find_cluster_id()
