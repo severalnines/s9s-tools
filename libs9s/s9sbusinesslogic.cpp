@@ -792,6 +792,9 @@ S9sBusinessLogic::executeNodeSet(
 
     success = client.setHost();
     client.printMessages("Ok.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 void
@@ -805,6 +808,9 @@ S9sBusinessLogic::executeCreateAccount(
      */
     success = client.createAccount();
     client.printMessages("Created.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 void
@@ -819,6 +825,9 @@ S9sBusinessLogic::executeGrant(
      */
     success = client.grantPrivileges(options->account(), options->privileges());
     client.printMessages("Grant.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 void
@@ -832,6 +841,9 @@ S9sBusinessLogic::executeDeleteAccount(
      */
     success = client.deleteAccount();
     client.printMessages("Created.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 void
@@ -845,6 +857,9 @@ S9sBusinessLogic::executeCreateDatabase(
      */
     success = client.createDatabase();
     client.printMessages("Created.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 void
@@ -859,6 +874,9 @@ S9sBusinessLogic::executeDeleteBackup(
      */
     success = client.deleteBackupRecord(options->backupId());
     client.printMessages("Deleted.\n", success);
+
+    if (!client.reply().isOk())
+        S9sOptions::instance()->setExitStatus(S9sOptions::Failed);
 }
 
 /**

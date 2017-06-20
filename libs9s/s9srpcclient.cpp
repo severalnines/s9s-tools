@@ -136,6 +136,10 @@ S9sRpcClient::errorString() const
     return m_priv->m_errorString;
 }
 
+/**
+ * Prints the messages from the reply, prints the default message if there are
+ * no messages in the reply.
+ */
 void
 S9sRpcClient::printMessages(
         const S9sString &defaultMessage,
@@ -381,7 +385,6 @@ S9sRpcClient::setConfig(
     retval = executeRequest(uri, request);
     return retval;
 }
-
 
 bool
 S9sRpcClient::ping()
