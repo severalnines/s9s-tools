@@ -164,7 +164,7 @@ function testJobOperations()
     expected="One of the --list, --log and --wait options is mandatory."
     output=$($S9S job --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
@@ -173,7 +173,7 @@ function testJobOperations()
     expected="The --list, --log and --wait options are mutually exclusive."
     output=$($S9S job --list --log --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
@@ -228,7 +228,7 @@ function testClusterOperations()
     local output
     local expected
 
-    expected="One of the following options is mandatory: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start, --create-account, --delete-account, --create-database, --grant."
+    expected="One of the following options is mandatory: --list, --stat, --create, --ping, --rolling-restart, --add-node, --create-report, --remove-node, --drop, --stop, --start, --create-account, --delete-account, --create-database, --grant."
     output=$($S9S cluster 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."
@@ -237,10 +237,10 @@ function testClusterOperations()
         return 1
     fi
     
-    expected="The following options are mutually exclusive: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start, --create-account, --delete-account, --create-database, --grant."
+    expected="The following options are mutually exclusive: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start, --create-account, --create-report, --delete-account, --create-database, --grant."
     output=$($S9S cluster --list --start 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
@@ -260,7 +260,7 @@ function testNodeOperations()
     expected="One of the --list, --list-config, --change-config, --stat and --set options is mandatory."
     output=$($S9S node 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
@@ -304,19 +304,19 @@ function testUserOperations()
     local output
     local expected
 
-    expected="One of the --list, --whoami and --create options is mandatory."
+    expected="One of the --list, --whoami, --set and --create options is mandatory."
     output=$($S9S user 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
     fi
     
-    expected="The --list, --whoami and --create options are mutually exclusive."
+    expected="The --list, --whoami, --set and --create options are mutually exclusive."
     output=$($S9S user --list --create 2>&1)
     if [ "$output" != "$expected" ]; then
-        failure "Error message not as expected when operation is missing."
+        failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
         return 1
