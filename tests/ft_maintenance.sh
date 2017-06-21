@@ -103,7 +103,7 @@ fi
 #
 function dateFormat()
 {
-    date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
+    TZ=GMT date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
 }
 
 #

@@ -474,8 +474,10 @@ S9sDateTime::toString(
         case CompactFormat:
             if (isToday())
             {
-                retval.sprintf("%02d:%02d:%02d",
-                        lt->tm_hour, lt->tm_min, lt->tm_sec);
+                char buffer[80];
+
+                strftime(buffer, sizeof(buffer), "%H:%M:%S", lt);
+                retval = buffer;
             } else {
                 retval.sprintf("%04d-%02d-%02d %02d:%02d:%02d",
                         lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
@@ -623,18 +625,22 @@ S9sDateTime::parse(
         const S9sString &input,
         int              *length)
 {
+    bool retval = false;
     if (parseLogFileFormat(input, length))
-        return true;
+        retval = true;
     else if (parseMySqlLogFileFormat(input, length))
-        return true;
+        retval = true;
     else if (parseMySqlShortLogFormat(input, length))
-        return true;
+        retval = true;
     else if (parseMySqlShortLogFormatNoLeadZero(input, length))
-        return true;
+        retval = true;
     else if (parseTzFormat(input, length))
-        return true;
+        retval = true;
 
-    return false;
+    S9S_DEBUG("***  input : %s", STR(input));
+    S9S_DEBUG("*** retval : %s", retval ? "true" : "false");
+    S9S_DEBUG("***  value : %s", STR(toString()));
+    return retval;
 }
 
 S9sString
@@ -1021,6 +1027,16 @@ S9sDateTime::parseTzFormat(
         return false;
     }
 
+    S9S_WARNING("*** fields       : %d", fields);
+    S9S_WARNING("*** year         : %d", year);
+    S9S_WARNING("*** month        : %d", month);
+    S9S_WARNING("*** monthDay     : %d", monthDay);
+    S9S_WARNING("*** hour         : %d", hour);
+    S9S_WARNING("*** minute       : %d", minute);
+    S9S_WARNING("*** second       : %d", second);
+    S9S_WARNING("*** milliseconds : %d", milliseconds);
+    S9S_WARNING("*** timezone     : %d", timezone);
+
     //
     // Transforming and checking.
     //
@@ -1044,9 +1060,15 @@ S9sDateTime::parseTzFormat(
     
         timezone /= 100;
         timezone *= 60 * 60;
+        
+        S9S_WARNING("*** timezone     : %d", timezone);
+        S9S_WARNING("*** timeZone()   : %d", timeZone());
+        S9S_WARNING("*** dayLight()   : %d", dayLight());
+        S9S_WARNING("*** mktime()     : %s", S9S_TIME_T(m_timeSpec.tv_sec));
 
         m_timeSpec.tv_sec += timezone;
         m_timeSpec.tv_sec -= timeZone();
+
         
         if (builtTime.tm_isdst)
             m_timeSpec.tv_sec += dayLight();
