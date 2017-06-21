@@ -24,14 +24,18 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+ 
+  $MYNAME - Test script for to check ndb clusters.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
+ --install        Just install the cluster and exit.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -40,7 +44,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -77,6 +81,16 @@ while true; do
             PRINT_COMMANDS="true"
             ;;
 
+        --install)
+            shift
+            OPTION_INSTALL="--install"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -96,17 +110,6 @@ if [ -z $(which pip-container-create) ]; then
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
-
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
-}
 
 #
 # $1: the name of the cluster
@@ -343,14 +346,18 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateCluster
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
+    #runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode
