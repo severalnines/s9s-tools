@@ -393,7 +393,7 @@ function testDeletePeriods()
 #
 function testClusterMaintenance()
 {
-    local reason="cluster maintenance $$"
+    local reason="cluster_maintenance_$$"
 
     #
     # Creating a maintenance period that expires real soon.
