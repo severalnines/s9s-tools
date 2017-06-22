@@ -444,7 +444,7 @@ S9sRpcClient::ping()
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
-    S9sString      uri = "/v2";
+    S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
