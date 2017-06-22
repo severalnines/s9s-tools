@@ -236,11 +236,11 @@ S9sRpcClient::authenticate()
     }
 
     /*
-     * First request, 'login'
+     * First request.
      */
     request = S9sVariantMap();
-    request["operation"]    = "login";
-    request["username"]     = options->userName();
+    request["operation"]    = "authenticate";
+    request["user_name"]    = options->userName();
 
     retval = executeRequest(uri, request);
     if (!retval)
@@ -254,6 +254,9 @@ S9sRpcClient::authenticate()
     // create an RSA-SHA256 signature using user's privkey
     rsa.signRsaSha256(challenge, signature);
 
+    /*
+     * Second request.
+     */
     request = S9sVariantMap();
     request["operation"]    = "response";
     request["signature"]    = signature;
