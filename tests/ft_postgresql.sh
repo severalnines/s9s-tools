@@ -454,7 +454,7 @@ function testCreateDatabase()
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
         --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
-        --batch
+        --batch --verbose --print-json
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"

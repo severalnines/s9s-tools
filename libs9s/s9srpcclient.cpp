@@ -442,7 +442,6 @@ S9sRpcClient::setConfig(
 bool
 S9sRpcClient::ping()
 {
-    S9sOptions    *options = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
     S9sString      uri = "/v2";
@@ -451,7 +450,6 @@ S9sRpcClient::ping()
 
     request["operation"]       = "ping";
     request["request_created"] = timeString;
-    request["user"]            = options->userName();
     
     retval = executeRequest(uri, request);
 
