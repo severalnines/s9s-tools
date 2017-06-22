@@ -33,6 +33,7 @@ class S9sRpcClientPrivate
 
     private:
         int             m_referenceCounter;
+        ulonglong       m_requestId;
         int             m_socketFd;
         S9sString       m_hostName;
         int             m_port;

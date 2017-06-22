@@ -3058,6 +3058,7 @@ S9sRpcClient::executeRequest(
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
 
     request["request_created"] = timeString;
+    request["request_id"]      = ++m_priv->m_requestId;
 
     return doExecuteRequest(uri, request.toString());
 }
