@@ -897,7 +897,7 @@ S9sRpcClient::rollingRestart(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Rolling Restart";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -936,7 +936,6 @@ S9sRpcClient::createReport(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Error Report";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -1182,7 +1181,6 @@ S9sRpcClient::createGaleraCluster(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Galera Cluster";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -1262,7 +1260,6 @@ S9sRpcClient::createMySqlReplication(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -1339,7 +1336,6 @@ S9sRpcClient::createGroupReplication(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -1423,7 +1419,7 @@ S9sRpcClient::createNdbCluster(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create NDB Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1491,7 +1487,7 @@ S9sRpcClient::createPostgreSql(
     job["class_name"]    = "CmonJobInstance";
     job["title"]         = "Setup PostgreSQL Server";
     job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1651,7 +1647,7 @@ S9sRpcClient::addNode(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1756,7 +1752,7 @@ S9sRpcClient::addReplicationSlave(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Slave to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1845,7 +1841,7 @@ S9sRpcClient::addHaProxy(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add HaProxy to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1910,7 +1906,7 @@ S9sRpcClient::addProxySql(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add ProxySQL to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1992,7 +1988,9 @@ S9sRpcClient::addMaxScale(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add MaxScale to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -2061,7 +2059,7 @@ S9sRpcClient::removeNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -2108,7 +2106,7 @@ S9sRpcClient::stopCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
 
@@ -2144,7 +2142,6 @@ S9sRpcClient::startCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Cluster";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2197,7 +2194,6 @@ S9sRpcClient::startNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2253,7 +2249,6 @@ S9sRpcClient::stopNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Stopping Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2310,7 +2305,6 @@ S9sRpcClient::restartNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restarting Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2358,7 +2352,7 @@ S9sRpcClient::dropCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -2446,7 +2440,6 @@ S9sRpcClient::createBackup()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Backup";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
@@ -2507,7 +2500,7 @@ S9sRpcClient::restoreBackup()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restore Backup";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
 
