@@ -189,7 +189,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    pip-say "The test to check maintenance periods is starting now."
+
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
@@ -230,6 +231,8 @@ function testCreateMaintenance()
 {
     local reason="test_$$_maintenance"
 
+    pip-say "Testing maintenance now."
+
     #
     # Creating a maintenance period that expires real soon.
     #
@@ -238,14 +241,14 @@ function testCreateMaintenance()
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
-        --reason="$reason" #\ --batch
+        --reason="$reason" 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
+        failure "Exit code is not 0 while creating maintenance."
     fi
-
+    
     #
     # The maintenance period should be there now.
     #
@@ -272,6 +275,8 @@ function testCreateMaintenance()
 
 function testCreateTwoPeriods()
 {
+    pip-say "Testing two maintenance periods now."
+
     #
     # Creating a maintenance period that expires real soon and an other one that
     # expires a bit later.
@@ -336,6 +341,8 @@ function testDeletePeriods()
     #
     # Creating maintenance periods.
     #
+    pip-say "Testing deleting of maintenance now."
+
     mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
@@ -374,7 +381,7 @@ function testDeletePeriods()
     
     for uuid in $(s9s maintenance --list --batch); do
         #echo "-> $uuid"
-        s9s maintenance --delete --uuid=$uuid --batch
+        s9s maintenance --delete --uuid=$uuid --batch 
         if [ "$exitCode" -ne 0 ]; then
             failure "Exit code is not 0 while removing maintenance."
         fi
@@ -395,6 +402,8 @@ function testClusterMaintenance()
 {
     local reason="cluster_maintenance_$$"
 
+    pip-say "Testing cluster maintenance now."
+    
     #
     # Creating a maintenance period that expires real soon.
     #
