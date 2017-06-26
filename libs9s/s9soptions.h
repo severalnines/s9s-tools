@@ -211,6 +211,7 @@ class S9sOptions
         bool isSetRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
+        bool isRegisterRequested() const;
         bool isDeleteRequested() const;
         bool isPingRequested() const;
         bool isRestoreRequested() const;

@@ -151,6 +151,7 @@ class S9sRpcClient
         bool createReport(const int clusterId);
 
         bool createCluster();
+        bool registerCluster();
         bool createNode();
         bool removeNode();
         bool stopCluster();
@@ -229,6 +230,10 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 bool                  uninstall);
+
+        bool registerPostgreSql(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
         
         // Low level methods that create/install a new node and add it to a
         // cluster.

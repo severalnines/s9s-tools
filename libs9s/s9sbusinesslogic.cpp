@@ -116,6 +116,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createCluster();
             maybeJobRegistered(client, 0, success);
+        } else if (options->isRegisterRequested())
+        {
+            success = client.registerCluster();
+            maybeJobRegistered(client, 0, success);
         } else if (options->isRollingRestartRequested())
         {
             success = client.rollingRestart(clusterId);

@@ -138,6 +138,7 @@ enum S9sOptionType
     OptionCreateReport,
     OptionLimit,
     OptionOffset,
+    OptionRegister,
 };
 
 /**
@@ -1784,6 +1785,16 @@ bool
 S9sOptions::isCreateRequested() const
 {
     return getBool("create");
+}
+
+/**
+ * \returns true if the --register command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isRegisterRequested() const
+{
+    return getBool("register");
 }
 
 /**
@@ -3895,6 +3906,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isCreateDatabaseRequested())
         countOptions++;
+    
+    if (isRegisterRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -3903,7 +3917,7 @@ S9sOptions::checkOptionsCluster()
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
             " --create-report,"
-            " --delete-account, --create-database, --grant"
+            " --delete-account, --create-database, --grant, --register"
             ".";
 
         m_exitStatus = BadOptions;
@@ -3915,7 +3929,7 @@ S9sOptions::checkOptionsCluster()
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --create-report,"
             " --remove-node, --drop, --stop, --start, --create-account,"
-            " --delete-account, --create-database, --grant"
+            " --delete-account, --create-database, --grant, --register"
             ".";
 
         m_exitStatus = BadOptions;
@@ -4952,6 +4966,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
         { "create",           no_argument,       0, OptionCreate          },
+        { "register",         no_argument,       0, OptionRegister        },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -5174,6 +5189,11 @@ S9sOptions::readOptionsCluster(
                 m_options["create"] = true;
                 break;
             
+            case OptionRegister:
+                // --register
+                m_options["register"] = true;
+                break;
+
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);

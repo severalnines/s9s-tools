@@ -46,6 +46,8 @@ EXAMPLES
   together with the first node that is going to be the master:
 
   ./ft_postgresql.sh --log --print-commands testCreateCluster testAddNode testAddNode
+
+
 EOF
     exit 1
 }
