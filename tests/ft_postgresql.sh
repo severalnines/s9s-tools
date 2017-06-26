@@ -503,6 +503,10 @@ function testCreateBackup()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating a backup"
     fi
+
+    s9s backup --list --long
+
+    s9s backup --list --verbose --print-json
 }
 
 #

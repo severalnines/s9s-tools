@@ -1141,7 +1141,6 @@ S9sRpcClient::createGaleraCluster(
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
-    bool            retval;
     
     if (hosts.size() < 1u)
     {
@@ -1157,40 +1156,47 @@ S9sRpcClient::createGaleraCluster(
             hostNames << hosts[idx];
     }
 
+    // 
     // The job_data describing the cluster.
-    jobData["cluster_type"]    = "galera";
-    jobData["mysql_hostnames"] = hostNames;
-    jobData["vendor"]          = vendor;
-    jobData["mysql_version"]   = mySqlVersion;
+    //
+    jobData["cluster_type"]     = "galera";
+    jobData["mysql_hostnames"]  = hostNames;
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
-    jobData["ssh_user"]        = osUserName;
+    jobData["ssh_user"]         = osUserName;
     //jobData["repl_user"]        = options->dbAdminUserName();
-    jobData["mysql_password"]  = options->dbAdminPassword();
+    jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_key"]      = options->osKeyFile();
 
+    // 
     // The jobspec describing the command.
-    jobSpec["command"]    = "create_cluster";
-    jobSpec["job_data"]   = jobData;
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
 
+    // 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Create Galera Cluster";
-    job["job_spec"]       = jobSpec;
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Create Galera Cluster";
+    job["job_spec"]             = jobSpec;
 
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+
+    // 
     // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
     
-    retval = executeRequest(uri, request);
-    
-    return retval;
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1452,7 +1458,6 @@ S9sRpcClient::createPostgreSql(
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
-    bool            retval;
 
     if (hosts.size() != 1u)
     {
@@ -1462,7 +1467,9 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    // 
     // The job_data describing the cluster.
+    //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     
@@ -1479,25 +1486,29 @@ S9sRpcClient::createPostgreSql(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
+    // 
     // The jobspec describing the command.
-    jobSpec["command"]   = "setup_server";
-    jobSpec["job_data"]  = jobData;
+    //
+    jobSpec["command"]          = "setup_server";
+    jobSpec["job_data"]         = jobData;
 
+    // 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Setup PostgreSQL Server";
-    job["job_spec"]      = jobSpec;
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Setup PostgreSQL Server";
+    job["job_spec"]             = jobSpec;
 
     if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
+        job["scheduled"]        = options->schedule(); 
 
+    // 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
     
-    retval = executeRequest(uri, request);
-    
-    return retval;
+    return executeRequest(uri, request);
 }
 
 bool 
@@ -2855,6 +2866,9 @@ S9sRpcClient::setUser()
         return false;
     }
 
+    properties["class_name"] = "CmonUser";
+    properties["user_name"]  = options->extraArgument(0);
+
     if (!options->firstName().empty())
         properties["first_name"] = options->firstName();
     
@@ -2868,8 +2882,7 @@ S9sRpcClient::setUser()
         properties["email_address"] = options->emailAddress();
 
     request["operation"]  = "setUser";
-    request["user_name"]  = options->extraArgument(0);
-    request["properties"] = properties;
+    request["user"]       = properties;
 
     retval = executeRequest(uri, request);
 
