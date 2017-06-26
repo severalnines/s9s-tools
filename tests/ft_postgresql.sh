@@ -31,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check various error conditions.
+  $MYNAME - Tests various features on PostgreSql. 
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -51,7 +51,6 @@ EXAMPLES
 EOF
     exit 1
 }
-
 
 ARGS=$(\
     getopt -o h \
@@ -121,37 +120,6 @@ if [ -z $(which pip-container-create) ]; then
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
 
 function grant_user()
 {
