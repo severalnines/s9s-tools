@@ -25,13 +25,16 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+ 
+  $MYNAME - Tests group replication clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers. 
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers. 
+  --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
