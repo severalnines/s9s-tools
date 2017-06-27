@@ -214,6 +214,10 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
         
+        bool registerMySqlReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
+        
         bool createGroupReplication(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
