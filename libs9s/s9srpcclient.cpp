@@ -1098,9 +1098,12 @@ S9sRpcClient::registerCluster()
     if (options->clusterType() == "postgresql")
     {
         success = registerPostgreSql(hosts, osUserName);
+    } else if (options->clusterType() == "galera")
+    {
+        success = registerGaleraCluster(hosts, osUserName);
     } else {
         PRINT_ERROR("Register cluster is currently implemented only for "
-                "PostgreSql.");
+                "some cluster types.");
         options->setExitStatus(S9sOptions::BadOptions);
         return success;
     }
@@ -1172,7 +1175,6 @@ S9sRpcClient::createGaleraCluster(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
@@ -1183,25 +1185,15 @@ S9sRpcClient::createGaleraCluster(
         return false;
     }
     
-    for (uint idx = 0; idx < hosts.size(); ++idx)
-    {
-        if (hosts[idx].isNode())
-            hostNames << hosts[idx].toNode().hostName();
-        else
-            hostNames << hosts[idx];
-    }
-
     // 
     // The job_data describing the cluster.
     //
     jobData["cluster_type"]     = "galera";
     jobData["nodes"]            = nodesField(hosts);
-    //jobData["mysql_hostnames"]  = hostNames;
     jobData["vendor"]           = vendor;
     jobData["mysql_version"]    = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
-    //jobData["repl_user"]        = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (!options->clusterName().empty())
@@ -1259,12 +1251,13 @@ S9sRpcClient::registerGaleraCluster(
     // 
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "postgresql_single";
+    jobData["cluster_type"]     = "galera";
     jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
     jobData["ssh_user"]         = osUserName;
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]  = options->osKeyFile();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -1279,7 +1272,7 @@ S9sRpcClient::registerGaleraCluster(
     // The job instance describing how the job will be executed.
     //
     job["class_name"]           = "CmonJobInstance";
-    job["title"]                = "Register PostgreSQL";
+    job["title"]                = "Register Galera";
     job["job_spec"]             = jobSpec;
     
     if (!options->schedule().empty())
@@ -1636,7 +1629,7 @@ S9sRpcClient::registerPostgreSql(
     jobData["ssh_user"]         = osUserName;
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]  = options->osKeyFile();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();

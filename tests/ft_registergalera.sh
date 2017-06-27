@@ -31,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test register cluster on PostgreSql.
+  $MYNAME - Test register cluster on Galera.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -129,27 +129,33 @@ function grant_user()
 #
 function testCreateCluster()
 {
-    local nodes
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    pip-say "The test to create Galera cluster is starting now."
     nodeName=$(create_node)
-    nodes+="$nodeName:8089;"
+    NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
+    nodeName=$(create_node)
+    NODES+="$nodeName;"
+    ALL_CREATED_IPS+=" $nodeName"
+    
+    nodeName=$(create_node)
+    NODES+="$nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
+    
     #
-    # Creating a PostgreSQL cluster.
+    # Creating a Galera cluster.
     #
     mys9s cluster \
         --create \
-        --cluster-type=postgresql \
-        --nodes="$nodes" \
+        --cluster-type=galera \
+        --nodes="$NODES" \
+        --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --db-admin="postmaster" \
-        --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version=5.6 \
         $LOG_OPTION
 
     exitCode=$?
@@ -201,9 +207,10 @@ function testRegister()
     #
     mys9s cluster \
         --register \
-        --cluster-type=postgresql \
-        --nodes=$FIRST_ADDED_NODE:8089 \
-        --cluster-name=my_cluster \
+        --cluster-type=galera \
+        --nodes=$NODES \
+        --vendor=percona \
+        --cluster-name=my_cluster_$$ \
         $LOG_OPTION
 
     exitCode=$?
