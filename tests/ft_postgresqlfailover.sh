@@ -161,38 +161,6 @@ function create_node()
 }
 
 #
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    printVerbose "Finding existing cluster ID."
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-#
 # Prints the state of the node, e.g. CmonHostOnline.
 #
 function wait_for_node_become_slave()

@@ -137,37 +137,6 @@ brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
 EOF
 }
 
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name" 2>/dev/null)
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
 function grant_user()
 {
     $S9S user --create --cmon-user=$USER --generate-key \
