@@ -1104,6 +1104,9 @@ S9sRpcClient::registerCluster()
     } else if (options->clusterType() == "mysqlreplication")
     {
         success = registerMySqlReplication(hosts, osUserName);
+    } else if (options->clusterType() == "group_replication")
+    {
+        success = registerGroupReplication(hosts, osUserName);
     } else {
         PRINT_ERROR("Register cluster is currently implemented only for "
                 "some cluster types.");
@@ -1425,6 +1428,7 @@ S9sRpcClient::registerMySqlReplication(
     
     return executeRequest(uri, request);
 }
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -1499,6 +1503,66 @@ S9sRpcClient::createGroupReplication(
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * http://52.58.107.236/cmon-docs/current/cmonjobs.html#add_cluster1
+ */
+bool
+S9sRpcClient::registerGroupReplication(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
+    
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "group_replication";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"]  = options->osKeyFile();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+    
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Register MySql Replication";
+    job["job_spec"]             = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+    
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
 }
 
 /**

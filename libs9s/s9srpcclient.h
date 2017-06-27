@@ -225,6 +225,10 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
 
+        bool registerGroupReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
+
         bool createNdbCluster(
                 const S9sVariantList &mySqlHosts,
                 const S9sVariantList &mgmdHosts,
