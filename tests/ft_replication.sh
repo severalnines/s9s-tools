@@ -106,37 +106,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-function reset_config()
-{
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
-
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
 function grant_user()
 {
     $S9S user --create --cmon-user=$USER --generate-key \

@@ -106,21 +106,6 @@ function dateFormat()
     TZ=GMT date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
 }
 
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    if [ -z "$ip" ]; then
-        echo "Failed to create container." >&2
-    fi
-
-    echo $ip
-}
-
 function grant_user()
 {
     $S9S user --create --cmon-user=$USER --generate-key \

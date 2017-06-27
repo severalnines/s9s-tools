@@ -98,17 +98,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
-}
-
 function grant_user()
 {
     $S9S user --create --cmon-user=$USER --generate-key \
