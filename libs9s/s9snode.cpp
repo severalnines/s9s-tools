@@ -961,6 +961,8 @@ S9sNode::nodeTypeFlag() const
         return 'h';
     else if (theNodeType == "garbd")
         return 'a';
+    else if (theNodeType == "grouprepl")
+        return 'r';
 
     if (className() == "CmonMySqlHost")
         return 's';
