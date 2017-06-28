@@ -4,15 +4,19 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+VERSION="0.0.3"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
+OPTION_INSTALL=""
+PIP_CONTAINER_CREATE=$(which "pip-container-create")
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER="core1"
 
-# The IP of the node we added last. Empty if we did not.
+# The IP of the node we added first and last. Empty if we did not.
+FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
@@ -27,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for to check ndb clusters.
+  $MYNAME - Test register cluster on PostgreSql.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -40,7 +44,6 @@ Usage:
 EOF
     exit 1
 }
-
 
 ARGS=$(\
     getopt -o h \
@@ -103,7 +106,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
@@ -113,30 +116,12 @@ fi
 
 function grant_user()
 {
-    $S9S user --create --cmon-user=$USER --generate-key \
+    $S9S user \
+        --create \
+        --cmon-user=$USER \
+        --controller="https://localhost:9556" \
+        --generate-key \
         >/dev/null 2>/dev/null
-}
-
-#
-#
-#
-function testPing()
-{
-    pip-say "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
-    fi
 }
 
 #
@@ -144,25 +129,24 @@ function testPing()
 #
 function testCreateCluster()
 {
-    local nodes
     local nodeName
     local exitCode
 
     pip-say "The test to create NDB cluster is starting now."
     nodeName=$(create_node)
-    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    NODES+="mysql://$nodeName;ndb_mgmd://$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
 
     nodeName=$(create_node)
-    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    NODES+="mysql://$nodeName;ndb_mgmd://$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
-    nodes+="ndbd://$nodeName;"
+    NODES+="ndbd://$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
-    nodes+="ndbd://$nodeName"
+    NODES+="ndbd://$nodeName"
     ALL_CREATED_IPS+=" $nodeName"
 
     #
@@ -171,7 +155,7 @@ function testCreateCluster()
     mys9s cluster \
         --create \
         --cluster-type=ndb \
-        --nodes="$nodes" \
+        --nodes="$NODES" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
@@ -188,90 +172,6 @@ function testCreateCluster()
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
-    fi
-}
-
-#
-# This test will add one new node to the cluster.
-#
-function testAddNode()
-{
-    local nodes
-    local exitCode
-
-    pip-say "The test to add node is starting now."
-    printVerbose "Creating Node..."
-    nodeName=$(create_node)
-    ALL_CREATED_IPS+=" $nodeName"
-    LAST_ADDED_NODE=$nodeName
-    nodes+="$nodeName"
-
-    #
-    # Adding a node to the cluster.
-    # We can do this by cluster ID and we also can do this by cluster name, but
-    # it takes a bit too long to test both.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-name=$CLUSTER_NAME \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This test will remove the last added node.
-#
-function testRemoveNode()
-{
-    if [ -z "$LAST_ADDED_NODE" ]; then
-        printVerbose "Skipping test."
-    fi
-    
-    pip-say "The test to remove node is starting now."
-    
-    #
-    # Removing the last added node.
-    #
-    mys9s cluster \
-        --remove-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$LAST_ADDED_NODE" \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-}
-
-#
-# This will perform a rolling restart on the cluster
-#
-function testRollingRestart()
-{
-    local exitCode
-    
-    pip-say "The test of rolling restart is starting now."
-
-    #
-    # Calling for a rolling restart.
-    #
-    mys9s cluster \
-        --rolling-restart \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
     fi
 }
 
@@ -299,16 +199,30 @@ function testDrop()
     fi
 }
 
-#
-# This will destroy the containers we created.
-#
-function testDestroyNodes()
+function testRegister()
 {
-    pip-say "The test is now destroying the nodes."
-    pip-container-destroy \
-        --server=$CONTAINER_SERVER \
-        $ALL_CREATED_IPS \
-        >/dev/null 2>/dev/null
+    local exitCode 
+
+    pip-say "The test to register a cluster is starting."
+
+    #
+    # Registering the cluester that we just created and dropped.
+    #
+    mys9s cluster \
+        --register \
+        --cluster-type=ndb \
+        --nodes="$NODES" \
+        --cluster-name=my_cluster_$$ \
+        $LOG_OPTION
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    s9s cluster --list --long
+    s9s node --list --long
 }
 
 #
@@ -326,13 +240,9 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    #runFunctionalTest testPing
     runFunctionalTest testCreateCluster
-    runFunctionalTest testAddNode
-    runFunctionalTest testRemoveNode
-    runFunctionalTest testRollingRestart
     runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
+    runFunctionalTest testRegister
 fi
 
 if [ "$FAILED" == "no" ]; then
@@ -342,5 +252,4 @@ else
 fi
 
 endTests
-
 

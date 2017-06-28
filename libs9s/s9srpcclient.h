@@ -237,6 +237,12 @@ class S9sRpcClient
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
+        
+        bool registerNdbCluster(
+                const S9sVariantList &mySqlHosts,
+                const S9sVariantList &mgmdHosts,
+                const S9sVariantList &ndbdHosts,
+                const S9sString      &osUserName);
 
         bool createPostgreSql(
                 const S9sVariantList &hosts,

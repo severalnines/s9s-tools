@@ -1107,6 +1107,35 @@ S9sRpcClient::registerCluster()
     } else if (options->clusterType() == "group_replication")
     {
         success = registerGroupReplication(hosts, osUserName);
+    } else if (options->clusterType() == "ndb" || 
+            options->clusterType() == "ndbcluster")
+    {
+        S9sVariantList mySqlHosts, mgmdHosts, ndbdHosts;
+
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode     node     = hosts[idx].toNode();
+            S9sString   protocol = node.protocol().toLower();
+
+            if (protocol == "ndbd")
+            {
+                ndbdHosts << node;
+            } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
+            {
+                mgmdHosts << node;
+            } else if (protocol == "mysql" || protocol.empty())
+            {
+                mySqlHosts << node;
+            } else {
+                PRINT_ERROR(
+                        "The protocol '%s' is not supported.", 
+                        STR(protocol));
+                return false;
+            }
+        }
+
+        success = registerNdbCluster(
+                mySqlHosts, mgmdHosts, ndbdHosts, osUserName);
     } else {
         PRINT_ERROR("Register cluster is currently implemented only for "
                 "some cluster types.");
@@ -1649,6 +1678,82 @@ S9sRpcClient::createNdbCluster(
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ *
+ */
+bool
+S9sRpcClient::registerNdbCluster(
+        const S9sVariantList &mySqlHosts,
+        const S9sVariantList &mgmdHosts,
+        const S9sVariantList &ndbdHosts,
+        const S9sString      &osUserName)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    
+    for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
+    {
+        if (mySqlHosts[idx].isNode())
+            mySqlHostNames << mySqlHosts[idx].toNode().hostName();
+        else
+            mySqlHostNames << mySqlHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < mgmdHosts.size(); ++idx)
+    {
+        if (mgmdHosts[idx].isNode())
+            mgmdHostNames << mgmdHosts[idx].toNode().hostName();
+        else
+            mgmdHostNames << mgmdHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < ndbdHosts.size(); ++idx)
+    {
+        if (ndbdHosts[idx].isNode())
+            ndbdHostNames << ndbdHosts[idx].toNode().hostName();
+        else
+            ndbdHostNames << ndbdHosts[idx];
+    }
+    
+    // The job_data describing the cluster.
+    jobData["cluster_type"]     = "mysqlcluster";
+    jobData["type"]             = "mysql";
+    jobData["mysql_hostnames"]  = mySqlHostNames;
+    jobData["mgmd_hostnames"]   = mgmdHostNames;
+    jobData["ndbd_hostnames"]   = ndbdHostNames;
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"] = options->osKeyFile();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "add_cluster";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Register NDB Cluster";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
+    
+    return executeRequest(uri, request);
 }
 
 /**
