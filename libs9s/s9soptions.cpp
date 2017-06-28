@@ -1343,6 +1343,23 @@ S9sOptions::userName(
     return retval;
 }
 
+S9sString
+S9sOptions::password() const
+{
+    S9sString retval;
+
+    if (m_options.contains("password"))
+        retval = m_options.at("password").toString();
+
+    return retval;
+}
+
+bool
+S9sOptions::hasPassword() const
+{
+    return m_options.contains("password");
+}
+
 /**
  * \returns the account that was provided using the --account command line
  *   options.
@@ -2604,6 +2621,7 @@ S9sOptions::printHelpJob()
 "  --date-format=FORMAT       The format of the dates printed.\n"
 "  --job-id=ID                The ID of the job.\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
@@ -2624,6 +2642,7 @@ S9sOptions::printHelpProcess()
 "  --top                      Continuosly print top processes.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
 "  --update-freq=SECS         The screen update frequency.\n"
 "\n"
@@ -2646,6 +2665,7 @@ S9sOptions::printHelpBackup()
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --backup-format            The format string used while printing backups.\n"
@@ -2680,6 +2700,7 @@ S9sOptions::printHelpMaintenance()
 "  --reason=STRING            The reason for the maintenance.\n"
 "  --start=DATE&TIME          The start of the maintenance period.\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --uuid=UUID                The UUID to identify the maintenance period.\n"
 "\n"
     );
@@ -2714,6 +2735,7 @@ S9sOptions::printHelpUser()
 ""
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --create-group             Create the group if it doesn't exist.\n"
@@ -2766,6 +2788,7 @@ S9sOptions::printHelpCluster()
 "  --provider-version=VER     The version of the software.\n"
 "    the following types are supported: galera, mysqlreplication,\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
 "\n");
@@ -2790,6 +2813,7 @@ S9sOptions::printHelpNode()
 "  --cluster-name=NAME        Name of the cluster to list.\n"
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "\n"
 "  --begin=TIMESTAMP          The start of the graph interval.\n"
 "  --end=TIMESTAMP            The end of teh graph interval.\n"
@@ -2815,6 +2839,7 @@ S9sOptions::printHelpScript()
 "  --tree                     Print the scripts available on the controller.\n"
 "\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
 "\n"
     );
@@ -2837,6 +2862,7 @@ S9sOptions::readOptionsNode(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -2927,6 +2953,11 @@ S9sOptions::readOptionsNode(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -3170,6 +3201,7 @@ S9sOptions::readOptionsBackup(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -3251,6 +3283,11 @@ S9sOptions::readOptionsBackup(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -3512,6 +3549,7 @@ S9sOptions::readOptionsLog(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -3589,6 +3627,11 @@ S9sOptions::readOptionsLog(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -4177,6 +4220,7 @@ S9sOptions::readOptionsProcess(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -4234,6 +4278,11 @@ S9sOptions::readOptionsProcess(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -4340,37 +4389,38 @@ S9sOptions::readOptionsUser(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'                },
-        { "debug",            no_argument,       0, OptionDebug        },
-        { "verbose",          no_argument,       0, 'v'                },
-        { "version",          no_argument,       0, 'V'                },
-        { "controller",       required_argument, 0, 'c'                },
-        { "controller-port",  required_argument, 0, 'P'                },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls       },
-        { "rpc-token",        required_argument, 0, 't'                },
-        { "long",             no_argument,       0, 'l'                },
-        { "print-json",       no_argument,       0, OptionPrintJson    },
-        { "color",            optional_argument, 0, OptionColor        },
-        { "config-file",      required_argument, 0, OptionConfigFile   },
-        { "batch",            no_argument,       0, OptionBatch        },
-        { "no-header",        no_argument,       0, OptionNoHeader     },
+        { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "generate-key",     no_argument,       0, 'g'                }, 
-        { "cmon-user",        required_argument, 0, 'u'                }, 
-        { "list",             no_argument,       0, 'L'                },
-        { "whoami",           no_argument,       0, OptionWhoAmI       },
-        { "create",           no_argument,       0, OptionCreate       },
-        { "set",              no_argument,       0, OptionSet          },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "list",             no_argument,       0, 'L'                   },
+        { "whoami",           no_argument,       0, OptionWhoAmI          },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "set",              no_argument,       0, OptionSet             },
        
         // Options about the user.
-        { "group",            required_argument, 0, OptionGroup        },
-        { "create-group",     no_argument,       0, OptionCreateGroup  },
-        { "first-name",       required_argument, 0, OptionFirstName    },
-        { "last-name",        required_argument, 0, OptionLastName     },
-        { "title",            required_argument, 0, OptionTitle        },
-        { "email-address",    required_argument, 0, OptionEmailAddress },
-        { "user-format",      required_argument, 0, OptionUserFormat   }, 
+        { "group",            required_argument, 0, OptionGroup           },
+        { "create-group",     no_argument,       0, OptionCreateGroup     },
+        { "first-name",       required_argument, 0, OptionFirstName       },
+        { "last-name",        required_argument, 0, OptionLastName        },
+        { "title",            required_argument, 0, OptionTitle           },
+        { "email-address",    required_argument, 0, OptionEmailAddress    },
+        { "user-format",      required_argument, 0, OptionUserFormat      }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4465,6 +4515,11 @@ S9sOptions::readOptionsUser(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'g':
@@ -4571,6 +4626,7 @@ S9sOptions::readOptionsMaintenance(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -4637,6 +4693,11 @@ S9sOptions::readOptionsMaintenance(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -4952,6 +5013,7 @@ S9sOptions::readOptionsCluster(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
@@ -5049,6 +5111,11 @@ S9sOptions::readOptionsCluster(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -5339,32 +5406,33 @@ S9sOptions::readOptionsJob(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp        },
-        { "debug",            no_argument,       0, OptionDebug       },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "cmon-user",        required_argument, 0, 'u'               }, 
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0,  6                },
-        { "rpc-token",        required_argument, 0, 't'               },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0,  OptionPrintJson  },
-        { "config-file",      required_argument, 0,  OptionConfigFile },
-        { "color",            optional_argument, 0,  OptionColor      },
-        { "date-format",      required_argument, 0,  OptionDateFormat },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0,  6                    },
+        { "rpc-token",        required_argument, 0, 't'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "config-file",      required_argument, 0,  OptionConfigFile     },
+        { "color",            optional_argument, 0,  OptionColor          },
+        { "date-format",      required_argument, 0,  OptionDateFormat     },
 
         // Main Option
-        { "wait",             no_argument,       0,  5                },
-        { "log",              no_argument,       0, 'G'               },
-        { "list",             no_argument,       0, 'L'               },
+        { "wait",             no_argument,       0,  5                    },
+        { "log",              no_argument,       0, 'G'                   },
+        { "list",             no_argument,       0, 'L'                   },
 
         // Job Related Options
-        { "cluster-id",       required_argument, 0, 'i'               },
-        { "job-id",           required_argument, 0, OptionJobId       },
-        { "log-format",       required_argument, 0, OptionLogFormat   },
-        { "limit",            required_argument, 0, OptionLimit       },
-        { "offset",           required_argument, 0, OptionOffset      },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "job-id",           required_argument, 0, OptionJobId           },
+        { "log-format",       required_argument, 0, OptionLogFormat       },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
 
         { 0, 0, 0, 0 }
     };
@@ -5407,6 +5475,11 @@ S9sOptions::readOptionsJob(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -5532,6 +5605,7 @@ S9sOptions::readOptionsScript(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
@@ -5588,6 +5662,11 @@ S9sOptions::readOptionsScript(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
