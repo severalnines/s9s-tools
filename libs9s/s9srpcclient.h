@@ -52,6 +52,8 @@ class S9sRpcClient
                 bool             success);
 
         bool authenticate();
+        bool authenticateWithKey();
+        bool authenticateWithPassword();
 
         /*
          * The executers that send an RPC request and receive an RPC reply from

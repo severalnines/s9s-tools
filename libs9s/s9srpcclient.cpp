@@ -214,6 +214,39 @@ bool
 S9sRpcClient::authenticate()
 {
     S9sOptions    *options = S9sOptions::instance();
+
+    if (options->hasPassword())
+        return authenticateWithPassword();
+
+    return authenticateWithKey();
+}
+
+bool 
+S9sRpcClient::authenticateWithPassword()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/auth";
+    bool           retval;
+
+    request["operation"]    = "authenticateWithPassword";
+    request["user_name"]    = options->userName();
+    request["password"]     = options->password();
+    
+    retval = executeRequest(uri, request);
+    if (!retval)
+        return false;
+    
+    return reply().isOk();
+}
+
+/**
+ * Does the authentication with the private key.
+ */
+bool
+S9sRpcClient::authenticateWithKey()
+{
+    S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/v2/auth";
     S9sVariantMap  request;
