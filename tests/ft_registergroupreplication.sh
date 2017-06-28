@@ -155,6 +155,11 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    echo "testCreateCluster(): "
+    s9s cluster --list --long
+    s9s node --list --long
+    s9s node --list --node-format="%12R %N\n"
 }
 
 #
@@ -204,8 +209,10 @@ function testRegister()
         failure "The exit code is ${exitCode}"
     fi
 
+    echo "testRegister(): "
     s9s cluster --list --long
     s9s node --list --long
+    s9s node --list --node-format="%12R %N\n"
 }
 
 #

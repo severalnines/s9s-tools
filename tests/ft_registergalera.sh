@@ -219,8 +219,8 @@ function testRegister()
         failure "The exit code is ${exitCode}"
     fi
 
-    s9s cluster --list --long
-    s9s node --list --long
+    #s9s cluster --list --long
+    #s9s node --list --long
 }
 
 #
