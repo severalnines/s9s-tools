@@ -103,7 +103,7 @@ function _s9s()
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
-                opts+="--date-format= "
+                opts+="--date-format= --cmon-user= --password= "
 
                 opts+="--backup-id= --backup-format= "
                 opts+="--backup-directory= --backup-method= --databases= "
@@ -144,7 +144,7 @@ function _s9s()
                 opts+="--help --verbose --version " 
                 opts+="--config-file= "
                 opts+="--controller= --controller-port= "
-                opts+="--rpc-tls "
+                opts+="--rpc-tls --cmon-user= --password= "
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--only-ascii "
                 opts+="--wait --log --schedule= "
@@ -173,7 +173,8 @@ function _s9s()
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= --cmon-user= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--cmon-user= --password= "
            
                 opts+="--date-format= "
                 opts+="--job-id= --from= --until= --limit= --offset= "
@@ -199,7 +200,7 @@ function _s9s()
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
                 opts+="--date-format= end= --full-uuid --reason= --start= "
-                opts+="--cmon-user= --uuid="
+                opts+="--cmon-user= --password= --uuid="
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt+="--help "
@@ -229,7 +230,8 @@ function _s9s()
                 opts+="--help --verbose --version --config-file= --controller= "
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
-                opts+="--cluster-id= --cluster-name= --nodes= --cmon-user= "
+                opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--cmon-user= --password= "
 
                 opts+="--properties= --begin --end --force --graph= "
                 opts+="--node-format= --opt-group= --opt-name= --opt-value= "
@@ -254,7 +256,8 @@ function _s9s()
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
-                
+                opts+="--cmon-user= --password= "
+
                 opts+=$(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" )
             fi
         elif [[ ${COMP_WORDS[i]} == "process" ]]; then
@@ -264,7 +267,7 @@ function _s9s()
                 opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
-            main_opt="--list --whoami --create --help --set"
+            main_opt="--list --whoami --create --help --set --change-password "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -282,8 +285,9 @@ function _s9s()
                 opts+="--title= --email-address= "
                 opts+="--account= --with-database --db-name= --user-format= "
 
-                opts+="--cmon-user= "
-                opts+=$(s9s user --list)
+                opts+="--cmon-user= --password= "
+                opts+="--new-password= --old-password= "
+                opts+=$(s9s user --list 2>/dev/null)
             fi
         elif [[ ${COMP_WORDS[i]} == "metatype" ]]; then
             main_opt+="--help "
@@ -304,6 +308,7 @@ function _s9s()
                 opts+="--controller-port= --long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
+                opts+="--cmon-user= --password= "
                 opts+="--type= "
             fi
         fi

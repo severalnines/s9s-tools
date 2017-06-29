@@ -16,13 +16,17 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+.TP 
+.B \-\^\-change\-password
+Change the password of an existing user.
+
 .TP
-.B \-\-create
+.B \-\^\-create
 Register a new user or update an existing user on the controller and grant
 access to the ClusterControl system.
 
 .TP
-.B \-L, \-\-list
+.B \-L, \-\^\-list
 List the users registered for the ClusterControl controller. 
 
 .TP
@@ -30,26 +34,26 @@ List the users registered for the ClusterControl controller.
 Changes the specified properties of the user.
 
 .TP
-.B \-\-whoami
+.B \-\^\-whoami
 Same as \fB\-\-list\fR, but only lists the current user, the user that
 authenticated on the controller.
 
 .SS Generic Options
 
 .TP
-.B \-\-help
+.B \-\^\-help
 Print the help message and exist.
 
 .TP
-.B \-\-debug
+.B \-\^\-debug
 Print even the debug level messages.
 
 .TP
-.B \-v, \-\-verbose
+.B \-v, \-\^\-verbose
 Print more messages than normally.
 
 .TP
-.B \-V, \-\-version
+.B \-V, \-\^\-version
 Print version information and exit.
 
 .TP
@@ -62,13 +66,13 @@ part of the hostname (e.g. --controller="https://127.0.0.1:9556").
 The port where the Cmon Controller is waiting for connections.
 
 .TP
-.B \-l, \-\-long
+.B \-l, \-\^\-long
 This option is similar to the -l option for the standard ls UNIX utility
 program. If the program creates a list of objects this option will change its
 format to show more details.
 
 .TP
-.B \-\-print-json
+.B \-\^\-print-json
 The JSON strings will be printed while communicating with the controller. This 
 option is for debugging purposes.
 
@@ -80,13 +84,13 @@ is
 .BR never ", " always ", or " auto .
 
 .TP
-.B \-\-batch
+.B \-\^\-batch
 Print no messages. If the application created a job print only the job ID number
 and exit. If the command prints data do not use syntax highlight, headers,
 totals, only the pure table to be processed using filters.
 
 .TP
-.B \-\-no\-header
+.B \-\^\-no\-header
 Do not print headers for tables.
 
 .\"
@@ -108,15 +112,15 @@ Set the name of the group. For example when a new user is created this option
 can be used to control what will be the primary group of the new user.
 
 .TP
-.BI \-\^\-create-group
+.BI \-\^\-create\-group
 Not yet implemented.
 
 .TP
-.BI \-\^\-first-name= NAME
+.BI \-\^\-first\-name= NAME
 Set the first name of the user.
 
 .TP
-.BI \-\^\-last-name= NAME
+.BI \-\^\-last\-name= NAME
 Set the last name of the user.
 
 .TP
@@ -124,8 +128,16 @@ Set the last name of the user.
 The title prefix (e.g. Dr.) for the user.
 
 .TP
-.BI \-\^\-email-address= ADDRESS
+.BI \-\^\-email\-address= ADDRESS
 The email address for the user.
+
+.TP
+.BI \-\^\-new\-password= PASSWORD
+The new password when changing the password.
+
+.TP
+.BI \-\^\-old\-password= PASSWORD
+The old password when changing the password.
 
 .\"
 .\" The user format string.
