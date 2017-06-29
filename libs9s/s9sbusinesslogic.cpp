@@ -284,6 +284,11 @@ S9sBusinessLogic::execute()
             success = client.setUser();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->isChangePasswordRequested())
+        {
+            success = client.setPassword();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else {
             executeCreateUser(client);
         }

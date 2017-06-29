@@ -59,6 +59,7 @@ enum S9sOptionType
     OptionRemoveNode,
     OptionJobId,
     OptionSet,
+    OptionChangePassword,
     OptionDrop,
     OptionOsUser,
     OptionProviderVersion,
@@ -139,6 +140,8 @@ enum S9sOptionType
     OptionLimit,
     OptionOffset,
     OptionRegister,
+    OptionOldPassword,
+    OptionNewPassword,
 };
 
 /**
@@ -1346,12 +1349,31 @@ S9sOptions::userName(
 S9sString
 S9sOptions::password() const
 {
-    S9sString retval;
+    return getString("password");
+}
 
-    if (m_options.contains("password"))
-        retval = m_options.at("password").toString();
+bool 
+S9sOptions::hasOldPassword() const
+{
+    return m_options.contains("old_password");
+}
 
-    return retval;
+S9sString
+S9sOptions::oldPassword() const
+{
+    return getString("old_password");
+}
+
+bool 
+S9sOptions::hasNewPassword() const
+{
+    return m_options.contains("new_password");
+}
+
+S9sString
+S9sOptions::newPassword() const
+{
+    return getString("new_password");
 }
 
 bool
@@ -1783,6 +1805,17 @@ S9sOptions::isSetRequested() const
 {
     return getBool("set");
 }
+
+/**
+ * \returns true if the "change password" function is requested using the 
+ *   --change-password command line option.
+ */
+bool
+S9sOptions::isChangePasswordRequested() const
+{
+    return getBool("change_password");
+}
+
 
 /**
  * \returns true if the --log command line option was provided when the program
@@ -2721,6 +2754,11 @@ S9sOptions::printHelpMetaType()
     );
 }
 
+/**
+ * Prints the help text for the 'user' mode. This is called like this:
+ *
+ * s9s user --help
+ */
 void
 S9sOptions::printHelpUser()
 {
@@ -2728,6 +2766,7 @@ S9sOptions::printHelpUser()
 
     printf(
 "Options for the \"user\" command:\n"
+"  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
 "  --list                     List the users.\n"
 "  --set                      Change the properties of a user.\n"
@@ -2774,7 +2813,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
-"  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
+"  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
 "    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
@@ -4134,6 +4173,9 @@ S9sOptions::checkOptionsUser()
     if (isSetRequested())
         countOptions++;
     
+    if (isChangePasswordRequested())
+        countOptions++;
+    
     if (isWhoAmIRequested())
         countOptions++;
 
@@ -4141,8 +4183,8 @@ S9sOptions::checkOptionsUser()
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --whoami, --set and --create options are mutually"
-            " exclusive.";
+            "The --list, --whoami, --set, --change-password and --create "
+            "options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
 
@@ -4150,8 +4192,8 @@ S9sOptions::checkOptionsUser()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --whoami, --set and --create options"
-            " is mandatory.";
+            "One of the --list, --whoami, --set, --change-password and "
+            "--create options is mandatory.";
 
         m_exitStatus = BadOptions;
 
@@ -4412,6 +4454,7 @@ S9sOptions::readOptionsUser(
         { "whoami",           no_argument,       0, OptionWhoAmI          },
         { "create",           no_argument,       0, OptionCreate          },
         { "set",              no_argument,       0, OptionSet             },
+        { "change-password",  no_argument,       0, OptionChangePassword  },
        
         // Options about the user.
         { "group",            required_argument, 0, OptionGroup           },
@@ -4421,6 +4464,8 @@ S9sOptions::readOptionsUser(
         { "title",            required_argument, 0, OptionTitle           },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
+        { "old-password",     required_argument, 0, OptionOldPassword     }, 
+        { "new-password",     required_argument, 0, OptionNewPassword     }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4546,7 +4591,12 @@ S9sOptions::readOptionsUser(
                 // --set
                 m_options["set"]  = true;
                 break;
-            
+           
+            case OptionChangePassword:
+                // --change-password
+                m_options["change_password"] = true;
+                break;
+
             case OptionGroup:
                 // --group=GROUPNAME
                 m_options["group"] = optarg;
@@ -4581,7 +4631,17 @@ S9sOptions::readOptionsUser(
                 // --user-format=VALUE
                 m_options["user_format"] = optarg;
                 break;
+           
+            case OptionOldPassword:
+                // --old-password=PASSWORD
+                m_options["old_password"] = optarg;
+                break;
             
+            case OptionNewPassword:
+                // --new-password=PASSWORD
+                m_options["new_password"] = optarg;
+                break;
+
             case '?':
                 // 
                 return false;

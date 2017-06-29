@@ -149,8 +149,14 @@ class S9sOptions
         S9sString graph() const;
 
         S9sString userName( const bool tryLocalUserToo = false) const;
-        S9sString password() const;
         bool hasPassword() const;
+        S9sString password() const;
+
+        bool hasOldPassword() const;
+        S9sString oldPassword() const;
+        
+        bool hasNewPassword() const;
+        S9sString newPassword() const;
 
         S9sString privateKeyPath() const;
 
@@ -211,6 +217,7 @@ class S9sOptions
         bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isSetRequested() const;
+        bool isChangePasswordRequested() const;
         bool isLogRequested() const;
         bool isCreateRequested() const;
         bool isRegisterRequested() const;

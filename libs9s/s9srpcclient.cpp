@@ -3298,6 +3298,53 @@ S9sRpcClient::setUser()
     return retval;
 }
 
+bool
+S9sRpcClient::setPassword()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+    bool           changingSelf = false;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("Only one user can be modified at once.");
+        return false;
+    }
+
+    //
+    //
+    //
+    properties["class_name"] = "CmonUser";
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        properties["user_name"] = options->userName();
+        changingSelf = true;
+    }
+
+    //
+    // 
+    //
+    request["operation"]  = "changePassword";
+    request["user"]       = properties;
+
+    if (options->hasOldPassword())
+    {
+        request["old_password"] = options->oldPassword();
+    } else if (changingSelf && options->hasPassword())
+    {
+        request["old_password"] = options->password();
+    }
+
+    if (options->hasNewPassword())
+        request["new_password"] = options->newPassword();
+    
+    return executeRequest(uri, request);
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
