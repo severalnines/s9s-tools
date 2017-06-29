@@ -3263,22 +3263,20 @@ S9sRpcClient::setUser()
     S9sVariantMap  properties;
     bool           retval;
 
-    if (options->nExtraArguments() == 0)
+    if (options->nExtraArguments() > 1)
     {
-        PRINT_ERROR(
-                "To modify a user a username must be provided in the "
-                "command line.");
-        return false;
-    } else if (options->nExtraArguments() > 1)
-    {
-        PRINT_ERROR(
-                "To modify a user only one username must be provided in the "
-                "command line.");
+        PRINT_ERROR("Only one user can be modified at once.");
         return false;
     }
 
     properties["class_name"] = "CmonUser";
-    properties["user_name"]  = options->extraArgument(0);
+
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        properties["user_name"] = options->userName();
+    }
 
     if (!options->firstName().empty())
         properties["first_name"] = options->firstName();
