@@ -17,18 +17,22 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B \-\-create
+Register a new user or update an existing user on the controller and grant
+access to the ClusterControl system.
+
+.TP
 .B \-L, \-\-list
 List the users registered for the ClusterControl controller. 
+
+.TP
+.B \-\^\-set
+Changes the specified properties of the user.
 
 .TP
 .B \-\-whoami
 Same as \fB\-\-list\fR, but only lists the current user, the user that
 authenticated on the controller.
-
-.TP
-.B \-\-create
-Register a new user or update an existing user on the controller and grant
-access to the ClusterControl system.
 
 .SS Generic Options
 
@@ -288,7 +292,8 @@ Here is how to get a detailed list of the users managed by the controller.
     --list \\
     --long\fR
 
-Change the email address of an existing user.
+The following example shows how one user can change the email address of an
+other (existing) user. 
 
 .nf
 # \fBs9s user \\
