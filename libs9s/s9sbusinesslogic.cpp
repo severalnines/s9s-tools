@@ -151,7 +151,7 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateAccountRequested())
         {
             success = client.createAccount();
-            client.printMessages("Created.\n", success);
+            client.printMessages("Created.", success);
             client.setExitStatus();
         } else if (options->isGrantRequested())
         {
@@ -159,17 +159,17 @@ S9sBusinessLogic::execute()
                     options->account(), 
                     options->privileges());
 
-            client.printMessages("Grant.\n", success);
+            client.printMessages("Grant.", success);
             client.setExitStatus();
         } else if (options->isDeleteAccountRequested())
         {
             success = client.deleteAccount();
-            client.printMessages("Created.\n", success);
+            client.printMessages("Created.", success);
             client.setExitStatus();
         } else if (options->isCreateDatabaseRequested())
         {
             success = client.createDatabase();
-            client.printMessages("Created.\n", success);
+            client.printMessages("Created.", success);
             client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
@@ -258,7 +258,7 @@ S9sBusinessLogic::execute()
         } else if (options->isDeleteRequested())
         {
             success = client.deleteBackupRecord(options->backupId());
-            client.printMessages("Deleted.\n", success);
+            client.printMessages("Deleted.", success);
             client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown backup operation.");
@@ -282,7 +282,7 @@ S9sBusinessLogic::execute()
         } else if (options->isSetRequested())
         {
             success = client.setUser();
-            client.printMessages("Ok.\n", success);
+            client.printMessages("Ok.", success);
             client.setExitStatus();
         } else {
             executeCreateUser(client);
@@ -298,7 +298,7 @@ S9sBusinessLogic::execute()
         } else if (options->isDeleteRequested())
         {
             success = client.deleteMaintenance();
-            client.printMessages("Created.\n", success);
+            client.printMessages("Created.", success);
             client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
@@ -812,7 +812,7 @@ S9sBusinessLogic::executeNodeSet(
     bool            success;
 
     success = client.setHost();
-    client.printMessages("Ok.\n", success);
+    client.printMessages("Ok.", success);
     client.setExitStatus();
 }
 

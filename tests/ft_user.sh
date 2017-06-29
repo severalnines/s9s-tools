@@ -440,6 +440,8 @@ function testSetUser()
     #
     mys9s user \
         --set \
+        --cmon-user=system \
+        --password=secret \
         --batch \
         --email-address=system@mydomain.com \
         system
@@ -459,6 +461,8 @@ function testSetUser()
     #
     mys9s user \
         --set \
+        --cmon-user=system \
+        --password=secret \
         --batch \
         --email-address=system@mynewdomain.com \
         system
