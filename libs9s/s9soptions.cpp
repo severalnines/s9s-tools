@@ -5919,6 +5919,10 @@ S9sOptions::readOptionsNoMode(
     return true;
 }
 
+/**
+ * \returns The path of the private key of the user. There is a default path
+ *   here, so this method will always return a non-empty string.
+ */
 S9sString
 S9sOptions::privateKeyPath() const
 {

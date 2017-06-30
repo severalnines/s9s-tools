@@ -25,12 +25,14 @@
 
 S9sUser::S9sUser()
 {
+    m_properties["class_name"] = "CmonUser";
 }
  
 S9sUser::S9sUser(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
+    m_properties["class_name"] = "CmonUser";
 }
 
 S9sUser::~S9sUser()
@@ -110,6 +112,12 @@ S9sUser::setProperty(
         const S9sString &name,
         const S9sString &value)
 {
+    if (value.empty())
+    {
+        m_properties.erase(name);
+        return;
+    }
+
     if (value.looksBoolean())
     {
         m_properties[name] = value.toBoolean();
@@ -263,6 +271,36 @@ S9sUser::fullName() const
     }
 
     return retval;
+}
+
+void
+S9sUser::setGroup(
+        const S9sString &groupName)
+{
+    S9sVariantMap  groupMap;
+    S9sVariantList groupList;
+
+    groupMap["class_name"] = "CmonGroup";
+    groupMap["group_name"] = groupName;
+
+    groupList << groupMap;
+
+    m_properties["groups"] = groupList;
+}
+
+void
+S9sUser::setPublicKey(
+        const S9sString &name,
+        const S9sString &key)
+{
+    S9sVariantMap  keyMap;
+    S9sVariantList keysList;
+
+    keyMap["name"]              = name;
+    keyMap["key"]               = key;
+
+    keysList << keyMap;
+    m_properties["public_keys"] = keysList;
 }
 
 /**

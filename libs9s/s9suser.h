@@ -50,7 +50,13 @@ class S9sUser
         S9sString middleName() const;
         S9sString title() const;
         S9sString jobTitle() const;
+        void setGroup(const S9sString &groupName);
         S9sString groupNames(const S9sString separator = ",") const;
+
+        void setPublicKey(
+                const S9sString &name,
+                const S9sString &key);
+
         S9sString fullName() const;
 
         S9sString toString(

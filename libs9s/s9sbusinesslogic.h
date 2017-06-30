@@ -21,6 +21,8 @@
 
 #include "S9sRpcClient"
 
+//#define USE_NEW_RPC 
+
 /**
  * A class that is able to execute whatever the user requested through the
  * command line options.
@@ -61,6 +63,10 @@ class S9sBusinessLogic
 
         void executeUserList(S9sRpcClient &client);
         void executeCreateUser(S9sRpcClient &client);
+
+        bool ensureHasAuthKey(
+                const S9sString &privateKeyPath,
+                S9sString       &publicKey);
 
         void executeClusterList(S9sRpcClient &client);
         void executePing(S9sRpcClient &client);

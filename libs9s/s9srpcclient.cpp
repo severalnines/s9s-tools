@@ -21,6 +21,7 @@
 #include "s9srpcclient_p.h"
 
 #include "S9sOptions"
+#include "S9sUser"
 #include "S9sNode"
 #include "S9sAccount"
 #include "S9sRsaKey"
@@ -291,7 +292,7 @@ S9sRpcClient::authenticateWithKey()
      * Second request.
      */
     request = S9sVariantMap();
-    request["operation"]    = "response";
+    request["operation"]    = "authenticateResponse";
     request["signature"]    = signature;
 
     retval = executeRequest(uri, request);
@@ -352,7 +353,6 @@ S9sRpcClient::getCluster()
     return retval;
 }
 
-
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
@@ -377,7 +377,6 @@ S9sRpcClient::getClusters()
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
     request["with_sheet_info"] = true;
-    //request["user"]            = options->userName();
 
     retval = executeRequest(uri, request);
 
@@ -3226,6 +3225,19 @@ S9sRpcClient::treeScripts()
         request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
+}
+
+S9sVariantMap
+S9sRpcClient::createUserRequest(
+        const S9sUser   &user,
+        bool             createGroup)
+{
+    S9sVariantMap  request;
+
+    request["operation"]    = "createUser";
+    request["user"]         = user.toVariantMap();
+    request["create_group"] = createGroup;
+    return request;
 }
 
 /**

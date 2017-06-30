@@ -22,6 +22,7 @@
 #include "S9sStringList"
 #include "S9sRpcReply"
 #include "S9sOptions"
+#include "S9sUser"
 #include "S9sNode"
 #include "S9sAccount"
 #include "S9sDateTime"
@@ -1273,6 +1274,70 @@ S9sBusinessLogic::waitForJobWithLog(
     printf("\n");
 }
 
+bool
+S9sBusinessLogic::ensureHasAuthKey(
+        const S9sString &privateKeyPath,
+        S9sString       &publicKey)
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sRsaKey      rsaKey;
+    S9sString      errorString;
+    S9sString      publicKeyPath;
+
+    if (options->isGenerateKeyRequested())
+    {
+        // check if key exists and is valid, otherwise generate a new key-pair
+        S9sRsaKey key;
+
+        if (key.loadKeyFromFile(privateKeyPath) && key.isValid())
+        {
+            PRINT_VERBOSE(
+                    "Keyfile '%s' exists and valid.", 
+                    STR(privateKeyPath));
+        } else {
+            PRINT_VERBOSE(
+                    "Generating an RSA key-pair (%s).", 
+                    STR(privateKeyPath));
+
+            publicKeyPath = privateKeyPath;
+            publicKeyPath.replace(".key", "");
+            publicKeyPath += ".pub";
+
+            if (!key.generateKeyPair() ||
+                !key.saveKeys(privateKeyPath, publicKeyPath, errorString))
+            {
+                if (errorString.empty())
+                    errorString = "RSA key generation failure.";
+
+                PRINT_ERROR("Key generation failed: %s", STR(errorString));
+            }
+        }
+    }
+
+    if (!rsaKey.loadKeyFromFile(privateKeyPath) || !rsaKey.isValid())
+    {
+        PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(privateKeyPath));
+        return false;
+    }
+        
+    publicKeyPath = privateKeyPath;
+    publicKeyPath.replace(".key", "");
+    publicKeyPath += ".pub";
+
+    S9sFile pubKeyFile(publicKeyPath);
+    if (!pubKeyFile.readTxtFile(publicKey) || publicKey.empty())
+    {
+        // Private key exists and valid, but
+        PRINT_ERROR("Could not load public key (%s): %s",
+                STR(publicKeyPath), 
+                STR(pubKeyFile.errorString()));
+
+        return false;
+    }
+
+    return true;
+}
+
 void
 S9sBusinessLogic::executeCreateUser(
         S9sRpcClient        &client)
@@ -1280,9 +1345,15 @@ S9sBusinessLogic::executeCreateUser(
     S9sString      errorString;
     S9sOptions    *options  = S9sOptions::instance();
     S9sString      userName = options->userName();
-    S9sString      keyFilePath;
+    S9sString      pubKeyStr;
     S9sConfigFile  config;
+    bool           success;
 
+    #ifdef USE_NEW_RPC
+    S9sUser        user;
+    S9sVariantMap  request;
+    #endif
+    
     if (userName.empty())
     {
         PRINT_ERROR(
@@ -1325,44 +1396,13 @@ S9sBusinessLogic::executeCreateUser(
     /*
      *
      */
-    S9sRsaKey rsaKey;
-
-    keyFilePath = options->privateKeyPath();
-    if (options->isGenerateKeyRequested())
+    success = ensureHasAuthKey(options->privateKeyPath(), pubKeyStr);
+    if (!success)
     {
-        // check if key exists and is valid, otherwise generate a new key-pair
-        S9sRsaKey key;
-
-        if (key.loadKeyFromFile(keyFilePath) && key.isValid())
-        {
-            PRINT_VERBOSE("Keyfile '%s' exists and valid.", STR(keyFilePath));
-        } else {
-            S9sString pubKeyPath;
-
-            PRINT_VERBOSE("Generating an RSA key-pair (%s).", STR(keyFilePath));
-
-            pubKeyPath = keyFilePath;
-            pubKeyPath.replace(".key", "");
-            pubKeyPath += ".pub";
-
-            if (!key.generateKeyPair() ||
-                !key.saveKeys(keyFilePath, pubKeyPath, errorString))
-            {
-                if (errorString.empty())
-                    errorString = "RSA key generation failure.";
-
-                PRINT_ERROR("Key generation failed: %s", STR(errorString));
-            }
-        }
-    }
-
-    if (!rsaKey.loadKeyFromFile(keyFilePath) || !rsaKey.isValid())
-    {
-        PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(keyFilePath));
-        options->setExitStatus(S9sOptions::JobFailed);
+        options->setExitStatus(S9sOptions::Failed);
         return;
     }
-
+    
     /*
      * Granting.
      */
@@ -1372,24 +1412,6 @@ S9sBusinessLogic::executeCreateUser(
         int           exitCode = 0;
         S9sString     sshCommand;
         S9sStringList fifos;
-        S9sString     pubKeyPath;
-
-        // There must be a better way to determine this
-        pubKeyPath = keyFilePath;
-        pubKeyPath.replace(".key", "");
-        pubKeyPath += ".pub";
-
-        S9sFile pubKeyFile (pubKeyPath);
-        S9sString pubKeyStr;
-        if (!pubKeyFile.readTxtFile(pubKeyStr) || pubKeyStr.empty())
-        {
-            // Private key exists and valid, but
-            PRINT_ERROR("Couldn't load public key (%s): %s",
-                STR(pubKeyPath), STR(pubKeyFile.errorString()));
-
-            options->setExitStatus(S9sOptions::JobFailed);
-            return;
-        }
 
         S9sString controller = options->controllerHostName();
         if (controller.empty())
@@ -1402,10 +1424,25 @@ S9sBusinessLogic::executeCreateUser(
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
+        #ifdef USE_NEW_RPC
+        user.setProperty("user_name",     options->userName());
+        user.setProperty("title",         options->title());
+        user.setProperty("first_name",    options->firstName());
+        user.setProperty("last_name",     options->lastName());
+        user.setProperty("email_address", options->emailAddress());
+        user.setGroup(options->group());
+        user.setPublicKey("No Name", pubKeyStr);
+
+        request = S9sRpcClient::createUserRequest(user, options->createGroup());
+        S9S_WARNING("-> \n%s", STR(request.toString()));
+        #endif
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
+            #ifdef USE_NEW_RPC
+            #else
             S9sVariantMap request;
+            #endif
             S9sString     escapedJson;
             S9sString     path = fifos.at(idx);
             S9sFile       file(path);
@@ -1413,6 +1450,9 @@ S9sBusinessLogic::executeCreateUser(
             // 
             // Building up a request for the user creation.
             //
+            #ifdef USE_NEW_RPC
+            escapedJson = request.toString().escape();
+            #else
             request["user_name"] = userName;
             request["pubkey"]    = pubKeyStr;
             
@@ -1435,6 +1475,8 @@ S9sBusinessLogic::executeCreateUser(
                 request["create_group"] = true;
             
             escapedJson = request.toString().escape();
+            #endif
+
             if (options->isJsonRequested())
                 printf("Request: %s\n", STR(request.toString()));
             

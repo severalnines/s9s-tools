@@ -23,6 +23,7 @@
 #include "S9sRpcReply"
 
 class S9sRpcClientPrivate;
+class S9sUser;
 
 class S9sRpcClient
 {
@@ -138,6 +139,11 @@ class S9sRpcClient
         /*
          * Requests related to the cmon users.
          */
+        static S9sVariantMap 
+            createUserRequest(
+                    const S9sUser   &user,
+                    bool             createGroup);
+
         bool getUsers();
         bool setUser();
         bool setPassword();
