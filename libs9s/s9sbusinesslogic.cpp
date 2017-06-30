@@ -1274,6 +1274,12 @@ S9sBusinessLogic::waitForJobWithLog(
     printf("\n");
 }
 
+/**
+ * \param privateKeyPath The path of the private key file.
+ * \param publicKey The string where the method returns the public key.
+ * \returns True if the keys exists or created.
+ *
+ */
 bool
 S9sBusinessLogic::ensureHasAuthKey(
         const S9sString &privateKeyPath,
@@ -1316,7 +1322,13 @@ S9sBusinessLogic::ensureHasAuthKey(
 
     if (!rsaKey.loadKeyFromFile(privateKeyPath) || !rsaKey.isValid())
     {
-        PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(privateKeyPath));
+        if (options->isGenerateKeyRequested())
+        {
+            PRINT_ERROR(
+                    "User keyfile couldn't be loaded: %s", 
+                    STR(privateKeyPath));
+        }
+
         return false;
     }
         
@@ -1394,17 +1406,27 @@ S9sBusinessLogic::executeCreateUser(
     }
 
     /*
-     *
+     * Making sure we have an RSA key for the user.
      */
     success = ensureHasAuthKey(options->privateKeyPath(), pubKeyStr);
     if (!success)
     {
+        #ifdef USE_NEW_RPC 
+        if (!options->hasNewPassword())
+        {
+            PRINT_ERROR("No RSA key and no password for the new user.");
+            options->setExitStatus(S9sOptions::Failed);
+            return;
+        }
+        #else
+        // The old released API only supports keys.
         options->setExitStatus(S9sOptions::Failed);
         return;
+        #endif
     }
     
     /*
-     * Granting.
+     * 
      */
     if (options->isCreateRequested())
     {
@@ -1425,6 +1447,9 @@ S9sBusinessLogic::executeCreateUser(
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
         #ifdef USE_NEW_RPC
+        /*
+         * We create a user object, then we create a createUser request.
+         */
         user.setProperty("user_name",     options->userName());
         user.setProperty("title",         options->title());
         user.setProperty("first_name",    options->firstName());
@@ -1433,7 +1458,10 @@ S9sBusinessLogic::executeCreateUser(
         user.setGroup(options->group());
         user.setPublicKey("No Name", pubKeyStr);
 
-        request = S9sRpcClient::createUserRequest(user, options->createGroup());
+        request = S9sRpcClient::createUserRequest(
+                user, 
+                options->newPassword(),
+                options->createGroup());
         S9S_WARNING("-> \n%s", STR(request.toString()));
         #endif
 

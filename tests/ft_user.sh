@@ -154,8 +154,11 @@ function testGrantUser()
     mys9s user \
         --create \
         --cmon-user=$USER \
+        --group="testgroup" \
+        --create-group \
         --generate-key \
         --controller="https://localhost:9556" \
+        --new-password="p" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch

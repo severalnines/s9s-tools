@@ -3230,6 +3230,7 @@ S9sRpcClient::treeScripts()
 S9sVariantMap
 S9sRpcClient::createUserRequest(
         const S9sUser   &user,
+        const S9sString &newPassword,
         bool             createGroup)
 {
     S9sVariantMap  request;
@@ -3237,6 +3238,10 @@ S9sRpcClient::createUserRequest(
     request["operation"]    = "createUser";
     request["user"]         = user.toVariantMap();
     request["create_group"] = createGroup;
+
+    if (!newPassword.empty())
+        request["new_password"] = newPassword;
+
     return request;
 }
 

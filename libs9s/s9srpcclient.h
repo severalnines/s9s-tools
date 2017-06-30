@@ -142,6 +142,7 @@ class S9sRpcClient
         static S9sVariantMap 
             createUserRequest(
                     const S9sUser   &user,
+                    const S9sString &newPassword,
                     bool             createGroup);
 
         bool getUsers();
