@@ -112,8 +112,11 @@ the configuration file. Please check the documentation of the s9s.conf(5) to see
 how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
 
 .TP
-.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
-The RPC token to be used when authenticating on the Cmon Controller.
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
 
 .TP
 .B \-l, \-\-long
