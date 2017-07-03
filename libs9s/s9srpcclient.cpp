@@ -3305,6 +3305,20 @@ S9sRpcClient::createUserRequest(
     return request;
 }
 
+bool
+S9sRpcClient::createUser(
+        const S9sUser   &user,
+        const S9sString &newPassword,
+        bool             createGroup)
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    
+    request = createUserRequest(user, newPassword, createGroup);
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

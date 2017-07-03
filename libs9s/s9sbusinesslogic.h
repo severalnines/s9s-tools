@@ -65,6 +65,7 @@ class S9sBusinessLogic
         void executeUserList(S9sRpcClient &client);
 
         void executeCreateUser(S9sRpcClient &client);
+        void executeCreateUserThroughRpc(S9sRpcClient &client);
         void executeCreateUserThroughPipe(S9sRpcClient &client);
 
         bool ensureHasAuthKey(

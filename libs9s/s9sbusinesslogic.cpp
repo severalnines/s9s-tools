@@ -1373,9 +1373,14 @@ void
 S9sBusinessLogic::executeCreateUser(
         S9sRpcClient        &client)
 {
-    //S9sOptions    *options  = S9sOptions::instance();
-    
-    executeCreateUserThroughPipe(client);
+    S9sString errorString;
+   
+    if (client.canAuthenticate(errorString))
+    {
+        executeCreateUserThroughRpc(client);
+    } else {
+        executeCreateUserThroughPipe(client);
+    }
 }
 
 /**
@@ -1611,6 +1616,103 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
         }
     }
 }
+
+void
+S9sBusinessLogic::executeCreateUserThroughRpc(
+        S9sRpcClient        &client)
+{
+    S9sString      errorString;
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      userName;
+    S9sString      privateKeyPath;
+    S9sString      pubKeyStr;
+    S9sConfigFile  config;
+    S9sUser        user;
+    S9sVariantMap  request;
+    bool           success;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when creating new user account.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    userName = options->extraArgument(0);
+    
+    /*
+     * Now make sure that we save the specified username/controller into the 
+     * user config file if there is no username/controller.
+     */
+    config.setFileName("~/.s9s/s9s.conf");
+    PRINT_VERBOSE(
+            "Saving Cmon user '%s' into config file at %s.",
+            STR(userName), 
+            STR(config.fileName()));
+
+    if (!config.parseSourceFile())
+    {
+        PRINT_ERROR("Couldn't parse %s: %s",
+                STR(config.fileName()), STR(config.errorString()));
+        return;
+    }
+
+    if (!config.hasVariable("global", "cmon_user") &&
+            !config.hasVariable("", "cmon_user"))
+    {
+        config.setVariable("global", "cmon_user",  userName);
+    }
+
+    if (!config.hasVariable("global", "controller") &&
+            !config.hasVariable("", "controller"))
+    {
+        config.setVariable("global", "controller", options->controllerUrl());
+    }
+
+    if (!config.save(errorString))
+    {
+        PRINT_ERROR(
+                "Could not update user configuration file: %s", 
+                STR(errorString));
+        
+        return;
+    }
+    
+    /*
+     * Making sure we have an RSA key for the user.
+     */
+    privateKeyPath.sprintf("~/.s9s/%s.key", STR(userName));
+    success = ensureHasAuthKey(privateKeyPath, pubKeyStr);
+    if (!success)
+    {
+        if (options->isGenerateKeyRequested())
+        {
+            options->setExitStatus(S9sOptions::Failed);
+            return;
+        }
+    }
+
+        
+    /*
+     * We create a user object, then we create a createUser request.
+     */
+    user.setProperty("user_name",     userName);
+    user.setProperty("title",         options->title());
+    user.setProperty("first_name",    options->firstName());
+    user.setProperty("last_name",     options->lastName());
+    user.setProperty("email_address", options->emailAddress());
+    user.setGroup(options->group());
+    user.setPublicKey("No Name", pubKeyStr);
+
+    success = client.createUser(
+            user, options->newPassword(), options->createGroup());
+
+    client.printMessages("User created.", success);
+}
+
 
 void
 S9sBusinessLogic::executeMaintenanceCreate(
