@@ -55,55 +55,15 @@ S9sBusinessLogic::execute()
     bool         success;
 
     /*
-     * Here is a fucked up version and a version that I try to clean up.
+     *
      */
-    if (options->isUserOperation() && options->isCreateRequested())
-    {
-        PRINT_VERBOSE("No authentication required");
-        // No authentication required.
-    } else {
-        PRINT_VERBOSE("Authenticating.");
-        S9sString userName = options->userName();
-        S9sString keyPath  = options->privateKeyPath();
+    success = authenticate(client);
+    if (!success)
+        return;
 
-        if (userName.empty())
-        {
-            PRINT_ERROR("No user name not set.");
-            options->setExitStatus(S9sOptions::BadOptions);
-            return;
-        }
-
-        if (keyPath.empty())
-        {
-            PRINT_ERROR("No key file name not set.");
-            options->setExitStatus(S9sOptions::BadOptions);
-            return;
-        }
-
-        if (!client.authenticate())
-        {
-
-            if (options->isJsonRequested())
-            {
-                printf("%s\n", STR(client.reply().toString()));
-            } else {
-                S9sString errorString = client.errorString();
-
-                if (errorString.empty())
-                    errorString = client.reply().errorString();
-
-                if (errorString.empty())
-                    errorString = "Access denied.";
-
-                PRINT_ERROR("%s", STR(errorString));
-            }
-
-            // continuing, server replies a nice error
-            options->setExitStatus(S9sOptions::AccessDenied);
-            return;
-        }
-    }
-
+    /*
+     *
+     */
     if (options->isClusterOperation())
     {
         if (options->isPingRequested())
@@ -290,7 +250,7 @@ S9sBusinessLogic::execute()
             client.printMessages("Ok.", success);
             client.setExitStatus();
         } else {
-            executeCreateUserThroughPipe(client);
+            executeCreateUser(client);
         }
     } else if (options->isMaintenanceOperation())
     {
@@ -323,6 +283,60 @@ S9sBusinessLogic::execute()
         PRINT_ERROR("Unknown operation.");
     }
 }
+
+bool
+S9sBusinessLogic::authenticate(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options    = S9sOptions::instance();
+    S9sString    errorString;
+    bool         canAuthenticate;
+    bool         needAuthenticate;
+
+    canAuthenticate  = client.canAuthenticate(errorString);
+    needAuthenticate = client.needToAuthenticate();
+
+    // We can authenticate, the user intended to.
+    if (canAuthenticate)
+    {
+        if (!client.authenticate())
+        {
+            if (options->isJsonRequested())
+            {
+                printf("%s\n", STR(client.reply().toString()));
+            } else {
+                S9sString errorString = client.errorString();
+
+                if (errorString.empty())
+                    errorString = client.reply().errorString();
+
+                if (errorString.empty())
+                    errorString = "Access denied.";
+
+                PRINT_ERROR("%s", STR(errorString));
+            }
+
+            // continuing, server replies a nice error
+            options->setExitStatus(S9sOptions::AccessDenied);
+            return false;
+        }
+
+        return true;
+    }
+
+    // Can't authenticate, but we need.
+    if (needAuthenticate)
+    {
+        PRINT_ERROR("%s", STR(errorString));
+        options->setExitStatus(S9sOptions::AccessDenied);
+
+        return false;
+    }
+
+    // We can't and we don't have to... ok then.
+    return true;
+}
+
 
 /**
  * \param client A client for the communication.
@@ -1355,6 +1369,15 @@ S9sBusinessLogic::ensureHasAuthKey(
     return true;
 }
 
+void
+S9sBusinessLogic::executeCreateUser(
+        S9sRpcClient        &client)
+{
+    //S9sOptions    *options  = S9sOptions::instance();
+    
+    executeCreateUserThroughPipe(client);
+}
+
 /**
  * This is the method that can "bootstrap" the Cmon User management: it can
  * create a new user through a named pipe without password or a registered RSA
@@ -1389,8 +1412,8 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     userName = options->extraArgument(0);
 
     /*
-     * Now make sure that we save the specified username into the user config
-     * file
+     * Now make sure that we save the specified username/controller into the 
+     * user config file if there is no username/controller.
      */
     config.setFileName("~/.s9s/s9s.conf");
     PRINT_VERBOSE(
@@ -1405,8 +1428,17 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
         return;
     }
 
-    config.setVariable("global", "cmon_user",  userName);
-    config.setVariable("global", "controller", options->controllerUrl());
+    if (!config.hasVariable("global", "cmon_user") &&
+            !config.hasVariable("", "cmon_user"))
+    {
+        config.setVariable("global", "cmon_user",  userName);
+    }
+
+    if (!config.hasVariable("global", "controller") &&
+            !config.hasVariable("", "controller"))
+    {
+        config.setVariable("global", "controller", options->controllerUrl());
+    }
 
     if (!config.save(errorString))
     {

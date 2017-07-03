@@ -26,6 +26,7 @@
 #include "S9sAccount"
 #include "S9sRsaKey"
 #include "S9sDateTime"
+#include "S9sFile"
 
 #include <cstring>
 #include <cstdio>
@@ -110,6 +111,58 @@ S9sRpcClient::operator= (
 	}
 
 	return *this;
+}
+
+bool
+S9sRpcClient::hasPrivateKey() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sFile        keyFile(options->privateKeyPath());
+
+    if (options->userName().empty())
+        return false;
+ 
+    return keyFile.exists();
+}
+
+bool
+S9sRpcClient::canAuthenticate(
+        S9sString &reason) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    // No authentication wihtout a username.
+    if (options->userName().empty())
+    {
+        reason = "No user name set.";
+        return false;
+    }
+
+    // It is possible with a password...
+    if (!options->password().empty())
+        return true;
+
+    // or a key.
+    if (hasPrivateKey())
+        return true;
+
+    reason.sprintf(
+            "No password and no RSA key for user %s.", 
+            STR(options->userName()));
+
+    return false;
+}
+
+bool
+S9sRpcClient::needToAuthenticate() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    // Creating a new user is possible without authentication through the pipe.
+    if (options->isUserOperation() && options->isCreateRequested())
+        return false;
+
+    return true;
 }
 
 /**
@@ -222,8 +275,6 @@ S9sRpcClient::authenticate()
 bool 
 S9sRpcClient::authenticateWithPassword()
 {
-    S9S_DEBUG("Authenticating with password.");
-
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sString      uri = "/v2/auth";

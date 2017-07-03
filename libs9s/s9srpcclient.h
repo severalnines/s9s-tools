@@ -37,11 +37,14 @@ class S9sRpcClient
 
         S9sRpcClient(const S9sRpcClient &orig);
 
-
         virtual ~S9sRpcClient();
 
 
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
+
+        bool hasPrivateKey() const;
+        bool canAuthenticate(S9sString &reason) const;
+        bool needToAuthenticate() const;
 
         const S9sRpcReply &reply() const;
         void setExitStatus();

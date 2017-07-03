@@ -31,6 +31,7 @@ class S9sBusinessLogic
 {
     public:
         void execute();
+        bool authenticate(S9sRpcClient &client);
 
         void waitForJob(
                 const int     clusterId,
@@ -62,6 +63,8 @@ class S9sBusinessLogic
                 S9sRpcClient &client);
 
         void executeUserList(S9sRpcClient &client);
+
+        void executeCreateUser(S9sRpcClient &client);
         void executeCreateUserThroughPipe(S9sRpcClient &client);
 
         bool ensureHasAuthKey(
