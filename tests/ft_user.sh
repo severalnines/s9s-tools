@@ -247,6 +247,8 @@ function testFailNoGroup()
 
 function testCreateUsers()
 {
+    local myself
+
     #
     # Let's add some users so that we have something to work on.
     #
@@ -392,7 +394,7 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batc \
+        --batch \
         "worf"
     
     exitCode=$?
@@ -401,6 +403,15 @@ function testCreateUsers()
     fi
 
     s9s user --list --long
+
+    #
+    # After creating all these users the logged in user should still be me.
+    #
+    myself=$(s9s user --whoami)
+    if [ "$myself" != "$USER" ]; then
+        failure "The logged in user should be '$USER' instead of '$myself'."
+    fi
+
     return 0
 }
 

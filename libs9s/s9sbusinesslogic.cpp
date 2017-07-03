@@ -1471,7 +1471,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     }
     
     /*
-     * 
+     * Creating user through the pipe. 
      */
     if (options->isCreateRequested())
     {
