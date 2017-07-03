@@ -38,7 +38,6 @@ class S9sRpcClientPrivate
         S9sString       m_hostName;
         int             m_port;
         bool            m_useTls;
-        S9sString       m_token;
         S9sString       m_errorString;
         S9sString       m_jsonReply;
         S9sRpcReply     m_reply;

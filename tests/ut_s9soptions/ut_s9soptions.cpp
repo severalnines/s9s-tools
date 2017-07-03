@@ -120,7 +120,7 @@ UtS9sOptions::testReadOptions01()
     const char *argv[] = 
     { 
         "/bin/s9s", "node", "--list", "--controller=localhost:9555",
-        "--rpc-token=the_token", "--color=always", "--verbose",
+        "--color=always", "--verbose",
         NULL 
     };
     int   argc   = sizeof(argv) / sizeof(char *) - 1;
@@ -133,7 +133,6 @@ UtS9sOptions::testReadOptions01()
     S9S_COMPARE(options->m_operationMode,       S9sOptions::Node);
     S9S_COMPARE(options->controllerHostName(),  "localhost");
     S9S_COMPARE(options->controllerPort(),      9555);
-    S9S_COMPARE(options->rpcToken(),            "the_token");
     S9S_VERIFY(options->isListRequested());
     S9S_VERIFY(options->isVerbose());
     S9S_VERIFY(options->useSyntaxHighlight());
@@ -153,7 +152,7 @@ UtS9sOptions::testReadOptions02()
     const char *argv[] = 
     { 
         "/bin/s9s", "job", "--list", "--controller=localhost:9555",
-        "--rpc-token=the_token", "--color=always", "--verbose",
+        "--color=always", "--verbose",
         NULL 
     };
     int   argc   = sizeof(argv) / sizeof(char *) - 1;
@@ -166,7 +165,6 @@ UtS9sOptions::testReadOptions02()
     S9S_COMPARE(options->m_operationMode,       S9sOptions::Job);
     S9S_COMPARE(options->controllerHostName(),  "localhost");
     S9S_COMPARE(options->controllerPort(),      9555);
-    S9S_COMPARE(options->rpcToken(),            "the_token");
     S9S_VERIFY(options->isListRequested());
     S9S_VERIFY(options->isVerbose());
     S9S_VERIFY(options->useSyntaxHighlight());
@@ -187,7 +185,7 @@ UtS9sOptions::testReadOptions03()
     const char *argv[] = 
     { 
         "/bin/s9s", "cluster", "--create", "--controller=localhost:9555",
-        "--rpc-token=the_token", "--cluster-type=Galera", 
+        "--cluster-type=Galera", 
         "--nodes=10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5",
         "--vendor=codership", "--provider-version=5.6", "--os-user=14j",
         "--wait", NULL 
@@ -202,7 +200,6 @@ UtS9sOptions::testReadOptions03()
     S9S_COMPARE(options->m_operationMode,        S9sOptions::Cluster);
     S9S_COMPARE(options->controllerHostName(),   "localhost");
     S9S_COMPARE(options->controllerPort(),       9555);
-    S9S_COMPARE(options->rpcToken(),             "the_token");
     S9S_COMPARE(options->clusterType(),          "galera");
     S9S_COMPARE(options->vendor(),               "codership");
     S9S_COMPARE(options->providerVersion(),      "5.6");
@@ -231,7 +228,7 @@ UtS9sOptions::testReadOptions04()
     const char *argv[] = 
     { 
         "/bin/s9s", "--config-file", "/home/johan/.s9s/s9s.conf", 
-        "job", "--list", "-t", "THE_TOKEN", NULL 
+        "job", "--list", NULL 
     };
     int   argc   = sizeof(argv) / sizeof(char *) - 1;
 
@@ -242,7 +239,6 @@ UtS9sOptions::testReadOptions04()
     S9S_COMPARE(options->binaryName(),     "s9s");
     S9S_COMPARE(options->m_operationMode,  S9sOptions::Job);
     S9S_COMPARE(options->configFile(),     "/home/johan/.s9s/s9s.conf");
-    S9S_COMPARE(options->rpcToken(),       "THE_TOKEN");
     S9S_VERIFY(options->isListRequested());
 
     S9sOptions::uninit();

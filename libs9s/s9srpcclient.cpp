@@ -48,20 +48,17 @@ S9sRpcClient::S9sRpcClient() :
  * \param hostName the name if the host where the Cmon controller accepts
  *   requests.
  * \param port the port where the Cmon controller accepts requests.
- * \param token a token to be used with the communication.
  * \param useTls if client must initiate TLS encryption to the server.
  *
  */
 S9sRpcClient::S9sRpcClient(
         const S9sString &hostName,
         const int        port,
-        const S9sString &token,
         const bool       useTls) :
     m_priv(new S9sRpcClientPrivate)
 {
     m_priv->m_hostName = hostName;
     m_priv->m_port     = port;
-    m_priv->m_token    = token;
     m_priv->m_useTls   = useTls;
 }
 

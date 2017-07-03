@@ -1052,15 +1052,6 @@ S9sOptions::fullUuid() const
     return getBool("full_uuid");
 }
 
-/**
- * \returns the RPC token to be used while communicating with the controller.
- */
-S9sString
-S9sOptions::rpcToken() const
-{
-    return getString("rpc_token");
-}
-
 S9sString
 S9sOptions::schedule() const
 {
@@ -2654,7 +2645,6 @@ S9sOptions::printHelpGeneric()
 "  -c, --controller=URL       The URL where the controller is found.\n"
 "  -P, --controller-port INT  The port of the controller.\n"
 "  --rpc-tls                  Use TLS encryption to controller.\n"
-"  -t, --rpc-token=TOKEN      The RPC authentication token (deprecated).\n"
 "\n"
 "Formatting:\n"
 "  -l, --long                 Print the detailed list.\n"
@@ -2934,7 +2924,6 @@ S9sOptions::readOptionsNode(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3036,11 +3025,6 @@ S9sOptions::readOptionsNode(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -3273,7 +3257,6 @@ S9sOptions::readOptionsBackup(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3366,11 +3349,6 @@ S9sOptions::readOptionsBackup(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -3621,7 +3599,6 @@ S9sOptions::readOptionsLog(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3710,11 +3687,6 @@ S9sOptions::readOptionsLog(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4295,7 +4267,6 @@ S9sOptions::readOptionsProcess(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0,  OptionPrintJson      },
         { "color",            optional_argument, 0,  OptionColor          },
@@ -4364,11 +4335,6 @@ S9sOptions::readOptionsProcess(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4467,7 +4433,6 @@ S9sOptions::readOptionsUser(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -4541,11 +4506,6 @@ S9sOptions::readOptionsUser(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4719,7 +4679,6 @@ S9sOptions::readOptionsMaintenance(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -4797,11 +4756,6 @@ S9sOptions::readOptionsMaintenance(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4992,11 +4946,6 @@ S9sOptions::readOptionsMetaType(
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
-                break;
             
             case 'l':
                 // -l, --long
@@ -5106,7 +5055,6 @@ S9sOptions::readOptionsCluster(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -5215,11 +5163,6 @@ S9sOptions::readOptionsCluster(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --rpc-token=TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
@@ -5504,7 +5447,6 @@ S9sOptions::readOptionsJob(
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  6                    },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0,  OptionPrintJson      },
         { "config-file",      required_argument, 0,  OptionConfigFile     },
@@ -5579,11 +5521,6 @@ S9sOptions::readOptionsJob(
             case 'P':
                 // -P, --controller-port
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --rpc-token=TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
