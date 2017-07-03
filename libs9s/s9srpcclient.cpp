@@ -31,7 +31,7 @@
 #include <cstdio>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -225,6 +225,8 @@ S9sRpcClient::authenticate()
 bool 
 S9sRpcClient::authenticateWithPassword()
 {
+    S9S_DEBUG("Authenticating with password.");
+
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sString      uri = "/v2/auth";
@@ -247,6 +249,8 @@ S9sRpcClient::authenticateWithPassword()
 bool
 S9sRpcClient::authenticateWithKey()
 {
+    S9S_DEBUG("Authenticating with key.");
+
     S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/v2/auth";
@@ -256,6 +260,8 @@ S9sRpcClient::authenticateWithKey()
 
     if (privKeyPath.empty())
     {
+        S9S_WARNING("Private key not specified.");
+
         m_priv->m_errorString =
                 "Private key not specified, authentication is not possible.";
         return false;
@@ -263,6 +269,10 @@ S9sRpcClient::authenticateWithKey()
 
     if (!rsa.loadKeyFromFile(privKeyPath))
     {
+        S9S_WARNING(
+                "Could not load user private key: %s",
+                STR(privKeyPath));
+
         m_priv->m_errorString.sprintf (
                 "Could not load user private key: %s",
                 STR(privKeyPath));
@@ -281,12 +291,14 @@ S9sRpcClient::authenticateWithKey()
         return false;
 
     S9sRpcReply loginReply = reply();
-
     S9sString signature;
     S9sString challenge = loginReply["challenge"].toString();
 
     // create an RSA-SHA256 signature using user's privkey
+    S9S_DEBUG("  privKeyPath : %s", STR(privKeyPath));
     rsa.signRsaSha256(challenge, signature);
+    S9S_DEBUG("  challenge   : %s", STR(challenge));
+    S9S_DEBUG("  signature   : %s", STR(signature));
 
     /*
      * Second request.

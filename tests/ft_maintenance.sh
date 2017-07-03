@@ -106,12 +106,6 @@ function dateFormat()
     TZ=GMT date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
 }
 
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 #
 #

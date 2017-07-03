@@ -181,16 +181,6 @@ function wait_for_node_online()
     return 2
 }
 
-function grant_user()
-{
-    printVerbose "Creating Cmon user ${USER}."
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #

@@ -121,16 +121,6 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
-function grant_user()
-{
-    $S9S user \
-        --create \
-        --cmon-user=$USER \
-        --controller="https://localhost:9556" \
-        --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -424,7 +414,7 @@ function testCreateDatabase()
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
         --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
-        --batch --verbose --print-json
+        --batch 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -474,9 +464,8 @@ function testCreateBackup()
         failure "The exit code is ${exitCode} while creating a backup"
     fi
 
-    s9s backup --list --long
-
-    s9s backup --list --verbose --print-json
+    # s9s backup --list --long
+    # s9s backup --list --verbose --print-json
 }
 
 #

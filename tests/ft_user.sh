@@ -146,31 +146,6 @@ function testPing()
 }
 
 #
-# Just a normal createUser call we do all the time to register a user on the
-# controller so that we can actually execute RPC calls.
-#
-function testGrantUser()
-{
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --group="testgroup" \
-        --create-group \
-        --generate-key \
-        --controller="https://localhost:9556" \
-        --new-password="p" \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-        return 1
-    fi
-}
-
-#
 # This test will check the system users, users that should be available on every
 # system.
 #
@@ -255,12 +230,13 @@ function testFailNoGroup()
     #
     mys9s user \
         --create \
-        --cmon-user=kirk \
         --title="Captain" \
         --generate-key \
-        --group=nosuchgroup
+        --group=nosuchgroup \
+        --batch \
+        "kirk"
 
-    user_name=$(s9s user --list kirk)
+    user_name=$(s9s user --list kirk 2>/dev/null)
     if [ "$user_name" ]; then
         failure "User created when the group was invalid."
         return 1
@@ -276,7 +252,6 @@ function testCreateUsers()
     #
     mys9s user \
         --create \
-        --cmon-user="sisko" \
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \
@@ -284,7 +259,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "sisko"
       
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -293,14 +269,14 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="odo" \
         --first-name="Odo" \
         --last-name="" \
         --email-address="odo@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "odo"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -309,14 +285,14 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="jake"\
         --first-name="Jake"\
         --last-name="Sisko"\
         --email-address="jake.sisko@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "jake"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -325,7 +301,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="bashir" \
         --title="Dr." \
         --first-name="Julian" \
         --last-name="Bashir" \
@@ -333,7 +308,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "bashir"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -342,7 +318,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="chief" \
         --title="Chief" \
         --first-name="Miles" \
         --last-name="O'Brien" \
@@ -350,7 +325,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "chief"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -359,7 +335,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="nerys"  \
         --title="Major" \
         --first-name="Kira" \
         --last-name="Nerys" \
@@ -367,7 +342,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "nerys"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -376,14 +352,14 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="quark" \
         --first-name="Quark" \
         --last-name=""\
         --email-address="quark@ferengi.fr" \
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "quark"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -392,7 +368,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="jadzia" \
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
@@ -400,7 +375,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "jadzia"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -409,7 +385,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="worf"\
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
@@ -417,7 +392,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batc \
+        "worf"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -488,6 +464,7 @@ function testSetUser()
 #
 startTests
 reset_config
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
@@ -495,7 +472,6 @@ if [ "$1" ]; then
     done
 else
     #runFunctionalTest testPing
-    runFunctionalTest testGrantUser
     runFunctionalTest testSetUser
 
     runFunctionalTest testSystemUsers

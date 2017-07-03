@@ -131,29 +131,6 @@ function testPing()
 }
 
 #
-# Just a normal createUser call we do all the time to register a user on the
-# controller so that we can actually execute RPC calls.
-#
-function testGrantUser()
-{
-    $S9S user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-        return 1
-    fi
-
-    return 0
-}
-
-#
 # Checks the main operation command line options for the job handling.
 #
 function testJobOperations()
@@ -425,13 +402,13 @@ function testInvalidUrl()
 # Running the requested tests.
 #
 startTests
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testGrantUser
     runFunctionalTest testJobOperations
     runFunctionalTest testBackupOperations
     runFunctionalTest testClusterOperations

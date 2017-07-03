@@ -476,3 +476,28 @@ function find_cluster_id()
         fi
     done
 }
+
+#
+# Just a normal createUser call we do all the time to register a user on the
+# controller so that we can actually execute RPC calls.
+#
+function grant_user()
+{
+    mys9s user \
+        --create \
+        --group="testgroup" \
+        --create-group \
+        --generate-key \
+        --controller="https://localhost:9556" \
+        --new-password="p" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "$USER"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+        return 1
+    fi
+}

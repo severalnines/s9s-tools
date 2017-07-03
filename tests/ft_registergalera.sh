@@ -114,16 +114,6 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
-function grant_user()
-{
-    $S9S user \
-        --create \
-        --cmon-user=$USER \
-        --controller="https://localhost:9556" \
-        --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #

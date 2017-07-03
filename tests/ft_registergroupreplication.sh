@@ -100,12 +100,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #

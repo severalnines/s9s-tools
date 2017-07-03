@@ -1346,40 +1346,58 @@ S9sOptions::userName(
     return retval;
 }
 
+/**
+ * \returns The command line option argument for the --password option.
+ */
 S9sString
 S9sOptions::password() const
 {
     return getString("password");
 }
 
+/**
+ * \returns True if the --password command line option was provided.
+ */
+bool
+S9sOptions::hasPassword() const
+{
+    return m_options.contains("password");
+}
+
+/**
+ * \returns True if the --old-password command line option was provided.
+ */
 bool 
 S9sOptions::hasOldPassword() const
 {
     return m_options.contains("old_password");
 }
 
+/**
+ * \returns The command line option argument for the --old-password option.
+ */
 S9sString
 S9sOptions::oldPassword() const
 {
     return getString("old_password");
 }
 
+/**
+ * \returns True if the --new-password command line option was provided.
+ */
 bool 
 S9sOptions::hasNewPassword() const
 {
     return m_options.contains("new_password");
 }
 
+/**
+ * \returns The command line option argument for the --new-password option.
+ */
 S9sString
 S9sOptions::newPassword() const
 {
     return getString("new_password");
-}
-
-bool
-S9sOptions::hasPassword() const
-{
-    return m_options.contains("password");
 }
 
 /**
@@ -2096,12 +2114,23 @@ S9sOptions::isStringMatchExtraArguments(
     return false;
 }
 
+/**
+ * \returns The number of extra arguments, arguments that are not commands (e.g.
+ *   'cluster' or 'user'), not command line options and not command line option
+ *   arguments.
+ */
 uint
 S9sOptions::nExtraArguments() const
 {
     return m_extraArguments.size();
 }
 
+/**
+ * \returns One extra argument by its index.
+ *
+ * Extra arguments that are not commands (e.g.  'cluster' or 'user'), not
+ * command line options and not command line option arguments.
+ */
 S9sString
 S9sOptions::extraArgument(
         uint idx)
@@ -5922,6 +5951,10 @@ S9sOptions::readOptionsNoMode(
 /**
  * \returns The path of the private key of the user. There is a default path
  *   here, so this method will always return a non-empty string.
+ *
+ * Please note that this is a path based on the --auth-key or --cmon-user
+ * command line options. When creating a new user this is probably not what you
+ * want.
  */
 S9sString
 S9sOptions::privateKeyPath() const

@@ -96,7 +96,7 @@ S9sBusinessLogic::execute()
                 if (errorString.empty())
                     errorString = "Access denied.";
 
-                PRINT_ERROR("Authentication failed: %s", STR(errorString));
+                PRINT_ERROR("%s", STR(errorString));
             }
 
             // continuing, server replies a nice error
@@ -291,7 +291,7 @@ S9sBusinessLogic::execute()
             client.printMessages("Ok.", success);
             client.setExitStatus();
         } else {
-            executeCreateUser(client);
+            executeCreateUserThroughPipe(client);
         }
     } else if (options->isMaintenanceOperation())
     {
@@ -1290,6 +1290,12 @@ S9sBusinessLogic::ensureHasAuthKey(
     S9sString      errorString;
     S9sString      publicKeyPath;
 
+    if (privateKeyPath.empty())
+    {
+        PRINT_ERROR("The private key path is empty!");
+        return false;
+    }
+
     if (options->isGenerateKeyRequested())
     {
         // check if key exists and is valid, otherwise generate a new key-pair
@@ -1350,31 +1356,38 @@ S9sBusinessLogic::ensureHasAuthKey(
     return true;
 }
 
+/**
+ * This is the method that can "bootstrap" the Cmon User management: it can
+ * create a new user through a named pipe without password or a registered RSA
+ * key.
+ */
 void
-S9sBusinessLogic::executeCreateUser(
+S9sBusinessLogic::executeCreateUserThroughPipe(
         S9sRpcClient        &client)
 {
     S9sString      errorString;
     S9sOptions    *options  = S9sOptions::instance();
-    S9sString      userName = options->userName();
+    S9sString      userName;
+    S9sString      privateKeyPath;
     S9sString      pubKeyStr;
     S9sConfigFile  config;
     bool           success;
-
     #ifdef USE_NEW_RPC
     S9sUser        user;
     S9sVariantMap  request;
     #endif
     
-    if (userName.empty())
+    if (options->nExtraArguments() != 1)
     {
         PRINT_ERROR(
-                 "User name is not set.\n"
-                 "Use the --cmon-user command line option to set it.");
+                "One username should be passed as command line argument "
+                "when creating new user account.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;
     }
+
+    userName = options->extraArgument(0);
 
     /*
      * Now make sure that we save the specified username into the user config
@@ -1393,7 +1406,7 @@ S9sBusinessLogic::executeCreateUser(
         return;
     }
 
-    config.setVariable("global", "cmon_user", userName);
+    config.setVariable("global", "cmon_user",  userName);
     config.setVariable("global", "controller", options->controllerUrl());
 
     if (!config.save(errorString))
@@ -1408,7 +1421,8 @@ S9sBusinessLogic::executeCreateUser(
     /*
      * Making sure we have an RSA key for the user.
      */
-    success = ensureHasAuthKey(options->privateKeyPath(), pubKeyStr);
+    privateKeyPath.sprintf("~/.s9s/%s.key", STR(userName));
+    success = ensureHasAuthKey(privateKeyPath, pubKeyStr);
     if (!success)
     {
         #ifdef USE_NEW_RPC 
@@ -1450,7 +1464,7 @@ S9sBusinessLogic::executeCreateUser(
         /*
          * We create a user object, then we create a createUser request.
          */
-        user.setProperty("user_name",     options->userName());
+        user.setProperty("user_name",     userName);
         user.setProperty("title",         options->title());
         user.setProperty("first_name",    options->firstName());
         user.setProperty("last_name",     options->lastName());

@@ -22,8 +22,10 @@ Change the password of an existing user.
 
 .TP
 .B \-\^\-create
-Register a new user or update an existing user on the controller and grant
-access to the ClusterControl system.
+Register a new user (create a new user account) on the controller and grant
+access to the ClusterControl system. The user name of the new account should be
+the command line argument. Please check the EXAMPLES section of this
+documentation for some examples.
 
 .TP
 .B \-L, \-\^\-list
@@ -66,6 +68,14 @@ part of the hostname (e.g. --controller="https://127.0.0.1:9556").
 The port where the Cmon Controller is waiting for connections.
 
 .TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
 .B \-l, \-\^\-long
 This option is similar to the -l option for the standard ls UNIX utility
 program. If the program creates a list of objects this option will change its
@@ -97,14 +107,6 @@ Do not print headers for tables.
 .\"
 .\"
 .SS Options Related to Users
-
-.TP
-.BI \-\^\-cmon-user= USERNAME
-Sets the name of the Cmon user (the name of the account maintained by the Cmon
-Controller) to be manipulated or used to authenticate. Since most of the
-functionality needs authentication this command line option should be very
-frequently used or set in the configuration file. Please check the documentation
-of the s9s-conf(5) to see how the Cmon User can be set.
 
 .TP
 .BI \-\^\-group= GROUPNAME
@@ -292,10 +294,10 @@ created):
 # \fBs9s user \\
     --create \\
     --generate-key \\
-    --cmon-user=john \\
     --first-name="John" \\
     --last-name="Doe" \\
-    --group=admins\fR
+    --group=admins \\
+    john\fR
 .fi
 
 Here is how to get a detailed list of the users managed by the controller.

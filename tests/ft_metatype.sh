@@ -146,28 +146,6 @@ function testPing()
 }
 
 #
-# Just a normal createUser call we do all the time to register a user on the
-# controller so that we can actually execute RPC calls.
-#
-function testGrantUser()
-{
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        --controller="https://localhost:9556" \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-        return 1
-    fi
-}
-
-#
 # This test will check the system users, users that should be available on every
 # system.
 #
@@ -248,6 +226,7 @@ function testProperties()
 #
 startTests
 reset_config
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
@@ -255,7 +234,6 @@ if [ "$1" ]; then
     done
 else
     #runFunctionalTest testPing
-    runFunctionalTest testGrantUser
     runFunctionalTest testTypes
     runFunctionalTest testProperties
 
