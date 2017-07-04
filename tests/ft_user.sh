@@ -227,7 +227,7 @@ function testFailWrongPassword()
     #
     # Using the wrong password.
     #
-    output=$(mys9s user --whoami --cmon-user=system --password=wrongone 2>&1)
+    output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
         failure "The exit code is ${exitCode} using a wrong password"
@@ -241,7 +241,7 @@ function testFailWrongPassword()
     #
     # Using the wrong username.
     #
-    output=$(mys9s user --whoami --cmon-user=sys --password=secret 2>&1)
+    output=$(s9s user --whoami --cmon-user=sys --password=secret 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
         failure "The exit code is ${exitCode} using a wrong username"
@@ -690,7 +690,7 @@ if [ "$1" ]; then
     
     s9s user --list --long
 else
-    runFunctionalTest testPing
+    #runFunctionalTest testPing
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers

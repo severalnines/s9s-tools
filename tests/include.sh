@@ -483,6 +483,12 @@ function find_cluster_id()
 #
 function grant_user()
 {
+    local first
+    local last
+
+    first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
+    last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+
     mys9s user \
         --create \
         --group="testgroup" \
@@ -491,6 +497,8 @@ function grant_user()
         --controller="https://localhost:9556" \
         --new-password="p" \
         --email-address="laszlo@severalnines.com" \
+        --first-name="$first" \
+        --last-name="$last" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
