@@ -121,7 +121,7 @@ function index_table()
 }
 
 #
-#
+# Pinging the controller without authenticating.
 #
 function testPing()
 {
@@ -245,6 +245,9 @@ function testFailNoGroup()
     return 0
 }
 
+#
+# Creating a bunch of users through the pipe without authentication.
+#
 function testCreateUsers()
 {
     local myself
@@ -337,39 +340,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --title="Major" \
-        --first-name="Kira" \
-        --last-name="Nerys" \
-        --email-address="kira@ds9.com" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch \
-        "nerys"
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    mys9s user \
-        --create \
-        --first-name="Quark" \
-        --last-name=""\
-        --email-address="quark@ferengi.fr" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch \
-        "quark"
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    mys9s user \
-        --create \
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
@@ -416,12 +386,11 @@ function testCreateUsers()
 }
 
 #
-# This test will change some properties of some user(s) and check if the change
-# registered.
+# This test will change some properties of the same user (the user changes
+# itself) and check if the change registered.
 #
 function testSetUser()
 {
-    local userName="system"
     local emailAddress
     local exitCode
 
@@ -433,8 +402,7 @@ function testSetUser()
         --cmon-user=system \
         --password=secret \
         --batch \
-        --email-address=system@mydomain.com \
-        system
+        --email-address=system@mydomain.com 
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -454,8 +422,7 @@ function testSetUser()
         --cmon-user=system \
         --password=secret \
         --batch \
-        --email-address=system@mynewdomain.com \
-        system
+        --email-address=system@mynewdomain.com 
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -465,6 +432,61 @@ function testSetUser()
     emailAddress=$(s9s user --list --user-format="%M" system)
     if [ "$emailAddress" != "system@mynewdomain.com" ]; then
         failure "The email address is ${emailAddress} instead of 'system@mynewdomain.com'."
+    fi
+
+    return 0
+}
+
+#
+# This test will change some properties of some user (the user changes
+# some other user) and check if the change registered.
+#
+function testSetOtherUser()
+{
+    local userName="nobody"
+    local emailAddress
+    local exitCode
+
+    #
+    # Setting the email address for a user and checking if it set.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=nobody@mydomain.com \
+        "$userName"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" $userName)
+    if [ "$emailAddress" != "nobody@mydomain.com" ]; then
+        failure "The email is ${emailAddress} instead of 'nobody@mydomain.com'."
+    fi
+
+    #
+    # Setting the email address again.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=nobody@mynewdomain.com \
+        "$userName"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" $userName)
+    if [ "$emailAddress" != "nobody@mynewdomain.com" ]; then
+        failure "The email is ${emailAddress} and not 'nobody@mynewdomain.com'."
     fi
 
     return 0
@@ -573,9 +595,9 @@ if [ "$1" ]; then
     
     s9s user --list --long
 else
-    #runFunctionalTest testPing
+    runFunctionalTest testPing
     runFunctionalTest testSetUser
-
+    runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
     runFunctionalTest testCreateUsers
