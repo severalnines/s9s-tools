@@ -133,7 +133,7 @@ function testPing()
     mys9s cluster \
         --ping \
         $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE
+        $OPTION_VERBOSE >/dev/null
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -517,7 +517,8 @@ function testCreateThroughRpc()
         --email-address="rpc@email.com" \
         --generate-key \
         --new-password="p" \
-        "$newUserName" 
+        "$newUserName" \
+        >/dev/null
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -582,6 +583,62 @@ function testCreateThroughRpc()
 }
 
 #
+# This test will try to change the password for a user. First a user changes the
+# password for an other user, then this other user uses the new password for
+# changing his own password again. Classic... :)
+#
+function testChangePassword()
+{
+    local userName="nobody"
+    local myself
+
+    #
+    # The 'system' user changes the password for nobody.
+    #
+    mys9s user \
+        --change-password \
+        --cmon-user="system" \
+        --password="secret" \
+        --new-password="p" \
+        "$userName" \
+        >/dev/null 
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+    fi
+
+    myself=$(s9s user --whoami --cmon-user=$userName --password=p)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+    
+    #
+    # Nobody uses this new password to change the password again.
+    #
+    mys9s user \
+        --change-password \
+        --cmon-user="$userName" \
+        --password="p" \
+        --new-password="pp" \
+        >/dev/null
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+    fi
+
+    myself=$(s9s user --whoami --cmon-user=$userName --password=pp)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -602,8 +659,9 @@ else
     runFunctionalTest testFailNoGroup
     runFunctionalTest testCreateUsers
     runFunctionalTest testCreateThroughRpc
+    runFunctionalTest testChangePassword
     
-    s9s user --list --long
+    #s9s user --list --long
 fi
 
 endTests
