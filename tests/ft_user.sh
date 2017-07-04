@@ -216,6 +216,44 @@ function testSystemUsers()
 }
 
 #
+# This test will check what happens if using a wrong username or a wrong
+# password. The proper exit code and error message is checked.
+#
+function testFailWrongPassword()
+{
+    local output
+    local exitCode
+
+    #
+    # Using the wrong password.
+    #
+    output=$(mys9s user --whoami --cmon-user=system --password=wrongone 2>&1)
+    exitCode=$?
+    if [ "$exitCode" -ne 3 ]; then
+        failure "The exit code is ${exitCode} using a wrong password"
+    fi
+
+    if [ "$output" != "Wrong username or password." ]; then
+        failure "Wrong error message when using the wrong password"
+        echo "  output: '$output'"
+    fi
+    
+    #
+    # Using the wrong username.
+    #
+    output=$(mys9s user --whoami --cmon-user=sys --password=secret 2>&1)
+    exitCode=$?
+    if [ "$exitCode" -ne 3 ]; then
+        failure "The exit code is ${exitCode} using a wrong username"
+    fi
+
+    if [ "$output" != "Wrong username or password." ]; then
+        failure "Wrong error message when using the wrong username"
+        echo "  output: '$output'"
+    fi
+}
+
+#
 # Testing what happens when a creation of a new user fails because the group 
 # does not exist.
 #
@@ -657,6 +695,7 @@ else
     runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
+    runFunctionalTest testFailWrongPassword
     runFunctionalTest testCreateUsers
     runFunctionalTest testCreateThroughRpc
     runFunctionalTest testChangePassword
