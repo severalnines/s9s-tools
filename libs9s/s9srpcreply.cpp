@@ -880,7 +880,26 @@ S9sRpcReply::printBackupList()
 void
 S9sRpcReply::printKeys()
 {
-    printf("%s\n", STR(toString()));
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("public_keys").toVariantList();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+    
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap = theList[idx].toVariantMap();
+
+        printf("\"%s\"\n", STR(theMap["name"].toString()));
+        printf("%s\n\n",   STR(theMap["key"].toString()));
+    }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", operator[]("total").toInt());
 }
 
 void 
