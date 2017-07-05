@@ -249,6 +249,9 @@ S9sBusinessLogic::execute()
             success = client.setPassword();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->isListKeysRequested())
+        {
+            executePrintKeys(client);
         } else {
             executeCreateUser(client);
         }
@@ -872,6 +875,24 @@ S9sBusinessLogic::executeProcessList(
 }
 
 void 
+S9sBusinessLogic::executePrintKeys(
+        S9sRpcClient &client)
+{
+    S9S_DEBUG("");
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getKeys();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printKeys();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
 S9sBusinessLogic::executeBackupList(
         S9sRpcClient &client)
 {
@@ -1408,7 +1429,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     {
         PRINT_ERROR(
                 "One username should be passed as command line argument "
-                "when creating new user account.");
+                "when creating new user.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;
@@ -1635,7 +1656,7 @@ S9sBusinessLogic::executeCreateUserThroughRpc(
     {
         PRINT_ERROR(
                 "One username should be passed as command line argument "
-                "when creating new user account.");
+                "when creating new user.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;

@@ -3390,6 +3390,34 @@ S9sRpcClient::setUser()
 }
 
 bool
+S9sRpcClient::getKeys()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("More than one user when getting keys.");
+        return false;
+    }
+    
+    properties["class_name"] = "CmonUser";
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        properties["user_name"] = options->userName();
+    }
+    
+    request["operation"]  = "getKeys";
+    request["user"]       = properties;
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::setPassword()
 {
     S9sOptions    *options = S9sOptions::instance();

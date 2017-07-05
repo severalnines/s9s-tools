@@ -67,6 +67,7 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeList();
         void printJobList();
         void printBackupList();
+        void printKeys();
         void printUserList();
         void printMaintenanceList();
         void printMetaTypeList();

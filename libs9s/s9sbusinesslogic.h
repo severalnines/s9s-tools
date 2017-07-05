@@ -21,7 +21,7 @@
 
 #include "S9sRpcClient"
 
-//#define USE_NEW_RPC 
+#define USE_NEW_RPC 
 
 /**
  * A class that is able to execute whatever the user requested through the
@@ -86,6 +86,7 @@ class S9sBusinessLogic
 
         void executeTop(S9sRpcClient &client);
         void executeProcessList(S9sRpcClient &client);
+        void executePrintKeys(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);

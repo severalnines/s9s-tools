@@ -877,6 +877,12 @@ S9sRpcReply::printBackupList()
         printBackupListBrief();
 }
 
+void
+S9sRpcReply::printKeys()
+{
+    printf("%s\n", STR(toString()));
+}
+
 void 
 S9sRpcReply::printUserList()
 {

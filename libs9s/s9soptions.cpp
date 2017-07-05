@@ -4572,7 +4572,7 @@ S9sOptions::readOptionsUser(
 
             case OptionListKeys:
                 // --list-keys
-                m_options["list-keys"] = true;
+                m_options["list_keys"] = true;
                 break;
 
             case OptionWhoAmI:
