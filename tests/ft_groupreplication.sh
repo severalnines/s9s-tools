@@ -25,13 +25,16 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+ 
+  $MYNAME - Tests group replication clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers. 
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers. 
+  --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -40,7 +43,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -71,6 +74,22 @@ while true; do
             shift
             ;;
 
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --)
             shift
             break
@@ -96,54 +115,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
 fi
 
 #
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
-}
-
-#
 #
 #
 function testPing()
@@ -153,7 +124,7 @@ function testPing()
     #
     # Pinging. 
     #
-    $S9S cluster --ping 
+    mys9s cluster --ping 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -191,19 +162,7 @@ function testCreateCluster()
     #
     # Creating a MySQL replication cluster.
     #
-clear
-cat <<EOF
-# s9s cluster \\
-    --create \\
-    --cluster-type=group_replication \\
-    --nodes="$nodes" \\
-    --vendor=oracle \\
-    --cluster-name="$CLUSTER_NAME" \\
-    --provider-version=5.7 \\
-    --wait
-EOF
-
-    $S9S cluster \
+    mys9s cluster \
         --create \
         --cluster-type=group_replication \
         --nodes="$nodes" \
@@ -241,13 +200,7 @@ function testConfig()
     #
     # Listing the configuration values.
     #
-    cat <<EOF
-    $S9S node 
-        --list-config 
-        --nodes=$FIRST_ADDED_NODE:3306
-EOF
-
-    $S9S node \
+    mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE:3306 
 
@@ -281,7 +234,7 @@ function testAddNode()
     # Adding a node to the cluster.
     #
     printVerbose "Adding node:"
-    $S9S cluster \
+    mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
@@ -308,7 +261,7 @@ function testRemoveNode()
     #
     # Removing the last added node.
     #
-    $S9S cluster \
+    mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
@@ -333,7 +286,7 @@ function testRollingRestart()
     #
     # Calling for a rolling restart.
     #
-    $S9S cluster \
+    mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -357,7 +310,7 @@ function testStop()
     #
     # Stopping the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -381,7 +334,7 @@ function testDrop()
     #
     # Starting the cluster.
     #
-    $S9S cluster \
+    mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
@@ -409,9 +362,13 @@ function testDestroyNodes()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateCluster
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
@@ -426,6 +383,12 @@ else
     #runFunctionalTest testStop
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes
+fi
+
+if [ "$FAILED" == "no" ]; then
+    pip-say "The test script is now finished. No errors were detected."
+else
+    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests

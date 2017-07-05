@@ -225,3 +225,288 @@ function printError()
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
     fi
 }
+
+
+function cluster_state()
+{
+    local clusterId="$1"
+
+    s9s cluster --list --cluster-id=$clusterId --cluster-format="%S"
+}        
+
+function node_state()
+{
+    local nodeName="$1"
+        
+    s9s node --list --batch --long --node-format="%S" "$nodeName"
+}
+
+#
+# This function will wait for a node to pick up a state and stay in that state
+# for a while.
+#
+function wait_for_node_state()
+{
+    local nodeName="$1"
+    local expectedState="$2"
+    local state
+    local waited=0
+    local stayed=0
+
+    if [ -z "$nodeName" ]; then
+        printError "Expected a node name."
+        return 6
+    fi
+
+    if [ -z "$expectedState" ]; then 
+        printError "Expected state name."
+        return 6
+    fi
+
+    while true; do
+        state=$(node_state "$nodeName")
+        if [ "$state" == $expectedState ]; then
+            let stayed+=1
+        else
+            let stayed=0
+
+            #
+            # Would be crazy to timeout when we are in the expected state, so we
+            # do check the timeout only when we are not in the expected state.
+            #
+            if [ "$waited" -gt 120 ]; then
+                return 1
+            fi
+        fi
+
+        if [ "$stayed" -gt 10 ]; then
+            return 0
+        fi
+
+        let waited+=1
+        sleep 1
+    done
+
+    return 2
+}
+
+#
+# This function waits until the host goes into CmonHostShutDown state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostShutDown state.
+#
+function wait_for_node_shut_down()
+{
+    wait_for_node_state "$1" "CmonHostShutDown"
+    return $?
+}
+
+#
+# This function waits until the host goes into CmonHostOnline state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostOnline state.
+#
+function wait_for_node_online()
+{
+    wait_for_node_state "$1" "CmonHostOnline"
+    return $?
+}
+
+#
+# This function waits until the host goes into CmonHostOffLine state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostOffLine state.
+#
+function wait_for_node_offline()
+{
+    wait_for_node_state "$1" "CmonHostOffLine"
+    return $?
+}
+
+#
+# This function waits until the host goes into CmonHostFailed state and then
+# waits if it remains in that state for a while. A timeout is implemented and 
+# the return value shows if the node is indeed in the CmonHostFailed state.
+#
+function wait_for_node_failed()
+{
+    wait_for_node_state "$1" "CmonHostFailed"
+    return $?
+}
+
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local OWNER="$2"
+    local isOK
+
+    isOk=$(sudo -u $OWNER -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+#
+# $2: the server name
+#
+# Waits until the server is accepting SSH connections. There is also a timeout
+# implemented here.
+#
+function wait_for_server_ssh()
+{
+    local serverName="$1"
+    local OWNER="$2"
+    local nTry=0
+    local nSuccess=0
+
+    while true; do
+        if is_server_running_ssh "$serverName" $OWNER; then
+            printVerbose "Server '$serverName' is reachable."
+            let nSuccess+=1
+        else
+            printVerbose "Server '$serverName' is not reachable."
+            let nSuccess=0
+
+            # 120 x 5 = 10 minutes
+            if [ "$nTry" -gt 120 ]; then
+                printVerbose "Server '$serverName' did not came alive."
+                return 1
+            fi
+        fi
+
+        if [ "$nSuccess" -gt 3 ]; then
+            printVerbose "Server '$serverName' is stable."
+            return 0
+        fi
+
+        sleep 5
+        let nTry+=1
+    done
+
+    return 0
+}
+
+#
+# Creates and starts a new virtual machine node.
+#
+function create_node()
+{
+    local ip
+    local retval
+
+    printVerbose "Creating container..."
+    ip=$(pip-container-create --server=$CONTAINER_SERVER)
+    printVerbose "Created '$ip'."
+   
+    #
+    #
+    #
+    wait_for_server_ssh "$ip" "$USER"
+    retval=$?
+    if [ "$retval" -ne 0 ]; then
+        failure "Could not reach created server"
+    fi
+
+    echo $ip
+}
+
+function reset_config()
+{
+    local config_dir="$HOME/.s9s"
+    local config_file="$config_dir/s9s.conf"
+
+    if [ -z "$OPTION_RESET_CONFIG" ]; then
+        return 0
+    fi
+
+    printVerbose "Rewriting S9S configuration."
+    if [ -d "$config_file" ]; then
+        rm -rf "$config_file"
+    fi
+
+    if [ ! -d "$config_dir" ]; then
+        mkdir "$config_dir"
+    fi
+
+    cat >$config_file <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
+
+#
+# $1: the name of the cluster
+#
+function find_cluster_id()
+{
+    local name="$1"
+    local retval
+    local nTry=0
+
+    while true; do
+        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
+        retval=$(echo "$retval" | awk '{print $1}')
+
+        if [ -z "$retval" ]; then
+            printVerbose "Cluster '$name' was not found."
+            let nTry+=1
+
+            if [ "$nTry" -gt 10 ]; then
+                echo 0
+                break
+            else
+                sleep 3
+            fi
+        else
+            printVerbose "Cluster '$name' was found with ID ${retval}."
+            echo "$retval"
+            break
+        fi
+    done
+}
+
+#
+# Just a normal createUser call we do all the time to register a user on the
+# controller so that we can actually execute RPC calls.
+#
+function grant_user()
+{
+    local first
+    local last
+
+    first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
+    last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+
+    mys9s user \
+        --create \
+        --group="testgroup" \
+        --create-group \
+        --generate-key \
+        --controller="https://localhost:9556" \
+        --new-password="p" \
+        --email-address="laszlo@severalnines.com" \
+        --first-name="$first" \
+        --last-name="$last" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "$USER"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+        return 1
+    fi
+}

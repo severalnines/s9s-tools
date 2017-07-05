@@ -59,14 +59,18 @@ The port where the Cmon Controller is waiting for connections.
 
 .TP
 .BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
-The name of the user that is going to be used to authenticate on the Cmon
-Controller. This can also be set as the \fBcmon_user\fP configuration file 
-value, but the command line option of course has precedence over the
-configuration file. 
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
 
 .TP
-.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
-The RPC token to be used when authenticating on the Cmon Controller.
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
 
 .TP
 .B \-\-print-json

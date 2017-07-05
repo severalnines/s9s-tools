@@ -71,6 +71,7 @@ class S9sNode
         S9sString dataDir() const;
         int pid() const;
         ulonglong uptime() const;
+        S9sString replicationState() const;
 
         bool hasPort() const;
         int port() const;

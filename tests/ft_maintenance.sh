@@ -103,59 +103,7 @@ fi
 #
 function dateFormat()
 {
-    date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
-}
-
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    if [ -z "$ip" ]; then
-        echo "Failed to create container." >&2
-    fi
-
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
+    TZ=GMT date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
 }
 
 #
@@ -189,7 +137,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    pip-say "The test to check maintenance periods is starting now."
+
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
@@ -230,6 +179,8 @@ function testCreateMaintenance()
 {
     local reason="test_$$_maintenance"
 
+    pip-say "Testing maintenance now."
+
     #
     # Creating a maintenance period that expires real soon.
     #
@@ -238,14 +189,14 @@ function testCreateMaintenance()
         --nodes=$FIRST_NODENAME \
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
-        --reason="$reason" #\ --batch
+        --reason="$reason" 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
+        failure "Exit code is not 0 while creating maintenance."
     fi
-
+    
     #
     # The maintenance period should be there now.
     #
@@ -272,6 +223,8 @@ function testCreateMaintenance()
 
 function testCreateTwoPeriods()
 {
+    pip-say "Testing two maintenance periods now."
+
     #
     # Creating a maintenance period that expires real soon and an other one that
     # expires a bit later.
@@ -336,6 +289,8 @@ function testDeletePeriods()
     #
     # Creating maintenance periods.
     #
+    pip-say "Testing deleting of maintenance now."
+
     mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
@@ -374,7 +329,7 @@ function testDeletePeriods()
     
     for uuid in $(s9s maintenance --list --batch); do
         #echo "-> $uuid"
-        s9s maintenance --delete --uuid=$uuid --batch
+        s9s maintenance --delete --uuid=$uuid --batch 
         if [ "$exitCode" -ne 0 ]; then
             failure "Exit code is not 0 while removing maintenance."
         fi
@@ -393,8 +348,10 @@ function testDeletePeriods()
 #
 function testClusterMaintenance()
 {
-    local reason="cluster maintenance $$"
+    local reason="cluster_maintenance_$$"
 
+    pip-say "Testing cluster maintenance now."
+    
     #
     # Creating a maintenance period that expires real soon.
     #

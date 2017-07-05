@@ -22,6 +22,7 @@
 #include "S9sStringList"
 #include "S9sRpcReply"
 #include "S9sOptions"
+#include "S9sUser"
 #include "S9sNode"
 #include "S9sAccount"
 #include "S9sDateTime"
@@ -48,63 +49,21 @@ S9sBusinessLogic::execute()
     S9sOptions  *options    = S9sOptions::instance();
     S9sString    controller = options->controllerHostName();
     int          port       = options->controllerPort();
-    S9sString    token      = options->rpcToken();
     int          clusterId  = options->clusterId();
     bool         useTls     = options->useTls();
-    S9sRpcClient client(controller, port, token, useTls);
+    S9sRpcClient client(controller, port, useTls);
     bool         success;
 
     /*
-     * Here is a fucked up version and a version that I try to clean up.
+     *
      */
-    //if (!options->isUserOperation() || !options->rpcToken().empty())
-    if (options->isUserOperation() && options->isCreateRequested())
-    {
-        PRINT_VERBOSE("No authentication required");
-        // No authentication required.
-    } else {
-        PRINT_VERBOSE("Authenticating.");
-        S9sString userName = options->userName();
-        S9sString keyPath  = options->privateKeyPath();
+    success = authenticate(client);
+    if (!success)
+        return;
 
-        if (userName.empty())
-        {
-            PRINT_ERROR("No user name not set.");
-            options->setExitStatus(S9sOptions::BadOptions);
-            return;
-        }
-
-        if (keyPath.empty())
-        {
-            PRINT_ERROR("No key file name not set.");
-            options->setExitStatus(S9sOptions::BadOptions);
-            return;
-        }
-
-        if (!client.authenticate())
-        {
-
-            if (options->isJsonRequested())
-            {
-                printf("%s\n", STR(client.reply().toString()));
-            } else {
-                S9sString errorString = client.errorString();
-
-                if (errorString.empty())
-                    errorString = client.reply().errorString();
-
-                if (errorString.empty())
-                    errorString = "Access denied.";
-
-                PRINT_ERROR("Authentication failed: %s", STR(errorString));
-            }
-
-            // continuing, server replies a nice error
-            options->setExitStatus(S9sOptions::AccessDenied);
-            return;
-        }
-    }
-
+    /*
+     *
+     */
     if (options->isClusterOperation())
     {
         if (options->isPingRequested())
@@ -116,6 +75,10 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateRequested())
         {
             success = client.createCluster();
+            maybeJobRegistered(client, 0, success);
+        } else if (options->isRegisterRequested())
+        {
+            success = client.registerCluster();
             maybeJobRegistered(client, 0, success);
         } else if (options->isRollingRestartRequested())
         {
@@ -147,16 +110,27 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateAccountRequested())
         {
-            executeCreateAccount(client);
+            success = client.createAccount();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else if (options->isGrantRequested())
         {
-            executeGrant(client);
+            success = client.grantPrivileges(
+                    options->account(), 
+                    options->privileges());
+
+            client.printMessages("Grant.", success);
+            client.setExitStatus();
         } else if (options->isDeleteAccountRequested())
         {
-            executeDeleteAccount(client);
+            success = client.deleteAccount();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else if (options->isCreateDatabaseRequested())
         {
-            executeCreateDatabase(client);
+            success = client.createDatabase();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -243,7 +217,9 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isDeleteRequested())
         {
-            executeDeleteBackup(client);
+            success = client.deleteBackupRecord(options->backupId());
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
@@ -263,8 +239,18 @@ S9sBusinessLogic::execute()
         if (options->isListRequested() || options->isWhoAmIRequested())
         {
             executeUserList(client);
+        } else if (options->isSetRequested())
+        {
+            success = client.setUser();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
+        } else if (options->isChangePasswordRequested())
+        {
+            success = client.setPassword();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else {
-            executeUser(client);
+            executeCreateUser(client);
         }
     } else if (options->isMaintenanceOperation())
     {
@@ -276,7 +262,9 @@ S9sBusinessLogic::execute()
             executeMaintenanceCreate(client);
         } else if (options->isDeleteRequested())
         {
-            executeMaintenanceDelete(client);
+            success = client.deleteMaintenance();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
         }
@@ -295,6 +283,60 @@ S9sBusinessLogic::execute()
         PRINT_ERROR("Unknown operation.");
     }
 }
+
+bool
+S9sBusinessLogic::authenticate(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options    = S9sOptions::instance();
+    S9sString    errorString;
+    bool         canAuthenticate;
+    bool         needAuthenticate;
+
+    canAuthenticate  = client.canAuthenticate(errorString);
+    needAuthenticate = client.needToAuthenticate();
+
+    // We can authenticate, the user intended to.
+    if (canAuthenticate)
+    {
+        if (!client.authenticate())
+        {
+            if (options->isJsonRequested())
+            {
+                printf("%s\n", STR(client.reply().toString()));
+            } else {
+                S9sString errorString = client.errorString();
+
+                if (errorString.empty())
+                    errorString = client.reply().errorString();
+
+                if (errorString.empty())
+                    errorString = "Access denied.";
+
+                PRINT_ERROR("%s", STR(errorString));
+            }
+
+            // continuing, server replies a nice error
+            options->setExitStatus(S9sOptions::AccessDenied);
+            return false;
+        }
+
+        return true;
+    }
+
+    // Can't authenticate, but we need.
+    if (needAuthenticate)
+    {
+        PRINT_ERROR("%s", STR(errorString));
+        options->setExitStatus(S9sOptions::AccessDenied);
+
+        return false;
+    }
+
+    // We can't and we don't have to... ok then.
+    return true;
+}
+
 
 /**
  * \param client A client for the communication.
@@ -789,74 +831,8 @@ S9sBusinessLogic::executeNodeSet(
     bool            success;
 
     success = client.setHost();
-    client.printMessages("Ok.\n", success);
-}
-
-void
-S9sBusinessLogic::executeCreateAccount(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.createAccount();
-    client.printMessages("Created.\n", success);
-}
-
-void
-S9sBusinessLogic::executeGrant(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.grantPrivileges(options->account(), options->privileges());
-    client.printMessages("Grant.\n", success);
-}
-
-void
-S9sBusinessLogic::executeDeleteAccount(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteAccount();
-    client.printMessages("Created.\n", success);
-}
-
-void
-S9sBusinessLogic::executeCreateDatabase(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.createDatabase();
-    client.printMessages("Created.\n", success);
-}
-
-void
-S9sBusinessLogic::executeDeleteBackup(
-        S9sRpcClient &client)
-{
-    S9sOptions    *options = S9sOptions::instance();
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteBackupRecord(options->backupId());
-    client.printMessages("Deleted.\n", success);
+    client.printMessages("Ok.", success);
+    client.setExitStatus();
 }
 
 /**
@@ -1311,29 +1287,138 @@ S9sBusinessLogic::waitForJobWithLog(
     printf("\n");
 }
 
+/**
+ * \param privateKeyPath The path of the private key file.
+ * \param publicKey The string where the method returns the public key.
+ * \returns True if the keys exists or created.
+ *
+ */
+bool
+S9sBusinessLogic::ensureHasAuthKey(
+        const S9sString &privateKeyPath,
+        S9sString       &publicKey)
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sRsaKey      rsaKey;
+    S9sString      errorString;
+    S9sString      publicKeyPath;
+
+    if (privateKeyPath.empty())
+    {
+        PRINT_ERROR("The private key path is empty!");
+        return false;
+    }
+
+    if (options->isGenerateKeyRequested())
+    {
+        // check if key exists and is valid, otherwise generate a new key-pair
+        S9sRsaKey key;
+
+        if (key.loadKeyFromFile(privateKeyPath) && key.isValid())
+        {
+            PRINT_VERBOSE(
+                    "Keyfile '%s' exists and valid.", 
+                    STR(privateKeyPath));
+        } else {
+            PRINT_VERBOSE(
+                    "Generating an RSA key-pair (%s).", 
+                    STR(privateKeyPath));
+
+            publicKeyPath = privateKeyPath;
+            publicKeyPath.replace(".key", "");
+            publicKeyPath += ".pub";
+
+            if (!key.generateKeyPair() ||
+                !key.saveKeys(privateKeyPath, publicKeyPath, errorString))
+            {
+                if (errorString.empty())
+                    errorString = "RSA key generation failure.";
+
+                PRINT_ERROR("Key generation failed: %s", STR(errorString));
+            }
+        }
+    }
+
+    if (!rsaKey.loadKeyFromFile(privateKeyPath) || !rsaKey.isValid())
+    {
+        if (options->isGenerateKeyRequested())
+        {
+            PRINT_ERROR(
+                    "User keyfile couldn't be loaded: %s", 
+                    STR(privateKeyPath));
+        }
+
+        return false;
+    }
+        
+    publicKeyPath = privateKeyPath;
+    publicKeyPath.replace(".key", "");
+    publicKeyPath += ".pub";
+
+    S9sFile pubKeyFile(publicKeyPath);
+    if (!pubKeyFile.readTxtFile(publicKey) || publicKey.empty())
+    {
+        // Private key exists and valid, but
+        PRINT_ERROR("Could not load public key (%s): %s",
+                STR(publicKeyPath), 
+                STR(pubKeyFile.errorString()));
+
+        return false;
+    }
+
+    return true;
+}
+
 void
-S9sBusinessLogic::executeUser(
+S9sBusinessLogic::executeCreateUser(
+        S9sRpcClient        &client)
+{
+    S9sString errorString;
+   
+    if (client.canAuthenticate(errorString))
+    {
+        executeCreateUserThroughRpc(client);
+    } else {
+        executeCreateUserThroughPipe(client);
+    }
+}
+
+/**
+ * This is the method that can "bootstrap" the Cmon User management: it can
+ * create a new user through a named pipe without password or a registered RSA
+ * key.
+ */
+void
+S9sBusinessLogic::executeCreateUserThroughPipe(
         S9sRpcClient        &client)
 {
     S9sString      errorString;
     S9sOptions    *options  = S9sOptions::instance();
-    S9sString      userName = options->userName();
-    S9sString      keyFilePath;
+    S9sString      userName;
+    S9sString      privateKeyPath;
+    S9sString      pubKeyStr;
     S9sConfigFile  config;
-
-    if (userName.empty())
+    bool           success;
+    #ifdef USE_NEW_RPC
+    S9sUser        user;
+    S9sVariantMap  request;
+    #endif
+    
+    if (options->nExtraArguments() != 1)
     {
         PRINT_ERROR(
-                 "User name is not set.\n"
-                 "Use the --cmon-user command line option to set it.");
+                "One username should be passed as command line argument "
+                "when creating new user account.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return;
     }
 
+    userName = options->extraArgument(0);
+
     /*
-     * Now make sure that we save the specified username into the user config
-     * file
+     * Now make sure that we save the specified username/controller into the 
+     * user config file if there is no username/controller.
      */
     config.setFileName("~/.s9s/s9s.conf");
     PRINT_VERBOSE(
@@ -1348,8 +1433,17 @@ S9sBusinessLogic::executeUser(
         return;
     }
 
-    config.setVariable("global", "cmon_user", userName);
-    config.setVariable("global", "controller", options->controllerUrl());
+    if (!config.hasVariable("global", "cmon_user") &&
+            !config.hasVariable("", "cmon_user"))
+    {
+        config.setVariable("global", "cmon_user",  userName);
+    }
+
+    if (!config.hasVariable("global", "controller") &&
+            !config.hasVariable("", "controller"))
+    {
+        config.setVariable("global", "controller", options->controllerUrl());
+    }
 
     if (!config.save(errorString))
     {
@@ -1361,48 +1455,28 @@ S9sBusinessLogic::executeUser(
     }
 
     /*
-     *
+     * Making sure we have an RSA key for the user.
      */
-    S9sRsaKey rsaKey;
-
-    keyFilePath = options->privateKeyPath();
-    if (options->isGenerateKeyRequested())
+    privateKeyPath.sprintf("~/.s9s/%s.key", STR(userName));
+    success = ensureHasAuthKey(privateKeyPath, pubKeyStr);
+    if (!success)
     {
-        // check if key exists and is valid, otherwise generate a new key-pair
-        S9sRsaKey key;
-
-        if (key.loadKeyFromFile(keyFilePath) && key.isValid())
+        #ifdef USE_NEW_RPC 
+        if (!options->hasNewPassword())
         {
-            PRINT_VERBOSE("Keyfile '%s' exists and valid.", STR(keyFilePath));
-        } else {
-            S9sString pubKeyPath;
-
-            PRINT_VERBOSE("Generating an RSA key-pair (%s).", STR(keyFilePath));
-
-            pubKeyPath = keyFilePath;
-            pubKeyPath.replace(".key", "");
-            pubKeyPath += ".pub";
-
-            if (!key.generateKeyPair() ||
-                !key.saveKeys(keyFilePath, pubKeyPath, errorString))
-            {
-                if (errorString.empty())
-                    errorString = "RSA key generation failure.";
-
-                PRINT_ERROR("Key generation failed: %s", STR(errorString));
-            }
+            PRINT_ERROR("No RSA key and no password for the new user.");
+            options->setExitStatus(S9sOptions::Failed);
+            return;
         }
-    }
-
-    if (!rsaKey.loadKeyFromFile(keyFilePath) || !rsaKey.isValid())
-    {
-        PRINT_ERROR("User keyfile couldn't be loaded: %s", STR(keyFilePath));
-        options->setExitStatus(S9sOptions::JobFailed);
+        #else
+        // The old released API only supports keys.
+        options->setExitStatus(S9sOptions::Failed);
         return;
+        #endif
     }
-
+    
     /*
-     * Granting.
+     * Creating user through the pipe. 
      */
     if (options->isCreateRequested())
     {
@@ -1410,24 +1484,6 @@ S9sBusinessLogic::executeUser(
         int           exitCode = 0;
         S9sString     sshCommand;
         S9sStringList fifos;
-        S9sString     pubKeyPath;
-
-        // There must be a better way to determine this
-        pubKeyPath = keyFilePath;
-        pubKeyPath.replace(".key", "");
-        pubKeyPath += ".pub";
-
-        S9sFile pubKeyFile (pubKeyPath);
-        S9sString pubKeyStr;
-        if (!pubKeyFile.readTxtFile(pubKeyStr) || pubKeyStr.empty())
-        {
-            // Private key exists and valid, but
-            PRINT_ERROR("Couldn't load public key (%s): %s",
-                STR(pubKeyPath), STR(pubKeyFile.errorString()));
-
-            options->setExitStatus(S9sOptions::JobFailed);
-            return;
-        }
 
         S9sString controller = options->controllerHostName();
         if (controller.empty())
@@ -1440,10 +1496,31 @@ S9sBusinessLogic::executeUser(
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
+        #ifdef USE_NEW_RPC
+        /*
+         * We create a user object, then we create a createUser request.
+         */
+        user.setProperty("user_name",     userName);
+        user.setProperty("title",         options->title());
+        user.setProperty("first_name",    options->firstName());
+        user.setProperty("last_name",     options->lastName());
+        user.setProperty("email_address", options->emailAddress());
+        user.setGroup(options->group());
+        user.setPublicKey("No Name", pubKeyStr);
+
+        request = S9sRpcClient::createUserRequest(
+                user, 
+                options->newPassword(),
+                options->createGroup());
+        S9S_WARNING("-> \n%s", STR(request.toString()));
+        #endif
 
         for (uint idx = 0; idx < fifos.size(); ++idx)
         {
+            #ifdef USE_NEW_RPC
+            #else
             S9sVariantMap request;
+            #endif
             S9sString     escapedJson;
             S9sString     path = fifos.at(idx);
             S9sFile       file(path);
@@ -1451,6 +1528,9 @@ S9sBusinessLogic::executeUser(
             // 
             // Building up a request for the user creation.
             //
+            #ifdef USE_NEW_RPC
+            escapedJson = request.toString().escape();
+            #else
             request["user_name"] = userName;
             request["pubkey"]    = pubKeyStr;
             
@@ -1473,6 +1553,8 @@ S9sBusinessLogic::executeUser(
                 request["create_group"] = true;
             
             escapedJson = request.toString().escape();
+            #endif
+
             if (options->isJsonRequested())
                 printf("Request: %s\n", STR(request.toString()));
             
@@ -1536,6 +1618,103 @@ S9sBusinessLogic::executeUser(
 }
 
 void
+S9sBusinessLogic::executeCreateUserThroughRpc(
+        S9sRpcClient        &client)
+{
+    S9sString      errorString;
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      userName;
+    S9sString      privateKeyPath;
+    S9sString      pubKeyStr;
+    S9sConfigFile  config;
+    S9sUser        user;
+    S9sVariantMap  request;
+    bool           success;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when creating new user account.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return;
+    }
+
+    userName = options->extraArgument(0);
+    
+    /*
+     * Now make sure that we save the specified username/controller into the 
+     * user config file if there is no username/controller.
+     */
+    config.setFileName("~/.s9s/s9s.conf");
+    PRINT_VERBOSE(
+            "Saving Cmon user '%s' into config file at %s.",
+            STR(userName), 
+            STR(config.fileName()));
+
+    if (!config.parseSourceFile())
+    {
+        PRINT_ERROR("Couldn't parse %s: %s",
+                STR(config.fileName()), STR(config.errorString()));
+        return;
+    }
+
+    if (!config.hasVariable("global", "cmon_user") &&
+            !config.hasVariable("", "cmon_user"))
+    {
+        config.setVariable("global", "cmon_user",  userName);
+    }
+
+    if (!config.hasVariable("global", "controller") &&
+            !config.hasVariable("", "controller"))
+    {
+        config.setVariable("global", "controller", options->controllerUrl());
+    }
+
+    if (!config.save(errorString))
+    {
+        PRINT_ERROR(
+                "Could not update user configuration file: %s", 
+                STR(errorString));
+        
+        return;
+    }
+    
+    /*
+     * Making sure we have an RSA key for the user.
+     */
+    privateKeyPath.sprintf("~/.s9s/%s.key", STR(userName));
+    success = ensureHasAuthKey(privateKeyPath, pubKeyStr);
+    if (!success)
+    {
+        if (options->isGenerateKeyRequested())
+        {
+            options->setExitStatus(S9sOptions::Failed);
+            return;
+        }
+    }
+
+        
+    /*
+     * We create a user object, then we create a createUser request.
+     */
+    user.setProperty("user_name",     userName);
+    user.setProperty("title",         options->title());
+    user.setProperty("first_name",    options->firstName());
+    user.setProperty("last_name",     options->lastName());
+    user.setProperty("email_address", options->emailAddress());
+    user.setGroup(options->group());
+    user.setPublicKey("No Name", pubKeyStr);
+
+    success = client.createUser(
+            user, options->newPassword(), options->createGroup());
+
+    client.printMessages("User created.", success);
+}
+
+
+void
 S9sBusinessLogic::executeMaintenanceCreate(
         S9sRpcClient &client)
 {
@@ -1563,18 +1742,5 @@ S9sBusinessLogic::executeMaintenanceCreate(
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
-}
-
-void
-S9sBusinessLogic::executeMaintenanceDelete(
-        S9sRpcClient &client)
-{
-    bool           success;
-
-    /*
-     * Running the request on the controller.
-     */
-    success = client.deleteMaintenance();
-    client.printMessages("Created.\n", success);
 }
 

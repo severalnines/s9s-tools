@@ -20,6 +20,7 @@
 
 S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_referenceCounter(1),
+    m_requestId(0ull),
     m_socketFd(-1),
     m_port(0),
     m_useTls(false),

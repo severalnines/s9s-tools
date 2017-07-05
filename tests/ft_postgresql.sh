@@ -31,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check various error conditions.
+  $MYNAME - Tests various features on PostgreSql. 
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -46,10 +46,11 @@ EXAMPLES
   together with the first node that is going to be the master:
 
   ./ft_postgresql.sh --log --print-commands testCreateCluster testAddNode testAddNode
+
+
 EOF
     exit 1
 }
-
 
 ARGS=$(\
     getopt -o h \
@@ -119,92 +120,6 @@ if [ -z $(which pip-container-create) ]; then
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
-
-function reset_config()
-{
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
-
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    $S9S user \
-        --create \
-        --cmon-user=$USER \
-        --controller="https://localhost:9556" \
-        --generate-key \
-        >/dev/null 2>/dev/null
-}
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -383,9 +298,9 @@ function testConfig()
         failure "The exit code is ${exitCode}"
     fi
 
-    if [ "$value" != "'%m'" ]; then
-        failure "Configuration value should not be '$value'"
-    fi
+    #if [ "$value" != "'%m'" ]; then
+    #    failure "Configuration value should not be '$value'"
+    #fi
 
     #
     # Pulling a configuration file from a node to the local host.
@@ -499,7 +414,7 @@ function testCreateDatabase()
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
         --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
-        --batch
+        --batch 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -548,6 +463,9 @@ function testCreateBackup()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating a backup"
     fi
+
+    # s9s backup --list --long
+    # s9s backup --list --verbose --print-json
 }
 
 #
@@ -720,8 +638,6 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
-
     runFunctionalTest testCreateCluster
     runFunctionalTest testAddNode
     runFunctionalTest testStopStartNode

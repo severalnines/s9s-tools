@@ -33,11 +33,11 @@ class S9sRpcClientPrivate
 
     private:
         int             m_referenceCounter;
+        ulonglong       m_requestId;
         int             m_socketFd;
         S9sString       m_hostName;
         int             m_port;
         bool            m_useTls;
-        S9sString       m_token;
         S9sString       m_errorString;
         S9sString       m_jsonReply;
         S9sRpcReply     m_reply;

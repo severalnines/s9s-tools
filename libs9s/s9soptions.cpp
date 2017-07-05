@@ -59,6 +59,7 @@ enum S9sOptionType
     OptionRemoveNode,
     OptionJobId,
     OptionSet,
+    OptionChangePassword,
     OptionDrop,
     OptionOsUser,
     OptionProviderVersion,
@@ -129,12 +130,18 @@ enum S9sOptionType
     OptionClusterFormat,
     OptionNodeFormat,
     OptionBackupFormat,
+    OptionUserFormat,
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
     OptionDensity,
     OptionRollingRestart,
     OptionCreateReport,
+    OptionLimit,
+    OptionOffset,
+    OptionRegister,
+    OptionOldPassword,
+    OptionNewPassword,
 };
 
 /**
@@ -513,12 +520,7 @@ S9sOptions::controllerUrl()
 S9sString
 S9sOptions::configFile() const
 {
-    S9sString retval;
-
-    if (m_options.contains("config_file"))
-        retval = m_options.at("config_file").toString();
-
-    return retval;
+    return getString("config_file");
 }
 
 /**
@@ -550,15 +552,7 @@ S9sOptions::onlyAscii() const
 bool
 S9sOptions::density() const
 {
-    const char *key = "density";
-    bool        retval = false;
-
-    if (m_options.contains(key))
-    {
-        retval = m_options.at(key).toBoolean();
-    }
-
-    return retval;
+    return getBool("density");
 }
 
 /**
@@ -683,6 +677,30 @@ S9sOptions::longNodeFormat() const
 }
 
 /**
+ * \returns The value for the "short_node_format" config variable that
+ *   controls the format of the node lines printed when the --long option is
+ *   not provided and the --node-format option is not used.
+ */
+S9sString 
+S9sOptions::shortNodeFormat() const
+{
+    const char *key = "short_node_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
  * \returns The value for the "long_backup_format" config variable that
  *   controls the format of the backup lines printed when the --long option is
  *   provided and the --backup-format option is not used.
@@ -691,6 +709,30 @@ S9sString
 S9sOptions::longBackupFormat() const
 {
     const char *key = "long_backup_format";
+    S9sString   retval;
+
+    if (m_options.contains(key))
+    {
+        retval = m_options.at(key).toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The value for the "long_user_format" config variable that controls
+ *  the format of the user info lines printed when the --long option is provided
+ *  and the --user-format option is not used.
+ */
+S9sString 
+S9sOptions::longUserFormat() const
+{
+    const char *key = "long_user_format";
     S9sString   retval;
 
     if (m_options.contains(key))
@@ -815,10 +857,7 @@ S9sOptions::vendor() const
 S9sString
 S9sOptions::start() const
 {
-    if (m_options.contains("start"))
-        return m_options.at("start").toString();
-
-    return S9sString();
+    return getString("start");
 }
 
 /**
@@ -827,10 +866,7 @@ S9sOptions::start() const
 S9sString
 S9sOptions::begin() const
 {
-    if (m_options.contains("begin"))
-        return m_options.at("begin").toString();
-
-    return S9sString();
+    return getString("begin");
 }
 
 /**
@@ -839,10 +875,7 @@ S9sOptions::begin() const
 S9sString
 S9sOptions::end() const
 {
-    if (m_options.contains("end"))
-        return m_options.at("end").toString();
-
-    return S9sString();
+    return getString("end");
 }
 
 /**
@@ -851,10 +884,7 @@ S9sOptions::end() const
 S9sString
 S9sOptions::from() const
 {
-    if (m_options.contains("from"))
-        return m_options.at("from").toString();
-
-    return S9sString();
+    return getString("from");
 }
 
 /**
@@ -863,28 +893,19 @@ S9sOptions::from() const
 S9sString
 S9sOptions::until() const
 {
-    if (m_options.contains("until"))
-        return m_options.at("until").toString();
-
-    return S9sString();
+    return getString("until");
 }
 
 S9sString
 S9sOptions::reason() const
 {
-    if (m_options.contains("reason"))
-        return m_options.at("reason").toString();
-
-    return S9sString();
+    return getString("reason");
 }
 
 S9sString
 S9sOptions::uuid() const
 {
-    if (m_options.contains("uuid"))
-        return m_options.at("uuid").toString();
-
-    return S9sString();
+    return getString("uuid");
 }
 
 /**
@@ -981,12 +1002,7 @@ S9sOptions::dbAdminUserName(
 S9sString 
 S9sOptions::dbAdminPassword()
 {
-    S9sString retval;
-
-    if (m_options.contains("db_admin_password"))
-        retval = m_options.at("db_admin_password").toString();
-
-    return retval;
+    return getString("db_admin_password");
 }
 
 /**
@@ -999,10 +1015,7 @@ S9sOptions::dbAdminPassword()
 S9sString
 S9sOptions::clusterType() const
 {
-    if (m_options.contains("cluster_type"))
-        return m_options.at("cluster_type").toString().toLower();
-
-    return S9sString();
+    return getString("cluster_type").toLower();
 }
 
 /**
@@ -1036,31 +1049,41 @@ S9sOptions::formatDateTime(
 bool
 S9sOptions::fullUuid() const
 {
-    if (m_options.contains("full_uuid"))
-        return m_options.at("full_uuid").toBoolean();
-
-    return false;
-}
-
-/**
- * \returns the RPC token to be used while communicating with the controller.
- */
-S9sString
-S9sOptions::rpcToken() const
-{
-    if (m_options.contains("rpc_token"))
-        return m_options.at("rpc_token").toString();
-
-    return S9sString();
+    return getBool("full_uuid");
 }
 
 S9sString
 S9sOptions::schedule() const
 {
-    S9sString retval;
+    return getString("schedule");
+}
 
-    if (m_options.contains("schedule"))
-        retval = m_options.at("schedule").toString();
+/**
+ * \returns The numerical value of the command line option argument for --limit
+ *   or -1 if the option was not provided.
+ */
+int
+S9sOptions::limit() const
+{
+    int retval = -1;
+
+    if (m_options.contains("limit"))
+        retval = m_options.at("limit").toInt();
+
+    return retval;
+}
+
+/**
+ * \returns The numerical value of the command line option argument for --offset
+ *   or -1 if the option was not provided.
+ */
+int
+S9sOptions::offset() const
+{
+    int retval = -1;
+
+    if (m_options.contains("offset"))
+        retval = m_options.at("offset").toInt();
 
     return retval;
 }
@@ -1116,10 +1139,7 @@ S9sOptions::backupId() const
 S9sString
 S9sOptions::type() const
 {
-    if (m_options.contains("type"))
-        return m_options.at("type").toString();
-
-    return S9sString();
+    return getString("type");
 }
 
 int
@@ -1150,12 +1170,7 @@ S9sOptions::updateFreq() const
 S9sString
 S9sOptions::clusterName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("cluster_name"))
-        return m_options.at("cluster_name").toString();
-
-    return retval;
+    return getString("cluster_name");
 }
 
 bool
@@ -1201,10 +1216,7 @@ S9sOptions::hasLogFormat() const
 S9sString
 S9sOptions::logFormat() const
 {
-    if (m_options.contains("log_format"))
-        return m_options.at("log_format").toString();
-
-    return S9sString();
+    return getString("log_format");
 }
 
 /**
@@ -1223,10 +1235,7 @@ S9sOptions::hasClusterFormat() const
 S9sString
 S9sOptions::clusterFormat() const
 {
-    if (m_options.contains("cluster_format"))
-        return m_options.at("cluster_format").toString();
-
-    return S9sString();
+    return getString("cluster_format");
 }
 
 /**
@@ -1239,6 +1248,16 @@ S9sOptions::hasNodeFormat() const
 }
 
 /**
+ * \returns The command line option argument for the --node-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::nodeFormat() const
+{
+    return getString("node_format");
+}
+
+/**
  * \returns True if the --backup-format command line option was provided.
  */
 bool
@@ -1248,31 +1267,33 @@ S9sOptions::hasBackupFormat() const
 }
 
 /**
- * \returns The command line option argument for the --node-format option or
- *   the empty string if the option was not used.
- */
-S9sString
-S9sOptions::nodeFormat() const
-{
-    if (m_options.contains("node_format"))
-        return m_options.at("node_format").toString();
-
-    return S9sString();
-}
-
-/**
  * \returns The command line option argument for the --backup-format option or
  *   the empty string if the option was not used.
  */
 S9sString
 S9sOptions::backupFormat() const
 {
-    if (m_options.contains("backup_format"))
-        return m_options.at("backup_format").toString();
-
-    return S9sString();
+    return getString("backup_format");
 }
 
+/**
+ * \returns True if the --user-format command line option was provided.
+ */
+bool
+S9sOptions::hasUserFormat() const
+{
+    return m_options.contains("user_format");
+}
+
+/**
+ * \returns The command line option argument for the --user-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::userFormat() const
+{
+    return getString("user_format");
+}
 
 /**
  * \returns The command line option argument for the --graph option.
@@ -1280,10 +1301,7 @@ S9sOptions::backupFormat() const
 S9sString
 S9sOptions::graph() const
 {
-    if (m_options.contains("graph"))
-        return m_options.at("graph").toString();
-
-    return S9sString();
+    return getString("graph");
 }
 
 /**
@@ -1317,6 +1335,60 @@ S9sOptions::userName(
         retval = getenv("USER");
 
     return retval;
+}
+
+/**
+ * \returns The command line option argument for the --password option.
+ */
+S9sString
+S9sOptions::password() const
+{
+    return getString("password");
+}
+
+/**
+ * \returns True if the --password command line option was provided.
+ */
+bool
+S9sOptions::hasPassword() const
+{
+    return m_options.contains("password");
+}
+
+/**
+ * \returns True if the --old-password command line option was provided.
+ */
+bool 
+S9sOptions::hasOldPassword() const
+{
+    return m_options.contains("old_password");
+}
+
+/**
+ * \returns The command line option argument for the --old-password option.
+ */
+S9sString
+S9sOptions::oldPassword() const
+{
+    return getString("old_password");
+}
+
+/**
+ * \returns True if the --new-password command line option was provided.
+ */
+bool 
+S9sOptions::hasNewPassword() const
+{
+    return m_options.contains("new_password");
+}
+
+/**
+ * \returns The command line option argument for the --new-password option.
+ */
+S9sString
+S9sOptions::newPassword() const
+{
+    return getString("new_password");
 }
 
 /**
@@ -1368,12 +1440,7 @@ S9sOptions::setAccount(
 S9sString
 S9sOptions::privileges() const
 {
-    S9sString retval;
-
-    if (m_options.contains("privileges"))
-        retval = m_options.at("privileges").toString();
-
-    return retval;
+    return getString("privileges");
 }
 
 /**
@@ -1382,12 +1449,7 @@ S9sOptions::privileges() const
 S9sString
 S9sOptions::optGroup() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_group"))
-        retval = m_options.at("opt_group").toString();
-
-    return retval;
+    return getString("opt_group");
 }
 
 /**
@@ -1396,12 +1458,7 @@ S9sOptions::optGroup() const
 S9sString
 S9sOptions::optName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_name"))
-        retval = m_options.at("opt_name").toString();
-
-    return retval;
+    return getString("opt_name");
 }
 
 /**
@@ -1410,12 +1467,7 @@ S9sOptions::optName() const
 S9sString
 S9sOptions::optValue() const
 {
-    S9sString retval;
-
-    if (m_options.contains("opt_value"))
-        retval = m_options.at("opt_value").toString();
-
-    return retval;
+    return getString("opt_value");
 }
 
 /**
@@ -1424,12 +1476,7 @@ S9sOptions::optValue() const
 S9sString
 S9sOptions::outputDir() const
 {
-    S9sString retval;
-
-    if (m_options.contains("output_dir"))
-        retval = m_options.at("output_dir").toString();
-
-    return retval;
+    return getString("output_dir");
 }
 
 /**
@@ -1438,13 +1485,7 @@ S9sOptions::outputDir() const
 bool
 S9sOptions::force() const
 {
-    bool retval = false;
-
-    if (m_options.contains("force"))
-        retval = m_options.at("force").toBoolean();
-
-    return retval;
-
+    return getBool("force");
 }
 
 /**
@@ -1453,23 +1494,13 @@ S9sOptions::force() const
 bool
 S9sOptions::withDatabase() const
 {
-    bool retval = false;
-
-    if (m_options.contains("with_database"))
-        retval = m_options.at("with_database").toBoolean();
-
-    return retval;
+    return getBool("with_database");
 }
 
 S9sString
 S9sOptions::dbName() const
 {
-    S9sString retval;
-
-    if (m_options.contains("db_name"))
-        retval = m_options.at("db_name").toString();
-
-    return retval;
+    return getString("db_name");
 }
 
 S9sString
@@ -1495,10 +1526,7 @@ S9sOptions::backupDir() const
 bool
 S9sOptions::noCompression() const
 {
-    if (m_options.contains("no_compression"))
-        return m_options.at("no_compression").toBoolean();
-
-    return false;
+    return getBool("no_compression");
 }
 
 /**
@@ -1507,10 +1535,7 @@ S9sOptions::noCompression() const
 bool
 S9sOptions::usePigz() const
 {
-    if (m_options.contains("use_pigz"))
-        return m_options.at("use_pigz").toBoolean();
-
-    return false;
+    return getBool("use_pigz");
 }
 
 /**
@@ -1519,10 +1544,7 @@ S9sOptions::usePigz() const
 bool
 S9sOptions::onNode() const
 {
-    if (m_options.contains("on_node"))
-        return m_options.at("on_node").toBoolean();
-
-    return false;
+    return getBool("on_node");
 }
 
 
@@ -1557,12 +1579,7 @@ S9sOptions::backupMethod() const
 S9sString
 S9sOptions::databases() const
 {
-    S9sString retval;
-
-    if (m_options.contains("databases"))
-        retval = m_options.at("databases").toString();
-
-    return retval;
+    return getString("databases");
 }
 
 bool
@@ -1613,12 +1630,7 @@ S9sOptions::parallellism() const
 bool
 S9sOptions::fullPathRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("full_path"))
-        retval = m_options.at("full_path").toBoolean();
-
-    return retval;
+    return getBool("full_path");
 }
 
 /**
@@ -1711,10 +1723,7 @@ S9sOptions::isMetaTypeOperation() const
 bool
 S9sOptions::isHelpRequested() const
 {
-    if (m_options.contains("help"))
-        return m_options.at("help").toBoolean();
-
-    return false;
+    return getBool("help");
 }
 
 /**
@@ -1724,10 +1733,7 @@ S9sOptions::isHelpRequested() const
 bool
 S9sOptions::isListRequested() const
 {
-    if (m_options.contains("list"))
-        return m_options.at("list").toBoolean();
-
-    return false;
+    return getBool("list");
 }
 
 /**
@@ -1737,10 +1743,7 @@ S9sOptions::isListRequested() const
 bool
 S9sOptions::isStatRequested() const
 {
-    if (m_options.contains("stat"))
-        return m_options.at("stat").toBoolean();
-
-    return false;
+    return getBool("stat");
 }
 
 /**
@@ -1750,10 +1753,7 @@ S9sOptions::isStatRequested() const
 bool
 S9sOptions::isListConfigRequested() const
 {
-    if (m_options.contains("list_config"))
-        return m_options.at("list_config").toBoolean();
-
-    return false;
+    return getBool("list_config");
 }
 
 /**
@@ -1763,10 +1763,7 @@ S9sOptions::isListConfigRequested() const
 bool
 S9sOptions::isChangeConfigRequested() const
 {
-    if (m_options.contains("change_config"))
-        return m_options.at("change_config").toBoolean();
-
-    return false;
+    return getBool("change_config");
 }
 
 /**
@@ -1776,10 +1773,7 @@ S9sOptions::isChangeConfigRequested() const
 bool
 S9sOptions::isPullConfigRequested() const
 {
-    if (m_options.contains("pull_config"))
-        return m_options.at("pull_config").toBoolean();
-
-    return false;
+    return getBool("pull_config");
 }
 
 /**
@@ -1789,10 +1783,7 @@ S9sOptions::isPullConfigRequested() const
 bool
 S9sOptions::isPushConfigRequested() const
 {
-    if (m_options.contains("push_config"))
-        return m_options.at("push_config").toBoolean();
-
-    return false;
+    return getBool("push_config");
 }
 
 /**
@@ -1801,10 +1792,7 @@ S9sOptions::isPushConfigRequested() const
 bool
 S9sOptions::isListPropertiesRequested() const
 {
-    if (m_options.contains("list-properties"))
-        return m_options.at("list-properties").toBoolean();
-
-    return false;
+    return getBool("list_properties");
 }
 
 /**
@@ -1814,10 +1802,7 @@ S9sOptions::isListPropertiesRequested() const
 bool
 S9sOptions::isWhoAmIRequested() const
 {
-    if (m_options.contains("whoami"))
-        return m_options.at("whoami").toBoolean();
-
-    return false;
+    return getBool("whoami");
 }
 
 /**
@@ -1827,11 +1812,19 @@ S9sOptions::isWhoAmIRequested() const
 bool
 S9sOptions::isSetRequested() const
 {
-    if (m_options.contains("set"))
-        return m_options.at("set").toBoolean();
-
-    return false;
+    return getBool("set");
 }
+
+/**
+ * \returns true if the "change password" function is requested using the 
+ *   --change-password command line option.
+ */
+bool
+S9sOptions::isChangePasswordRequested() const
+{
+    return getBool("change_password");
+}
+
 
 /**
  * \returns true if the --log command line option was provided when the program
@@ -1840,10 +1833,7 @@ S9sOptions::isSetRequested() const
 bool
 S9sOptions::isLogRequested() const
 {
-    if (m_options.contains("log"))
-        return m_options.at("log").toBoolean();
-
-    return false;
+    return getBool("log");
 }
 
 /**
@@ -1853,10 +1843,17 @@ S9sOptions::isLogRequested() const
 bool
 S9sOptions::isCreateRequested() const
 {
-    if (m_options.contains("create"))
-        return m_options.at("create").toBoolean();
+    return getBool("create");
+}
 
-    return false;
+/**
+ * \returns true if the --register command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isRegisterRequested() const
+{
+    return getBool("register");
 }
 
 /**
@@ -1866,10 +1863,7 @@ S9sOptions::isCreateRequested() const
 bool
 S9sOptions::isExecuteRequested() const
 {
-    if (m_options.contains("execute"))
-        return m_options.at("execute").toBoolean();
-
-    return false;
+    return getBool("execute");
 }
 
 /**
@@ -1879,10 +1873,7 @@ S9sOptions::isExecuteRequested() const
 bool
 S9sOptions::isTreeRequested() const
 {
-    if (m_options.contains("tree"))
-        return m_options.at("tree").toBoolean();
-
-    return false;
+    return getBool("tree");
 }
 
 /**
@@ -1892,19 +1883,13 @@ S9sOptions::isTreeRequested() const
 bool
 S9sOptions::isDeleteRequested() const
 {
-    if (m_options.contains("delete"))
-        return m_options.at("delete").toBoolean();
-
-    return false;
+    return getBool("delete");
 }
 
 bool
 S9sOptions::isPingRequested() const
 {
-    if (m_options.contains("ping"))
-        return m_options.at("ping").toBoolean();
-
-    return false;
+    return getBool("ping");
 }
 
 /**
@@ -1914,10 +1899,7 @@ S9sOptions::isPingRequested() const
 bool
 S9sOptions::isRestoreRequested() const
 {
-    if (m_options.contains("restore"))
-        return m_options.at("restore").toBoolean();
-
-    return false;
+    return getBool("restore");
 }
 
 /**
@@ -1927,12 +1909,7 @@ S9sOptions::isRestoreRequested() const
 bool
 S9sOptions::isRollingRestartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("rolling_restart"))
-        retval = m_options.at("rolling_restart").toBoolean();
-
-    return retval;
+    return getBool("rolling_restart");
 }
 
 /**
@@ -1942,12 +1919,7 @@ S9sOptions::isRollingRestartRequested() const
 bool
 S9sOptions::isCreateReportRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_report"))
-        retval = m_options.at("create_report").toBoolean();
-
-    return retval;
+    return getBool("create_report");
 }
 
 /**
@@ -1957,12 +1929,7 @@ S9sOptions::isCreateReportRequested() const
 bool
 S9sOptions::isAddNodeRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("add_node"))
-        retval = m_options.at("add_node").toBoolean();
-
-    return retval;
+    return getBool("add_node");
 }
 
 /**
@@ -1972,12 +1939,7 @@ S9sOptions::isAddNodeRequested() const
 bool
 S9sOptions::isRemoveNodeRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("remove_node"))
-        retval = m_options.at("remove_node").toBoolean();
-
-    return retval;
+    return getBool("remove_node");
 }
 
 /**
@@ -1987,12 +1949,7 @@ S9sOptions::isRemoveNodeRequested() const
 bool
 S9sOptions::isDropRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("drop"))
-        retval = m_options.at("drop").toBoolean();
-
-    return retval;
+    return getBool("drop");
 }
 
 /**
@@ -2002,12 +1959,7 @@ S9sOptions::isDropRequested() const
 bool
 S9sOptions::isStopRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("stop"))
-        retval = m_options.at("stop").toBoolean();
-
-    return retval;
+    return getBool("stop");
 }
 
 /**
@@ -2017,12 +1969,7 @@ S9sOptions::isStopRequested() const
 bool
 S9sOptions::isStartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("start"))
-        retval = m_options.at("start").toBoolean();
-
-    return retval;
+    return getBool("start");
 }
 
 /**
@@ -2032,12 +1979,7 @@ S9sOptions::isStartRequested() const
 bool
 S9sOptions::isRestartRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("restart"))
-        retval = m_options.at("restart").toBoolean();
-
-    return retval;
+    return getBool("restart");
 }
 
 /**
@@ -2047,12 +1989,7 @@ S9sOptions::isRestartRequested() const
 bool
 S9sOptions::isCreateAccountRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_account"))
-        retval = m_options.at("create_account").toBoolean();
-
-    return retval;
+    return getBool("create_account");
 }
 
 /**
@@ -2062,12 +1999,7 @@ S9sOptions::isCreateAccountRequested() const
 bool
 S9sOptions::isGrantRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("grant"))
-        retval = m_options.at("grant").toBoolean();
-
-    return retval;
+    return getBool("grant");
 }
 
 /**
@@ -2077,12 +2009,7 @@ S9sOptions::isGrantRequested() const
 bool
 S9sOptions::isDeleteAccountRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("delete_account"))
-        retval = m_options.at("delete_account").toBoolean();
-
-    return retval;
+    return getBool("delete_account");
 }
 
 /**
@@ -2092,12 +2019,7 @@ S9sOptions::isDeleteAccountRequested() const
 bool
 S9sOptions::isCreateDatabaseRequested() const
 {
-    bool retval = false;
-
-    if (m_options.contains("create_database"))
-        retval = m_options.at("create_database").toBoolean();
-
-    return retval;
+    return getBool("create_database");
 }
 
 /**
@@ -2106,10 +2028,7 @@ S9sOptions::isCreateDatabaseRequested() const
 bool
 S9sOptions::isLongRequested() const
 {
-    if (m_options.contains("long"))
-        return m_options.at("long").toBoolean();
-
-    return false;
+    return getBool("long");
 }
 
 /**
@@ -2119,10 +2038,7 @@ S9sOptions::isLongRequested() const
 bool
 S9sOptions::isJsonRequested() const
 {
-    if (m_options.contains("print_json"))
-        return m_options.at("print_json").toBoolean();
-
-    return false;
+    return getBool("print_json");
 }
 
 /**
@@ -2132,10 +2048,7 @@ S9sOptions::isJsonRequested() const
 bool
 S9sOptions::isTopRequested() const
 {
-    if (m_options.contains("top"))
-        return m_options.at("top").toBoolean();
-
-    return false;
+    return getBool("top");
 }
 
 /**
@@ -2144,10 +2057,7 @@ S9sOptions::isTopRequested() const
 bool
 S9sOptions::isWaitRequested() const
 {
-    if (m_options.contains("wait"))
-        return m_options.at("wait").toBoolean();
-
-    return false;
+    return getBool("wait");
 }
 
 /**
@@ -2156,10 +2066,7 @@ S9sOptions::isWaitRequested() const
 bool
 S9sOptions::isBatchRequested() const
 {
-    if (m_options.contains("batch"))
-        return m_options.at("batch").toBoolean();
-
-    return false;
+    return getBool("batch");
 }
 
 /**
@@ -2172,10 +2079,7 @@ S9sOptions::isNoHeaderRequested() const
     if (isBatchRequested())
         return true;
     
-    if (m_options.contains("no_header"))
-        return m_options.at("no_header").toBoolean();
-
-    return false;
+    return getBool("no_header");
 }
 
 /**
@@ -2201,12 +2105,23 @@ S9sOptions::isStringMatchExtraArguments(
     return false;
 }
 
+/**
+ * \returns The number of extra arguments, arguments that are not commands (e.g.
+ *   'cluster' or 'user'), not command line options and not command line option
+ *   arguments.
+ */
 uint
 S9sOptions::nExtraArguments() const
 {
     return m_extraArguments.size();
 }
 
+/**
+ * \returns One extra argument by its index.
+ *
+ * Extra arguments that are not commands (e.g.  'cluster' or 'user'), not
+ * command line options and not command line option arguments.
+ */
 S9sString
 S9sOptions::extraArgument(
         uint idx)
@@ -2245,24 +2160,14 @@ S9sOptions::useSyntaxHighlight() const
 bool
 S9sOptions::humanReadable() const
 {
-    bool retval = false;
-
-    if (m_options.contains("human_readable"))
-        retval = m_options.at("human_readable").toBoolean();
-
-    return retval;
+    return getBool("human_readable");
 }
 
 
 S9sString 
 S9sOptions::timeStyle() const
 {
-    S9sString retval;
-
-    if (m_options.contains("time_style"))
-        retval = m_options.at("time_style").toString();
-
-    return retval;
+    return getString("time_style");
 }
 
 void
@@ -2355,19 +2260,13 @@ S9sOptions::setExitStatus(
 bool
 S9sOptions::isVerbose() const
 {
-    if (!m_options.contains("verbose"))
-        return false;
-
-    return m_options.at("verbose").toBoolean();
+    return getBool("verbose");
 }
 
 bool
 S9sOptions::isDebug() const
 {
-    if (!m_options.contains("debug"))
-        return false;
-
-    return m_options.at("debug").toBoolean();
+    return getBool("debug");
 }
 
 /**
@@ -2733,10 +2632,11 @@ S9sOptions::printHelpGeneric()
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
 "    maint - to view and manipulate maintenance periods.\n"
+" metatype - to print metatype information.\n"
 "     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
+"   script - to manage and execute scripts.\n"
 "     user - to manage users.\n"
-"   script - manage and execute scripts.\n"
 "\n"
 "Generic options:\n"
 "  -h, --help                 Show help message and exit.\n" 
@@ -2745,7 +2645,8 @@ S9sOptions::printHelpGeneric()
 "  -c, --controller=URL       The URL where the controller is found.\n"
 "  -P, --controller-port INT  The port of the controller.\n"
 "  --rpc-tls                  Use TLS encryption to controller.\n"
-"  -t, --rpc-token=TOKEN      The RPC authentication token (deprecated).\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "\n"
 "Formatting:\n"
 "  -l, --long                 Print the detailed list.\n"
@@ -2754,6 +2655,7 @@ S9sOptions::printHelpGeneric()
 "  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
 "  --no-header                Do not print headers.\n"
+"  --date-format=FORMAT       The format of the dates printed.\n"
 "\n"
 "Job related options:\n"
 "  --wait                     Wait until the job ends.\n"
@@ -2771,11 +2673,11 @@ S9sOptions::printHelpJob()
 "Options for the \"job\" command:\n"
 "  --list                     List the jobs.\n"
 "\n"
-"  --date-format=FORMAT       The format of the dates printed.\n"
 "  --job-id=ID                The ID of the job.\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
+"  --limit=NUMBER             Controls how many jobs are printed max.\n"
+"  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
 "\n"
     );
@@ -2791,7 +2693,6 @@ S9sOptions::printHelpProcess()
 "  --list                     List the processes.\n"
 "  --top                      Continuosly print top processes.\n"
 "\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
 "  --update-freq=SECS         The screen update frequency.\n"
 "\n"
@@ -2813,13 +2714,11 @@ S9sOptions::printHelpBackup()
 "  --backup-id=ID             The ID of the backup.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --backup-format            The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
-"  --date-format=FORMAT       The format of the dates printed.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -2841,13 +2740,11 @@ S9sOptions::printHelpMaintenance()
 "  --delete                   Delete a maintenance period.\n"
 "\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
-"  --date-format=FORMAT       The format of the dates printed.\n"
 "  --end=DATE&TIME            The end of the maintenance period.\n"
 "  --full-uuid                Print the full UUID.\n"
 "  --nodes=NODELIST           The nodes for the node maintenances.\n"
 "  --reason=STRING            The reason for the maintenance.\n"
 "  --start=DATE&TIME          The start of the maintenance period.\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --uuid=UUID                The UUID to identify the maintenance period.\n"
 "\n"
     );
@@ -2868,6 +2765,11 @@ S9sOptions::printHelpMetaType()
     );
 }
 
+/**
+ * Prints the help text for the 'user' mode. This is called like this:
+ *
+ * s9s user --help
+ */
 void
 S9sOptions::printHelpUser()
 {
@@ -2875,12 +2777,13 @@ S9sOptions::printHelpUser()
 
     printf(
 "Options for the \"user\" command:\n"
-"  --list                     List the users.\n"
-"  --whoami                   List the current user only.\n"
+"  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
+"  --list                     List the users.\n"
+"  --set                      Change the properties of a user.\n"
+"  --whoami                   List the current user only.\n"
 ""
 "\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --create-group             Create the group if it doesn't exist.\n"
@@ -2888,6 +2791,7 @@ S9sOptions::printHelpUser()
 "  --last-name=NAME           The last name of the user.\n"
 "  --title=TITLE              The prefix title for the user.\n"
 "  --email-address=ADDRESS    The email address for the user.\n"
+"  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
 }
 
@@ -2918,7 +2822,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
-"  --db-admin-passwd=PASSWD   The pasword for the database admin.\n"
+"  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
 "    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
@@ -2931,7 +2835,6 @@ S9sOptions::printHelpCluster()
 "    postgresql.\n"
 "  --provider-version=VER     The version of the software.\n"
 "    the following types are supported: galera, mysqlreplication,\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
 "\n");
@@ -2955,7 +2858,6 @@ S9sOptions::printHelpNode()
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
 "  --cluster-name=NAME        Name of the cluster to list.\n"
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "\n"
 "  --begin=TIMESTAMP          The start of the graph interval.\n"
 "  --end=TIMESTAMP            The end of teh graph interval.\n"
@@ -2980,7 +2882,6 @@ S9sOptions::printHelpScript()
 "  --execute                  Execute a script.\n"
 "  --tree                     Print the scripts available on the controller.\n"
 "\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
 "\n"
     );
@@ -3003,10 +2904,10 @@ S9sOptions::readOptionsNode(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3094,6 +2995,11 @@ S9sOptions::readOptionsNode(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller
@@ -3103,11 +3009,6 @@ S9sOptions::readOptionsNode(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -3336,10 +3237,10 @@ S9sOptions::readOptionsBackup(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3418,6 +3319,11 @@ S9sOptions::readOptionsBackup(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller
@@ -3427,11 +3333,6 @@ S9sOptions::readOptionsBackup(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -3678,10 +3579,10 @@ S9sOptions::readOptionsLog(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -3756,6 +3657,11 @@ S9sOptions::readOptionsLog(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller
@@ -3765,11 +3671,6 @@ S9sOptions::readOptionsLog(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4072,6 +3973,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isCreateDatabaseRequested())
         countOptions++;
+    
+    if (isRegisterRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -4080,7 +3984,7 @@ S9sOptions::checkOptionsCluster()
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
             " --create-report,"
-            " --delete-account, --create-database, --grant"
+            " --delete-account, --create-database, --grant, --register"
             ".";
 
         m_exitStatus = BadOptions;
@@ -4092,7 +3996,7 @@ S9sOptions::checkOptionsCluster()
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --create-report,"
             " --remove-node, --drop, --stop, --start, --create-account,"
-            " --delete-account, --create-database, --grant"
+            " --delete-account, --create-database, --grant, --register"
             ".";
 
         m_exitStatus = BadOptions;
@@ -4251,6 +4155,12 @@ S9sOptions::checkOptionsUser()
     if (isCreateRequested())
         countOptions++;
     
+    if (isSetRequested())
+        countOptions++;
+    
+    if (isChangePasswordRequested())
+        countOptions++;
+    
     if (isWhoAmIRequested())
         countOptions++;
 
@@ -4258,8 +4168,8 @@ S9sOptions::checkOptionsUser()
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --whoami and --create options are mutually"
-            " exclusive.";
+            "The --list, --whoami, --set, --change-password and --create "
+            "options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
 
@@ -4267,7 +4177,8 @@ S9sOptions::checkOptionsUser()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --whoami and --create options is mandatory.";
+            "One of the --list, --whoami, --set, --change-password and "
+            "--create options is mandatory.";
 
         m_exitStatus = BadOptions;
 
@@ -4336,10 +4247,10 @@ S9sOptions::readOptionsProcess(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0,  OptionPrintJson      },
         { "color",            optional_argument, 0,  OptionColor          },
@@ -4395,6 +4306,11 @@ S9sOptions::readOptionsProcess(
                 m_options["cmon_user"] = optarg;
                 break;
 
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
@@ -4403,11 +4319,6 @@ S9sOptions::readOptionsProcess(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4499,36 +4410,40 @@ S9sOptions::readOptionsUser(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'                },
-        { "debug",            no_argument,       0, OptionDebug        },
-        { "verbose",          no_argument,       0, 'v'                },
-        { "version",          no_argument,       0, 'V'                },
-        { "controller",       required_argument, 0, 'c'                },
-        { "controller-port",  required_argument, 0, 'P'                },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls       },
-        { "rpc-token",        required_argument, 0, 't'                },
-        { "long",             no_argument,       0, 'l'                },
-        { "print-json",       no_argument,       0, OptionPrintJson    },
-        { "color",            optional_argument, 0, OptionColor        },
-        { "config-file",      required_argument, 0, OptionConfigFile   },
-        { "batch",            no_argument,       0, OptionBatch        },
-        { "no-header",        no_argument,       0, OptionNoHeader     },
+        { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "generate-key",     no_argument,       0, 'g'                }, 
-        { "cmon-user",        required_argument, 0, 'u'                }, 
-        { "list",             no_argument,       0, 'L'                },
-        { "whoami",           no_argument,       0, OptionWhoAmI       },
-        { "create",           no_argument,       0, OptionCreate       },
-        { "set",              no_argument,       0, OptionSet          },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "list",             no_argument,       0, 'L'                   },
+        { "whoami",           no_argument,       0, OptionWhoAmI          },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "set",              no_argument,       0, OptionSet             },
+        { "change-password",  no_argument,       0, OptionChangePassword  },
        
         // Options about the user.
-        { "group",            required_argument, 0, OptionGroup        },
-        { "create-group",     no_argument,       0, OptionCreateGroup  },
-        { "first-name",       required_argument, 0, OptionFirstName    },
-        { "last-name",        required_argument, 0, OptionLastName     },
-        { "title",            required_argument, 0, OptionTitle        },
-        { "email-address",    required_argument, 0, OptionEmailAddress },
+        { "group",            required_argument, 0, OptionGroup           },
+        { "create-group",     no_argument,       0, OptionCreateGroup     },
+        { "first-name",       required_argument, 0, OptionFirstName       },
+        { "last-name",        required_argument, 0, OptionLastName        },
+        { "title",            required_argument, 0, OptionTitle           },
+        { "email-address",    required_argument, 0, OptionEmailAddress    },
+        { "user-format",      required_argument, 0, OptionUserFormat      }, 
+        { "old-password",     required_argument, 0, OptionOldPassword     }, 
+        { "new-password",     required_argument, 0, OptionNewPassword     }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4576,11 +4491,6 @@ S9sOptions::readOptionsUser(
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
-                break;
             
             case 'l':
                 // -l, --long
@@ -4624,6 +4534,11 @@ S9sOptions::readOptionsUser(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'g':
                 // --generate-key
@@ -4649,7 +4564,12 @@ S9sOptions::readOptionsUser(
                 // --set
                 m_options["set"]  = true;
                 break;
-            
+           
+            case OptionChangePassword:
+                // --change-password
+                m_options["change_password"] = true;
+                break;
+
             case OptionGroup:
                 // --group=GROUPNAME
                 m_options["group"] = optarg;
@@ -4680,6 +4600,21 @@ S9sOptions::readOptionsUser(
                 m_options["email_address"] = optarg;
                 break;
             
+            case OptionUserFormat:
+                // --user-format=VALUE
+                m_options["user_format"] = optarg;
+                break;
+           
+            case OptionOldPassword:
+                // --old-password=PASSWORD
+                m_options["old_password"] = optarg;
+                break;
+            
+            case OptionNewPassword:
+                // --new-password=PASSWORD
+                m_options["new_password"] = optarg;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -4724,10 +4659,10 @@ S9sOptions::readOptionsMaintenance(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -4791,6 +4726,11 @@ S9sOptions::readOptionsMaintenance(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller=URL
@@ -4800,11 +4740,6 @@ S9sOptions::readOptionsMaintenance(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
             
             case 'l':
@@ -4995,11 +4930,6 @@ S9sOptions::readOptionsMetaType(
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
                 break;
-
-            case 't':
-                // -t, --token=RPC_TOKEN
-                m_options["rpc_token"] = optarg;
-                break;
             
             case 'l':
                 // -l, --long
@@ -5051,7 +4981,7 @@ S9sOptions::readOptionsMetaType(
            
             case OptionListProperties:
                 // --list-properties
-                m_options["list-properties"] = true;
+                m_options["list_properties"] = true;
                 break;
 
             case OptionType:
@@ -5105,10 +5035,10 @@ S9sOptions::readOptionsCluster(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
-        { "rpc-token",        required_argument, 0, 't'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
@@ -5119,6 +5049,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
         { "create",           no_argument,       0, OptionCreate          },
+        { "register",         no_argument,       0, OptionRegister        },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -5202,6 +5133,11 @@ S9sOptions::readOptionsCluster(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller=URL
@@ -5211,11 +5147,6 @@ S9sOptions::readOptionsCluster(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --rpc-token=TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
@@ -5341,6 +5272,11 @@ S9sOptions::readOptionsCluster(
                 m_options["create"] = true;
                 break;
             
+            case OptionRegister:
+                // --register
+                m_options["register"] = true;
+                break;
+
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
@@ -5486,30 +5422,32 @@ S9sOptions::readOptionsJob(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp        },
-        { "debug",            no_argument,       0, OptionDebug       },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "cmon-user",        required_argument, 0, 'u'               }, 
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0,  6                },
-        { "rpc-token",        required_argument, 0, 't'               },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0,  OptionPrintJson  },
-        { "config-file",      required_argument, 0,  OptionConfigFile },
-        { "color",            optional_argument, 0,  OptionColor      },
-        { "date-format",      required_argument, 0,  OptionDateFormat },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0,  6                    },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "config-file",      required_argument, 0,  OptionConfigFile     },
+        { "color",            optional_argument, 0,  OptionColor          },
+        { "date-format",      required_argument, 0,  OptionDateFormat     },
 
         // Main Option
-        { "wait",             no_argument,       0,  5                },
-        { "log",              no_argument,       0, 'G'               },
-        { "list",             no_argument,       0, 'L'               },
+        { "wait",             no_argument,       0,  5                    },
+        { "log",              no_argument,       0, 'G'                   },
+        { "list",             no_argument,       0, 'L'                   },
 
         // Job Related Options
-        { "cluster-id",       required_argument, 0, 'i'               },
-        { "job-id",           required_argument, 0, OptionJobId       },
-        { "log-format",       required_argument, 0, OptionLogFormat   },
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "job-id",           required_argument, 0, OptionJobId           },
+        { "log-format",       required_argument, 0, OptionLogFormat       },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
 
         { 0, 0, 0, 0 }
     };
@@ -5553,6 +5491,11 @@ S9sOptions::readOptionsJob(
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
                 break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
 
             case 'c':
                 // -c, --controller=URL
@@ -5562,11 +5505,6 @@ S9sOptions::readOptionsJob(
             case 'P':
                 // -P, --controller-port
                 m_options["controller_port"] = atoi(optarg);
-                break;
-
-            case 't':
-                // -t, --rpc-token=TOKEN
-                m_options["rpc_token"] = optarg;
                 break;
 
             case 'l':
@@ -5632,6 +5570,16 @@ S9sOptions::readOptionsJob(
                 m_options["log_format"] = optarg;
                 break;
 
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -5667,6 +5615,7 @@ S9sOptions::readOptionsScript(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
@@ -5723,6 +5672,11 @@ S9sOptions::readOptionsScript(
             case 'u':
                 // --cmon-user=USERNAME
                 m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -5915,6 +5869,14 @@ S9sOptions::readOptionsNoMode(
     return true;
 }
 
+/**
+ * \returns The path of the private key of the user. There is a default path
+ *   here, so this method will always return a non-empty string.
+ *
+ * Please note that this is a path based on the --auth-key or --cmon-user
+ * command line options. When creating a new user this is probably not what you
+ * want.
+ */
 S9sString
 S9sOptions::privateKeyPath() const
 {
@@ -5937,10 +5899,7 @@ S9sOptions::privateKeyPath() const
 bool
 S9sOptions::isGenerateKeyRequested() const
 {
-    if (m_options.contains("generate_key"))
-        return m_options.at("generate_key").toBoolean();
-
-    return false;
+    return getBool("generate_key");
 }
 
 /**
@@ -5950,10 +5909,7 @@ S9sOptions::isGenerateKeyRequested() const
 S9sString
 S9sOptions::group() const
 {
-    if (m_options.contains("group"))
-        return m_options.at("group").toString();
-
-    return S9sString();
+    return getString("group");
 }
 
 /**
@@ -5962,44 +5918,65 @@ S9sOptions::group() const
 bool
 S9sOptions::createGroup() const
 {
-    if (m_options.contains("create_group"))
-        return m_options.at("create_group").toBoolean();
-
-    return false;
+    return getBool("create_group");
 }
 
+/**
+ * \returns The argument of the --title command line option.
+ */
 S9sString
 S9sOptions::title() const
 {
-    if (m_options.contains("title"))
-        return m_options.at("title").toString();
-
-    return S9sString();
+    return getString("title");
 }
 
+/**
+ * \returns The argument of the --last-name command line option.
+ */
 S9sString
 S9sOptions::lastName() const
 {
-    if (m_options.contains("last_name"))
-        return m_options.at("last_name").toString();
-
-    return S9sString();
+    return getString("last_name");
 }
 
+/**
+ * \returns The argument of the --first-name command line option.
+ */
 S9sString
 S9sOptions::firstName() const
 {
-    if (m_options.contains("first_name"))
-        return m_options.at("first_name").toString();
-
-    return S9sString();
+    return getString("first_name");
 }
 
+/**
+ * \returns The argument of the --email-address command line option.
+ */
 S9sString
 S9sOptions::emailAddress() const
 {
-    if (m_options.contains("email_address"))
-        return m_options.at("email_address").toString();
+    return getString("email_address");
+}
 
-    return S9sString();
+bool 
+S9sOptions::getBool(
+        const char *key) const
+{
+    bool retval = false;
+
+    if (m_options.contains(key))
+        retval = m_options.at(key).toBoolean();
+
+    return retval;
+}
+
+S9sString
+S9sOptions::getString(
+        const char *key) const
+{
+    S9sString retval;
+
+    if (m_options.contains(key))
+        retval = m_options.at(key).toString();
+
+    return retval;
 }

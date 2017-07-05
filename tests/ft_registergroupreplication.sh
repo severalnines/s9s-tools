@@ -28,14 +28,13 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for mysql replication.
+  $MYNAME - Check for registering group replication clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
 
 EOF
     exit 1
@@ -81,11 +80,6 @@ while true; do
             PRINT_COMMANDS="true"
             ;;
 
-        --reset-config)
-            shift
-            OPTION_RESET_CONFIG="true"
-            ;;
-
         --)
             shift
             break
@@ -107,64 +101,25 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
 fi
 
 #
-#
-#
-function testPing()
-{
-    pip-say "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
-    fi
-}
-
-#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster()
 {
-    local nodes
     local nodeName
     local exitCode
 
-    pip-say "The test to create My SQL replication cluster is starting now."
+    pip-say "The test to create MySQL replication cluster is starting now."
     nodeName=$(create_node)
-    nodes+="$nodeName?master;"
+    NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
-    SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName?slave;"
+    NODES+="$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
     
     nodeName=$(create_node)
-    SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
-    
-    nodeName=$(create_node)
-    nodes+="$nodeName?master;"
-    ALL_CREATED_IPS+=" $nodeName"
-    
-    nodeName=$(create_node)
-    SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
-    
-    nodeName=$(create_node)
-    SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName?slave;"
+    NODES+="$nodeName"
     ALL_CREATED_IPS+=" $nodeName"
     
     #
@@ -172,49 +127,33 @@ function testCreateCluster()
     #
     mys9s cluster \
         --create \
-        --cluster-type=mysqlreplication \
-        --nodes="$nodes" \
-        --vendor=percona \
+        --cluster-type=group_replication \
+        --nodes="$NODES" \
+        --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version=5.7 \
         $LOG_OPTION
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+        return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    printVerbose "CLUSTER_ID: '$CLUSTER_ID'"
+
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
-}
 
-#
-# Stopping the cluster.
-#
-function testStop()
-{
-    local exitCode
-
-    pip-say "The test to stop cluster is starting now."
-
-    #
-    # Stopping the cluster.
-    #
-    mys9s cluster \
-        --stop \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    echo "testCreateCluster(): "
+    s9s cluster --list --long
+    s9s node --list --long
+    s9s node --list --node-format="%12R %N\n"
 }
 
 #
@@ -241,24 +180,39 @@ function testDrop()
     fi
 }
 
-#
-# This will destroy the containers we created.
-#
-function testDestroyNodes()
+function testRegister()
 {
-    pip-say "The test is now destroying the nodes."
-    pip-container-destroy \
-        --server=$CONTAINER_SERVER \
-        $ALL_CREATED_IPS \
-        >/dev/null 2>/dev/null
+    local exitCode 
+
+    pip-say "The test to register a cluster is starting."
+
+    #
+    # Registering the cluester that we just created and dropped.
+    #
+    mys9s cluster \
+        --register \
+        --cluster-type=group_replication \
+        --nodes=$NODES \
+        --vendor=percona \
+        --cluster-name=my_cluster_$$ \
+        $LOG_OPTION
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+
+    echo "testRegister(): "
+    s9s cluster --list --long
+    s9s node --list --long
+    s9s node --list --node-format="%12R %N\n"
 }
 
 #
 # Running the requested tests.
 #
 startTests
-
-reset_config
 grant_user
 
 if [ "$1" ]; then
@@ -266,11 +220,9 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testPing
     runFunctionalTest testCreateCluster
-    runFunctionalTest testStop
     runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
+    runFunctionalTest testRegister
 fi
 
 if [ "$FAILED" == "no" ]; then

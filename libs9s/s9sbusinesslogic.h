@@ -21,6 +21,8 @@
 
 #include "S9sRpcClient"
 
+//#define USE_NEW_RPC 
+
 /**
  * A class that is able to execute whatever the user requested through the
  * command line options.
@@ -29,6 +31,7 @@ class S9sBusinessLogic
 {
     public:
         void execute();
+        bool authenticate(S9sRpcClient &client);
 
         void waitForJob(
                 const int     clusterId,
@@ -59,7 +62,15 @@ class S9sBusinessLogic
                 const int     jobId, 
                 S9sRpcClient &client);
 
-        void executeUser(S9sRpcClient &client);
+        void executeUserList(S9sRpcClient &client);
+
+        void executeCreateUser(S9sRpcClient &client);
+        void executeCreateUserThroughRpc(S9sRpcClient &client);
+        void executeCreateUserThroughPipe(S9sRpcClient &client);
+
+        bool ensureHasAuthKey(
+                const S9sString &privateKeyPath,
+                S9sString       &publicKey);
 
         void executeClusterList(S9sRpcClient &client);
         void executePing(S9sRpcClient &client);
@@ -76,22 +87,14 @@ class S9sBusinessLogic
         void executeTop(S9sRpcClient &client);
         void executeProcessList(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
-        void executeUserList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
         void executeLogList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 
         void executeDropCluster(S9sRpcClient &client);
-        void executeCreateAccount(S9sRpcClient &client);
-        void executeGrant(S9sRpcClient &client);
-        void executeDeleteAccount(S9sRpcClient &client);
-        void executeCreateDatabase(S9sRpcClient &client);
 
-        void executeDeleteBackup(S9sRpcClient &client);
-        
         void executeMaintenanceCreate(S9sRpcClient &client);
-        void executeMaintenanceDelete(S9sRpcClient &client);
         void executeMaintenanceList(S9sRpcClient &client);
         void executeMetaTypeList(S9sRpcClient &client);
         void executeMetaTypePropertyList(S9sRpcClient &client);

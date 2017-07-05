@@ -16,36 +16,46 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+.TP 
+.B \-\^\-change\-password
+Change the password of an existing user.
+
 .TP
-.B \-L, \-\-list
+.B \-\^\-create
+Register a new user (create a new user account) on the controller and grant
+access to the ClusterControl system. The user name of the new account should be
+the command line argument. Please check the EXAMPLES section of this
+documentation for some examples.
+
+.TP
+.B \-L, \-\^\-list
 List the users registered for the ClusterControl controller. 
 
 .TP
-.B \-\-whoami
-Same as \fB\-\-list\fR, but only lists the current user, the user that
-authenticated on the controller.
+.B \-\^\-set
+Changes the specified properties of the user.
 
 .TP
-.B \-\-create
-Register a new user or update an existing user on the controller and grant
-access to the ClusterControl system.
+.B \-\^\-whoami
+Same as \fB\-\-list\fR, but only lists the current user, the user that
+authenticated on the controller.
 
 .SS Generic Options
 
 .TP
-.B \-\-help
+.B \-\^\-help
 Print the help message and exist.
 
 .TP
-.B \-\-debug
+.B \-\^\-debug
 Print even the debug level messages.
 
 .TP
-.B \-v, \-\-verbose
+.B \-v, \-\^\-verbose
 Print more messages than normally.
 
 .TP
-.B \-V, \-\-version
+.B \-V, \-\^\-version
 Print version information and exit.
 
 .TP
@@ -58,13 +68,28 @@ part of the hostname (e.g. --controller="https://127.0.0.1:9556").
 The port where the Cmon Controller is waiting for connections.
 
 .TP
-.B \-l, \-\-long
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.B \-l, \-\^\-long
 This option is similar to the -l option for the standard ls UNIX utility
 program. If the program creates a list of objects this option will change its
 format to show more details.
 
 .TP
-.B \-\-print-json
+.B \-\^\-print-json
 The JSON strings will be printed while communicating with the controller. This 
 option is for debugging purposes.
 
@@ -76,13 +101,13 @@ is
 .BR never ", " always ", or " auto .
 
 .TP
-.B \-\-batch
+.B \-\^\-batch
 Print no messages. If the application created a job print only the job ID number
 and exit. If the command prints data do not use syntax highlight, headers,
 totals, only the pure table to be processed using filters.
 
 .TP
-.B \-\-no\-header
+.B \-\^\-no\-header
 Do not print headers for tables.
 
 .\"
@@ -91,28 +116,21 @@ Do not print headers for tables.
 .SS Options Related to Users
 
 .TP
-.BI \-\^\-cmon-user= USERNAME
-Sets the name of the Cmon user (the name of the account maintained by the Cmon
-Controller) to be manipulated or used to authenticate. Since most of the
-functionality needs authentication this command line option should be very
-frequently used or set in the configuration file. Please check the documentation
-of the s9s-conf(5) to see how the Cmon User can be set.
-
-.TP
 .BI \-\^\-group= GROUPNAME
 Set the name of the group. For example when a new user is created this option
 can be used to control what will be the primary group of the new user.
 
 .TP
-.BI \-\^\-create-group
-Not yet implemented.
+.BI \-\^\-create\-group
+If this command line option is provided and the group for the new user does not
+exist the group will be created together with the new user.
 
 .TP
-.BI \-\^\-first-name= NAME
+.BI \-\^\-first\-name= NAME
 Set the first name of the user.
 
 .TP
-.BI \-\^\-last-name= NAME
+.BI \-\^\-last\-name= NAME
 Set the last name of the user.
 
 .TP
@@ -120,8 +138,86 @@ Set the last name of the user.
 The title prefix (e.g. Dr.) for the user.
 
 .TP
-.BI \-\^\-email-address= ADDRESS
+.BI \-\^\-email\-address= ADDRESS
 The email address for the user.
+
+.TP
+.BI \-\^\-new\-password= PASSWORD
+The new password when changing the password.
+
+.TP
+.BI \-\^\-old\-password= PASSWORD
+The old password when changing the password.
+
+.\"
+.\" The user format string.
+.\"
+.TP
+.BR \-\^\-user\-format [ =\fIFORMATSTRING\fP "]
+The string that controls the format of the printed information about the users.
+When this command line option is used the specified information will be printed
+instead of the default columns. The format string uses the '%' character to mark
+variable fields and flag characters as they are specified in the standard
+printf() C library functions. The '%' specifiers are ended by field name letters
+to refer to various properties of the users.
+
+The "%+12I" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the user are encoded by letters. The in the "%16N" for
+example the letter "N" encodes the "username" field, so username of the user
+will be substituted. 
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The s9s-tools support the following fields:
+
+.RS 7
+
+.TP
+.B F
+The full name of the user.
+
+.TP
+.B f
+The first name of the user.
+
+.TP
+.B G
+The names of groups the given user belongs to.
+
+.TP
+.B I
+The unique numerical ID of the user.
+
+.TP 
+.B j
+The job title of the user.
+
+.TP
+.B l
+The last name of the user.
+
+.TP
+.B M
+The email address of the user.
+
+.TP
+.B m
+The middle name of the user.
+
+.TP
+.B N
+The username for the user.
+
+.TP
+.B t
+The title of the user (e.g. "Dr.").
+
+.RE
+
 
 .\"
 .\"
@@ -206,10 +302,10 @@ created):
 # \fBs9s user \\
     --create \\
     --generate-key \\
-    --cmon-user=john \\
     --first-name="John" \\
     --last-name="Doe" \\
-    --group=admins\fR
+    --group=admins \\
+    john\fR
 .fi
 
 Here is how to get a detailed list of the users managed by the controller.
@@ -217,3 +313,15 @@ Here is how to get a detailed list of the users managed by the controller.
 # \fBs9s user \\
     --list \\
     --long\fR
+
+The following example shows how one user can change the email address of an
+other (existing) user. 
+
+.nf
+# \fBs9s user \\
+    --set \\
+    --email-address=newemail@ds9.com \\
+    worf
+\fR
+.fi
+

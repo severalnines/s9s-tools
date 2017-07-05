@@ -23,6 +23,7 @@
 #include "S9sRpcReply"
 
 class S9sRpcClientPrivate;
+class S9sUser;
 
 class S9sRpcClient
 {
@@ -32,31 +33,37 @@ class S9sRpcClient
         S9sRpcClient(
                 const S9sString &hostName,
                 const int        port,
-                const S9sString &token,
                 const bool       useTls);
 
         S9sRpcClient(const S9sRpcClient &orig);
-
 
         virtual ~S9sRpcClient();
 
 
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
 
+        bool hasPrivateKey() const;
+        bool canAuthenticate(S9sString &reason) const;
+        bool needToAuthenticate() const;
+
         const S9sRpcReply &reply() const;
+        void setExitStatus();
+
         S9sString errorString() const;
         void printMessages(
                 const S9sString &defaultMessage,
                 bool             success);
 
         bool authenticate();
+        bool authenticateWithKey();
+        bool authenticateWithPassword();
 
         /*
          * The executers that send an RPC request and receive an RPC reply from
          * the server.
          */
         bool getClusters();
-        bool getCluster(int clusterId);
+        bool getCluster();
         
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);
@@ -134,7 +141,20 @@ class S9sRpcClient
         /*
          * Requests related to the cmon users.
          */
+        static S9sVariantMap 
+            createUserRequest(
+                    const S9sUser   &user,
+                    const S9sString &newPassword,
+                    bool             createGroup);
+
+        bool createUser(
+                const S9sUser   &user,
+                const S9sString &newPassword,
+                bool             createGroup);
+
         bool getUsers();
+        bool setUser();
+        bool setPassword();
 
         bool getJobInstance(const int jobId);
         
@@ -148,6 +168,7 @@ class S9sRpcClient
         bool createReport(const int clusterId);
 
         bool createCluster();
+        bool registerCluster();
         bool createNode();
         bool removeNode();
         bool stopCluster();
@@ -191,13 +212,17 @@ class S9sRpcClient
                 const S9sString &payload);
 
     private:
-        // Low level methods that create new clusters.
+        // Low level methods that create/register new clusters.
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
+
+        bool registerGaleraCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
 
         bool createMySqlReplication(
                 const S9sVariantList &hosts,
@@ -206,12 +231,20 @@ class S9sRpcClient
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
         
+        bool registerMySqlReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
+        
         bool createGroupReplication(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
+
+        bool registerGroupReplication(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
 
         bool createNdbCluster(
                 const S9sVariantList &mySqlHosts,
@@ -221,11 +254,21 @@ class S9sRpcClient
                 const S9sString      &vendor,
                 const S9sString      &mySqlVersion,
                 bool                  uninstall);
+        
+        bool registerNdbCluster(
+                const S9sVariantList &mySqlHosts,
+                const S9sVariantList &mgmdHosts,
+                const S9sVariantList &ndbdHosts,
+                const S9sString      &osUserName);
 
         bool createPostgreSql(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 bool                  uninstall);
+
+        bool registerPostgreSql(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
         
         // Low level methods that create/install a new node and add it to a
         // cluster.

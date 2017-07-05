@@ -5,6 +5,7 @@
 SUBDIRS =     	     \
 	ut_library       \
 	ut_s9sstring     \
+	ut_s9sdatetime   \
 	ut_s9surl        \
 	ut_s9snode       \
 	ut_s9scluster    \

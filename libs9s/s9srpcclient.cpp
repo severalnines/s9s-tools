@@ -21,10 +21,12 @@
 #include "s9srpcclient_p.h"
 
 #include "S9sOptions"
+#include "S9sUser"
 #include "S9sNode"
 #include "S9sAccount"
 #include "S9sRsaKey"
 #include "S9sDateTime"
+#include "S9sFile"
 
 #include <cstring>
 #include <cstdio>
@@ -47,20 +49,17 @@ S9sRpcClient::S9sRpcClient() :
  * \param hostName the name if the host where the Cmon controller accepts
  *   requests.
  * \param port the port where the Cmon controller accepts requests.
- * \param token a token to be used with the communication.
  * \param useTls if client must initiate TLS encryption to the server.
  *
  */
 S9sRpcClient::S9sRpcClient(
         const S9sString &hostName,
         const int        port,
-        const S9sString &token,
         const bool       useTls) :
     m_priv(new S9sRpcClientPrivate)
 {
     m_priv->m_hostName = hostName;
     m_priv->m_port     = port;
-    m_priv->m_token    = token;
     m_priv->m_useTls   = useTls;
 }
 
@@ -114,6 +113,58 @@ S9sRpcClient::operator= (
 	return *this;
 }
 
+bool
+S9sRpcClient::hasPrivateKey() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sFile        keyFile(options->privateKeyPath());
+
+    if (options->userName().empty())
+        return false;
+ 
+    return keyFile.exists();
+}
+
+bool
+S9sRpcClient::canAuthenticate(
+        S9sString &reason) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    // No authentication wihtout a username.
+    if (options->userName().empty())
+    {
+        reason = "No user name set.";
+        return false;
+    }
+
+    // It is possible with a password...
+    if (!options->password().empty())
+        return true;
+
+    // or a key.
+    if (hasPrivateKey())
+        return true;
+
+    reason.sprintf(
+            "No password and no RSA key for user %s.", 
+            STR(options->userName()));
+
+    return false;
+}
+
+bool
+S9sRpcClient::needToAuthenticate() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    // Creating a new user is possible without authentication through the pipe.
+    if (options->isUserOperation() && options->isCreateRequested())
+        return false;
+
+    return true;
+}
+
 /**
  * \returns the reply that received from the controller.
  *
@@ -128,6 +179,56 @@ S9sRpcClient::reply() const
 }
 
 /**
+ * Takes the request status from the reply and sets the exit code of the
+ * program accordingly. If the request status is "ok" the exit code is not going
+ * to be changed.
+ */
+void
+S9sRpcClient::setExitStatus() 
+{
+    S9sRpcReply::ErrorCode errorCode = reply().requestStatus();
+
+    if (errorCode != S9sRpcReply::Ok)
+    {
+        S9sOptions *options = S9sOptions::instance();
+
+        switch (errorCode)
+        {
+            case S9sRpcReply::Ok:
+                break;
+
+            case S9sRpcReply::InvalidRequest:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::ObjectNotFound:
+                options->setExitStatus(S9sOptions::NotFound);
+                break;
+
+            case S9sRpcReply::TryAgain:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::ClusterNotFound:
+                options->setExitStatus(S9sOptions::NotFound);
+                break;
+
+            case S9sRpcReply::UnknownError:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+
+            case S9sRpcReply::AccessDenied:
+                options->setExitStatus(S9sOptions::AccessDenied);
+                break;
+
+            case S9sRpcReply::AuthRequired:
+                options->setExitStatus(S9sOptions::Failed);
+                break;
+        }
+    }
+}
+
+/**
  * \returns the human readable error string stored in the object.
  */
 S9sString 
@@ -136,6 +237,10 @@ S9sRpcClient::errorString() const
     return m_priv->m_errorString;
 }
 
+/**
+ * Prints the messages from the reply, prints the default message if there are
+ * no messages in the reply.
+ */
 void
 S9sRpcClient::printMessages(
         const S9sString &defaultMessage,
@@ -160,6 +265,41 @@ bool
 S9sRpcClient::authenticate()
 {
     S9sOptions    *options = S9sOptions::instance();
+
+    if (options->hasPassword())
+        return authenticateWithPassword();
+
+    return authenticateWithKey();
+}
+
+bool 
+S9sRpcClient::authenticateWithPassword()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/auth";
+    bool           retval;
+
+    request["operation"]    = "authenticateWithPassword";
+    request["user_name"]    = options->userName();
+    request["password"]     = options->password();
+    
+    retval = executeRequest(uri, request);
+    if (!retval)
+        return false;
+    
+    return reply().isOk();
+}
+
+/**
+ * Does the authentication with the private key.
+ */
+bool
+S9sRpcClient::authenticateWithKey()
+{
+    S9S_DEBUG("Authenticating with key.");
+
+    S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/v2/auth";
     S9sVariantMap  request;
@@ -168,6 +308,8 @@ S9sRpcClient::authenticate()
 
     if (privKeyPath.empty())
     {
+        S9S_WARNING("Private key not specified.");
+
         m_priv->m_errorString =
                 "Private key not specified, authentication is not possible.";
         return false;
@@ -175,6 +317,10 @@ S9sRpcClient::authenticate()
 
     if (!rsa.loadKeyFromFile(privKeyPath))
     {
+        S9S_WARNING(
+                "Could not load user private key: %s",
+                STR(privKeyPath));
+
         m_priv->m_errorString.sprintf (
                 "Could not load user private key: %s",
                 STR(privKeyPath));
@@ -182,26 +328,31 @@ S9sRpcClient::authenticate()
     }
 
     /*
-     * First request, 'login'
+     * First request.
      */
     request = S9sVariantMap();
-    request["operation"]    = "login";
-    request["username"]     = options->userName();
+    request["operation"]    = "authenticate";
+    request["user_name"]    = options->userName();
 
     retval = executeRequest(uri, request);
     if (!retval)
         return false;
 
     S9sRpcReply loginReply = reply();
-
     S9sString signature;
     S9sString challenge = loginReply["challenge"].toString();
 
     // create an RSA-SHA256 signature using user's privkey
+    S9S_DEBUG("  privKeyPath : %s", STR(privKeyPath));
     rsa.signRsaSha256(challenge, signature);
+    S9S_DEBUG("  challenge   : %s", STR(challenge));
+    S9S_DEBUG("  signature   : %s", STR(signature));
 
+    /*
+     * Second request.
+     */
     request = S9sVariantMap();
-    request["operation"]    = "response";
+    request["operation"]    = "authenticateResponse";
     request["signature"]    = signature;
 
     retval = executeRequest(uri, request);
@@ -224,24 +375,43 @@ S9sRpcClient::authenticate()
  * referenced by the cluster ID.
  */
 bool
-S9sRpcClient::getCluster(
-        int clusterId)
+S9sRpcClient::getCluster()
 {
-    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"]  = "getAllClusterInfo";
-    request["with_hosts"] = true;
-    request["cluster_id"] = clusterId;
-    request["user"]       = options->userName();
+    #if 0
+    //
+    // We actually can send this request in two ways: getAllClusterInfo or
+    // clusterClusterInfo
+    //
+    S9sVariantList clusterIds;
+
+    clusterIds << clusterId;
+
+    request["operation"]       = "getAllClusterInfo";
+    request["with_hosts"]      = true;
+    request["with_sheet_info"] = true;
+    request["cluster_ids"]     = clusterIds;
+    #else
+    S9sOptions    *options = S9sOptions::instance();
+
+    request["operation"]       = "getClusterInfo";
+    request["with_hosts"]      = true;
+    request["with_sheet_info"] = true;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"]   = options->clusterId();
+
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+    #endif
     
     retval = executeRequest(uri, request);
     
     return retval;
 }
-
 
 /**
  * \returns true if the request sent and a return is received (even if the reply
@@ -257,11 +427,16 @@ S9sRpcClient::getClusters()
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
+   
+    if (options->hasClusterIdOption())
+        return getCluster();
+    
+    if (options->hasClusterNameOption())
+        return getCluster();
 
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
     request["with_sheet_info"] = true;
-    request["user"]            = options->userName();
 
     retval = executeRequest(uri, request);
 
@@ -307,6 +482,10 @@ S9sRpcClient::getConfig(
     return retval;
 }
 
+/**
+ * This function is for changing the configuration through the controller for 
+ * one node.
+ */
 bool
 S9sRpcClient::setConfig(
         const S9sVariantList &hosts)
@@ -328,7 +507,7 @@ S9sRpcClient::setConfig(
         if (node.hasPort())
             request["port"] = node.port();
     } else {
-        PRINT_ERROR("getConfig only implemented for one host.");
+        PRINT_ERROR("setConfig only implemented for one host.");
         return false;
     }
 
@@ -345,27 +524,24 @@ S9sRpcClient::setConfig(
         optionMap["group"] = options->optGroup();
 
     optionList << optionMap;
+
     request["configuration"] = optionList;
 
     retval = executeRequest(uri, request);
-
     return retval;
 }
-
 
 bool
 S9sRpcClient::ping()
 {
-    S9sOptions    *options = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
-    S9sString      uri = "/v2";
+    S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
     request["operation"]       = "ping";
     request["request_created"] = timeString;
-    request["user"]            = options->userName();
     
     retval = executeRequest(uri, request);
 
@@ -410,7 +586,6 @@ S9sRpcClient::setHost()
 
 
 /**
- * \param clusterId The cluster where the request will be sent.
  * \param hosts The list of hosts to change (currently only one host is
  *   supported).
  * \param properties The names and values of the host properties to change.
@@ -422,7 +597,7 @@ S9sRpcClient::setHost(
 {
     S9sString      uri = "/v2/host";
     S9sVariantMap  request;
-
+    
     if (hosts.size() != 1u)
     {
         PRINT_ERROR("setHost is currently implemented only for one node.");
@@ -507,11 +682,10 @@ S9sRpcClient::getInfo()
 }
 
 /**
- * \param clusterId the ID of the cluster for which the CPU information will be
+ * \param clusterId the ID of the cluster for which the statistics will be
  *   fetched.
- * \returns true if the request sent and a return is received (even if the reply
+ * \returns true if the request sent and a reply is received (even if the reply
  *   is an error message).
- *
  */
 bool
 S9sRpcClient::getCpuStats(
@@ -520,6 +694,12 @@ S9sRpcClient::getCpuStats(
     return getStats(clusterId, "cpustat");
 }
 
+/**
+ * \param clusterId the ID of the cluster for which the statistics will be
+ *   fetched.
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ */
 bool
 S9sRpcClient::getSqlStats(
         const int clusterId)
@@ -527,13 +707,18 @@ S9sRpcClient::getSqlStats(
     return getStats(clusterId, "sqlstat");
 }
 
+/**
+ * \param clusterId the ID of the cluster for which the statistics will be
+ *   fetched.
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ */
 bool
 S9sRpcClient::getMemStats(
         const int clusterId)
 {
     return getStats(clusterId, "memorystat");
 }
-
 
 bool
 S9sRpcClient::getMetaTypes()
@@ -652,8 +837,12 @@ S9sRpcClient::getJobInstances()
     bool           retval;
 
     request["operation"] = "getJobInstances";
-    //request["ascending"] = true;
-    //request["limit"]     = 10000;
+
+    if (options->limit() >= 0)
+        request["limit"] = options->limit();
+
+    if (options->offset() >= 0)
+        request["offset"] = options->offset();
 
     if (options->hasClusterIdOption())
         request["cluster_id"] = options->clusterId();
@@ -800,7 +989,7 @@ S9sRpcClient::rollingRestart(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Rolling Restart";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -839,7 +1028,6 @@ S9sRpcClient::createReport(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Error Report";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -895,7 +1083,7 @@ S9sRpcClient::createCluster()
         return false;
     }
 
-    dbVersion = options->providerVersion("5.6");
+    dbVersion    = options->providerVersion("5.6");
     osUserName   = options->osUser();
     vendor       = options->vendor();
 
@@ -977,6 +1165,79 @@ S9sRpcClient::createCluster()
     return success;
 }
 
+bool
+S9sRpcClient::registerCluster()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hosts;
+    S9sString      osUserName;
+    bool           success = false;
+
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+            "Node list is empty while registering cluster.\n"
+            "Use the --nodes command line option to provide the node list."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return success;
+    }
+    
+    osUserName   = options->osUser();
+    
+    if (options->clusterType() == "postgresql")
+    {
+        success = registerPostgreSql(hosts, osUserName);
+    } else if (options->clusterType() == "galera")
+    {
+        success = registerGaleraCluster(hosts, osUserName);
+    } else if (options->clusterType() == "mysqlreplication")
+    {
+        success = registerMySqlReplication(hosts, osUserName);
+    } else if (options->clusterType() == "group_replication")
+    {
+        success = registerGroupReplication(hosts, osUserName);
+    } else if (options->clusterType() == "ndb" || 
+            options->clusterType() == "ndbcluster")
+    {
+        S9sVariantList mySqlHosts, mgmdHosts, ndbdHosts;
+
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode     node     = hosts[idx].toNode();
+            S9sString   protocol = node.protocol().toLower();
+
+            if (protocol == "ndbd")
+            {
+                ndbdHosts << node;
+            } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
+            {
+                mgmdHosts << node;
+            } else if (protocol == "mysql" || protocol.empty())
+            {
+                mySqlHosts << node;
+            } else {
+                PRINT_ERROR(
+                        "The protocol '%s' is not supported.", 
+                        STR(protocol));
+                return false;
+            }
+        }
+
+        success = registerNdbCluster(
+                mySqlHosts, mgmdHosts, ndbdHosts, osUserName);
+    } else {
+        PRINT_ERROR("Register cluster is currently implemented only for "
+                "some cluster types.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return success;
+    }
+
+    return success;
+}
+
 /**
  * \param clusterId the ID of the cluster for which the CPU information will be
  *   fetched.
@@ -1041,11 +1302,9 @@ S9sRpcClient::createGaleraCluster(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
-    bool            retval;
     
     if (hosts.size() < 1u)
     {
@@ -1053,49 +1312,106 @@ S9sRpcClient::createGaleraCluster(
         return false;
     }
     
-    for (uint idx = 0; idx < hosts.size(); ++idx)
-    {
-        if (hosts[idx].isNode())
-            hostNames << hosts[idx].toNode().hostName();
-        else
-            hostNames << hosts[idx];
-    }
-
+    // 
     // The job_data describing the cluster.
-    jobData["cluster_type"]    = "galera";
-    jobData["mysql_hostnames"] = hostNames;
-    jobData["vendor"]          = vendor;
-    jobData["mysql_version"]   = mySqlVersion;
+    //
+    jobData["cluster_type"]     = "galera";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
     jobData["enable_mysql_uninstall"] = uninstall;
-    jobData["ssh_user"]        = osUserName;
-    //jobData["repl_user"]        = options->dbAdminUserName();
-    jobData["mysql_password"]  = options->dbAdminPassword();
+    jobData["ssh_user"]         = osUserName;
+    jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_key"]      = options->osKeyFile();
 
+    // 
     // The jobspec describing the command.
-    jobSpec["command"]    = "create_cluster";
-    jobSpec["job_data"]   = jobData;
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
 
+    // 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Create Galera Cluster";
-    job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Create Galera Cluster";
+    job["job_spec"]             = jobSpec;
 
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+
+    // 
     // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
     
-    retval = executeRequest(uri, request);
+    return executeRequest(uri, request);
+}
+
+/**
+ * http://52.58.107.236/cmon-docs/current/cmonjobs.html#add_cluster1
+ */
+bool
+S9sRpcClient::registerGaleraCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
     
-    return retval;
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "galera";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"]  = options->osKeyFile();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+    
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Register Galera";
+    job["job_spec"]             = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+    
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1128,19 +1444,11 @@ S9sRpcClient::createMySqlReplication(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
-#if 0
-    for (uint idx = 0; idx < hosts.size(); ++idx)
-    {
-        if (hosts[idx].isNode())
-            hostNames << hosts[idx].toNode().hostName();
-        else
-            hostNames << hosts[idx];
-    }
-#endif
+    
+    // 
     // The job_data describing the cluster.
+    //
     jobData["cluster_type"]     = "replication";
-    //jobData["mysql_hostnames"]  = hostNames;
-    //jobData["master_address"]   = hostNames[0].toString();
     jobData["topology"]         = topologyField(hosts);
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
@@ -1157,17 +1465,22 @@ S9sRpcClient::createMySqlReplication(
     if (!options->osKeyFile().empty())
         jobData["ssh_key"]      = options->osKeyFile();
 
+    // 
     // The jobspec describing the command.
+    //
     jobSpec["command"]    = "create_cluster";
     jobSpec["job_data"]   = jobData;
 
+    // 
     // The job instance describing how the job will be executed.
+    //
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
+    // 
     // The request describing we want to register a job instance.
+    //
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
     request["cluster_id"] = 0;
@@ -1175,6 +1488,66 @@ S9sRpcClient::createMySqlReplication(
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * http://52.58.107.236/cmon-docs/current/cmonjobs.html#add_cluster1
+ */
+bool
+S9sRpcClient::registerMySqlReplication(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
+    
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "replication";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"]  = options->osKeyFile();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+    
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Register MySql Replication";
+    job["job_spec"]             = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+    
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1242,7 +1615,6 @@ S9sRpcClient::createGroupReplication(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -1252,6 +1624,66 @@ S9sRpcClient::createGroupReplication(
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * http://52.58.107.236/cmon-docs/current/cmonjobs.html#add_cluster1
+ */
+bool
+S9sRpcClient::registerGroupReplication(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
+    
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "group_replication";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"]  = options->osKeyFile();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+    
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Register MySql Replication";
+    job["job_spec"]             = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+    
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1326,7 +1758,7 @@ S9sRpcClient::createNdbCluster(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create NDB Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1343,11 +1775,89 @@ S9sRpcClient::createNdbCluster(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ *
+ */
+bool
+S9sRpcClient::registerNdbCluster(
+        const S9sVariantList &mySqlHosts,
+        const S9sVariantList &mgmdHosts,
+        const S9sVariantList &ndbdHosts,
+        const S9sString      &osUserName)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    
+    for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
+    {
+        if (mySqlHosts[idx].isNode())
+            mySqlHostNames << mySqlHosts[idx].toNode().hostName();
+        else
+            mySqlHostNames << mySqlHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < mgmdHosts.size(); ++idx)
+    {
+        if (mgmdHosts[idx].isNode())
+            mgmdHostNames << mgmdHosts[idx].toNode().hostName();
+        else
+            mgmdHostNames << mgmdHosts[idx];
+    }
+    
+    for (uint idx = 0; idx < ndbdHosts.size(); ++idx)
+    {
+        if (ndbdHosts[idx].isNode())
+            ndbdHostNames << ndbdHosts[idx].toNode().hostName();
+        else
+            ndbdHostNames << ndbdHosts[idx];
+    }
+    
+    // The job_data describing the cluster.
+    jobData["cluster_type"]     = "mysqlcluster";
+    jobData["type"]             = "mysql";
+    jobData["mysql_hostnames"]  = mySqlHostNames;
+    jobData["mgmd_hostnames"]   = mgmdHostNames;
+    jobData["ndbd_hostnames"]   = ndbdHostNames;
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"] = options->osKeyFile();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "add_cluster";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Register NDB Cluster";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  * \param osUserName the user name to be used to SSH to the host.
  * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
+ * This method will create a job that creates a single server PostgreSQL
+ * cluster.
  */
 bool
 S9sRpcClient::createPostgreSql(
@@ -1359,7 +1869,6 @@ S9sRpcClient::createPostgreSql(
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
-    bool            retval;
 
     if (hosts.size() != 1u)
     {
@@ -1369,7 +1878,9 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    // 
     // The job_data describing the cluster.
+    //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     
@@ -1386,25 +1897,88 @@ S9sRpcClient::createPostgreSql(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
+    // 
     // The jobspec describing the command.
-    jobSpec["command"]   = "setup_server";
-    jobSpec["job_data"]  = jobData;
+    //
+    jobSpec["command"]          = "setup_server";
+    jobSpec["job_data"]         = jobData;
 
+    // 
     // The job instance describing how the job will be executed.
-    job["class_name"]    = "CmonJobInstance";
-    job["title"]         = "Setup PostgreSQL Server";
-    job["job_spec"]      = jobSpec;
-    job["user_name"]     = options->userName();
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Setup PostgreSQL Server";
+    job["job_spec"]             = jobSpec;
 
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+
+    // 
     // The request describing we want to register a job instance.
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
     
-    retval = executeRequest(uri, request);
+    return executeRequest(uri, request);
+}
+
+/**
+ * http://52.58.107.236/cmon-docs/current/cmonjobs.html#add_cluster1
+ */
+bool
+S9sRpcClient::registerPostgreSql(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
     
-    return retval;
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "postgresql_single";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["ssh_user"]         = osUserName;
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"]  = options->osKeyFile();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+    
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Register PostgreSQL";
+    job["job_spec"]             = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+    
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
 }
 
 bool 
@@ -1554,7 +2128,7 @@ S9sRpcClient::addNode(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1659,7 +2233,7 @@ S9sRpcClient::addReplicationSlave(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Slave to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1748,7 +2322,7 @@ S9sRpcClient::addHaProxy(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add HaProxy to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1813,7 +2387,7 @@ S9sRpcClient::addProxySql(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add ProxySQL to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -1895,7 +2469,9 @@ S9sRpcClient::addMaxScale(
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add MaxScale to Cluster";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -1964,7 +2540,7 @@ S9sRpcClient::removeNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
@@ -2011,7 +2587,7 @@ S9sRpcClient::stopCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
 
@@ -2047,7 +2623,6 @@ S9sRpcClient::startCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Cluster";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2100,7 +2675,6 @@ S9sRpcClient::startNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2156,7 +2730,6 @@ S9sRpcClient::stopNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Stopping Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2213,7 +2786,6 @@ S9sRpcClient::restartNode()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restarting Node";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
@@ -2261,7 +2833,7 @@ S9sRpcClient::dropCluster()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule(); 
 
@@ -2349,7 +2921,6 @@ S9sRpcClient::createBackup()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Backup";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
 
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
@@ -2410,7 +2981,7 @@ S9sRpcClient::restoreBackup()
     job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restore Backup";
     job["job_spec"]       = jobSpec;
-    job["user_name"]      = options->userName();
+
     if (!options->schedule().empty())
         job["scheduled"]  = options->schedule();
 
@@ -2716,6 +3287,38 @@ S9sRpcClient::treeScripts()
     return executeRequest(uri, request);
 }
 
+S9sVariantMap
+S9sRpcClient::createUserRequest(
+        const S9sUser   &user,
+        const S9sString &newPassword,
+        bool             createGroup)
+{
+    S9sVariantMap  request;
+
+    request["operation"]    = "createUser";
+    request["user"]         = user.toVariantMap();
+    request["create_group"] = createGroup;
+
+    if (!newPassword.empty())
+        request["new_password"] = newPassword;
+
+    return request;
+}
+
+bool
+S9sRpcClient::createUser(
+        const S9sUser   &user,
+        const S9sString &newPassword,
+        bool             createGroup)
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    
+    request = createUserRequest(user, newPassword, createGroup);
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
@@ -2734,6 +3337,103 @@ S9sRpcClient::getUsers()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * \returns true if the request sent and a reply is received (even if the reply
+ *   is an error message).
+ *
+ * This method is used to modify an existing Cmon User on the controller.
+ */
+bool
+S9sRpcClient::setUser()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+    bool           retval;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("Only one user can be modified at once.");
+        return false;
+    }
+
+    properties["class_name"] = "CmonUser";
+
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        properties["user_name"] = options->userName();
+    }
+
+    if (!options->firstName().empty())
+        properties["first_name"] = options->firstName();
+    
+    if (!options->lastName().empty())
+        properties["last_name"] = options->lastName();
+    
+    if (!options->title().empty())
+        properties["title"] = options->title();
+    
+    if (!options->emailAddress().empty())
+        properties["email_address"] = options->emailAddress();
+
+    request["operation"]  = "setUser";
+    request["user"]       = properties;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::setPassword()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+    bool           changingSelf = false;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("Only one user can be modified at once.");
+        return false;
+    }
+
+    //
+    //
+    //
+    properties["class_name"] = "CmonUser";
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        properties["user_name"] = options->userName();
+        changingSelf = true;
+    }
+
+    //
+    // 
+    //
+    request["operation"]  = "changePassword";
+    request["user"]       = properties;
+
+    if (options->hasOldPassword())
+    {
+        request["old_password"] = options->oldPassword();
+    } else if (changingSelf && options->hasPassword())
+    {
+        request["old_password"] = options->password();
+    }
+
+    if (options->hasNewPassword())
+        request["new_password"] = options->newPassword();
+    
+    return executeRequest(uri, request);
 }
 
 /**
@@ -2912,6 +3612,7 @@ S9sRpcClient::executeRequest(
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
 
     request["request_created"] = timeString;
+    request["request_id"]      = ++m_priv->m_requestId;
 
     return doExecuteRequest(uri, request.toString());
 }

@@ -99,54 +99,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
 fi
 
 #
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name" 2>/dev/null)
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
-}
-
-#
 #
 #
 function testPing()

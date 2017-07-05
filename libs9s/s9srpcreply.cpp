@@ -39,6 +39,37 @@
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
+S9sRpcReply::ErrorCode
+S9sRpcReply::requestStatus() const
+{
+    S9sString errorCodeString = "ok";
+    ErrorCode retval = Ok;
+
+    if (contains("requestStatus"))
+        errorCodeString = at("requestStatus").toString().toLower();
+    else if (contains("request_status"))
+        errorCodeString = at("request_status").toString().toLower();
+
+    if (errorCodeString == "ok")
+        retval = Ok;
+    else if (errorCodeString == "invalidrequest")
+        retval = InvalidRequest;
+    else if (errorCodeString == "tryagain")
+        retval = TryAgain;
+    else if (errorCodeString == "clusternotfound")
+        retval = ClusterNotFound;
+    else if (errorCodeString == "unknownerror")
+        retval = UnknownError;
+    else if (errorCodeString == "accessdenied")
+        retval = AccessDenied;
+    else if (errorCodeString == "authrequeired")
+        retval = AuthRequired;
+    else 
+        retval = UnknownError;
+
+    return retval;
+}
+
 /**
  * \returns true if the reply states that the request status is 'ok'.
  */
@@ -167,6 +198,25 @@ S9sRpcReply::isJobFailed() const
     retval = job["status"].toString() == "FAILED";
 
     return retval;
+}
+
+/**
+ * The reply to getClusterInfo and getAllClusterInfo replies are similar, one
+ * contains a single cluster, the other contains a list of clusters. This
+ * function returns the cluster(s) as a list of maps no matter which way the
+ * reply is built.
+ */
+S9sVariantList
+S9sRpcReply::clusters()
+{
+    S9sVariantList  theList;
+    
+    if (contains("clusters"))
+        theList = operator[]("clusters").toVariantList();
+    else if (contains("cluster"))
+        theList << operator[]("cluster");
+
+    return theList;
 }
 
 S9sString
@@ -1328,7 +1378,7 @@ S9sRpcReply::printClusterListBrief()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       format    = options->clusterFormat();
     bool            hasFormat = options->hasClusterFormat();
-    S9sVariantList  theList   = operator[]("clusters").toVariantList();
+    S9sVariantList  theList   = clusters();
     int             nPrinted  = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -1388,11 +1438,12 @@ void
 S9sRpcReply::printClusterListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       requestedName = options->clusterName();
+    int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
-    S9sString       formatString = options->longClusterFormat();
+    S9sString       formatString  = options->longClusterFormat();
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
@@ -1572,7 +1623,7 @@ S9sRpcReply::printClusterListLong()
         nColumns += groupFormat.realWidth();
         nColumns += nameFormat.realWidth();
 
-        if (nColumns < terminalWidth)
+        if (isTerminal && nColumns < terminalWidth)
         {
             int remaining  = terminalWidth - nColumns;
             
@@ -1624,15 +1675,55 @@ void
 S9sRpcReply::printNodeListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
+    S9sString       formatString = options->shortNodeFormat();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       clusterNameFilter = options->clusterName();
     int             nPrinted = 0;
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
     int             column = 0;
+        
+    if (options->hasNodeFormat())
+        formatString = options->nodeFormat();
+
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap      = theList[idx].toVariantMap();
+            S9sVariantList hosts       = theMap["hosts"].toVariantList();
+            S9sString      clusterName = theMap["cluster_name"].toString();
+
+            if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
+                continue;
+
+            for (uint idx2 = 0; idx2 < hosts.size(); ++idx2)
+            {
+                S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
+                S9sNode       node      = hostMap;
+                int           clusterId = node.clusterId();
+                S9sCluster    cluster   = clusterMap(clusterId);
+                S9sString     hostName  = node.name();
+
+                if (!options->isStringMatchExtraArguments(hostName))
+                    continue;
+
+                node.setCluster(cluster);
+
+                printf("%s", STR(node.toString(syntaxHighlight, formatString)));
+            }
+        }
     
+        return;
+    }
+
+
     /*
      * First run: some data collecting.
      */
@@ -2548,7 +2639,7 @@ void
 S9sRpcReply::printNodeListStat()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2573,7 +2664,7 @@ void
 S9sRpcReply::printClusterListStat()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2597,7 +2688,7 @@ S9sRpcReply::printNodeListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     S9sString       formatString = options->longNodeFormat();
     S9sVariantList  hostList;
     S9sFormat       cidFormat;
@@ -3919,6 +4010,7 @@ void
 S9sRpcReply::printUserListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  userList = operator[]("users").toVariantList();
     int             authUserId = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
@@ -3926,7 +4018,33 @@ S9sRpcReply::printUserListBrief()
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
 
-    userList = operator[]("users").toVariantList();
+    if (options->hasUserFormat())
+        formatString = options->userFormat();
+
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < userList.size(); ++idx)
+        {
+            S9sVariantMap  userMap      = userList[idx].toVariantMap();
+            S9sUser        user         = userMap;
+            int            userId       = user.userId();
+            S9sString      userName     = user.userName();
+
+            /*
+             * Filtering.
+             */
+            if (whoAmIRequested && userId != authUserId)
+                continue;
+        
+            if (!options->isStringMatchExtraArguments(userName))
+                continue;
+   
+            printf("%s", STR(user.toString(syntaxHighlight, formatString)));
+            
+        }
+
+        return;
+    }
 
     /*
      * 
@@ -3970,6 +4088,7 @@ void
 S9sRpcReply::printUserListLong()
 {
     S9sOptions     *options  = S9sOptions::instance();
+    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  userList = operator[]("users").toVariantList();
     int             authUserId = operator[]("request_user_id").toInt();
     bool            whoAmIRequested = options->isWhoAmIRequested();
@@ -3983,8 +4102,37 @@ S9sRpcReply::printUserListLong()
     S9sFormat       groupNamesFormat;
     S9sFormat       emailFormat;
 
-    userList = operator[]("users").toVariantList();
+    if (options->hasUserFormat())
+        formatString = options->userFormat();
+
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < userList.size(); ++idx)
+        {
+            S9sVariantMap  userMap      = userList[idx].toVariantMap();
+            S9sUser        user         = userMap;
+            int            userId       = user.userId();
+            S9sString      userName     = user.userName();
+
+            /*
+             * Filtering.
+             */
+            if (whoAmIRequested && userId != authUserId)
+                continue;
+        
+            if (!options->isStringMatchExtraArguments(userName))
+                continue;
    
+            printf("%s", STR(user.toString(syntaxHighlight, formatString)));
+            
+        }
+
+        if (!options->isBatchRequested())
+            printf("Total: %d\n", operator[]("total").toInt());
+
+        return;
+    }
+
     /*
      * Going through first and collecting some informations.
      */
@@ -4471,7 +4619,7 @@ S9sVariantMap
 S9sRpcReply::clusterMap(
         const int clusterId)
 {
-    S9sVariantList  theList = operator[]("clusters").toVariantList();
+    S9sVariantList  theList = clusters();
     S9sVariantMap   retval;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -4778,18 +4926,43 @@ S9sRpcReply::printMetaTypeListLong()
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
-        
+       
+        if (typeName.contains("*"))
+            continue;
+
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
         nameFormat.widen(typeName);
     }
     
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        nameFormat.widen("NAME");
+            
+        printf("%s", headerColorBegin());
+         
+        nameFormat.printf("NAME");
+        printf("DESCRIPTION");
+
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    /*
+     * Printing the actual list.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap typeMap      = theList[idx].toVariantMap();
         S9sString     typeName     = typeMap["type_name"].toString();
         S9sString     description  = typeMap["description"].toString();
+
+        if (typeName.contains("*"))
+            continue;
 
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
@@ -4880,11 +5053,16 @@ S9sRpcReply::printMetaTypePropertyList()
         printMetaTypePropertyListBrief();
 }
 
-
+/**
+ * This function will print the properties of a type from the metatype system in
+ * a detailed long list.
+ */
 void 
 S9sRpcReply::printMetaTypePropertyListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             isTerminal    = options->isTerminal();
+    int             terminalWidth = options->terminalWidth();
     S9sVariantList  theList = operator[]("metatype_info").toVariantList();
     S9sFormat       statFormat;
     S9sFormat       nameFormat;
@@ -4930,7 +5108,6 @@ S9sRpcReply::printMetaTypePropertyListLong()
         printf("\n");
     }
 
-    
     /*
      * Printing the actual data.
      */
@@ -4943,7 +5120,8 @@ S9sRpcReply::printMetaTypePropertyListLong()
         bool          isReadable   = typeMap["is_public"].toBoolean();
         bool          isWritable   = typeMap["is_writable"].toBoolean();
         S9sString     stat;
-
+        int           nColumns    = 0;
+    
         if (!options->isStringMatchExtraArguments(typeName))
             continue;
 
@@ -4956,6 +5134,21 @@ S9sRpcReply::printMetaTypePropertyListLong()
         stat += isReadable ? "r" : "-";
         stat += isWritable ? "w" : "-";
 
+        nColumns += statFormat.realWidth();
+        nColumns += nameFormat.realWidth();
+        nColumns += unitFormat.realWidth();
+        
+        if (isTerminal && nColumns < terminalWidth)
+        {
+            int remaining  = terminalWidth - nColumns;
+            
+            if (remaining < (int) description.length())
+            {
+                description.resize(remaining - 1);
+                description += "…";
+            }
+        }
+        
         statFormat.printf(stat);
         printf("%s", propertyColorBegin());
         nameFormat.printf(typeName);
@@ -4968,6 +5161,10 @@ S9sRpcReply::printMetaTypePropertyListLong()
     }
 }
 
+/**
+ * This function will print the properties of a type from the metatype system in
+ * a brief list.
+ */
 void 
 S9sRpcReply::printMetaTypePropertyListBrief()
 {

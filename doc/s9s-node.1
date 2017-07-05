@@ -89,14 +89,18 @@ The port where the Cmon Controller is waiting for connections.
 
 .TP
 .BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
-The name of the user that is going to be used to authenticate on the Cmon
-Controller. This can also be set as the \fBcmon_user\fP configuration file 
-value, but the command line option of course has precedence over the
-configuration file. 
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
 
 .TP
-.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
-The RPC token to be used when authenticating on the Cmon Controller.
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
 
 .TP
 .B \-l, \-\-long
@@ -346,7 +350,8 @@ the following characters:
 This is the type of the node. It can be \fBc\fP for controller, \fBg\fP for
 Galera node, \fBx\fP for MaxScale node, \fBk\fP for Keepalived node, \fBp\fP for
 PostgreSQL, \fBm\fP for Mongo, \fBe\fP for MemCached, \fBy\fP for ProxySql,
-\fBh\fP for HaProxy, \fBa\fP for Garbd and \fBs\fP for generic MySQL nodes.
+\fBh\fP for HaProxy, \fBa\fP for Garbd, \fBr\fP for group replication host 
+and \fBs\fP for generic MySQL nodes.
 .TP
 .B hoststatus
 The status of the node. It can be \fBo\fP for on-line, \fBl\fP for off-line,
@@ -679,4 +684,59 @@ lists and command line options:
     --properties="alias=controller"\fR
 .fi
 
+
+Create a set of graphs, one for each node shown in the terminal about the load
+on the hosts. If the terminal is wide enough the graphs will be shown side by
+side for a compact view.
+
+.nf
+# \fBs9s node \\
+    --stat \\
+    --cluster-id=1 \\
+    --begin="08:00" \\
+    --end="14:00" \\
+    --graph=load\fR
+.fi
+
+Density functions can also be printed to show what were the typical values for
+the given statistical data. The following example shows what was the typical
+values for the user mode CPU usage percent
+
+.nf
+# \fBs9s node \\
+    --stat \\
+    --cluster-id=2 \\
+    --begin=00:00 \\
+    --end=16:00 \\
+    --density \\
+    --graph=cpuuser\fR
+.fi
+
+The following example shows how a custom list can be created to show some
+information about the CPU(s) in some specific hosts:
+
+.nf
+# \fBs9s node \\
+    --list \\
+    --node-format="%N %U CPU %c Cores %6.2u%% %Z\\n" \\
+    192.168.1.191 \\
+    192.168.1.195\fR
+
+192.168.1.191 2 CPU 16 Cores  22.54% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+192.168.1.195 2 CPU 16 Cores  23.12% Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
+.fi
+
+
+The following list shows some information about the memory, the total memory and
+the memory available for the applications to allocate (including cache and
+buffer with the free memory):
+
+.nf
+# \fBs9s node \\
+    --list \\
+    --node-format="%4.2m GBytes %4.2fm GBytes %N\\n"\fR
+
+16.00 GBytes 15.53 GBytes 192.168.1.191
+47.16 GBytes 38.83 GBytes 192.168.1.127
+.fi
 

@@ -115,91 +115,70 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
-function reset_config()
+#
+# Prints the state of the node, e.g. CmonHostOnline.
+#
+function wait_for_node_become_slave()
 {
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
+    local nodeName="$1"
+    local state
+    local waited=0
+    local stayed=0
 
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
-#
-# Creates and starts a new virtual machine.
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    printVerbose "Finding existing cluster ID."
     while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
+        state=$(s9s node --list --batch --long --node-format="%R" "$nodeName")
+        if [ "$state" == "slave" ]; then
+            let stayed+=1
         else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
+            let stayed=0
         fi
+
+        if [ "$stayed" -gt 10 ]; then
+            return 0
+        fi
+
+        if [ "$waited" -gt 180 ]; then
+            return 1
+        fi
+
+        let waited+=1
+        sleep 1
     done
+
+    return 2
 }
 
-function grant_user()
+#
+# Waits until the node becomes stable in CmonHostOnline state.
+#
+function wait_for_node_online()
 {
-    printVerbose "Creating Cmon user ${USER}."
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        >/dev/null 2>/dev/null
+    local nodeName="$1"
+    local state
+    local waited=0
+    local stayed=0
+
+    while true; do
+        state=$(s9s node --list --batch --long --node-format="%S" "$nodeName")
+        if [ "$state" == "CmonHostOnline" ]; then
+            let stayed+=1
+        else
+            let stayed=0
+        fi
+
+        if [ "$stayed" -gt 10 ]; then
+            return 0
+        fi
+
+        if [ "$waited" -gt 120 ]; then
+            return 1
+        fi
+
+        let waited+=1
+        sleep 1
+    done
+
+    return 2
 }
 
 #
@@ -283,19 +262,28 @@ function testStopMaster()
     local timeLoop="0"
 
     #
-    # Stopping the first added node. 
+    # Tring to stop the first added node. 
+    # This should fail, because the master is protected.
     #
+    echo "Stopping node on $FIRST_ADDED_NODE"
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
-    
+ 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
+    if [ "$exitCode" -eq 0 ]; then
+        failure "The exit code is ${exitCode}, should have failed."
     fi
+
+    #
+    # Stopping it manually.
+    #
+    printVerbose "Stopping postgresql on $FIRST_ADDED_NODE"
+    ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
+    printVerbose "Stopped postgresql on $FIRST_ADDED_NODE"
 
     while true; do
         if [ "$timeLoop" -gt 60 ]; then
@@ -304,12 +292,31 @@ function testStopMaster()
             return 1
         fi
 
-        if s9s node --list --long | grep --quiet ^poM; then
+        if s9s node --list --long | grep -v "$FIRST_ADDED_NODE" | grep --quiet ^poM; then
             break
         fi
     done
 
-    mys9s node --list --long
+    # Well, we better wait until the other slaves are restarted.
+    sleep 30
+
+    #
+    # Manually restarting the the postgresql on the node.
+    #
+    printVerbose "Starting postgresql on $FIRST_ADDED_NODE"
+    ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql start
+    if wait_for_node_shut_down "$FIRST_ADDED_NODE"; then
+        printVerbose "Started postgresql on $FIRST_ADDED_NODE"
+    else
+        failure "Host $FIRST_ADDED_NODE did not come on-line."
+    fi
+
+#    if wait_for_node_become_slave $FIRST_ADDED_NODE; then
+#        printVerbose "Node $FIRST_ADDED_NODE reslaved."
+#    else
+#        failure "Host $FIRST_ADDED_NODE is still not a slave."
+#    fi
+
     return 0
 }
 

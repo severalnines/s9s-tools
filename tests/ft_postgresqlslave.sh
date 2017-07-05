@@ -20,7 +20,7 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 
 #
 # Prints usage information and exits.
@@ -31,7 +31,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - PostgreSQL failover script.
+  $MYNAME - PostgreSQL slave stop test script.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -115,93 +115,6 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
-function reset_config()
-{
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
-
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
-#
-# Creates and starts a new virtual machine.
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    printVerbose "Finding existing cluster ID."
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    printVerbose "Creating Cmon user ${USER}."
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -231,7 +144,6 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
     fi
@@ -267,15 +179,13 @@ function testAddNode()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
 }
 
 #
-# This will stop the master node so we can observe what happens with the
-# failover.
+# This will stop the slave node and checks what happens with the cluster state.
 #
 function testStopSlave()
 {
@@ -292,17 +202,20 @@ function testStopSlave()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
 
-    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
     fi
+    
+    if ! wait_for_node_shut_down "$LAST_ADDED_NODE"; then
+        state=$(node_state "$nodeName")
+        failure "Host state is '$state' instead of 'CmonHostShutDown'."
+    fi
 
-    #mys9s cluster --list --long
     return 0
 }
 
@@ -325,20 +238,54 @@ function testStartSlave()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
 
-    state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
+    state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
     fi
 
-    #mys9s cluster --list --long
+    if ! wait_for_node_online "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
+    fi
+
     return 0
 }
 
+#
+# This function will stop the Postgresql daemon on the slave manually and check
+# if the node goes into failed state. Then the daemon is restarted and it is
+# cehcked that it comes back online.
+#
+function testStopDaemon()
+{
+    local state
+
+    #
+    # Stopping the daemon manually.
+    #
+    printVerbose "Stopping postgresql on $LAST_ADDED_NODE"
+    ssh "$LAST_ADDED_NODE" sudo /etc/init.d/postgresql stop
+
+    if ! wait_for_node_offline "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOffLine'."
+    fi
+
+    #
+    # Starting the daemon manually.
+    #
+    printVerbose "Starting postgresql on $LAST_ADDED_NODE"
+    ssh "$LAST_ADDED_NODE" sudo /etc/init.d/postgresql start 
+
+    if ! wait_for_node_online "$LAST_ADDED_NODE"; then
+        state=$(node_state "$LAST_ADDED_NODE")
+        failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
+    fi
+}
 
 #
 # Dropping the cluster from the controller.
@@ -358,7 +305,6 @@ function testDrop()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
@@ -396,6 +342,7 @@ else
 
     runFunctionalTest testStopSlave
     runFunctionalTest testStartSlave
+    runFunctionalTest testStopDaemon
     
     runFunctionalTest testDrop
     runFunctionalTest testDestroyNodes

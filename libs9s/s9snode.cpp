@@ -185,8 +185,8 @@ S9sNode::className() const
  * \param formatString The formatstring with markup.
  * \returns The string representation according to the format string.
  *
- * Converts the message to a string using a special format string that may
- * contain field names of message properties.
+ * Converts the node to a string using a special format string that may
+ * contain field names of node properties.
  */
 S9sString
 S9sNode::toString(
@@ -299,7 +299,6 @@ S9sNode::toString(
                     retval += tmp;
                     break;
 
-
                 case 'D':
                     // The data directory.
                     partFormat += 's';
@@ -329,6 +328,13 @@ S9sNode::toString(
                         retval += S9sRpcReply::fileColorEnd();
 
                     break;
+                
+                case 'E':
+                    // The replication state.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(replicationState()));
+                    retval += tmp;
+                    break; 
 
                 case 'g':
                     // The log file. 
@@ -573,6 +579,21 @@ S9sNode::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(cpuModel()));
                     retval += tmp;
+                    break;
+                
+                case 'z':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+                    
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+                    
                     break;
 
                 case '%':
@@ -940,6 +961,8 @@ S9sNode::nodeTypeFlag() const
         return 'h';
     else if (theNodeType == "garbd")
         return 'a';
+    else if (theNodeType == "grouprepl")
+        return 'r';
 
     if (className() == "CmonMySqlHost")
         return 's';
@@ -1027,6 +1050,54 @@ S9sNode::uptime() const
 
     if (m_properties.contains("uptime"))
         retval = m_properties.at("uptime").toULongLong();
+
+    return retval;
+}
+
+S9sString
+S9sNode::replicationState() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("replication_state"))
+        retval = m_properties.at("replication_state").toString();
+
+    if (m_properties.contains("galera"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("galera").toVariantMap();
+        retval = map["localstatusstr"].toString().toLower();
+    }
+
+    if (retval.empty() && m_properties.contains("replication_master"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("replication_master").toVariantMap();
+
+        if (map["semisync_status"] == "ON")
+            retval = "semisync";
+    } 
+    
+    if (retval.empty() && m_properties.contains("replication_slave"))
+    {
+        S9sVariantMap map;
+        
+        map = m_properties.at("replication_slave").toVariantMap();
+
+        if (map["semisync_status"] == "ON")
+            retval = "semisync";
+    } 
+
+    if (retval.empty() && m_properties.contains("connected_slaves"))
+    {
+        if (m_properties.at("connected_slaves").toInt() > 0)
+            retval = "connected";
+    }
+
+    if (retval.empty())
+        retval = "-";
 
     return retval;
 }

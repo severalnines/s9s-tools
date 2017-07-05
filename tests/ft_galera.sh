@@ -114,88 +114,6 @@ if [ -z $(which pip-container-create) ]; then
     exit 1
 fi
 
-function reset_config()
-{
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
-
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
-#
-# Creates and starts a new 
-#
-function create_node()
-{
-    local ip
-
-    printVerbose "Creating container..."
-    ip=$(pip-container-create --server=$CONTAINER_SERVER)
-    printVerbose "Created '$ip'."
-
-    echo $ip
-}
-
-#
-# $1: the name of the cluster
-#
-function find_cluster_id()
-{
-    local name="$1"
-    local retval
-    local nTry=0
-
-    while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
-        retval=$(echo "$retval" | awk '{print $1}')
-
-        if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
-            let nTry+=1
-
-            if [ "$nTry" -gt 10 ]; then
-                echo 0
-                break
-            else
-                sleep 3
-            fi
-        else
-            printVerbose "Cluster '$name' was found with ID ${retval}."
-            echo "$retval"
-            break
-        fi
-    done
-}
-
-function grant_user()
-{
-    $S9S user --create --cmon-user=$USER --generate-key \
-        >/dev/null 2>/dev/null
-}
-
 #
 #
 #
@@ -461,6 +379,11 @@ function testCreateAccount()
     #
     # This command will create a new account on the cluster.
     #
+    if [ -z "$CLUSTER_ID" ]; then
+        failure "No cluster ID found."
+        return 1
+    fi
+
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \

@@ -25,12 +25,14 @@
 
 S9sUser::S9sUser()
 {
+    m_properties["class_name"] = "CmonUser";
 }
  
 S9sUser::S9sUser(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
+    m_properties["class_name"] = "CmonUser";
 }
 
 S9sUser::~S9sUser()
@@ -110,6 +112,12 @@ S9sUser::setProperty(
         const S9sString &name,
         const S9sString &value)
 {
+    if (value.empty())
+    {
+        m_properties.erase(name);
+        return;
+    }
+
     if (value.looksBoolean())
     {
         m_properties[name] = value.toBoolean();
@@ -158,6 +166,9 @@ S9sUser::emailAddress() const
     return S9sString();
 }
 
+/**
+ * \returns The unique numerical ID of the user.
+ */
 int
 S9sUser::userId() const
 {
@@ -167,6 +178,9 @@ S9sUser::userId() const
     return 0;
 }
 
+/**
+ * \returns The first name of the user.
+ */
 S9sString
 S9sUser::firstName() const
 {
@@ -176,6 +190,9 @@ S9sUser::firstName() const
     return S9sString();
 }
 
+/**
+ * \returns The last name of the user.
+ */
 S9sString
 S9sUser::lastName() const
 {
@@ -185,6 +202,9 @@ S9sUser::lastName() const
     return S9sString();
 }
 
+/**
+ * \returns The middle name of the user.
+ */
 S9sString
 S9sUser::middleName() const
 {
@@ -194,6 +214,9 @@ S9sUser::middleName() const
     return S9sString();
 }
 
+/**
+ * \returns The title of the user (e.g. "Dr.").
+ */
 S9sString
 S9sUser::title() const
 {
@@ -203,6 +226,9 @@ S9sUser::title() const
     return S9sString();
 }
 
+/**
+ * \returns The job title of the user (e.g. "programmer").
+ */
 S9sString
 S9sUser::jobTitle() const
 {
@@ -212,6 +238,9 @@ S9sUser::jobTitle() const
     return S9sString();
 }
 
+/**
+ * \returns The full name of the user in one string.
+ */
 S9sString
 S9sUser::fullName() const
 {
@@ -244,11 +273,43 @@ S9sUser::fullName() const
     return retval;
 }
 
+void
+S9sUser::setGroup(
+        const S9sString &groupName)
+{
+    S9sVariantMap  groupMap;
+    S9sVariantList groupList;
+
+    groupMap["class_name"] = "CmonGroup";
+    groupMap["group_name"] = groupName;
+
+    groupList << groupMap;
+
+    m_properties["groups"] = groupList;
+}
+
+void
+S9sUser::setPublicKey(
+        const S9sString &name,
+        const S9sString &key)
+{
+    S9sVariantMap  keyMap;
+    S9sVariantList keysList;
+
+    keyMap["name"]              = name;
+    keyMap["key"]               = key;
+
+    keysList << keyMap;
+    m_properties["public_keys"] = keysList;
+}
+
 /**
+ * \param separator The field separator to put in between the group names.
  * \returns All the group names concatenated with a field separator.
  */
 S9sString
-S9sUser::groupNames() const
+S9sUser::groupNames(
+        const S9sString separator) const
 {
     S9sVariantList groupList;
     S9sString      retval;
@@ -265,10 +326,202 @@ S9sUser::groupNames() const
         S9sString     groupName = groupMap["group_name"].toString();
 
         if (!retval.empty())
-            retval += ",";
+            retval += separator;
 
         retval += groupName;
     }
 
     return retval;
 }
+
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the message to a string using a special format string that may
+ * contain field names of properties of the user.
+ */
+S9sString
+S9sUser::toString(
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sString    retval;
+    S9sString    tmp;
+    char         c;
+    S9sString    partFormat;
+    bool         percent      = false;
+    bool         escaped      = false;
+    bool         modifierFree = false;
+
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+       
+        if (c == '%' && !percent)
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+#if 0
+        } else if (percent && c == 'f')
+        {
+            modifierFree = true;
+            continue;
+#endif
+        } else if (c == '\\')
+        {
+            escaped = true;
+            continue;
+        }
+
+        if (modifierFree)
+        {
+            S9S_DEBUG("Modifier 'f' is not used here.");
+        }
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'F':
+                    // The full name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(fullName()));
+                    retval += tmp;
+                    break;
+                
+                case 'f':
+                    // The first name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(firstName()));
+                    retval += tmp;
+                    break;
+                
+                case 'G':
+                    // The group names of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(groupNames()));
+                    retval += tmp;
+                    break;
+
+                case 'I':
+                    // The user ID.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), userId());
+                    retval += tmp;
+                    break;
+                
+                case 'j':
+                    // The job title of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(jobTitle()));
+                    retval += tmp;
+                    break;
+                
+                case 'l':
+                    // The last name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(lastName()));
+                    retval += tmp;
+                    break;
+
+                case 'M':
+                    // The email address. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(emailAddress()));
+                    retval += tmp;
+                    break;
+                
+                case 'm':
+                    // The middle name of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(middleName()));
+                    retval += tmp;
+                    break;
+                
+                case 'N':
+                    // The username of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(userName()));
+                    retval += tmp;
+                    break;
+                
+                case 't':
+                    // The title of the user.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(title()));
+                    retval += tmp;
+                    break;
+
+                
+                case '%':
+                    retval += '%';
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                case '\'':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent      = false;
+        escaped      = false;
+        modifierFree = false;
+    }
+
+    return retval;
+}
+

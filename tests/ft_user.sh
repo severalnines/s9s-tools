@@ -97,37 +97,6 @@ fi
 
 #CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
-function reset_config()
-{
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
-
-    if [ -z "$OPTION_RESET_CONFIG" ]; then
-        return 0
-    fi
-
-    printVerbose "Rewriting S9S configuration."
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
-    fi
-
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
-    fi
-
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
-
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
-}
-
 #
 # This function is used to cut one cell (of a given row and column) from a table
 # formatted text.
@@ -152,7 +121,7 @@ function index_table()
 }
 
 #
-#
+# Pinging the controller without authenticating.
 #
 function testPing()
 {
@@ -164,7 +133,7 @@ function testPing()
     mys9s cluster \
         --ping \
         $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE
+        $OPTION_VERBOSE >/dev/null
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -173,28 +142,6 @@ function testPing()
         pip-say "The controller is off line. Further testing is not possible."
     else
         pip-say "The controller is on line."
-    fi
-}
-
-#
-# Just a normal createUser call we do all the time to register a user on the
-# controller so that we can actually execute RPC calls.
-#
-function testGrantUser()
-{
-    mys9s user \
-        --create \
-        --cmon-user=$USER \
-        --generate-key \
-        --controller="https://localhost:9556" \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-        return 1
     fi
 }
 
@@ -269,6 +216,44 @@ function testSystemUsers()
 }
 
 #
+# This test will check what happens if using a wrong username or a wrong
+# password. The proper exit code and error message is checked.
+#
+function testFailWrongPassword()
+{
+    local output
+    local exitCode
+
+    #
+    # Using the wrong password.
+    #
+    output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
+    exitCode=$?
+    if [ "$exitCode" -ne 3 ]; then
+        failure "The exit code is ${exitCode} using a wrong password"
+    fi
+
+    if [ "$output" != "Wrong username or password." ]; then
+        failure "Wrong error message when using the wrong password"
+        echo "  output: '$output'"
+    fi
+    
+    #
+    # Using the wrong username.
+    #
+    output=$(s9s user --whoami --cmon-user=sys --password=secret 2>&1)
+    exitCode=$?
+    if [ "$exitCode" -ne 3 ]; then
+        failure "The exit code is ${exitCode} using a wrong username"
+    fi
+
+    if [ "$output" != "Wrong username or password." ]; then
+        failure "Wrong error message when using the wrong username"
+        echo "  output: '$output'"
+    fi
+}
+
+#
 # Testing what happens when a creation of a new user fails because the group 
 # does not exist.
 #
@@ -283,12 +268,13 @@ function testFailNoGroup()
     #
     mys9s user \
         --create \
-        --cmon-user=kirk \
         --title="Captain" \
         --generate-key \
-        --group=nosuchgroup
+        --group=nosuchgroup \
+        --batch \
+        "kirk"
 
-    user_name=$(s9s user --list kirk)
+    user_name=$(s9s user --list kirk 2>/dev/null)
     if [ "$user_name" ]; then
         failure "User created when the group was invalid."
         return 1
@@ -297,14 +283,18 @@ function testFailNoGroup()
     return 0
 }
 
+#
+# Creating a bunch of users through the pipe without authentication.
+#
 function testCreateUsers()
 {
+    local myself
+
     #
     # Let's add some users so that we have something to work on.
     #
     mys9s user \
         --create \
-        --cmon-user="sisko" \
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \
@@ -312,7 +302,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "sisko"
       
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -321,14 +312,14 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="odo" \
         --first-name="Odo" \
         --last-name="" \
         --email-address="odo@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "odo"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -337,14 +328,14 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="jake"\
         --first-name="Jake"\
         --last-name="Sisko"\
         --email-address="jake.sisko@ds9.com" \
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "jake"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -353,7 +344,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="bashir" \
         --title="Dr." \
         --first-name="Julian" \
         --last-name="Bashir" \
@@ -361,7 +351,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "bashir"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -370,7 +361,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="chief" \
         --title="Chief" \
         --first-name="Miles" \
         --last-name="O'Brien" \
@@ -378,7 +368,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "chief"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -387,40 +378,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="nerys"  \
-        --title="Major" \
-        --first-name="Kira" \
-        --last-name="Nerys" \
-        --email-address="kira@ds9.com" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    mys9s user \
-        --create \
-        --cmon-user="quark" \
-        --first-name="Quark" \
-        --last-name=""\
-        --email-address="quark@ferengi.fr" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-    fi
-
-    mys9s user \
-        --create \
-        --cmon-user="jadzia" \
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
@@ -428,7 +385,8 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "jadzia"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -437,7 +395,6 @@ function testCreateUsers()
 
     mys9s user \
         --create \
-        --cmon-user="worf"\
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
@@ -445,14 +402,278 @@ function testCreateUsers()
         --generate-key \
         --group=ds9 \
         --create-group \
-        --batch
+        --batch \
+        "worf"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
     fi
 
-    s9s user --list --long
+    #s9s user --list --long
+
+    #
+    # After creating all these users the logged in user should still be me.
+    #
+    myself=$(s9s user --whoami)
+    if [ "$myself" != "$USER" ]; then
+        failure "The logged in user should be '$USER' instead of '$myself'."
+    fi
+
+    return 0
+}
+
+#
+# This test will change some properties of the same user (the user changes
+# itself) and check if the change registered.
+#
+function testSetUser()
+{
+    local emailAddress
+    local exitCode
+
+    #
+    # Setting the email address for a user and checking if it set.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=system@mydomain.com 
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" system)
+    if [ "$emailAddress" != "system@mydomain.com" ]; then
+        failure "The email address is ${emailAddress} instead of 'system@mydomain.com'."
+    fi
+
+    #
+    # Setting the email address again.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=system@mynewdomain.com 
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" system)
+    if [ "$emailAddress" != "system@mynewdomain.com" ]; then
+        failure "The email address is ${emailAddress} instead of 'system@mynewdomain.com'."
+    fi
+
+    return 0
+}
+
+#
+# This test will change some properties of some user (the user changes
+# some other user) and check if the change registered.
+#
+function testSetOtherUser()
+{
+    local userName="nobody"
+    local emailAddress
+    local exitCode
+
+    #
+    # Setting the email address for a user and checking if it set.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=nobody@mydomain.com \
+        "$userName"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" $userName)
+    if [ "$emailAddress" != "nobody@mydomain.com" ]; then
+        failure "The email is ${emailAddress} instead of 'nobody@mydomain.com'."
+    fi
+
+    #
+    # Setting the email address again.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=nobody@mynewdomain.com \
+        "$userName"
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while changing user"
+    fi
+
+    emailAddress=$(s9s user --list --user-format="%M" $userName)
+    if [ "$emailAddress" != "nobody@mynewdomain.com" ]; then
+        failure "The email is ${emailAddress} and not 'nobody@mynewdomain.com'."
+    fi
+
+    return 0
+}
+
+#
+# This test will create a new user through the RPC v2 encrypted network
+# connecttion (instead of using the old named pipe connection). We are creating
+# the new user, a new group, RSA keys and also a password, then we test if we
+# can login with the keypair and also the password.
+#
+function testCreateThroughRpc()
+{
+    local newUserName="rpc_user"
+    local userId
+
+    #
+    # Here we pass the --cmon-user and --password options when creating the new
+    # user, so the client will try to send the createUser request to RPC v2
+    # through the network and not through the named pipe.
+    #
+    mys9s user \
+        --create \
+        --cmon-user="system" \
+        --password="secret" \
+        --group="rpc_group" \
+        --create-group \
+        --email-address="rpc@email.com" \
+        --generate-key \
+        --new-password="p" \
+        "$newUserName" \
+        >/dev/null
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+    fi
+
+    #
+    # Checking some properties.
+    #
+    userId=$(s9s user --list --user-format="%I" $newUserName)
+    if [ "$userId" -gt 0 ]; then
+        printVerbose "  user_id : $userId"
+    else
+        failure "The user ID is invalid while creating user through RPC"
+    fi
+    
+    group=$(s9s user --list --user-format="%G" $newUserName)
+    if [ "$group" == "rpc_group" ]; then
+        printVerbose "    group : '$group'"
+    else
+        failure "The group is '$group' while creating user through RPC"
+    fi
+    
+    email=$(s9s user --list --user-format="%M" $newUserName)
+    if [ "$email" == "rpc@email.com" ]; then
+        printVerbose "    email : '$email'"
+    else
+        failure "The email is '$email' while creating user through RPC"
+    fi
+
+    #
+    # Testing if we can log in with the shiny new password.
+    #
+    myself=$(s9s user --whoami --cmon-user=rpc_user --password=p)
+    if [ "$myself" != "rpc_user" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+
+    #
+    # Then we check if the key files are created and will try to log in using
+    # the RSA key. Well, we are not passing the --password option so the s9s
+    # client will try to log in with the key.
+    #
+    file="$HOME/.s9s/rpc_user.key"
+    if [ ! -f "$file" ]; then
+        failure "File '$file' was not created"
+    fi
+    
+    file="$HOME/.s9s/rpc_user.pub"
+    if [ ! -f "$file" ]; then
+        failure "File '$file' was not created"
+    fi
+    
+    myself=$(s9s user --whoami --cmon-user=rpc_user)
+    if [ "$myself" != "rpc_user" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+}
+
+#
+# This test will try to change the password for a user. First a user changes the
+# password for an other user, then this other user uses the new password for
+# changing his own password again. Classic... :)
+#
+function testChangePassword()
+{
+    local userName="nobody"
+    local myself
+
+    #
+    # The 'system' user changes the password for nobody.
+    #
+    mys9s user \
+        --change-password \
+        --cmon-user="system" \
+        --password="secret" \
+        --new-password="p" \
+        "$userName" \
+        >/dev/null 
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+    fi
+
+    myself=$(s9s user --whoami --cmon-user=$userName --password=p)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+    
+    #
+    # Nobody uses this new password to change the password again.
+    #
+    mys9s user \
+        --change-password \
+        --cmon-user="$userName" \
+        --password="p" \
+        --new-password="pp" \
+        >/dev/null
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+    fi
+
+    myself=$(s9s user --whoami --cmon-user=$userName --password=pp)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with password ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
 }
 
 #
@@ -460,17 +681,26 @@ function testCreateUsers()
 #
 startTests
 reset_config
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
+    
+    s9s user --list --long
 else
     #runFunctionalTest testPing
-    runFunctionalTest testGrantUser
+    runFunctionalTest testSetUser
+    runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
+    runFunctionalTest testFailWrongPassword
     runFunctionalTest testCreateUsers
+    runFunctionalTest testCreateThroughRpc
+    runFunctionalTest testChangePassword
+    
+    #s9s user --list --long
 fi
 
 endTests

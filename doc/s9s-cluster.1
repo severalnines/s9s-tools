@@ -105,14 +105,18 @@ The port where the Cmon Controller is waiting for connections.
 
 .TP
 .BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
-The name of the user that is going to be used to authenticate on the Cmon
-Controller. This can also be set as the \fBcmon_user\fP configuration file 
-value, but the command line option of course has precedence over the
-configuration file. 
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
 
 .TP
-.BI \-t " STRING" "\fR,\fP \-\^\-rpc-token=" STRING
-The RPC token to be used when authenticating on the Cmon Controller.
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
 
 .TP
 .B \-l, \-\-long
@@ -516,7 +520,7 @@ finished, the job remains there and will be executed by the controller anyway.
 It is also possible to attach to the job using the job ID later or use the --log
 option to print the messages of the job.
 
-A similar example that wioll create a MySQL replication cluster with multiple
+A similar example that will create a MySQL replication cluster with multiple
 master and slave nodes in it:
 
 .nf
@@ -565,7 +569,9 @@ a customized the cluster list. The \fB\-\-cluster\-format\fR command line option
 is used here to produce a multi-line output:
 
 .nf
-# \fBs9s cluster --list --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n"\fR
+# \fBs9s cluster \\
+    --list \\
+    --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n\\n"\fR
     ID : 00001 
 Status : STOPPED 
   Name : ft_postgresqlstop_48273
