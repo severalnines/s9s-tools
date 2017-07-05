@@ -155,6 +155,7 @@ class S9sRpcClient
         bool getUsers();
         bool setUser();
         bool getKeys();
+        bool addKey();
         bool setPassword();
 
         bool getJobInstance(const int jobId);

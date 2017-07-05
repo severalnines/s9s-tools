@@ -252,6 +252,11 @@ S9sBusinessLogic::execute()
         } else if (options->isListKeysRequested())
         {
             executePrintKeys(client);
+        } else if (options->isAddKeyRequested())
+        {
+            success = client.addKey();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else {
             executeCreateUser(client);
         }

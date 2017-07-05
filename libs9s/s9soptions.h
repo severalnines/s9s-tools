@@ -158,6 +158,7 @@ class S9sOptions
         S9sString newPassword() const;
 
         S9sString privateKeyPath() const;
+        S9sString publicKeyPath() const;
 
         S9sAccount account() const;
         bool setAccount(const S9sString &value);
@@ -216,6 +217,7 @@ class S9sOptions
         bool isListPropertiesRequested() const;
         bool isWhoAmIRequested() const;
         bool isListKeysRequested() const;
+        bool isAddKeyRequested() const;
         bool isSetRequested() const;
         bool isChangePasswordRequested() const;
         bool isLogRequested() const;

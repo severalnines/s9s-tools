@@ -881,25 +881,29 @@ void
 S9sRpcReply::printKeys()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  theList = operator[]("public_keys").toVariantList();
 
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
         return;
-    }
-    
-
-    for (uint idx = 0u; idx < theList.size(); ++idx)
+    } else if (!isOk())
     {
-        S9sVariantMap theMap = theList[idx].toVariantMap();
-
-        printf("\"%s\"\n", STR(theMap["name"].toString()));
-        printf("%s\n\n",   STR(theMap["key"].toString()));
-    }
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    } else {
+        S9sVariantList  theList = operator[]("public_keys").toVariantList();
     
-    if (!options->isBatchRequested())
-        printf("Total: %d\n", operator[]("total").toInt());
+        for (uint idx = 0u; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap theMap = theList[idx].toVariantMap();
+
+            printf("\"%s\"\n", STR(theMap["name"].toString()));
+            printf("%s\n\n",   STR(theMap["key"].toString()));
+        }
+    
+        if (!options->isBatchRequested())
+            printf("Total: %d\n", operator[]("total").toInt());
+    }
 }
 
 void 

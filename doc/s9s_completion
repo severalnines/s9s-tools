@@ -258,7 +258,7 @@ function _s9s()
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--cmon-user= --password= "
 
-                opts+=$(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" )
+                opts+=$(compgen -f -- "${COMP_WORDS[${COMP_CWORD}]}" )
             fi
         elif [[ ${COMP_WORDS[i]} == "process" ]]; then
             main_opt="--list --top --help"
@@ -268,6 +268,7 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
             main_opt="--list --whoami --create --help --set --change-password "
+            main_opt+="--list-keys --add-key "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -275,6 +276,8 @@ function _s9s()
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts=$(s9s user --list)
+            elif [ "$prev" == "--public-key-file" ]; then
+                opts+=$(compgen -f -- "${COMP_WORDS[${COMP_CWORD}]}" )
             else
                 opts+="--help --verbose --version " 
                 opts+="--config-file= "
@@ -284,9 +287,8 @@ function _s9s()
                 opts+="--group= --create-group --first-name= --last-name= "
                 opts+="--title= --email-address= "
                 opts+="--account= --with-database --db-name= --user-format= "
-                opts+="--generate-key --list-keys "
                 opts+="--cmon-user= --password= "
-                opts+="--new-password= --old-password= "
+                opts+="--new-password= --old-password= --public-key-file= "
                 opts+=$(s9s user --list 2>/dev/null)
             fi
         elif [[ ${COMP_WORDS[i]} == "metatype" ]]; then

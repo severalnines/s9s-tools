@@ -3418,6 +3418,68 @@ S9sRpcClient::getKeys()
 }
 
 bool
+S9sRpcClient::addKey()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  userMap, keyMap;
+    S9sString      keyFileName = options->publicKeyPath();
+    S9sFile        keyFile(keyFileName);
+    S9sString      key;
+    bool           success;
+
+    /*
+     * The user.
+     */
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("More than one user when getting keys.");
+        return false;
+    }
+    
+    userMap["class_name"] = "CmonUser";
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"]  = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    /*
+     * The key.
+     */
+    if (keyFileName.empty())
+    {
+        PRINT_ERROR("The public key file was not specified.");
+        PRINT_ERROR("Use the --public-key-path command line option to "
+                "specify the public key file.");
+        return false;
+    }
+
+    success = keyFile.readTxtFile(key);
+    if (!success)
+    {
+        PRINT_ERROR("%s", STR(keyFile.errorString()));
+    }
+
+    if (key.empty())
+    {
+        PRINT_ERROR("Invalid key in file '%s'.", STR(keyFileName));
+        return false;
+    }
+    
+    keyMap["key"]          = key;
+    keyMap["name"]         = "No Name";
+
+    request["operation"]   = "addKey";
+    request["user"]        = userMap;
+    request["public_key"]  = keyMap;
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::setPassword()
 {
     S9sOptions    *options = S9sOptions::instance();

@@ -24,7 +24,6 @@
 #include "S9sAccount"
 #include "S9sFile"
 #include "S9sRegExp"
-#include "S9sFile"
 #include "S9sDir"
 #include "s9srsakey.h"
 #include "S9sDateTime"
@@ -143,6 +142,8 @@ enum S9sOptionType
     OptionOldPassword,
     OptionNewPassword,
     OptionListKeys,
+    OptionAddKey,
+    OptionPublicKeyFile,
 };
 
 /**
@@ -1814,6 +1815,16 @@ bool
 S9sOptions::isListKeysRequested() const
 {
     return getBool("list_keys");
+}
+
+/**
+ * \returns true if the "add-key" function is requested by providing the 
+ * --add-key command line option.
+ */
+bool
+S9sOptions::isAddKeyRequested() const
+{
+    return getBool("add_key");
 }
 
 /**
@@ -4178,11 +4189,15 @@ S9sOptions::checkOptionsUser()
 
     if (isListKeysRequested())
         countOptions++;
+    
+    if (isAddKeyRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --whoami, --set, --change-password, --list-keys"
+            "The --list, --whoami, --set, --change-password, --list-keys, "
+            "--add-key "
             " and --create options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
@@ -4192,7 +4207,8 @@ S9sOptions::checkOptionsUser()
     {
         m_errorMessage = 
             "One of the --list, --whoami, --set, --change-password,"
-            " --list-keys and --create options is mandatory.";
+            " --list-keys, --add-key, "
+            " and --create options is mandatory.";
 
         m_exitStatus = BadOptions;
 
@@ -4444,6 +4460,7 @@ S9sOptions::readOptionsUser(
         { "create",           no_argument,       0, OptionCreate          },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "list-keys",        no_argument,       0, OptionListKeys        },
+        { "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "set",              no_argument,       0, OptionSet             },
@@ -4459,6 +4476,7 @@ S9sOptions::readOptionsUser(
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
         { "old-password",     required_argument, 0, OptionOldPassword     }, 
         { "new-password",     required_argument, 0, OptionNewPassword     }, 
+        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4574,6 +4592,11 @@ S9sOptions::readOptionsUser(
                 // --list-keys
                 m_options["list_keys"] = true;
                 break;
+            
+            case OptionAddKey:
+                // --list-keys
+                m_options["add_key"] = true;
+                break;
 
             case OptionWhoAmI:
                 // --whoami
@@ -4633,6 +4656,11 @@ S9sOptions::readOptionsUser(
             case OptionNewPassword:
                 // --new-password=PASSWORD
                 m_options["new_password"] = optarg;
+                break;
+
+            case OptionPublicKeyFile:
+                // --public-key-file=FILE
+                m_options["public_key_file"] = optarg;
                 break;
 
             case '?':
@@ -5914,6 +5942,12 @@ S9sOptions::privateKeyPath() const
         authKey.sprintf("~/.s9s/%s.key", STR(userName()));
 
     return authKey;
+}
+
+S9sString
+S9sOptions::publicKeyPath() const
+{
+    return getString("public_key_file");
 }
 
 bool

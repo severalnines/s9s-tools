@@ -146,6 +146,30 @@ function testPing()
 }
 
 #
+# Checking that the current user (created in grant_user()) can log in and can
+# view its own public key.
+#
+function testUser()
+{
+    local userName="$USER"
+    local myself
+
+    myself=$(s9s user --whoami)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with public key ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+
+    #
+    # Checking that we can see the keys.
+    #
+    if ! s9s user --list-keys | grep -q "Total: 1"; then
+        failure "Could not read keys for '$userName'"
+    fi
+}
+
+#
 # This test will check the system users, users that should be available on every
 # system.
 #
@@ -540,6 +564,7 @@ function testCreateThroughRpc()
 {
     local newUserName="rpc_user"
     local userId
+    local myself
 
     #
     # Here we pass the --cmon-user and --password options when creating the new
@@ -617,6 +642,13 @@ function testCreateThroughRpc()
     else
         printVerbose "   myself : '$myself'"
     fi
+
+    #
+    # Checking that we can see the keys.
+    #
+    if ! s9s user --list-keys --cmon-user=rpc_user | grep -q "Total: 1"; then
+        failure "Could not read keys for 'rpc_user'"
+    fi
 }
 
 #
@@ -690,6 +722,7 @@ if [ "$1" ]; then
     s9s user --list --long
 else
     #runFunctionalTest testPing
+    runFunctionalTest testUser
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers
