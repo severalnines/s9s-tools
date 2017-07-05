@@ -2799,6 +2799,7 @@ S9sOptions::printHelpUser()
 
     printf(
 "Options for the \"user\" command:\n"
+"  --add-key                  Register a new public key for a user.\n"
 "  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
 "  --list-keys                List the public keys of a user.\n"
@@ -2807,13 +2808,14 @@ S9sOptions::printHelpUser()
 "  --whoami                   List the current user only.\n"
 ""
 "\n"
+"  --create-group             Create the group if it doesn't exist.\n"
+"  --email-address=ADDRESS    The email address for the user.\n"
+"  --first-name=NAME          The first name of the user.\n"
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
-"  --create-group             Create the group if it doesn't exist.\n"
-"  --first-name=NAME          The first name of the user.\n"
 "  --last-name=NAME           The last name of the user.\n"
+"  --public-key-file=FILENAME The name of the file where the public key is.\n"
 "  --title=TITLE              The prefix title for the user.\n"
-"  --email-address=ADDRESS    The email address for the user.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
 }

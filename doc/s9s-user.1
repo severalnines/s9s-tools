@@ -17,6 +17,10 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP 
+.B \-\^\-add\-key
+Register a new public key for an existing user.
+
+.TP 
 .B \-\^\-change\-password
 Change the password of an existing user.
 
@@ -138,6 +142,11 @@ Set the first name of the user.
 .TP
 .BI \-\^\-last\-name= NAME
 Set the last name of the user.
+
+.TP
+.BI \-\^\-public\-key\-file= FILENAME 
+The name of the file where the public key is stored. Please note that this
+currently only works with the \fB\-\^\-add\-key\fP option.
 
 .TP
 .BI \-\^\-title= TITLE
