@@ -284,7 +284,7 @@ function _s9s()
                 opts+="--group= --create-group --first-name= --last-name= "
                 opts+="--title= --email-address= "
                 opts+="--account= --with-database --db-name= --user-format= "
-                opts+="--generate-key "
+                opts+="--generate-key --list-keys "
                 opts+="--cmon-user= --password= "
                 opts+="--new-password= --old-password= "
                 opts+=$(s9s user --list 2>/dev/null)
