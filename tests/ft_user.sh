@@ -555,8 +555,8 @@ function testCreateThroughRpc()
         --email-address="rpc@email.com" \
         --generate-key \
         --new-password="p" \
-        "$newUserName" \
-        >/dev/null
+        --verbose --print-json \
+        "$newUserName" #>/dev/null
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then

@@ -142,6 +142,7 @@ enum S9sOptionType
     OptionRegister,
     OptionOldPassword,
     OptionNewPassword,
+    OptionListKeys,
 };
 
 /**
@@ -1806,6 +1807,16 @@ S9sOptions::isWhoAmIRequested() const
 }
 
 /**
+ * \returns true if the "list-keys" function is requested by providing the 
+ * --list-keys command line option.
+ */
+bool
+S9sOptions::isListKeysRequested() const
+{
+    return getBool("list_keys");
+}
+
+/**
  * \returns true if the "set" function is requested using the --set command line
  *   option.
  */
@@ -2782,6 +2793,7 @@ S9sOptions::printHelpUser()
 "  --list                     List the users.\n"
 "  --set                      Change the properties of a user.\n"
 "  --whoami                   List the current user only.\n"
+"  --list-keys                List the public keys of a user.\n"
 ""
 "\n"
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
@@ -4164,12 +4176,14 @@ S9sOptions::checkOptionsUser()
     if (isWhoAmIRequested())
         countOptions++;
 
+    if (isListKeysRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --whoami, --set, --change-password and --create "
-            "options are mutually exclusive.";
+            "The --list, --whoami, --set, --change-password, --list-keys"
+            " and --create options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
 
@@ -4177,8 +4191,8 @@ S9sOptions::checkOptionsUser()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --whoami, --set, --change-password and "
-            "--create options is mandatory.";
+            "One of the --list, --whoami, --set, --change-password,"
+            " --list-keys and --create options is mandatory.";
 
         m_exitStatus = BadOptions;
 
@@ -4425,14 +4439,15 @@ S9sOptions::readOptionsUser(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "generate-key",     no_argument,       0, 'g'                   }, 
-        { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "password",         required_argument, 0, 'p'                   }, 
-        { "list",             no_argument,       0, 'L'                   },
-        { "whoami",           no_argument,       0, OptionWhoAmI          },
-        { "create",           no_argument,       0, OptionCreate          },
-        { "set",              no_argument,       0, OptionSet             },
         { "change-password",  no_argument,       0, OptionChangePassword  },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "create",           no_argument,       0, OptionCreate          },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "list-keys",        no_argument,       0, OptionListKeys        },
+        { "list",             no_argument,       0, 'L'                   },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "set",              no_argument,       0, OptionSet             },
+        { "whoami",           no_argument,       0, OptionWhoAmI          },
        
         // Options about the user.
         { "group",            required_argument, 0, OptionGroup           },
@@ -4553,6 +4568,11 @@ S9sOptions::readOptionsUser(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionListKeys:
+                // --list-keys
+                m_options["list-keys"] = true;
                 break;
 
             case OptionWhoAmI:
