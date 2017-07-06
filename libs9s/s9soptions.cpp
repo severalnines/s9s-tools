@@ -144,6 +144,7 @@ enum S9sOptionType
     OptionListKeys,
     OptionAddKey,
     OptionPublicKeyFile,
+    OptionPrivateKeyFile,
 };
 
 /**
@@ -2669,6 +2670,7 @@ S9sOptions::printHelpGeneric()
 "  --rpc-tls                  Use TLS encryption to controller.\n"
 "  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  -p, --password=PASSWORD    The password for the Cmon user.\n"
+"  --private-key-file=FILE    The name of the file for authentication.\n"
 "\n"
 "Formatting:\n"
 "  -l, --long                 Print the detailed list.\n"
@@ -2814,7 +2816,7 @@ S9sOptions::printHelpUser()
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --last-name=NAME           The last name of the user.\n"
-"  --public-key-file=FILENAME The name of the file where the public key is.\n"
+"  --public-key-file=FILE     The name of the file where the public key is.\n"
 "  --title=TITLE              The prefix title for the user.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
@@ -2930,6 +2932,7 @@ S9sOptions::readOptionsNode(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -3024,6 +3027,11 @@ S9sOptions::readOptionsNode(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -3263,6 +3271,7 @@ S9sOptions::readOptionsBackup(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -3348,6 +3357,11 @@ S9sOptions::readOptionsBackup(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -3605,6 +3619,7 @@ S9sOptions::readOptionsLog(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -3686,6 +3701,11 @@ S9sOptions::readOptionsLog(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -4280,6 +4300,7 @@ S9sOptions::readOptionsProcess(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -4341,6 +4362,11 @@ S9sOptions::readOptionsProcess(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -4448,6 +4474,8 @@ S9sOptions::readOptionsUser(
         { "version",          no_argument,       0, 'V'                   },
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -4464,7 +4492,6 @@ S9sOptions::readOptionsUser(
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
-        { "password",         required_argument, 0, 'p'                   }, 
         { "set",              no_argument,       0, OptionSet             },
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
@@ -4574,6 +4601,11 @@ S9sOptions::readOptionsUser(
                 // --password=PASSWORD
                 m_options["password"] = optarg;
                 break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
 
             case 'g':
                 // --generate-key
@@ -4664,7 +4696,7 @@ S9sOptions::readOptionsUser(
                 // --public-key-file=FILE
                 m_options["public_key_file"] = optarg;
                 break;
-
+            
             case '?':
                 // 
                 return false;
@@ -4710,6 +4742,7 @@ S9sOptions::readOptionsMaintenance(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -4780,6 +4813,11 @@ S9sOptions::readOptionsMaintenance(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -4911,28 +4949,30 @@ S9sOptions::readOptionsMetaType(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, 'h'               },
-        { "debug",            no_argument,       0, OptionDebug       },
-        { "verbose",          no_argument,       0, 'v'               },
-        { "version",          no_argument,       0, 'V'               },
-        { "controller",       required_argument, 0, 'c'               },
-        { "controller-port",  required_argument, 0, 'P'               },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls      },
-        { "long",             no_argument,       0, 'l'               },
-        { "print-json",       no_argument,       0, OptionPrintJson   },
-        { "color",            optional_argument, 0, OptionColor       },
-        { "config-file",      required_argument, 0, OptionConfigFile  },
-        { "batch",            no_argument,       0, OptionBatch       },
-        { "no-header",        no_argument,       0, OptionNoHeader    },
-        { "date-format",      required_argument, 0, OptionDateFormat  },
-        { "full-uuid",        no_argument,       0, OptionFullUuid    },
+        { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "date-format",      required_argument, 0, OptionDateFormat      },
+        { "full-uuid",        no_argument,       0, OptionFullUuid        },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'               },
-        { "list-properties",  no_argument,       0, OptionListProperties },
+        { "list",             no_argument,       0, 'L'                   },
+        { "list-properties",  no_argument,       0, OptionListProperties  },
         
         // Type/property related options
-        { "type",             required_argument, 0, OptionType        },
+        { "type",             required_argument, 0, OptionType            },
 
         { 0, 0, 0, 0 }
     };
@@ -4979,6 +5019,16 @@ S9sOptions::readOptionsMetaType(
             case 'P':
                 // -P, --controller-port=PORT
                 m_options["controller_port"] = atoi(optarg);
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
             
             case 'l':
@@ -5086,6 +5136,7 @@ S9sOptions::readOptionsCluster(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
@@ -5189,6 +5240,11 @@ S9sOptions::readOptionsCluster(
                 m_options["password"] = optarg;
                 break;
 
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+            
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
@@ -5478,6 +5534,7 @@ S9sOptions::readOptionsJob(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  6                    },
@@ -5545,6 +5602,11 @@ S9sOptions::readOptionsJob(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -5666,6 +5728,7 @@ S9sOptions::readOptionsScript(
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
@@ -5727,6 +5790,11 @@ S9sOptions::readOptionsScript(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
                 break;
 
             case 'c':
@@ -5930,8 +5998,8 @@ S9sOptions::readOptionsNoMode(
 S9sString
 S9sOptions::privateKeyPath() const
 {
-    if (m_options.contains("auth_key"))
-        return m_options.at("auth_key").toString();
+    if (m_options.contains("private_key_file"))
+        return m_options.at("private_key_file").toString();
 
     S9sString authKey;
     
