@@ -289,6 +289,7 @@ function _s9s()
                 opts+="--account= --with-database --db-name= --user-format= "
                 opts+="--cmon-user= --password= "
                 opts+="--new-password= --old-password= --public-key-file= "
+                opts+="--public-key-name= "
                 opts+=$(s9s user --list 2>/dev/null)
             fi
         elif [[ ${COMP_WORDS[i]} == "metatype" ]]; then

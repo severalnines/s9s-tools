@@ -711,7 +711,7 @@ function testChangePassword()
 #
 function testPrivateKey()
 {
-    local userName="nobody"
+    local userName="worf"
     local publicKey="$HOME/.s9s/kirk.pub"
     local privateKey="$HOME/.s9s/kirk.key"
     local myself
@@ -738,12 +738,14 @@ function testPrivateKey()
         --password=secret \
         --add-key \
         --public-key-file=$publicKey \
-        $userName \
-        >/dev/null 2>/dev/null 
+        --public-key-name="mykeyfile" \
+        $userName \ >/dev/null 2>/dev/null 
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while adding key."
+    else
+        printVerbose "Key file '$publicKey' registered."
     fi
 
     #

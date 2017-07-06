@@ -297,14 +297,14 @@ S9sRpcClient::authenticateWithPassword()
 bool
 S9sRpcClient::authenticateWithKey()
 {
-    S9S_DEBUG("Authenticating with key.");
-
     S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/v2/auth";
     S9sVariantMap  request;
     bool           retval;
     S9sString      privKeyPath = options->privateKeyPath();
+
+    S9S_DEBUG(" privKeyPath : %s", STR(privKeyPath));
 
     if (privKeyPath.empty())
     {
@@ -3470,7 +3470,7 @@ S9sRpcClient::addKey()
     }
     
     keyMap["key"]          = key;
-    keyMap["name"]         = "No Name";
+    keyMap["name"]         = options->publicKeyName();
 
     request["operation"]   = "addKey";
     request["user"]        = userMap;

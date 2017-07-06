@@ -159,6 +159,7 @@ class S9sOptions
 
         S9sString privateKeyPath() const;
         S9sString publicKeyPath() const;
+        S9sString publicKeyName() const;
 
         S9sAccount account() const;
         bool setAccount(const S9sString &value);

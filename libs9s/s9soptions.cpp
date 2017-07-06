@@ -144,7 +144,9 @@ enum S9sOptionType
     OptionListKeys,
     OptionAddKey,
     OptionPublicKeyFile,
+    OptionPublicKeyName,
     OptionPrivateKeyFile,
+    OptionKeyName,
 };
 
 /**
@@ -2817,6 +2819,7 @@ S9sOptions::printHelpUser()
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --last-name=NAME           The last name of the user.\n"
 "  --public-key-file=FILE     The name of the file where the public key is.\n"
+"  --public-key-name=NAME     The name of the public key.\n"
 "  --title=TITLE              The prefix title for the user.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
@@ -4506,6 +4509,7 @@ S9sOptions::readOptionsUser(
         { "old-password",     required_argument, 0, OptionOldPassword     }, 
         { "new-password",     required_argument, 0, OptionNewPassword     }, 
         { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
+        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
 
         { 0, 0, 0, 0 }
     };
@@ -4695,6 +4699,11 @@ S9sOptions::readOptionsUser(
             case OptionPublicKeyFile:
                 // --public-key-file=FILE
                 m_options["public_key_file"] = optarg;
+                break;
+            
+            case OptionPublicKeyName:
+                // --public-key-name=FILE
+                m_options["public_key_name"] = optarg;
                 break;
             
             case '?':
@@ -6018,6 +6027,12 @@ S9sString
 S9sOptions::publicKeyPath() const
 {
     return getString("public_key_file");
+}
+
+S9sString
+S9sOptions::publicKeyName() const
+{
+    return getString("public_key_name");
 }
 
 bool
