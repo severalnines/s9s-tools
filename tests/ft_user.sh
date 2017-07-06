@@ -136,7 +136,6 @@ function testPing()
         $OPTION_VERBOSE >/dev/null
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
         pip-say "The controller is off line. Further testing is not possible."
@@ -708,6 +707,62 @@ function testChangePassword()
 }
 
 #
+# Registering a public key and using its private counterpart to authenticate.
+#
+function testPrivateKey()
+{
+    local userName="nobody"
+    local publicKey="$HOME/.s9s/kirk.pub"
+    local privateKey="$HOME/.s9s/kirk.key"
+    local myself
+
+    #
+    # We are re-using keys here created in some previous test, so we check if
+    # the files exists.
+    #
+    if [ ! -f $publicKey ]; then
+        failure "File '$publicKey' not found."
+        return
+    fi
+
+    if [ ! -f $privateKey ]; then
+        failure "File '$rivateKey' not found."
+        return
+    fi
+
+    #
+    # Registering a new key, checking the exitcode.
+    #
+    mys9s user \
+        --cmon-user=system \
+        --password=secret \
+        --add-key \
+        --public-key-file=$publicKey \
+        $userName \
+        >/dev/null 2>/dev/null 
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while adding key."
+    fi
+
+    #
+    # Authenticating with the private counterpart.
+    #
+    myself=$(\
+        s9s user \
+            --whoami \
+            --cmon-user=$userName \
+            --private-key-file=$privateKey)
+    if [ "$myself" != "$userName" ]; then
+        failure "Failed to log in with public key ($myself)"
+    else
+        printVerbose "   myself : '$myself'"
+    fi
+    
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -731,6 +786,7 @@ else
     runFunctionalTest testCreateUsers
     runFunctionalTest testCreateThroughRpc
     runFunctionalTest testChangePassword
+    runFunctionalTest testPrivateKey
     
     #s9s user --list --long
 fi
