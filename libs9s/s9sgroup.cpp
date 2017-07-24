@@ -146,3 +146,14 @@ S9sGroup::groupName() const
     return S9sString();
 }
 
+/**
+ * \returns The unique numerical ID of the group.
+ */
+int
+S9sGroup::groupId() const
+{
+    if (m_properties.contains("group_id"))
+        return m_properties.at("group_id").toInt();
+
+    return 0;
+}

@@ -32,6 +32,7 @@
 #include "S9sMessage"
 #include "S9sCmonGraph"
 #include "S9sUser"
+#include "S9sGroup"
 
 //#define DEBUG
 //#define WARNING
@@ -4067,7 +4068,7 @@ S9sRpcReply::printGroupListBrief()
     for (uint idx = 0; idx < groupList.size(); ++idx)
     {
         S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
-        S9sString      groupName     = groupMap["group_name"].toString();
+        S9sGroup       group         = groupMap;
         const char    *groupColorBegin = "";
         const char    *groupColorEnd   = "";
 
@@ -4077,7 +4078,10 @@ S9sRpcReply::printGroupListBrief()
             groupColorEnd   = TERM_NORMAL;
         }
         
-        printf("%s%s%s\n", groupColorBegin, STR(groupName), groupColorEnd);
+        printf("%s%s%s\n", 
+                groupColorBegin, 
+                STR(group.groupName()), 
+                groupColorEnd);
     }
 }
 

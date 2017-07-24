@@ -43,7 +43,8 @@ class S9sGroup
         void setProperties(const S9sVariantMap &properties);
 
         S9sString groupName() const;
-    
+        int groupId() const;
+
     private:
         S9sVariantMap    m_properties;
 };
