@@ -2285,6 +2285,19 @@ S9sOptions::setExitStatus(
 bool
 S9sOptions::isVerbose() const
 {
+    char *variable;
+    
+    variable = getenv("S9S_VERBOSE");
+    if (variable != NULL)
+    {
+        S9sString theString = variable;
+        if (theString.toInt() > 0)
+        {
+            S9S_DEBUG("returning true (S9S_VERBOSE=%s", STR(theString));
+            return true;
+        }
+    }
+
     return getBool("verbose");
 }
 

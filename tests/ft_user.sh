@@ -318,6 +318,8 @@ function testCreateUsers()
     #
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \
@@ -335,6 +337,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --first-name="Odo" \
         --last-name="" \
         --email-address="odo@ds9.com" \
@@ -351,6 +355,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --first-name="Jake"\
         --last-name="Sisko"\
         --email-address="jake.sisko@ds9.com" \
@@ -367,6 +373,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Dr." \
         --first-name="Julian" \
         --last-name="Bashir" \
@@ -384,6 +392,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Chief" \
         --first-name="Miles" \
         --last-name="O'Brien" \
@@ -401,6 +411,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Lt." \
         --first-name="Jadzia" \
         --last-name="Dax"\
@@ -418,6 +430,8 @@ function testCreateUsers()
 
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
