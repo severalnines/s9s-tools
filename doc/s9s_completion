@@ -268,7 +268,7 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
             main_opt="--list --whoami --create --help --set --change-password "
-            main_opt+="--list-keys --add-key "
+            main_opt+="--list-keys --add-key --list-groups "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
