@@ -147,6 +147,7 @@ enum S9sOptionType
     OptionPublicKeyName,
     OptionPrivateKeyFile,
     OptionKeyName,
+    OptionListGroups,
 };
 
 /**
@@ -535,9 +536,18 @@ S9sOptions::configFile() const
 bool
 S9sOptions::onlyAscii() const
 {
+    char *variable;
     const char *key = "only_ascii";
     S9sString   retval;
 
+    variable = getenv("S9S_ONLY_ASCII");
+    if (variable != NULL)
+    {
+        S9sString theString = variable;
+        if (theString.toInt() > 0)
+            return true;
+    }
+    
     if (m_options.contains(key))
     {
         retval = m_options.at(key).toString();
@@ -1741,6 +1751,12 @@ S9sOptions::isListRequested() const
     return getBool("list");
 }
 
+bool
+S9sOptions::isListGroupsRequested() const
+{
+    return getBool("list-groups");
+}
+
 /**
  * \returns true if the --stat command line option was provided to get a
  *   detailed list of something
@@ -2202,6 +2218,9 @@ S9sOptions::setHumanReadable(
     m_options["human_readable"] = value;
 }
 
+/**
+ * \returns True if the standard output is connected to a terminal.
+ */
 bool
 S9sOptions::isTerminal() 
 {
@@ -2292,10 +2311,7 @@ S9sOptions::isVerbose() const
     {
         S9sString theString = variable;
         if (theString.toInt() > 0)
-        {
-            S9S_DEBUG("returning true (S9S_VERBOSE=%s", STR(theString));
             return true;
-        }
     }
 
     return getBool("verbose");
@@ -4213,6 +4229,9 @@ S9sOptions::checkOptionsUser()
     if (isListRequested())
         countOptions++;
     
+    if (isListGroupsRequested())
+        countOptions++;
+    
     if (isCreateRequested())
         countOptions++;
     
@@ -4508,6 +4527,7 @@ S9sOptions::readOptionsUser(
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-groups",      no_argument,       0, OptionListGroups      },
         { "set",              no_argument,       0, OptionSet             },
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
@@ -4637,6 +4657,11 @@ S9sOptions::readOptionsUser(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionListGroups:
+                // --list-groups
+                m_options["list-groups"] = true;
                 break;
 
             case OptionListKeys:

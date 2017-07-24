@@ -929,14 +929,36 @@ S9sRpcReply::printUserList()
         printUserListBrief();
 }
 
+void
+S9sRpcReply::printGroupList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printGroupListLong();
+    else
+        printGroupListBrief();
+
+}
+
+
 void 
 S9sRpcReply::printMaintenanceList()
 {
     S9sOptions *options = S9sOptions::instance();
     
-    if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (options->isLongRequested())
@@ -4033,6 +4055,54 @@ S9sRpcReply::printMaintenanceListLong()
 
     if (!options->isBatchRequested())
         printf("Total: %d\n", operator[]("total").toInt());
+}
+
+void 
+S9sRpcReply::printGroupListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  groupList = operator[]("groups").toVariantList();
+    
+    for (uint idx = 0; idx < groupList.size(); ++idx)
+    {
+        S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
+        S9sString      groupName     = groupMap["group_name"].toString();
+        const char    *groupColorBegin = "";
+        const char    *groupColorEnd   = "";
+
+        if (syntaxHighlight)
+        {
+            groupColorBegin = XTERM_COLOR_CYAN;
+            groupColorEnd   = TERM_NORMAL;
+        }
+        
+        printf("%s%s%s\n", groupColorBegin, STR(groupName), groupColorEnd);
+    }
+}
+
+void 
+S9sRpcReply::printGroupListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  groupList = operator[]("groups").toVariantList();
+    
+    for (uint idx = 0; idx < groupList.size(); ++idx)
+    {
+        S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
+        S9sString      groupName     = groupMap["group_name"].toString();
+        const char    *groupColorBegin = "";
+        const char    *groupColorEnd   = "";
+
+        if (syntaxHighlight)
+        {
+            groupColorBegin = XTERM_COLOR_CYAN;
+            groupColorEnd   = TERM_NORMAL;
+        }
+        
+        printf("%s%s%s\n", groupColorBegin, STR(groupName), groupColorEnd);
+    }
 }
 
 void 

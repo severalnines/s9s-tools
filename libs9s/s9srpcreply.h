@@ -69,6 +69,7 @@ class S9sRpcReply : public S9sVariantMap
         void printBackupList();
         void printKeys();
         void printUserList();
+        void printGroupList();
         void printMaintenanceList();
         void printMetaTypeList();
         void printMetaTypePropertyList();
@@ -176,6 +177,9 @@ class S9sRpcReply : public S9sVariantMap
         
         void printUserListBrief();
         void printUserListLong();
+        
+        void printGroupListBrief();
+        void printGroupListLong();
         
         void printMaintenanceListBrief();
         void printMaintenanceListLong();

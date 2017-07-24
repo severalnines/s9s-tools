@@ -153,6 +153,7 @@ class S9sRpcClient
                 bool             createGroup);
 
         bool getUsers();
+        bool getGroups();
         bool setUser();
         bool getKeys();
         bool addKey();

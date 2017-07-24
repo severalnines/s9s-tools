@@ -3339,6 +3339,21 @@ S9sRpcClient::getUsers()
     return retval;
 }
 
+bool
+S9sRpcClient::getGroups()
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getGroups";
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
 /**
  * \returns true if the request sent and a reply is received (even if the reply
  *   is an error message).

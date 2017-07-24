@@ -239,6 +239,9 @@ S9sBusinessLogic::execute()
         if (options->isListRequested() || options->isWhoAmIRequested())
         {
             executeUserList(client);
+        } else if (options->isListGroupsRequested())
+        {
+            executeGroupList(client);
         } else if (options->isSetRequested())
         {
             success = client.setUser();
@@ -932,6 +935,23 @@ S9sBusinessLogic::executeUserList(
     {
         reply = client.reply();
         reply.printUserList();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::executeGroupList(
+        S9sRpcClient &client)
+{
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getGroups();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printGroupList();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
