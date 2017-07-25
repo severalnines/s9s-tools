@@ -9,6 +9,7 @@ SERVER=""
 PARENT_NAME=ubuntu
 OWNER=${USER}
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+OPTION_NO_SSH_TEST=""
 
 #
 # Prints the software version and exits.
@@ -66,6 +67,8 @@ Usage:
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
  --server=SERVER      Create the container on remote server.
+ --owner=USERNAME     The name of the user to be created.
+ --no-ssh-test        Do not test the ssh connection to the container.
 
 EXAMPLE
 
@@ -78,7 +81,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:" \
+        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -113,6 +116,18 @@ while true; do
         --server)
             shift
             SERVER="$1"
+            shift
+            ;;
+
+        --owner)
+            shift
+            OWNER="$1"
+            shift
+            ;;
+
+        --no-ssh-test)
+            shift
+            OPTION_NO_SSH_TEST="true"
             shift
             ;;
 
@@ -214,10 +229,10 @@ function number_of_servers()
 function is_server_running_ssh()
 {
     local serverName="$1"
-    local OWNER="$2"
+    local owner="$2"
     local isOK
 
-    isOk=$(sudo -u $OWNER -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    isOk=$(sudo -u $owner -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
     if [ "$isOk" == "OK" ]; then
         return 0
     fi
@@ -234,11 +249,15 @@ function is_server_running_ssh()
 function wait_for_server_ssh()
 {
     local serverName="$1"
-    local OWNER="$2"
+    local owner="$2"
     local nTry=0
 
+    if [ "$OPTION_NO_SSH_TEST" ]; then
+        return 0
+    fi
+
     while true; do
-        if is_server_running_ssh "$serverName" $OWNER; then
+        if is_server_running_ssh "$serverName" $owner; then
             printVerbose "Server '$serverName' is started."
             return 0
         fi
@@ -249,7 +268,7 @@ function wait_for_server_ssh()
             return 1
         fi
 
-        printVerbose "Server '$serverName' is not yet started."
+        printVerbose "Server '$owner@$serverName' is not yet reachable."
         sleep 5
         let nTry+=1
     done
@@ -434,14 +453,19 @@ else
     if [ "$chosen_server" ]; then
         printVerbose "Executing on server '$chosen_server'."
 
-        ssh -o UserKnownHostsFile=/dev/null \
+        container_ip=$(ssh -o UserKnownHostsFile=/dev/null \
             -o StrictHostKeyChecking=no \
             -o LogLevel=quiet \
             $chosen_server -- \
             sudo $MYNAME \
+                --owner="$OWNER" \
+                --no-ssh-test \
                 $VERSION_OPTION \
                 $VERBOSE_OPTION \
-                $EXTRA_OPTIONS
+                $EXTRA_OPTIONS)
+
+        wait_for_server_ssh "$container_ip" "$OWNER"
+        echo "$container_ip"
     else
         printError "No server found."
     fi

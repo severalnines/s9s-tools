@@ -161,7 +161,7 @@ if [ "$SOURCE_SERVER" ]; then
         $TARGET_SERVER_OPTION \
         $EXTRA_OPTIONS 
 else
-    tar_file_name="/var/tmp/pip_container_move_$$.tar.gz"
+    tar_file_name="/var/tmp/pip_container_move_$$.tar"
     source_dir="/var/lib/lxc/$CONTAINER"
 
     #if [ ! -d "$CONTAINER" ]; then
@@ -172,7 +172,7 @@ else
     sudo lxc-stop -n "$CONTAINER" >/dev/null 2>/dev/null
 
     echo "Creating archive..."
-    sudo tar --numeric-owner -czf "$tar_file_name" "$source_dir" 2>/dev/null
+    sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
 
     #lxc-start --name $CONTAINER
     
@@ -183,7 +183,7 @@ else
 
     echo "Uncompressing archive..."
     $SSH $TARGET_SERVER 2>/dev/null -- \
-        sudo tar xzf "$tar_file_name" -C / 2>/dev/null
+        sudo tar xf "$tar_file_name" -C / 2>/dev/null
     
     $SSH $TARGET_SERVER 2>/dev/null -- \
         sudo rm -f "$tar_file_name" 2>/dev/null

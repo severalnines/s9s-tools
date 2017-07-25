@@ -4072,6 +4072,9 @@ S9sRpcReply::printGroupListBrief()
         const char    *groupColorBegin = "";
         const char    *groupColorEnd   = "";
 
+        if (!options->isStringMatchExtraArguments(group.groupName()))
+            continue;
+
         if (syntaxHighlight)
         {
             groupColorBegin = XTERM_COLOR_CYAN;

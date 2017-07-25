@@ -3319,6 +3319,24 @@ S9sRpcClient::createUser(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::addToGroup(
+        const S9sUser     &user,
+        const S9sString   &groupName,
+        bool               replacePrimaryGroup)
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    
+    request["operation"]    = "addToGroup";
+    request["user"]         = user.toVariantMap();
+    request["group_name"]   = groupName;
+    request["replace_primary_group"] = replacePrimaryGroup;
+    
+    return executeRequest(uri, request);
+}
+
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
