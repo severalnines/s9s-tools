@@ -10,6 +10,8 @@ SOURCE_SERVER=""
 TARGET_SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_GZIP=""
+OPTION_START=""
+START_OPTION=""
 
 #
 # Prints the software version and exits.
@@ -70,6 +72,7 @@ Usage:
  --source-server=SERVER The server to copy from.
  --target-server=SERVER The server to copy to.
  --gzip                 Compress the archive file.
+ --start                Start the container after moving it.
 
 EXAMPLE
   pip-container-move --source-server=core1 --target-server=host01 mqtt 
@@ -82,7 +85,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,source-server:,target-server:,\
-gzip" \
+gzip,start" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -133,6 +136,12 @@ while true; do
             OPTION_GZIP="true"
             ;;
 
+        --start)
+            shift
+            OPTION_START="true"
+            START_OPTION="--start"
+            ;;
+
         --)
             shift
             break
@@ -166,6 +175,7 @@ if [ "$SOURCE_SERVER" ]; then
         $MYNAME \
         $VERSION_OPTION \
         $VERBOSE_OPTION \
+        $START_OPTION \
         $TARGET_SERVER_OPTION \
         $EXTRA_OPTIONS 
 else
@@ -206,7 +216,13 @@ else
         $SSH $TARGET_SERVER 2>/dev/null -- \
             sudo tar xf "$tar_file_name" -C / 2>/dev/null
     fi
-    
+   
+    if [ "$OPTION_START" ]; then
+        echo "Starting container '$CONTAINER'..."
+        $SSH $TARGET_SERVER 2>/dev/null -- \
+            sudo lxc-start --name $CONTAINER
+    fi
+
     $SSH $TARGET_SERVER 2>/dev/null -- \
         sudo rm -f "$tar_file_name" 2>/dev/null
 fi
