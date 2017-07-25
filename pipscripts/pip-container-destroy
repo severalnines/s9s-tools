@@ -7,7 +7,6 @@ VERBOSE=""
 LOGFILE=""
 SERVER=""
 
-
 #
 # Prints the software version and exits.
 #
@@ -212,6 +211,9 @@ fi
 # Doing the job.
 #
 if [ -z "$SERVER" ]; then
+    #
+    # Destroy the container locally.
+    #
     if [ "$VERSION_OPTION" ]; then
         printVersionAndExit
         exit 0
