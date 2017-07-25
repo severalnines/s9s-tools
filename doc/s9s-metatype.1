@@ -1,0 +1,168 @@
+.TH S9S-MAINTENANCE 1 "August 29, 2016"
+
+.SH NAME
+s9s-maintenance \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-maintenance
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-L, \-\-list
+List the names of the types the controller supports. 
+
+.TP
+.B \-\-list\-properties
+List the properties the given metatype has. Use the \fP\-\-type\fR command line
+option to pass the name of the metatype.
+
+.SS Generic Options
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\-no\-header
+Do not print headers for tables.
+
+.\"
+.\"
+.\"
+.SS Options Related to Metatypes
+
+.TP
+.BI \-\^\-type= TYPENAME
+The name of the type.
+
+
+.\"
+.\"
+.\"
+.SH PROPERTY LIST
+Using the \fB\-\-list\-properties\fP and \fB\-\-long\fP command line options a
+detailed list of the metatype properties can be printed:
+
+.nf
+# \fBs9s metatype --list-properties --type=CmonUser --long\fP
+ST NAME               UNIT DESCRIPTION
+rw email_address      -    The email address of the user.
+rw first_name         -    The first name of the user.
+rw groups             -    The list of groups for the user.
+rw job_title          -    The job title of the user.
+r- last_login         -    The date&time of the last successful login.
+ . . .
+.fi
+
+The list contains the following fields:
+.RS 5
+.TP
+.B ST 
+The short status information, where at the first character position 'r' stands 
+for 'readable' and '-' shows that the property is not readable by the client
+program. At the second character position 'w' stands for 'writable' and '-' 
+shows that the property is not writable by the client.
+.TP
+.B NAME
+The name of the property.
+.TP
+.B UNIT
+The unit in which the given property is measured (e.g. 'byte'). This field shows
+a single '-' character if the unit is not applicable.
+.TP 
+.B DESCRIPTION
+The short human readable description of the property.
+.RE
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+List the metatypes the controller supports.
+
+.nf
+# \fBs9s metatype --list\fR
+.fi
+
+List a detailed list of the properties the \fBCmonUser\fR type has.
+
+.nf
+# \fBs9s metatype \\
+    --list-properties \\
+    --type=CmonUser \\
+    --long\fR
+.fi

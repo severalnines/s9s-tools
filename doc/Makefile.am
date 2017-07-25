@@ -7,6 +7,7 @@ man_MANS =            \
 	s9s-backup.1      \
 	s9s-user.1        \
 	s9s-maintenance.1 \
+	s9s-metatype.1    \
 	s9s-script.1      \
 	s9s.conf.5
 

@@ -5199,13 +5199,13 @@ S9sRpcReply::printMetaTypePropertyListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        statFormat.widen("STAT");
+        statFormat.widen("ST");
         nameFormat.widen("NAME");
         unitFormat.widen("UNIT");
 
         printf("%s", headerColorBegin());
          
-        statFormat.printf("STAT");
+        statFormat.printf("ST");
         nameFormat.printf("NAME");
         unitFormat.printf("UNIT");
         printf("DESCRIPTION");

@@ -4995,8 +4995,12 @@ S9sOptions::readOptionsMetaType(
     int           c;
     struct option long_options[] =
     {
-        // Generic Options
+        // Main Option
         { "help",             no_argument,       0, 'h'                   },
+        { "list",             no_argument,       0, 'L'                   },
+        { "list-properties",  no_argument,       0, OptionListProperties  },
+
+        // Generic Options
         { "debug",            no_argument,       0, OptionDebug           },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
@@ -5013,10 +5017,6 @@ S9sOptions::readOptionsMetaType(
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "date-format",      required_argument, 0, OptionDateFormat      },
         { "full-uuid",        no_argument,       0, OptionFullUuid        },
-
-        // Main Option
-        { "list",             no_argument,       0, 'L'                   },
-        { "list-properties",  no_argument,       0, OptionListProperties  },
         
         // Type/property related options
         { "type",             required_argument, 0, OptionType            },
