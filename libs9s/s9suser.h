@@ -52,6 +52,7 @@ class S9sUser
         S9sString jobTitle() const;
         void setGroup(const S9sString &groupName);
         S9sString groupNames(const S9sString separator = ",") const;
+        bool isMemberOf(const S9sString &groupName) const;
 
         void setPublicKey(
                 const S9sString &name,

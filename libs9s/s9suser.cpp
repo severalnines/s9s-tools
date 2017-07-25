@@ -334,6 +334,28 @@ S9sUser::groupNames(
     return retval;
 }
 
+bool
+S9sUser::isMemberOf(
+        const S9sString &groupName) const
+{
+    S9sVariantList groupList;
+    S9sString      retval;
+
+    if (m_properties.contains("groups"))
+        groupList = m_properties.at("groups").toVariantList();
+
+    for (uint idx = 0u; idx < groupList.size(); ++idx)
+    {
+        S9sVariantMap groupMap  = groupList[idx].toVariantMap();
+        S9sString     thisName  = groupMap["group_name"].toString();
+
+        if (thisName == groupName)
+            return true;
+    }
+
+    return false;
+}
+
 /**
  * \param syntaxHighlight Controls if the string will have colors or not.
  * \param formatString The formatstring with markup.

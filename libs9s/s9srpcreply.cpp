@@ -4120,6 +4120,7 @@ S9sRpcReply::printUserListBrief()
     S9sVariantList  userList = operator[]("users").toVariantList();
     int             authUserId = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       groupFilter     = options->group();
     bool            whoAmIRequested = options->isWhoAmIRequested();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
@@ -4143,6 +4144,9 @@ S9sRpcReply::printUserListBrief()
                 continue;
         
             if (!options->isStringMatchExtraArguments(userName))
+                continue;
+            
+            if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
                 continue;
    
             printf("%s", STR(user.toString(syntaxHighlight, formatString)));
@@ -4169,6 +4173,9 @@ S9sRpcReply::printUserListBrief()
             continue;
 
         if (!options->isStringMatchExtraArguments(userName))
+            continue;
+        
+        if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
             continue;
 
         /*
@@ -4199,6 +4206,7 @@ S9sRpcReply::printUserListLong()
     int             authUserId = operator[]("request_user_id").toInt();
     bool            whoAmIRequested = options->isWhoAmIRequested();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       groupFilter     = options->group();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
     const char     *groupColorBegin = "";
@@ -4228,9 +4236,11 @@ S9sRpcReply::printUserListLong()
         
             if (!options->isStringMatchExtraArguments(userName))
                 continue;
+        
+            if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
+                continue;
    
             printf("%s", STR(user.toString(syntaxHighlight, formatString)));
-            
         }
 
         if (!options->isBatchRequested())
@@ -4258,6 +4268,9 @@ S9sRpcReply::printUserListLong()
             continue;
         
         if (!options->isStringMatchExtraArguments(userName))
+            continue;
+
+        if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
             continue;
 
         if (groupNames.empty())
@@ -4314,6 +4327,9 @@ S9sRpcReply::printUserListLong()
             continue;
         
         if (!options->isStringMatchExtraArguments(userName))
+            continue;
+        
+        if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
             continue;
        
         if (groupNames.empty())
