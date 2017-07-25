@@ -9,6 +9,7 @@ CONTAINER=""
 SOURCE_SERVER=""
 TARGET_SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+OPTION_GZIP=""
 
 #
 # Prints the software version and exits.
@@ -68,6 +69,7 @@ Usage:
  --log-file=FILE        Store all the messages in the given file too.
  --source-server=SERVER The server to copy from.
  --target-server=SERVER The server to copy to.
+ --gzip                 Compress the archive file.
 
 EXAMPLE
   pip-container-move --source-server=core1 --target-server=host01 mqtt 
@@ -79,7 +81,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,source-server:,target-server:" \
+        -l "help,verbose,version,log-file:,source-server:,target-server:,\
+gzip" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -125,6 +128,11 @@ while true; do
             shift
             ;;
 
+        --gzip)
+            shift
+            OPTION_GZIP="true"
+            ;;
+
         --)
             shift
             break
@@ -161,7 +169,12 @@ if [ "$SOURCE_SERVER" ]; then
         $TARGET_SERVER_OPTION \
         $EXTRA_OPTIONS 
 else
-    tar_file_name="/var/tmp/pip_container_move_$$.tar"
+    if [ "$OPTION_GZIP" ]; then
+        tar_file_name="/var/tmp/pip_container_move_$$.tar.gz"
+    else
+        tar_file_name="/var/tmp/pip_container_move_$$.tar"
+    fi
+
     source_dir="/var/lib/lxc/$CONTAINER"
 
     #if [ ! -d "$CONTAINER" ]; then
@@ -172,7 +185,11 @@ else
     sudo lxc-stop -n "$CONTAINER" >/dev/null 2>/dev/null
 
     echo "Creating archive..."
-    sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
+    if [ "$OPTION_GZIP" ]; then
+        sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
+    else
+        sudo tar --numeric-owner -czf "$tar_file_name" "$source_dir" 2>/dev/null
+    fi
 
     #lxc-start --name $CONTAINER
     
@@ -182,8 +199,13 @@ else
     sudo rm -f "$tar_file_name"
 
     echo "Uncompressing archive..."
-    $SSH $TARGET_SERVER 2>/dev/null -- \
-        sudo tar xf "$tar_file_name" -C / 2>/dev/null
+    if [ "$OPTION_GZIP" ]; then
+        $SSH $TARGET_SERVER 2>/dev/null -- \
+            sudo tar xzf "$tar_file_name" -C / 2>/dev/null
+    else
+        $SSH $TARGET_SERVER 2>/dev/null -- \
+            sudo tar xf "$tar_file_name" -C / 2>/dev/null
+    fi
     
     $SSH $TARGET_SERVER 2>/dev/null -- \
         sudo rm -f "$tar_file_name" 2>/dev/null

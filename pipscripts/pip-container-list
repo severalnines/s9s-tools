@@ -1,10 +1,12 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYDIR=$(dirname $0)
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
+SERVER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 #
 # Prints the software version and exits.
@@ -62,6 +64,7 @@ Usage:
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
+ --server=SERVER      List the containers on remote server.
 
 EOF
     exit 0
@@ -70,7 +73,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -101,6 +104,12 @@ while true; do
             shift
             ;;
 
+        --server)
+            shift
+            SERVER="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -111,4 +120,8 @@ while true; do
     esac
 done
 
-lxc-ls --fancy | grep -v NAME
+if [ -z "$SERVER" ]; then
+    lxc-ls --fancy | grep -v NAME
+else
+    $SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME
+fi
