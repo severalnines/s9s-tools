@@ -175,6 +175,10 @@ function container_names()
     done
 }
 
+#
+# This function will choose a server by checking how many containers are there
+# on the individual servers.
+#
 function choose_server()
 {
     local server
@@ -211,6 +215,11 @@ function choose_server()
     fi
 }
 
+#
+# Prints how many remote servers are provided in the --server command line
+# option argument. If there are more than one server we chose one as a load
+# balancer would do.
+#
 function number_of_servers()
 {
     local server
@@ -220,7 +229,7 @@ function number_of_servers()
         let retval+=1
     done
 
-    echo $retval;
+    echo $retval
 }
 
 #
@@ -427,9 +436,14 @@ if [ -z "$SERVER" ]; then
 fi
 
 #
-# Doing the job.
+# Doing the job. If this is a local call we create the container here, if it is
+# a remote operation we ssh to the remote server and execute this same script 
+# there.
 #
 if [ -z "$SERVER" ]; then
+    # 
+    # No server is provided, we execute locally.
+    #
     if [ "$VERSION_OPTION" ]; then
         printVersionAndExit
         exit 0
