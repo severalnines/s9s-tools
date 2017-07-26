@@ -925,6 +925,8 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
+    //getLogStatistics();
+
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -943,10 +945,10 @@ S9sRpcClient::getLog()
         request["created_before"] = options->until();
 
         
-    if (limit != 0)
+    if (limit > 0)
         request["limit"]  = limit;
 
-    if (offset != 0)
+    if (offset > 0)
         request["offset"] = offset;
 
     if (options->hasClusterIdOption())
@@ -960,8 +962,19 @@ S9sRpcClient::getLog()
     retval = executeRequest(uri, request);
 
     return retval;
-
 }
+
+bool
+S9sRpcClient::getLogStatistics()
+{
+    S9sString      uri = "/v2/log/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getLogStatistics";
+    return executeRequest(uri, request);
+}
+
 
 
 
