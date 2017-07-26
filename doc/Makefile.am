@@ -1,6 +1,7 @@
 man_MANS =            \
 	s9s.1             \
 	s9s-job.1         \
+	s9s-log.1         \
 	s9s-cluster.1     \
 	s9s-node.1        \
 	s9s-process.1     \
