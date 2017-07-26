@@ -3676,8 +3676,10 @@ S9sOptions::readOptionsLog(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Log Options 
-        { "from",            required_argument,  0, OptionFrom            },
-        { "until",           required_argument,  0, OptionUntil           },
+        { "from",             required_argument,  0, OptionFrom           },
+        { "until",            required_argument,  0, OptionUntil          },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
 
         { 0, 0, 0, 0 }
     };
@@ -3807,6 +3809,16 @@ S9sOptions::readOptionsLog(
             case OptionUntil:
                 // --until=DATE&TIME
                 m_options["until"] = optarg;
+                break;
+            
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
             
             case '?':

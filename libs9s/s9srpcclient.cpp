@@ -926,6 +926,8 @@ bool
 S9sRpcClient::getLog()
 {
     S9sOptions    *options   = S9sOptions::instance();
+    int            limit     = options->limit();
+    int            offset    = options->offset();
     S9sString      uri = "/v2/log/";
     S9sVariantMap  request;
     bool           retval;
@@ -941,13 +943,11 @@ S9sRpcClient::getLog()
         request["created_before"] = options->until();
 
         
-    #if 0
     if (limit != 0)
         request["limit"]  = limit;
 
     if (offset != 0)
         request["offset"] = offset;
-    #endif
 
     if (options->hasClusterIdOption())
     {
