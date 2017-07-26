@@ -3663,15 +3663,6 @@ S9sOptions::readOptionsLog(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
-        { "stat",             no_argument,       0,  OptionStat           },
-        { "set",              no_argument,       0,  OptionSet            },
-        { "start",            no_argument,       0,  OptionStart          },
-        { "stop",             no_argument,       0,  OptionStop           },
-        { "restart",          no_argument,       0,  OptionRestart        },
-        { "list-config",      no_argument,       0,  OptionListConfig     },
-        { "change-config",    no_argument,       0,  OptionChangeConfig   },
-        { "pull-config",      no_argument,       0,  OptionPullConfig     },
-        { "push-config",      no_argument,       0,  OptionPushConfig     },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -3760,26 +3751,6 @@ S9sOptions::readOptionsLog(
                 m_options["list"] = true;
                 break;
 
-            case OptionStat:
-                // --stat
-                m_options["stat"] = true;
-                break;
-
-            case OptionSet:
-                // --set
-                m_options["set"]  = true;
-                break;
-
-            case OptionStart:
-                // --start
-                m_options["start"] = true;
-                break;
-
-            case OptionStop:
-                // --stop
-                m_options["stop"] = true;
-                break;
-
             case 4:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
@@ -3790,11 +3761,6 @@ S9sOptions::readOptionsLog(
                 m_options["wait"] = true;
                 break;
 
-            case 'G':
-                // -G, --log
-                m_options["log"] = true;
-                break;
-            
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
@@ -3833,17 +3799,6 @@ S9sOptions::readOptionsLog(
                 m_options["cluster_name"] = optarg;
                 break;
 
-            case OptionProperties:
-                // --properties=STRING
-                setPropertiesOption(optarg);
-                break;
-            
-            case OptionNodes:
-                // --nodes=LIST
-                if (!setNodes(optarg))
-                    return false;
-                break;
-            
             case OptionFrom:
                 // --from=DATE&TIME
                 m_options["from"] = optarg;

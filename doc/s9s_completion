@@ -54,7 +54,7 @@ function _s9s_has_options()
 function _s9s_no_command()
 {
     if ! _s9s_has_options "backup" "cluster" "job" "maint" "node" "process" \
-        "user" "script" "metatype"; 
+        "user" "script" "metatype" "log"; 
     then
         return 0
     fi
@@ -82,7 +82,7 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="backup cluster job maint node process user script metatype"
+        opts+="backup cluster job maint node process user script metatype log"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -201,6 +201,30 @@ function _s9s()
 
                 opts+="--date-format= end= --full-uuid --reason= --start= "
                 opts+="--cmon-user= --password= --uuid="
+            fi
+        elif [[ ${COMP_WORDS[i]} == "log" ]]; then
+            main_opt="--help "
+            main_opt="--list "
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cluster-id" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --only-ascii --wait "
+                opts+="--cluster-id= --cluster-name= "
+
+                opts+="--date-format= "
+                opts+="--cmon-user= --password= "
+                opts+="--from= --until= "
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt+="--help "
