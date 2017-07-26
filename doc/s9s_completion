@@ -212,6 +212,10 @@ function _s9s()
                 prev="${cur%%=*}="
                 cur=${cur#*=}
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
+            elif [ "$prev" == "--cluster-name" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s cluster --list)
             elif [ "$prev" == "--cmon-user" ]; then
                 prev="${cur%%=*}="
                 cur=${cur#*=}
