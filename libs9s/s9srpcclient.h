@@ -173,6 +173,7 @@ class S9sRpcClient
 
         bool getLog();
         bool getLogStatistics();
+        bool getAlarms();
         bool rollingRestart(const int clusterId);
         bool createReport(const int clusterId);
 

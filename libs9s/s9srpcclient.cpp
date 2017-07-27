@@ -1014,6 +1014,7 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
+    //getAlarms();
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -1131,6 +1132,81 @@ S9sRpcClient::getLogStatistics()
 }
 
 
+/**
+ * Gets the active alarms of a cluster. Here is an example that shows the reply:
+ * \code{.js}
+ * {
+ *     "alarms": [ 
+ *     {
+ *         "alarm_id": 1,
+ *         "class_name": "CmonAlarm",
+ *         "cluster_id": 1,
+ *         "component": 3,
+ *         "component_name": "Cluster",
+ *         "counter": 1,
+ *         "created": "2017-07-27T06:33:38.000Z",
+ *         "ignored": 0,
+ *         "measured": 0,
+ *         "message": "System time is drifting between servers and the distance between the highest system time and lowest is more than one minute.",
+ *         "recommendation": "Synchronize the system clock on the servers using e.g NTP or make sure NTP is working. Time drifting may lead to unexpected failures or problems, and makes debugging hard.\n\nThe last seen host time values (in controller's time-zone):\n192.168.1.127: Jul 27 08:32:40\n192.168.1.169: Jul 27 08:33:44\n",
+ *         "reported": "2017-07-27T06:33:38.000Z",
+ *         "severity": 1,
+ *         "severity_name": "ALARM_WARNING",
+ *         "title": "System time is drifting",
+ *         "type": 40000,
+ *         "type_name": "ClusterTimeDrift"
+ *     }, 
+ *     . . .
+ *     {
+ *         "alarm_id": 3,
+ *         "class_name": "CmonAlarm",
+ *         "cluster_id": 1,
+ *         "component": 0,
+ *         "component_name": "Network",
+ *         "counter": 12,
+ *         "created": "2017-07-27T06:35:56.000Z",
+ *         "host_id": 1,
+ *         "hostname": "192.168.1.169",
+ *         "ignored": 0,
+ *         "measured": 0,
+ *         "message": "Server 192.168.1.169 reports: Host 192.168.1.169 is not responding to ping after 3 cycles, the host is most likely unreachable.",
+ *         "recommendation": "Restart failed host, check firewall.",
+ *         "reported": "2017-07-27T06:35:56.000Z",
+ *         "severity": 2,
+ *         "severity_name": "ALARM_CRITICAL",
+ *         "title": "Host is not responding",
+ *         "type": 10006,
+ *         "type_name": "HostUnreachable"
+ *     } ],
+ *     "cluster_id": 1,
+ *     "request_created": "2017-07-27T06:36:03.627Z",
+ *     "request_id": 3,
+ *     "request_processed": "2017-07-27T06:36:03.675Z",
+ *     "request_status": "Ok",
+ *     "request_user_id": 3
+ * }
+ * \endcode
+ */
+bool
+S9sRpcClient::getAlarms()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/alarm/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getAlarms";
+    
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
 
 
 /**
@@ -3933,10 +4009,13 @@ S9sRpcClient::doExecuteRequest(
     }
         
     /*
-     *
+     * Printing the request we are sending.
      */
     if (options->isJsonRequested() && options->isVerbose())
-        printf("Preparing to send request: \n%s\n", STR(payload));
+    {
+        printf("Preparing to send request on %s: \n%s\n", 
+                STR(uri), STR(payload));
+    }
 
     header.sprintf(
         "POST %s HTTP/1.0\r\n"

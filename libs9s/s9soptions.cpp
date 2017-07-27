@@ -165,14 +165,16 @@ S9sOptions::S9sOptions() :
     /*
      * Setting up some internals that we use later.
      */
-    m_modes["cluster"]     = Cluster;
-    m_modes["node"]        = Node;
-    m_modes["job"]         = Job;
     m_modes["backup"]      = Backup;
+    m_modes["cluster"]     = Cluster;
+    m_modes["job"]         = Job;
+    m_modes["log"]         = Log;
     m_modes["maintenance"] = Maintenance;
-    m_modes["user"]        = User;
     m_modes["metatype"]    = MetaType;
+    m_modes["node"]        = Node;
+    m_modes["process"]     = Process;
     m_modes["script"]      = Script;
+    m_modes["user"]        = User;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2510,6 +2512,10 @@ S9sOptions::readOptions(
         
         case MetaType:
             retval = readOptionsMetaType(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsMetaType();
+
             break;
         
         case Script:
@@ -2574,36 +2580,9 @@ S9sOptions::setMode(
     bool retval = true;
    
     S9S_DEBUG("*** modeName: '%s'", STR(modeName));
-    if (modeName == "cluster") 
+    if (m_modes.contains(modeName))
     {
-        m_operationMode = Cluster;
-    } else if (modeName == "node")
-    {
-        m_operationMode = Node;
-    } else if (modeName == "job")
-    {
-        m_operationMode = Job;
-    } else if (modeName == "process")
-    {
-        m_operationMode = Process;
-    } else if (modeName == "backup")
-    {
-        m_operationMode = Backup;
-    } else if (modeName == "maintenance" || modeName == "maint")
-    {
-        m_operationMode = Maintenance;
-    } else if (modeName == "user")
-    {
-        m_operationMode = User;
-    } else if (modeName == "metatype")
-    {
-        m_operationMode = MetaType;
-    } else if (modeName == "script")
-    {
-        m_operationMode = Script;
-    } else if (modeName == "log")
-    {
-        m_operationMode = Log;
+        m_operationMode = m_modes.at(modeName);
     } else if (modeName.startsWith("-"))
     {
         // Ignored.
@@ -5127,6 +5106,48 @@ S9sOptions::readOptionsMetaType(
     for (int idx = optind + 1; idx < argc; ++idx)
     {
         m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsMetaType()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isListPropertiesRequested())
+        countOptions++;
+    
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list and --list-properties options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, and --list-properties options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
     }
 
     return true;

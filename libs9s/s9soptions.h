@@ -325,6 +325,7 @@ class S9sOptions
         bool checkOptionsScript();
 
         bool readOptionsMetaType(int argc, char *argv[]);
+        bool checkOptionsMetaType();
         
         bool readOptionsLog(int argc, char *argv[]);
         bool checkOptionsLog();
