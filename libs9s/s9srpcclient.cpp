@@ -921,6 +921,95 @@ S9sRpcClient::getJobLog(
 /**
  * This function gets the logs from the controller. Not the job messages, but
  * the actual cmon logs.
+ *
+ * Here is an example of a reply. We might have to double check the format
+ * string for this, there are a few fields just added.
+ *
+ * \code{.js}
+ * {
+ *     "log_entries": [ 
+ *     {
+ *         "class_name": "CmonLogMessage",
+ *         "component": "ClusterConfiguration",
+ *         "created": "2017-07-26T08:35:40.704Z",
+ *         "log_class": "LogMessage",
+ *         "log_id": 110,
+ *         "log_origins": 
+ *         {
+ *             "sender_binary": "cmon",
+ *             "sender_file": "../../src/cmonhostmanager.cpp",
+ *             "sender_line": 594,
+ *             "sender_pid": 40818,
+ *             "tv_nsec": 704637455,
+ *             "tv_sec": 1501058140
+ *         },
+ *         "log_specifics": 
+ *         {
+ *             "cluster_id": 1,
+ *             "message_text": "Registering CmonPostgreSqlHost: 192.168.1.167:8089"
+ *         },
+ *         "severity": "LOG_DEBUG"
+ *     }, 
+ *  
+ *     . . .
+ * 
+ *     {
+ *         "class_name": "CmonLogMessage",
+ *         "created": "2017-07-26T08:38:11.697Z",
+ *         "log_class": "LogMessage",
+ *         "log_id": 351,
+ *         "log_origins": 
+ *         {
+ *             "sender_binary": "cmon",
+ *             "sender_file": "../../src/cmonalarmdb.cpp",
+ *             "sender_line": 1467,
+ *             "sender_pid": 40818,
+ *             "tv_nsec": 697060177,
+ *             "tv_sec": 1501058291
+ *         },
+ *         "log_specifics": 
+ *         {
+ *             "cluster_id": 1,
+ *             "message_text": "hostId: 1, nodeId: 0, alarm: Host is not responding"
+ *         },
+ *         "severity": "LOG_DEBUG"
+ *     } ],
+ *     "log_entry_counts": 
+ *     {
+ *         "component": 
+ *         {
+ *             "Cluster": 1,
+ *             "ClusterConfiguration": 2,
+ *             "Node": 3,
+ *             "Unknown": 194
+ *         },
+ *         "hostname": 
+ *         {
+ *             "": 199,
+ *             "192.168.1.167": 1
+ *         },
+ *         "sender_binary": 
+ *         {
+ *             "cmon": 200
+ *         },
+ *         "severity": 
+ *         {
+ *             "LOG_CRIT": 2,
+ *             "LOG_DEBUG": 192,
+ *             "LOG_ERR": 1,
+ *             "LOG_INFO": 2,
+ *             "LOG_WARNING": 3
+ *         }
+ *     },
+ *     "reply_received": "2017-07-26T08:39:53.936Z",
+ *     "request_created": "2017-07-26T08:39:53.931Z",
+ *     "request_id": 3,
+ *     "request_processed": "2017-07-26T08:39:54.019Z",
+ *     "request_status": "Ok",
+ *     "request_user_id": 3,
+ *     "total": 258
+ * }
+ * \endcode
  */
 bool
 S9sRpcClient::getLog()
