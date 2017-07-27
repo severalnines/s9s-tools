@@ -98,7 +98,8 @@ authentication can also be done using a private/public keypair automatically.
 
 .TP
 .BI \-\^\-private\-key\-file= FILE
-The path to the private key file that will be used for the authentication.
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
 
 .TP
 .B \-l, \-\^\-long
@@ -349,3 +350,52 @@ other (existing) user.
 \fR
 .fi
 
+
+The following example shows how the system user can add a public key for an
+other user. The public key from a local file is uploaded to the controller and
+registered for the user.
+
+.nf
+# \fBs9s user \\
+    --cmon-user=system \\
+    --password=secret \\
+    --add-key \\
+    --public-key-file=/home/otheruser/.s9s/otheruser.pub \\
+    --public-key-name="My Public Key" \\
+    otheruser
+\fR
+.fi
+
+The following example shows how the user can check if the authentication with a
+public/private key pair is working.
+
+.nf
+# \fBs9s user \\
+    --whoami \\
+    --cmon-user=otheruser \\
+    --private-key-file=somefile.key\fR
+.fi
+
+The neyt example shows how the user is able to change the password by providing
+both the old and the new passwords.
+
+.nf
+# \fBs9s user \\
+    --change-password \\
+    --cmon-user="myusername" \\
+    --password="p" \\
+    --new-password="pp" 
+\fR
+.fi
+
+The \fBsystem\fR user can change the password for other users. Please note the
+for the password change the current password of the system user is used.
+
+.nf
+# \fBs9s user \\
+    --change-password \\
+    --cmon-user="system" \\
+    --password="secret" \\
+    --new-password="p" \\
+    "otheruser" 
+.fi
