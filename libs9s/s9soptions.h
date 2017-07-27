@@ -56,7 +56,8 @@ class S9sOptions
             Maintenance,
             MetaType,
             Script,
-            Log
+            Log,
+            //Alarm
         };
 
         enum ExitCodes
@@ -292,6 +293,7 @@ class S9sOptions
         void printHelpNode();
         void printHelpUser();
         void printHelpJob();
+        void printHelpLog();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();

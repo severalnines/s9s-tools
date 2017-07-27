@@ -2648,7 +2648,7 @@ S9sOptions::printHelp()
             break;
 
         case Log:
-            // Missing help
+            printHelpLog();
             break;
     }
 }
@@ -2921,6 +2921,23 @@ S9sOptions::printHelpScript()
 "  --tree                     Print the scripts available on the controller.\n"
 "\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpLog()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"log\" command:\n"
+"  --list                     List the log messages.\n"
+"\n"
+"  --from=DATE&TIME           The start of the interval to be printed.\n"
+"  --limit=NUMBER             Controls how many jobs are printed max.\n"
+"  --offset=NUMBER            Controls the index of the first item printed.\n"
+"  --until=DATE&TIME          The end of the interval to be printed.\n"
 "\n"
     );
 }
@@ -3655,10 +3672,10 @@ S9sOptions::readOptionsLog(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Log Options 
-        { "from",             required_argument,  0, OptionFrom           },
-        { "until",            required_argument,  0, OptionUntil          },
-        { "limit",            required_argument, 0, OptionLimit           },
-        { "offset",           required_argument, 0, OptionOffset          },
+        { "from",             required_argument, 0, OptionFrom           },
+        { "until",            required_argument, 0, OptionUntil          },
+        { "limit",            required_argument, 0, OptionLimit          },
+        { "offset",           required_argument, 0, OptionOffset         },
 
         { 0, 0, 0, 0 }
     };
