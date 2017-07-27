@@ -1014,8 +1014,6 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-    //getLogStatistics();
-
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -1053,6 +1051,74 @@ S9sRpcClient::getLog()
     return retval;
 }
 
+/**
+ * Gets the statistics about the log. Here is an example reply:
+ *
+ * \code{.js}
+ * {
+ *     "log_statistics": 
+ *     {
+ *         "cluster_log_statistics": [ 
+ *         {
+ *             "cluster_id": -1,
+ *             "disabled": false,
+ *             "entries_received": 3,
+ *             "format_string": "%C : (%S) %M",
+ *             "last_error_message": "",
+ *             "lines_written": 0,
+ *             "log_file_name": "",
+ *             "max_log_file_size": 5242880,
+ *             "messages_per_sec": 0.05,
+ *             "syslog_enabled": false,
+ *             "write_cycle_counter": 1
+ *         }, 
+ *         {
+ *             "cluster_id": 0,
+ *             "disabled": false,
+ *             "entries_received": 93,
+ *             "format_string": "%C : (%S) %M",
+ *             "last_error_message": "Success.",
+ *             "lines_written": 93,
+ *             "log_file_name": "./cmon-ft-install.log",
+ *             "max_log_file_size": 5242880,
+ *             "messages_per_sec": 0.05,
+ *             "syslog_enabled": false,
+ *             "write_cycle_counter": 3
+ *         }, 
+ *         {
+ *             "cluster_id": 1,
+ *             "disabled": false,
+ *             "entries_received": 218,
+ *             "format_string": "%C : (%S) %M",
+ *             "last_error_message": "Success.",
+ *             "lines_written": 218,
+ *             "log_file_name": "/tmp/cmon_1.log",
+ *             "max_log_file_size": 5242880,
+ *             "messages_per_sec": 0.85,
+ *             "syslog_enabled": false,
+ *             "write_cycle_counter": 11
+ *         } ],
+ *         "current_time": "2017-07-26T11:01:08.884Z",
+ *         "entries_statistics": 
+ *         {
+ *             "entries_received": 319,
+ *             "entries_written_to_cmondb": 314
+ *         },
+ *         "has_cmondb": true,
+ *         "last_error_message": "Success.",
+ *         "last_flush_time": "2017-07-26T11:00:59.543Z",
+ *         "log_debug_enabled": false,
+ *         "writer_thread_running": true,
+ *         "writer_thread_started": "2017-07-26T10:55:29.410Z"
+ *     },
+ *     "request_created": "2017-07-26T11:01:08.840Z",
+ *     "request_id": 3,
+ *     "request_processed": "2017-07-26T11:01:08.884Z",
+ *     "request_status": "Ok",
+ *     "request_user_id": 3
+ * }
+ * \endcode
+ */
 bool
 S9sRpcClient::getLogStatistics()
 {
