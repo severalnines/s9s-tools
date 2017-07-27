@@ -1,0 +1,138 @@
+.TH S9S-JOB 1 "August 29, 2016"
+
+.SH NAME
+s9s_job \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-log
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP is command line tool to manage and monitor... more info needed...
+
+.SH OPTIONS
+
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-L, \-\-list
+List the log entries.
+
+.\"
+.\"
+.\"
+.SS General Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The port is also accepted as part of the
+hostname.
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+.TP
+
+.TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\-no\-header
+Do not print headers for tables.
+
+.TP
+.BI \-\^\-date\-format= FORMATSTRING
+Controls what format the dates and times will be printed. Formats strings
+accepted as specified in the strftime(3) man page.
+
+.\"
+.\"
+.\"
+.SS Cluster Related Options
+
+.TP
+.BI \-i " INTEGER" "\fR,\fP \-\^\-cluster\-id=" INTEGER
+Controls which cluster to check.
+
+.TP
+.BI \-n " NAME" "\fR,\fP \-\^\-cluster-name=" NAME
+Controls which cluster to check.
+
+.\"
+.\"
+.\"
+.SH ENVIRONMENT
+The s9s application will read and consider the following environment variables:
+.TP 5 
+CMON_CONTROLLER
+The host name and optionally the port number of the controller that will be
+contacted. This also can be set using the \fB\-\-controller\fR command line
+option.
+
+.TP 5
+CMON_CLUSTER_ID
+The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
+command line option.
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+The next example can be used to view the log messages for a given cluster:
+
+.nf
+# \fBs9s log \\
+    --list \\
+    --cluster-id=1 \\
+    --long \fR
+.fi
+
