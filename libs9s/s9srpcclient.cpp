@@ -660,13 +660,179 @@ S9sRpcClient::getCpuInfo(
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"] = "getCpuPhysicalInfo";
+    request["operation"]  = "getCpuPhysicalInfo";
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
     return retval;
 }
 
+/**
+ * This function will send the "getInfo" call on the "v2/stat" interface. The
+ * reply will be something like this:
+ * \code{.js}
+ * {
+ *     "collected_info": [ 
+ *     {
+ *         "cluster_id": 1,
+ *         "info": 
+ *         {
+ *             "cluster.status": 2,
+ *             "cluster.statustext": "Cluster started.",
+ *             "cmon.domainname": "",
+ *             "cmon.hostname": "t7500",
+ *             "cmon.running": true,
+ *             "cmon.starttime": 1501144642,
+ *             "cmon.uptime": 15636,
+ *             "conf.backup_retention": 31,
+ *             "conf.clusterid": 1,
+ *             "conf.clustername": "ft_postgresql_48154",
+ *             "conf.clustertype": 5,
+ *             "conf.configfile": "/tmp/cmon_1.cnf",
+ *             "conf.hostname": "192.168.1.127",
+ *             "conf.os": "debian",
+ *             "conf.statustext": "Configuration loaded.",
+ *             "host.1.connected": true,
+ *             "host.1.cpu_io_wait_percent": 0.353357,
+ *             "host.1.cpu_steal_percent": 0,
+ *             "host.1.cpu_usage_percent": 15.5331,
+ *             "host.1.cpucores": 16,
+ *             "host.1.cpuinfo": [ 
+ *             {
+ *                 "class_name": "CmonCpuInfo",
+ *                 "cpucores": 4,
+ *                 "cpumaxmhz": 2.268e+06,
+ *                 "cpumhz": 1600,
+ *                 "cpumodel": "Intel(R) Xeon(R) CPU           L5520  @ 2.27GHz",
+ *                 "cputemp": 55.5,
+ *                 "hostid": 1,
+ *                 "physical_cpu_id": 0,
+ *                 "siblings": 8,
+ *                 "vendor": "GenuineIntel"
+ *             }, 
+ *             {
+ *                 "class_name": "CmonCpuInfo",
+ *                 "cpucores": 4,
+ *                 "cpumaxmhz": 2.268e+06,
+ *                 "cpumhz": 1733,
+ *                 "cpumodel": "Intel(R) Xeon(R) CPU           L5520  @ 2.27GHz",
+ *                 "cputemp": 55.5,
+ *                 "hostid": 1,
+ *                 "physical_cpu_id": 1,
+ *                 "siblings": 8,
+ *                 "vendor": "GenuineIntel"
+ *             } ],
+ *             "host.1.cpumaxmhz": 2268,
+ *             "host.1.cpumhz": 1733,
+ *             "host.1.cpumodel": "Intel(R) Xeon(R) CPU           L5520  @ 2.27GHz",
+ *             "host.1.cputemp": 55.5,
+ *             "host.1.devices": [ "/dev/mapper/core1--vg-root" ],
+ *             "host.1.free_disk_bytes": 155814936576,
+ *             "host.1.hostname": "192.168.1.174",
+ *             "host.1.interfaces": [ "eth0" ],
+ *             "host.1.ip": "192.168.1.174",
+ *             "host.1.membuffer": 0,
+ *             "host.1.memcached": 1,
+ *             "host.1.memfree": 16031900,
+ *             "host.1.memtotal": 16777216,
+ *             "host.1.network_interfaces": [ 
+ *             {
+ *                 "interface_name": "eth0",
+ *                 "rx_bytes_per_sec": 11775.8,
+ *                 "tx_bytes_per_sec": 17652.3
+ *             } ],
+ *             "host.1.pingdelay": -1,
+ *             "host.1.pingstatustext": "Creating ICMP socket (to ping '192.168.1.174') failed: Operation not permitted.",
+ *             "host.1.port": 8089,
+ *             "host.1.rx_bytes_per_second": 11775.8,
+ *             "host.1.swapfree": 0,
+ *             "host.1.swaptotal": 0,
+ *             "host.1.total_disk_bytes": 208033853440,
+ *             "host.1.tx_bytes_per_second": 17652.3,
+ *             "host.1.uptime": 15779,
+ *             "host.1.wallclock": 1501160299,
+ *             "host.1.wallclocksampled": 1501160235,
+ *             "host.2.class_name": "controller",
+ *             "host.2.connected": true,
+ *             "host.2.cpu_io_wait_percent": 2.89087,
+ *             "host.2.cpu_steal_percent": 0,
+ *             "host.2.cpu_usage_percent": 204.378,
+ *             "host.2.cpucores": 24,
+ *             "host.2.cpuinfo": [ 
+ *             {
+ *                 "class_name": "CmonCpuInfo",
+ *                 "cpucores": 6,
+ *                 "cpumaxmhz": 2.661e+06,
+ *                 "cpumhz": 1596,
+ *                 "cpumodel": "Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz",
+ *                 "cputemp": 0,
+ *                 "hostid": 2,
+ *                 "physical_cpu_id": 0,
+ *                 "siblings": 12,
+ *                 "vendor": "GenuineIntel"
+ *             }, 
+ *             {
+ *                 "class_name": "CmonCpuInfo",
+ *                 "cpucores": 6,
+ *                 "cpumaxmhz": 2.661e+06,
+ *                 "cpumhz": 1596,
+ *                 "cpumodel": "Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz",
+ *                 "cputemp": 0,
+ *                 "hostid": 2,
+ *                 "physical_cpu_id": 1,
+ *                 "siblings": 12,
+ *                 "vendor": "GenuineIntel"
+ *             } ],
+ *             "host.2.cpumaxmhz": 2661,
+ *             "host.2.cpumhz": 1596,
+ *             "host.2.cpumodel": "Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz",
+ *             "host.2.cputemp": 0,
+ *             "host.2.devices": [ "/dev/sda1" ],
+ *             "host.2.free_disk_bytes": 1409452683264,
+ *             "host.2.hostname": "192.168.1.127",
+ *             "host.2.interfaces": [ "eth0" ],
+ *             "host.2.ip": "192.168.1.127",
+ *             "host.2.membuffer": 318624,
+ *             "host.2.memcached": 19415480,
+ *             "host.2.memfree": 9243460,
+ *             "host.2.memtotal": 49453276,
+ *             "host.2.network_interfaces": [ 
+ *             {
+ *                 "interface_name": "eth0",
+ *                 "rx_bytes_per_sec": 29150.4,
+ *                 "tx_bytes_per_sec": 18520.8
+ *             } ],
+ *             "host.2.pingdelay": -1,
+ *             "host.2.pingstatustext": "Creating ICMP socket (to ping '192.168.1.127') failed: Operation not permitted.",
+ *             "host.2.port": 9555,
+ *             "host.2.rx_bytes_per_second": 29150.4,
+ *             "host.2.swapfree": 0,
+ *             "host.2.swaptotal": 0,
+ *             "host.2.total_disk_bytes": 2125259440128,
+ *             "host.2.tx_bytes_per_second": 18520.8,
+ *             "host.2.uptime": 2.59852e+06,
+ *             "host.2.version": "1.4.3",
+ *             "host.2.wallclock": 1501160235,
+ *             "host.2.wallclocksampled": 1501160235,
+ *             "license.expires": -1,
+ *             "license.status": false,
+ *             "license.statustext": "No license found.",
+ *             "mail.statustext": "Created.",
+ *             "netStat.1.eth0.rxBytes": 287358005,
+ *             "netStat.1.eth0.txBytes": 205682361,
+ *             "netStat.2.eth0.rxBytes": 531084878595,
+ *             "netStat.2.eth0.txBytes": 503628558465
+ *         }
+ *     } ],
+ *     "request_created": "2017-07-27T12:58:00.283Z",
+ *     "request_id": 3,
+ *     "request_processed": "2017-07-27T12:58:00.328Z",
+ *     "request_status": "Ok",
+ *     "request_user_id": 3
+ * }
+ * \endcode
+ */
 bool
 S9sRpcClient::getInfo()
 {
@@ -1014,7 +1180,7 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-    //getAlarms();
+    getAccounts();
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -3321,6 +3487,29 @@ S9sRpcClient::createAccount()
 
     return retval;
 }
+
+bool
+S9sRpcClient::getAccounts()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "listAccounts";
+    request["with_privileges"]  = true;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
 
 /**
  * \param account The account for which we are granting privileges.

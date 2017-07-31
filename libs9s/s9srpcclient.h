@@ -109,6 +109,7 @@ class S9sRpcClient
          * Account&database handling.
          */
         bool createAccount();
+        bool getAccounts();
 
         bool grantPrivileges(
                 const S9sAccount &account,
