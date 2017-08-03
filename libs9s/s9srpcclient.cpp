@@ -1446,10 +1446,16 @@ S9sRpcClient::generateReport()
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/reports/";
     S9sVariantMap  request;
+    S9sVariantMap  reportMap;
 
     // Building the request.
-    request["operation"]  = "generateReport";
-    request["name"]       = "availability";
+    reportMap["class_name"]  = "CmonReport";
+    reportMap["report_type"] = "availability";
+    reportMap["recipients"]  = 
+        "kedazo@severalnines.com,laszlo@severalnines.com";
+
+    request["operation"]     = "generateReport";
+    request["report"]        = reportMap;
 
     if (options->hasClusterIdOption())
     {
