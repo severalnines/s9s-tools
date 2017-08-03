@@ -110,6 +110,8 @@ class S9sRpcClient
          */
         bool createAccount();
         bool getAccounts();
+        bool getRepositories();
+        bool getSupportedSetups();
 
         bool grantPrivileges(
                 const S9sAccount &account,
@@ -175,8 +177,19 @@ class S9sRpcClient
         bool getLog();
         bool getLogStatistics();
         bool getAlarms();
+        bool getAlarm();
+        bool getAlarmStatistics();
+        bool generateReport();
+        bool getReports();
         bool rollingRestart(const int clusterId);
         bool createReport(const int clusterId);
+
+        bool createLocalRepository(
+                const int          clusterId,
+                const S9sString   &clusterType,
+                const S9sString   &vendor,
+                const S9sString   &dbVersion,
+                const S9sString   &osRelease);
 
         bool createCluster();
         bool registerCluster();

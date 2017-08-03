@@ -1180,7 +1180,8 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-    getAccounts();
+    generateReport();
+    getReports();
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -1374,6 +1375,134 @@ S9sRpcClient::getAlarms()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::getAlarm()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/alarm/";
+    S9sVariantMap  request;
+    int            alarmId = 1;
+
+    // Building the request.
+    request["operation"]  = "getAlarm";
+    request["alarm_id"]   = alarmId;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getAlarmStatistics()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/alarm/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getStatistics";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getReports()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/reports/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getReports";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::generateReport()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/reports/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "generateReport";
+    request["name"]       = "availability";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+
+/**
+ * This will initiate a job that creates a local repository.
+ */
+bool
+S9sRpcClient::createLocalRepository(
+        const int          clusterId,
+        const S9sString   &clusterType,
+        const S9sString   &vendor,
+        const S9sString   &dbVersion,
+        const S9sString   &osRelease)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobData["cluster_type"] = clusterType;
+    jobData["vendor"]     = vendor;
+    jobData["db_version"] = dbVersion;
+    jobData["os_release"] = osRelease;
+    //jobData["dry_run"]    = true;
+
+    jobSpec["command"]    = "create_local_repository";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Repository";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    return executeRequest(uri, request);
+}
 
 /**
  * \param clusterId the ID of the cluster that will be restarted
@@ -1391,7 +1520,6 @@ S9sRpcClient::rollingRestart(
     S9sVariantMap  request;
     S9sVariantMap  job, jobSpec;
     S9sString      uri = "/v2/jobs/";
-    bool           retval;
 
     jobSpec["command"]    = "rolling_restart";
 
@@ -1408,9 +1536,7 @@ S9sRpcClient::rollingRestart(
     request["job"]        = job;
     request["cluster_id"] = clusterId;
     
-    retval = executeRequest(uri, request);
-
-    return retval;
+    return executeRequest(uri, request);
 }
 
 /**
@@ -3510,6 +3636,47 @@ S9sRpcClient::getAccounts()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::getRepositories()
+{
+    #if 1
+    static int testJob = 0;
+    if (testJob == 0)
+    {
+        createLocalRepository(1, "galera", "percona", "5.6", "precise");
+        ++testJob;
+    }
+    #endif
+
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/repositories/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getRepositories";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getSupportedSetups()
+{
+    S9sString      uri = "/v2/repositories/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getSupportedSetups";
+
+    return executeRequest(uri, request);
+}
 
 /**
  * \param account The account for which we are granting privileges.
