@@ -1180,8 +1180,16 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
+#if 0
+    S9sRpcReply theReply;
+
     generateReport();
+    theReply = reply();
+    theReply.printReport();
+
     getReports();
+#endif
+
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -1450,9 +1458,9 @@ S9sRpcClient::generateReport()
 
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
-    reportMap["report_type"] = "availability";
-    reportMap["recipients"]  = 
-        "kedazo@severalnines.com,laszlo@severalnines.com";
+    reportMap["report_type"] = "capacity";
+    reportMap["recipients"]  = "laszlo@severalnines.com";
+    reportMap["text_format"] = "AnsiTerminal";
 
     request["operation"]     = "generateReport";
     request["report"]        = reportMap;

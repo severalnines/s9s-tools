@@ -84,6 +84,7 @@ libs9s_a_SOURCES =            \
 	s9scluster.cpp            \
 	s9sbackup.cpp             \
 	s9suser.cpp               \
+	s9sreport.cpp             \
 	s9sgroup.cpp              \
 	s9smessage.cpp            \
 	s9saccount.cpp            \

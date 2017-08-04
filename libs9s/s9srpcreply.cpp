@@ -33,6 +33,7 @@
 #include "S9sCmonGraph"
 #include "S9sUser"
 #include "S9sGroup"
+#include "S9sReport"
 
 //#define DEBUG
 //#define WARNING
@@ -953,7 +954,6 @@ S9sRpcReply::printGroupList()
         printGroupListBrief();
 
 }
-
 
 void 
 S9sRpcReply::printMaintenanceList()
@@ -1986,6 +1986,14 @@ S9sRpcReply::printScriptOutputBrief()
     printScriptBacktrace();
 }
 
+void
+S9sRpcReply::printReport()
+{
+    S9sVariantMap   reportMap = operator[]("report").toVariantMap();
+    S9sReport       report(reportMap);
+
+    printf("%s", STR(report.content()));
+}
 
 /**
  * \param a the first host represented as a variantmap
