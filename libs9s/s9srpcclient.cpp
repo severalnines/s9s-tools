@@ -1180,15 +1180,16 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-#if 0
+    #if 1
     S9sRpcReply theReply;
 
     generateReport();
     theReply = reply();
     theReply.printReport();
 
-    getReports();
-#endif
+    deleteReport(1);
+    //getReports();
+    #endif
 
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
@@ -1476,6 +1477,32 @@ S9sRpcClient::generateReport()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::deleteReport(
+        const int reportId)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/reports/";
+    S9sVariantMap  request;
+    S9sVariantMap  reportMap;
+
+    // Building the request.
+    reportMap["class_name"]  = "CmonReport";
+    reportMap["report_id"]   = reportId;
+
+    request["operation"]     = "deleteReport";
+    request["report"]        = reportMap;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
 
 /**
  * This will initiate a job that creates a local repository.

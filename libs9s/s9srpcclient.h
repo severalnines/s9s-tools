@@ -180,6 +180,7 @@ class S9sRpcClient
         bool getAlarm();
         bool getAlarmStatistics();
         bool generateReport();
+        bool deleteReport(const int reportId);
         bool getReports();
         bool rollingRestart(const int clusterId);
         bool createReport(const int clusterId);
