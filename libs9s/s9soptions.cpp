@@ -4318,6 +4318,9 @@ S9sOptions::checkOptionsAccount()
     if (isCreateRequested())
         countOptions++;
     
+    if (isDeleteRequested())
+        countOptions++;
+    
     if (isSetRequested())
         countOptions++;
     
@@ -4896,6 +4899,10 @@ S9sOptions::readOptionsAccount(
         { "set",              no_argument,       0, OptionSet             },
         { "delete",           no_argument,       0, OptionDelete          },
         { "grant",            no_argument,       0, OptionGrant           },
+        
+        // Cluster information
+        { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
        
         // Options about the user.
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
@@ -4903,6 +4910,11 @@ S9sOptions::readOptionsAccount(
         { "new-password",     required_argument, 0, OptionNewPassword     }, 
         { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
         { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
+        
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "db-name",          required_argument, 0, OptionDbName          },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "account",          required_argument, 0, OptionAccount,        },
 
         { 0, 0, 0, 0 }
     };
@@ -5003,6 +5015,16 @@ S9sOptions::readOptionsAccount(
                 // --private-key-file=FILE
                 m_options["private_key_file"] = optarg;
                 break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
+                break;
 
             case 'g':
                 // --generate-key
@@ -5072,6 +5094,28 @@ S9sOptions::readOptionsAccount(
             case OptionPublicKeyName:
                 // --public-key-name=FILE
                 m_options["public_key_name"] = optarg;
+                break;
+            
+            case OptionWithDatabase:
+                // --with-database
+                m_options["with_database"] = true;
+                break;
+            
+            case OptionDbName:
+                // --db-name=NAME
+                m_options["db_name"] = optarg;
+                break;
+            
+            case OptionPrivileges:
+                // --privileges=PRIVILEGES
+                m_options["privileges"] = optarg;
+                break;
+            
+            case OptionAccount:
+                // --account=USERNAME
+                if (!setAccount(optarg))
+                    return false;
+
                 break;
             
             case '?':
@@ -5595,7 +5639,7 @@ S9sOptions::readOptionsCluster(
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "nodes",            required_argument, 0,  OptionNodes          },
+        { "nodes",            required_argument, 0, OptionNodes           },
         { "vendor",           required_argument, 0, OptionVendor          },
         { "provider-version", required_argument, 0, OptionProviderVersion },
         { "os-user",          required_argument, 0, OptionOsUser          },

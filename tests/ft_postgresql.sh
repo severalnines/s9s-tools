@@ -337,8 +337,8 @@ function testCreateAccount()
     #
     # This command will create a new account on the cluster.
     #
-    mys9s cluster \
-        --create-account \
+    mys9s account \
+        --create \
         --cluster-id=$CLUSTER_ID \
         --account="joe:password" \
         --with-database \
@@ -353,8 +353,8 @@ function testCreateAccount()
     #
     # This command will delete the same account from the cluster.
     #
-    mys9s cluster \
-        --delete-account \
+    mys9s account \
+        --delete \
         --cluster-id=$CLUSTER_ID \
         --account="joe" \
         --batch
@@ -374,7 +374,7 @@ function testCreateDatabase()
     pip-say "Testing database creation."
 
     #
-    # This command will create a new account on the cluster.
+    # This command will create a new database on the cluster.
     #
     mys9s cluster \
         --create-database \
@@ -392,8 +392,8 @@ function testCreateDatabase()
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
     #
-    mys9s cluster \
-        --create-account \
+    mys9s account \
+        --create \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
         --privileges="testCreateDatabase.*:INSERT,UPDATE" \
@@ -409,7 +409,7 @@ function testCreateDatabase()
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
     #
-    mys9s cluster \
+    mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
