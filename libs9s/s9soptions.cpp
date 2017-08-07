@@ -175,6 +175,7 @@ S9sOptions::S9sOptions() :
     m_modes["process"]     = Process;
     m_modes["script"]      = Script;
     m_modes["user"]        = User;
+    m_modes["account"]     = Account;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2502,6 +2503,14 @@ S9sOptions::readOptions(
 
             break;
         
+        case Account:
+            retval = readOptionsAccount(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsAccount();
+
+            break;
+        
         case Maintenance:
             retval = readOptionsMaintenance(*argc, argv);
             
@@ -2641,6 +2650,10 @@ S9sOptions::printHelp()
 
         case User:
             printHelpUser();
+            break;
+        
+        case Account:
+            printHelpAccount();
             break;
         
         case Script:
@@ -2811,6 +2824,41 @@ S9sOptions::printHelpUser()
 
     printf(
 "Options for the \"user\" command:\n"
+"  --add-key                  Register a new public key for a user.\n"
+"  --change-password          Change the password for an existing user.\n"
+"  --create                   Create a new Cmon user.\n"
+"  --list-keys                List the public keys of a user.\n"
+"  --list                     List the users.\n"
+"  --set                      Change the properties of a user.\n"
+"  --whoami                   List the current user only.\n"
+""
+"\n"
+"  --create-group             Create the group if it doesn't exist.\n"
+"  --email-address=ADDRESS    The email address for the user.\n"
+"  --first-name=NAME          The first name of the user.\n"
+"  -g, --generate-key         Generate an RSA keypair for the user.\n"
+"  --group=GROUP_NAME         The primary group for the new user.\n"
+"  --last-name=NAME           The last name of the user.\n"
+"  --public-key-file=FILE     The name of the file where the public key is.\n"
+"  --public-key-name=NAME     The name of the public key.\n"
+"  --title=TITLE              The prefix title for the user.\n"
+"  --user-format=FORMAT       The format string used to print users.\n"
+"\n");
+}
+
+/**
+ * Prints the help text for the 'account' mode. This is called like this:
+ *
+ * s9s account --help
+ */
+void
+S9sOptions::printHelpAccount()
+{
+    printHelpGeneric();
+
+    printf(
+"FIXME: THIS TEXT IS UNDER CONSTRUCTION!\n"
+"Options for the \"account\" command:\n"
 "  --add-key                  Register a new public key for a user.\n"
 "  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
@@ -4242,6 +4290,69 @@ S9sOptions::checkOptionsUser()
  * \returns True if the command line options seem to be ok.
  */
 bool
+S9sOptions::checkOptionsAccount()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isListGroupsRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
+        countOptions++;
+    
+    if (isSetRequested())
+        countOptions++;
+    
+    if (isChangePasswordRequested())
+        countOptions++;
+    
+    if (isWhoAmIRequested())
+        countOptions++;
+
+    if (isListKeysRequested())
+        countOptions++;
+    
+    if (isAddKeyRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --whoami, --set, --change-password, --list-keys, "
+            "--add-key "
+            " and --create options are mutually exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --whoami, --set, --change-password,"
+            " --list-keys, --add-key, "
+            " and --create options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
 S9sOptions::checkOptionsProcess()
 {
     int countOptions = 0;
@@ -4459,6 +4570,289 @@ S9sOptions::readOptionsProcess(
  */
 bool
 S9sOptions::readOptionsUser(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        // Main Option
+        { "change-password",  no_argument,       0, OptionChangePassword  },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "create",           no_argument,       0, OptionCreate          },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "list-keys",        no_argument,       0, OptionListKeys        },
+        { "add-key",          no_argument,       0, OptionAddKey          },
+        { "list",             no_argument,       0, 'L'                   },
+        { "list-groups",      no_argument,       0, OptionListGroups      },
+        { "set",              no_argument,       0, OptionSet             },
+        { "whoami",           no_argument,       0, OptionWhoAmI          },
+       
+        // Options about the user.
+        { "group",            required_argument, 0, OptionGroup           },
+        { "create-group",     no_argument,       0, OptionCreateGroup     },
+        { "first-name",       required_argument, 0, OptionFirstName       },
+        { "last-name",        required_argument, 0, OptionLastName        },
+        { "title",            required_argument, 0, OptionTitle           },
+        { "email-address",    required_argument, 0, OptionEmailAddress    },
+        { "user-format",      required_argument, 0, OptionUserFormat      }, 
+        { "old-password",     required_argument, 0, OptionOldPassword     }, 
+        { "new-password",     required_argument, 0, OptionNewPassword     }, 
+        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
+        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:Vgu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+            
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'g':
+                // --generate-key
+                m_options["generate_key"] = true;
+                break;
+
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+ 
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case OptionListGroups:
+                // --list-groups
+                m_options["list-groups"] = true;
+                break;
+
+            case OptionListKeys:
+                // --list-keys
+                m_options["list_keys"] = true;
+                break;
+            
+            case OptionAddKey:
+                // --list-keys
+                m_options["add_key"] = true;
+                break;
+
+            case OptionWhoAmI:
+                // --whoami
+                m_options["whoami"] = true;
+                break;
+
+            case OptionSet:
+                // --set
+                m_options["set"]  = true;
+                break;
+           
+            case OptionChangePassword:
+                // --change-password
+                m_options["change_password"] = true;
+                break;
+
+            case OptionGroup:
+                // --group=GROUPNAME
+                m_options["group"] = optarg;
+                break;
+            
+            case OptionCreateGroup:
+                // --create-group
+                m_options["create_group"] = true;
+                break;
+            
+            case OptionFirstName:
+                // --first-name=FIRSTNAME
+                m_options["first_name"] = optarg;
+                break;
+            
+            case OptionLastName:
+                // --last-name=FIRSTNAME
+                m_options["last_name"] = optarg;
+                break;
+            
+            case OptionTitle:
+                // --title=TITLE
+                m_options["title"] = optarg;
+                break;
+            
+            case OptionEmailAddress:
+                // --email-address=ADDRESSS
+                m_options["email_address"] = optarg;
+                break;
+            
+            case OptionUserFormat:
+                // --user-format=VALUE
+                m_options["user_format"] = optarg;
+                break;
+           
+            case OptionOldPassword:
+                // --old-password=PASSWORD
+                m_options["old_password"] = optarg;
+                break;
+            
+            case OptionNewPassword:
+                // --new-password=PASSWORD
+                m_options["new_password"] = optarg;
+                break;
+
+            case OptionPublicKeyFile:
+                // --public-key-file=FILE
+                m_options["public_key_file"] = optarg;
+                break;
+            
+            case OptionPublicKeyName:
+                // --public-key-name=FILE
+                m_options["public_key_name"] = optarg;
+                break;
+            
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    // 
+    // The first extra argument is 'user', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * Reads the command line options in the "user" mode.
+ */
+bool
+S9sOptions::readOptionsAccount(
         int    argc,
         char  *argv[])
 {

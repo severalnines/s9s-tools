@@ -50,13 +50,14 @@ class S9sOptions
             Cluster,
             Node,
             Job,
+            Log,
             Backup,
             Process,
             User,
+            Account,
             Maintenance,
             MetaType,
             Script,
-            Log,
             //Alarm
         };
 
@@ -292,6 +293,7 @@ class S9sOptions
         void printHelpCluster();
         void printHelpNode();
         void printHelpUser();
+        void printHelpAccount();
         void printHelpJob();
         void printHelpLog();
         void printHelpProcess();
@@ -319,6 +321,9 @@ class S9sOptions
         
         bool readOptionsUser(int argc, char *argv[]);
         bool checkOptionsUser();
+        
+        bool readOptionsAccount(int argc, char *argv[]);
+        bool checkOptionsAccount();
 
         bool readOptionsMaintenance(int argc, char *argv[]);
         bool checkOptionsMaintenance();

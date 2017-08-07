@@ -1180,7 +1180,7 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-    #if 1
+    #if 0
     S9sRpcReply theReply;
 
     generateReport();
@@ -1459,7 +1459,7 @@ S9sRpcClient::generateReport()
 
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
-    reportMap["report_type"] = "capacity";
+    reportMap["report_type"] = "testreport";
     reportMap["recipients"]  = "laszlo@severalnines.com";
     reportMap["text_format"] = "AnsiTerminal";
 
