@@ -263,6 +263,29 @@ S9sBusinessLogic::execute()
         } else {
             executeCreateUser(client);
         }
+    } else if (options->isAccountOperation())
+    {
+        if (options->isCreateRequested())
+        {
+            success = client.createAccount();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
+        } else if (options->isGrantRequested())
+        {
+            success = client.grantPrivileges(
+                    options->account(), 
+                    options->privileges());
+
+            client.printMessages("Grant.", success);
+            client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteAccount();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isMaintenanceOperation())
     {
         if (options->isListRequested())

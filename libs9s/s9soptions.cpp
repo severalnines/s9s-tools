@@ -1721,6 +1721,15 @@ S9sOptions::isUserOperation() const
 }
 
 /**
+ * \returns true if the main operation is "account".
+ */
+bool
+S9sOptions::isAccountOperation() const
+{
+    return m_operationMode == Account;
+}
+
+/**
  * \returns true if the main operation is "maintenance".
  */
 bool
@@ -4884,17 +4893,11 @@ S9sOptions::readOptionsAccount(
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
-        { "list-groups",      no_argument,       0, OptionListGroups      },
         { "set",              no_argument,       0, OptionSet             },
-        { "whoami",           no_argument,       0, OptionWhoAmI          },
+        { "delete",           no_argument,       0, OptionDelete          },
+        { "grant",            no_argument,       0, OptionGrant           },
        
         // Options about the user.
-        { "group",            required_argument, 0, OptionGroup           },
-        { "create-group",     no_argument,       0, OptionCreateGroup     },
-        { "first-name",       required_argument, 0, OptionFirstName       },
-        { "last-name",        required_argument, 0, OptionLastName        },
-        { "title",            required_argument, 0, OptionTitle           },
-        { "email-address",    required_argument, 0, OptionEmailAddress    },
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
         { "old-password",     required_argument, 0, OptionOldPassword     }, 
         { "new-password",     required_argument, 0, OptionNewPassword     }, 
@@ -5016,11 +5019,6 @@ S9sOptions::readOptionsAccount(
                 m_options["list"] = true;
                 break;
 
-            case OptionListGroups:
-                // --list-groups
-                m_options["list-groups"] = true;
-                break;
-
             case OptionListKeys:
                 // --list-keys
                 m_options["list_keys"] = true;
@@ -5030,10 +5028,15 @@ S9sOptions::readOptionsAccount(
                 // --list-keys
                 m_options["add_key"] = true;
                 break;
+            
+            case OptionGrant:
+                // --grant
+                m_options["grant"] = true;
+                break;
 
-            case OptionWhoAmI:
-                // --whoami
-                m_options["whoami"] = true;
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
                 break;
 
             case OptionSet:
@@ -5046,36 +5049,6 @@ S9sOptions::readOptionsAccount(
                 m_options["change_password"] = true;
                 break;
 
-            case OptionGroup:
-                // --group=GROUPNAME
-                m_options["group"] = optarg;
-                break;
-            
-            case OptionCreateGroup:
-                // --create-group
-                m_options["create_group"] = true;
-                break;
-            
-            case OptionFirstName:
-                // --first-name=FIRSTNAME
-                m_options["first_name"] = optarg;
-                break;
-            
-            case OptionLastName:
-                // --last-name=FIRSTNAME
-                m_options["last_name"] = optarg;
-                break;
-            
-            case OptionTitle:
-                // --title=TITLE
-                m_options["title"] = optarg;
-                break;
-            
-            case OptionEmailAddress:
-                // --email-address=ADDRESSS
-                m_options["email_address"] = optarg;
-                break;
-            
             case OptionUserFormat:
                 // --user-format=VALUE
                 m_options["user_format"] = optarg;

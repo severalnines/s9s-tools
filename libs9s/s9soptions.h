@@ -199,6 +199,7 @@ class S9sOptions
         bool isBackupOperation() const;
         bool isProcessOperation() const;
         bool isUserOperation() const;
+        bool isAccountOperation() const;
         bool isMaintenanceOperation() const;
         bool isMetaTypeOperation() const;
 
