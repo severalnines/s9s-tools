@@ -39,6 +39,7 @@ class S9sAccount
         void setUserName(const S9sString &value);
 
         S9sString password() const;
+        S9sString passwordMasked() const;
         void setPassword(const S9sString &value);
 
         S9sString hostAllow() const;
@@ -47,10 +48,15 @@ class S9sAccount
         void setWithDatabase(bool value);
 
         void setGrants(const S9sString &value);
+        S9sString grants() const;
 
         void setError(const S9sString &value);
         bool hasError() const;
         S9sString errorString() const;
+
+        int maxConnections() const;
+        int connections() const;
+        bool isExpired() const;
 
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);

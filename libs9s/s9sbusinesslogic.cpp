@@ -265,7 +265,10 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isAccountOperation())
     {
-        if (options->isCreateRequested())
+        if (options->isListRequested())
+        {
+            executeAccountList(client);
+        } else if (options->isCreateRequested())
         {
             success = client.createAccount();
             client.printMessages("Created.", success);
@@ -962,6 +965,25 @@ S9sBusinessLogic::executeUserList(
         PRINT_ERROR("%s", STR(client.errorString()));
     }
 }
+
+void 
+S9sBusinessLogic::executeAccountList(
+        S9sRpcClient &client)
+{
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getAccounts();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printAccountList();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+
 
 void 
 S9sBusinessLogic::executeGroupList(

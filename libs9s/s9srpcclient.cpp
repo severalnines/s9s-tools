@@ -3663,8 +3663,7 @@ S9sRpcClient::getAccounts()
     S9sVariantMap  request;
 
     // Building the request.
-    request["operation"]  = "listAccounts";
-    request["with_privileges"]  = true;
+    request["operation"]  = "getAccounts";
 
     if (options->hasClusterIdOption())
     {

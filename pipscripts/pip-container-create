@@ -54,6 +54,20 @@ function printVerbose()
     fi
 }
 
+#
+# https://unix.stackexchange.com/questions/30286/can-i-configure-my-linux-system-for-more-aggressive-file-system-caching
+# http://www.networkinghowtos.com/howto/list-all-hard-disks-connected-to-a-ubuntu-system/
+#
+# Use this much percent of ram for cache
+# echo 99 > /proc/sys/vm/dirty_ratio
+#
+# Use this much percent of ram before slowing down writer process.
+# echo 50 > /proc/sys/vm/dirty_background_ratio
+#
+# It is ok to wait 1h before writing.
+# echo 360000 > /proc/sys/vm/dirty_expire_centisecs
+# echo 360000 > /proc/sys/vm/dirty_writeback_centisecs
+
 function printHelpAndExit()
 {
 cat <<EOF

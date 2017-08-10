@@ -384,8 +384,8 @@ function testCreateAccount()
         return 1
     fi
 
-    mys9s cluster \
-        --create-account \
+    mys9s account \
+        --create \
         --cluster-id=$CLUSTER_ID \
         --account="john_doe:password@1.2.3.4" \
         --with-database
@@ -396,6 +396,64 @@ function testCreateAccount()
         failure "Exit code is not 0 while creating an account."
     fi
 }
+
+#
+# Creating a new database on the cluster.
+#
+function testCreateDatabase()
+{
+    pip-say "Testing database creation."
+
+    #
+    # This command will create a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testCreateDatabase" \
+        --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating a database."
+    fi
+    
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas:password" \
+        --privileges="testCreateDatabase.*:INSERT,UPDATE" \
+        --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating account."
+    fi
+    
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    mys9s account \
+        --grant \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas" \
+        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
+        --batch 
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting privileges."
+    fi
+}
+
 
 #
 # This test will add one new node to the cluster.
@@ -767,6 +825,8 @@ else
     runFunctionalTest testStopStartNode
 
     runFunctionalTest testCreateAccount
+    runFunctionalTest testCreateDatabase
+
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddRemoveHaProxy

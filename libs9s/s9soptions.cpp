@@ -4318,6 +4318,9 @@ S9sOptions::checkOptionsAccount()
     if (isCreateRequested())
         countOptions++;
     
+    if (isGrantRequested())
+        countOptions++;
+    
     if (isDeleteRequested())
         countOptions++;
     

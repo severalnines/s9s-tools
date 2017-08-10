@@ -64,6 +64,7 @@ class S9sBusinessLogic
 
         void executeUserList(S9sRpcClient &client);
         void executeGroupList(S9sRpcClient &client);
+        void executeAccountList(S9sRpcClient &client);
 
         void executeCreateUser(S9sRpcClient &client);
         void executeCreateUserThroughRpc(S9sRpcClient &client);

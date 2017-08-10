@@ -100,6 +100,19 @@ S9sAccount::password() const
     return S9sString();
 }
 
+S9sString
+S9sAccount::passwordMasked() const
+{
+    S9sString thePassword = password();
+
+    if (thePassword.empty())
+        thePassword = "-";
+    else 
+        thePassword = "########";
+
+    return thePassword;
+}
+
 /**
  * \param value The new password for the account.
  *
@@ -154,6 +167,15 @@ S9sAccount::setGrants(
         m_properties["grants"] = value;
 }
 
+S9sString
+S9sAccount::grants() const
+{
+    if (m_properties.contains("grants"))
+        return m_properties.at("grants").toString();
+
+    return S9sString();
+}
+
 void
 S9sAccount::setError(
         const S9sString &value)
@@ -180,6 +202,33 @@ S9sAccount::errorString() const
     return S9sString();
 }
 
+int 
+S9sAccount::maxConnections() const
+{
+    if (m_properties.contains("max_connections"))
+        return m_properties.at("max_connections").toInt();
+
+    return 0;
+}
+
+int 
+S9sAccount::connections() const
+{
+    if (m_properties.contains("connections"))
+        return m_properties.at("connections").toInt();
+
+    return 0;
+}
+
+
+bool
+S9sAccount::isExpired() const
+{
+    if (m_properties.contains("password_expired"))
+        return m_properties.at("password_expired").toBoolean();
+
+    return false;
+}
 
 
 const S9sVariantMap &

@@ -32,6 +32,7 @@
 #include "S9sMessage"
 #include "S9sCmonGraph"
 #include "S9sUser"
+#include "S9sAccount"
 #include "S9sGroup"
 #include "S9sReport"
 
@@ -906,6 +907,198 @@ S9sRpcReply::printKeys()
         if (!options->isBatchRequested())
             printf("Total: %d\n", operator[]("total").toInt());
     }
+}
+
+void 
+S9sRpcReply::printAccountList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printAccountListLong();
+    else
+        printAccountListBrief();
+}
+
+
+void 
+S9sRpcReply::printAccountListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  accountList = operator[]("accounts").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
+    S9sVariantMap   printed;
+
+    /*
+     * Printing the account names.
+     */
+    for (uint idx = 0; idx < accountList.size(); ++idx)
+    {
+        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
+        S9sUser        account      = accountMap;
+        S9sString      accountName  = account.userName();
+
+        if (!options->isStringMatchExtraArguments(accountName))
+            continue;
+  
+        if (printed.contains(accountName))
+            continue;
+
+        /*
+         * Syntax highlight.
+         */
+        if (syntaxHighlight)
+        {
+            colorBegin = XTERM_COLOR_ORANGE;
+            colorEnd   = TERM_NORMAL;
+        } else {
+            colorBegin = "";
+            colorEnd   = "";
+        }
+
+        printf("%s%s%s\n", colorBegin, STR(accountName), colorEnd);
+        printed[accountName] = true;
+    }
+}
+
+void 
+S9sRpcReply::printAccountListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  accountList = operator[]("accounts").toVariantList();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sFormat       accountNameFormat, hostNameFormat, passwordFormat;
+    S9sFormat       maxConnectionsFormat, connectionsFormat;
+    int             isTerminal    = options->isTerminal();
+    int             terminalWidth = options->terminalWidth();
+    int             columns;
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
+    const char     *hostColorBegin = "";
+    const char     *hostColorEnd   = "";
+    
+    /*
+     *  Going through first and collecting some informations.
+     */
+    for (uint idx = 0; idx < accountList.size(); ++idx)
+    {
+        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
+        S9sAccount     account      = accountMap;
+        S9sString      accountName  = account.userName();
+        S9sString      hostName     = account.hostAllow();
+        S9sString      password     = account.passwordMasked();
+        int            maxConnections = account.maxConnections();
+        int            connections  = account.connections();
+
+        if (!options->isStringMatchExtraArguments(accountName))
+            continue;
+
+        if (hostName.empty())
+            hostName = "-";
+
+        accountNameFormat.widen(accountName);
+        hostNameFormat.widen(hostName);
+        passwordFormat.widen(password);
+        maxConnectionsFormat.widen(maxConnections);
+        connectionsFormat.widen(connections);
+    }
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        accountNameFormat.widen("NAME");
+        hostNameFormat.widen("HOST");
+        passwordFormat.widen("PASSWORD");
+        connectionsFormat.widen("CONN");
+        maxConnectionsFormat.widen("MAXC");
+
+        printf("%s", headerColorBegin());
+        accountNameFormat.printf("NAME");
+        hostNameFormat.printf("HOST");
+        passwordFormat.printf("PASSWORD");
+        connectionsFormat.printf("CONN");
+        maxConnectionsFormat.printf("MAXC");
+        printf("GRANTS");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    columns  = terminalWidth;
+    columns -= accountNameFormat.realWidth();
+    columns -= hostNameFormat.realWidth();
+    columns -= passwordFormat.realWidth();
+    columns -= connectionsFormat.realWidth();
+    columns -= maxConnectionsFormat.realWidth();
+
+    /*
+     * Going through again and printing.
+     */
+    for (uint idx = 0; idx < accountList.size(); ++idx)
+    {
+        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
+        S9sAccount     account      = accountMap;
+        S9sString      accountName  = account.userName();
+        S9sString      hostName     = account.hostAllow();
+        S9sString      grants       = account.grants();
+        S9sString      password     = account.passwordMasked();
+        int            maxConnections = account.maxConnections();
+        int            connections  = account.connections();
+
+        if (!options->isStringMatchExtraArguments(accountName))
+            continue;
+
+        if (hostName.empty())
+            hostName = "-";
+
+        if (syntaxHighlight)
+        {
+            colorBegin      = XTERM_COLOR_ORANGE;
+            colorEnd        = TERM_NORMAL;
+            hostColorBegin  = XTERM_COLOR_GREEN;
+            hostColorEnd    = TERM_NORMAL;
+        }
+        
+        printf("%s", colorBegin);
+        accountNameFormat.printf(accountName);
+        printf("%s", colorEnd);
+        
+        printf("%s", hostColorBegin);
+        hostNameFormat.printf(hostName);
+        printf("%s", hostColorEnd);
+
+        passwordFormat.printf(password);
+        connectionsFormat.printf(connections);
+        maxConnectionsFormat.printf(maxConnections);
+
+        if (isTerminal && (int) grants.length() > columns && columns > 1)
+        {
+            grants.resize(columns - 1);
+            grants += "…";
+        }
+
+        printf("%s", STR(grants));
+        printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", operator[]("total").toInt());
 }
 
 void 
@@ -4165,7 +4358,7 @@ S9sRpcReply::printUserListBrief()
     }
 
     /*
-     * 
+     * Printing the user names.
      */
     for (uint idx = 0; idx < userList.size(); ++idx)
     {
