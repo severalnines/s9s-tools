@@ -4918,6 +4918,8 @@ S9sOptions::readOptionsAccount(
         { "db-name",          required_argument, 0, OptionDbName          },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "account",          required_argument, 0, OptionAccount,        },
+        { "limit",            required_argument, 0, OptionLimit          },
+        { "offset",           required_argument, 0, OptionOffset         },
 
         { 0, 0, 0, 0 }
     };
@@ -5119,6 +5121,16 @@ S9sOptions::readOptionsAccount(
                 if (!setAccount(optarg))
                     return false;
 
+                break;
+            
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
             
             case '?':

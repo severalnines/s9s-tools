@@ -3664,6 +3664,12 @@ S9sRpcClient::getAccounts()
 
     // Building the request.
     request["operation"]  = "getAccounts";
+    
+    if (options->limit() >= 0)
+        request["limit"] = options->limit();
+
+    if (options->offset() >= 0)
+        request["offset"] = options->offset();
 
     if (options->hasClusterIdOption())
     {

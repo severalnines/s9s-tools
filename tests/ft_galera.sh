@@ -374,6 +374,8 @@ function testStopStartNode()
 #
 function testCreateAccount()
 {
+    local userName
+
     pip-say "Testing account creation."
 
     #
@@ -395,6 +397,12 @@ function testCreateAccount()
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating an account."
     fi
+
+    userName=$(s9s account --list --cluster-id=1 john_doe)
+    if [ "$userName" != "john_doe" ]; then
+        failure "Failed to create user 'john_doe'."
+    fi
+
 }
 
 #
@@ -402,6 +410,8 @@ function testCreateAccount()
 #
 function testCreateDatabase()
 {
+    local userName
+
     pip-say "Testing database creation."
 
     #
@@ -435,7 +445,12 @@ function testCreateDatabase()
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating account."
     fi
-    
+   
+    userName=$(s9s account --list --cluster-id=1 pipas)
+    if [ "$userName" != "pipas" ]; then
+        failure "Failed to create user 'pipas'."
+    fi
+
     #
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
