@@ -1010,7 +1010,7 @@ S9sRpcReply::printAccountListLong()
         S9sAccount     account      = accountMap;
         S9sString      accountName  = account.userName();
         S9sString      hostName     = account.hostAllow();
-        S9sString      password     = account.passwordMasked();
+        S9sString      password     = account.password();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
 
@@ -1018,7 +1018,12 @@ S9sRpcReply::printAccountListLong()
             continue;
 
         if (hostName.empty())
-            hostName = "-";
+            hostName = "%";
+
+        if (password.empty())
+            password = "N";
+        else
+            password = "Y";
 
         accountNameFormat.widen(accountName);
         hostNameFormat.widen(hostName);
@@ -1034,7 +1039,7 @@ S9sRpcReply::printAccountListLong()
     {
         accountNameFormat.widen("NAME");
         hostNameFormat.widen("HOST");
-        passwordFormat.widen("PASSWORD");
+        passwordFormat.widen("P");
         connectionsFormat.widen("CONN");
         maxConnectionsFormat.widen("MAXC");
 
@@ -1046,8 +1051,9 @@ S9sRpcReply::printAccountListLong()
         #else
         accountNameFormat.printf("NAME");
         hostNameFormat.printf("");
+        printf(" ");
         #endif
-        passwordFormat.printf("PASSWORD");
+        passwordFormat.printf("P");
         connectionsFormat.printf("CONN");
         maxConnectionsFormat.printf("MAXC");
         printf("GRANTS");
@@ -1062,6 +1068,7 @@ S9sRpcReply::printAccountListLong()
     columns -= passwordFormat.realWidth();
     columns -= connectionsFormat.realWidth();
     columns -= maxConnectionsFormat.realWidth();
+    columns -= 1;
 
     /*
      * Going through again and printing.
@@ -1073,7 +1080,7 @@ S9sRpcReply::printAccountListLong()
         S9sString      accountName  = account.userName();
         S9sString      hostName     = account.hostAllow();
         S9sString      grants       = account.grants();
-        S9sString      password     = account.passwordMasked();
+        S9sString      password     = account.password();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
         int            thisWidth;
@@ -1083,7 +1090,7 @@ S9sRpcReply::printAccountListLong()
             continue;
 
         if (hostName.empty())
-            hostName = "-";
+            hostName = "%";
 
         if (syntaxHighlight)
         {
@@ -1092,6 +1099,11 @@ S9sRpcReply::printAccountListLong()
             hostColorBegin  = XTERM_COLOR_GREEN;
             hostColorEnd    = TERM_NORMAL;
         }
+        
+        if (password.empty())
+            password = "N";
+        else
+            password = "Y";
        
         // Johan asked for ''@'' format, this is a temporary solution for that.
         #if 0
@@ -1117,7 +1129,7 @@ S9sRpcReply::printAccountListLong()
             accountNameFormat.realWidth() + 
             hostNameFormat.realWidth();
 
-        for (int n = thisWidth; n < requiredWidth; ++n)
+        for (int n = thisWidth; n <= requiredWidth; ++n)
             printf(" ");
         #endif
 
