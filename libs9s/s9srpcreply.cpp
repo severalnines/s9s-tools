@@ -909,6 +909,10 @@ S9sRpcReply::printKeys()
     }
 }
 
+/**
+ * Prints the account list in either the short format, the long format or the
+ * JSON string format.
+ */
 void 
 S9sRpcReply::printAccountList()
 {
@@ -932,7 +936,9 @@ S9sRpcReply::printAccountList()
         printAccountListBrief();
 }
 
-
+/**
+ * Prints the account list in short format.
+ */
 void 
 S9sRpcReply::printAccountListBrief()
 {
@@ -975,6 +981,10 @@ S9sRpcReply::printAccountListBrief()
     }
 }
 
+/**
+ * Prints the account list in long format. This should be called when the user
+ * isues the "s9s account --list --long" combination.
+ */
 void 
 S9sRpcReply::printAccountListLong()
 {
