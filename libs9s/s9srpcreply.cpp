@@ -1029,8 +1029,14 @@ S9sRpcReply::printAccountListLong()
         maxConnectionsFormat.widen("MAXC");
 
         printf("%s", headerColorBegin());
+        // Johan asked for ''@'' format, this is a temporary solution for that.
+        #if 0
         accountNameFormat.printf("NAME");
         hostNameFormat.printf("HOST");
+        #else
+        accountNameFormat.printf("NAME");
+        hostNameFormat.printf("");
+        #endif
         passwordFormat.printf("PASSWORD");
         connectionsFormat.printf("CONN");
         maxConnectionsFormat.printf("MAXC");
@@ -1060,6 +1066,8 @@ S9sRpcReply::printAccountListLong()
         S9sString      password     = account.passwordMasked();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
+        int            thisWidth;
+        int            requiredWidth;
 
         if (!options->isStringMatchExtraArguments(accountName))
             continue;
@@ -1074,7 +1082,9 @@ S9sRpcReply::printAccountListLong()
             hostColorBegin  = XTERM_COLOR_GREEN;
             hostColorEnd    = TERM_NORMAL;
         }
-        
+       
+        // Johan asked for ''@'' format, this is a temporary solution for that.
+        #if 0
         printf("%s", colorBegin);
         accountNameFormat.printf(accountName);
         printf("%s", colorEnd);
@@ -1082,6 +1092,24 @@ S9sRpcReply::printAccountListLong()
         printf("%s", hostColorBegin);
         hostNameFormat.printf(hostName);
         printf("%s", hostColorEnd);
+        #else
+        printf("%s", colorBegin);
+        printf("'%s'", STR(accountName));
+        printf("%s", colorEnd);
+        printf("@");
+        printf("%s", hostColorBegin);
+        printf("'%s'", STR(hostName));
+        printf("%s", hostColorEnd);
+        
+        // The 5 is the length of ''@''
+        thisWidth = accountName.length() + hostName.length() + 5;
+        requiredWidth = 
+            accountNameFormat.realWidth() + 
+            hostNameFormat.realWidth();
+
+        for (int n = thisWidth; n < requiredWidth; ++n)
+            printf(" ");
+        #endif
 
         passwordFormat.printf(password);
         connectionsFormat.printf(connections);

@@ -423,6 +423,10 @@ S9sRpcClient::getCluster()
 bool
 S9sRpcClient::getClusters()
 {
+    checkHosts();
+    //getSupportedClusterTypes();
+    //checkClusterName();
+
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
@@ -3072,7 +3076,6 @@ S9sRpcClient::addMaxScale(
 bool
 S9sRpcClient::removeNode()
 {
-
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts = options->nodes();
@@ -3422,6 +3425,93 @@ S9sRpcClient::dropCluster()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+bool
+S9sRpcClient::checkHosts()
+{
+    getSshCredentials();
+    S9sString      uri = "/v2/discovery/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts     = options->nodes();
+   
+    if (hosts.empty())
+        return true;
+
+    request["operation"]      = "checkHosts";
+    request["nodes"]          = nodesField(hosts);
+    request["check_if_already_registered"] = true;
+    //request["check_ssh_sudo"] = true;
+    
+#if 0
+    S9sVariantMap credentials;
+
+    credentials["class_name"]      = "CmonSshCredentials";
+    credentials["user_name"]       = "pipas";
+    credentials["password"]        = "";
+    credentials["public_key_file"] = "./configs/testing_id_rsa";
+    //credentials["port"]            = ;
+    //credentials["timeout"]         = ;
+    //credentials["tty_for_sudo"]    = ;
+    request["ssh_credentials"]     = credentials;
+#endif
+
+#if 1 
+    if (options->hasClusterIdOption())
+        request["cluster_id"]   = options->clusterId();
+
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+#endif
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getSupportedClusterTypes()
+{
+    getSshCredentials();
+    S9sString      uri = "/v2/discovery/";
+    S9sVariantMap  request;
+   
+    request["operation"]     = "getSupportedClusterTypes";
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::checkClusterName()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/discovery/";
+    S9sVariantMap  request;
+   
+    request["operation"]        = "checkClusterName";
+    request["new_cluster_name"] = options->clusterName();
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getSshCredentials()
+{
+    S9sString      uri = "/v2/discovery/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts     = options->nodes();
+   
+    if (hosts.empty())
+        return true;
+
+    request["operation"]      = "getSshCredentials";
+    
+    if (options->hasClusterIdOption())
+        request["cluster_id"]   = options->clusterId();
+
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+    
+    return executeRequest(uri, request);
 }
 
 /**

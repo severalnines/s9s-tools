@@ -65,6 +65,11 @@ class S9sRpcClient
         bool getClusters();
         bool getCluster();
         
+        bool checkHosts();
+        bool getSupportedClusterTypes();
+        bool checkClusterName();
+        bool getSshCredentials();
+
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);
 

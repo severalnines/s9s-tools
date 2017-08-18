@@ -29,12 +29,15 @@
 
 S9sNode::S9sNode()
 {
+    m_properties["class_name"] = "CmonHost";
 }
  
 S9sNode::S9sNode(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonHost";
 }
 
 /**
@@ -69,6 +72,9 @@ S9sNode::S9sNode(
         if (m_url.hasPort())
             m_properties["port"] = m_url.port();
     }
+    
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonHost";
 }
 
 S9sNode::~S9sNode()

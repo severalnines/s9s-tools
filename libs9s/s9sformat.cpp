@@ -55,18 +55,27 @@ S9sFormat::operator+(
     return retval;
 }
 
+/**
+ * Sets the justification/alignment for the format.
+ */
 void
 S9sFormat::setRightJustify()
 {
     m_alignment = AlignRight;
 }
 
+/**
+ * Sets the justification/alignment for the format.
+ */
 void
 S9sFormat::setCenterJustify()
 {
     m_alignment = AlignCenter;
 }
 
+/**
+ * FIXME: We don't really use this.
+ */
 void
 S9sFormat::setColor(
         const char *colorStart,
@@ -76,6 +85,10 @@ S9sFormat::setColor(
     m_colorEnd   = colorEnd;
 }
 
+/**
+ * \returns How wide the format is with the field separator counted as one
+ *   space.
+ */
 int
 S9sFormat::realWidth() const
 {
@@ -124,6 +137,9 @@ S9sFormat::widen(
     widen(tmp);
 }
 
+/**
+ * Prints the value to the standard output, then prints the field separator.
+ */
 void
 S9sFormat::printf(
         const int value) const
@@ -141,6 +157,9 @@ S9sFormat::printf(
     ::printf(STR(formatString), value);
 }
 
+/**
+ * Prints the value to the standard output, then prints the field separator.
+ */
 void
 S9sFormat::printf(
         const ulonglong value) const
@@ -158,6 +177,9 @@ S9sFormat::printf(
     ::printf(STR(formatString), value);
 }
 
+/**
+ * Prints the value to the standard output, then prints the field separator.
+ */
 void
 S9sFormat::printf(
         const S9sString &value) const
