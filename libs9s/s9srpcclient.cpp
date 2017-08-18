@@ -423,7 +423,7 @@ S9sRpcClient::getCluster()
 bool
 S9sRpcClient::getClusters()
 {
-    checkHosts();
+    //checkHosts();
     //getSupportedClusterTypes();
     //checkClusterName();
 
