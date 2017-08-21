@@ -100,6 +100,9 @@ S9sAccount::password() const
     return S9sString();
 }
 
+/**
+ * FIXME: This is not used any more.
+ */
 S9sString
 S9sAccount::passwordMasked() const
 {

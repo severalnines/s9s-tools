@@ -1,0 +1,219 @@
+.TH S9S-USER 1 "August 21, 2017"
+
+.SH NAME
+s9s-user \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-cluster
+.RI [OPTION]...
+.RI [USERNAME]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-\^\-create
+Creates a new account on the cluster. Please note, the account is an account of
+the cluster and not a user of the Cmon system.
+
+.TP
+.B \-L, \-\^\-list
+Lists the accounts on the cluster.
+
+.\"
+.\" The generic options that are supported by all the modes.
+.\"
+.SS Generic Options
+
+.TP
+.B \-\^\-help
+Print the help message and exist.
+
+.TP
+.B \-\^\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\^\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\^\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
+
+.TP
+.B \-l, \-\^\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.TP
+.B \-\^\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.TP
+.B \-\^\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\^\-no\-header
+Do not print headers for tables.
+
+.\"
+.\" The options about the account. 
+.\"
+.SS Account Options
+
+.TP
+.BI \-\^\-account= USERNAME[:PASSWORD][@HOSTNAME]
+The account to be used or created on the cluster. The command line option
+argument may contain a username, a password for the user and a hostname
+identifying the host from where the user may log in.
+
+.TP
+.BI \-\^\-with-database
+Create a database for the new account while creating a new user account on the 
+cluster. The name of the database will be the same as the name of the account
+and all access rights will be granted for the account to use the database.
+
+.TP
+.BI \-\^\-privileges= EXPRESSION
+Privileges to be granted to a user account on the server. The privileges are
+specified using a simple language that is interpreted by the Cmon Controller. 
+The language is specified as follows:
+
+.nf
+.RS
+  expression: specification[;...] 
+  
+  specification: [object[,...]:]privilege[,...]
+  
+  object: {
+      *
+    | *.*
+    | database_name.*
+    | database_name.table_name
+    | database_name
+  }
+.RE
+.fi
+
+.RS
+Please note that an object name on itself is a database name (and not a table
+name) and multiple objects can be enumerated by using the ',' as separator. It
+is also important that multiple specifications can be enumerated using the
+semicolon as separator.
+
+The expression \fB"MyDb:INSERT,UPDATE;Other:SELECT"\fP for example defines
+\fBINSERT\fP and \fBUPDATE\fP privileges on the \fBMyDb\fP database and
+\fBSELECT\fP privilege on the \fBOther\fP database. The expression
+\fB"INSERT,UPDATE"\fP on the other hand would specify \fBINSERT\fP and
+\fBUPDATE\fP privileges on all databases and all tables.
+
+.\"
+.\" The environment variables.
+.\"
+.SH ENVIRONMENT
+The s9s application will read and consider the following environment variables:
+.TP 5 
+CMON_CONTROLLER
+The host name and optionally the port number of the controller that will be
+contacted. This also can be set using the \fB\-\-controller\fR command line
+option.
+
+.TP 5
+CMON_CLUSTER_ID
+The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
+command line option.
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+Here is an example showing how to create a new account with a password and a
+database on the cluster referenced by the cluster ID:
+
+.nf
+# \fBs9s account \\
+    --create \\
+    --cluster-id=1 \\
+    --account="joe:password" \\
+    --with-database\fR
+.fi
+
+The next example shows how to delete an account from the cluster.
+
+.nf
+# \fBs9s account \\
+    --delete \\
+    --cluster-id=1 \\
+    --account="joe"\fR
+.fi
+
+Here is how to show a detailed list of accounts that can be find on the
+specified cluster:
+
+.nf
+# \fBs9s account \\
+    --list \\
+    --long \\
+    --cluster-id=1\fR
+.fi
+
+Creating an account and granting certain access rights on the specified database
+that can be found on the cluster.
+
+.nf
+# \fBs9s account \\
+    --create \\
+    --cluster-id=1 \\
+    --account="pipas:password" \\
+    --privileges="mydatabase.*:INSERT,UPDATE" \\
+    --batch
+.fi
