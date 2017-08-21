@@ -515,12 +515,13 @@ function testUploadData()
     #
     reply=$(\
         mysql \
+            --disable-auto-rehash \
             --batch \
             -h$FIRST_ADDED_NODE \
             -u$user_name \
             -p$password \
             $db_name \
-            -e "SELECT 41+1")
+            -e "SELECT 41+1" | tail -n +2 )
 
     if [ "$reply" != "42" ]; then
         echo "Cluster failed to execute an SQL statement: '$reply'."
@@ -547,6 +548,9 @@ function testUploadData()
         fi
 
         let count+=1
+        if [ "$count" -gt 99 ]; then
+            break
+        fi
     done
 }
 
