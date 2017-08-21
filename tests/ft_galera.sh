@@ -40,6 +40,8 @@ Usage:
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
 
+EXAMPLE
+ ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
 EOF
     exit 1
 }
@@ -393,7 +395,6 @@ function testCreateAccount()
         --with-database
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating an account."
     fi
@@ -402,8 +403,8 @@ function testCreateAccount()
     if [ "$userName" != "john_doe" ]; then
         failure "Failed to create user 'john_doe'."
     fi
-
 }
+
 
 #
 # Creating a new database on the cluster.
@@ -469,6 +470,85 @@ function testCreateDatabase()
     fi
 }
 
+#
+#
+#
+function testUploadData()
+{
+    local db_name="pipas1"
+    local user_name="pipas1"
+    local password="p"
+    local reply
+    local count=0
+
+    pip-say "Testing data upload on cluster."
+
+    #
+    # Creating a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --db-name=$db_name
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        return 1
+    fi
+
+    #
+    # Creating a new account on the cluster.
+    #
+    mys9s account \
+        --create \
+        --account="$user_name:$password" \
+        --privileges="$db_name.*:ALL"
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        return 1
+    fi
+
+    #
+    # Executing a simple SQL statement using the account we created.
+    #
+    reply=$(\
+        mysql \
+            --batch \
+            -h$FIRST_ADDED_NODE \
+            -u$user_name \
+            -p$password \
+            $db_name \
+            -e "SELECT 41+1")
+
+    if [ "$reply" != "42" ]; then
+        echo "Cluster failed to execute an SQL statement: '$reply'."
+    fi
+
+    #
+    # Here we upload some tables. This part needs test data...
+    #
+    for file in /home/pipas/Desktop/stuff/databases/*.sql.gz; do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        printf "%'6d " "$count"
+        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
+        printf "\n"
+        zcat $file | \
+            mysql --batch -h$FIRST_ADDED_NODE -u$user_name -pp $db_name
+
+        exitCode=$?
+        if [ "$exitCode" -ne 0 ]; then
+            failure "Exit code is $exitCode while uploading data."
+            break
+        fi
+
+        let count+=1
+    done
+}
 
 #
 # This test will add one new node to the cluster.
@@ -841,6 +921,7 @@ else
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
+    runFunctionalTest testUploadData
 
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
