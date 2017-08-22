@@ -2091,11 +2091,12 @@ S9sRpcReply::printNodeListBrief()
                 }
             }
                    
-            printf(STR(hostNameFormat), 
-                    nameStart, STR(hostName), nameEnd);
 
             if (isTerminal)
             {
+                printf(STR(hostNameFormat), 
+                        nameStart, STR(hostName), nameEnd);
+
                 column += maxHostNameLength;
                 if (column + (int) maxHostNameLength > terminalWidth)
                 {
@@ -2103,7 +2104,7 @@ S9sRpcReply::printNodeListBrief()
                     column = 0;
                 }
             } else {
-                printf("\n");
+                printf("%s%s%s\n", nameStart, STR(hostName), nameEnd);
                 column = 0;
             }
         }

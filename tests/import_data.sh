@@ -3,6 +3,7 @@ MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
+SQL_HOST=""
 
 cd $MYDIR
 source ./include.sh
@@ -54,3 +55,15 @@ while true; do
     esac
 done
 
+if [ -z "$SQL_HOST" ]; then
+    SQL_HOST=$(\
+        s9s node --list --properties="class_name=CmonGaleraHost" | \
+        head -n1)
+fi
+
+if [ -z "$SQL_HOST" ]; then
+    printError "Could not find SQL host."
+    exit 5
+fi
+
+printVerbose " SQL_HOST : '$SQL_HOST'"
