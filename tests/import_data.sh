@@ -66,4 +66,14 @@ if [ -z "$SQL_HOST" ]; then
     exit 5
 fi
 
+if [ -z "$SQL_PORT" ]; then
+    SQL_PORT=$(s9s node --list --node-format="%P\n" "$SQL_HOST")
+fi
+
+if [ -z "$SQL_PORT" ]; then
+    printError "Could not find SQL port."
+    exit 5
+fi
+
 printVerbose " SQL_HOST : '$SQL_HOST'"
+printVerbose " SQL_PORT : $SQL_PORT"
