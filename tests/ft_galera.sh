@@ -19,7 +19,7 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 
 #
 # Prints usage information and exits.
@@ -471,7 +471,8 @@ function testCreateDatabase()
 }
 
 #
-#
+# This test will create a user and a database and then upload some data if the
+# data can be found on the local computer.
 #
 function testUploadData()
 {

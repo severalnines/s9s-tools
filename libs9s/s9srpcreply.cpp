@@ -1970,6 +1970,7 @@ void
 S9sRpcReply::printNodeListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   properties = options->propertiesOption();
     S9sVariantList  theList = clusters();
     S9sString       formatString = options->shortNodeFormat();
     bool            syntaxHighlight = options->useSyntaxHighlight();
@@ -2005,6 +2006,10 @@ S9sRpcReply::printNodeListBrief()
                 int           clusterId = node.clusterId();
                 S9sCluster    cluster   = clusterMap(clusterId);
                 S9sString     hostName  = node.name();
+                
+                // Filtering...
+                if (!properties.isSubSet(hostMap))
+                    continue;
 
                 if (!options->isStringMatchExtraArguments(hostName))
                     continue;
@@ -2033,6 +2038,9 @@ S9sRpcReply::printNodeListBrief()
             S9sNode       node      = hostMap;
             S9sString     hostName  = node.name();
             S9sString     version   = hostMap["version"].toString();
+                
+            if (!properties.isSubSet(hostMap))
+                continue;
             
             if (hostName.length() > maxHostNameLength)
                 maxHostNameLength = hostName.length();
@@ -2061,6 +2069,9 @@ S9sRpcReply::printNodeListBrief()
             S9sString     status    = hostMap["hoststatus"].toString();
             const char   *nameStart = "";
             const char   *nameEnd   = "";
+
+            if (!properties.isSubSet(hostMap))
+                continue;
 
             if (syntaxHighlight)
             {
@@ -2989,6 +3000,7 @@ void
 S9sRpcReply::printNodeListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   properties = options->propertiesOption();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
     S9sVariantList  theList = clusters();
@@ -3018,7 +3030,7 @@ S9sRpcReply::printNodeListLong()
             S9sString      clusterName = theMap["cluster_name"].toString();
 
             total += hosts.size();
-    
+   
             if (!clusterNameFilter.empty() && clusterNameFilter != clusterName)
                 continue;
 
@@ -3029,6 +3041,9 @@ S9sRpcReply::printNodeListLong()
                 int           clusterId = node.clusterId();
                 S9sCluster    cluster   = clusterMap(clusterId);
                 S9sString     hostName  = node.name();
+
+                if (!properties.isSubSet(hostMap))
+                    continue;
 
                 if (!options->isStringMatchExtraArguments(hostName))
                     continue;
@@ -3069,6 +3084,9 @@ S9sRpcReply::printNodeListLong()
             S9sString     version   = hostMap["version"].toString();
             int           port      = hostMap["port"].toInt(-1);
             int           clusterId = hostMap["clusterid"].toInt();
+
+            if (!properties.isSubSet(hostMap))
+                continue;
 
             if (!options->isStringMatchExtraArguments(hostName))
                 continue;
@@ -3134,6 +3152,9 @@ S9sRpcReply::printNodeListLong()
         int           port      = hostMap["port"].toInt(-1);
             
         // Filtering...
+        if (!properties.isSubSet(hostMap))
+            continue;
+
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
 

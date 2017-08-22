@@ -13,7 +13,7 @@
 #include "json_lexer.h"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 static const char dblQuot = '"';
@@ -269,7 +269,28 @@ S9sVariantMap::parseAssignments(
 
     return retval;
 }
+    
+bool 
+S9sVariantMap::isSubSet(
+        const S9sVariantMap &superSet) const
+{
+    S9sVector<S9sString> theKeys = keys();
 
+    for (uint idx = 0u; idx < theKeys.size(); ++idx)
+    {
+        const S9sString &key = theKeys[idx];
+
+        if (!superSet.contains(key))
+            return false;
+
+        if (at(key) == superSet.at(key))
+            continue;
+            
+        return false;
+    }
+
+    return true;
+}
 
 /**
  * Private function, part of the S9sVariantMap::toString() implemtation.

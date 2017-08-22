@@ -22,6 +22,7 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
         bool parse(const char *source);
         S9sString toString() const;
         bool parseAssignments(const S9sString &input);
+        bool isSubSet(const S9sVariantMap &superSet) const;
 
     private:
         S9sString toString(
