@@ -689,6 +689,15 @@ lists and command line options:
     --properties="alias=controller"\fR
 .fi
 
+Listing the Galera hosts. This can be done by filtering the list of nodes by
+their properties, like this:
+
+.nf
+# \fBs9s node \\
+    --list \\
+    --long \\
+    --properties="class_name=CmonGaleraHost"\fR
+.fi
 
 Create a set of graphs, one for each node shown in the terminal about the load
 on the hosts. If the terminal is wide enough the graphs will be shown side by
