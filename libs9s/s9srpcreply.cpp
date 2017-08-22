@@ -1973,9 +1973,9 @@ S9sRpcReply::printNodeListBrief()
     S9sVariantMap   properties = options->propertiesOption();
     S9sVariantList  theList = clusters();
     S9sString       formatString = options->shortNodeFormat();
+    int             isTerminal    = options->isTerminal();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
-    int             nPrinted = 0;
     uint            maxHostNameLength = 0u;
     S9sString       hostNameFormat;
     int             terminalWidth = options->terminalWidth();
@@ -2090,22 +2090,26 @@ S9sRpcReply::printNodeListBrief()
                     nameEnd   = TERM_NORMAL;
                 }
             }
-                    
+                   
             printf(STR(hostNameFormat), 
                     nameStart, STR(hostName), nameEnd);
 
-            column += maxHostNameLength;
-            if (column + (int) maxHostNameLength > terminalWidth)
+            if (isTerminal)
             {
+                column += maxHostNameLength;
+                if (column + (int) maxHostNameLength > terminalWidth)
+                {
+                    printf("\n");
+                    column = 0;
+                }
+            } else {
                 printf("\n");
                 column = 0;
             }
-
-            ++nPrinted;
         }
     }
 
-    if (nPrinted > 0)
+    if (column > 0)
     {
         printf("\n");
         fflush(stdout);
