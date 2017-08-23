@@ -28,10 +28,10 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help      Print this help and exit.
- --verbose       Print more messages.
- --print-json    Print the JSON messages sent and received.
- --log           Print the logs while waiting for the job to be ended.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --print-json     Print the JSON messages sent and received.
+ --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
  --reset-config   Remove and re-generate the ~/.s9s directory.
 

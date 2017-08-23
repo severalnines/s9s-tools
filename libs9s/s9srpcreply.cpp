@@ -3185,7 +3185,7 @@ S9sRpcReply::printNodeListLong()
         }
 
         // Calculating how much space we have for the message column.
-        nColumns  = 3 + 1;
+        nColumns  = 3 + 1 + 1;
         nColumns += cidFormat.realWidth();
         nColumns += versionFormat.realWidth();
         nColumns += clusterNameFormat.realWidth();

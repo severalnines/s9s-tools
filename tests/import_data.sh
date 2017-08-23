@@ -55,6 +55,91 @@ while true; do
     esac
 done
 
+#
+# This test will create a user and a database and then upload some data if the
+# data can be found on the local computer.
+#
+function testUploadData()
+{
+    local sql_host=$1
+    local db_name="pipas1"
+    local user_name="pipas1"
+    local password="p"
+    local reply
+    local count=0
+
+    pip-say "Testing data upload on cluster."
+
+    #
+    # Creating a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --db-name=$db_name
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        return 1
+    fi
+
+    #
+    # Creating a new account on the cluster.
+    #
+    mys9s account \
+        --create \
+        --account="$user_name:$password" \
+        --privileges="$db_name.*:ALL"
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        return 1
+    fi
+
+    #
+    # Executing a simple SQL statement using the account we created.
+    #
+    reply=$(\
+        mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$sql_host \
+            -u$user_name \
+            -p$password \
+            $db_name \
+            -e "SELECT 41+1" | tail -n +2 )
+
+    if [ "$reply" != "42" ]; then
+        echo "Cluster failed to execute an SQL statement: '$reply'."
+    fi
+
+    #
+    # Here we upload some tables. This part needs test data...
+    #
+    for file in /home/pipas/Desktop/stuff/databases/*.sql.gz; do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        printf "%'6d " "$count"
+        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
+        printf "\n"
+        zcat $file | mysql --batch -h$sql_host -u$user_name -pp $db_name
+
+        exitCode=$?
+        if [ "$exitCode" -ne 0 ]; then
+            failure "Exit code is $exitCode while uploading data."
+            break
+        fi
+
+        let count+=1
+        if [ "$count" -gt 999 ]; then
+            break
+        fi
+    done
+}
+
 if [ -z "$SQL_HOST" ]; then
     SQL_HOST=$(\
         s9s node --list --properties="class_name=CmonGaleraHost" | \
@@ -77,3 +162,4 @@ fi
 
 printVerbose " SQL_HOST : '$SQL_HOST'"
 printVerbose " SQL_PORT : $SQL_PORT"
+testUploadData "$SQL_HOST"
