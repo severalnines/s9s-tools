@@ -4029,6 +4029,7 @@ S9sRpcClient::createUserRequest(
         const S9sString &newPassword,
         bool             createGroup)
 {
+    S9S_WARNING("*** newPassword : '%s'", STR(newPassword));
     S9sVariantMap  request;
 
     request["operation"]    = "createUser";

@@ -21,7 +21,7 @@
 
 #include "S9sRpcClient"
 
-//#define USE_NEW_RPC 
+#define USE_NEW_RPC 
 
 /**
  * A class that is able to execute whatever the user requested through the
