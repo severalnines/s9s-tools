@@ -77,3 +77,20 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
+reset_config
+
+first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
+last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)    
+
+mys9s user \
+    --create \
+    --generate-key \
+    --group="admins" \
+    --new-password="admin" \
+    --controller="https://localhost:9556" \
+    --email-address="laszlo@severalnines.com" \
+    --first-name="$first" \
+    --last-name="$last" \
+    $OPTION_PRINT_JSON \
+    $OPTION_VERBOSE \
+    "admin"
