@@ -64,6 +64,7 @@ class S9sRpcClient
          */
         bool getClusters();
         bool getCluster();
+        bool getTree();
         
         bool checkHosts();
         bool getSupportedClusterTypes();

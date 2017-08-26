@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.4"
+VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
 SERVER=""
@@ -10,6 +10,7 @@ PARENT_NAME=ubuntu
 OWNER=${USER}
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_NO_SSH_TEST=""
+OPTION_TMP=""
 
 #
 # Prints the software version and exits.
@@ -83,6 +84,7 @@ Usage:
  --server=SERVER      Create the container on remote server.
  --owner=USERNAME     The name of the user to be created.
  --no-ssh-test        Do not test the ssh connection to the container.
+ --tmp                Create temporary container.
 
 EXAMPLE
 
@@ -95,7 +97,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test" \
+        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test,tmp" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -142,6 +144,12 @@ while true; do
         --no-ssh-test)
             shift
             OPTION_NO_SSH_TEST="true"
+            ;;
+
+        --tmp)
+            shift
+            OPTION_TMP="true"
+            TMP_OPTION="--tmp"
             ;;
 
         --)
@@ -346,7 +354,15 @@ function create_container()
     # Creating the new container.
     #
     printVerbose "Creating container $new_name"
-    lxc-copy -n $parent_name --newname="$new_name"
+
+    location_option=""
+    if [ "$OPTION_TMP" ]; then
+        printVerbose "Creating ramdisk."
+        mkdir /var/lib/lxc/$new_name
+        mount -t tmpfs -o size=8G tmpfs /var/lib/lxc/$new_name
+    fi
+    
+    lxc-copy $location_option -n $parent_name --newname="$new_name"
     lxc-start -n "$new_name"
 
     #
@@ -486,6 +502,7 @@ else
                 --no-ssh-test \
                 $VERSION_OPTION \
                 $VERBOSE_OPTION \
+                $TMP_OPTION \
                 $EXTRA_OPTIONS)
 
         printVerbose "Executed on server '$chosen_server'."

@@ -392,6 +392,8 @@ function wait_for_server_ssh()
 }
 
 #
+# $1: The name of the container or just leave it empty for the default name.
+#
 # Creates and starts a new virtual machine node.
 #
 function create_node()
@@ -405,11 +407,11 @@ function create_node()
     fi
 
     printVerbose "Creating container..."
-    ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER)
+    ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER $1)
     printVerbose "Created '$ip'."
    
     #
-    #
+    # Waiting until the server is up and accepts SSH connections.
     #
     wait_for_server_ssh "$ip" "$USER"
     retval=$?

@@ -161,6 +161,12 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    s9s node \
+        --set \
+        --nodes="$nodes" \
+        --properties="hostgrouppath=$CONTAINER_SERVER"
+
 }
 
 #

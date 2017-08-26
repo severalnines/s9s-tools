@@ -426,6 +426,7 @@ S9sRpcClient::getClusters()
     //checkHosts();
     //getSupportedClusterTypes();
     //checkClusterName();
+    getTree();
 
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
@@ -445,6 +446,17 @@ S9sRpcClient::getClusters()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+bool
+S9sRpcClient::getTree()
+{
+    S9sString      uri = "/v2/host";
+    S9sVariantMap  request;
+   
+    request["operation"]       = "getTree";
+
+    return executeRequest(uri, request);
 }
 
 /**
@@ -4029,7 +4041,6 @@ S9sRpcClient::createUserRequest(
         const S9sString &newPassword,
         bool             createGroup)
 {
-    S9S_WARNING("*** newPassword : '%s'", STR(newPassword));
     S9sVariantMap  request;
 
     request["operation"]    = "createUser";

@@ -186,7 +186,13 @@ function destroy_container()
     fi
 
     lxc-stop -n "$container_name"
-    lxc-destroy -n "$container_name"
+    lxc-destroy -n "$container_name" >/dev/null 2>/dev/null
+
+    if [ -d "/var/lib/lxc/$container_name" ]; then
+        printVerbose "Removing root-fs."
+        umount /var/lib/lxc/$container_name
+        rmdir /var/lib/lxc/$container_name
+    fi
 }
 
 #

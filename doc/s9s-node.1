@@ -689,6 +689,15 @@ lists and command line options:
     --properties="alias=controller"\fR
 .fi
 
+Moving the node into a different place in the object tree:
+
+.nf
+# \fBs9s node \\
+    --set \\
+    --nodes=192.168.1.113 \\
+    --properties="hostgrouppath=mycontainers"\fR
+.fi
+
 Listing the Galera hosts. This can be done by filtering the list of nodes by
 their properties, like this:
 
