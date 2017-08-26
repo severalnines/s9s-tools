@@ -104,16 +104,20 @@ if [ "$OPTION_RESET_CONFIG" ]; then
     grant_user
 fi
 
-cluster_name="galera_cluster_1"
+cluster_name="cluster_$$"
 
 #
 # Creating a Galera cluster.
+# FIXME: It is possible to create two clusters with the same name.
 #
+pip-say "Creating containers."
+
 nodes=""
 nodes+="$(create_node "galera_node_01")"
 nodes+=";$(create_node "galera_node_02")"
 nodes+=";$(create_node "galera_node_03")"
 
+pip-say "Installing cluster."
 mys9s cluster \
     --create \
     --cluster-type=galera \
@@ -123,20 +127,11 @@ mys9s cluster \
     --provider-version=5.6 \
     $LOG_OPTION
 
-#
-# 
-#
-haproxy="$(create_node "haproxy_node_01")"
-
-mys9s cluster \
-    --add-node \
-    --cluster-name=$cluster_name \
-    --nodes="haProxy://$haproxy" \
-    $LOG_OPTION
 
 #
 # 
 #
+pip-say "Creating database and account."
 dbname="mydatabase"
 
 mys9s cluster \
@@ -157,9 +152,25 @@ mys9s account \
     --privileges="$dbname.*:ALL" \
     --batch
 
+#
+# FIXME: This is not working: it says cluster 0 is not running!
+#    --cluster-name=$cluster_name \
+#
+#pip-say "Installing proxy server."
+#
+#haproxy="$(create_node "haproxy_node_01")"
+#
+#mys9s cluster \
+#    --add-node \
+#    --cluster-id=1 \
+#    --nodes="haProxy://$haproxy" \
+#    $LOG_OPTION
+#
+
+pip-say "Finished installing cluster."
 echo "cluster_name : $cluster_name"
 echo "    db_nodes : $nodes"
-echo "     haproxy : $haproxy"
+#echo "     haproxy : $haproxy"
 echo "      dbname : $dbname"
 echo "     account : $account"
 echo "    password : $password"
