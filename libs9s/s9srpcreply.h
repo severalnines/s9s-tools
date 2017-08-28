@@ -89,6 +89,9 @@ class S9sRpcReply : public S9sVariantMap
         void printScriptTree();
         void printScriptTreeBrief();
         
+        void printObjectTree();
+        void printObjectTreeBrief();
+        
         void saveConfig(S9sString outputDir);
 
 
@@ -98,6 +101,11 @@ class S9sRpcReply : public S9sVariantMap
                 S9sString            indentString,
                 bool                 isLast);
 
+        void printObjectTreeBrief(
+                S9sVariantMap        entry,
+                int                  recursionLevel,
+                S9sString            indentString,
+                bool                 isLast);
 
         static S9sString progressBar(double percent, bool syntaxHighlight);
         static S9sString progressBar(bool syntaxHighlight);

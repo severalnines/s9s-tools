@@ -188,6 +188,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isServerOperation())
+    {
+        if (options->isTreeRequested())
+        {
+            executeObjectTree(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isJobOperation())
     {
         if (options->isListRequested())
@@ -465,6 +473,32 @@ S9sBusinessLogic::executeScriptTree(
     {
         reply = client.reply();
         reply.printScriptTree();
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(reply.toString()));
+        else
+            PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+/**
+ * \param client A client for the communication.
+ *
+ * Execute the "server --tree" operation.
+ */
+void
+S9sBusinessLogic::executeObjectTree(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getTree();
+    if (success)
+    {
+        reply = client.reply();
+        reply.printObjectTree();
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));

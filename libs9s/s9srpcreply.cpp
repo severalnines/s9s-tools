@@ -2191,6 +2191,85 @@ S9sRpcReply::printScriptTreeBrief()
 }
 
 void
+S9sRpcReply::printObjectTree()
+{
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else 
+        printObjectTreeBrief();
+}
+
+void 
+S9sRpcReply::printObjectTreeBrief(
+        S9sVariantMap        entry,
+        int                  recursionLevel,
+        S9sString            indentString,
+        bool                 isLast)
+{
+    S9sString       name      = entry["item_name"].toString();
+    S9sString       type      = entry["item_type"].toString();
+    S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    bool            isDir     = type == "Folder";
+    bool            isCluster = type == "Cluster";
+    S9sString       indent;
+
+    printf("%s", STR(indentString));
+
+    if (recursionLevel)
+    {
+        if (isLast)
+            indent = "└── ";
+        else 
+            indent = "├── ";
+    }
+
+    if (isDir)
+    {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_ORANGE, STR(name), TERM_NORMAL);
+    } else if (isCluster)
+    {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                clusterColorBegin(), STR(name), clusterColorEnd());
+    } else {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_GREEN, STR(name), TERM_NORMAL);
+    }
+
+    for (uint idx = 0; idx < entries.size(); ++idx)
+    {
+        S9sVariantMap child = entries[idx].toVariantMap();
+        bool          last = idx + 1 >= entries.size();
+       
+        if (recursionLevel)
+        {
+            if (isLast)
+                indent = "    ";
+            else
+                indent = "│   ";
+        }
+
+        printObjectTreeBrief(
+                child, recursionLevel + 1, 
+                indentString + indent, last);
+    }
+}
+
+void
+S9sRpcReply::printObjectTreeBrief()
+{
+    S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
+
+    printObjectTreeBrief(entry, 0, "", false);
+}
+
+void
 S9sRpcReply::printScriptOutput()
 {
     S9sOptions *options = S9sOptions::instance();

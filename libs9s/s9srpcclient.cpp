@@ -426,7 +426,7 @@ S9sRpcClient::getClusters()
     //checkHosts();
     //getSupportedClusterTypes();
     //checkClusterName();
-    getTree();
+    //getTree();
 
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
