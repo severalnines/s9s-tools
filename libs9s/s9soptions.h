@@ -92,9 +92,11 @@ class S9sOptions
         bool setPropertiesOption(const S9sString &assignments);
         S9sVariantMap propertiesOption() const;
 
-
         bool setNodes(const S9sString &value);
         S9sVariantList nodes() const;
+        
+        bool setServers(const S9sString &value);
+        S9sVariantList servers() const;
 
         S9sString briefJobLogFormat() const;
         S9sString briefLogFormat() const;

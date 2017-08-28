@@ -54,6 +54,7 @@ enum S9sOptionType
     OptionBatch,
     OptionNoHeader,
     OptionNodes,
+    OptionServers,
     OptionAddNode,
     OptionRemoveNode,
     OptionJobId,
@@ -848,6 +849,49 @@ S9sOptions::nodes() const
     return S9sVariantList();
 }
 
+/**
+ * \param value the node list as a string using field separators that the
+ *   S9sString::split() function can interpret.
+ *
+ * The node list is usually set in the command line using the --servers option.
+ */
+bool
+S9sOptions::setServers(
+        const S9sString &value)
+{
+    S9sVariantList serverStrings = value.split(";");
+    S9sVariantList servers;
+
+    for (uint idx = 0; idx < serverStrings.size(); ++idx)
+    {
+        S9sString serverString = serverStrings[idx].toString();
+        S9sNode   node(serverString.trim());
+
+        if (node.hasError())
+        {
+            PRINT_ERROR("%s", STR(node.fullErrorString()));
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        servers << node;
+    }
+
+    m_options["servers"] = servers;
+    return true;
+}
+
+/**
+ * \returns the node list, one host name in every list item
+ */
+S9sVariantList
+S9sOptions::servers() const
+{
+    if (m_options.contains("servers"))
+        return m_options.at("servers").toVariantList();
+
+    return S9sVariantList();
+}
 /**
  * \returns the vendor name as it is set by the --vendor command line option.
  */
@@ -6432,6 +6476,7 @@ S9sOptions::readOptionsServer(
 
         // Main Option
         { "tree",             no_argument,       0, OptionTree            },
+        { "create",           no_argument,       0, OptionCreate          },
        
         // Options about the maintenance period.
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -6541,6 +6586,11 @@ S9sOptions::readOptionsServer(
                 m_options["tree"] = true;
                 break;
 
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+
             case '?':
                 // 
                 return false;
@@ -6634,6 +6684,9 @@ S9sOptions::checkOptionsServer()
      * Checking if multiple operations are requested.
      */
     if (isTreeRequested())
+        countOptions++;
+    
+    if (isCreateRequested())
         countOptions++;
 
     if (countOptions > 1)

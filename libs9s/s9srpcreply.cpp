@@ -2214,6 +2214,9 @@ S9sRpcReply::printObjectTreeBrief(
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
     bool            isDir     = type == "Folder";
     bool            isCluster = type == "Cluster";
+    bool            isNode    = type == "Node";
+    bool            isServer  = type == "Server";
+    bool            isUser    = type == "User";
     S9sString       indent;
 
     printf("%s", STR(indentString));
@@ -2230,16 +2233,29 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s\n", 
                 STR(indent), 
-                XTERM_COLOR_ORANGE, STR(name), TERM_NORMAL);
+                XTERM_COLOR_YELLOW, STR(name), TERM_NORMAL);
     } else if (isCluster)
     {
         printf("%s%s%s%s\n", 
                 STR(indent), 
                 clusterColorBegin(), STR(name), clusterColorEnd());
-    } else {
+    } else if (isNode)
+    {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_PURPLE, STR(name), TERM_NORMAL);
+    } else if (isServer)
+    {
         printf("%s%s%s%s\n", 
                 STR(indent), 
                 XTERM_COLOR_GREEN, STR(name), TERM_NORMAL);
+    } else if (isUser)
+    {
+        printf("%s%s%s%s\n", 
+                STR(indent), 
+                XTERM_COLOR_ORANGE, STR(name), TERM_NORMAL);
+    } else {
+        printf("%s%s\n", STR(indent), STR(name));
     }
 
     for (uint idx = 0; idx < entries.size(); ++idx)
