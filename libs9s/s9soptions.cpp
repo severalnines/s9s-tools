@@ -6478,8 +6478,10 @@ S9sOptions::readOptionsServer(
         { "tree",             no_argument,       0, OptionTree            },
         { "create",           no_argument,       0, OptionCreate          },
        
-        // Options about the maintenance period.
-        { "cluster-id",       required_argument, 0, 'i'                   },
+        // FIXME: remove this.
+        //{ "cluster-id",       required_argument, 0, 'i'                   },
+        
+        { "servers",          required_argument, 0, OptionServers         },
 
         { 0, 0, 0, 0 }
     };
@@ -6589,6 +6591,13 @@ S9sOptions::readOptionsServer(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionServers:
+                // --servers=LIST
+                if (!setServers(optarg))
+                    return false;
+
                 break;
 
             case '?':
