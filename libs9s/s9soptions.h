@@ -47,17 +47,18 @@ class S9sOptions
         enum OperationMode 
         {
             NoMode  = 0,
+            Account,
+            Backup,
             Cluster,
-            Node,
             Job,
             Log,
-            Backup,
-            Process,
-            User,
-            Account,
             Maintenance,
             MetaType,
+            Node,
+            Process,
             Script,
+            Server,
+            User,
             //Alarm
         };
 
@@ -194,6 +195,7 @@ class S9sOptions
         bool isNodeOperation() const;
         bool isLogOperation() const;
         bool isScriptOperation() const;
+        bool isServerOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
         bool isBackupOperation() const;
@@ -302,6 +304,7 @@ class S9sOptions
         void printHelpMaintenance();
         void printHelpMetaType();
         void printHelpScript();
+        void printHelpServer();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         
@@ -331,6 +334,9 @@ class S9sOptions
 
         bool readOptionsScript(int argc, char *argv[]);
         bool checkOptionsScript();
+        
+        bool readOptionsServer(int argc, char *argv[]);
+        bool checkOptionsServer();
 
         bool readOptionsMetaType(int argc, char *argv[]);
         bool checkOptionsMetaType();

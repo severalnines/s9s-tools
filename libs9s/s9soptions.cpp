@@ -174,6 +174,7 @@ S9sOptions::S9sOptions() :
     m_modes["node"]        = Node;
     m_modes["process"]     = Process;
     m_modes["script"]      = Script;
+    m_modes["server"]      = Server;
     m_modes["user"]        = User;
     m_modes["account"]     = Account;
 
@@ -1676,6 +1677,15 @@ S9sOptions::isScriptOperation() const
 }
 
 /**
+ * \returns true if the main operation is "server".
+ */
+bool
+S9sOptions::isServerOperation() const
+{
+    return m_operationMode == Server;
+}
+
+/**
  * \returns true if the main operation is "cluster".
  */
 bool
@@ -2543,6 +2553,14 @@ S9sOptions::readOptions(
                 retval = checkOptionsScript();
 
             break;
+        
+        case Server:
+            retval = readOptionsServer(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsServer();
+
+            break;
 
         case Log:
             retval = readOptionsLog(*argc, argv);
@@ -2668,6 +2686,10 @@ S9sOptions::printHelp()
         case Script:
             printHelpScript();
             break;
+        
+        case Server:
+            printHelpServer();
+            break;
 
         case Log:
             printHelpLog();
@@ -2691,6 +2713,7 @@ S9sOptions::printHelpGeneric()
 "     node - to handle nodes.\n"
 "  process - to view processes running on nodes.\n"
 "   script - to manage and execute scripts.\n"
+"   server - to manage hardware resources.\n"
 "     user - to manage users.\n"
 "\n"
 "Generic options:\n"
@@ -2981,6 +3004,19 @@ S9sOptions::printHelpScript()
 "\n"
     );
 }
+
+void
+S9sOptions::printHelpServer()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"server\" command:\n"
+"  --tree                     Print the object tree.\n"
+"\n"
+    );
+}
+
 
 void
 S9sOptions::printHelpLog()
@@ -6191,6 +6227,9 @@ S9sOptions::readOptionsJob(
     return true;
 }
 
+/**
+ * Reads the command line options for the "script" mode.
+ */
 bool
 S9sOptions::readOptionsScript(
         int    argc,
@@ -6364,7 +6403,176 @@ S9sOptions::readOptionsScript(
 }
 
 /**
- * \returns True if the command line options seem to be ok.
+ * Reads the command line options for the "server" mode.
+ */
+bool
+S9sOptions::readOptionsServer(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, 'h'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        // Main Option
+        { "tree",             no_argument,       0, OptionTree            },
+       
+        // Options about the maintenance period.
+        { "cluster-id",       required_argument, 0, 'i'                   },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                // -h, --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionTree:
+                // --tree
+                m_options["tree"] = true;
+                break;
+
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok in "script" mode.
  */
 bool
 S9sOptions::checkOptionsScript()
@@ -6387,6 +6595,45 @@ S9sOptions::checkOptionsScript()
         countOptions++;
     
     if (isDeleteRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = 
+            "The --list, --execute and --delete options are mutually"
+            " exclusive.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = 
+            "One of the --list, --execute and --delete options is mandatory.";
+
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok in "server" mode.
+ */
+bool
+S9sOptions::checkOptionsServer()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isTreeRequested())
         countOptions++;
 
     if (countOptions > 1)
