@@ -193,6 +193,11 @@ S9sBusinessLogic::execute()
         if (options->isTreeRequested())
         {
             executeObjectTree(client);
+        } else if (options->isCreateRequested())
+        {
+            success = client.registerServers();
+            client.printMessages("Registered.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

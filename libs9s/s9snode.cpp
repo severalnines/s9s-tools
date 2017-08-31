@@ -72,7 +72,15 @@ S9sNode::S9sNode(
         if (m_url.hasPort())
             m_properties["port"] = m_url.port();
     }
-    
+   
+    if (m_url.hasProtocol())
+    {
+        S9sString protocol = m_url.protocol().toLower();
+
+        if (m_url.protocol() == "lxc")
+            m_properties["class_name"] = "CmonContainerServer";
+    }
+
     if (!m_properties.contains("class_name"))
         m_properties["class_name"] = "CmonHost";
 }

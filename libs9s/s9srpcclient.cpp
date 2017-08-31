@@ -3480,6 +3480,24 @@ S9sRpcClient::checkHosts()
 }
 
 bool
+S9sRpcClient::registerServers()
+{
+    getSshCredentials();
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    if (servers.empty())
+        return true;
+
+    request["operation"]      = "registerservers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::getSupportedClusterTypes()
 {
     getSshCredentials();
@@ -4706,5 +4724,15 @@ S9sRpcClient::nodesField(
     S9sVariant     retval;
 
     retval = nodes;
+    return retval;
+}
+
+S9sVariant
+S9sRpcClient::serversField(
+        const S9sVariantList &servers)
+{
+    S9sVariant     retval;
+
+    retval = servers;
     return retval;
 }

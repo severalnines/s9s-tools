@@ -131,11 +131,24 @@ function testCreateCluster()
     local exitCode
 
     pip-say "The test to create PostgreSQL cluster is starting now."
+    
+    for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
+        [ "$servers" ] && servers+=";"
+        servers+="lxc://$server"
+    done
+
+    if [ "$servers" ]; then
+        mys9s server --create --servers=$servers
+    fi
+
+    #
+    # Creatuing containers.
+    #
     nodeName=$(create_node)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
-    
+   
     #
     # Creating a PostgreSQL cluster.
     #
@@ -166,7 +179,6 @@ function testCreateCluster()
     #    --set \
     #    --nodes="$nodes" \
     #    --properties="hostgrouppath=$CONTAINER_SERVER"
-
 }
 
 #

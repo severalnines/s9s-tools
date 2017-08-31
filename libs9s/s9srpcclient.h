@@ -71,6 +71,9 @@ class S9sRpcClient
         bool checkClusterName();
         bool getSshCredentials();
 
+        bool registerServers();
+
+
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);
 
@@ -331,6 +334,10 @@ class S9sRpcClient
             nodesField(
                 const S9sVariantList &nodes);
         
+        static S9sVariant
+            serversField(
+                const S9sVariantList &servers);
+
     private:
         S9sRpcClientPrivate *m_priv;
 
