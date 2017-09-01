@@ -72,7 +72,8 @@ class S9sRpcClient
         bool getSshCredentials();
 
         bool registerServers();
-
+        bool unregisterServers();
+        bool createContainer();
 
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);

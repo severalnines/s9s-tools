@@ -193,10 +193,28 @@ S9sBusinessLogic::execute()
         if (options->isTreeRequested())
         {
             executeObjectTree(client);
-        } else if (options->isCreateRequested())
+        } else if (options->isRegisterRequested())
         {
+            /* 
+             * Here is an example of the server registration:
+             * s9s server --register --servers="lxc://storage01?hostgrouppath=myservers" --print-json --verbose
+             */
             success = client.registerServers();
             client.printMessages("Registered.", success);
+            client.setExitStatus();
+        } else if (options->isUnregisterRequested())
+        {
+            /* 
+             * Here is an example of the server unregister:
+             * s9s server --unregister --servers="lxc://storage01" 
+             */
+            success = client.unregisterServers();
+            client.printMessages("Unregistered.", success);
+            client.setExitStatus();
+        } else if (options->isCreateRequested())
+        {
+            success = client.createContainer();
+            client.printMessages("Created.", success);
             client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");

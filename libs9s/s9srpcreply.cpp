@@ -2194,6 +2194,7 @@ void
 S9sRpcReply::printObjectTree()
 {
     S9sOptions *options = S9sOptions::instance();
+
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (!isOk())
@@ -2210,6 +2211,7 @@ S9sRpcReply::printObjectTreeBrief(
         bool                 isLast)
 {
     S9sString       name      = entry["item_name"].toString();
+    S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
     bool            isDir     = type == "Folder";
@@ -2231,32 +2233,37 @@ S9sRpcReply::printObjectTreeBrief(
 
     if (isDir)
     {
-        printf("%s%s%s%s\n", 
+        printf("%s%s%s%s", 
                 STR(indent), 
                 XTERM_COLOR_YELLOW, STR(name), TERM_NORMAL);
     } else if (isCluster)
     {
-        printf("%s%s%s%s\n", 
+        printf("%s%s%s%s", 
                 STR(indent), 
                 clusterColorBegin(), STR(name), clusterColorEnd());
     } else if (isNode)
     {
-        printf("%s%s%s%s\n", 
+        printf("%s%s%s%s", 
                 STR(indent), 
                 XTERM_COLOR_PURPLE, STR(name), TERM_NORMAL);
     } else if (isServer)
     {
-        printf("%s%s%s%s\n", 
+        printf("%s%s%s%s", 
                 STR(indent), 
                 XTERM_COLOR_GREEN, STR(name), TERM_NORMAL);
     } else if (isUser)
     {
-        printf("%s%s%s%s\n", 
+        printf("%s%s%s%s", 
                 STR(indent), 
                 XTERM_COLOR_ORANGE, STR(name), TERM_NORMAL);
     } else {
-        printf("%s%s\n", STR(indent), STR(name));
+        printf("%s%s", STR(indent), STR(name));
     }
+
+    if (!spec.empty())
+        printf(" (%s)", STR(spec));
+
+    printf("\n");
 
     for (uint idx = 0; idx < entries.size(); ++idx)
     {

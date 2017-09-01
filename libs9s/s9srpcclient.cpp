@@ -426,7 +426,6 @@ S9sRpcClient::getClusters()
     //checkHosts();
     //getSupportedClusterTypes();
     //checkClusterName();
-    //getTree();
 
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
@@ -451,10 +450,13 @@ S9sRpcClient::getClusters()
 bool
 S9sRpcClient::getTree()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/host";
     S9sVariantMap  request;
-   
+    
     request["operation"]       = "getTree";
+    if (options->nExtraArguments() > 0)
+        request["path"] = options->extraArgument(0u);
 
     return executeRequest(uri, request);
 }
@@ -3479,20 +3481,57 @@ S9sRpcClient::checkHosts()
     return executeRequest(uri, request);
 }
 
+/**
+ * This is where we send the "registerServers" request that will notify the
+ * controller about a container server we want to use.
+ */
 bool
 S9sRpcClient::registerServers()
 {
-    getSshCredentials();
+    //getSshCredentials();
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
    
-    if (servers.empty())
-        return true;
-
-    request["operation"]      = "registerservers";
+    request["operation"]      = "registerServers";
     request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::unregisterServers()
+{
+    //getSshCredentials();
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "unregisterServers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+
+bool
+S9sRpcClient::createContainer()
+{
+    //getSshCredentials();
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "createContainer";
+    request["start"]          = true;
+    request["wait_for_start"] = true;
+    request["check_ssh"]      = true;
+
+    if (!servers.empty())
+        request["servers"] = serversField(servers);
     
     return executeRequest(uri, request);
 }

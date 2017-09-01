@@ -140,6 +140,7 @@ enum S9sOptionType
     OptionLimit,
     OptionOffset,
     OptionRegister,
+    OptionUnregister,
     OptionOldPassword,
     OptionNewPassword,
     OptionListKeys,
@@ -1964,6 +1965,16 @@ S9sOptions::isRegisterRequested() const
 }
 
 /**
+ * \returns true if the --unregister command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isUnregisterRequested() const
+{
+    return getBool("unregister");
+}
+
+/**
  * \returns true if the --execute command line option was provided when the
  *   program was started.
  */
@@ -3056,7 +3067,10 @@ S9sOptions::printHelpServer()
 
     printf(
 "Options for the \"server\" command:\n"
+"  --create                   Create a new container.\n"
+"  --register                 Register an existint container server.\n"
 "  --tree                     Print the object tree.\n"
+"  --unregister               Unregister a container server.\n"
 "\n"
     );
 }
@@ -6477,6 +6491,8 @@ S9sOptions::readOptionsServer(
         // Main Option
         { "tree",             no_argument,       0, OptionTree            },
         { "create",           no_argument,       0, OptionCreate          },
+        { "register",         no_argument,       0, OptionRegister        },
+        { "unregister",       no_argument,       0, OptionUnregister      },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -6593,6 +6609,16 @@ S9sOptions::readOptionsServer(
                 m_options["create"] = true;
                 break;
             
+            case OptionRegister:
+                // --register
+                m_options["register"] = true;
+                break;
+            
+            case OptionUnregister:
+                // --unregister
+                m_options["unregister"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6693,9 +6719,25 @@ S9sOptions::checkOptionsServer()
      * Checking if multiple operations are requested.
      */
     if (isTreeRequested())
+    {
         countOptions++;
+        if (nExtraArguments() > 1) 
+        {
+            m_errorMessage = 
+                "The --tree option enables only one command line argument: "
+                "the path to print.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
     
     if (isCreateRequested())
+        countOptions++;
+    
+    if (isRegisterRequested())
+        countOptions++;
+    
+    if (isUnregisterRequested())
         countOptions++;
 
     if (countOptions > 1)
@@ -6705,7 +6747,6 @@ S9sOptions::checkOptionsServer()
             " exclusive.";
 
         m_exitStatus = BadOptions;
-
         return false;
     } else if (countOptions == 0)
     {

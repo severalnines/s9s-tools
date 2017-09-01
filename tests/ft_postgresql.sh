@@ -138,7 +138,7 @@ function testCreateCluster()
     done
 
     if [ "$servers" ]; then
-        mys9s server --create --servers=$servers
+        mys9s server --register --servers=$servers
     fi
 
     #
