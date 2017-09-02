@@ -123,7 +123,7 @@ mys9s user \
     --last-name="$last" \
     $OPTION_PRINT_JSON \
     $OPTION_VERBOSE \
-    "admin"
+    "$USER"
 
 
 #
@@ -140,5 +140,5 @@ mys9s user --list --long
 mys9s user \
     --list \
     --long \
-    --cmon-user="admin" \
+    --cmon-user="$USER" \
     --password="admin"

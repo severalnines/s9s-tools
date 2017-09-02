@@ -336,6 +336,11 @@ function create_container()
         return 1
     fi
 
+    # 
+    # We can also do something like this:
+    #
+    # lxc-create --template=/usr/share/lxc/templates/lxc-debian -n debian
+    #
     if [ ! -d "/var/lib/lxc/$parent_name" ]; then
         if [ "$parent_name" == "ubuntu" ]; then
             lxc-create \

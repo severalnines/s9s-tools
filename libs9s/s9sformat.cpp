@@ -41,6 +41,17 @@ S9sFormat::S9sFormat() :
 {
 }
 
+S9sFormat::S9sFormat(
+        const char *colorStart,
+        const char *colorEnd) :
+    m_width(0),
+    m_withFieldSeparator(true),
+    m_colorStart(colorStart),
+    m_colorEnd(colorEnd),
+    m_alignment(AlignLeft)
+{
+}
+
 S9sFormat 
 S9sFormat::operator+(
         const S9sFormat &rhs)
@@ -182,7 +193,8 @@ S9sFormat::printf(
  */
 void
 S9sFormat::printf(
-        const S9sString &value) const
+        const S9sString &value,
+        bool             color) const
 {
     S9sString formatString;
     S9sString myValue = value;
@@ -223,12 +235,12 @@ S9sFormat::printf(
     if (m_withFieldSeparator)
         formatString += " ";
 
-    if (m_colorStart != NULL)
+    if (color && m_colorStart != NULL)
         ::printf("%s", m_colorStart);
 
     ::printf(STR(formatString), STR(myValue));
 
-    if (m_colorEnd != NULL)
+    if (color && m_colorEnd != NULL)
         ::printf("%s", m_colorEnd);
 }
 

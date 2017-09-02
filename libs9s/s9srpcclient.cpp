@@ -3515,11 +3515,23 @@ S9sRpcClient::unregisterServers()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::getContainers()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "getContainers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
 
 bool
 S9sRpcClient::createContainer()
 {
-    //getSshCredentials();
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();

@@ -224,6 +224,7 @@ class S9sOptions
         bool isPullConfigRequested() const;
         bool isPushConfigRequested() const;
         bool isListPropertiesRequested() const;
+        bool isListContainersRequested() const;
         bool isWhoAmIRequested() const;
         bool isListKeysRequested() const;
         bool isAddKeyRequested() const;

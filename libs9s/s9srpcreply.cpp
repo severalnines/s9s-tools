@@ -1949,7 +1949,7 @@ S9sRpcReply::printClusterListLong()
 
         printf("%s", groupColorBegin(groupName));
         groupFormat.printf(groupName);
-        printf("%s", userColorEnd());
+        printf("%s", groupColorEnd());
         
         printf("%s", clusterColorBegin());
         nameFormat.printf(clusterName);
@@ -2191,6 +2191,152 @@ S9sRpcReply::printScriptTreeBrief()
 }
 
 void
+S9sRpcReply::printContainers()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else 
+        printContainersLong();
+}
+
+/**
+ * 
+ * Here is how a container looks like.
+ * \code{.js}
+ * {
+ *     "alias": "cmon_node_0001",
+ *     "class_name": "CmonContainer",
+ *     "hostname": "192.168.1.212",
+ *     "ip": "192.168.1.212",
+ *     "ipv4_addresses": [ "192.168.1.212" ],
+ *     "owner_group_id": 1,
+ *     "owner_user_id": 3,
+ *     "parent_server": "core1",
+ *     "status": "RUNNING"
+ * }, 
+ * \endcode
+ */
+void 
+S9sRpcReply::printContainersLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("containers").toVariantList();
+    int             total   = operator[]("total").toInt();
+    S9sFormat       aliasFormat(XTERM_COLOR_NODE, TERM_NORMAL);
+    S9sFormat       ipFormat(XTERM_COLOR_IP, TERM_NORMAL);
+    S9sFormat       parentFormat;
+    S9sFormat       userFormat(userColorBegin(), userColorEnd());
+    S9sFormat       groupFormat;
+    S9sFormat       typeFormat;
+    S9sFormat       templateFormat;
+
+    /*
+     * First run-through: collecting some information.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      alias  = theMap["alias"].toString();
+        S9sString      ip     = theMap["ip"].toString();
+        S9sString      parent = theMap["parent_server"].toString();
+        S9sString      user   = theMap["owner_user_name"].toString();
+        S9sString      group  = theMap["owner_group_name"].toString();
+        S9sString      type   = theMap["type"].toString();
+        S9sString      templateName = theMap["template"].toString();
+
+        if (ip.empty())
+            ip = "-";
+
+        userFormat.widen(user);
+        groupFormat.widen(group);
+        aliasFormat.widen(alias);
+        ipFormat.widen(ip);
+        parentFormat.widen(parent);
+        typeFormat.widen(type);
+        templateFormat.widen(templateName);
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        typeFormat.widen("TYPE");
+        templateFormat.widen("TEMPLATE");
+        userFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        aliasFormat.widen("NAME");
+        ipFormat.widen("IP ADDRESS");
+        parentFormat.widen("SERVER");
+
+        printf("%s", headerColorBegin());
+        printf("S ");
+        typeFormat.printf("TYPE", false);
+        templateFormat.printf("TEMPLATE", false);
+        userFormat.printf("OWNER", false);
+        groupFormat.printf("GROUP", false);
+        aliasFormat.printf("NAME", false);
+        ipFormat.printf("IP ADDRESS", false);
+        parentFormat.printf("SERVER", false);
+
+        printf("%s\n", headerColorEnd());
+    }
+
+    /*
+     * Second run: doing the actual printing.
+     */    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      alias  = theMap["alias"].toString();
+        S9sString      ip     = theMap["ip"].toString();
+        bool           isRunning = theMap["status"] == "RUNNING";
+        S9sString      parent = theMap["parent_server"].toString();
+        S9sString      user   = theMap["owner_user_name"].toString();
+        S9sString      group  = theMap["owner_group_name"].toString();
+        S9sString      type   = theMap["type"].toString();
+        S9sString      templateName = theMap["template"].toString();
+
+        if (templateName.empty())
+            templateName = "-";
+
+        if (ip.empty())
+            ip = "-";
+        
+        printf("%c ", isRunning ? 'u' : '-');
+        
+        typeFormat.printf(type);
+        templateFormat.printf(templateName);
+
+        printf("%s", userColorBegin());
+        userFormat.printf(user);
+        printf("%s", userColorEnd());
+        
+        printf("%s", groupColorBegin(group));
+        groupFormat.printf(group);
+        printf("%s", groupColorEnd());
+
+        aliasFormat.printf(alias);
+
+        ipFormat.printf(ip);
+
+        printf("%s", serverColorBegin());
+        parentFormat.printf(parent);
+        printf("%s", serverColorEnd());
+
+        printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
+
+}
+
+void
 S9sRpcReply::printObjectTree()
 {
     S9sOptions *options = S9sOptions::instance();
@@ -2219,6 +2365,7 @@ S9sRpcReply::printObjectTreeBrief(
     bool            isNode    = type == "Node";
     bool            isServer  = type == "Server";
     bool            isUser    = type == "User";
+    bool            isContainer = type == "Container";
     S9sString       indent;
 
     printf("%s", STR(indentString));
@@ -2236,6 +2383,11 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s%s%s", 
                 STR(indent), 
                 XTERM_COLOR_YELLOW, STR(name), TERM_NORMAL);
+    } else if (isContainer)
+    {
+        printf("%s%s%s%s", 
+                STR(indent), 
+                XTERM_COLOR_NODE, STR(name), TERM_NORMAL);
     } else if (isCluster)
     {
         printf("%s%s%s%s", 
@@ -2250,7 +2402,7 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                XTERM_COLOR_GREEN, STR(name), TERM_NORMAL);
+                serverColorBegin(), STR(name), serverColorEnd());
     } else if (isUser)
     {
         printf("%s%s%s%s", 
@@ -3235,9 +3387,7 @@ S9sRpcReply::printNodeListLong()
         hostNameFormat.printf("HOST");
         portFormat.printf("PORT");
         printf("COMMENT");
-        printf("%s", headerColorEnd());
-
-        printf("\n");
+        printf("%s\n", headerColorEnd());
     }
         
     /*
@@ -5192,6 +5342,24 @@ S9sRpcReply::userColorBegin()
 
 const char *
 S9sRpcReply::userColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::serverColorBegin() 
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_SERVER;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::serverColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

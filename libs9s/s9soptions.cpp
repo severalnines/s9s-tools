@@ -93,6 +93,7 @@ enum S9sOptionType
     OptionFullUuid,
     OptionWhoAmI,
     OptionListProperties,
+    OptionListContainers,
     OptionType,
     OptionBackupMethod,
     OptionBackupDirectory,
@@ -1881,6 +1882,15 @@ bool
 S9sOptions::isListPropertiesRequested() const
 {
     return getBool("list_properties");
+}
+
+/**
+ * \returns true if the --list-containers main option was provided.
+ */
+bool
+S9sOptions::isListContainersRequested() const
+{
+    return getBool("list_containers");
 }
 
 /**
@@ -6493,6 +6503,7 @@ S9sOptions::readOptionsServer(
         { "create",           no_argument,       0, OptionCreate          },
         { "register",         no_argument,       0, OptionRegister        },
         { "unregister",       no_argument,       0, OptionUnregister      },
+        { "list-containers",  no_argument,       0, OptionListContainers  },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -6619,6 +6630,11 @@ S9sOptions::readOptionsServer(
                 m_options["unregister"] = true;
                 break;
             
+            case OptionListContainers:
+                // --list-containers
+                m_options["list_containers"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6738,6 +6754,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isUnregisterRequested())
+        countOptions++;
+    
+    if (isListContainersRequested())
         countOptions++;
 
     if (countOptions > 1)

@@ -36,6 +36,7 @@ class S9sFormat
         };
 
         S9sFormat();
+        S9sFormat(const char *colorStart, const char *colorEnd);
        
         S9sFormat operator+(const S9sFormat &rhs);
         
@@ -51,7 +52,7 @@ class S9sFormat
 
         void printf(const int value) const;
         void printf(const ulonglong value) const;
-        void printf(const S9sString &value) const;
+        void printf(const S9sString &value, bool color = true) const;
 
         static S9sString toSizeString(const ulonglong value);
 
