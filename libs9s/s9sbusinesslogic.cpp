@@ -211,6 +211,14 @@ S9sBusinessLogic::execute()
             success = client.unregisterServers();
             client.printMessages("Unregistered.", success);
             client.setExitStatus();
+        } else if (options->isListRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printServers();
+            client.setExitStatus();
         } else if (options->isListContainersRequested())
         {
             S9sRpcReply reply;

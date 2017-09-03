@@ -3530,6 +3530,20 @@ S9sRpcClient::getContainers()
 }
 
 bool
+S9sRpcClient::getServers()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "getServers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::createContainer()
 {
     S9sString      uri = "/v2/host/";

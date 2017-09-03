@@ -2191,6 +2191,93 @@ S9sRpcReply::printScriptTreeBrief()
 }
 
 void
+S9sRpcReply::printServers()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else 
+        printServersLong();
+}
+
+/**
+ *
+ * \code{.js}
+ * "processors": [ 
+ * {
+ *     "cores": 4,
+ *     "cpu_max_ghz": 2,
+ *     "id": 400,
+ *     "model": "Intel(R) Xeon(R) CPU E5345 @ 2.33GHz",
+ *     "siblings": 4,
+ *     "vendor": "Intel Corp."
+ * }, 
+ * {
+ *     "cores": 4,
+ *     "cpu_max_ghz": 2,
+ *     "id": 401,
+ *     "model": "Intel(R) Xeon(R) CPU E5345 @ 2.33GHz",
+ *     "siblings": 4,
+ *     "vendor": "Intel Corp."
+ * } ],
+ * \endcode
+ */
+void 
+S9sRpcReply::printServersLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    int             totalCpus = 0;
+    int             totalCores = 0;
+    int             totalThreads = 0;
+    bool            compact = !options->isLongRequested();
+    S9sVariantMap   cpuModels;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList processorList = theMap["processors"].toVariantList();
+
+        for (uint idx1 = 0; idx1 < processorList.size(); ++idx1)
+        {
+            S9sVariantMap processor = processorList[idx1].toVariantMap();
+            S9sString     model     = processor["model"].toString();
+            int           cores     = processor["cores"].toInt();
+            int           threads   = processor["siblings"].toInt();
+
+            if (compact)
+            {
+                cpuModels[model] += 1;
+            } else {
+                printf("%s", STR(model));
+                printf("\n");
+            }
+                
+            ++totalCpus;
+            totalCores += cores;
+            totalThreads += threads;
+        }
+    }
+
+    if (compact)
+    {
+        for (uint idx = 0; idx < cpuModels.keys().size(); ++idx)
+        {
+            S9sString  name = cpuModels.keys().at(idx);
+            int        volume = cpuModels[name].toInt();
+
+            printf("%3d x %s\n", volume, STR(name));
+        }
+    }
+
+    printf("Total: %d cpus, %d cores, %d threads\n", 
+            totalCpus, totalCores, totalThreads);
+}
+
+void
 S9sRpcReply::printContainers()
 {
     S9sOptions *options = S9sOptions::instance();

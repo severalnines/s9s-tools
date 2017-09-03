@@ -6499,11 +6499,12 @@ S9sOptions::readOptionsServer(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "tree",             no_argument,       0, OptionTree            },
         { "create",           no_argument,       0, OptionCreate          },
-        { "register",         no_argument,       0, OptionRegister        },
-        { "unregister",       no_argument,       0, OptionUnregister      },
         { "list-containers",  no_argument,       0, OptionListContainers  },
+        { "list",             no_argument,       0, 'L'                   },
+        { "register",         no_argument,       0, OptionRegister        },
+        { "tree",             no_argument,       0, OptionTree            },
+        { "unregister",       no_argument,       0, OptionUnregister      },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -6630,6 +6631,11 @@ S9sOptions::readOptionsServer(
                 m_options["unregister"] = true;
                 break;
             
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
             case OptionListContainers:
                 // --list-containers
                 m_options["list_containers"] = true;
@@ -6757,6 +6763,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListContainersRequested())
+        countOptions++;
+    
+    if (isListRequested())
         countOptions++;
 
     if (countOptions > 1)
