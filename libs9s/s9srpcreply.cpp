@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2017 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -2199,8 +2199,12 @@ S9sRpcReply::printServers()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-    else 
-        printServersLong();
+    else {
+        printProcessors();
+        printMemoryBanks();
+        printDisks();
+        printNics();
+    }
 }
 
 /**
@@ -2226,7 +2230,8 @@ S9sRpcReply::printServers()
  * \endcode
  */
 void 
-S9sRpcReply::printServersLong()
+S9sRpcReply::printProcessors(
+        S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("servers").toVariantList();
@@ -2241,6 +2246,14 @@ S9sRpcReply::printServersLong()
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList processorList = theMap["processors"].toVariantList();
 
+        if (!compact)
+        {
+            S9sString name = theMap["hostname"].toString();
+            S9sString model = theMap["model"].toString();
+
+            printf("%s (%s)\n", STR(name), STR(model));
+        }
+
         for (uint idx1 = 0; idx1 < processorList.size(); ++idx1)
         {
             S9sVariantMap processor = processorList[idx1].toVariantMap();
@@ -2252,6 +2265,7 @@ S9sRpcReply::printServersLong()
             {
                 cpuModels[model] += 1;
             } else {
+                printf("    %s", STR(indent));
                 printf("%s", STR(model));
                 printf("\n");
             }
@@ -2269,14 +2283,398 @@ S9sRpcReply::printServersLong()
             S9sString  name = cpuModels.keys().at(idx);
             int        volume = cpuModels[name].toInt();
 
+            printf("%s", STR(indent));
             printf("%3d x %s\n", volume, STR(name));
         }
     }
 
-    printf("Total: %d cpus, %d cores, %d threads\n", 
+    printf("%sTotal: %d cpus, %d cores, %d threads\n", 
+            STR(indent),
             totalCpus, totalCores, totalThreads);
 }
 
+void 
+S9sRpcReply::printDisks(
+        S9sString indent)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    int             totalDisks = 0;
+    bool            compact = !options->isLongRequested();
+    S9sVariantMap   diskModels;
+    ulonglong       totalCapacity = 0;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList processorList = theMap["disk_devices"].toVariantList();
+
+        if (!compact)
+        {
+            S9sString name = theMap["hostname"].toString();
+            S9sString model = theMap["model"].toString();
+
+            printf("%s (%s)\n", STR(name), STR(model));
+        }
+
+        for (uint idx1 = 0; idx1 < processorList.size(); ++idx1)
+        {
+            S9sVariantMap processor = processorList[idx1].toVariantMap();
+            S9sString     model     = processor["model"].toString();
+            bool isHw = processor["is_hardware_storage"].toBoolean();
+            ulonglong     capacity  = processor["total_mb"].toULongLong();
+
+            if (!isHw)
+            {
+                continue;
+            }
+
+            //capacity *= 1024 * 1024;
+            //capacity /= 1000000000ull;
+            capacity /= 1024;
+            totalCapacity += capacity;
+            model.sprintf("%llu GBytes %s", capacity, STR(model));
+
+            if (compact)
+            {
+                diskModels[model] += 1;
+            } else {
+                printf("    %s", STR(indent));
+                printf("%s", STR(model));
+                printf("\n");
+            }
+                
+            ++totalDisks;
+        }
+    }
+
+    if (compact)
+    {
+        for (uint idx = 0; idx < diskModels.keys().size(); ++idx)
+        {
+            S9sString  name = diskModels.keys().at(idx);
+            int        volume = diskModels[name].toInt();
+
+            printf("%s", STR(indent));
+            printf("%3d x %s\n", volume, STR(name));
+        }
+    }
+
+    printf("%sTotal: %d disks, %llu GBytes\n", 
+            STR(indent), totalDisks, totalCapacity);
+}
+
+void 
+S9sRpcReply::printNics(
+        S9sString indent)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    int             totalDisks = 0;
+    bool            compact = !options->isLongRequested();
+    S9sVariantMap   diskModels;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList nicList = theMap["network_interfaces"].toVariantList();
+
+        if (!compact)
+        {
+            S9sString name = theMap["hostname"].toString();
+            S9sString model = theMap["model"].toString();
+
+            printf(TERM_BOLD);
+            printf("%s (%s)\n", STR(name), STR(model));
+            printf(TERM_NORMAL);
+        }
+
+        for (uint idx1 = 0; idx1 < nicList.size(); ++idx1)
+        {
+            S9sVariantMap processor = nicList[idx1].toVariantMap();
+            S9sString     model     = processor["model"].toString();
+            S9sString     mac       = processor["mac"].toString();
+            bool          link      = processor["link"].toBoolean();
+            
+            if (model.empty())
+                continue;
+
+            if (compact)
+            {
+                diskModels[model] += 1;
+            } else {
+                printf("    %s", STR(indent));
+
+                if (link)
+                    printf(XTERM_COLOR_NIC_UP);
+                else
+                    printf(XTERM_COLOR_NIC_NOLINK);
+
+                printf("%s ", STR(mac));
+                printf("%s", STR(model));
+
+                printf(TERM_NORMAL);
+
+                printf("\n");
+            }
+                
+            ++totalDisks;
+        }
+    }
+
+    if (compact)
+    {
+        for (uint idx = 0; idx < diskModels.keys().size(); ++idx)
+        {
+            S9sString  name = diskModels.keys().at(idx);
+            int        volume = diskModels[name].toInt();
+
+            printf("%s", STR(indent));
+            printf("%3d x %s\n", volume, STR(name));
+        }
+    }
+
+    printf("%sTotal: %d network interfaces\n", 
+            STR(indent), totalDisks);
+}
+
+S9sString 
+bytesToHuman(
+        ulonglong mBytes)
+{
+    S9sString  retval;
+    S9sVariant bytes = mBytes * (1024ull * 1024ull);
+
+    if (bytes.toTBytes() > 1.0)
+    {
+        retval.sprintf("%.1fTB", bytes.toTBytes());
+    } else if (bytes.toGBytes() >= 1.0) 
+    {
+        retval.sprintf("%.1fGB", bytes.toGBytes());
+    } else {
+        retval.sprintf("%.1fMB", bytes.toMBytes());
+    }
+
+    return retval;
+}
+
+void 
+S9sRpcReply::printPartitions(
+        S9sString indent)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       totalFormat;
+    S9sFormat       freeFormat;
+    S9sFormat       hostnameFormat;
+    S9sFormat       filesystemFormat;
+    S9sFormat       deviceFormat;
+    S9sFormat       mountpointFormat;
+    ulonglong       totalTotal = 0ull;
+    ulonglong       freeTotal = 0ull;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList deviceList = theMap["disk_devices"].toVariantList();
+        S9sString      hostName   = theMap["hostname"].toString();
+        
+        hostnameFormat.widen(hostName);
+
+        for (uint idx1 = 0; idx1 < deviceList.size(); ++idx1)
+        {
+            S9sVariantMap device = deviceList[idx1].toVariantMap();
+            S9sString     className = device["class_name"].toString();
+            S9sString     deviceName = device["device"].toString();
+            S9sString     filesystem = device["filesystem"].toString();
+            ulonglong     total = device["total_mb"].toULongLong();
+            S9sString     totalStr = bytesToHuman(total);
+            ulonglong     free = device["free_mb"].toULongLong();
+            S9sString     freeStr = bytesToHuman(free);
+
+            if (total == 0ull)
+                continue;
+
+            if (className != "CmonDiskDevice")
+                continue;
+
+            totalFormat.widen(totalStr);
+            freeFormat.widen(freeStr);
+            filesystemFormat.widen(filesystem);
+            deviceFormat.widen(deviceName);
+        }
+    }
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        totalFormat.widen("TOTAL");
+        freeFormat.widen("FREE");
+        hostnameFormat.widen("HOST");
+        filesystemFormat.widen("FS");
+        deviceFormat.widen("DEVICE");
+        mountpointFormat.widen("MOUNT POINT");
+
+        printf("%s", headerColorBegin());
+        totalFormat.printf("TOTAL");
+        freeFormat.printf("FREE");
+        hostnameFormat.printf("HOST");
+        filesystemFormat.printf("FS");
+        deviceFormat.printf("DEVICE");
+        mountpointFormat.printf("MOUNT POINT");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    totalFormat.setRightJustify();
+    freeFormat.setRightJustify();
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList deviceList = theMap["disk_devices"].toVariantList();
+        S9sString      hostName   = theMap["hostname"].toString();
+
+        for (uint idx1 = 0; idx1 < deviceList.size(); ++idx1)
+        {
+            S9sVariantMap device = deviceList[idx1].toVariantMap();
+            S9sString     className = device["class_name"].toString();
+            S9sString     deviceName = device["device"].toString();
+            S9sString     filesystem = device["filesystem"].toString();
+            ulonglong     total = device["total_mb"].toULongLong();
+            S9sString     totalStr = bytesToHuman(total);
+            ulonglong     free = device["free_mb"].toULongLong();
+            S9sString     freeStr = bytesToHuman(free);
+            S9sString     mountPoint = device["mountpoint"].toString();
+
+            if (className != "CmonDiskDevice")
+                continue;
+            
+            if (total == 0ull)
+                continue;
+
+            totalTotal += total;
+            freeTotal  += free;
+
+            totalFormat.printf(totalStr);
+            freeFormat.printf(freeStr);
+            
+            printf("%s", serverColorBegin());
+            hostnameFormat.printf(hostName);
+            printf("%s", serverColorEnd());
+
+            printf("%s", XTERM_COLOR_FILESYSTEM);
+            filesystemFormat.printf(filesystem);
+            printf("%s", TERM_NORMAL);
+            
+            printf("%s", XTERM_COLOR_BDEV);
+            deviceFormat.printf(deviceName);
+            printf("%s", TERM_NORMAL);
+
+            printf("%s", XTERM_COLOR_DIR);
+            printf("%s", STR(mountPoint));
+            printf("%s", TERM_NORMAL);
+
+            printf("\n");
+        }
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s, %s free\n", 
+                STR(bytesToHuman(totalTotal)),
+                STR(bytesToHuman(freeTotal)));
+    }
+    
+}
+
+/**
+ *
+ * \code{.js}
+ * "memory": 
+ * {
+ *     "banks": [ 
+ *     {
+ *         "bank": "0",
+ *         "name": "DIMM 800 MHz (1.2 ns)",
+ *         "size": 4294967296
+ *     } ],
+ *     "class_name": "CmonMemoryInfo",
+ *     "memory_available_mb": 61175,
+ *     "memory_free_mb": 54846,
+ *     "memory_total_mb": 64421,
+ *     "swap_free_mb": 0,
+ *     "swap_total_mb": 0
+ * },
+ * \endcode
+ */
+
+void 
+S9sRpcReply::printMemoryBanks(
+        S9sString indent)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    int             totalModules = 0;
+    ulonglong       totalSize = 0ull;
+    bool            compact = !options->isLongRequested();
+    S9sVariantMap   memoryModels;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantMap  memory = theMap["memory"].toVariantMap();
+        S9sVariantList processorList = memory["banks"].toVariantList();
+
+        if (!compact)
+        {
+            S9sString name = theMap["hostname"].toString();
+            S9sString model = theMap["model"].toString();
+
+            printf("%s (%s)\n", STR(name), STR(model));
+        }
+
+        for (uint idx1 = 0; idx1 < processorList.size(); ++idx1)
+        {
+            S9sVariantMap processor = processorList[idx1].toVariantMap();
+            S9sString     model     = processor["name"].toString();
+            ulonglong     size      = processor["size"].toULongLong();
+            int           gBytes    = size / (1024ull * 1024ull * 1024ull);
+
+            model.sprintf("%d Gbyte %s", gBytes, STR(model));
+
+            if (compact)
+            {
+                memoryModels[model] += 1;
+            } else {
+                printf("    %s", STR(indent));
+                printf("%s", STR(model));
+                printf("\n");
+            }
+                
+            ++totalModules;
+            totalSize += size;
+        }
+    }
+
+    if (compact)
+    {
+        for (uint idx = 0; idx < memoryModels.keys().size(); ++idx)
+        {
+            S9sString  name   = memoryModels.keys().at(idx);
+            int        volume = memoryModels[name].toInt();
+
+            printf("%s", STR(indent));
+            printf("%3d x %s\n", volume, STR(name));
+        }
+    }
+
+    printf("%s", STR(indent));
+    printf("Total: %d modules, %d Gbytes\n", 
+            totalModules, 
+            (int)(totalSize / (1024.0 * 1024 * 1024)));
+}
 void
 S9sRpcReply::printContainers()
 {

@@ -261,6 +261,30 @@ S9sRpcClient::printMessages(
     }
 }
 
+void
+S9sRpcClient::printServerRegistered(
+        bool success)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    rpcReply;
+
+    rpcReply = reply();
+    if (success)
+    {
+        rpcReply.printMessages("Registered.");
+        printf("  Processors\n");
+        rpcReply.printProcessors("    ");
+        printf("  Memory\n");
+        rpcReply.printMemoryBanks("    ");
+    } else {
+        if (options->isJsonRequested())
+            printf("%s\n", STR(rpcReply.toString()));
+        else
+            PRINT_ERROR("%s", STR(errorString()));
+    }
+}
+
+
 bool
 S9sRpcClient::authenticate()
 {
@@ -3538,7 +3562,9 @@ S9sRpcClient::getServers()
     S9sVariantList servers   = options->servers();
    
     request["operation"]      = "getServers";
-    request["servers"]        = serversField(servers);
+
+    if (!servers.empty())
+        request["servers"]    = serversField(servers);
     
     return executeRequest(uri, request);
 }

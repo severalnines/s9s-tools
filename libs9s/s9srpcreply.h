@@ -76,7 +76,11 @@ class S9sRpcReply : public S9sVariantMap
         void printMetaTypePropertyList();
         void printPing();
         void printServers();
-        void printServersLong();
+        void printProcessors(S9sString indent = S9sString());
+        void printDisks(S9sString indent = S9sString());
+        void printPartitions(S9sString indent = S9sString());
+        void printNics(S9sString indent = S9sString());
+        void printMemoryBanks(S9sString indent = S9sString());
         void printContainers();
         void printContainersLong();
         void printProcessList();

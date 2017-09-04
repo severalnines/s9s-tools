@@ -200,7 +200,7 @@ S9sBusinessLogic::execute()
              * s9s server --register --servers="lxc://storage01?hostgrouppath=myservers" --print-json --verbose
              */
             success = client.registerServers();
-            client.printMessages("Registered.", success);
+            client.printServerRegistered(success);
             client.setExitStatus();
         } else if (options->isUnregisterRequested())
         {
@@ -213,11 +213,25 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else if (options->isListRequested())
         {
+            /*
+             * s9s server --list
+             */
             S9sRpcReply reply;
 
             success = client.getServers();
             reply = client.reply();
             reply.printServers();
+            client.setExitStatus();
+        } else if (options->isListPartitionsRequested())
+        {
+            /*
+             * s9s server --list
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printPartitions();
             client.setExitStatus();
         } else if (options->isListContainersRequested())
         {

@@ -151,6 +151,7 @@ enum S9sOptionType
     OptionPrivateKeyFile,
     OptionKeyName,
     OptionListGroups,
+    OptionListPartitions,
 };
 
 /**
@@ -1817,6 +1818,12 @@ bool
 S9sOptions::isListRequested() const
 {
     return getBool("list");
+}
+
+bool
+S9sOptions::isListPartitionsRequested() const
+{
+    return getBool("list_partitions");
 }
 
 bool
@@ -6502,6 +6509,7 @@ S9sOptions::readOptionsServer(
         { "create",           no_argument,       0, OptionCreate          },
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-partitions",  no_argument,       0, OptionListPartitions  },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
@@ -6641,6 +6649,11 @@ S9sOptions::readOptionsServer(
                 m_options["list_containers"] = true;
                 break;
             
+            case OptionListPartitions:
+                // --list-partitions
+                m_options["list_partitions"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6763,6 +6776,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListContainersRequested())
+        countOptions++;
+    
+    if (isListPartitionsRequested())
         countOptions++;
     
     if (isListRequested())

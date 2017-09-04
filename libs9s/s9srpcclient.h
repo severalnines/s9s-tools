@@ -54,6 +54,8 @@ class S9sRpcClient
                 const S9sString &defaultMessage,
                 bool             success);
 
+        void printServerRegistered(bool success);
+
         bool authenticate();
         bool authenticateWithKey();
         bool authenticateWithPassword();
