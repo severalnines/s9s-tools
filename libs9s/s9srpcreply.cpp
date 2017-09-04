@@ -2200,7 +2200,6 @@ S9sRpcReply::printServers()
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else {
-        printProcessors();
         printMemoryBanks();
         printDisks();
         printNics();
@@ -2618,6 +2617,7 @@ S9sRpcReply::printMemoryBanks(
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalModules = 0;
     ulonglong       totalSize = 0ull;
+    ulonglong       freeSize  = 0ull;
     bool            compact = !options->isLongRequested();
     S9sVariantMap   memoryModels;
 
@@ -2626,6 +2626,11 @@ S9sRpcReply::printMemoryBanks(
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantMap  memory = theMap["memory"].toVariantMap();
         S9sVariantList processorList = memory["banks"].toVariantList();
+        int            totalOnServer = memory["memory_total_mb"].toInt();
+        int            freeOnServer  = memory["memory_free_mb"].toInt();
+
+        totalSize += totalOnServer;
+        freeSize  += freeOnServer;
 
         if (!compact)
         {
@@ -2654,7 +2659,6 @@ S9sRpcReply::printMemoryBanks(
             }
                 
             ++totalModules;
-            totalSize += size;
         }
     }
 
@@ -2671,9 +2675,10 @@ S9sRpcReply::printMemoryBanks(
     }
 
     printf("%s", STR(indent));
-    printf("Total: %d modules, %d Gbytes\n", 
+    printf("Total: %d modules, %d GBytes memory, %d GBytes free\n", 
             totalModules, 
-            (int)(totalSize / (1024.0 * 1024 * 1024)));
+            (int)(totalSize/1024), 
+            (int)(freeSize/1024));
 }
 void
 S9sRpcReply::printContainers()

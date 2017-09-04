@@ -152,6 +152,7 @@ enum S9sOptionType
     OptionKeyName,
     OptionListGroups,
     OptionListPartitions,
+    OptionListProcessors,
 };
 
 /**
@@ -1820,10 +1821,22 @@ S9sOptions::isListRequested() const
     return getBool("list");
 }
 
+/**
+ * \returns True if the --list-partitions command line option is provided.
+ */
 bool
 S9sOptions::isListPartitionsRequested() const
 {
     return getBool("list_partitions");
+}
+
+/**
+ * \returns True if the --list-processors command line option is provided.
+ */
+bool
+S9sOptions::isListProcessorsRequested() const
+{
+    return getBool("list_processors");
 }
 
 bool
@@ -3085,6 +3098,8 @@ S9sOptions::printHelpServer()
     printf(
 "Options for the \"server\" command:\n"
 "  --create                   Create a new container.\n"
+"  --list-partitions          List partitions from multiple servers.\n"
+"  --list-processors          List processors from multiple servers.\n"
 "  --register                 Register an existint container server.\n"
 "  --tree                     Print the object tree.\n"
 "  --unregister               Unregister a container server.\n"
@@ -6510,6 +6525,7 @@ S9sOptions::readOptionsServer(
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
+        { "list-processors",  no_argument,       0, OptionListProcessors  },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
@@ -6654,6 +6670,11 @@ S9sOptions::readOptionsServer(
                 m_options["list_partitions"] = true;
                 break;
             
+            case OptionListProcessors:
+                // --list-processors
+                m_options["list_processors"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6779,6 +6800,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListPartitionsRequested())
+        countOptions++;
+    
+    if (isListProcessorsRequested())
         countOptions++;
     
     if (isListRequested())

@@ -233,6 +233,17 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printPartitions();
             client.setExitStatus();
+        } else if (options->isListProcessorsRequested())
+        {
+            /*
+             * s9s server --list
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printProcessors();
+            client.setExitStatus();
         } else if (options->isListContainersRequested())
         {
             S9sRpcReply reply;
