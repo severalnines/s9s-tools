@@ -159,6 +159,7 @@ enum S9sOptionType
     OptionListMemory,
     OptionListNics,
     OptionListDisks,
+    OptionDonor,
 };
 
 /**
@@ -1550,6 +1551,15 @@ S9sString
 S9sOptions::outputDir() const
 {
     return getString("output_dir");
+}
+
+/**
+ * \returns The argument for the --donor= command line option.
+ */
+S9sString
+S9sOptions::donor() const
+{
+    return getString("donor");
 }
 
 /**
@@ -3075,6 +3085,7 @@ S9sOptions::printHelpCluster()
 "    the following types are supported: galera, mysqlreplication,\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --donor=ADDRESS            The address of the donor node when starting.\n"
 "\n");
 }
 
@@ -5835,6 +5846,7 @@ S9sOptions::readOptionsCluster(
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "output-dir",       required_argument, 0, OptionOutputDir       },
+        { "donor",            required_argument, 0, OptionDonor           },
         { 0, 0, 0, 0 }
     };
 
@@ -6126,6 +6138,11 @@ S9sOptions::readOptionsCluster(
             case OptionOutputDir:
                 // --output-dir=DIRECTORY
                 m_options["output_dir"] = optarg;
+                break;
+
+            case OptionDonor:
+                // --donor=ADDRESS
+                m_options["donor"] = optarg;
                 break;
 
             case '?':

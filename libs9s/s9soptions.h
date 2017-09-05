@@ -178,6 +178,7 @@ class S9sOptions
         S9sString optName() const;
         S9sString optValue() const;
         S9sString outputDir() const;
+        S9sString donor() const;
         bool force() const;
 
 

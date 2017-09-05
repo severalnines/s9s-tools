@@ -3234,7 +3234,11 @@ S9sRpcClient::startCluster()
     S9sVariantMap  job, jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
-    
+   
+    // The job_data
+    if (!options->donor().empty())
+        jobData["donor_address"] = options->donor();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "start_cluster";
     jobSpec["job_data"]   = jobData;
