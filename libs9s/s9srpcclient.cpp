@@ -3000,6 +3000,15 @@ S9sRpcClient::addProxySql(
     jobData["action"]   = "setupProxySql";
     jobData["hostname"] = proxyNodes[0].toNode().hostName();
     
+    printf("WARNING: admin/admin\n");
+    printf("WARNING: proxy-monitor/proxy-monitor\n");
+
+    jobData["admin_user"]       = "admin";
+    jobData["admin_password"]   = "admin",
+    jobData["monitor_user"]     = "proxy-monitor";
+    jobData["monitor_password"] = "proxysql-monitor";
+
+
     // The jobspec describing the command.
     jobSpec["command"]    = "proxysql";
     jobSpec["job_data"]   = jobData;
