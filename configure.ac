@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(s9s, 0.0.1)
+AC_INIT(s9s, 0.2.0)
 AC_CONFIG_SRCDIR([libs9s/library.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])
@@ -30,6 +30,7 @@ AC_LANG([C++])
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+AC_HEADER_STDC
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_VPRINTF
@@ -53,9 +54,11 @@ AM_CONDITIONAL([COND_GCOV],[test '!' "$enable_gcov" = no])
 
 GIT_VERSION=$([LANG=C git rev-parse --short HEAD])
 AC_DEFINE_UNQUOTED([GIT_VERSION], ["$GIT_VERSION"], [The git version hash])
+AC_SUBST(GIT_VERSION)
 
-BUILD_DATE=$([LC_ALL=C TZ=UTC date])
+BUILD_DATE=$([LC_ALL=C TZ=UTC date --rfc-3339=seconds])
 AC_DEFINE_UNQUOTED([BUILD_DATE], ["$BUILD_DATE"], [The build date])
+AC_SUBST(BUILD_DATE)
 
 # Check for running on Darwin
 AC_MSG_CHECKING([Checking if running on Darwin])
@@ -71,8 +74,6 @@ else
   is_darwin=false
 fi
 AM_CONDITIONAL([DARWIN], [test x$is_darwin = xtrue])
-
-AC_SUBST(GIT_VERSION)
 
 #
 # Creating teh makefiles.
