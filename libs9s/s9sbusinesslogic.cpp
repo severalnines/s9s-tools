@@ -255,6 +255,28 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printProcessors();
             client.setExitStatus();
+        } else if (options->isListNicsRequested())
+        {
+            /*
+             * s9s server --list-nics
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printNics();
+            client.setExitStatus();
+        } else if (options->isListDisksRequested())
+        {
+            /*
+             * s9s server --list-nics
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printDisks();
+            client.setExitStatus();
         } else if (options->isListContainersRequested())
         {
             S9sRpcReply reply;

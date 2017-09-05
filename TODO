@@ -1,3 +1,6 @@
+o s9s user --set --properties="hostgrouppath=/pécs" pipas
+  s9s: unrecognized option '--properties=hostgrouppath=/pécs'
+
 o [vagrant@n1 ~]$ s9s user --create --generate-key --controller=”https://localhost:9501” --cmon-user=dba
 Grant user 'dba' succeeded.
 

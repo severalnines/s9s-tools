@@ -220,6 +220,8 @@ class S9sOptions
         bool isListPartitionsRequested() const;
         bool isListMemoryRequested() const;
         bool isListProcessorsRequested() const;
+        bool isListNicsRequested() const;
+        bool isListDisksRequested() const;
         bool isListGroupsRequested() const;
         bool isStatRequested() const;
         bool isListConfigRequested() const;

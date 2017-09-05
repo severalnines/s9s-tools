@@ -154,6 +154,8 @@ enum S9sOptionType
     OptionListPartitions,
     OptionListProcessors,
     OptionListMemory,
+    OptionListNics,
+    OptionListDisks,
 };
 
 /**
@@ -1849,6 +1851,24 @@ S9sOptions::isListProcessorsRequested() const
     return getBool("list_processors");
 }
 
+/**
+ * \returns True if the --list-nics command line option is provided.
+ */
+bool
+S9sOptions::isListNicsRequested() const
+{
+    return getBool("list_nics");
+}
+
+/**
+ * \returns True if the --list-disks command line option is provided.
+ */
+bool
+S9sOptions::isListDisksRequested() const
+{
+    return getBool("list_disks");
+}
+
 bool
 S9sOptions::isListGroupsRequested() const
 {
@@ -3111,7 +3131,9 @@ S9sOptions::printHelpServer()
     printf(
 "Options for the \"server\" command:\n"
 "  --create                   Create a new container.\n"
+"  --list-disks               List disks from multiple servers.\n"
 "  --list-memory              List memory modules from multiple servers.\n"
+"  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
 "  --register                 Register an existint container server.\n"
@@ -6541,6 +6563,8 @@ S9sOptions::readOptionsServer(
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
         { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
+        { "list-nics",        no_argument,       0, OptionListNics        },
+        { "list-disks",       no_argument,       0, OptionListNics        },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
@@ -6695,6 +6719,16 @@ S9sOptions::readOptionsServer(
                 m_options["list_processors"] = true;
                 break;
             
+            case OptionListNics:
+                // --list-nics
+                m_options["list_nics"] = true;
+                break;
+            
+            case OptionListDisks:
+                // --list-nics
+                m_options["list_disks"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6826,6 +6860,12 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListProcessorsRequested())
+        countOptions++;
+    
+    if (isListNicsRequested())
+        countOptions++;
+    
+    if (isListDisksRequested())
         countOptions++;
     
     if (isListRequested())

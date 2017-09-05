@@ -2251,6 +2251,10 @@ S9sRpcReply::printProcessors(
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList processorList = theMap["processors"].toVariantList();
+        S9sString      hostName = theMap["hostname"].toString();
+ 
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         if (!compact)
         {
@@ -2323,6 +2327,10 @@ S9sRpcReply::printDisks(
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList processorList = theMap["disk_devices"].toVariantList();
+        S9sString      hostName = theMap["hostname"].toString();
+        
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         if (!compact)
         {
@@ -2403,6 +2411,10 @@ S9sRpcReply::printNics(
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList nicList = theMap["network_interfaces"].toVariantList();
+        S9sString      hostName = theMap["hostname"].toString();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         if (!compact)
         {
@@ -2517,6 +2529,9 @@ S9sRpcReply::printPartitions(
         S9sVariantList deviceList = theMap["disk_devices"].toVariantList();
         S9sString      hostName   = theMap["hostname"].toString();
         
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
         hostnameFormat.widen(hostName);
 
         for (uint idx1 = 0; idx1 < deviceList.size(); ++idx1)
@@ -2573,6 +2588,9 @@ S9sRpcReply::printPartitions(
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sVariantList deviceList = theMap["disk_devices"].toVariantList();
         S9sString      hostName   = theMap["hostname"].toString();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         for (uint idx1 = 0; idx1 < deviceList.size(); ++idx1)
         {
@@ -2681,6 +2699,10 @@ S9sRpcReply::printMemoryBanks(
         S9sVariantList processorList = memory["banks"].toVariantList();
         int            totalOnServer = memory["memory_total_mb"].toInt();
         int            freeOnServer  = memory["memory_free_mb"].toInt();
+        S9sString      hostName = theMap["hostname"].toString();
+ 
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         totalSize += totalOnServer;
         freeSize  += freeOnServer;
