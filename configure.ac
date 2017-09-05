@@ -51,9 +51,11 @@ AC_ARG_ENABLE([gcov],
     [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV],[test '!' "$enable_gcov" = no])
 
-GIT_VERSION=$([LANG=C git log -1 --pretty=format:%H])
+GIT_VERSION=$([LANG=C git rev-parse --short HEAD])
 AC_DEFINE_UNQUOTED([GIT_VERSION], ["$GIT_VERSION"], [The git version hash])
 
+BUILD_DATE=$([LC_ALL=C TZ=UTC date])
+AC_DEFINE_UNQUOTED([BUILD_DATE], ["$BUILD_DATE"], [The build date])
 
 # Check for running on Darwin
 AC_MSG_CHECKING([Checking if running on Darwin])
