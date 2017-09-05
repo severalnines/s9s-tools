@@ -1876,7 +1876,6 @@ S9sRpcReply::printClusterListLong()
         int           clusterId   = clusterMap["cluster_id"].toInt();
         S9sString     clusterType = clusterMap["cluster_type"].toString();
         S9sString     state       = clusterMap["state"].toString();
-        S9sString     text        = clusterMap["status_text"].toString();
         S9sString     statusText  = clusterMap["status_text"].toString();
         int           nColumns    = 0;
         S9sString     version     = 
@@ -2200,9 +2199,9 @@ S9sRpcReply::printServers()
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else {
-        printMemoryBanks();
-        printDisks();
-        printNics();
+        //printDisks();
+        //printNics();
+        printServersLong();
     }
 }
 
@@ -2233,12 +2232,20 @@ S9sRpcReply::printProcessors(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalCpus = 0;
     int             totalCores = 0;
     int             totalThreads = 0;
     bool            compact = !options->isLongRequested();
     S9sVariantMap   cpuModels;
+    
+    if (!options->isNoHeaderRequested() && compact)
+    {
+        printf("%s", headerColorBegin());
+        printf("QUA   PROCESSOR\n");
+        printf("%s", headerColorEnd());    
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2287,9 +2294,18 @@ S9sRpcReply::printProcessors(
         }
     }
 
-    printf("%sTotal: %d cpus, %d cores, %d threads\n", 
-            STR(indent),
-            totalCpus, totalCores, totalThreads);
+    if (syntaxHighlight)
+    {
+        printf("%sTotal: %s%d%s cpus, %s%d%s cores, %s%d%s threads\n", 
+                STR(indent),
+                XTERM_COLOR_NUMBER, totalCpus, TERM_NORMAL,
+                XTERM_COLOR_NUMBER, totalCores, TERM_NORMAL,
+                XTERM_COLOR_NUMBER, totalThreads, TERM_NORMAL);
+    } else {
+        printf("%sTotal: %d cpus, %d cores, %d threads\n", 
+                STR(indent),
+                totalCpus, totalCores, totalThreads);
+    }
 }
 
 void 
@@ -2368,10 +2384,20 @@ S9sRpcReply::printNics(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalDisks = 0;
+    int             totalLink  = 0;
     bool            compact = !options->isLongRequested();
     S9sVariantMap   diskModels;
+    
+    if (!options->isNoHeaderRequested() && compact)
+    {
+        printf("%s", headerColorBegin());
+        printf("QUA   NIC\n");
+        printf("%s", headerColorEnd());
+        
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2418,6 +2444,9 @@ S9sRpcReply::printNics(
             }
                 
             ++totalDisks;
+
+            if (link)
+                totalLink += 1;
         }
     }
 
@@ -2433,8 +2462,18 @@ S9sRpcReply::printNics(
         }
     }
 
-    printf("%sTotal: %d network interfaces\n", 
-            STR(indent), totalDisks);
+    if (syntaxHighlight)
+    {
+        printf("%sTotal: %s%d%s network interfaces, %s%d%s connected\n", 
+            STR(indent), 
+            TERM_BOLD, totalDisks, TERM_NORMAL, 
+            TERM_BOLD, totalLink, TERM_NORMAL);
+    } else {
+        printf("%sTotal: %d network interfaces, %d connected\n", 
+            STR(indent), 
+            totalDisks, 
+            totalLink);
+    }
 }
 
 S9sString 
@@ -2608,12 +2647,12 @@ S9sRpcReply::printPartitions(
  * },
  * \endcode
  */
-
 void 
 S9sRpcReply::printMemoryBanks(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalModules = 0;
     ulonglong       totalSize = 0ull;
@@ -2621,6 +2660,20 @@ S9sRpcReply::printMemoryBanks(
     bool            compact = !options->isLongRequested();
     S9sVariantMap   memoryModels;
 
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && compact)
+    {
+        printf("%s", headerColorBegin());
+        printf("QUA   MODULE\n");
+        printf("%s", headerColorEnd()); 
+    }
+
+    /*
+     * Going through the list and printing the modules. If this is a compact
+     * view we only collect data here, print later.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -2662,6 +2715,9 @@ S9sRpcReply::printMemoryBanks(
         }
     }
 
+    /*
+     * If this is a compact list we print here.
+     */
     if (compact)
     {
         for (uint idx = 0; idx < memoryModels.keys().size(); ++idx)
@@ -2674,12 +2730,30 @@ S9sRpcReply::printMemoryBanks(
         }
     }
 
-    printf("%s", STR(indent));
-    printf("Total: %d modules, %d GBytes memory, %d GBytes free\n", 
-            totalModules, 
-            (int)(totalSize/1024), 
-            (int)(freeSize/1024));
+    /*
+     * Printing the total.
+     */
+    if (!options->isBatchRequested())
+    {
+        printf("%s", STR(indent));
+
+        if (syntaxHighlight)
+        {
+            printf(
+                "Total: %s%d%s modules, %s%d%s GBytes, %s%d%s GBytes free\n", 
+                XTERM_COLOR_NUMBER, totalModules, TERM_NORMAL,
+                XTERM_COLOR_NUMBER, (int)(totalSize/1024), TERM_NORMAL, 
+                XTERM_COLOR_NUMBER, (int)(freeSize/1024), TERM_NORMAL);
+        } else {
+            printf(
+                "Total: %d modules, %d GBytes, %d GBytes free\n", 
+                totalModules, 
+                (int)(totalSize/1024), 
+                (int)(freeSize/1024));
+        }
+    }
 }
+
 void
 S9sRpcReply::printContainers()
 {
@@ -2691,6 +2765,98 @@ S9sRpcReply::printContainers()
         PRINT_ERROR("%s", STR(errorString()));
     else 
         printContainersLong();
+}
+
+void 
+S9sRpcReply::printServersLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       protocolFormat;
+    S9sFormat       versionFormat;
+    S9sFormat       nContainersFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       groupFormat;
+    S9sFormat       ipFormat(XTERM_COLOR_IP, TERM_NORMAL);
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      hostName = theMap["hostname"].toString();
+        S9sString      prot     = "lxc";
+        S9sString      version  = theMap["version"].toString();
+        S9sString      owner    = theMap["owner_user_name"].toString();
+        S9sString      group    = theMap["owner_group_name"].toString();
+        int            nContainers = theMap["containers"].size();
+        S9sString      ip       = theMap["ip"].toString();
+
+        if (version.empty())
+            version = "-";
+
+        protocolFormat.widen(prot);
+        versionFormat.widen(version);
+        nContainersFormat.widen(nContainers);
+        hostNameFormat.widen(hostName);
+        ownerFormat.widen(owner);
+        groupFormat.widen(group);
+        ipFormat.widen(ip);
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sString      hostName = theMap["hostname"].toString();
+        S9sString      prot     = "lxc";
+        S9sString      version  = theMap["version"].toString();
+        S9sString      status   = theMap["hoststatus"].toString();
+        S9sString      owner    = theMap["owner_user_name"].toString();
+        S9sString      group    = theMap["owner_group_name"].toString();
+        S9sString      message  = theMap["message"].toString();
+        int            nContainers = theMap["containers"].size();
+        S9sString      ip       = theMap["ip"].toString();
+
+        if (version.empty())
+            version = "-";
+
+        // FIXME: I am not sure this is actually user friendly.
+        if (syntaxHighlight)
+        {
+            if (status == "CmonHostRecovery" ||
+                    status == "CmonHostShutDown")
+            {
+                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
+            } else if (status == "CmonHostUnknown" ||
+                    status == "CmonHostOffLine")
+            {
+                hostNameFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
+            } else {
+                hostNameFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
+            }
+        }
+        
+        protocolFormat.printf(prot);
+        versionFormat.printf(version);
+        nContainersFormat.printf(nContainers);
+        
+        printf("%s", userColorBegin());
+        ownerFormat.printf(owner);
+        printf("%s", userColorEnd());
+        
+        printf("%s", groupColorBegin(group));
+        groupFormat.printf(group);
+        printf("%s", groupColorEnd());
+
+        hostNameFormat.printf(hostName);
+        ipFormat.printf(ip);
+
+        printf("%s", STR(message));
+
+        printf("\n");
+    }
+
+
 }
 
 /**
@@ -2716,6 +2882,7 @@ S9sRpcReply::printContainersLong()
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
+    int             totalRunning = 0;
     S9sFormat       aliasFormat(XTERM_COLOR_NODE, TERM_NORMAL);
     S9sFormat       ipFormat(XTERM_COLOR_IP, TERM_NORMAL);
     S9sFormat       parentFormat;
@@ -2791,6 +2958,9 @@ S9sRpcReply::printContainersLong()
         S9sString      type   = theMap["type"].toString();
         S9sString      templateName = theMap["template"].toString();
 
+        if (isRunning)
+            totalRunning++;
+
         if (templateName.empty())
             templateName = "-";
 
@@ -2822,7 +2992,7 @@ S9sRpcReply::printContainersLong()
     }
     
     if (!options->isBatchRequested())
-        printf("Total: %d\n", total);
+        printf("Total: %d containers, %d running\n", total, totalRunning);
 
 }
 
@@ -3911,6 +4081,7 @@ S9sRpcReply::printNodeListLong()
         if (version.empty())
             version = "-";
 
+        // FIXME: I am not sure this is actually user friendly.
         if (syntaxHighlight)
         {
             if (status == "CmonHostRecovery" ||

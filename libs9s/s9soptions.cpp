@@ -153,6 +153,7 @@ enum S9sOptionType
     OptionListGroups,
     OptionListPartitions,
     OptionListProcessors,
+    OptionListMemory,
 };
 
 /**
@@ -1831,6 +1832,15 @@ S9sOptions::isListPartitionsRequested() const
 }
 
 /**
+ * \returns True if the --list-memory command line option is provided.
+ */
+bool
+S9sOptions::isListMemoryRequested() const
+{
+    return getBool("list_memory");
+}
+
+/**
  * \returns True if the --list-processors command line option is provided.
  */
 bool
@@ -2680,7 +2690,9 @@ S9sOptions::executeInfoRequest()
                "/ __| (_) / __|_____| __/ _ \\ / _ \\| / __|\n"
                "\\__ \\\\__, \\__ \\_____| || (_) | (_) | \\__ \\\n"
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
+        printf("\n");
         printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+        printf("git version: %s\n", GIT_VERSION);
         printf("Copyright (C) 2016-2017 Severalnines AB\n");
         printf("\n");
         //printf("Written by ...\n");
@@ -2956,6 +2968,7 @@ S9sOptions::printHelpUser()
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --last-name=NAME           The last name of the user.\n"
+"  --new-password=PASSWORD    The new password to set."
 "  --public-key-file=FILE     The name of the file where the public key is.\n"
 "  --public-key-name=NAME     The name of the public key.\n"
 "  --title=TITLE              The prefix title for the user.\n"
@@ -3098,6 +3111,7 @@ S9sOptions::printHelpServer()
     printf(
 "Options for the \"server\" command:\n"
 "  --create                   Create a new container.\n"
+"  --list-memory              List memory modules from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
 "  --register                 Register an existint container server.\n"
@@ -6525,6 +6539,7 @@ S9sOptions::readOptionsServer(
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
+        { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
@@ -6670,6 +6685,11 @@ S9sOptions::readOptionsServer(
                 m_options["list_partitions"] = true;
                 break;
             
+            case OptionListMemory:
+                // --list-memory
+                m_options["list_memory"] = true;
+                break;
+            
             case OptionListProcessors:
                 // --list-processors
                 m_options["list_processors"] = true;
@@ -6800,6 +6820,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListPartitionsRequested())
+        countOptions++;
+    
+    if (isListMemoryRequested())
         countOptions++;
     
     if (isListProcessorsRequested())

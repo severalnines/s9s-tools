@@ -218,6 +218,7 @@ class S9sOptions
         bool isHelpRequested() const;
         bool isListRequested() const;
         bool isListPartitionsRequested() const;
+        bool isListMemoryRequested() const;
         bool isListProcessorsRequested() const;
         bool isListGroupsRequested() const;
         bool isStatRequested() const;

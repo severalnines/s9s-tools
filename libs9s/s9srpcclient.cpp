@@ -272,10 +272,12 @@ S9sRpcClient::printServerRegistered(
     if (success)
     {
         rpcReply.printMessages("Registered.");
+        #if 0
         printf("  Processors\n");
         rpcReply.printProcessors("    ");
         printf("  Memory\n");
         rpcReply.printMemoryBanks("    ");
+        #endif
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(rpcReply.toString()));
