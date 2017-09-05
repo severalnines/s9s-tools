@@ -247,6 +247,11 @@ supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
 
 .TP
+.BI \-\^\-donor= ADDRESS
+Currently this option is used when starting a cluster. It can be used to control
+which node will be started first and used for the others as donor.
+
+.TP
 .BR \-\^\-cluster\-format [ =\fIFORMATSTRING\fP "]
 The string that controls the format of the printed information about clusters.
 When this command line option is used the specified information will be printed
