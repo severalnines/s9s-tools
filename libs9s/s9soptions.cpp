@@ -37,6 +37,9 @@
 #include <cctype>
 #include <fnmatch.h>
 
+// for build/version info
+#include "../config.h"
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
@@ -2711,8 +2714,7 @@ S9sOptions::executeInfoRequest()
                "\\__ \\\\__, \\__ \\_____| || (_) | (_) | \\__ \\\n"
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
-        printf("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-        printf("git version: %s\n", GIT_VERSION);
+        printf("%s %s-%s BUILD %s\n", PACKAGE_NAME, PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
         printf("Copyright (C) 2016-2017 Severalnines AB\n");
         printf("\n");
         //printf("Written by ...\n");
