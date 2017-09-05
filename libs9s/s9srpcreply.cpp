@@ -2933,6 +2933,9 @@ S9sRpcReply::printContainersLong()
         S9sString      type   = theMap["type"].toString();
         S9sString      templateName = theMap["template"].toString();
 
+        if (!options->isStringMatchExtraArguments(alias))
+            continue;
+
         if (ip.empty())
             ip = "-";
 
@@ -2988,6 +2991,9 @@ S9sRpcReply::printContainersLong()
 
         if (isRunning)
             totalRunning++;
+        
+        if (!options->isStringMatchExtraArguments(alias))
+            continue;
 
         if (templateName.empty())
             templateName = "-";
