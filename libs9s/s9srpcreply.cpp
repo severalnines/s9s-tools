@@ -2814,6 +2814,9 @@ S9sRpcReply::printServersLong()
         int            nContainers = theMap["containers"].size();
         S9sString      ip       = theMap["ip"].toString();
 
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
         if (version.empty())
             version = "-";
 
@@ -2838,6 +2841,9 @@ S9sRpcReply::printServersLong()
         S9sString      message  = theMap["message"].toString();
         int            nContainers = theMap["containers"].size();
         S9sString      ip       = theMap["ip"].toString();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         if (version.empty())
             version = "-";
