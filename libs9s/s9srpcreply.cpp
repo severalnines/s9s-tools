@@ -2908,6 +2908,7 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
     int             totalRunning = 0;
@@ -3026,7 +3027,17 @@ S9sRpcReply::printContainersLong()
     }
     
     if (!options->isBatchRequested())
-        printf("Total: %d containers, %d running\n", total, totalRunning);
+    {
+        if (syntaxHighlight)
+        {
+            printf("Total: %s%d%s containers, %s%d%s running.\n", 
+                    XTERM_COLOR_NUMBER, total, TERM_NORMAL,
+                    XTERM_COLOR_NUMBER, totalRunning, TERM_NORMAL);
+        } else {
+            printf("Total: %d containers, %d running.\n", 
+                    total, totalRunning);
+        }
+    }
 
 }
 
