@@ -3000,6 +3000,13 @@ S9sRpcClient::addProxySql(
     jobData["action"]   = "setupProxySql";
     jobData["hostname"] = proxyNodes[0].toNode().hostName();
     
+    /*
+     * Some information:
+        "db_database": "*.*",
+        "db_password": "cmon",
+        "db_privs": "",
+        "db_username": "cmon",
+    */
     printf("WARNING: admin/admin\n");
     printf("WARNING: proxy-monitor/proxy-monitor\n");
 
