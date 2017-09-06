@@ -2879,7 +2879,10 @@ S9sOptions::printHelpJob()
 
     printf(
 "Options for the \"job\" command:\n"
+"  --delete                   Delete the job referenced by the job ID.\n"
 "  --list                     List the jobs.\n"
+"  --log                      Print the job log messages.\n"
+"  --wait                     Wait for the job referenced by the job ID.\n"
 "\n"
 "  --job-id=ID                The ID of the job.\n"
 "\n"

@@ -54,7 +54,7 @@ function _s9s_has_options()
 function _s9s_no_command()
 {
     if ! _s9s_has_options "backup" "cluster" "job" "maint" "node" "process" \
-        "user" "script" "metatype" "log"; 
+        "user" "script" "metatype" "log" "server"; 
     then
         return 0
     fi
@@ -82,7 +82,8 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="backup cluster job maint node process user script metatype log"
+        opts+="backup cluster job maint node process user script metatype log "
+        opts+="server"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -157,7 +158,7 @@ function _s9s()
             fi 
         elif [[ ${COMP_WORDS[i]} == "job" ]]; then
             main_opt+="--help "
-            main_opt+="--wait --log --list "
+            main_opt+="--wait --log --list --delete"
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -179,6 +180,29 @@ function _s9s()
                 opts+="--date-format= "
                 opts+="--job-id= --from= --until= --limit= --offset= "
             fi
+        elif [[ ${COMP_WORDS[i]} == "server" ]]; then
+            main_opt+="--help "
+            main_opt+="--create --list-disks --list-memory --list-nics "
+            main_opt+="--list-partitions --list-processors --register "
+            main_opt+="--tree --unregister"
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --servers= "
+                opts+="--cmon-user= --password= "
+           
+                opts+="--date-format= "
+                opts+="--job-id= --from= --until= --limit= --offset= "
+            fi
+            
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
             main_opt="--help "
             main_opt="--list --create --delete "

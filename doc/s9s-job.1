@@ -16,17 +16,21 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B \-\^\-delete
+Delete the job referenced by the job ID. 
+
+.TP
 .B \-L, \-\-list
 List jobs.
+
+.TP
+.B \-\-log
+Print the job messages of the specified job.
 
 .TP
 .B \-\-wait
 Wait for the specified job to end. While waiting a progress bar will be shown
 unless the silent mode is set.
-
-.TP
-.B \-\-log
-Print the job messages of the specified job.
 
 .\"
 .\"
@@ -284,3 +288,10 @@ specific job.
 # \fBs9s job \\
     --log \\
     --job-id=5\fR
+
+Delete the job that has the job ID 41:
+
+.nf
+# \fBs9s job \\
+    --delete \\
+    --job-id=42\fR
