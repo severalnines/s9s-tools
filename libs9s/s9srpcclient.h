@@ -109,6 +109,7 @@ class S9sRpcClient
         bool getRunningProcesses();
 
         bool getJobInstances();
+        bool deleteJobInstance(const int jobId);
         
         /*
          * Backup related methods.

@@ -4163,11 +4163,22 @@ S9sOptions::checkOptionsJob()
 
     if (isWaitRequested())
         countOptions++;
+    
+    if (isDeleteRequested())
+    {
+        if (!hasJobId())
+        {
+            PRINT_ERROR("The --delete option requires the --job-id=ID option.");
+            return false;
+        }
+
+        countOptions++;
+    }
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --log and --wait options are mutually"
+            "The --list, --log, --delete and --wait options are mutually"
             " exclusive.";
 
         m_exitStatus = BadOptions;
@@ -4176,7 +4187,8 @@ S9sOptions::checkOptionsJob()
     } else if (countOptions == 0)
     {
         m_errorMessage = 
-            "One of the --list, --log and --wait options is mandatory.";
+            "One of the --list, --log, --delete and --wait"
+            " options is mandatory.";
 
         m_exitStatus = BadOptions;
 
@@ -6207,6 +6219,7 @@ S9sOptions::readOptionsJob(
         { "wait",             no_argument,       0,  5                    },
         { "log",              no_argument,       0, 'G'                   },
         { "list",             no_argument,       0, 'L'                   },
+        { "delete",           no_argument,       0,  OptionDelete         },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -6291,6 +6304,11 @@ S9sOptions::readOptionsJob(
             case 'G': 
                 // -G, --log
                 m_options["log"] = true;
+                break;
+            
+            case OptionDelete: 
+                // --delete
+                m_options["delete"] = true;
                 break;
 
             case OptionConfigFile:

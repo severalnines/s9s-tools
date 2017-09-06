@@ -1065,6 +1065,8 @@ S9sRpcClient::getJobInstances()
     return retval;
 }
 
+
+
 /**
  * \param clusterId the ID of the cluster
  * \param jobId the ID of the job
@@ -1084,6 +1086,22 @@ S9sRpcClient::getJobInstance(
     bool           retval;
 
     request["operation"] = "getJobInstance";
+    request["job_id"]    = jobId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::deleteJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "deleteJobInstance";
     request["job_id"]    = jobId;
 
     retval = executeRequest(uri, request);

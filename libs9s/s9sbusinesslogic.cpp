@@ -305,6 +305,11 @@ S9sBusinessLogic::execute()
         } else if (options->isWaitRequested())
         {
             waitForJob(clusterId, options->jobId(), client);
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteJobInstance(options->jobId());
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown job operation.");
         }
