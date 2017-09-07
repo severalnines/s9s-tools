@@ -3567,7 +3567,6 @@ S9sRpcClient::registerServers()
 bool
 S9sRpcClient::unregisterServers()
 {
-    //getSshCredentials();
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
@@ -3588,7 +3587,9 @@ S9sRpcClient::getContainers()
     S9sVariantList servers   = options->servers();
    
     request["operation"]      = "getContainers";
-    request["servers"]        = serversField(servers);
+
+    if (!servers.empty())
+        request["servers"]    = serversField(servers);
     
     return executeRequest(uri, request);
 }
@@ -3614,13 +3615,48 @@ S9sRpcClient::createContainer()
 {
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
+    S9sOptions    *options    = S9sOptions::instance();
+    S9sVariantList servers    = options->servers();
+   
+    if (options->nExtraArguments() == 1)
+    {
+        S9sVariantMap  container;
+
+        container["class_name"]   = "CmonContainer";
+        container["alias"]        = options->extraArgument(0);
+    
+        request["container"]      = container;
+    } else if (options->nExtraArguments() == 2)
+    {
+        PRINT_ERROR("Currently only one container can be created at a time.");
+        return false;
+    }
+
+    request["operation"]      = "createContainer";
+    //request["start"]          = true;
+    //request["wait_for_start"] = true;
+    //request["check_ssh"]      = true;
+
+    if (!servers.empty())
+        request["servers"] = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::deleteContainer()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
-   
-    request["operation"]      = "createContainer";
-    request["start"]          = true;
-    request["wait_for_start"] = true;
-    request["check_ssh"]      = true;
+    S9sVariantMap  container;
+
+    container["class_name"]  = "CmonContainer";
+    container["alias"]       = options->extraArgument(0);
+
+    request["operation"]     = "deleteContainer";
+    request["container"]     = container;
 
     if (!servers.empty())
         request["servers"] = serversField(servers);

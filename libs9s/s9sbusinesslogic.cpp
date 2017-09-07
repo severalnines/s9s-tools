@@ -291,6 +291,12 @@ S9sBusinessLogic::execute()
             success = client.createContainer();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            // s9s server --delete NAME
+            success = client.deleteContainer();
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

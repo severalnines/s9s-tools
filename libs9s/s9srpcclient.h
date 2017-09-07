@@ -78,6 +78,7 @@ class S9sRpcClient
         bool getContainers();
         bool getServers();
         bool createContainer();
+        bool deleteContainer();
 
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);

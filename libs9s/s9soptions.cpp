@@ -6608,6 +6608,7 @@ S9sOptions::readOptionsServer(
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
+        { "delete",           no_argument,       0, OptionDelete          },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -6769,6 +6770,11 @@ S9sOptions::readOptionsServer(
                 m_options["list_disks"] = true;
                 break;
             
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -6880,6 +6886,9 @@ S9sOptions::checkOptionsServer()
             return false;
         }
     }
+
+    if (isDeleteRequested())
+        countOptions++;
     
     if (isCreateRequested())
         countOptions++;
