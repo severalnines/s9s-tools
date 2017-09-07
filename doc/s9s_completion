@@ -183,7 +183,8 @@ function _s9s()
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
             main_opt+="--help "
             main_opt+="--create --list-disks --list-memory --list-nics "
-            main_opt+="--list-partitions --list-processors --register "
+            main_opt+="--list-partitions --list-processors --list-containers "
+            main_opt+="--register "
             main_opt+="--tree --unregister"
             
             if ! _s9s_has_options $main_opt; then
