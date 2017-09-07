@@ -6604,7 +6604,7 @@ S9sOptions::readOptionsServer(
         { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
         { "list-nics",        no_argument,       0, OptionListNics        },
-        { "list-disks",       no_argument,       0, OptionListNics        },
+        { "list-disks",       no_argument,       0, OptionListDisks       },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },

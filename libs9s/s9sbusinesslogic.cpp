@@ -1400,10 +1400,15 @@ S9sBusinessLogic::waitForJobWithProgress(
             goto end_of_loop;
         #endif
 
+        // This helps debug the progress values the controller send us.
+        if (options->isDebug() && 
+                !previousProgressLine.empty() &&
+                progressLine != previousProgressLine)
+        {
+            printf("\n");
+        }
+
         printf("%s %s\033[K\r", rotate[rotateCycle], STR(progressLine));
-        #ifdef DEBUG
-        printf("\n");
-        #endif
 
         previousProgressLine = progressLine;
 
