@@ -3615,7 +3615,7 @@ S9sRpcClient::unregisterHost()
 
     request["operation"]      = "unregisterHost";
     request["host"]           = hosts[0];
-    request["dry_run"]        = true;
+    //request["dry_run"]        = true;
 
     if (options->hasClusterIdOption())
         request["cluster_id"]   = options->clusterId();
