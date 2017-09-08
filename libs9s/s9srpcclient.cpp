@@ -1729,7 +1729,7 @@ S9sRpcClient::createCluster()
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
         PRINT_ERROR(
-            "The vendor name is unknown while creating a galera cluster.\n"
+            "The vendor name is unknown while creating a cluster.\n"
             "Use the --vendor command line option to provide the vendor."
             );
 
@@ -1751,7 +1751,12 @@ S9sRpcClient::createCluster()
     /*
      * Running the request on the controller.
      */
-    if (options->clusterType() == "galera")
+    if (options->clusterType() == "mysql_single" ||
+            options->clusterType() == "mysql-single")
+    {
+        success = createMySqlSingleCluster(
+                hosts, osUserName, vendor, dbVersion, uninstall);
+    } else if (options->clusterType() == "galera")
     {
         success = createGaleraCluster(
                 hosts, osUserName, vendor, dbVersion, uninstall);
@@ -1979,6 +1984,67 @@ S9sRpcClient::createGaleraCluster(
     //
     job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Create Galera Cluster";
+    job["job_spec"]             = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"]        = options->schedule(); 
+
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::createMySqlSingleCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &vendor,
+        const S9sString      &mySqlVersion,
+        bool                  uninstall)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Galera cluster.");
+        return false;
+    }
+    
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "mysql_single";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = vendor;
+    jobData["mysql_version"]    = mySqlVersion;
+    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["ssh_user"]         = osUserName;
+    jobData["mysql_password"]   = options->dbAdminPassword();
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"]      = options->osKeyFile();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["class_name"]           = "CmonJobInstance";
+    job["title"]                = "Create Single MySql Instance";
     job["job_spec"]             = jobSpec;
 
     if (!options->schedule().empty())

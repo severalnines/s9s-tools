@@ -2519,6 +2519,7 @@ S9sRpcReply::printPartitions(
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sFormat       totalFormat;
     S9sFormat       freeFormat;
+    S9sFormat       percentFormat;
     S9sFormat       hostnameFormat;
     S9sFormat       filesystemFormat;
     S9sFormat       deviceFormat;
@@ -2547,6 +2548,7 @@ S9sRpcReply::printPartitions(
             S9sString     totalStr = bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
             S9sString     freeStr = bytesToHuman(free);
+            S9sString     percentStr;
 
             if (total == 0ull)
                 continue;
@@ -2554,8 +2556,11 @@ S9sRpcReply::printPartitions(
             if (className != "CmonDiskDevice")
                 continue;
 
+            percentStr.sprintf("%6.2f%%", ((double)(total - free)) / total);
+
             totalFormat.widen(totalStr);
             freeFormat.widen(freeStr);
+            percentFormat.widen(percentStr);
             filesystemFormat.widen(filesystem);
             deviceFormat.widen(deviceName);
         }
@@ -2567,6 +2572,7 @@ S9sRpcReply::printPartitions(
     {
         totalFormat.widen("TOTAL");
         freeFormat.widen("FREE");
+        percentFormat.widen("USED");
         hostnameFormat.widen("HOST");
         filesystemFormat.widen("FS");
         deviceFormat.widen("DEVICE");
@@ -2575,6 +2581,7 @@ S9sRpcReply::printPartitions(
         printf("%s", headerColorBegin());
         totalFormat.printf("TOTAL");
         freeFormat.printf("FREE");
+        percentFormat.printf("USED");
         hostnameFormat.printf("HOST");
         filesystemFormat.printf("FS");
         deviceFormat.printf("DEVICE");
@@ -2586,6 +2593,7 @@ S9sRpcReply::printPartitions(
 
     totalFormat.setRightJustify();
     freeFormat.setRightJustify();
+    percentFormat.setRightJustify();
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -2605,6 +2613,7 @@ S9sRpcReply::printPartitions(
             S9sString     totalStr = bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
             S9sString     freeStr = bytesToHuman(free);
+            S9sString     percentStr;
             S9sString     mountPoint = device["mountpoint"].toString();
 
             if (className != "CmonDiskDevice")
@@ -2613,11 +2622,14 @@ S9sRpcReply::printPartitions(
             if (total == 0ull)
                 continue;
 
+            percentStr.sprintf("%6.2f%%", ((double)(total - free)) / total);
+
             totalTotal += total;
             freeTotal  += free;
 
             totalFormat.printf(totalStr);
             freeFormat.printf(freeStr);
+            percentFormat.printf(percentStr);
             
             printf("%s", serverColorBegin());
             hostnameFormat.printf(hostName);

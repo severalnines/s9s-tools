@@ -255,6 +255,13 @@ class S9sRpcClient
 
     private:
         // Low level methods that create/register new clusters.
+        bool createMySqlSingleCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mySqlVersion,
+                bool                  uninstall);
+
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
