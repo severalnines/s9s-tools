@@ -2556,7 +2556,7 @@ S9sRpcReply::printPartitions(
             if (className != "CmonDiskDevice")
                 continue;
 
-            percentStr.sprintf("%6.2f%%", 100.0 * (total - free) / total);
+            percentStr.sprintf("%.1f%%", 100.0 * (total - free) / total);
 
             totalFormat.widen(totalStr);
             freeFormat.widen(freeStr);
@@ -2622,7 +2622,7 @@ S9sRpcReply::printPartitions(
             if (total == 0ull)
                 continue;
 
-            percentStr.sprintf("%6.2f%%", 100.0 * (total - free) / total);
+            percentStr.sprintf("%.1f%%", 100.0 * (total - free) / total);
 
             totalTotal += total;
             freeTotal  += free;
