@@ -2519,6 +2519,7 @@ S9sRpcReply::printPartitions(
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sFormat       totalFormat;
     S9sFormat       freeFormat;
+    S9sFormat       usedFormat;
     S9sFormat       percentFormat;
     S9sFormat       hostnameFormat;
     S9sFormat       filesystemFormat;
@@ -2548,6 +2549,7 @@ S9sRpcReply::printPartitions(
             S9sString     totalStr = bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
             S9sString     freeStr = bytesToHuman(free);
+            S9sString     usedStr = bytesToHuman(total - free);
             S9sString     percentStr;
 
             if (total == 0ull)
@@ -2559,8 +2561,10 @@ S9sRpcReply::printPartitions(
             percentStr.sprintf("%.1f%%", 100.0 * (total - free) / total);
 
             totalFormat.widen(totalStr);
+            usedFormat.widen(usedStr);
             freeFormat.widen(freeStr);
             percentFormat.widen(percentStr);
+
             filesystemFormat.widen(filesystem);
             deviceFormat.widen(deviceName);
         }
@@ -2570,18 +2574,20 @@ S9sRpcReply::printPartitions(
      */
     if (!options->isNoHeaderRequested())
     {
-        totalFormat.widen("TOTAL");
-        freeFormat.widen("FREE");
-        percentFormat.widen("USED");
+        totalFormat.widen("SIZE");
+        usedFormat.widen("USED");
+        freeFormat.widen("AVAIL");
+        percentFormat.widen("USE%");
         hostnameFormat.widen("HOST");
         filesystemFormat.widen("FS");
         deviceFormat.widen("DEVICE");
         mountpointFormat.widen("MOUNT POINT");
 
         printf("%s", headerColorBegin());
-        totalFormat.printf("TOTAL");
-        freeFormat.printf("FREE");
-        percentFormat.printf("USED");
+        totalFormat.printf("SIZE");
+        freeFormat.printf("AVAIL");
+        usedFormat.widen("USED");
+        percentFormat.printf("USE%");
         hostnameFormat.printf("HOST");
         filesystemFormat.printf("FS");
         deviceFormat.printf("DEVICE");
@@ -2613,6 +2619,7 @@ S9sRpcReply::printPartitions(
             S9sString     totalStr = bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
             S9sString     freeStr = bytesToHuman(free);
+            S9sString     usedStr = bytesToHuman(total - free);
             S9sString     percentStr;
             S9sString     mountPoint = device["mountpoint"].toString();
 
@@ -2628,6 +2635,7 @@ S9sRpcReply::printPartitions(
             freeTotal  += free;
 
             totalFormat.printf(totalStr);
+            usedFormat.printf(usedStr);
             freeFormat.printf(freeStr);
             percentFormat.printf(percentStr);
             
