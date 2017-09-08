@@ -2598,6 +2598,7 @@ S9sRpcReply::printPartitions(
     }
 
     totalFormat.setRightJustify();
+    usedFormat.setRightJustify();
     freeFormat.setRightJustify();
     percentFormat.setRightJustify();
     for (uint idx = 0; idx < theList.size(); ++idx)
