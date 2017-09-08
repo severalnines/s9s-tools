@@ -2354,9 +2354,12 @@ S9sRpcReply::printDisks(
 
             //capacity *= 1024 * 1024;
             //capacity /= 1000000000ull;
-            capacity /= 1024;
-            totalCapacity += capacity;
-            model.sprintf("%llu GBytes %s", capacity, STR(model));
+            if (capacity > 0ull)
+            {
+                capacity /= 1024;
+                totalCapacity += capacity;
+                model.sprintf("%llu GBytes %s", capacity, STR(model));
+            }
 
             if (compact)
             {
