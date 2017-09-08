@@ -29,6 +29,7 @@
 #include <limits> 
 
 #include "S9sNode"
+#include "S9sContainer"
 #include "S9sAccount"
 #include "S9sDateTime"
 
@@ -44,6 +45,7 @@ static const double kbyte = 1024.0;
 const S9sVariantMap  S9sVariant::sm_emptyMap;
 const S9sVariantList S9sVariant::sm_emptyList = S9sVariantList();
 static const S9sNode             sm_emptyNode;
+static const S9sContainer        sm_emptyContainer;
 static const S9sAccount          sm_emptyAccount;
 
 #ifdef __GNUC__
@@ -82,6 +84,11 @@ S9sVariant::S9sVariant(
         case Node:
             m_union.nodeValue = new S9sNode(*orig.m_union.nodeValue);
             break;
+        
+        case Container:
+            m_union.containerValue = new S9sContainer(
+                    *orig.m_union.containerValue);
+            break;
 
         case Account:
             m_union.accountValue = new S9sAccount(*orig.m_union.accountValue);
@@ -93,6 +100,13 @@ S9sVariant::S9sVariant(
     m_type (Node)
 {
     m_union.nodeValue = new S9sNode(nodeValue);
+}
+
+S9sVariant::S9sVariant(
+        const S9sContainer &containerValue) :
+    m_type (Container)
+{
+    m_union.containerValue = new S9sContainer(containerValue);
 }
 
 S9sVariant::S9sVariant(
@@ -161,6 +175,11 @@ S9sVariant::operator=(
 
         case Node:
             m_union.nodeValue = new S9sNode(*rhs.m_union.nodeValue);
+            break;
+        
+        case Container:
+            m_union.containerValue = new S9sContainer(
+                    *rhs.m_union.containerValue);
             break;
 
         case Account:
@@ -398,6 +417,10 @@ S9sVariant::typeName() const
             retval = "node";
             break;
         
+        case Container:
+            retval = "container";
+            break;
+        
         case Account:
             retval = "account";
             break;
@@ -414,6 +437,30 @@ S9sVariant::typeName() const
     return retval;
 }
 
+const S9sContainer &
+S9sVariant::toContainer() const
+{
+    switch (m_type)
+    {
+        case Invalid:
+        case Int:
+        case Ulonglong:
+        case Double:
+        case Bool:
+        case String:
+        case List:
+        case Map:
+        case Account:
+        case Node:
+            return sm_emptyContainer;
+
+        case Container:
+            return *m_union.containerValue;
+    }
+            
+    return sm_emptyContainer;
+}
+
 const S9sNode &
 S9sVariant::toNode() const
 {
@@ -428,6 +475,7 @@ S9sVariant::toNode() const
         case List:
         case Map:
         case Account:
+        case Container:
             return sm_emptyNode;
 
         case Node:
@@ -451,6 +499,7 @@ S9sVariant::toAccount() const
         case List:
         case Map:
         case Node:
+        case Container:
             return sm_emptyAccount;
 
         case Account:
@@ -480,6 +529,9 @@ S9sVariant::toVariantMap() const
         case Map:
             return *m_union.mapValue;
 
+        case Container:
+            return m_union.containerValue->toVariantMap();
+
         case Node:
             return m_union.nodeValue->toVariantMap();
 
@@ -506,6 +558,7 @@ S9sVariant::toVariantList() const
         case String:
         case Map:
         case Node:
+        case Container:
         case Account:
             return sm_emptyList;
 
@@ -570,6 +623,7 @@ S9sVariant::toInt(
         case Map:
         case List:
         case Node:
+        case Container:
         case Account:
             return defaultValue;
     }
@@ -620,6 +674,7 @@ S9sVariant::toULongLong(
         case Map:
         case List:
         case Node:
+        case Container:
         case Account:
             // FIXME: This is not yet implemented.
             return defaultValue;
@@ -651,6 +706,7 @@ S9sVariant::toDouble(
         case List:
         case Invalid:
         case Node:
+        case Container:
         case Account:
             // The default value is already there.
             break;
@@ -764,6 +820,7 @@ S9sVariant::toBoolean(
         case Map:
         case List:
         case Node:
+        case Container:
         case Account:
             return defaultValue;
     }
@@ -807,6 +864,9 @@ S9sVariant::toString() const
     } else if (m_type == Node)
     {
         retval = toNode().toVariantMap().toString();
+    } else if (m_type == Container)
+    {
+        retval = toContainer().toVariantMap().toString();
     } else if (m_type == List)
     {
         const S9sVariantList &list = toVariantList();
@@ -1249,6 +1309,11 @@ S9sVariant::clear()
         case Node:
             delete m_union.nodeValue;
             m_union.nodeValue = NULL;
+            break;
+        
+        case Container:
+            delete m_union.containerValue;
+            m_union.containerValue = NULL;
             break;
 
         case Account:

@@ -27,6 +27,7 @@ class S9sVariantArray;
 class S9sString;
 class S9sNode;
 class S9sAccount;
+class S9sContainer;
 
 /** 
  * An enum to identify the basic types for S9s. Well, basic types are types that
@@ -41,6 +42,7 @@ enum S9sBasicType
     Double,
     String,
     Node,
+    Container,
     Account,
     Map,
     List
@@ -57,5 +59,6 @@ union S9sUnion
     S9sVariantArray  *arrayValue;
     S9sString        *stringValue;
     S9sNode          *nodeValue;
+    S9sContainer     *containerValue;
     S9sAccount       *accountValue;
 };

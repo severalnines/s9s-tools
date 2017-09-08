@@ -23,6 +23,7 @@
 #include "S9sString"
 
 class S9sNode;
+class S9sContainer;
 class S9sVariantMap;
 class S9sVariantList;
 
@@ -65,6 +66,7 @@ class S9sVariant
         inline S9sVariant(const std::string &stringValue);
         inline S9sVariant(const S9sString &stringValue);
         S9sVariant(const S9sNode &nodeValue);
+        S9sVariant(const S9sContainer &containerValue);
         S9sVariant(const S9sAccount &accountValue);
         
         S9sVariant(const S9sVariantMap &mapValue);
@@ -96,6 +98,7 @@ class S9sVariant
         bool isVariantMap() const { return m_type == Map; };
         bool isVariantList() const { return m_type == List; };
         bool isNode() const { return m_type == Node; };
+        bool isContainer() const { return m_type == Container; };
         bool isAccount() const { return m_type == Account; };
 
         int size() const;
@@ -115,6 +118,7 @@ class S9sVariant
 
         const S9sVariantMap &toVariantMap() const;
         const S9sNode &toNode() const;
+        const S9sContainer &toContainer() const;
         const S9sAccount &toAccount() const;
         const S9sVariantList &toVariantList() const;
 
