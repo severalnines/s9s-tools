@@ -258,7 +258,7 @@ function _s9s()
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt+="--help "
             main_opt+="--change-config --list-config --list --pull-config "
-            main_opt+="--push-config --set --stat "
+            main_opt+="--push-config --set --stat --unregister "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt

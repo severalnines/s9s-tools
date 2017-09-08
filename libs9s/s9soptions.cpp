@@ -3106,6 +3106,7 @@ S9sOptions::printHelpNode()
 "  --push-config              Copy configuration files to a node.\n"
 "  --set                      Change the properties of a node.\n"
 "  --stat                     Print detailed node information.\n"
+"  --unregister               Drop the node without touching it.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
 "  --cluster-name=NAME        Name of the cluster to list.\n"
@@ -3218,6 +3219,7 @@ S9sOptions::readOptionsNode(
         { "change-config",    no_argument,       0,  OptionChangeConfig   },
         { "pull-config",      no_argument,       0,  OptionPullConfig     },
         { "push-config",      no_argument,       0,  OptionPushConfig     },
+        { "unregister",       no_argument,       0, OptionUnregister      },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -3360,6 +3362,11 @@ S9sOptions::readOptionsNode(
             case OptionPushConfig:
                 // --push-config
                 m_options["push_config"] = true;
+                break;
+            
+            case OptionUnregister:
+                // --unregister
+                m_options["unregister"] = true;
                 break;
 
             case 4:
@@ -4353,22 +4360,19 @@ S9sOptions::checkOptionsNode()
     
     if (isRestartRequested())
         countOptions++;
+    
+    if (isUnregisterRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --list-config, --change-config, --stat and --set "
-            "options are mutually exclusive.";
-
+        m_errorMessage = "Main command line options are mutually exclusive.";
         m_exitStatus = BadOptions;
 
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --list-config, --change-config, --stat and "
-            "--set options is mandatory.";
-
+        m_errorMessage = "One main option is required.";
         m_exitStatus = BadOptions;
 
         return false;

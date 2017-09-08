@@ -75,6 +75,7 @@ class S9sRpcClient
 
         bool registerServers();
         bool unregisterServers();
+        bool unregisterHost();
         bool getContainers();
         bool getServers();
         bool createContainer();

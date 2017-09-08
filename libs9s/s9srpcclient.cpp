@@ -3564,6 +3564,9 @@ S9sRpcClient::registerServers()
     return executeRequest(uri, request);
 }
 
+/**
+ * Unregisters one or more CmonContainerServer in one step.
+ */
 bool
 S9sRpcClient::unregisterServers()
 {
@@ -3577,6 +3580,53 @@ S9sRpcClient::unregisterServers()
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::unregisterHost()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+    S9sVariantList hosts;
+    
+    /*
+     * Finding the host(s).
+     */
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+            "Node list is empty while unregistering nodes.\n"
+            "Use the --nodes command line option to provide a node."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    } else if (hosts.size() > 1u)
+    {
+        PRINT_ERROR(
+            "Only one node can be unregister at a time."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    request["operation"]      = "unregisterHost";
+    request["host"]           = hosts[0];
+    request["dry_run"]        = true;
+
+    if (options->hasClusterIdOption())
+        request["cluster_id"]   = options->clusterId();
+
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+    
+    return executeRequest(uri, request);
+}
+
+
 
 bool
 S9sRpcClient::getContainers()
