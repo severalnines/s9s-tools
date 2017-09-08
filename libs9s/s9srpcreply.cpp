@@ -2569,6 +2569,13 @@ S9sRpcReply::printPartitions(
             deviceFormat.widen(deviceName);
         }
     }
+
+    
+    totalFormat.setRightJustify();
+    usedFormat.setRightJustify();
+    freeFormat.setRightJustify();
+    percentFormat.setRightJustify();
+
     /*
      * Printing the header.
      */
@@ -2585,9 +2592,10 @@ S9sRpcReply::printPartitions(
 
         printf("%s", headerColorBegin());
         totalFormat.printf("SIZE");
-        usedFormat.widen("USED");
+        usedFormat.printf("USED");
         freeFormat.printf("AVAIL");
         percentFormat.printf("USE%");
+
         hostnameFormat.printf("HOST");
         filesystemFormat.printf("FS");
         deviceFormat.printf("DEVICE");
@@ -2597,10 +2605,6 @@ S9sRpcReply::printPartitions(
         printf("\n");
     }
 
-    totalFormat.setRightJustify();
-    usedFormat.setRightJustify();
-    freeFormat.setRightJustify();
-    percentFormat.setRightJustify();
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
