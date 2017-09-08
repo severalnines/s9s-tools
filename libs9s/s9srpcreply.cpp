@@ -2585,8 +2585,8 @@ S9sRpcReply::printPartitions(
 
         printf("%s", headerColorBegin());
         totalFormat.printf("SIZE");
-        freeFormat.printf("AVAIL");
         usedFormat.widen("USED");
+        freeFormat.printf("AVAIL");
         percentFormat.printf("USE%");
         hostnameFormat.printf("HOST");
         filesystemFormat.printf("FS");
