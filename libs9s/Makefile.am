@@ -81,6 +81,7 @@ libs9s_a_SOURCES =            \
 	s9sdatetime.cpp           \
 	s9surl.cpp                \
 	s9snode.cpp               \
+	s9scontainer.cpp          \
 	s9scluster.cpp            \
 	s9sbackup.cpp             \
 	s9suser.cpp               \
