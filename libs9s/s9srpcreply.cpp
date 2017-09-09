@@ -2520,6 +2520,7 @@ S9sRpcReply::printPartitions(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sFormat       totalFormat;
     S9sFormat       freeFormat;
@@ -2670,11 +2671,21 @@ S9sRpcReply::printPartitions(
 
     if (!options->isBatchRequested())
     {
-        printf("Total: %s, %s free\n", 
-                STR(bytesToHuman(totalTotal)),
-                STR(bytesToHuman(freeTotal)));
-    }
-    
+        if (syntaxHighlight)
+        {
+            printf("Total: %s%s%s, %s%s%s free\n", 
+                    XTERM_COLOR_NUMBER, 
+                    STR(bytesToHuman(totalTotal)),
+                    TERM_NORMAL,
+                    XTERM_COLOR_NUMBER, 
+                    STR(bytesToHuman(freeTotal)), 
+                    TERM_NORMAL);
+        } else {
+            printf("Total: %s, %s free\n", 
+                    STR(bytesToHuman(totalTotal)),
+                    STR(bytesToHuman(freeTotal)));
+        }
+    } 
 }
 
 /**
