@@ -72,8 +72,98 @@ BUILT_SOURCES =               \
     config_parser.h           \
     config_parser.cpp           
 
+libs9s_public_h_headers =     \
+	config_lexer.h            \
+	config_parser.h           \
+	json_lexer.h              \
+	json_parser.h             \
+	library.h                 \
+	S9sAccount                \
+	s9saccount.h              \
+	S9sBackup                 \
+	s9sbackup.h               \
+	S9sBusinessLogic          \
+	s9sbusinesslogic.h        \
+	S9sCluster                \
+	s9scluster.h              \
+	S9sCmonGraph              \
+	s9scmongraph.h            \
+	S9sConfigFile             \
+	s9sconfigfile.h           \
+	s9sconfigfile_p.h         \
+	S9sContainer              \
+	s9scontainer.h            \
+	S9sDateTime               \
+	s9sdatetime.h             \
+	s9sdebug.h                \
+	S9sDir                    \
+	s9sdir.h                  \
+	S9sFile                   \
+	s9sfile.h                 \
+	s9sfile_p.h               \
+	S9sFormat                 \
+	s9sformat.h               \
+	S9sGlobal                 \
+	s9sglobal.h               \
+	S9sGraph                  \
+	s9sgraph.h                \
+	S9sGroup                  \
+	s9sgroup.h                \
+	S9sJsonParseContext       \
+	s9sjsonparsecontext.h     \
+	S9sMap                    \
+	s9smap.h                  \
+	S9sMessage                \
+	s9smessage.h              \
+	S9sNode                   \
+	s9snode.h                 \
+	S9sOptions                \
+	s9soptions.h              \
+	S9sParseContext           \
+	s9sparsecontext.h         \
+	S9sParseContextState      \
+	s9sparsecontextstate.h    \
+	S9sRegExp                 \
+	s9sregexp.h               \
+	s9sregexp_p.h          \
+	S9sReport          \
+	s9sreport.h          \
+	S9sRpcClient          \
+	s9srpcclient.h          \
+	s9srpcclient_p.h          \
+	S9sRpcReply          \
+	s9srpcreply.h          \
+	S9sRsaKey          \
+	s9srsakey.h          \
+	s9srsakey_p.h          \
+	S9sStack          \
+	s9sstack.h          \
+	S9sString          \
+	s9sstring.h              \
+	S9sStringList              \
+	s9sstringlist.h              \
+	S9sTopUi              \
+	s9stopui.h              \
+	s9sunion.h              \
+	S9sUrl              \
+	s9surl.h              \
+	S9sUser              \
+	s9suser.h              \
+	S9sVariant              \
+	S9sVariantArray              \
+	s9svariantarray.h              \
+	s9svariant.h              \
+	S9sVariantList              \
+	s9svariantlist.h              \
+	S9sVariantMap              \
+	s9svariantmap.h              \
+	S9sVector              \
+	s9svector.h
+
+
 libs9s_a_SOURCES =            \
 	$(BUILT_SOURCES)          \
+    $(libs9s_public_h_headers) \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sstring.cpp             \
@@ -115,4 +205,5 @@ libs9s_a_SOURCES =            \
 	s9sconfigfile.cpp         \
 	s9sconfigfile_p.cpp
 
-
+libs9sdir = $(includedir)/s9s
+libs9s_HEADERS = $(libs9s_public_h_headers)
