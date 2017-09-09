@@ -2495,10 +2495,14 @@ S9sString
 bytesToHuman(
         ulonglong mBytes)
 {
-    S9sString  retval;
-    S9sVariant bytes = mBytes * (1024ull * 1024ull);
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   retval;
+    S9sVariant  bytes = mBytes * (1024ull * 1024ull);
 
-    if (bytes.toTBytes() > 1.0)
+    if (!options->humanReadable())
+    {
+        retval.sprintf("%'llu", bytes.toULongLong());
+    } else if (bytes.toTBytes() > 1.0)
     {
         retval.sprintf("%.1fTB", bytes.toTBytes());
     } else if (bytes.toGBytes() >= 1.0) 
