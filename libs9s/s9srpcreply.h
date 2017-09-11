@@ -82,8 +82,15 @@ class S9sRpcReply : public S9sVariantMap
         void printPartitions(S9sString indent = S9sString());
         void printNics(S9sString indent = S9sString());
         void printMemoryBanks(S9sString indent = S9sString());
+        
+        // Handling containers.
+        S9sContainer container(
+                const S9sString &serverName, 
+                const S9sString &containerName);
+
         void printContainers();
         void printContainersLong();
+
         void printProcessList();
         void printProcessListBrief(const int maxLines = -1);
         void printCpuStat();

@@ -131,7 +131,7 @@ S9sRpcClient::canAuthenticate(
 {
     S9sOptions    *options = S9sOptions::instance();
 
-    // No authentication wihtout a username.
+    // No authentication without a username.
     if (options->userName().empty())
     {
         reason = "No user name set.";
@@ -301,6 +301,7 @@ S9sRpcClient::authenticate()
 bool 
 S9sRpcClient::authenticateWithPassword()
 {
+    S9S_DEBUG(" ");
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sString      uri = "/v2/auth";
@@ -323,6 +324,7 @@ S9sRpcClient::authenticateWithPassword()
 bool
 S9sRpcClient::authenticateWithKey()
 {
+    S9S_DEBUG(" ");
     S9sOptions    *options = S9sOptions::instance();
     S9sRsaKey      rsa;
     S9sString      uri = "/v2/auth";
@@ -362,7 +364,10 @@ S9sRpcClient::authenticateWithKey()
 
     retval = executeRequest(uri, request);
     if (!retval)
+    {
+        S9S_WARNING("request failed: %s", STR(reply().toString()));
         return false;
+    }
 
     S9sRpcReply loginReply = reply();
     S9sString signature;
@@ -3710,6 +3715,9 @@ S9sRpcClient::getContainers()
     return executeRequest(uri, request);
 }
 
+/**
+ * Gets the servers from the controller.
+ */
 bool
 S9sRpcClient::getServers()
 {

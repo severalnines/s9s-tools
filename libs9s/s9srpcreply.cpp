@@ -35,6 +35,7 @@
 #include "S9sAccount"
 #include "S9sGroup"
 #include "S9sReport"
+#include "S9sContainer"
 
 //#define DEBUG
 //#define WARNING
@@ -2189,22 +2190,6 @@ S9sRpcReply::printScriptTreeBrief()
     printScriptTreeBrief(entry, 0, "", false);
 }
 
-void
-S9sRpcReply::printServers()
-{
-    S9sOptions *options = S9sOptions::instance();
-
-    if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-    else if (!isOk())
-        PRINT_ERROR("%s", STR(errorString()));
-    else {
-        //printDisks();
-        //printNics();
-        printServersLong();
-    }
-}
-
 /**
  *
  * \code{.js}
@@ -2820,7 +2805,7 @@ S9sRpcReply::printMemoryBanks(
 }
 
 void
-S9sRpcReply::printContainers()
+S9sRpcReply::printServers()
 {
     S9sOptions *options = S9sOptions::instance();
 
@@ -2828,10 +2813,16 @@ S9sRpcReply::printContainers()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-    else 
-        printContainersLong();
+    else {
+        //printDisks();
+        //printNics();
+        printServersLong();
+    }
 }
 
+/**
+ * Prints the servers in the long format.
+ */
 void 
 S9sRpcReply::printServersLong()
 {
@@ -2926,12 +2917,59 @@ S9sRpcReply::printServersLong()
 
         printf("\n");
     }
-
-
 }
 
 /**
- * 
+ * \param serverName The name of the server holding the container or an empty
+ *   string.
+ * \param containerName The name of the container to return.
+ * \returns The container object if the container is in the reply or an invalid
+ *   container if the container was not found.
+ */
+S9sContainer
+S9sRpcReply::container(
+        const S9sString &serverName,
+        const S9sString &containerName)
+{
+    S9sVariantList  theList = operator[]("containers").toVariantList();
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sString      alias  = theMap["alias"].toString();
+        S9sString      parent = theMap["parent_server"].toString();
+
+        if (!serverName.empty() && serverName != parent)
+            continue;
+
+        if (containerName != alias)
+            continue;
+
+        return S9sContainer(theMap);
+    }
+
+    return S9sContainer();
+}
+
+/**
+ * Prints the containers.
+ */
+void
+S9sRpcReply::printContainers()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else 
+        printContainersLong();
+}
+
+/**
+ * Prints the containers in long format.
+ *
  * Here is how a container looks like.
  * \code{.js}
  * {

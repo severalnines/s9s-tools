@@ -29,15 +29,15 @@
 
 S9sContainer::S9sContainer()
 {
-    m_properties["class_name"] = "CmonContainer";
+    //m_properties["class_name"] = "CmonContainer";
 }
  
 S9sContainer::S9sContainer(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
-    if (!m_properties.contains("class_name"))
-        m_properties["class_name"] = "CmonContainer";
+    //if (!m_properties.contains("class_name"))
+    //    m_properties["class_name"] = "CmonContainer";
 }
 
 /**

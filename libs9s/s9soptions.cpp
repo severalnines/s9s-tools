@@ -2467,6 +2467,13 @@ S9sOptions::isVerbose() const
     return getBool("verbose");
 }
 
+void
+S9sOptions::setVerbose(
+        bool value)
+{
+    m_options["verbose"] = value;
+}
+
 bool
 S9sOptions::isDebug() const
 {
