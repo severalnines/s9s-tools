@@ -1030,7 +1030,9 @@ S9sRpcClient::getRunningProcesses()
  * to get the job list (e.g. s9s job --list).
  */
 bool
-S9sRpcClient::getJobInstances()
+S9sRpcClient::getJobInstances(
+        const S9sString  &clusterName, 
+        const int         clusterId)
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1045,11 +1047,11 @@ S9sRpcClient::getJobInstances()
     if (options->offset() >= 0)
         request["offset"] = options->offset();
 
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+        request["cluster_id"] = clusterId;
     
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
 
     retval = executeRequest(uri, request);
 

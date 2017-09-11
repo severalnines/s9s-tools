@@ -110,7 +110,11 @@ class S9sRpcClient
 
         bool getRunningProcesses();
 
-        bool getJobInstances();
+        // Methods related to jobs.
+        bool getJobInstances(
+                const S9sString  &clusterName, 
+                const int         clusterId);
+
         bool deleteJobInstance(const int jobId);
         
         /*

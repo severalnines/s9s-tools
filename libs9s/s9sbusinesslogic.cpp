@@ -1159,11 +1159,13 @@ void
 S9sBusinessLogic::executeJobList(
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
-    S9sRpcReply reply;
-    bool        success;
+    S9sOptions  *options     = S9sOptions::instance();
+    int          clusterId   = options->clusterId();
+    S9sString    clusterName = options->clusterName();
+    S9sRpcReply  reply;
+    bool         success;
 
-    success = client.getJobInstances();
+    success = client.getJobInstances(clusterName, clusterId);
     if (success)
     {
         reply = client.reply();
