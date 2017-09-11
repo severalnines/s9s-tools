@@ -25,6 +25,7 @@ class S9sNode;
 class S9sCluster;
 class S9sFormat;
 class S9sCmonGraph;
+class S9sUser;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -68,7 +69,11 @@ class S9sRpcReply : public S9sVariantMap
         void printJobList();
         void printBackupList();
         void printKeys();
+        
+        // Methods handling users.
         void printUserList();
+        S9sUser getUser(const S9sString &userName);
+
         void printGroupList();
         void printAccountList();
         void printMaintenanceList();

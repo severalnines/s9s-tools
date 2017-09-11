@@ -40,6 +40,8 @@ class S9sUser
         void setProperty(const S9sString &name, const S9sString &value);
 
         const S9sVariantMap &toVariantMap() const;
+        S9sString toString() const;
+
         void setProperties(const S9sVariantMap &properties);
 
         S9sString userName() const;

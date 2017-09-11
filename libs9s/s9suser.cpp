@@ -75,6 +75,15 @@ S9sUser::toVariantMap() const
 }
 
 /**
+ * \returns The JSON string representing the user.
+ */
+S9sString 
+S9sUser::toString() const
+{
+    return m_properties.toString();
+}
+
+/**
  * \returns True if a property with the given key exists.
  */
 bool

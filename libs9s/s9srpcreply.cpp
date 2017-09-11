@@ -1152,29 +1152,6 @@ S9sRpcReply::printAccountListLong()
         printf("Total: %d\n", operator[]("total").toInt());
 }
 
-void 
-S9sRpcReply::printUserList()
-{
-    S9sOptions *options = S9sOptions::instance();
-    
-    if (options->isJsonRequested())
-    {
-        printf("%s\n", STR(toString()));
-        return;
-    }
-
-    if (!isOk())
-    {
-        PRINT_ERROR("%s", STR(errorString()));
-        return;
-    }
-
-    if (options->isLongRequested())
-        printUserListLong();
-    else
-        printUserListBrief();
-}
-
 void
 S9sRpcReply::printGroupList()
 {
@@ -5428,6 +5405,56 @@ S9sRpcReply::printGroupListLong()
     }
 }
 
+S9sUser
+S9sRpcReply::getUser(
+        const S9sString &userName)
+{
+    if (contains("users"))
+    {
+        S9sVariantList  userList = operator[]("users").toVariantList();
+        
+        for (uint idx = 0; idx < userList.size(); ++idx)
+        {
+            S9sVariantMap  userMap      = userList[idx].toVariantMap();
+            S9sUser        user         = userMap;
+        
+            if (user.userName() == userName)
+                return user;
+        }
+    }
+
+    return S9sUser();
+}
+
+/**
+ * Prints the user list in either short or long format.
+ */
+void 
+S9sRpcReply::printUserList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printUserListLong();
+    else
+        printUserListBrief();
+}
+
+/**
+ * Prints the user list in short format.
+ */
 void 
 S9sRpcReply::printUserListBrief()
 {
