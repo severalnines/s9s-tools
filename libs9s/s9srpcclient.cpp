@@ -412,20 +412,6 @@ S9sRpcClient::getCluster()
     S9sVariantMap  request;
     bool           retval;
 
-    #if 0
-    //
-    // We actually can send this request in two ways: getAllClusterInfo or
-    // clusterClusterInfo
-    //
-    S9sVariantList clusterIds;
-
-    clusterIds << clusterId;
-
-    request["operation"]       = "getAllClusterInfo";
-    request["with_hosts"]      = true;
-    request["with_sheet_info"] = true;
-    request["cluster_ids"]     = clusterIds;
-    #else
     S9sOptions    *options = S9sOptions::instance();
 
     request["operation"]       = "getClusterInfo";
@@ -437,7 +423,6 @@ S9sRpcClient::getCluster()
 
     if (options->hasClusterNameOption())
         request["cluster_name"] = options->clusterName();
-    #endif
     
     retval = executeRequest(uri, request);
     

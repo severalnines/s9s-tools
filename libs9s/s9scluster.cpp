@@ -47,10 +47,23 @@ S9sCluster::operator=(
     return *this;
 }
 
+/**
+ * \returns A variant map holding all the properties of the cluster.
+ * Converts the cluster to a variant map.
+ */
 const S9sVariantMap &
 S9sCluster::toVariantMap() const
 {
     return m_properties;
+}
+
+/**
+ * \returns A JSON string representing the cluster.
+ */
+S9sString
+S9sCluster::toString() const
+{
+    return m_properties.toString();
 }
 
 /**

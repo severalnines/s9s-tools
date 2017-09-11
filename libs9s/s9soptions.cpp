@@ -1169,11 +1169,11 @@ S9sOptions::offset() const
 int
 S9sOptions::clusterId() const
 {
-    int retval = 0;
+    int retval = S9S_INVALID_CLUSTER_ID;
 
     if (m_options.contains("cluster_id"))
     {
-        retval = m_options.at("cluster_id").toInt();
+        retval = m_options.at("cluster_id").toInt(S9S_INVALID_CLUSTER_ID);
     } else {
         S9sString stringVal = m_userConfig.variableValue("default_cluster_id");
 
@@ -1181,7 +1181,7 @@ S9sOptions::clusterId() const
             stringVal = m_systemConfig.variableValue("default_cluster_id");
 
         if (!stringVal.empty())
-            retval = stringVal.toInt();
+            retval = stringVal.toInt(S9S_INVALID_CLUSTER_ID);
     }
 
     return retval;

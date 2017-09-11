@@ -20,6 +20,8 @@
 #pragma once
 
 #include <S9sVariantMap>
+#define S9S_INVALID_CLUSTER_ID -1
+#define S9S_CLUSTER_ID_IS_VALID(_id) (_id > 0)
 
 class S9sCluster
 {
@@ -32,6 +34,7 @@ class S9sCluster
         S9sCluster &operator=(const S9sVariantMap &rhs);
 
         const S9sVariantMap &toVariantMap() const;
+        S9sString toString() const;
 
         S9sString className() const;
         S9sString name() const;
