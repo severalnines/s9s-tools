@@ -6238,6 +6238,7 @@ S9sOptions::readOptionsJob(
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "cluster-name",     required_argument, 0, 'n'                   },
         { "job-id",           required_argument, 0, OptionJobId           },
         { "log-format",       required_argument, 0, OptionLogFormat       },
         { "limit",            required_argument, 0, OptionLimit           },
@@ -6367,6 +6368,11 @@ S9sOptions::readOptionsJob(
             case 'i':
                 // --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
                 break;
 
             case OptionLogFormat:
