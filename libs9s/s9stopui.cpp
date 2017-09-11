@@ -72,9 +72,10 @@ bool
 S9sTopUi::executeTopOnce(
         S9sRpcClient &client)
 {
-    S9sOptions  *options = S9sOptions::instance();
-    int          clusterId = options->clusterId();
-    S9sString    clusterName, clusterStatusText;
+    S9sOptions  *options     = S9sOptions::instance();
+    int          clusterId   = options->clusterId();
+    S9sString    clusterName = options->clusterName();
+    S9sString    clusterStatusText;
     S9sRpcReply  reply;
     bool         success = true;
     S9sDateTime  date = S9sDateTime::currentDateTime();
@@ -86,7 +87,7 @@ S9sTopUi::executeTopOnce(
     //
     // The cluster information.
     //
-    success = client.getCluster();
+    success = client.getCluster(clusterName, clusterId);
     reply = client.reply();
     if (!success)
         return success;

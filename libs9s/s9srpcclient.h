@@ -65,7 +65,7 @@ class S9sRpcClient
          * the server.
          */
         bool getClusters();
-        bool getCluster();
+        bool getCluster(const S9sString &clusterName, const int clusterId);
         bool getTree();
         
         bool checkHosts();

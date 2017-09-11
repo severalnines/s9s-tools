@@ -52,6 +52,9 @@ class S9sRpcReply : public S9sVariantMap
         int jobId() const;
         S9sString jobTitle() const;
         bool isJobFailed() const;
+
+        // Methods handling clusters.
+        S9sCluster cluster(const S9sString &clusterName);
         S9sVariantList clusters();
 
         S9sString clusterName(const int clusterId);

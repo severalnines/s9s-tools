@@ -205,6 +205,27 @@ S9sRpcReply::isJobFailed() const
 }
 
 /**
+ * \param clusterName The name of the cluster to return.
+ * \returns The cluster object from the reply.
+ */
+S9sCluster
+S9sRpcReply::cluster(
+        const S9sString &clusterName)
+{
+    S9sVariantList clusterList = clusters();
+
+    for (uint idx = 0u; idx < clusterList.size(); ++idx)
+    {
+        S9sCluster thisCluster(clusterList[idx].toVariantMap());
+
+        if (thisCluster.name() == clusterName)
+            return thisCluster;
+    }
+
+    return S9sCluster();
+}
+
+/**
  * The reply to getClusterInfo and getAllClusterInfo replies are similar, one
  * contains a single cluster, the other contains a list of clusters. This
  * function returns the cluster(s) as a list of maps no matter which way the
@@ -221,6 +242,28 @@ S9sRpcReply::clusters()
         theList << operator[]("cluster");
 
     return theList;
+}
+
+
+/**
+ * Prints the RPC reply as a cluster list. Considers command line options to
+ * decide what format will be used to print the list.
+ */
+void 
+S9sRpcReply::printClusterList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else if (options->isStatRequested())
+        printClusterListStat();
+    else if (options->isLongRequested())
+        printClusterListLong();
+    else
+        printClusterListBrief();
 }
 
 S9sString
@@ -1205,27 +1248,6 @@ S9sRpcReply::printNodeList()
         printNodeListLong();
     else
         printNodeListBrief();
-}
-
-/**
- * Prints the RPC reply as a cluster list. Considers command line options to
- * decide what format will be used to print the list.
- */
-void 
-S9sRpcReply::printClusterList()
-{
-    S9sOptions *options = S9sOptions::instance();
-
-    if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
-    else if (!isOk())
-        PRINT_ERROR("%s", STR(errorString()));
-    else if (options->isStatRequested())
-        printClusterListStat();
-    else if (options->isLongRequested())
-        printClusterListLong();
-    else
-        printClusterListBrief();
 }
 
 void
@@ -5405,6 +5427,10 @@ S9sRpcReply::printGroupListLong()
     }
 }
 
+/**
+ * \param userName The name of the user to return.
+ * \returns The user object from the reply.
+ */
 S9sUser
 S9sRpcReply::getUser(
         const S9sString &userName)

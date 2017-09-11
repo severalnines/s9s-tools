@@ -406,23 +406,23 @@ S9sRpcClient::authenticateWithKey()
  * referenced by the cluster ID.
  */
 bool
-S9sRpcClient::getCluster()
+S9sRpcClient::getCluster(
+        const S9sString  &clusterName, 
+        const int         clusterId)
 {
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
 
-    S9sOptions    *options = S9sOptions::instance();
-
     request["operation"]       = "getClusterInfo";
     request["with_hosts"]      = true;
     request["with_sheet_info"] = true;
 
-    if (options->hasClusterIdOption())
-        request["cluster_id"]   = options->clusterId();
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+        request["cluster_id"]   = clusterId;
 
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
     
     retval = executeRequest(uri, request);
     
@@ -443,16 +443,17 @@ S9sRpcClient::getClusters()
     //getSupportedClusterTypes();
     //checkClusterName();
 
-    S9sOptions    *options = S9sOptions::instance();
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sString      clusterName = options->clusterName();
+    int            clusterId   = options->clusterId();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
    
     if (options->hasClusterIdOption())
-        return getCluster();
-    
-    if (options->hasClusterNameOption())
-        return getCluster();
+        return getCluster(clusterName, clusterId);
+    else if (options->hasClusterNameOption())
+        return getCluster(clusterName, clusterId);
 
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
