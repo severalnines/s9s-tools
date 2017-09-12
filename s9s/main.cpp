@@ -54,6 +54,8 @@ main(int argc, char **argv)
     bool        success, finished;
     int         exitStatus;
 
+    setlocale(LC_NUMERIC, "en_US");
+
     #if 0
     for (;;)
     {
