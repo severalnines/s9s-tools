@@ -2080,7 +2080,7 @@ S9sRpcReply::printDatabaseListLong()
         S9sCluster     cluster(theMap);
         S9sString      clusterName = theMap["cluster_name"].toString();
         int            clusterId   = theMap["cluster_id"].toInt();
-        
+       
         //
         // Filtering.
         //
@@ -2104,6 +2104,9 @@ S9sRpcReply::printDatabaseListLong()
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     nTablesString;
+
+            if (name == "mysql" || name == "performance_schema")
+                continue;
 
             if (!options->isStringMatchExtraArguments(name))
                 continue;
@@ -2172,6 +2175,9 @@ S9sRpcReply::printDatabaseListLong()
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     nTablesString;
+
+            if (name == "mysql" || name == "performance_schema")
+                continue;
 
             if (!options->isStringMatchExtraArguments(name))
                 continue;
