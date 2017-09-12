@@ -43,6 +43,30 @@
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
+S9sString 
+bytesToHuman(
+        ulonglong mBytes)
+{
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   retval;
+    S9sVariant  bytes = mBytes * (1024ull * 1024ull);
+
+    if (!options->humanReadable())
+    {
+        retval.sprintf("%'llu", bytes.toULongLong());
+    } else if (bytes.toTBytes() > 1.0)
+    {
+        retval.sprintf("%.1fTB", bytes.toTBytes());
+    } else if (bytes.toGBytes() >= 1.0) 
+    {
+        retval.sprintf("%.1fGB", bytes.toGBytes());
+    } else {
+        retval.sprintf("%.1fMB", bytes.toMBytes());
+    }
+
+    return retval;
+}
+
 S9sRpcReply::ErrorCode
 S9sRpcReply::requestStatus() const
 {
@@ -243,6 +267,7 @@ S9sRpcReply::clusters()
 
     return theList;
 }
+
 
 
 /**
@@ -979,6 +1004,31 @@ S9sRpcReply::printAccountList()
     else
         printAccountListBrief();
 }
+
+void 
+S9sRpcReply::printDatabaseList()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printDatabaseListLong();
+    else
+        printDatabaseListBrief();
+}
+
+
 
 /**
  * Prints the account list in short format.
@@ -1725,6 +1775,56 @@ S9sRpcReply::printClusterListBrief()
     }
 }
 
+void 
+S9sRpcReply::printDatabaseListBrief()
+{
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sVariantList  theList   = clusters();
+    int             nPrinted  = 0;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList databases = theMap["databases"].toVariantList();
+        S9sCluster     cluster(theMap);
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        int            clusterId   = theMap["cluster_id"].toInt();
+        
+        //
+        // Filtering.
+        //
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
+        
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
+                continue;
+        }
+
+        for (uint idx1 = 0u; idx1 < databases.size(); ++idx1)
+        {
+            S9sVariantMap database = databases[idx1].toVariantMap();
+            S9sString     name = database["database_name"].toString();
+        
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
+
+            printf("%s ", STR(name));
+        }
+
+        ++nPrinted;
+    }
+
+    if (nPrinted > 0)
+    {
+        printf("\n");
+        fflush(stdout);
+    }
+}
 /**
  * This method will print the reply as a detailed cluster list (aka 
  * "cluster --list --long").
@@ -1959,6 +2059,140 @@ S9sRpcReply::printClusterListLong()
    
     if (!options->isBatchRequested())
         printf("Total: %lu\n", (unsigned long int) theList.size());
+}
+
+void 
+S9sRpcReply::printDatabaseListLong()
+{
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sVariantList  theList   = clusters();
+    S9sFormat       sizeFormat;
+    S9sFormat       nTablesFormat;
+    S9sFormat       clusterNameFormat;
+    S9sFormat       nameFormat;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList databases = theMap["databases"].toVariantList();
+        S9sCluster     cluster(theMap);
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        int            clusterId   = theMap["cluster_id"].toInt();
+        
+        //
+        // Filtering.
+        //
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
+        
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
+                continue;
+        }
+
+        for (uint idx1 = 0u; idx1 < databases.size(); ++idx1)
+        {
+            S9sVariantMap database = databases[idx1].toVariantMap();
+            S9sString     name = database["database_name"].toString();
+            ulonglong     size = database["database_size"].toULongLong();
+            S9sString     sizeStr = bytesToHuman(size / (1024*1024));
+            ulonglong     nTables = database["number_of_tables"].toULongLong();
+            S9sString     nTablesString;
+
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
+
+            nTablesString.sprintf("%'llu", nTables);
+
+            sizeFormat.widen(sizeStr);
+            nTablesFormat.widen(nTablesString);
+            clusterNameFormat.widen(clusterName);
+            nameFormat.widen(name);
+
+        }
+    }
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        sizeFormat.widen("SIZE");
+        nTablesFormat.widen("#TABLES");
+        clusterNameFormat.widen("CLUSTER");
+        nameFormat.widen("DATABASE");
+
+        printf("%s", headerColorBegin());
+
+        sizeFormat.printf("SIZE");
+        nTablesFormat.printf("#TABLES");
+        clusterNameFormat.printf("CLUSTER");
+        nameFormat.printf("DATABASE");
+ 
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    sizeFormat.setRightJustify();
+    nTablesFormat.setRightJustify();
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList databases = theMap["databases"].toVariantList();
+        S9sCluster     cluster(theMap);
+        S9sString      clusterName = theMap["cluster_name"].toString();
+        int            clusterId   = theMap["cluster_id"].toInt();
+        
+        //
+        // Filtering.
+        //
+        if (options->hasClusterIdOption())
+        {
+            if (clusterId != options->clusterId())
+                continue;
+        }
+        
+        if (options->hasClusterNameOption())
+        {
+            if (clusterName != options->clusterName())
+                continue;
+        }
+
+        for (uint idx1 = 0u; idx1 < databases.size(); ++idx1)
+        {
+            S9sVariantMap database = databases[idx1].toVariantMap();
+            S9sString     name = database["database_name"].toString();
+            ulonglong     size = database["database_size"].toULongLong();
+            S9sString     sizeStr = bytesToHuman(size / (1024*1024));
+            ulonglong     nTables = database["number_of_tables"].toULongLong();
+            S9sString     nTablesString;
+
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
+
+            nTablesString.sprintf("%'llu", nTables);
+
+            sizeFormat.printf(sizeStr);
+            nTablesFormat.printf(nTablesString);
+            
+            printf("%s", clusterColorBegin());
+            clusterNameFormat.printf(clusterName);
+            printf("%s", clusterColorEnd());
+
+            printf("%s", XTERM_COLOR_DATABASE);
+            nameFormat.printf(name);
+            printf("%s", TERM_NORMAL);
+
+            printf("\n");
+        }
+    }
+
+    //if (!options->isBatchRequested())
+    //    printf("Total: %lu\n", (unsigned long int) theList.size());
 }
 
 /**
@@ -2473,30 +2707,6 @@ S9sRpcReply::printNics(
             totalDisks, 
             totalLink);
     }
-}
-
-S9sString 
-bytesToHuman(
-        ulonglong mBytes)
-{
-    S9sOptions *options = S9sOptions::instance();
-    S9sString   retval;
-    S9sVariant  bytes = mBytes * (1024ull * 1024ull);
-
-    if (!options->humanReadable())
-    {
-        retval.sprintf("%'llu", bytes.toULongLong());
-    } else if (bytes.toTBytes() > 1.0)
-    {
-        retval.sprintf("%.1fTB", bytes.toTBytes());
-    } else if (bytes.toGBytes() >= 1.0) 
-    {
-        retval.sprintf("%.1fGB", bytes.toGBytes());
-    } else {
-        retval.sprintf("%.1fMB", bytes.toMBytes());
-    }
-
-    return retval;
 }
 
 void 

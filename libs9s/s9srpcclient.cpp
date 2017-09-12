@@ -439,10 +439,6 @@ S9sRpcClient::getCluster(
 bool
 S9sRpcClient::getClusters()
 {
-    //checkHosts();
-    //getSupportedClusterTypes();
-    //checkClusterName();
-
     S9sOptions    *options     = S9sOptions::instance();
     S9sString      clusterName = options->clusterName();
     int            clusterId   = options->clusterId();
@@ -463,6 +459,30 @@ S9sRpcClient::getClusters()
 
     return retval;
 }
+
+bool
+S9sRpcClient::getDatabases()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sString      clusterName = options->clusterName();
+    int            clusterId   = options->clusterId();
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request;
+    bool           retval;
+   
+    if (options->hasClusterIdOption())
+        return getCluster(clusterName, clusterId);
+    else if (options->hasClusterNameOption())
+        return getCluster(clusterName, clusterId);
+
+    request["operation"]       = "getAllClusterInfo";
+    request["with_databases"]  = true;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 bool
 S9sRpcClient::getTree()

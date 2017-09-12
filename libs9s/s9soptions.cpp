@@ -111,6 +111,7 @@ enum S9sOptionType
     OptionGrant,
     OptionDeleteAccount,
     OptionCreateDatabase,
+    OptionListDatabases,
     OptionAccount,
     OptionWithDatabase,
     OptionObjects,
@@ -2214,6 +2215,16 @@ S9sOptions::isCreateDatabaseRequested() const
 }
 
 /**
+ * \returns true if the --list-databases command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isListDatabasesRequested() const
+{
+    return getBool("list_databases");
+}
+
+/**
  * \returns true if the --long command line option was provided.
  */
 bool
@@ -2891,6 +2902,8 @@ S9sOptions::printHelpJob()
 "  --log                      Print the job log messages.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
 "\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --cluster-name=NAME        Name of the cluster.\n"
 "  --job-id=ID                The ID of the job.\n"
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
@@ -4276,6 +4289,9 @@ S9sOptions::checkOptionsCluster()
     if (isCreateDatabaseRequested())
         countOptions++;
     
+    if (isListDatabasesRequested())
+        countOptions++;
+    
     if (isRegisterRequested())
         countOptions++;
 
@@ -4285,7 +4301,7 @@ S9sOptions::checkOptionsCluster()
             "The following options are mutually exclusive: "
             "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
             " --remove-node, --drop, --stop, --start, --create-account,"
-            " --create-report,"
+            " --create-report, --list-databases, "
             " --delete-account, --create-database, --grant, --register"
             ".";
 
@@ -5823,6 +5839,7 @@ S9sOptions::readOptionsCluster(
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
+        { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
 
         // Main Option
@@ -5841,6 +5858,7 @@ S9sOptions::readOptionsCluster(
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
+        { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "grant",            no_argument,       0, OptionGrant           },
 
         // Job Related Options
@@ -6001,9 +6019,19 @@ S9sOptions::readOptionsCluster(
                 m_options["create_database"] = true;
                 break;
             
+            case OptionListDatabases:
+                // --list-databases
+                m_options["list_databases"] = true;
+                break;
+            
             case OptionGrant:
                 // --grant
                 m_options["grant"] = true;
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
                 break;
 
             case OptionConfigFile:

@@ -72,6 +72,13 @@ S9sBusinessLogic::execute()
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeClusterList(client);
+        } else if (options->isListDatabasesRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getDatabases();
+            reply = client.reply();
+            reply.printDatabaseList();
         } else if (options->isCreateRequested())
         {
             success = client.createCluster();

@@ -67,6 +67,8 @@ class S9sRpcClient
         bool getClusters();
         bool getCluster(const S9sString &clusterName, const int clusterId);
         bool getTree();
+        bool getDatabases();
+
         
         bool checkHosts();
         bool getSupportedClusterTypes();
