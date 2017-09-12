@@ -1817,7 +1817,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
             {
                 sshCommand.sprintf(
                     "echo \"%s\" "
-                    "| sudo -n tee %s 2>/dev/null >/dev/null",
+                    "| sudo tee %s >/dev/null",
                     STR(escapedJson), STR(path));
             } else {
                 sshCommand.sprintf(
@@ -1829,7 +1829,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
                     "-oConnectTimeout=30 "
                     " '%s' "
                     "'echo \"%s\" "
-                    "| sudo -n tee %s 2>/dev/null >/dev/null'",
+                    "| sudo tee %s >/dev/null'",
                     STR(controller),
                     STR(escapedJson),
                     STR(path));
