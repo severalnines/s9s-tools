@@ -2070,6 +2070,8 @@ S9sRpcReply::printDatabaseListLong()
     S9sFormat       nTablesFormat;
     S9sFormat       clusterNameFormat;
     S9sFormat       nameFormat;
+    ulonglong       totalBytes = 0ull;
+    ulonglong       totalTables = 0ull;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2174,6 +2176,9 @@ S9sRpcReply::printDatabaseListLong()
             if (!options->isStringMatchExtraArguments(name))
                 continue;
 
+            totalBytes  += size;
+            totalTables += nTables;
+
             nTablesString.sprintf("%'llu", nTables);
 
             sizeFormat.printf(sizeStr);
@@ -2191,8 +2196,12 @@ S9sRpcReply::printDatabaseListLong()
         }
     }
 
-    //if (!options->isBatchRequested())
-    //    printf("Total: %lu\n", (unsigned long int) theList.size());
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s, %'llu tables\n", 
+                STR(bytesToHuman(totalBytes / (1024*1024))),
+                totalTables);
+    }
 }
 
 /**
