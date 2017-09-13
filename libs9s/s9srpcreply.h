@@ -243,6 +243,9 @@ class S9sRpcReply : public S9sVariantMap
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
         
+        const char *numberColorBegin() const;
+        const char *numberColorEnd() const;
+        
         const char *databaseColorBegin() const;
         const char *databaseColorEnd() const;
 

@@ -6393,6 +6393,24 @@ S9sRpcReply::optNameColorEnd() const
 }
 
 const char *
+S9sRpcReply::numberColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_BLUE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::numberColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sRpcReply::clusterColorBegin() const
 {
     if (useSyntaxHighLight())
