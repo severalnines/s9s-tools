@@ -32,7 +32,7 @@
 #include <cstdio>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 512
@@ -464,18 +464,23 @@ bool
 S9sRpcClient::getDatabases()
 {
     S9sOptions    *options     = S9sOptions::instance();
-    S9sString      clusterName = options->clusterName();
-    int            clusterId   = options->clusterId();
+    S9sString      operation   = "getAllClusterInfo";
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
     bool           retval;
    
     if (options->hasClusterIdOption())
-        return getCluster(clusterName, clusterId);
-    else if (options->hasClusterNameOption())
-        return getCluster(clusterName, clusterId);
+    {
+        request["operation"]       = "getClusterInfo";
+        request["cluster_id"]      = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["operation"]       = "getClusterInfo";
+        request["cluster_name"]    = options->clusterName();
+    } else {
+        request["operation"]       = "getAllClusterInfo";
+    }
 
-    request["operation"]       = "getAllClusterInfo";
     request["with_databases"]  = true;
 
     retval = executeRequest(uri, request);
