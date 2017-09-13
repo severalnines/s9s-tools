@@ -2063,8 +2063,9 @@ S9sRpcReply::printClusterListLong()
 
 void 
 S9sRpcReply::printDatabaseListLong()
-{
+{ 
     S9sOptions     *options   = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList   = clusters();
     S9sFormat       sizeFormat;
     S9sFormat       nTablesFormat;
@@ -2204,9 +2205,18 @@ S9sRpcReply::printDatabaseListLong()
 
     if (!options->isBatchRequested())
     {
-        printf("Total: %s, %'llu tables\n", 
-                STR(bytesToHuman(totalBytes / (1024*1024))),
-                totalTables);
+        if (syntaxHighlight)
+        {
+            printf("Total: %s%s%s, %s%'llu%s tables.\n", 
+                    XTERM_COLOR_NUMBER,
+                    STR(bytesToHuman(totalBytes / (1024*1024))),
+                    TERM_NORMAL,
+                    XTERM_COLOR_NUMBER, totalTables, TERM_NORMAL);
+        } else {
+            printf("Total: %s, %'llu tables.\n", 
+                    STR(bytesToHuman(totalBytes / (1024*1024))),
+                    totalTables);
+        }
     }
 }
 
