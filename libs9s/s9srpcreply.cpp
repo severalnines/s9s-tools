@@ -2073,6 +2073,7 @@ S9sRpcReply::printDatabaseListLong()
     S9sFormat       nameFormat;
     ulonglong       totalBytes = 0ull;
     ulonglong       totalTables = 0ull;
+    int             nDatabases = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2183,6 +2184,7 @@ S9sRpcReply::printDatabaseListLong()
             if (!options->isStringMatchExtraArguments(name))
                 continue;
 
+            nDatabases  += 1;
             totalBytes  += size;
             totalTables += nTables;
 
@@ -2207,13 +2209,15 @@ S9sRpcReply::printDatabaseListLong()
     {
         if (syntaxHighlight)
         {
-            printf("Total: %s%s%s, %s%'llu%s tables.\n", 
+            printf("Total: %s%d%s databases, %s%s%s, %s%'llu%s tables.\n", 
+                    XTERM_COLOR_NUMBER, nDatabases, TERM_NORMAL,
                     XTERM_COLOR_NUMBER,
                     STR(bytesToHuman(totalBytes / (1024*1024))),
                     TERM_NORMAL,
                     XTERM_COLOR_NUMBER, totalTables, TERM_NORMAL);
         } else {
-            printf("Total: %s, %'llu tables.\n", 
+            printf("Total: %d databases, %s, %'llu tables.\n", 
+                    nDatabases,
                     STR(bytesToHuman(totalBytes / (1024*1024))),
                     totalTables);
         }
