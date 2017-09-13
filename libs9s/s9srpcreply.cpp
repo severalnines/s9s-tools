@@ -2195,9 +2195,9 @@ S9sRpcReply::printDatabaseListLong()
             clusterNameFormat.printf(clusterName);
             printf("%s", clusterColorEnd());
 
-            printf("%s", XTERM_COLOR_DATABASE);
+            printf("%s", databaseColorBegin());
             nameFormat.printf(name);
-            printf("%s", TERM_NORMAL);
+            printf("%s", databaseColorEnd());
 
             printf("\n");
         }
@@ -6399,6 +6399,24 @@ S9sRpcReply::clusterColorBegin() const
 
 const char *
 S9sRpcReply::clusterColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::databaseColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_DATABASE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::databaseColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
