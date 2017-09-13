@@ -2065,7 +2065,6 @@ void
 S9sRpcReply::printDatabaseListLong()
 { 
     S9sOptions     *options   = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList   = clusters();
     S9sFormat       sizeFormat;
     S9sFormat       nTablesFormat;
@@ -2207,20 +2206,12 @@ S9sRpcReply::printDatabaseListLong()
 
     if (!options->isBatchRequested())
     {
-        if (syntaxHighlight)
-        {
-            printf("Total: %s%d%s databases, %s%s%s, %s%'llu%s tables.\n", 
-                    XTERM_COLOR_NUMBER, nDatabases, TERM_NORMAL,
-                    XTERM_COLOR_NUMBER,
-                    STR(bytesToHuman(totalBytes / (1024*1024))),
-                    TERM_NORMAL,
-                    XTERM_COLOR_NUMBER, totalTables, TERM_NORMAL);
-        } else {
-            printf("Total: %d databases, %s, %'llu tables.\n", 
-                    nDatabases,
-                    STR(bytesToHuman(totalBytes / (1024*1024))),
-                    totalTables);
-        }
+        printf("Total: %s%d%s databases, %s%s%s, %s%'llu%s tables.\n", 
+                numberColorBegin(), nDatabases, numberColorEnd(),
+                numberColorBegin(),
+                STR(bytesToHuman(totalBytes / (1024*1024))),
+                numberColorEnd(),
+                numberColorBegin(), totalTables, numberColorEnd());
     }
 }
 
@@ -2479,7 +2470,6 @@ S9sRpcReply::printProcessors(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalCpus = 0;
     int             totalCores = 0;
@@ -2545,17 +2535,13 @@ S9sRpcReply::printProcessors(
         }
     }
 
-    if (syntaxHighlight)
+    if (!options->isBatchRequested())
     {
         printf("%sTotal: %s%d%s cpus, %s%d%s cores, %s%d%s threads\n", 
                 STR(indent),
-                XTERM_COLOR_NUMBER, totalCpus, TERM_NORMAL,
-                XTERM_COLOR_NUMBER, totalCores, TERM_NORMAL,
-                XTERM_COLOR_NUMBER, totalThreads, TERM_NORMAL);
-    } else {
-        printf("%sTotal: %d cpus, %d cores, %d threads\n", 
-                STR(indent),
-                totalCpus, totalCores, totalThreads);
+                numberColorBegin(), totalCpus, numberColorEnd(),
+                numberColorBegin(), totalCores, numberColorEnd(),
+                numberColorBegin(), totalThreads, numberColorEnd());
     }
 }
 
@@ -2743,7 +2729,6 @@ S9sRpcReply::printPartitions(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sFormat       totalFormat;
     S9sFormat       freeFormat;
@@ -2894,20 +2879,13 @@ S9sRpcReply::printPartitions(
 
     if (!options->isBatchRequested())
     {
-        if (syntaxHighlight)
-        {
-            printf("Total: %s%s%s, %s%s%s free\n", 
-                    XTERM_COLOR_NUMBER, 
-                    STR(bytesToHuman(totalTotal)),
-                    TERM_NORMAL,
-                    XTERM_COLOR_NUMBER, 
-                    STR(bytesToHuman(freeTotal)), 
-                    TERM_NORMAL);
-        } else {
-            printf("Total: %s, %s free\n", 
-                    STR(bytesToHuman(totalTotal)),
-                    STR(bytesToHuman(freeTotal)));
-        }
+        printf("Total: %s%s%s, %s%s%s free\n", 
+                numberColorBegin(), 
+                STR(bytesToHuman(totalTotal)),
+                numberColorEnd(),
+                numberColorBegin(), 
+                STR(bytesToHuman(freeTotal)), 
+                numberColorEnd());
     } 
 }
 
@@ -2936,7 +2914,6 @@ S9sRpcReply::printMemoryBanks(
         S9sString indent)
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             totalModules = 0;
     ulonglong       totalSize = 0ull;
@@ -3025,20 +3002,11 @@ S9sRpcReply::printMemoryBanks(
     {
         printf("%s", STR(indent));
 
-        if (syntaxHighlight)
-        {
-            printf(
-                "Total: %s%d%s modules, %s%d%s GBytes, %s%d%s GBytes free\n", 
-                XTERM_COLOR_NUMBER, totalModules, TERM_NORMAL,
-                XTERM_COLOR_NUMBER, (int)(totalSize/1024), TERM_NORMAL, 
-                XTERM_COLOR_NUMBER, (int)(freeSize/1024), TERM_NORMAL);
-        } else {
-            printf(
-                "Total: %d modules, %d GBytes, %d GBytes free\n", 
-                totalModules, 
-                (int)(totalSize/1024), 
-                (int)(freeSize/1024));
-        }
+        printf(
+            "Total: %s%d%s modules, %s%d%s GBytes, %s%d%s GBytes free\n", 
+            numberColorBegin(), totalModules, numberColorEnd(),
+            numberColorBegin(), (int)(totalSize/1024), numberColorEnd(), 
+            numberColorBegin(), (int)(freeSize/1024), numberColorEnd());
     }
 }
 
@@ -3227,7 +3195,6 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
     int             totalRunning = 0;
@@ -3347,17 +3314,10 @@ S9sRpcReply::printContainersLong()
     
     if (!options->isBatchRequested())
     {
-        if (syntaxHighlight)
-        {
-            printf("Total: %s%d%s containers, %s%d%s running.\n", 
-                    XTERM_COLOR_NUMBER, total, TERM_NORMAL,
-                    XTERM_COLOR_NUMBER, totalRunning, TERM_NORMAL);
-        } else {
-            printf("Total: %d containers, %d running.\n", 
-                    total, totalRunning);
-        }
+        printf("Total: %s%d%s containers, %s%d%s running.\n", 
+                numberColorBegin(), total, numberColorEnd(),
+                numberColorBegin(), totalRunning, numberColorEnd());
     }
-
 }
 
 void
@@ -6396,7 +6356,7 @@ const char *
 S9sRpcReply::numberColorBegin() const
 {
     if (useSyntaxHighLight())
-        return XTERM_COLOR_BLUE;
+        return XTERM_COLOR_NUMBER;
 
     return "";
 }
