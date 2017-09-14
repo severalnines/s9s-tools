@@ -223,6 +223,14 @@ S9sBusinessLogic::execute()
             success = client.unregisterServers();
             client.printMessages("Unregistered.", success);
             client.setExitStatus();
+        } else if (options->isMoveRequested())
+        {
+            /* 
+             * s9s server --move "/Hungary" "/"
+             */
+            success = client.moveInTree();
+            client.printMessages("Moved.", success);
+            client.setExitStatus();
         } else if (options->isListRequested())
         {
             /*

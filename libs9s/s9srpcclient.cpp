@@ -3653,6 +3653,31 @@ S9sRpcClient::registerServers()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::moveInTree()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+    
+    if (options->nExtraArguments() != 2)
+    {
+        PRINT_ERROR(
+                "The --move option requires two command line arguments: "
+                "the source path and the target path.");
+
+        return false;
+    }
+   
+   
+    request["operation"]      = "move";
+    request["source_path"]    = options->extraArgument(0u);
+    request["target_path"]    = options->extraArgument(1u);
+    
+    return executeRequest(uri, request);
+}
+
 /**
  * Unregisters one or more CmonContainerServer in one step.
  */

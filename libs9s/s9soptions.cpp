@@ -146,6 +146,7 @@ enum S9sOptionType
     OptionOffset,
     OptionRegister,
     OptionUnregister,
+    OptionMove,
     OptionOldPassword,
     OptionNewPassword,
     OptionListKeys,
@@ -178,18 +179,32 @@ S9sOptions::S9sOptions() :
     /*
      * Setting up some internals that we use later.
      */
-    m_modes["backup"]      = Backup;
-    m_modes["cluster"]     = Cluster;
-    m_modes["job"]         = Job;
-    m_modes["log"]         = Log;
-    m_modes["maintenance"] = Maintenance;
-    m_modes["metatype"]    = MetaType;
-    m_modes["node"]        = Node;
-    m_modes["process"]     = Process;
-    m_modes["script"]      = Script;
-    m_modes["server"]      = Server;
-    m_modes["user"]        = User;
-    m_modes["account"]     = Account;
+    m_modes["backup"]       = Backup;
+    m_modes["cluster"]      = Cluster;
+    m_modes["job"]          = Job;
+    m_modes["log"]          = Log;
+    m_modes["maintenance"]  = Maintenance;
+    m_modes["metatype"]     = MetaType;
+    m_modes["node"]         = Node;
+    m_modes["process"]      = Process;
+    m_modes["script"]       = Script;
+    m_modes["server"]       = Server;
+    m_modes["user"]         = User;
+    m_modes["account"]      = Account;
+    
+    // This helps to fix some typos I always had in the command line.
+    m_modes["backups"]      = Backup;
+    m_modes["clusters"]     = Cluster;
+    m_modes["jobs"]         = Job;
+    m_modes["logs"]         = Log;
+    m_modes["maintenances"] = Maintenance;
+    m_modes["metatypes"]    = MetaType;
+    m_modes["nodes"]        = Node;
+    m_modes["processes"]    = Process;
+    m_modes["scripts"]      = Script;
+    m_modes["servers"]      = Server;
+    m_modes["users"]        = User;
+    m_modes["accounts"]     = Account;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2049,6 +2064,16 @@ S9sOptions::isUnregisterRequested() const
 }
 
 /**
+ * \returns true if the --move command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isMoveRequested() const
+{
+    return getBool("move");
+}
+
+/**
  * \returns true if the --execute command line option was provided when the
  *   program was started.
  */
@@ -2852,6 +2877,7 @@ S9sOptions::printHelpGeneric()
 "  %s COMMAND [OPTION...]\n"
 "\n"
 "Where COMMAND is:\n"
+"  account - to manage accounts on clusters.\n"
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -3174,6 +3200,7 @@ S9sOptions::printHelpServer()
 "  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
+"  --move                     Move an object inside the tree.\n"
 "  --register                 Register an existint container server.\n"
 "  --tree                     Print the object tree.\n"
 "  --unregister               Unregister a container server.\n"
@@ -6647,17 +6674,18 @@ S9sOptions::readOptionsServer(
 
         // Main Option
         { "create",           no_argument,       0, OptionCreate          },
+        { "delete",           no_argument,       0, OptionDelete          },
         { "list-containers",  no_argument,       0, OptionListContainers  },
+        { "list-disks",       no_argument,       0, OptionListDisks       },
+        { "list-memory",      no_argument,       0, OptionListMemory      },
+        { "list-nics",        no_argument,       0, OptionListNics        },
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
-        { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
-        { "list-nics",        no_argument,       0, OptionListNics        },
-        { "list-disks",       no_argument,       0, OptionListDisks       },
+        { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
-        { "delete",           no_argument,       0, OptionDelete          },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -6782,6 +6810,11 @@ S9sOptions::readOptionsServer(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionMove:
+                // --move
+                m_options["move"] = true;
                 break;
             
             case OptionRegister:
@@ -6952,6 +6985,9 @@ S9sOptions::checkOptionsServer()
     if (isCreateRequested())
         countOptions++;
     
+    if (isMoveRequested())
+        countOptions++;
+
     if (isRegisterRequested())
         countOptions++;
     
