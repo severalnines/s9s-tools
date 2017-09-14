@@ -2875,13 +2875,14 @@ S9sOptions::printHelpGeneric()
 "  --private-key-file=FILE    The name of the file for authentication.\n"
 "\n"
 "Formatting:\n"
-"  -l, --long                 Print the detailed list.\n"
-"  --print-json               Print the sent/received JSon messages.\n"
-"  --config-file=PATH         Set the configuration file.\n"
-"  --color=always|auto|never  Sets if colors should be used in the output.\n"
 "  --batch                    No colors, no human readable, pure data.\n"
-"  --no-header                Do not print headers.\n"
+"  --color=always|auto|never  Sets if colors should be used in the output.\n"
+"  --config-file=PATH         Set the configuration file.\n"
 "  --date-format=FORMAT       The format of the dates printed.\n"
+"  -l, --long                 Print the detailed list.\n"
+"  --no-header                Do not print headers.\n"
+"  --only-ascii               Do not use UTF8 characters.\n"
+"  --print-json               Print the sent/received JSon messages.\n"
 "\n"
 "Job related options:\n"
 "  --wait                     Wait until the job ends.\n"
@@ -6641,6 +6642,7 @@ S9sOptions::readOptionsServer(
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
+        { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
@@ -6742,6 +6744,11 @@ S9sOptions::readOptionsServer(
             case OptionNoHeader:
                 // --no-header
                 m_options["no_header"] = true;
+                break;
+            
+            case OptionOnlyAscii:
+                // --only-ascii
+                m_options["only_ascii"] = true;
                 break;
 
             case OptionColor:

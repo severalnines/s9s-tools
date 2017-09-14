@@ -3363,6 +3363,10 @@ S9sRpcReply::printObjectTree()
         printObjectTreeBrief();
 }
 
+/**
+ * \param recursionLevel Shows how deep we are in the printing (not in the tree,
+ *   this might be a subtree).
+ */
 void 
 S9sRpcReply::printObjectTreeBrief(
         S9sVariantMap        entry,
@@ -3370,7 +3374,10 @@ S9sRpcReply::printObjectTreeBrief(
         S9sString            indentString,
         bool                 isLast)
 {
+    S9sOptions     *options   = S9sOptions::instance();
+    bool            onlyAscii = options->onlyAscii();
     S9sString       name      = entry["item_name"].toString();
+    S9sString       path      = entry["item_path"].toString();
     S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
@@ -3382,14 +3389,30 @@ S9sRpcReply::printObjectTreeBrief(
     bool            isContainer = type == "Container";
     S9sString       indent;
 
+    // It looks better if we print the full path on the first item when the
+    // first item is not the root folder. The user will know where the tree
+    // starts.
+    if (recursionLevel == 0 && name != "/")
+    {
+        S9sString tmp;
+
+        tmp  = path;
+        if (!tmp.endsWith("/"))
+            tmp += "/";
+
+        tmp += name;
+
+        name = tmp;
+    }
+
     printf("%s", STR(indentString));
 
     if (recursionLevel)
     {
         if (isLast)
-            indent = "└── ";
+            indent = onlyAscii ? "+-- " : "└── ";
         else 
-            indent = "├── ";
+            indent = onlyAscii ? "+-- " : "├── ";
     }
 
     if (isDir)
@@ -3441,7 +3464,7 @@ S9sRpcReply::printObjectTreeBrief(
             if (isLast)
                 indent = "    ";
             else
-                indent = "│   ";
+                indent = onlyAscii ? "|   " : "│   ";
         }
 
         printObjectTreeBrief(
