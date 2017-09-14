@@ -460,6 +460,11 @@ S9sRpcClient::getClusters()
     return retval;
 }
 
+/**
+ * Gets the list of databases from the controller. Getting the databases here is
+ * basically getting the clusters, but with requesting the databases of the
+ * cluster too.
+ */
 bool
 S9sRpcClient::getDatabases()
 {

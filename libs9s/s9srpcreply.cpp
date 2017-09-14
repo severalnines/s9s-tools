@@ -2061,6 +2061,11 @@ S9sRpcReply::printClusterListLong()
         printf("Total: %lu\n", (unsigned long int) theList.size());
 }
 
+/**
+ * Prints the database list in long format as in 
+ * s9s cluster --list-databases --long
+ *
+ */
 void 
 S9sRpcReply::printDatabaseListLong()
 { 
@@ -2068,6 +2073,7 @@ S9sRpcReply::printDatabaseListLong()
     S9sVariantList  theList   = clusters();
     S9sFormat       sizeFormat;
     S9sFormat       nTablesFormat;
+    S9sFormat       nRowsFormat;
     S9sFormat       clusterNameFormat;
     S9sFormat       nameFormat;
     ulonglong       totalBytes = 0ull;
@@ -2105,6 +2111,7 @@ S9sRpcReply::printDatabaseListLong()
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     nTablesString;
+            S9sString     nRowsString;
 
             if (name == "mysql" || name == "performance_schema")
                 continue;
@@ -2112,10 +2119,20 @@ S9sRpcReply::printDatabaseListLong()
             if (!options->isStringMatchExtraArguments(name))
                 continue;
 
+            if (database.contains("number_of_rows"))
+            {
+                nRowsString.sprintf(
+                        "%'llu", 
+                        database["number_of_rows"].toULongLong());
+            } else {
+                nRowsString = "-";
+            }
+
             nTablesString.sprintf("%'llu", nTables);
 
             sizeFormat.widen(sizeStr);
             nTablesFormat.widen(nTablesString);
+            nRowsFormat.widen(nRowsString);
             clusterNameFormat.widen(clusterName);
             nameFormat.widen(name);
 
@@ -2129,6 +2146,7 @@ S9sRpcReply::printDatabaseListLong()
     {
         sizeFormat.widen("SIZE");
         nTablesFormat.widen("#TABLES");
+        nRowsFormat.widen("#ROWS");
         clusterNameFormat.widen("CLUSTER");
         nameFormat.widen("DATABASE");
 
@@ -2136,6 +2154,7 @@ S9sRpcReply::printDatabaseListLong()
 
         sizeFormat.printf("SIZE");
         nTablesFormat.printf("#TABLES");
+        nRowsFormat.printf("#ROWS");
         clusterNameFormat.printf("CLUSTER");
         nameFormat.printf("DATABASE");
  
@@ -2145,6 +2164,7 @@ S9sRpcReply::printDatabaseListLong()
 
     sizeFormat.setRightJustify();
     nTablesFormat.setRightJustify();
+    nRowsFormat.setRightJustify();
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
@@ -2176,12 +2196,22 @@ S9sRpcReply::printDatabaseListLong()
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     nTablesString;
+            S9sString     nRowsString;
 
             if (name == "mysql" || name == "performance_schema")
                 continue;
 
             if (!options->isStringMatchExtraArguments(name))
                 continue;
+
+            if (database.contains("number_of_rows"))
+            {
+                nRowsString.sprintf(
+                        "%'llu", 
+                        database["number_of_rows"].toULongLong());
+            } else {
+                nRowsString = "-";
+            }
 
             nDatabases  += 1;
             totalBytes  += size;
@@ -2191,7 +2221,8 @@ S9sRpcReply::printDatabaseListLong()
 
             sizeFormat.printf(sizeStr);
             nTablesFormat.printf(nTablesString);
-            
+            nRowsFormat.printf(nRowsString);
+
             printf("%s", clusterColorBegin());
             clusterNameFormat.printf(clusterName);
             printf("%s", clusterColorEnd());
@@ -2783,7 +2814,6 @@ S9sRpcReply::printPartitions(
         }
     }
 
-    
     totalFormat.setRightJustify();
     usedFormat.setRightJustify();
     freeFormat.setRightJustify();
