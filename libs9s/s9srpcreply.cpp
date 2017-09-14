@@ -3387,6 +3387,7 @@ S9sRpcReply::printObjectTreeBrief(
     bool            isServer  = type == "Server";
     bool            isUser    = type == "User";
     bool            isContainer = type == "Container";
+    bool            isDatabase = type == "Database";
     S9sString       indent;
 
     // It looks better if we print the full path on the first item when the
@@ -3445,6 +3446,11 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s%s%s", 
                 STR(indent), 
                 userColorBegin(), STR(name), userColorEnd());
+    } else if (isDatabase)
+    {
+        printf("%s%s%s%s", 
+                STR(indent), 
+                databaseColorBegin(), STR(name), databaseColorEnd());
     } else {
         printf("%s%s", STR(indent), STR(name));
     }
