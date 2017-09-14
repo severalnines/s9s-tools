@@ -143,6 +143,12 @@ class S9sRpcReply : public S9sVariantMap
         static const char *clusterStateColorBegin(S9sString state);
         static const char *clusterStateColorEnd();
         
+        static const char *containerColorBegin();
+        static const char *containerColorEnd();
+        
+        static const char *ipColorBegin();
+        static const char *ipColorEnd();
+        
         static const char *userColorBegin();
         static const char *userColorEnd();
         
@@ -251,6 +257,9 @@ class S9sRpcReply : public S9sVariantMap
 
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
+        
+        const char *folderColorBegin() const;
+        const char *folderColorEnd() const;
 
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;

@@ -3071,7 +3071,7 @@ S9sRpcReply::printServersLong()
     S9sFormat       hostNameFormat;
     S9sFormat       ownerFormat;
     S9sFormat       groupFormat;
-    S9sFormat       ipFormat(XTERM_COLOR_IP, TERM_NORMAL);
+    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -3228,8 +3228,8 @@ S9sRpcReply::printContainersLong()
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
     int             totalRunning = 0;
-    S9sFormat       aliasFormat(XTERM_COLOR_NODE, TERM_NORMAL);
-    S9sFormat       ipFormat(XTERM_COLOR_IP, TERM_NORMAL);
+    S9sFormat       aliasFormat(containerColorBegin(), containerColorEnd());
+    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
     S9sFormat       parentFormat;
     S9sFormat       userFormat(userColorBegin(), userColorEnd());
     S9sFormat       groupFormat;
@@ -3419,12 +3419,12 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                XTERM_COLOR_YELLOW, STR(name), TERM_NORMAL);
+                folderColorBegin(), STR(name), folderColorEnd());
     } else if (isContainer)
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                XTERM_COLOR_NODE, STR(name), TERM_NORMAL);
+                containerColorBegin(), STR(name), containerColorEnd());
     } else if (isCluster)
     {
         printf("%s%s%s%s", 
@@ -3434,7 +3434,7 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                XTERM_COLOR_PURPLE, STR(name), TERM_NORMAL);
+                ipColorBegin(), STR(name), ipColorEnd());
     } else if (isServer)
     {
         printf("%s%s%s%s", 
@@ -3444,7 +3444,7 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                XTERM_COLOR_ORANGE, STR(name), TERM_NORMAL);
+                userColorBegin(), STR(name), userColorEnd());
     } else {
         printf("%s%s", STR(indent), STR(name));
     }
@@ -6531,6 +6531,60 @@ S9sRpcReply::headerColorBegin() const
 
 const char *
 S9sRpcReply::headerColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::folderColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_YELLOW;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::folderColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::containerColorBegin()
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_NODE;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::containerColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::ipColorBegin()
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_IP;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::ipColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
