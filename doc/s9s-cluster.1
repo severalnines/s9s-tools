@@ -34,6 +34,10 @@ a new cluster.
 Create a new account to be used on the cluster to access the database(s).
 
 .TP
+.B \-\-create-database
+Create a new database on the cluster.
+
+.TP
 .B \-\-create-report
 When this command line option is provided a new job will be started that will
 create a report. After the job is executed the report will be available on the 
@@ -515,6 +519,15 @@ Schedule a rolling restart of the cluster 20 minutes from now:
     --rolling-restart \\
     --cluster-id=1 \\
     --schedule="$(date -d 'now + 20 min')"\fR
+.fi
+
+Create a database on the cluster with the given name:
+
+.nf
+# \fBs9s cluster \\
+    --create-database \\
+    --cluster-id=2 \\
+    --db-name=database_name\fR
 .fi
 
 Create a database account on the cluster and also create a new database to be
