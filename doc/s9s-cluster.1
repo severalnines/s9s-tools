@@ -16,22 +16,21 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
-.B \-L, \-\-list
-List the clusters managed by the controller.
+.B \-\-add\-node
+Adds a new node (server) to the cluster or to be more precise creates a new
+job that will eventually add a new node to the cluster. The name (or IP 
+address) of the node should be specified using the \fB\-\-nodes\fR command 
+line option.
 
 .TP
-.B \-\-stat
-Print the details of one or more clusters.
+.B \-\-create-account
+Create a new account to be used on the cluster to access the database(s).
 
 .TP
 .B \-\-create
 Create a new cluster. When this command line option is provided the program
 will contact the controller and register a new job that will eventually create
 a new cluster. 
-
-.TP
-.B \-\-create-account
-Create a new account to be used on the cluster to access the database(s).
 
 .TP
 .B \-\-create-database
@@ -45,11 +44,19 @@ controller. If the \fB\-\-output-dir\fP command line option is provided the
 report will be created in the given directory on the controller host.
 
 .TP
-.B \-\-add\-node
-Adds a new node (server) to the cluster or to be more precise creates a new
-job that will eventually add a new node to the cluster. The name (or IP 
-address) of the node should be specified using the \fB\-\-nodes\fR command 
-line option.
+.B \-L, \-\-list
+List the clusters managed by the controller.
+
+.TP
+.B \-\^\-list\-databases
+List the databases found on the cluster. Please note that if the cluster has a
+lot of databases this option might not show some of them. Sampling a huge number
+of databases would generate high load and so the controller has an upper limit
+built into it.
+
+.TP
+.B \-\-stat
+Print the details of one or more clusters.
 
 .TP
 .B \-\-remove\-node 

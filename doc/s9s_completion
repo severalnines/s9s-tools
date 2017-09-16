@@ -137,9 +137,9 @@ function _s9s()
         elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
             main_opt+="--help "
             main_opt+="--add-node --create-account --create --create-database "
-            main_opt+="--delete-account --drop --list --ping --remove-node "
-            main_opt+="--rolling-restart --start --stat --stop "
-            main_opt+="--create-report "
+            main_opt+="--create-report --delete-account --drop --list "
+            main_opt+="--list-databases --ping "
+            main_opt+="--remove-node --rolling-restart --start --stat --stop "
 
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "

@@ -3107,6 +3107,7 @@ S9sOptions::printHelpCluster()
 "  --create-report            Starts a job that will create a report.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
 "  --remove-node              Remove a node from the cluster.\n"
