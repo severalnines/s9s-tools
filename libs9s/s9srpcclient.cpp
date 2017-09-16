@@ -487,6 +487,9 @@ S9sRpcClient::getDatabases()
     }
 
     request["with_databases"]  = true;
+    
+    if (options->isRefreshRequested())
+        request["refresh_now"] = true;
 
     retval = executeRequest(uri, request);
 

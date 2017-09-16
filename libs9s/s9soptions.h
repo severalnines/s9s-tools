@@ -239,6 +239,7 @@ class S9sOptions
         bool isLogRequested() const;
         bool isCreateRequested() const;
         bool isRegisterRequested() const;
+        bool isRefreshRequested() const;
         bool isUnregisterRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;

@@ -162,6 +162,7 @@ enum S9sOptionType
     OptionListNics,
     OptionListDisks,
     OptionDonor,
+    OptionRefresh,
 };
 
 /**
@@ -2051,6 +2052,12 @@ bool
 S9sOptions::isRegisterRequested() const
 {
     return getBool("register");
+}
+
+bool
+S9sOptions::isRefreshRequested() const
+{
+    return getBool("refresh");
 }
 
 /**
@@ -5896,6 +5903,7 @@ S9sOptions::readOptionsCluster(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "refresh",          no_argument,       0, OptionRefresh         },
 
 
         // Cluster information.
@@ -6104,6 +6112,11 @@ S9sOptions::readOptionsCluster(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
                 break;
 
             case OptionPing:
