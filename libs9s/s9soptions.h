@@ -100,6 +100,7 @@ class S9sOptions
 
         S9sString briefJobLogFormat() const;
         S9sString briefLogFormat() const;
+        S9sString longLogFormat() const;
 
         S9sString longJobLogFormat() const;
         S9sString longClusterFormat() const;

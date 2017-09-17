@@ -183,6 +183,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobLogLong();
         
         void printLogBrief();
+        void printLogLong();
 
         void printConfigBrief();
         

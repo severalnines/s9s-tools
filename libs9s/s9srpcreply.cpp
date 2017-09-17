@@ -1320,6 +1320,8 @@ S9sRpcReply::printLogList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (options->isLongRequested())
+        printLogLong();
     else 
         printLogBrief();
 }
@@ -1333,8 +1335,38 @@ S9sRpcReply::printLogBrief()
     S9sString       formatString = options->briefLogFormat();
     S9sVariantList  theList = operator[]("log_entries").toVariantList();
 
-    if (options->hasLogFormat())
-        formatString = options->logFormat();
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sMessage    message = theMap;
+        S9sString     severity = message.severity();
+
+        if (!isDebug && (severity == "DEBUG" || severity == "INFO"))
+            continue;
+
+        if (formatString.empty())
+            printf("%s\n", STR(S9sString::html2ansi(message.message())));
+        else {
+            printf("%s",
+                    STR(message.toString(syntaxHighlight, formatString)));
+        }
+    }
+}
+
+void
+S9sRpcReply::printLogLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    bool            isDebug = options->isDebug();
+    S9sString       formatString = options->longLogFormat();
+    S9sVariantList  theList = operator[]("log_entries").toVariantList();
+
+    // FIXME:
+    // The implementation of the long format is just a formatstring, the same
+    // code is used here as it is added to the brief format.
+    if (formatString.empty())
+        formatString = "%C %36B:%-5L: %-8S %M\n";
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {

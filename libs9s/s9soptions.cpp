@@ -627,6 +627,25 @@ S9sOptions::briefLogFormat() const
     return retval;
 }
 
+S9sString 
+S9sOptions::longLogFormat() const
+{
+    const char *key = "long_log_format";
+    S9sString   retval;
+
+    if (m_options.contains("log_format"))
+    {
+        retval = m_options.at("log_format").toString();
+    } else {
+        retval = m_userConfig.variableValue(key);
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue(key);
+    }
+
+    return retval;
+}
+
 /**
  * \returns The value for the "brief_job_log_format" config variable that
  *   controls the format of the job log lines printed when the --long option is
