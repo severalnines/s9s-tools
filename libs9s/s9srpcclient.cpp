@@ -3662,7 +3662,6 @@ S9sRpcClient::moveInTree()
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList servers   = options->servers();
     
     if (options->nExtraArguments() != 2)
     {
@@ -3680,6 +3679,30 @@ S9sRpcClient::moveInTree()
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::getAcl()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --get-acl option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+   
+    request["operation"]      = "getAcl";
+    request["path"]           = options->extraArgument(0u);
+    
+    return executeRequest(uri, request);
+}
+
 
 /**
  * Unregisters one or more CmonContainerServer in one step.

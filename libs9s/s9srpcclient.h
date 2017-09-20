@@ -78,6 +78,7 @@ class S9sRpcClient
         bool registerServers();
         bool unregisterServers();
         bool moveInTree();
+        bool getAcl();
 
         bool unregisterHost();
         bool getContainers();

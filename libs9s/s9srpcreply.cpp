@@ -268,7 +268,25 @@ S9sRpcReply::clusters()
     return theList;
 }
 
+void
+S9sRpcReply::printAcl()
+{
+    S9sOptions *options = S9sOptions::instance();
 
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        S9sString acl = operator[]("acl").toString();
+
+        acl.replace(",", "\n");
+        printf("%s\n", STR(acl));
+    }
+    
+}
 
 /**
  * Prints the RPC reply as a cluster list. Considers command line options to

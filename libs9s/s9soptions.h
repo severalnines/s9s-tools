@@ -221,6 +221,9 @@ class S9sOptions
         bool isListRequested() const;
         bool isListPartitionsRequested() const;
         bool isListMemoryRequested() const;
+        bool isGetAclRequested() const;
+        bool isAddAclRequested() const;
+        S9sString acl() const;
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
         bool isListDisksRequested() const;

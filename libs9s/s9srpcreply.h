@@ -65,6 +65,7 @@ class S9sRpcReply : public S9sVariantMap
         void printMessages(const S9sString &defaultMessage);
         void printJobStarted();
         void printJobLog();
+        void printAcl();
         void printClusterList();
         void printConfigList();
         void printLogList();

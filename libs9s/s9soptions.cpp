@@ -159,6 +159,9 @@ enum S9sOptionType
     OptionListPartitions,
     OptionListProcessors,
     OptionListMemory,
+    OptionGetAcl,
+    OptionAddAcl,
+    OptionAcl,
     OptionListNics,
     OptionListDisks,
     OptionDonor,
@@ -1892,6 +1895,34 @@ S9sOptions::isListMemoryRequested() const
 }
 
 /**
+ * \returns True if the --get-acl command line option is provided.
+ */
+bool
+S9sOptions::isGetAclRequested() const
+{
+    return getBool("get_acl");
+}
+
+/**
+ * \returns True if the --add-acl command line option is provided.
+ */
+bool
+S9sOptions::isAddAclRequested() const
+{
+    return getBool("add_acl");
+}
+
+/**
+ * \returns The command line option argument for the --acl option or the empty
+ *   string if the option was not provided.
+ */
+S9sString
+S9sOptions::acl() const
+{
+    return getString("acl");
+}
+
+/**
  * \returns True if the --list-processors command line option is provided.
  */
 bool
@@ -3222,6 +3253,8 @@ S9sOptions::printHelpServer()
     printf(
 "Options for the \"server\" command:\n"
 "  --create                   Create a new container.\n"
+"  --get-acl                  List the ACL of an object.\n"
+"  --add-acl                  Adds a new ACL entry to the object.\n"
 "  --list-disks               List disks from multiple servers.\n"
 "  --list-memory              List memory modules from multiple servers.\n"
 "  --list-nics                List network controllers from multiple servers.\n"
@@ -6718,6 +6751,8 @@ S9sOptions::readOptionsServer(
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list-disks",       no_argument,       0, OptionListDisks       },
         { "list-memory",      no_argument,       0, OptionListMemory      },
+        { "get-acl",          no_argument,       0, OptionGetAcl          },
+        { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "list-nics",        no_argument,       0, OptionListNics        },
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
@@ -6731,6 +6766,7 @@ S9sOptions::readOptionsServer(
         //{ "cluster-id",       required_argument, 0, 'i'                   },
         
         { "servers",          required_argument, 0, OptionServers         },
+        { "acl",              required_argument, 0, OptionAcl             },
 
         { 0, 0, 0, 0 }
     };
@@ -6887,6 +6923,16 @@ S9sOptions::readOptionsServer(
                 m_options["list_memory"] = true;
                 break;
             
+            case OptionGetAcl:
+                // --get-acl
+                m_options["get_acl"] = true;
+                break;
+
+            case OptionAddAcl:
+                // --add-acl
+                m_options["add_acl"] = true;
+                break;
+            
             case OptionListProcessors:
                 // --list-processors
                 m_options["list_processors"] = true;
@@ -6912,6 +6958,11 @@ S9sOptions::readOptionsServer(
                 if (!setServers(optarg))
                     return false;
 
+                break;
+
+            case OptionAcl:
+                // --acl=ACLSTRING
+                m_options["acl"] = optarg;
                 break;
 
             case '?':
@@ -7041,6 +7092,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListMemoryRequested())
+        countOptions++;
+    
+    if (isGetAclRequested())
         countOptions++;
     
     if (isListProcessorsRequested())

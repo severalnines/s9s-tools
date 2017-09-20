@@ -205,6 +205,14 @@ S9sBusinessLogic::execute()
         if (options->isTreeRequested())
         {
             executeObjectTree(client);
+        } else if (options->isGetAclRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getAcl();
+            reply = client.reply();
+            reply.printAcl();
+            client.setExitStatus();
         } else if (options->isRegisterRequested())
         {
             /* 
