@@ -3415,6 +3415,34 @@ S9sRpcReply::printObjectTree()
         printObjectTreeBrief();
 }
 
+S9sString 
+aclStringToUiString(
+        S9sString aclString)
+{
+    S9sVariantList parts = aclString.split(",");
+    S9sString user  = "---";
+    S9sString group = "---";
+    S9sString other = "---";
+    S9sString extra = " ";
+
+    for (uint idx = 0u; idx < parts.size(); ++idx)
+    {
+        S9sString part = parts[idx].toString();
+        S9sString lastField = part.substr(part.find_last_of(":") + 1);
+
+        if (part.startsWith("user::"))
+            user = lastField;
+        else if (part.startsWith("group::"))
+            group = lastField;
+        else if (part.startsWith("other::"))
+            other = lastField;
+        else 
+            extra = "+";
+    }
+
+    return user + group + other + extra;
+}
+
 /**
  * \param recursionLevel Shows how deep we are in the printing (not in the tree,
  *   this might be a subtree).
@@ -3550,6 +3578,7 @@ S9sRpcReply::printObjectTreeLong(
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
     S9sString       owner     = entry["owner_user_name"].toString();
     S9sString       group     = entry["owner_group_name"].toString();
+    S9sString       acl       = entry["item_acl"].toString();
     S9sString       fullPath;
 
     if (owner.empty())
@@ -3579,6 +3608,7 @@ S9sRpcReply::printObjectTreeLong(
     else if (type == "Database")
         printf("d");
    
+    printf("%s", STR(aclStringToUiString(acl)));
     printf(" ");
 
     printf("%s", userColorBegin());
@@ -3589,7 +3619,38 @@ S9sRpcReply::printObjectTreeLong(
     printf("%-10s ", STR(group));
     printf("%s", groupColorEnd());
 
-    printf("%s", STR(fullPath));
+    if (type == "Folder")
+    {
+        printf("%s%s%s", 
+                folderColorBegin(), STR(fullPath), folderColorEnd());
+    } else if (type == "Cluster")
+    {
+        printf("%s%s%s", 
+                clusterColorBegin(), STR(fullPath), clusterColorEnd());
+    } else if (type == "Node")
+    {
+        printf("%s%s%s", 
+                ipColorBegin(), STR(fullPath), ipColorEnd());
+    } else if (type == "Server")
+    {
+        printf("%s%s%s", 
+                serverColorBegin(), STR(fullPath), serverColorEnd());
+    } else if (type == "User")
+    {
+        printf("%s%s%s", 
+                userColorBegin(), STR(fullPath), userColorEnd());
+    } else if (type == "Container")
+    {
+        printf("%s%s%s", 
+                containerColorBegin(), STR(fullPath), containerColorEnd());
+    } else if (type == "Database")
+    {
+        printf("%s%s%s", 
+                databaseColorBegin(), STR(fullPath), databaseColorEnd());
+    } else {
+        printf("%s", STR(fullPath));
+    }
+
     printf("\n");
 
     for (uint idx = 0; idx < entries.size(); ++idx)
