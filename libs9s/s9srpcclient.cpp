@@ -3680,6 +3680,9 @@ S9sRpcClient::moveInTree()
     return executeRequest(uri, request);
 }
 
+/**
+ * Sends the getAcl request to the controller.
+ */
 bool
 S9sRpcClient::getAcl()
 {
@@ -3700,6 +3703,37 @@ S9sRpcClient::getAcl()
     request["operation"]      = "getAcl";
     request["path"]           = options->extraArgument(0u);
     
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::addAcl()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      aclString = options->acl();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --add-acl option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (aclString.empty())
+    {
+        PRINT_ERROR("The --add-acl requires the --acl=STRING option.");
+
+        return false;
+    }
+   
+    request["operation"]      = "addAcl";
+    request["path"]           = options->extraArgument(0u);
+    request["acl"]            = aclString;
+
     return executeRequest(uri, request);
 }
 

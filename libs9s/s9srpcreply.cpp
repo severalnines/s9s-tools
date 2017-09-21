@@ -3409,6 +3409,8 @@ S9sRpcReply::printObjectTree()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
+    else if (options->isLongRequested())
+        printObjectTreeLong();
     else 
         printObjectTreeBrief();
 }
@@ -3529,12 +3531,90 @@ S9sRpcReply::printObjectTreeBrief(
     }
 }
 
+/**
+ * \param recursionLevel Shows how deep we are in the printing (not in the tree,
+ *   this might be a subtree).
+ */
+void 
+S9sRpcReply::printObjectTreeLong(
+        S9sVariantMap        entry,
+        int                  recursionLevel,
+        S9sString            indentString,
+        bool                 isLast)
+{
+    //S9sOptions     *options   = S9sOptions::instance();
+    S9sString       name      = entry["item_name"].toString();
+    S9sString       path      = entry["item_path"].toString();
+    S9sString       spec      = entry["item_spec"].toString();
+    S9sString       type      = entry["item_type"].toString();
+    S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    S9sString       owner     = entry["owner_user_name"].toString();
+    S9sString       group     = entry["owner_group_name"].toString();
+    S9sString       fullPath;
+
+    if (owner.empty())
+        owner.sprintf("%d", entry["owner_user_id"].toInt());
+    
+    if (group.empty())
+        group.sprintf("%d", entry["owner_group_id"].toInt());
+
+    fullPath = path;
+    if (!fullPath.endsWith("/"))
+        fullPath += "/";
+
+    fullPath += name;
+
+    if (type == "Folder")
+        printf("f");
+    else if (type == "Cluster")
+        printf("c");
+    else if (type == "Node")
+        printf("n");
+    else if (type == "Server")
+        printf("s");
+    else if (type == "User")
+        printf("u");
+    else if (type == "Container")
+        printf("c");
+    else if (type == "Database")
+        printf("d");
+   
+    printf(" ");
+
+    printf("%s", userColorBegin());
+    printf("%-10s ", STR(owner));
+    printf("%s", userColorEnd());
+
+    printf("%s", groupColorBegin(group));
+    printf("%-10s ", STR(group));
+    printf("%s", groupColorEnd());
+
+    printf("%s", STR(fullPath));
+    printf("\n");
+
+    for (uint idx = 0; idx < entries.size(); ++idx)
+    {
+        S9sVariantMap child = entries[idx].toVariantMap();
+        bool          last = idx + 1 >= entries.size();
+       
+        printObjectTreeLong(
+                child, recursionLevel + 1, 
+                "", last);
+    }
+}
+
 void
 S9sRpcReply::printObjectTreeBrief()
 {
     S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
-
     printObjectTreeBrief(entry, 0, "", false);
+}
+
+void
+S9sRpcReply::printObjectTreeLong()
+{
+    S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
+    printObjectTreeLong(entry, 0, "", false);
 }
 
 void

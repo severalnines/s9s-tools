@@ -213,6 +213,11 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printAcl();
             client.setExitStatus();
+        } else if (options->isAddAclRequested())
+        {
+            success = client.addAcl();
+            client.printMessages("Acl is added.", success);
+            client.setExitStatus();
         } else if (options->isRegisterRequested())
         {
             /* 

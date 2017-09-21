@@ -7097,6 +7097,9 @@ S9sOptions::checkOptionsServer()
     if (isGetAclRequested())
         countOptions++;
     
+    if (isAddAclRequested())
+        countOptions++;
+    
     if (isListProcessorsRequested())
         countOptions++;
     
@@ -7111,10 +7114,7 @@ S9sOptions::checkOptionsServer()
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --execute and --delete options are mutually"
-            " exclusive.";
-
+        m_errorMessage = "Main option is required.";
         m_exitStatus = BadOptions;
         return false;
     } else if (countOptions == 0)
