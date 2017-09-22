@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sVariantMap"
+#include "S9sFormat"
 
 class S9sNode;
 class S9sCluster;
@@ -278,5 +279,12 @@ class S9sRpcReply : public S9sVariantMap
         
         const char *greyColorBegin() const;
         const char *greyColorEnd() const;
+
+    private:
+        void walkObjectTree(S9sVariantMap &node);
+
+    private:
+        S9sFormat   m_ownerFormat;
+        S9sFormat   m_groupFormat;
 };
 

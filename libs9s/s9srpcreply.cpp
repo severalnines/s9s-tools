@@ -3559,6 +3559,25 @@ S9sRpcReply::printObjectTreeBrief(
     }
 }
 
+void
+S9sRpcReply::walkObjectTree(
+        S9sVariantMap       &node)
+{
+    S9sString       owner     = node["owner_user_name"].toString();
+    S9sString       group     = node["owner_group_name"].toString();
+    S9sVariantList  entries   = node["sub_items"].toVariantList();
+
+    m_ownerFormat.widen(owner);
+    m_groupFormat.widen(group);
+
+    for (uint idx = 0; idx < entries.size(); ++idx)
+    {
+        S9sVariantMap child = entries[idx].toVariantMap();
+        
+        walkObjectTree(child);
+    }
+}
+
 /**
  * \param recursionLevel Shows how deep we are in the printing (not in the tree,
  *   this might be a subtree).
@@ -3570,7 +3589,6 @@ S9sRpcReply::printObjectTreeLong(
         S9sString            indentString,
         bool                 isLast)
 {
-    //S9sOptions     *options   = S9sOptions::instance();
     S9sString       name      = entry["item_name"].toString();
     S9sString       path      = entry["item_path"].toString();
     S9sString       spec      = entry["item_spec"].toString();
@@ -3612,11 +3630,11 @@ S9sRpcReply::printObjectTreeLong(
     printf(" ");
 
     printf("%s", userColorBegin());
-    printf("%-10s ", STR(owner));
+    m_ownerFormat.printf(owner);
     printf("%s", userColorEnd());
 
     printf("%s", groupColorBegin(group));
-    printf("%-10s ", STR(group));
+    m_groupFormat.printf(group);
     printf("%s", groupColorEnd());
 
     if (type == "Folder")
@@ -3675,6 +3693,11 @@ void
 S9sRpcReply::printObjectTreeLong()
 {
     S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
+
+    m_ownerFormat = S9sFormat();
+    m_groupFormat = S9sFormat();
+    walkObjectTree(entry);
+
     printObjectTreeLong(entry, 0, "", false);
 }
 
