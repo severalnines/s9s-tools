@@ -2138,6 +2138,7 @@ S9sRpcReply::printDatabaseListLong()
     S9sFormat       nRowsFormat;
     S9sFormat       clusterNameFormat;
     S9sFormat       nameFormat;
+    S9sFormat       ownerFormat, groupFormat;
     ulonglong       totalBytes = 0ull;
     ulonglong       totalTables = 0ull;
     int             nDatabases = 0;
@@ -2149,7 +2150,7 @@ S9sRpcReply::printDatabaseListLong()
         S9sCluster     cluster(theMap);
         S9sString      clusterName = theMap["cluster_name"].toString();
         int            clusterId   = theMap["cluster_id"].toInt();
-       
+
         //
         // Filtering.
         //
@@ -2172,6 +2173,8 @@ S9sRpcReply::printDatabaseListLong()
             ulonglong     size = database["database_size"].toULongLong();
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
+            S9sString     ownerName = database["owner_user_name"].toString();
+            S9sString     groupName = database["owner_group_name"].toString();
             S9sString     nTablesString;
             S9sString     nRowsString;
 
@@ -2192,6 +2195,8 @@ S9sRpcReply::printDatabaseListLong()
 
             nTablesString.sprintf("%'llu", nTables);
 
+            ownerFormat.widen(ownerName);
+            groupFormat.widen(groupName);
             sizeFormat.widen(sizeStr);
             nTablesFormat.widen(nTablesString);
             nRowsFormat.widen(nRowsString);
@@ -2209,6 +2214,8 @@ S9sRpcReply::printDatabaseListLong()
         sizeFormat.widen("SIZE");
         nTablesFormat.widen("#TABLES");
         nRowsFormat.widen("#ROWS");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
         clusterNameFormat.widen("CLUSTER");
         nameFormat.widen("DATABASE");
 
@@ -2217,6 +2224,8 @@ S9sRpcReply::printDatabaseListLong()
         sizeFormat.printf("SIZE");
         nTablesFormat.printf("#TABLES");
         nRowsFormat.printf("#ROWS");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
         clusterNameFormat.printf("CLUSTER");
         nameFormat.printf("DATABASE");
  
@@ -2257,6 +2266,8 @@ S9sRpcReply::printDatabaseListLong()
             ulonglong     size = database["database_size"].toULongLong();
             S9sString     sizeStr = bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
+            S9sString     ownerName = database["owner_user_name"].toString();
+            S9sString     groupName = database["owner_group_name"].toString();
             S9sString     nTablesString;
             S9sString     nRowsString;
 
@@ -2284,6 +2295,14 @@ S9sRpcReply::printDatabaseListLong()
             sizeFormat.printf(sizeStr);
             nTablesFormat.printf(nTablesString);
             nRowsFormat.printf(nRowsString);
+
+            printf("%s", userColorBegin());
+            ownerFormat.printf(ownerName);
+            printf("%s", userColorEnd());
+
+            printf("%s", groupColorBegin(groupName));
+            groupFormat.printf(groupName);
+            printf("%s", groupColorEnd());
 
             printf("%s", clusterColorBegin());
             clusterNameFormat.printf(clusterName);
