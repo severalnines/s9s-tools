@@ -204,7 +204,7 @@ function _s9s()
             main_opt+="--help "
             main_opt+="--create --list-disks --list-memory --list-nics "
             main_opt+="--list-partitions --list-processors --list-containers "
-            main_opt+="--register "
+            main_opt+="--register --unregister --start --stop "
             main_opt+="--tree --unregister --get-acl --set-acl"
             
             if ! _s9s_has_options $main_opt; then

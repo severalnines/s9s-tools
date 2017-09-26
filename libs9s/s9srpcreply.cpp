@@ -281,6 +281,18 @@ S9sRpcReply::printAcl()
         PRINT_ERROR("%s", STR(errorString()));
     } else {
         S9sString acl = operator[]("acl").toString();
+        S9sString owner = operator[]("owner_user_name").toString();
+        S9sString group = operator[]("owner_group_name").toString();
+        S9sString name  = operator[]("object_name").toString();
+
+        if (!name.empty())
+            printf("#  name: %s\n", STR(name));
+
+        if (!owner.empty())
+            printf("# owner: %s\n", STR(owner));
+        
+        if (!group.empty())
+            printf("# group: %s\n", STR(group));
 
         acl.replace(",", "\n");
         printf("%s\n", STR(acl));

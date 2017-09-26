@@ -505,8 +505,12 @@ S9sRpcClient::getTree()
     S9sVariantMap  request;
     
     request["operation"]       = "getTree";
+
     if (options->nExtraArguments() > 0)
         request["path"] = options->extraArgument(0u);
+
+    if (options->isRefreshRequested())
+        request["refresh_now"] = true;
 
     return executeRequest(uri, request);
 }
@@ -3644,7 +3648,6 @@ S9sRpcClient::checkHosts()
 bool
 S9sRpcClient::registerServers()
 {
-    //getSshCredentials();
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
@@ -3686,6 +3689,33 @@ S9sRpcClient::moveInTree()
 bool
 S9sRpcClient::getAcl()
 {
+    S9sString        uri = "/v2/host/";
+    S9sVariantMap    request;
+    S9sOptions      *options   = S9sOptions::instance();
+    S9sVariantList   servers   = options->servers();
+
+    if (!servers.empty())
+    {
+        request["servers"] = serversField(servers);
+    } else if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --get-acl option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    } else {
+        request["path"] = options->extraArgument(0u);
+    }
+   
+    request["operation"]      = "getAcl";
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::startInTree()
+{
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
@@ -3693,18 +3723,19 @@ S9sRpcClient::getAcl()
     if (options->nExtraArguments() != 1)
     {
         PRINT_ERROR(
-                "The --get-acl option requires one command line argument: "
+                "The --start option requires one command line argument: "
                 "the path of the object.");
 
         return false;
     }
    
    
-    request["operation"]      = "getAcl";
+    request["operation"]      = "start";
     request["path"]           = options->extraArgument(0u);
     
     return executeRequest(uri, request);
 }
+
 
 bool
 S9sRpcClient::addAcl()
@@ -3833,6 +3864,9 @@ S9sRpcClient::getServers()
 
     if (!servers.empty())
         request["servers"]    = serversField(servers);
+    
+    if (options->isRefreshRequested())
+        request["refresh_now"] = true;
     
     return executeRequest(uri, request);
 }

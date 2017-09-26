@@ -218,6 +218,11 @@ S9sBusinessLogic::execute()
             success = client.addAcl();
             client.printMessages("Acl is added.", success);
             client.setExitStatus();
+        } else if (options->isStartRequested())
+        {
+            success = client.startInTree();
+            client.printMessages("Started.", success);
+            client.setExitStatus();
         } else if (options->isRegisterRequested())
         {
             /* 

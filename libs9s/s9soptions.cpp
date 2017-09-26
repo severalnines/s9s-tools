@@ -6761,12 +6761,14 @@ S9sOptions::readOptionsServer(
         { "register",         no_argument,       0, OptionRegister        },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
+        { "start",            no_argument,       0, OptionStart           },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
         
         { "servers",          required_argument, 0, OptionServers         },
         { "acl",              required_argument, 0, OptionAcl             },
+        { "refresh",          no_argument,       0, OptionRefresh         },
 
         { 0, 0, 0, 0 }
     };
@@ -6964,6 +6966,16 @@ S9sOptions::readOptionsServer(
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
                 break;
+            
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
+                break;
+            
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
+                break;
 
             case '?':
                 // 
@@ -7110,6 +7122,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListRequested())
+        countOptions++;
+    
+    if (isStartRequested())
         countOptions++;
 
     if (countOptions > 1)

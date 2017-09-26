@@ -80,6 +80,7 @@ class S9sRpcClient
         bool moveInTree();
         bool getAcl();
         bool addAcl();
+        bool startInTree();
 
         bool unregisterHost();
         bool getContainers();
