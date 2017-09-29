@@ -100,7 +100,7 @@ mys9s user --list --long
 
 mys9s server \
     --register \
-    --servers="lxc://core1?hostgrouppath=compute;lxc://storage01?hostgrouppath=compute"
+    --servers="lxc://core1?;lxc://storage01"
 
 mys9s server \
     --tree

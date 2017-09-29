@@ -3107,7 +3107,7 @@ S9sOptions::printHelpUser()
 "  -g, --generate-key         Generate an RSA keypair for the user.\n"
 "  --group=GROUP_NAME         The primary group for the new user.\n"
 "  --last-name=NAME           The last name of the user.\n"
-"  --new-password=PASSWORD    The new password to set."
+"  --new-password=PASSWORD    The new password to set.\n"
 "  --public-key-file=FILE     The name of the file where the public key is.\n"
 "  --public-key-name=NAME     The name of the public key.\n"
 "  --title=TITLE              The prefix title for the user.\n"

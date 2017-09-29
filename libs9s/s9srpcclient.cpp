@@ -3896,6 +3896,9 @@ S9sRpcClient::getServers()
     return executeRequest(uri, request);
 }
 
+/**
+ * Sends a request to create a container.
+ */
 bool
 S9sRpcClient::createContainer()
 {

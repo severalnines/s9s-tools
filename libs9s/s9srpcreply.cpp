@@ -3713,6 +3713,9 @@ S9sRpcReply::printObjectTreeLong(
     }
 }
 
+/**
+ * Prints the CDT in its tree format.
+ */
 void
 S9sRpcReply::printObjectTreeBrief()
 {
@@ -3720,6 +3723,9 @@ S9sRpcReply::printObjectTreeBrief()
     printObjectTreeBrief(entry, 0, "", false);
 }
 
+/**
+ * Prints the CDT as a list.
+ */
 void
 S9sRpcReply::printObjectTreeLong()
 {
