@@ -249,6 +249,14 @@ S9sBusinessLogic::execute()
             success = client.moveInTree();
             client.printMessages("Moved.", success);
             client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            /* 
+             * s9s server --move "/Hungary" "/"
+             */
+            success = client.deleteFromTree();
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else if (options->isListRequested())
         {
             /*

@@ -496,7 +496,9 @@ S9sRpcClient::getDatabases()
     return retval;
 }
 
-
+/**
+ * This method id used to get the Cmon Directory Tree from the controller.
+ */
 bool
 S9sRpcClient::getTree()
 {
@@ -3679,6 +3681,29 @@ S9sRpcClient::moveInTree()
     request["operation"]      = "move";
     request["source_path"]    = options->extraArgument(0u);
     request["target_path"]    = options->extraArgument(1u);
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::deleteFromTree()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --delete option requires one command line argument: "
+                "the full path of the object to delete.");
+
+        return false;
+    }
+   
+   
+    request["operation"]      = "delete";
+    request["path"]           = options->extraArgument(0u);
     
     return executeRequest(uri, request);
 }

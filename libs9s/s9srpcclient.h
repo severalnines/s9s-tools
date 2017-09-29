@@ -78,6 +78,8 @@ class S9sRpcClient
         bool registerServers();
         bool unregisterServers();
         bool moveInTree();
+        bool deleteFromTree();
+
         bool getAcl();
         bool addAcl();
         bool startInTree();

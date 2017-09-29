@@ -2212,7 +2212,7 @@ S9sRpcReply::printDatabaseListLong()
     if (!options->isNoHeaderRequested())
     {
         sizeFormat.widen("SIZE");
-        nTablesFormat.widen("#TABLES");
+        nTablesFormat.widen("#TBL");
         nRowsFormat.widen("#ROWS");
         ownerFormat.widen("OWNER");
         groupFormat.widen("GROUP");
@@ -2222,7 +2222,7 @@ S9sRpcReply::printDatabaseListLong()
         printf("%s", headerColorBegin());
 
         sizeFormat.printf("SIZE");
-        nTablesFormat.printf("#TABLES");
+        nTablesFormat.printf("#TBL");
         nRowsFormat.printf("#ROWS");
         ownerFormat.printf("OWNER");
         groupFormat.printf("GROUP");
@@ -3716,14 +3716,14 @@ S9sRpcReply::printObjectTreeLong(
 void
 S9sRpcReply::printObjectTreeBrief()
 {
-    S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
+    S9sVariantMap entry =  operator[]("cdt").toVariantMap();
     printObjectTreeBrief(entry, 0, "", false);
 }
 
 void
 S9sRpcReply::printObjectTreeLong()
 {
-    S9sVariantMap entry =  operator[]("root_folder").toVariantMap();
+    S9sVariantMap entry =  operator[]("cdt").toVariantMap();
 
     m_ownerFormat = S9sFormat();
     m_groupFormat = S9sFormat();
