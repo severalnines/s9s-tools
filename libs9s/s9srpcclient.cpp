@@ -365,7 +365,7 @@ S9sRpcClient::authenticateWithKey()
     retval = executeRequest(uri, request);
     if (!retval)
     {
-        S9S_WARNING("request failed: %s", STR(reply().toString()));
+        S9S_DEBUG("request failed: %s", STR(reply().toString()));
         return false;
     }
 
