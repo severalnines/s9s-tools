@@ -3146,6 +3146,7 @@ S9sRpcReply::printServersLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
+    int             total   = operator[]("total").toInt();
     S9sFormat       protocolFormat;
     S9sFormat       versionFormat;
     S9sFormat       nContainersFormat;
@@ -3178,6 +3179,31 @@ S9sRpcReply::printServersLong()
         ownerFormat.widen(owner);
         groupFormat.widen(group);
         ipFormat.widen(ip);
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        protocolFormat.widen("PRV");
+        versionFormat.widen("VERSION");
+        nContainersFormat.widen("#C");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        hostNameFormat.widen("SERVER_NAME");
+        ipFormat.widen("IP");
+        
+        printf("%s", headerColorBegin());
+        protocolFormat.printf("PRV");
+        versionFormat.printf("VERSION");
+        nContainersFormat.printf("#C");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
+        hostNameFormat.printf("NAME");
+        ipFormat.printf("IP", false);
+        printf("COMMENT");
+        printf("%s\n", headerColorEnd());
     }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -3234,6 +3260,9 @@ S9sRpcReply::printServersLong()
 
         printf("\n");
     }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d server(s)\n", total);
 }
 
 /**
@@ -3600,6 +3629,7 @@ S9sRpcReply::walkObjectTree(
 
     m_ownerFormat.widen(owner);
     m_groupFormat.widen(group);
+    ++m_numberOfObjects;
 
     for (uint idx = 0; idx < entries.size(); ++idx)
     {
@@ -3729,13 +3759,36 @@ S9sRpcReply::printObjectTreeBrief()
 void
 S9sRpcReply::printObjectTreeLong()
 {
-    S9sVariantMap entry =  operator[]("cdt").toVariantMap();
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   entry =  operator[]("cdt").toVariantMap();
 
     m_ownerFormat = S9sFormat();
     m_groupFormat = S9sFormat();
+    m_numberOfObjects = 0;
+
     walkObjectTree(entry);
 
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        m_ownerFormat.widen("OWNER");
+        m_groupFormat.widen("GROUP");
+
+        printf("%s", headerColorBegin());
+        printf("MODE        ");
+        m_ownerFormat.printf("OWNER");
+        m_groupFormat.printf("GROUP");
+        printf("FULL PATH");
+        printf("%s\n", headerColorEnd());
+
+    }
+
     printObjectTreeLong(entry, 0, "", false);
+        
+    if (!options->isBatchRequested())
+        printf("Total: %d object(s)\n", m_numberOfObjects); 
 }
 
 void

@@ -152,3 +152,89 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
+#
+# Moving the server.
+#
+#echo "Moving the server in the tree"
+#mys9s server \
+#    --move \
+#    /core1 /servers
+#
+#exitCode=$?
+#if [ "$exitCode" -ne 0 ]; then
+#    failure "The exit code is ${exitCode} while moving server."
+#    exit 1
+#fi
+
+#
+# Creating a container.
+#
+echo "Creating a container."
+mys9s server \
+    --create container_001
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating container."
+    exit 1
+fi
+
+CONTAINER_IP=$(\
+    s9s server \
+        --list-containers \
+        --long container_001 \
+        --batch \
+    | awk '{print $7}')
+
+echo "CONTAINER_IP : $CONTAINER_IP"
+
+#
+# Creating a Galera cluster.
+#
+echo "Creating a cluster."
+mys9s cluster \
+    --create \
+    --cluster-type=galera \
+    --nodes="$CONTAINER_IP" \
+    --vendor=percona \
+    --cluster-name="galera_001" \
+    --provider-version=5.6 \
+    --wait
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating container."
+    exit 1
+fi
+
+#
+# Create databases.
+#
+mys9s cluster \
+    --create-database \
+    --cluster-name="galera_001" \
+    --db-name="domain_names_ngtlds_diff" \
+    --batch
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating database."
+    exit 1
+fi
+
+#
+# Creating a database account.
+#
+mys9s account \
+    --create \
+    --cluster-name="galera_001" \
+    --account="pipas:pipas" \
+    --privileges="*.*:ALL"
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating account."
+    exit 1
+fi
+
+mys9s server --tree --refresh
