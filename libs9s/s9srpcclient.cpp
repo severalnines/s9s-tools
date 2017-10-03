@@ -503,7 +503,7 @@ bool
 S9sRpcClient::getTree()
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/host";
+    S9sString      uri = "/v2/tree";
     S9sVariantMap  request;
     
     request["operation"]       = "getTree";
@@ -3664,7 +3664,7 @@ S9sRpcClient::registerServers()
 bool
 S9sRpcClient::moveInTree()
 {
-    S9sString      uri = "/v2/host/";
+    S9sString      uri = "/v2/tree/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     
@@ -3721,16 +3721,18 @@ S9sRpcClient::getAcl()
 
     if (!servers.empty())
     {
+        uri = "/v2/host/";
         request["servers"] = serversField(servers);
-    } else if (options->nExtraArguments() != 1)
+    } else if (options->nExtraArguments() == 1)
     {
+        uri = "/v2/tree/";
+        request["path"] = options->extraArgument(0u);
+    } else {
         PRINT_ERROR(
                 "The --get-acl option requires one command line argument: "
                 "the path of the object.");
 
         return false;
-    } else {
-        request["path"] = options->extraArgument(0u);
     }
    
     request["operation"]      = "getAcl";
@@ -3765,7 +3767,7 @@ S9sRpcClient::startInTree()
 bool
 S9sRpcClient::addAcl()
 {
-    S9sString      uri = "/v2/host/";
+    S9sString      uri = "/v2/tree/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      aclString = options->acl();
