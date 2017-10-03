@@ -2947,7 +2947,7 @@ S9sOptions::printHelpGeneric()
 "     user - to manage users.\n"
 "\n"
 "Generic options:\n"
-"  -h, --help                 Show help message and exit.\n" 
+"  --help                     Show help message and exit.\n" 
 "  -v, --verbose              Print more messages than normally.\n"
 "  -V, --version              Print version information and exit.\n"
 "  -c, --controller=URL       The URL where the controller is found.\n"
