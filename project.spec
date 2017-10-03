@@ -29,6 +29,7 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 
 %files
 %doc README TODO COPYING ChangeLog
@@ -39,5 +40,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Wed Oct  3 2017 David Kedves <kedazo@severalnines.com> 0.1.20171003
+- Fixing RPM building issue
 * Wed Jan 25 2017 David Kedves <kedazo@severalnines.com> 0.1.20170125
 - Initial RPM release
