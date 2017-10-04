@@ -1,10 +1,11 @@
-.TH S9S-NODE 1 "October 4, 2017"
+.TH S9S-TREE 1 "October 4, 2017"
 
 .SH NAME
-s9s-node \- Command line client for the Severalnines Clustercontrol server.
+s9s-tree \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
-.B s9s-node
-.RI [OPTION]...
+.B s9s-tree
+.RI [OPTION]... 
+.RI [PATH]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
 deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
@@ -14,3 +15,150 @@ deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
 The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
+
+.TP
+.B \-\^\-add\-acl
+Add an ACL entry to an object in the tree.
+
+.TP
+.B \-\^\-get\-acl
+Print the ACL of an object in the tree.
+
+.TP
+.B \-\^\-list
+Print the Cmon Directory Tree in list format.
+
+.TP 
+.B \-\^\-move 
+Move an object to a new location in the tree.
+
+.TP
+.B \-\^\-tree
+Print the tree in its original tree format.
+
+.\"
+.\" The generic options that we have in all the modes.
+.\"
+.SS Generic Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.TP
+.B \-\-print-json
+The JSON strings will be printed while communicating with the controller. This 
+option is for debugging purposes.
+
+.TP
+.BR \-\^\-color [ =\fIWHEN\fP "]
+Turn on and off the syntax highlighting of the output. The supported values for 
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+
+.TP
+.B \-\-batch
+Print no messages. If the application created a job print only the job ID number
+and exit. If the command prints data do not use syntax highlight, headers,
+totals, only the pure table to be processed using filters.
+
+.TP
+.B \-\-no\-header
+Do not print headers for tables.
+
+.TP
+.B \-\-only\-ascii
+Use only ASCII characters in the output.
+
+.\"
+.\" Other options. 
+.\"
+.SS Other Options
+
+.TP
+.BI \-\^\-acl= ACLSTRING
+An ACL entry in string format as it is defined in acl(5) "long text format" and
+"short text format".
+
+.TP
+.BI \-\^\-refresh
+If this command line option is provided the controller will collect the data, 
+refresh the information before sending it back. 
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+Print the Cmon Directory tree in its tree format.
+
+.nf 
+# \fBs9s tree --tree\fR
+.fi
+
+Print the Access Control List for one particular object on the tree:
+
+.nf
+# \fBs9s tree \\
+    --get-acl \\
+    /servers/storage01\fR
+.fi
+
+Adding a new ACL entry to the ACL of the specified object. If the ACL entry for
+the same type already added, the permissions will be overwritten.
+
+.nf
+# \fBs9s tree \\
+    --add-acl \\
+    --acl="user:pipas:rw-" \\
+    /servers/storage01\fR
+.fi

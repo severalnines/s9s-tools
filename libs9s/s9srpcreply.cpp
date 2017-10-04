@@ -286,7 +286,7 @@ S9sRpcReply::printAcl()
         S9sString name  = operator[]("object_name").toString();
 
         if (!name.empty())
-            printf("#  name: %s\n", STR(name));
+            printf("# name: %s\n", STR(name));
 
         if (!owner.empty())
             printf("# owner: %s\n", STR(owner));

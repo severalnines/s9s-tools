@@ -3297,9 +3297,9 @@ S9sOptions::printHelpTree()
 
     printf(
 "Options for the \"tree\" command:\n"
-"  --create                   Create a new container.\n"
-"  --get-acl                  List the ACL of an object.\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --get-acl                  List the ACL of an object.\n"
+"  --list                     Print the Cmon Directory Tree in list format.\n"
 "  --move                     Move an object inside the tree.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
@@ -7081,7 +7081,6 @@ S9sOptions::readOptionsTree(
         { "move",             no_argument,       0, OptionMove            },
         { "tree",             no_argument,       0, OptionTree            },
         
-        { "servers",          required_argument, 0, OptionServers         },
         { "acl",              required_argument, 0, OptionAcl             },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
