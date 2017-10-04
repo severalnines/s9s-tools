@@ -193,6 +193,7 @@ S9sOptions::S9sOptions() :
     m_modes["process"]      = Process;
     m_modes["script"]       = Script;
     m_modes["server"]       = Server;
+    m_modes["tree"]         = Tree;
     m_modes["user"]         = User;
     m_modes["account"]      = Account;
     
@@ -1789,6 +1790,15 @@ S9sOptions::isServerOperation() const
 }
 
 /**
+ * \returns true if the main operation is "tree".
+ */
+bool
+S9sOptions::isTreeOperation() const
+{
+    return m_operationMode == Tree;
+}
+
+/**
  * \returns true if the main operation is "cluster".
  */
 bool
@@ -2789,6 +2799,14 @@ S9sOptions::readOptions(
                 retval = checkOptionsServer();
 
             break;
+        
+        case Tree:
+            retval = readOptionsTree(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsTree();
+
+            break;
 
         case Log:
             retval = readOptionsLog(*argc, argv);
@@ -2918,6 +2936,10 @@ S9sOptions::printHelp()
         
         case Server:
             printHelpServer();
+            break;
+        
+        case Tree:
+            printHelpTree();
             break;
 
         case Log:
@@ -3268,6 +3290,21 @@ S9sOptions::printHelpServer()
     );
 }
 
+void
+S9sOptions::printHelpTree()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"tree\" command:\n"
+"  --create                   Create a new container.\n"
+"  --get-acl                  List the ACL of an object.\n"
+"  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --move                     Move an object inside the tree.\n"
+"  --tree                     Print the object tree.\n"
+"\n"
+    );
+}
 
 void
 S9sOptions::printHelpLog()
@@ -7008,6 +7045,222 @@ S9sOptions::readOptionsServer(
 }
 
 /**
+ * Reads the command line options for the "tree" mode.
+ */
+bool
+S9sOptions::readOptionsTree(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "human-readable",   no_argument,       0, 'h'                   },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        // Main Option
+        { "get-acl",          no_argument,       0, OptionGetAcl          },
+        { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "list",             no_argument,       0, 'L'                   },
+        { "move",             no_argument,       0, OptionMove            },
+        { "tree",             no_argument,       0, OptionTree            },
+        
+        { "servers",          required_argument, 0, OptionServers         },
+        { "acl",              required_argument, 0, OptionAcl             },
+        { "refresh",          no_argument,       0, OptionRefresh         },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // -h, --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+            
+            case OptionOnlyAscii:
+                // --only-ascii
+                m_options["only_ascii"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionTree:
+                // --tree
+                m_options["tree"] = true;
+                break;
+ 
+            case OptionMove:
+                // --move
+                m_options["move"] = true;
+                break;
+            
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case OptionGetAcl:
+                // --get-acl
+                m_options["get_acl"] = true;
+                break;
+
+            case OptionAddAcl:
+                // --add-acl
+                m_options["add_acl"] = true;
+                break;
+            
+            case OptionAcl:
+                // --acl=ACLSTRING
+                m_options["acl"] = optarg;
+                break;
+            
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
+                break;
+
+            case '?':
+                // 
+                return false;
+
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
  * \returns True if the command line options seem to be ok in "script" mode.
  */
 bool
@@ -7139,6 +7392,60 @@ S9sOptions::checkOptionsServer()
 
         m_exitStatus = BadOptions;
 
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok in "tree" mode.
+ */
+bool
+S9sOptions::checkOptionsTree()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isTreeRequested())
+    {
+        countOptions++;
+        if (nExtraArguments() > 1) 
+        {
+            m_errorMessage = 
+                "The --tree option enables only one command line argument: "
+                "the path to print.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if (isMoveRequested())
+        countOptions++;
+
+    if (isGetAclRequested())
+        countOptions++;
+    
+    if (isAddAclRequested())
+        countOptions++;
+    
+    if (isListRequested())
+        countOptions++;
+    
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Only one of the main options are allowed.";
+        m_exitStatus = BadOptions;
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
         return false;
     }
 

@@ -200,12 +200,38 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
-    } else if (options->isServerOperation())
+    } else if (options->isTreeOperation())
     {
         if (options->isTreeRequested())
         {
             executeObjectTree(client);
         } else if (options->isGetAclRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getAcl();
+            reply = client.reply();
+            reply.printAcl();
+            client.setExitStatus();
+        } else if (options->isAddAclRequested())
+        {
+            success = client.addAcl();
+            client.printMessages("Acl is added.", success);
+            client.setExitStatus();
+        } else if (options->isMoveRequested())
+        {
+            /* 
+             * s9s server --move "/Hungary" "/"
+             */
+            success = client.moveInTree();
+            client.printMessages("Moved.", success);
+            client.setExitStatus();
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
+    } else if (options->isServerOperation())
+    {
+        if (options->isGetAclRequested())
         {
             S9sRpcReply reply;
 
@@ -240,14 +266,6 @@ S9sBusinessLogic::execute()
              */
             success = client.unregisterServers();
             client.printMessages("Unregistered.", success);
-            client.setExitStatus();
-        } else if (options->isMoveRequested())
-        {
-            /* 
-             * s9s server --move "/Hungary" "/"
-             */
-            success = client.moveInTree();
-            client.printMessages("Moved.", success);
             client.setExitStatus();
         } else if (options->isDeleteRequested())
         {
@@ -325,6 +343,9 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else if (options->isListContainersRequested())
         {
+            /*
+             * s9s server --list-containers
+             */
             S9sRpcReply reply;
 
             success = client.getContainers();

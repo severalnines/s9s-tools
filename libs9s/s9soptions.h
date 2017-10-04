@@ -58,6 +58,7 @@ class S9sOptions
             Process,
             Script,
             Server,
+            Tree,
             User,
             //Alarm
         };
@@ -200,6 +201,7 @@ class S9sOptions
         bool isLogOperation() const;
         bool isScriptOperation() const;
         bool isServerOperation() const;
+        bool isTreeOperation() const;
         bool isClusterOperation() const;
         bool isJobOperation() const;
         bool isBackupOperation() const;
@@ -324,6 +326,7 @@ class S9sOptions
         void printHelpMetaType();
         void printHelpScript();
         void printHelpServer();
+        void printHelpTree();
 
         bool readOptionsNoMode(int argc, char *argv[]);
         
@@ -356,6 +359,9 @@ class S9sOptions
         
         bool readOptionsServer(int argc, char *argv[]);
         bool checkOptionsServer();
+        
+        bool readOptionsTree(int argc, char *argv[]);
+        bool checkOptionsTree();
 
         bool readOptionsMetaType(int argc, char *argv[]);
         bool checkOptionsMetaType();
