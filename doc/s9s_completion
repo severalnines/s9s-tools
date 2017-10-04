@@ -54,7 +54,7 @@ function _s9s_has_options()
 function _s9s_no_command()
 {
     if ! _s9s_has_options "account" "backup" "cluster" "job" "maint" "node" \
-        "process" "user" "script" "metatype" "log" "server"; 
+        "process" "user" "script" "metatype" "log" "server" "tree"; 
     then
         return 0
     fi
@@ -83,7 +83,7 @@ function _s9s()
     #
     if _s9s_no_command; then
         opts+="account backup cluster job maint node process user script "
-        opts+="metatype log server"
+        opts+="metatype log server tree"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -200,6 +200,26 @@ function _s9s()
                 opts+="--date-format= "
                 opts+="--job-id= --from= --until= --limit= --offset= "
             fi
+        elif [[ ${COMP_WORDS[i]} == "tree" ]]; then
+            main_opt+="--help "
+            main_opt+="--add-acl --get-acl --list --move --remove-acl --tree "
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= --servers= "
+                opts+="--cmon-user= --password= "
+
+                opts+="--acl= "
+                opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
+            fi
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
             main_opt+="--help "
             main_opt+="--create --list-disks --list-memory --list-nics "
@@ -224,9 +244,8 @@ function _s9s()
                 opts+="--job-id= --from= --until= --limit= --offset= "
 
                 opts+="--acl= "
-                opts+=$(s9s server --tree --long | awk '{print $4}')
+                opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
             fi
-            
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
             main_opt="--help "
             main_opt="--list --create --delete "
