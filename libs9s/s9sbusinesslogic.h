@@ -103,6 +103,5 @@ class S9sBusinessLogic
         void executeMetaTypePropertyList(S9sRpcClient &client);
         
         void executeScriptTree(S9sRpcClient &client);
-        void executeObjectTree(S9sRpcClient &client);
 };
 

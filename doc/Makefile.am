@@ -11,6 +11,7 @@ man_MANS =            \
 	s9s-maintenance.1 \
 	s9s-metatype.1    \
 	s9s-script.1      \
+	s9s-tree.1        \
 	s9s.conf.5
 
 completion_DATA =     \

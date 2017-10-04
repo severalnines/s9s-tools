@@ -202,9 +202,36 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isTreeOperation())
     {
-        if (options->isTreeRequested())
+        if (options->isListRequested())
         {
-            executeObjectTree(client);
+            S9sRpcReply reply;
+            
+            success = client.getTree();
+            if (success)
+            {
+                reply = client.reply();
+                reply.printObjectTreeLong();
+            } else {
+                if (options->isJsonRequested())
+                    printf("%s\n", STR(reply.toString()));
+                else
+                    PRINT_ERROR("%s", STR(client.errorString()));
+            }
+        } else if (options->isTreeRequested())
+        {
+            S9sRpcReply reply;
+            
+            success = client.getTree();
+            if (success)
+            {
+                reply = client.reply();
+                reply.printObjectTree();
+            } else {
+                if (options->isJsonRequested())
+                    printf("%s\n", STR(reply.toString()));
+                else
+                    PRINT_ERROR("%s", STR(client.errorString()));
+            }
         } else if (options->isGetAclRequested())
         {
             S9sRpcReply reply;
@@ -649,32 +676,6 @@ S9sBusinessLogic::executeScriptTree(
     {
         reply = client.reply();
         reply.printScriptTree();
-    } else {
-        if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
-            PRINT_ERROR("%s", STR(client.errorString()));
-    }
-}
-
-/**
- * \param client A client for the communication.
- *
- * Execute the "server --tree" operation.
- */
-void
-S9sBusinessLogic::executeObjectTree(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options = S9sOptions::instance();
-    S9sRpcReply reply;
-    bool        success;
-
-    success = client.getTree();
-    if (success)
-    {
-        reply = client.reply();
-        reply.printObjectTree();
     } else {
         if (options->isJsonRequested())
             printf("%s\n", STR(reply.toString()));
