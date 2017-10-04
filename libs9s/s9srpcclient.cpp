@@ -3763,7 +3763,9 @@ S9sRpcClient::startInTree()
     return executeRequest(uri, request);
 }
 
-
+/**
+ * Sends a request to add an ACL.
+ */
 bool
 S9sRpcClient::addAcl()
 {
@@ -3795,6 +3797,39 @@ S9sRpcClient::addAcl()
     return executeRequest(uri, request);
 }
 
+/**
+ * Sends a request to add an ACL.
+ */
+bool
+S9sRpcClient::removeAcl()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      aclString = options->acl();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --add-acl option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (aclString.empty())
+    {
+        PRINT_ERROR("The --add-acl requires the --acl=STRING option.");
+
+        return false;
+    }
+   
+    request["operation"]      = "removeAcl";
+    request["path"]           = options->extraArgument(0u);
+    request["acl"]            = aclString;
+
+    return executeRequest(uri, request);
+}
 
 /**
  * Unregisters one or more CmonContainerServer in one step.

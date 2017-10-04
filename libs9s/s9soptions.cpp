@@ -161,6 +161,7 @@ enum S9sOptionType
     OptionListMemory,
     OptionGetAcl,
     OptionAddAcl,
+    OptionRemoveAcl,
     OptionAcl,
     OptionListNics,
     OptionListDisks,
@@ -1923,6 +1924,15 @@ S9sOptions::isAddAclRequested() const
 }
 
 /**
+ * \returns True if the --remove-acl command line option is provided.
+ */
+bool
+S9sOptions::isRemoveAclRequested() const
+{
+    return getBool("remove_acl");
+}
+
+/**
  * \returns The command line option argument for the --acl option or the empty
  *   string if the option was not provided.
  */
@@ -3301,6 +3311,7 @@ S9sOptions::printHelpTree()
 "  --get-acl                  List the ACL of an object.\n"
 "  --list                     Print the Cmon Directory Tree in list format.\n"
 "  --move                     Move an object inside the tree.\n"
+"  --remove-acl               Removes an ACL entry from the object.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
     );
@@ -7075,10 +7086,11 @@ S9sOptions::readOptionsTree(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list",             no_argument,       0, 'L'                   },
         { "move",             no_argument,       0, OptionMove            },
+        { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "tree",             no_argument,       0, OptionTree            },
         
         { "acl",              required_argument, 0, OptionAcl             },
@@ -7227,6 +7239,11 @@ S9sOptions::readOptionsTree(
             case OptionRefresh:
                 // --refresh
                 m_options["refresh"] = true;
+                break;
+            
+            case OptionRemoveAcl:
+                // --remove-acl
+                m_options["remove_acl"] = true;
                 break;
 
             case '?':

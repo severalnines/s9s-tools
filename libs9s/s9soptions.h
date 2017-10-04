@@ -225,6 +225,7 @@ class S9sOptions
         bool isListMemoryRequested() const;
         bool isGetAclRequested() const;
         bool isAddAclRequested() const;
+        bool isRemoveAclRequested() const;
         S9sString acl() const;
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
