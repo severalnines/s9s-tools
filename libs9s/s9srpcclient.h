@@ -83,6 +83,8 @@ class S9sRpcClient
         bool getAcl();
         bool addAcl();
         bool removeAcl();
+        bool chOwn();
+
         bool startInTree();
 
         bool unregisterHost();

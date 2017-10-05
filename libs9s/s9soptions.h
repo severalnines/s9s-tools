@@ -226,7 +226,15 @@ class S9sOptions
         bool isGetAclRequested() const;
         bool isAddAclRequested() const;
         bool isRemoveAclRequested() const;
+        bool isChOwnRequested() const;
+        
         S9sString acl() const;
+
+        bool hasOwner() const;
+        S9sString ownerUserName() const;
+        S9sString ownerGroupName() const;
+
+
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
         bool isListDisksRequested() const;

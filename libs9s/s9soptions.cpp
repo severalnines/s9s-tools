@@ -162,7 +162,9 @@ enum S9sOptionType
     OptionGetAcl,
     OptionAddAcl,
     OptionRemoveAcl,
+    OptionChOwn,
     OptionAcl,
+    OptionOwner,
     OptionListNics,
     OptionListDisks,
     OptionDonor,
@@ -1915,6 +1917,15 @@ S9sOptions::isGetAclRequested() const
 }
 
 /**
+ * \returns True if the --chown command line option is provided.
+ */
+bool
+S9sOptions::isChOwnRequested() const
+{
+    return getBool("chown");
+}
+
+/**
  * \returns True if the --add-acl command line option is provided.
  */
 bool
@@ -1940,6 +1951,40 @@ S9sString
 S9sOptions::acl() const
 {
     return getString("acl");
+}
+
+bool
+S9sOptions::hasOwner() const
+{
+    return m_options.contains("owner");
+}
+
+S9sString
+S9sOptions::ownerUserName() const
+{
+    S9sString retval = getString("owner");
+
+    if (retval.contains(":"))
+    {
+        S9sVariantList parts = retval.split(":");
+        retval = parts[0].toString();
+    } 
+
+    return retval;
+}
+
+S9sString
+S9sOptions::ownerGroupName() const
+{
+    S9sString retval = getString("owner");
+
+    if (retval.contains(":"))
+    {
+        S9sVariantList parts = retval.split(":");
+        retval = parts[1].toString();
+    } 
+
+    return retval;
 }
 
 /**
@@ -7087,6 +7132,7 @@ S9sOptions::readOptionsTree(
 
         // Main Option
         { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "chown",            no_argument,       0, OptionChOwn           },
         { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list",             no_argument,       0, 'L'                   },
         { "move",             no_argument,       0, OptionMove            },
@@ -7094,6 +7140,7 @@ S9sOptions::readOptionsTree(
         { "tree",             no_argument,       0, OptionTree            },
         
         { "acl",              required_argument, 0, OptionAcl             },
+        { "owner",            required_argument, 0, OptionOwner           },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
         { 0, 0, 0, 0 }
@@ -7231,9 +7278,19 @@ S9sOptions::readOptionsTree(
                 m_options["add_acl"] = true;
                 break;
             
+            case OptionChOwn:
+                // --chown
+                m_options["chown"] = true;
+                break;
+            
             case OptionAcl:
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
+                break;
+            
+            case OptionOwner:
+                // --owner=USER | --owner=USER.GROUP
+                m_options["owner"] = optarg;
                 break;
             
             case OptionRefresh:
@@ -7448,6 +7505,12 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isAddAclRequested())
+        countOptions++;
+
+    if (isChOwnRequested())
+        countOptions++;
+ 
+    if (isRemoveAclRequested())
         countOptions++;
     
     if (isListRequested())

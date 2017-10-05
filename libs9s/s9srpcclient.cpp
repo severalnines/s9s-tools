@@ -3797,6 +3797,8 @@ S9sRpcClient::addAcl()
     return executeRequest(uri, request);
 }
 
+
+
 /**
  * Sends a request to add an ACL.
  */
@@ -3827,6 +3829,40 @@ S9sRpcClient::removeAcl()
     request["operation"]      = "removeAcl";
     request["path"]           = options->extraArgument(0u);
     request["acl"]            = aclString;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * Sends a request to add an ACL.
+ */
+bool
+S9sRpcClient::chOwn()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      aclString = options->acl();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --chown option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (!options->hasOwner())
+    {
+        PRINT_ERROR("The --chown requires the --owner=USERNAME option.");
+        return false;
+    }
+   
+    request["operation"]        = "chown";
+    request["path"]             = options->extraArgument(0u);
+    request["owner_user_name"]  = options->ownerUserName();
+    request["owner_group_name"] = options->ownerGroupName();
 
     return executeRequest(uri, request);
 }
