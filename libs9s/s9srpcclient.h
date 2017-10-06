@@ -84,6 +84,7 @@ class S9sRpcClient
         bool addAcl();
         bool removeAcl();
         bool chOwn();
+        bool mkdir();
 
         bool startInTree();
 

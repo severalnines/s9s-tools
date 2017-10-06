@@ -255,6 +255,11 @@ S9sBusinessLogic::execute()
             success = client.chOwn();
             client.printMessages("Changed.", success);
             client.setExitStatus();
+        } else if (options->isMkdirRequested())
+        {
+            success = client.mkdir();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else if (options->isMoveRequested())
         {
             /* 

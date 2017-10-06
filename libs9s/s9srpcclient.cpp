@@ -3740,6 +3740,7 @@ S9sRpcClient::getAcl()
     return executeRequest(uri, request);
 }
 
+
 bool
 S9sRpcClient::startInTree()
 {
@@ -3864,6 +3865,28 @@ S9sRpcClient::chOwn()
     request["owner_user_name"]  = options->ownerUserName();
     request["owner_group_name"] = options->ownerGroupName();
 
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::mkdir()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --mkdir option requires one command line argument: "
+                "the full path of the folder to be created.");
+
+        return false;
+    }
+
+    request["operation"]      = "mkdir";
+    request["path"]           = options->extraArgument(0u);
+    
     return executeRequest(uri, request);
 }
 

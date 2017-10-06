@@ -3626,10 +3626,15 @@ S9sRpcReply::walkObjectTree(
     S9sString       owner     = node["owner_user_name"].toString();
     S9sString       group     = node["owner_group_name"].toString();
     S9sVariantList  entries   = node["sub_items"].toVariantList();
+    S9sString       type      = node["item_type"].toString();
 
     m_ownerFormat.widen(owner);
     m_groupFormat.widen(group);
-    ++m_numberOfObjects;
+
+    if (type == "Folder")
+        m_numberOfFolders++;
+    else
+        m_numberOfObjects++;
 
     for (uint idx = 0; idx < entries.size(); ++idx)
     {
@@ -3765,6 +3770,7 @@ S9sRpcReply::printObjectTreeLong()
     m_ownerFormat = S9sFormat();
     m_groupFormat = S9sFormat();
     m_numberOfObjects = 0;
+    m_numberOfFolders = 0;
 
     walkObjectTree(entry);
 
@@ -3788,7 +3794,11 @@ S9sRpcReply::printObjectTreeLong()
     printObjectTreeLong(entry, 0, "", false);
         
     if (!options->isBatchRequested())
-        printf("Total: %d object(s)\n", m_numberOfObjects); 
+    {
+        printf("Total: %d object(s) in %d folder(s).\n", 
+                m_numberOfObjects,
+                m_numberOfFolders);
+    }
 }
 
 void
