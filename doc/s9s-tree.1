@@ -21,6 +21,11 @@ following:
 Add an ACL entry to an object in the tree.
 
 .TP
+.B \-\^\-chown 
+Change the ownership of an object. The new owner (and optionally the group
+owner) should be passed through the \fB\-\^\-owner\fP command line option.
+
+.TP
 .B \-\^\-get\-acl
 Print the ACL of an object in the tree.
 
@@ -131,6 +136,10 @@ Use only ASCII characters in the output.
 .BI \-\^\-acl= ACLSTRING
 An ACL entry in string format as it is defined in acl(5) "long text format" and
 "short text format".
+
+.TP
+.BI \-\^\-owner= USER[:GROUP]
+The user name and group name of the owner.
 
 .TP
 .BI \-\^\-refresh

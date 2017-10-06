@@ -237,4 +237,5 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-mys9s server --tree --refresh
+mys9s tree --tree --refresh
+

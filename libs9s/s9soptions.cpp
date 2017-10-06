@@ -163,6 +163,7 @@ enum S9sOptionType
     OptionAddAcl,
     OptionRemoveAcl,
     OptionChOwn,
+    OptionMkdir,
     OptionAcl,
     OptionOwner,
     OptionListNics,
@@ -1926,6 +1927,15 @@ S9sOptions::isChOwnRequested() const
 }
 
 /**
+ * \returns True if the --mkdir command line option is provided.
+ */
+bool
+S9sOptions::isMkdirRequested() const
+{
+    return getBool("mkdir");
+}
+
+/**
  * \returns True if the --add-acl command line option is provided.
  */
 bool
@@ -3353,8 +3363,10 @@ S9sOptions::printHelpTree()
     printf(
 "Options for the \"tree\" command:\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --chown                    Change the ownership of an object.\n"
 "  --get-acl                  List the ACL of an object.\n"
 "  --list                     Print the Cmon Directory Tree in list format.\n"
+"  --mkdir                    Create a directory in the Cmon Directory Tree.\n"
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
 "  --tree                     Print the object tree.\n"
@@ -7135,6 +7147,7 @@ S9sOptions::readOptionsTree(
         { "chown",            no_argument,       0, OptionChOwn           },
         { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list",             no_argument,       0, 'L'                   },
+        { "mkdir",            no_argument,       0, OptionMkdir           },
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "tree",             no_argument,       0, OptionTree            },
@@ -7266,6 +7279,11 @@ S9sOptions::readOptionsTree(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionMkdir:
+                // --mkdir
+                m_options["mkdir"] = true;
                 break;
 
             case OptionGetAcl:
@@ -7508,6 +7526,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
 
     if (isChOwnRequested())
+        countOptions++;
+    
+    if (isMkdirRequested())
         countOptions++;
  
     if (isRemoveAclRequested())

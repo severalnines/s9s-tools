@@ -227,7 +227,7 @@ class S9sOptions
         bool isAddAclRequested() const;
         bool isRemoveAclRequested() const;
         bool isChOwnRequested() const;
-        
+        bool isMkdirRequested() const;
         S9sString acl() const;
 
         bool hasOwner() const;
