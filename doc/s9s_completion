@@ -203,7 +203,8 @@ function _s9s()
         elif [[ ${COMP_WORDS[i]} == "tree" ]]; then
             main_opt+="--help "
             main_opt+="--add-acl --get-acl --list --move --remove-acl --tree "
-            
+            main_opt+="--mkdir --rmdir "
+
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
             elif [ "$prev" == "--cmon-user" ]; then

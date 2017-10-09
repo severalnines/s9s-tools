@@ -109,6 +109,7 @@ enum S9sOptionType
     OptionStat,
     OptionCreateAccount,
     OptionGrant,
+    OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
     OptionListDatabases,
@@ -164,6 +165,7 @@ enum S9sOptionType
     OptionRemoveAcl,
     OptionChOwn,
     OptionMkdir,
+    OptionRmdir,
     OptionAcl,
     OptionOwner,
     OptionListNics,
@@ -1936,6 +1938,15 @@ S9sOptions::isMkdirRequested() const
 }
 
 /**
+ * \returns True if the --rmdir command line option is provided.
+ */
+bool
+S9sOptions::isRmdirRequested() const
+{
+    return getBool("rmdir");
+}
+
+/**
  * \returns True if the --add-acl command line option is provided.
  */
 bool
@@ -2342,7 +2353,7 @@ S9sOptions::isCreateAccountRequested() const
 }
 
 /**
- * \returns true if the --create-account command line option was provided when
+ * \returns true if the --grant command line option was provided when
  *   the program was started.
  */
 bool
@@ -2350,6 +2361,17 @@ S9sOptions::isGrantRequested() const
 {
     return getBool("grant");
 }
+
+/**
+ * \returns true if the --check-hosts command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCheckHostsRequested() const
+{
+    return getBool("check_hosts");
+}
+
 
 /**
  * \returns true if the --delete-account command line option was provided when
@@ -3245,6 +3267,7 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
+"  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
@@ -3369,6 +3392,7 @@ S9sOptions::printHelpTree()
 "  --mkdir                    Create a directory in the Cmon Directory Tree.\n"
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
+"  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
     );
@@ -4481,6 +4505,9 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
     
     if (isGrantRequested())
+        countOptions++;
+
+    if (isCheckHostsRequested())
         countOptions++;
 
     if (isDeleteAccountRequested())
@@ -6060,6 +6087,7 @@ S9sOptions::readOptionsCluster(
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "grant",            no_argument,       0, OptionGrant           },
+        { "check-hosts",      no_argument,       0, OptionCheckHosts      },
 
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -6228,6 +6256,11 @@ S9sOptions::readOptionsCluster(
             case OptionGrant:
                 // --grant
                 m_options["grant"] = true;
+                break;
+            
+            case OptionCheckHosts:
+                // --check-hosts
+                m_options["check_hosts"] = true;
                 break;
 
             case 'h':
@@ -7148,6 +7181,7 @@ S9sOptions::readOptionsTree(
         { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list",             no_argument,       0, 'L'                   },
         { "mkdir",            no_argument,       0, OptionMkdir           },
+        { "rmdir",            no_argument,       0, OptionRmdir           },
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "tree",             no_argument,       0, OptionTree            },
@@ -7284,6 +7318,11 @@ S9sOptions::readOptionsTree(
             case OptionMkdir:
                 // --mkdir
                 m_options["mkdir"] = true;
+                break;
+            
+            case OptionRmdir:
+                // --rmdir
+                m_options["rmdir"] = true;
                 break;
 
             case OptionGetAcl:
@@ -7529,6 +7568,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isMkdirRequested())
+        countOptions++;
+    
+    if (isRmdirRequested())
         countOptions++;
  
     if (isRemoveAclRequested())

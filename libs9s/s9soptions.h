@@ -228,6 +228,7 @@ class S9sOptions
         bool isRemoveAclRequested() const;
         bool isChOwnRequested() const;
         bool isMkdirRequested() const;
+        bool isRmdirRequested() const;
         S9sString acl() const;
 
         bool hasOwner() const;
@@ -269,6 +270,7 @@ class S9sOptions
         bool isRestartRequested() const;
         bool isCreateAccountRequested() const; 
         bool isGrantRequested() const;
+        bool isCheckHostsRequested() const;
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isListDatabasesRequested() const; 

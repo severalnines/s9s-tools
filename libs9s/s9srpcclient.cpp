@@ -3606,20 +3606,42 @@ S9sRpcClient::dropCluster()
 bool
 S9sRpcClient::checkHosts()
 {
-    getSshCredentials();
+    //getSshCredentials();
     S9sString      uri = "/v2/discovery/";
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts     = options->nodes();
-   
+
+    S9sString      clusterType = options->clusterType();
+    S9sString      dbVersion   = options->providerVersion();
+    S9sString      vendor      = options->vendor();
+
     if (hosts.empty())
         return true;
 
     request["operation"]      = "checkHosts";
     request["nodes"]          = nodesField(hosts);
     request["check_if_already_registered"] = true;
-    //request["check_ssh_sudo"] = true;
-    
+    request["check_ssh_sudo"] = true;
+
+    if (!clusterType.empty())
+    {
+        request["cluster_type"]   = clusterType;
+        request["check_provider"] = true;
+    }
+
+    if (!vendor.empty())
+    {
+        request["vendor"]         = vendor;
+        request["check_provider"] = true;
+    }
+
+    if (!dbVersion.empty())
+    {
+        request["mysql_version"]  = mySqlVersion;
+        request["check_provider"] = true;
+    }
+
 #if 0
     S9sVariantMap credentials;
 
@@ -3885,6 +3907,28 @@ S9sRpcClient::mkdir()
     }
 
     request["operation"]      = "mkdir";
+    request["path"]           = options->extraArgument(0u);
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::rmdir()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --rmdir option requires one command line argument: "
+                "the full path of the folder to be removed.");
+
+        return false;
+    }
+
+    request["operation"]      = "rmdir";
     request["path"]           = options->extraArgument(0u);
     
     return executeRequest(uri, request);

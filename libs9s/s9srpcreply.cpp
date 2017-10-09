@@ -541,7 +541,44 @@ S9sRpcReply::printMessages(
     }
 }
 
+void
+S9sRpcReply::printCheckHostsReply()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  hosts = operator[]("checked_hosts").toVariantList();;
+   
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
 
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sVariantMap  theMap = hosts[idx].toVariantMap();
+        S9sNode        node   = theMap["host"].toVariantMap();
+        S9sVariantMap  status = theMap["status"].toVariantMap();
+        S9sString      message = status["error_message"].toString();
+        S9sString      errorCode = status["error_code"].toString();
+        const char    *hostColorBegin = "";
+        const char    *hostColorEnd   = "";
+
+        if (syntaxHighlight)
+        {
+            hostColorBegin  = XTERM_COLOR_GREEN;
+            hostColorEnd    = TERM_NORMAL;
+        }
+
+        if (message.empty())
+            message = "-";
+
+        printf("%s ", errorCode == "HostIsOk" ?  "SUCCESS" : "FAILURE");
+        printf("%s%s%s ", hostColorBegin, STR(node.hostName()), hostColorEnd);
+        printf("%s", STR(message));
+        printf("\n");
+    }
+}
 
 /**
  * This is a simple output function that we can call to print a short message

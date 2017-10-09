@@ -79,6 +79,18 @@ S9sBusinessLogic::execute()
             success = client.getDatabases();
             reply = client.reply();
             reply.printDatabaseList();
+        } else if (options->isCheckHostsRequested())
+        {
+            client.checkHosts();
+            #if 0
+            client.printMessages("Checked.", success);
+            client.setExitStatus();            
+            #else
+            S9sRpcReply reply;
+
+            reply = client.reply();
+            reply.printCheckHostsReply();
+            #endif
         } else if (options->isCreateRequested())
         {
             success = client.createCluster();
@@ -259,6 +271,11 @@ S9sBusinessLogic::execute()
         {
             success = client.mkdir();
             client.printMessages("Created.", success);
+            client.setExitStatus();
+        } else if (options->isRmdirRequested())
+        {
+            success = client.rmdir();
+            client.printMessages("Removed.", success);
             client.setExitStatus();
         } else if (options->isMoveRequested())
         {
