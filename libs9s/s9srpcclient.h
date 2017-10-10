@@ -331,6 +331,7 @@ class S9sRpcClient
         bool createPostgreSql(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
+                const S9sString      &psqlVersion,
                 bool                  uninstall);
 
         bool registerPostgreSql(
