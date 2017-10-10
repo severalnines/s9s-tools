@@ -3611,10 +3611,7 @@ S9sRpcClient::checkHosts()
     S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts     = options->nodes();
-
     S9sString      clusterType = options->clusterType();
-    S9sString      dbVersion   = options->providerVersion();
-    S9sString      vendor      = options->vendor();
 
     if (hosts.empty())
         return true;
@@ -3626,20 +3623,21 @@ S9sRpcClient::checkHosts()
 
     if (!clusterType.empty())
     {
-        request["cluster_type"]   = clusterType;
-        request["check_provider"] = true;
-    }
+        S9sVariantMap job, jobData, jobSpec;
 
-    if (!vendor.empty())
-    {
-        request["vendor"]         = vendor;
-        request["check_provider"] = true;
-    }
+        jobData["cluster_type"]   = clusterType;
+        jobData["nodes"]          = nodesField(hosts);
+        jobData["vendor"]         = options->vendor();
+        jobData["mysql_version"]  = options->providerVersion();
+    
+        jobSpec["command"]        = "create_cluster";
+        jobSpec["job_data"]       = jobData;
 
-    if (!dbVersion.empty())
-    {
-        request["mysql_version"]  = mySqlVersion;
-        request["check_provider"] = true;
+        job["class_name"]         = "CmonJobInstance";
+        job["job_spec"]           = jobSpec;
+
+        request["check_job"]      = true;
+        request["job"]            = job;
     }
 
 #if 0
