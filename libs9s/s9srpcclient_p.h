@@ -30,6 +30,7 @@ class S9sRpcClientPrivate
 
         void parseHeaders();
         S9sString cookieHeaders() const;
+        S9sString serverVersionString() const;
 
     private:
         int             m_referenceCounter;
@@ -47,6 +48,7 @@ class S9sRpcClientPrivate
         SSL_CTX        *m_sslContext;
         SSL            *m_ssl;
         S9sVariantMap   m_cookies;
+        S9sString       m_serverHeader;
 
         friend class S9sRpcClient;
 };
