@@ -3190,6 +3190,7 @@ S9sRpcReply::printServerStat(
     S9sVariantList processorNames = server.processorNames();
     S9sVariantList nicNames       = server.nicNames();
     S9sVariantList bankNames      = server.memoryBankNames();
+    S9sVariantList diskNames      = server.diskNames();
 
     //
     // The title line that is in inverse. 
@@ -3281,6 +3282,21 @@ S9sRpcReply::printServerStat(
         }
 
         printf("%s\n", STR(bankNames[idx].toString()));
+    }
+
+    //
+    // ""
+    //
+    for (uint idx = 0u; idx < diskNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s   Disks:%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(diskNames[idx].toString()));
     }
 
     //

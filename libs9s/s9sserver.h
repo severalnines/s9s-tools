@@ -55,6 +55,7 @@ class S9sServer
         S9sVariantList processorNames() const;
         S9sVariantList nicNames() const;
         S9sVariantList memoryBankNames() const;
+        S9sVariantList diskNames() const;
 
     private:
         S9sVariantMap    m_properties;

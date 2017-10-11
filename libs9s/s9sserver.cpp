@@ -166,7 +166,7 @@ S9sServer::osVersionString() const
 }
 
 /**
- * \returns A compact list enumerating the processors found in the host.
+ * \returns A compact list enumerating the processors found in the server.
  *
  * The strings look like this: "2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
  */
@@ -199,6 +199,10 @@ S9sServer::processorNames() const
     return retval;
 }
 
+/**
+ * \returns A compact list enumerating the NICs found in the server.
+ *
+ */
 S9sVariantList
 S9sServer::nicNames() const
 {
@@ -231,6 +235,10 @@ S9sServer::nicNames() const
     return retval;
 }
 
+/**
+ * \returns A compact list enumerating the memory banks found in the server.
+ *
+ */
 S9sVariantList
 S9sServer::memoryBankNames() const
 {
@@ -244,9 +252,6 @@ S9sServer::memoryBankNames() const
         S9sVariantMap bank   = bankList[idx1].toVariantMap();
         S9sString     model  = bank["name"].toString();
 
-//        if (model.empty())
-//            continue;
-
         bankModels[model] += 1;
     }
 
@@ -254,6 +259,43 @@ S9sServer::memoryBankNames() const
     {
         S9sString  name   = bankModels.keys().at(idx);
         int        volume = bankModels[name].toInt();
+        S9sString  line;
+
+        line.sprintf("%2d x %s", volume, STR(name));
+
+        retval << line;
+    }
+
+    return retval;
+}
+
+/**
+ * \returns A compact list enumerating the disks found in the server.
+ *
+ */
+S9sVariantList
+S9sServer::diskNames() const
+{
+    S9sVariantList  retval;
+    S9sVariantMap   diskModels;
+    S9sVariantList  diskList = property("disk_devices").toVariantList();
+
+    for (uint idx1 = 0; idx1 < diskList.size(); ++idx1)
+    {
+        S9sVariantMap disk   = diskList[idx1].toVariantMap();
+        S9sString     model  = disk["model"].toString();
+        bool          isHw   = disk["is_hardware_storage"].toBoolean();
+
+        if (!isHw)
+            continue;
+
+        diskModels[model] += 1;
+    }
+
+    for (uint idx = 0; idx < diskModels.keys().size(); ++idx)
+    {
+        S9sString  name   = diskModels.keys().at(idx);
+        int        volume = diskModels[name].toInt();
         S9sString  line;
 
         line.sprintf("%2d x %s", volume, STR(name));
