@@ -35,6 +35,7 @@
 #include "S9sAccount"
 #include "S9sGroup"
 #include "S9sReport"
+#include "S9sServer"
 #include "S9sContainer"
 
 //#define DEBUG
@@ -3194,14 +3195,15 @@ S9sRpcReply::printServersLong()
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        S9sString      hostName = theMap["hostname"].toString();
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
         S9sString      prot     = "lxc";
-        S9sString      version  = theMap["version"].toString();
-        S9sString      owner    = theMap["owner_user_name"].toString();
-        S9sString      group    = theMap["owner_group_name"].toString();
-        int            nContainers = theMap["containers"].size();
-        S9sString      ip       = theMap["ip"].toString();
+        S9sString      version  = server.version();
+        S9sString      owner    = server.ownerName();
+        S9sString      group    = server.groupName();
+        int            nContainers = server.nContainers();
+        S9sString      ip       = server.ipAddress();
 
         if (!options->isStringMatchExtraArguments(hostName))
             continue;

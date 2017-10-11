@@ -117,6 +117,9 @@ libs9s_public_h_headers =     \
 	s9smessage.h              \
 	S9sNode                   \
 	s9snode.h                 \
+	S9sServer                 \
+	s9sserver.h               \
+	s9sserver.cpp             \
 	S9sOptions                \
 	s9soptions.h              \
 	S9sParseContext           \
