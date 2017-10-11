@@ -52,6 +52,9 @@ class S9sServer
         S9sString model() const;
 
         S9sString osVersionString() const;
+        S9sVariantList processorNames() const;
+        S9sVariantList nicNames() const;
+        S9sVariantList memoryBankNames() const;
 
     private:
         S9sVariantMap    m_properties;

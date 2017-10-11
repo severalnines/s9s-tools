@@ -3182,11 +3182,14 @@ void
 S9sRpcReply::printServerStat(
         S9sServer server)
 {
-    S9sOptions *options = S9sOptions::instance();
-    int         terminalWidth = options->terminalWidth();
-    const char *greyBegin = greyColorBegin();
-    const char *greyEnd   = greyColorEnd();
-    S9sString   title;
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
+    const char    *greyBegin = greyColorBegin();
+    const char    *greyEnd   = greyColorEnd();
+    S9sString      title;
+    S9sVariantList processorNames = server.processorNames();
+    S9sVariantList nicNames       = server.nicNames();
+    S9sVariantList bankNames      = server.memoryBankNames();
 
     //
     // The title line that is in inverse. 
@@ -3234,6 +3237,51 @@ S9sRpcReply::printServerStat(
     printf("%s   Model:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(server.model()));
     printf("\n");
+
+    //
+    // "  CPU(s): 2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
+    //
+    for (uint idx = 0u; idx < processorNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s  CPU(s):%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(processorNames[idx].toString()));
+    }
+
+    //
+    // "  NIC(s): 4 x 82575EB Gigabit Network Connection"
+    //
+    for (uint idx = 0u; idx < nicNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s  NIC(s):%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(nicNames[idx].toString()));
+    }
+    
+    //
+    // ""
+    //
+    for (uint idx = 0u; idx < bankNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s   Banks:%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(bankNames[idx].toString()));
+    }
 
     //
     //

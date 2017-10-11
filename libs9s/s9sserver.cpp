@@ -164,3 +164,103 @@ S9sServer::osVersionString() const
 
     return retval;
 }
+
+/**
+ * \returns A compact list enumerating the processors found in the host.
+ *
+ * The strings look like this: "2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
+ */
+S9sVariantList
+S9sServer::processorNames() const
+{
+    S9sVariantList  retval;
+    S9sVariantMap   cpuModels;
+    S9sVariantList  processorList = property("processors").toVariantList();
+
+    for (uint idx1 = 0; idx1 < processorList.size(); ++idx1)
+    {
+        S9sVariantMap processor = processorList[idx1].toVariantMap();
+        S9sString     model     = processor["model"].toString();
+
+        cpuModels[model] += 1;
+    }
+
+    for (uint idx = 0; idx < cpuModels.keys().size(); ++idx)
+    {
+        S9sString  name = cpuModels.keys().at(idx);
+        int        volume = cpuModels[name].toInt();
+        S9sString  line;
+
+        line.sprintf("%2d x %s", volume, STR(name));
+
+        retval << line;
+    }
+
+    return retval;
+}
+
+S9sVariantList
+S9sServer::nicNames() const
+{
+    S9sVariantList  retval;
+    S9sVariantMap   nicModels;
+    S9sVariantList  nicList = property("network_interfaces").toVariantList();
+
+    for (uint idx1 = 0; idx1 < nicList.size(); ++idx1)
+    {
+        S9sVariantMap nic    = nicList[idx1].toVariantMap();
+        S9sString     model  = nic["model"].toString();
+
+        if (model.empty())
+            continue;
+
+        nicModels[model] += 1;
+    }
+
+    for (uint idx = 0; idx < nicModels.keys().size(); ++idx)
+    {
+        S9sString  name   = nicModels.keys().at(idx);
+        int        volume = nicModels[name].toInt();
+        S9sString  line;
+
+        line.sprintf("%2d x %s", volume, STR(name));
+
+        retval << line;
+    }
+
+    return retval;
+}
+
+S9sVariantList
+S9sServer::memoryBankNames() const
+{
+    S9sVariantList  retval;
+    S9sVariantMap   bankModels;
+    S9sVariantMap   memory  = property("memory").toVariantMap();
+    S9sVariantList  bankList = memory["banks"].toVariantList();
+
+    for (uint idx1 = 0; idx1 < bankList.size(); ++idx1)
+    {
+        S9sVariantMap bank   = bankList[idx1].toVariantMap();
+        S9sString     model  = bank["name"].toString();
+
+//        if (model.empty())
+//            continue;
+
+        bankModels[model] += 1;
+    }
+
+    for (uint idx = 0; idx < bankModels.keys().size(); ++idx)
+    {
+        S9sString  name   = bankModels.keys().at(idx);
+        int        volume = bankModels[name].toInt();
+        S9sString  line;
+
+        line.sprintf("%2d x %s", volume, STR(name));
+
+        retval << line;
+    }
+
+    return retval;
+}
+
