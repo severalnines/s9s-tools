@@ -3165,13 +3165,108 @@ S9sRpcReply::printServers()
     S9sOptions *options = S9sOptions::instance();
 
     if (options->isJsonRequested())
+    {
         printf("%s\n", STR(toString()));
-    else if (!isOk())
+    } else if (!isOk())
+    {
         PRINT_ERROR("%s", STR(errorString()));
-    else {
-        //printDisks();
-        //printNics();
+    } else if (options->isStatRequested())
+    {
+        printServersStat();
+    } else {
         printServersLong();
+    }
+}
+
+void
+S9sRpcReply::printServerStat(
+        S9sServer server)
+{
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    S9sString   title;
+
+    //
+    // The title line that is in inverse. 
+    //
+    title.sprintf("%s (%s)", STR(server.hostName()), STR(server.ipAddress()));
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s    Name:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(server.hostName()));
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s      IP:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(server.ipAddress()));
+    printf("\n");
+
+    // 
+    // Line 
+    //
+    printf("%s   Alias:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR("'" + server.alias() + "'"));
+    //printf("\n");
+    
+    printf("%s         Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(server.ownerName()), userColorEnd(),
+            groupColorBegin(server.groupOwnerName()), 
+            STR(server.groupOwnerName()), 
+            groupColorEnd());
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s   Model:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(server.model()));
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s   Class:%s ", greyBegin, greyEnd);
+    printf("%s%-24s%s ", 
+            typeColorBegin(), 
+            STR(server.className()), 
+            typeColorEnd());
+    printf("\n");
+
+        
+    //
+    // 
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-24s", STR(server.osVersionString()));
+    printf("\n");
+    
+    printf("\n");
+}
+
+void
+S9sRpcReply::printServersStat()
+{
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+
+        printServerStat(server);
     }
 }
 
@@ -3201,7 +3296,7 @@ S9sRpcReply::printServersLong()
         S9sString      prot     = "lxc";
         S9sString      version  = server.version();
         S9sString      owner    = server.ownerName();
-        S9sString      group    = server.groupName();
+        S9sString      group    = server.groupOwnerName();
         int            nContainers = server.nContainers();
         S9sString      ip       = server.ipAddress();
 
@@ -4409,7 +4504,7 @@ S9sRpcReply::printNodeStat(
     S9sString   message;
     
     //
-    // The title that is in inverse. 
+    // The title line that is in inverse. 
     //
     if (node.port() > 0)
         title.sprintf(" %s:%d ", STR(node.name()), node.port());
@@ -4424,7 +4519,7 @@ S9sRpcReply::printNodeStat(
     printf("\n");
 
     //
-    //
+    // "    Name: 192.168.1.127           Cluster: galera_001 (1)"
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.name()));
@@ -4437,7 +4532,10 @@ S9sRpcReply::printNodeStat(
             clusterColorEnd(),
             cluster.clusterId());
     printf("\n");
-    
+   
+    //
+    //
+    //
     printf("%s      IP:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(node.ipAddress()));
     //printf("\n");
@@ -4447,7 +4545,9 @@ S9sRpcReply::printNodeStat(
     printf("%d ", node.port());
     printf("\n");
     
+    // 
     // Line 
+    //
     printf("%s   Alias:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR("'" + node.alias() + "'"));
     //printf("\n");
@@ -4494,7 +4594,7 @@ S9sRpcReply::printNodeStat(
     printf("\n");
 
 
-    // A line for the humar readable message.
+    // A line for the human readable message.
     message = node.message();
     if (message.empty())
         message = "-";

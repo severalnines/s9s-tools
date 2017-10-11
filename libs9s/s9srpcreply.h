@@ -27,6 +27,7 @@ class S9sCluster;
 class S9sFormat;
 class S9sCmonGraph;
 class S9sUser;
+class S9sServer;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -89,6 +90,7 @@ class S9sRpcReply : public S9sVariantMap
         void printPing();
         void printServers();
         void printServersLong();
+
         void printProcessors(S9sString indent = S9sString());
         void printDisks(S9sString indent = S9sString());
         void printPartitions(S9sString indent = S9sString());
@@ -189,6 +191,9 @@ class S9sRpcReply : public S9sVariantMap
         S9sVariantMap clusterMap(const int clusterId);
         
     private:
+        void printServerStat(S9sServer server);
+        void printServersStat();
+
         void printJobLogBrief();
         void printJobLogLong();
         

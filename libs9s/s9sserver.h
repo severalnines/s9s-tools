@@ -40,13 +40,18 @@ class S9sServer
         void setProperties(const S9sVariantMap &properties);
 
         S9sString hostName() const;
+        S9sString alias() const;
         S9sString version() const;
         S9sString ipAddress() const;
 
         int nContainers() const;
 
         S9sString ownerName() const;
-        S9sString groupName() const;
+        S9sString groupOwnerName() const;
+        S9sString className() const;
+        S9sString model() const;
+
+        S9sString osVersionString() const;
 
     private:
         S9sVariantMap    m_properties;

@@ -6884,22 +6884,23 @@ S9sOptions::readOptionsServer(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
+        { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "create",           no_argument,       0, OptionCreate          },
         { "delete",           no_argument,       0, OptionDelete          },
+        { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list-disks",       no_argument,       0, OptionListDisks       },
         { "list-memory",      no_argument,       0, OptionListMemory      },
-        { "get-acl",          no_argument,       0, OptionGetAcl          },
-        { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "list-nics",        no_argument,       0, OptionListNics        },
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
         { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
+        { "start",            no_argument,       0, OptionStart           },
+        { "stat",             no_argument,       0, OptionStat            },
         { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
-        { "start",            no_argument,       0, OptionStart           },
        
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
@@ -7016,6 +7017,11 @@ S9sOptions::readOptionsServer(
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
                 break;
 
             case OptionTree:
@@ -7505,6 +7511,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListRequested())
+        countOptions++;
+    
+    if (isStatRequested())
         countOptions++;
     
     if (isStartRequested())

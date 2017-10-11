@@ -334,7 +334,7 @@ S9sBusinessLogic::execute()
             success = client.deleteFromTree();
             client.printMessages("Deleted.", success);
             client.setExitStatus();
-        } else if (options->isListRequested())
+        } else if (options->isListRequested() || options->isStatRequested())
         {
             /*
              * s9s server --list

@@ -93,6 +93,12 @@ S9sServer::hostName() const
 }
 
 S9sString
+S9sServer::alias() const
+{
+    return property("alias").toString();
+}
+
+S9sString
 S9sServer::version() const
 {
     return property("version").toString();
@@ -117,7 +123,44 @@ S9sServer::ownerName() const
 }
 
 S9sString
-S9sServer::groupName() const
+S9sServer::groupOwnerName() const
 {
     return property("owner_group_name").toString();
+}
+
+S9sString
+S9sServer::className() const
+{
+    return property("class_name").toString();
+}
+
+S9sString
+S9sServer::model() const
+{
+    return property("model").toString();
+}
+
+/**
+ * \returns A string encodes the operating system name and version.
+ */
+S9sString
+S9sServer::osVersionString() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("distribution"))
+    {
+        S9sVariantMap map = m_properties.at("distribution").toVariantMap();
+        S9sString     name, release, codeName;
+        
+        name     = map["name"].toString();
+        release  = map["release"].toString();
+        codeName = map["codename"].toString();
+
+        retval.appendWord(name);
+        retval.appendWord(release);
+        retval.appendWord(codeName);
+    }
+
+    return retval;
 }
