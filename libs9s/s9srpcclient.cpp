@@ -1754,7 +1754,8 @@ S9sRpcClient::createCluster()
         return false;
     }
 
-    dbVersion    = options->providerVersion("5.6");
+    dbVersion    = options->providerVersion(
+            options->clusterType() == "postgresql" ? "9.6" : "5.6");
     osUserName   = options->osUser();
     vendor       = options->vendor();
 
@@ -1803,7 +1804,7 @@ S9sRpcClient::createCluster()
                 hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "postgresql")
     {
-        success = createPostgreSql(hosts, osUserName, uninstall);
+        success = createPostgreSql(hosts, osUserName, dbVersion, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -1994,8 +1995,8 @@ S9sRpcClient::createGaleraCluster(
     jobData["cluster_type"]     = "galera";
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
-    jobData["mysql_version"]    = mySqlVersion;
-    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["version"]          = mySqlVersion;
+    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
@@ -2055,8 +2056,8 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["cluster_type"]     = "mysql_single";
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
-    jobData["mysql_version"]    = mySqlVersion;
-    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["version"]          = mySqlVersion;
+    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
@@ -2189,8 +2190,8 @@ S9sRpcClient::createMySqlReplication(
     jobData["topology"]         = topologyField(hosts);
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
-    jobData["mysql_version"]    = mySqlVersion;
-    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["version"]          = mySqlVersion;
+    jobData["enable_uninstall"] = uninstall;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
     jobData["repl_user"]        = options->dbAdminUserName();
@@ -2331,8 +2332,8 @@ S9sRpcClient::createGroupReplication(
     jobData["mysql_hostnames"]  = hostNames;
     jobData["master_address"]   = hostNames[0].toString();
     jobData["vendor"]           = vendor;
-    jobData["mysql_version"]    = mySqlVersion;
-    jobData["enable_mysql_uninstall"] = uninstall;
+    jobData["version"]          = mySqlVersion;
+    jobData["enable_uninstall"] = uninstall;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
     jobData["repl_user"]        = options->dbAdminUserName();
@@ -2477,7 +2478,7 @@ S9sRpcClient::createNdbCluster(
     jobData["ndbd_hostnames"]   = ndbdHostNames;
     jobData["ssh_user"]         = osUserName;
     jobData["vendor"]           = vendor;
-    jobData["mysql_version"]    = mySqlVersion;
+    jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = true;
     
@@ -2600,6 +2601,7 @@ bool
 S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
+        const S9sString      &psqlVersion,
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -2628,6 +2630,7 @@ S9sRpcClient::createPostgreSql(
 
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
+    jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
 
@@ -3628,7 +3631,7 @@ S9sRpcClient::checkHosts()
         jobData["cluster_type"]   = clusterType;
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
-        jobData["mysql_version"]  = options->providerVersion();
+        jobData["version"]        = options->providerVersion();
     
         jobSpec["command"]        = "create_cluster";
         jobSpec["job_data"]       = jobData;
