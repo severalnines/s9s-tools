@@ -286,7 +286,6 @@ S9sRpcClient::printServerRegistered(
     }
 }
 
-
 bool
 S9sRpcClient::authenticate()
 {
@@ -360,7 +359,11 @@ S9sRpcClient::authenticateWithKey()
      */
     request = S9sVariantMap();
     request["operation"]    = "authenticate";
-    request["user_name"]    = options->userName();
+    /*
+     * Please keep this as 'username' to be compatible with
+     * clustercontrol-controller 1.4.1 and 1.4.2
+     */
+    request["username"]     = options->userName();
 
     retval = executeRequest(uri, request);
     if (!retval)
@@ -5333,3 +5336,29 @@ S9sRpcClient::serversField(
     retval = servers;
     return retval;
 }
+
+/**
+ * Returns the current controller's version the client communicates
+ * with, please note this method will give valid value after any
+ * RPC request has been made (eg.: authenticate())
+ */
+S9sString
+S9sRpcClient::serverVersion() const
+{
+    S9sString versionString;
+    S9sVariantList parts;
+
+    // cmon/1.4.3
+    if (m_priv)
+        versionString = m_priv->serverVersionString();
+
+    if (!versionString.contains('/'))
+        return "";
+
+    parts = versionString.split("/");
+    if (parts.size() == 2u)
+        return parts.at(1).toString();
+
+    return "";
+}
+

@@ -579,7 +579,8 @@ S9sBusinessLogic::authenticate(
     // We can authenticate, the user intended to.
     if (canAuthenticate)
     {
-        if (!client.authenticate())
+        bool success = client.authenticate();
+        if (!success)
         {
             if (options->isJsonRequested())
             {
@@ -598,10 +599,31 @@ S9sBusinessLogic::authenticate(
 
             // continuing, server replies a nice error
             options->setExitStatus(S9sOptions::AccessDenied);
-            return false;
         }
 
-        return true;
+        S9sString controllerVersion = client.serverVersion();
+        if (options->isVerbose())
+        {
+            printf("Controller version: %s\n", STR(controllerVersion));
+        }
+
+        // I am not sure if this is the best place, but this version
+        // of the s9s CLI is not compatible with versions <= 1.4.2
+        if (controllerVersion == "1.4.1" ||
+            controllerVersion == "1.4.2")
+        {
+            PRINT_ERROR("\n"
+                        "WARNING: For clustercontrol-controller <= 1.4.2,\n"
+                        "you need to use the older (stable) s9s CLI.\n\n"
+                        "You can get it from http://repo.severalnines.com/s9s-tools/");
+
+            #if 0
+            options->setExitStatus(S9sOptions::Failed);
+            success = false;
+            #endif
+        }
+
+        return success;
     }
 
     // Can't authenticate, but we need.

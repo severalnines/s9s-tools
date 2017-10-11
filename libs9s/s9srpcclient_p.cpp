@@ -285,6 +285,8 @@ S9sRpcClientPrivate::read(
 void
 S9sRpcClientPrivate::parseHeaders()
 {
+    int lastIdx = 0;
+
     if (!m_buffer || m_dataSize < 12)
         return;
 
@@ -295,12 +297,16 @@ S9sRpcClientPrivate::parseHeaders()
 
     buffer.assign(m_buffer, m_dataSize);
 
-    int lastIdx = 0;
     while (lastIdx < (int) buffer.size() && regexp == buffer.substr(lastIdx))
     {
         m_cookies[regexp[1]] = regexp[2];
         lastIdx += regexp.firstIndex()+1;
     }
+
+    regexp = S9sRegExp("Server: ([^\r\n]*)");
+
+    if (regexp == buffer.substr(lastIdx))
+        m_serverHeader = regexp[1];
 }
 
 /**
@@ -328,5 +334,14 @@ S9sRpcClientPrivate::cookieHeaders() const
 
     cookieHeader += "\r\n";
     return cookieHeader;
+}
+
+/**
+ * This simply returns the value of 'Server' header from the reply.
+ */
+S9sString
+S9sRpcClientPrivate::serverVersionString() const
+{
+    return m_serverHeader;
 }
 
