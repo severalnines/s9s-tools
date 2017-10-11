@@ -360,7 +360,11 @@ S9sRpcClient::authenticateWithKey()
      */
     request = S9sVariantMap();
     request["operation"]    = "authenticate";
-    request["user_name"]    = options->userName();
+    /*
+     * Please keep this as 'username' to be compatible with
+     * clustercontrol-controller 1.4.1 and 1.4.2
+     */
+    request["username"]     = options->userName();
 
     retval = executeRequest(uri, request);
     if (!retval)
