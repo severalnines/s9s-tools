@@ -3191,6 +3191,7 @@ S9sRpcReply::printServerStat(
     S9sVariantList nicNames       = server.nicNames();
     S9sVariantList bankNames      = server.memoryBankNames();
     S9sVariantList diskNames      = server.diskNames();
+    S9sVariantList containers;
 
     //
     // The title line that is in inverse. 
@@ -3317,6 +3318,20 @@ S9sRpcReply::printServerStat(
     printf("%-24s", STR(server.osVersionString()));
     printf("\n");
     
+    //
+    //
+    //
+    printf("\n");
+    containers = server.containers();
+    for (uint idx = 0u; idx < containers.size(); ++idx)
+    {
+        const S9sContainer container = containers[idx].toContainer();
+
+        printf("  ");
+        printf("%s", STR(container.property("alias").toString()));
+        printf("\n");
+    }
+
     printf("\n");
 }
 
