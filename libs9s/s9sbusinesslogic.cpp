@@ -609,13 +609,12 @@ S9sBusinessLogic::authenticate(
 
         // I am not sure if this is the best place, but this version
         // of the s9s CLI is not compatible with versions <= 1.4.2
-        if (controllerVersion == "1.4.1" ||
-            controllerVersion == "1.4.2")
+        if (controllerVersion.startsWith("1.4.2") ||
+            controllerVersion.startsWith("1.4.1"))
         {
             PRINT_ERROR("\n"
-                        "WARNING: For clustercontrol-controller <= 1.4.2,\n"
-                        "you need to use the older (stable) s9s CLI.\n\n"
-                        "You can get it from http://repo.severalnines.com/s9s-tools/");
+                        "WARNING: clustercontrol-controller <= 1.4.2 is detected.\n"
+                        "Some features may not work, please upgrade your controller.\n");
 
             #if 0
             options->setExitStatus(S9sOptions::Failed);
@@ -1762,11 +1761,21 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     S9sString      pubKeyStr;
     S9sConfigFile  config;
     bool           success;
-    #ifdef USE_NEW_RPC
     S9sUser        user;
     S9sVariantMap  request;
-    #endif
-    
+    bool           useNewRpc  = true;
+
+    if (client.detectVersion() &&
+        (client.serverVersion().startsWith("1.4.1") ||
+         client.serverVersion().startsWith("1.4.2")))
+    {
+        // cmon <= 1.4.2 requires different user creation request
+        useNewRpc = false;
+    }
+
+    PRINT_VERBOSE("Detected controller '%s', using new API: %s",
+        STR(client.serverVersion()), STR_BOOL(useNewRpc));
+
     if (options->nExtraArguments() != 1)
     {
         PRINT_ERROR(
@@ -1824,18 +1833,21 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     success = ensureHasAuthKey(privateKeyPath, pubKeyStr);
     if (!success)
     {
-        #ifdef USE_NEW_RPC 
-        if (!options->hasNewPassword())
+        if (useNewRpc)
         {
-            PRINT_ERROR("No RSA key and no password for the new user.");
-            options->setExitStatus(S9sOptions::Failed);
-            return;
+            if (!options->hasNewPassword())
+            {
+                PRINT_ERROR("No RSA key and no password for the new user.");
+                options->setExitStatus(S9sOptions::Failed);
+            }
         }
-        #else
-        // The old released API only supports keys.
-        options->setExitStatus(S9sOptions::Failed);
+        else
+        {
+            // The old released API only supports keys.
+            options->setExitStatus(S9sOptions::Failed);
+        }
+
         return;
-        #endif
     }
     
     /*
@@ -1859,41 +1871,30 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";
 
-        #ifdef USE_NEW_RPC
-        /*
-         * We create a user object, then we create a createUser request.
-         */
-        user.setProperty("user_name",     userName);
-        user.setProperty("title",         options->title());
-        user.setProperty("first_name",    options->firstName());
-        user.setProperty("last_name",     options->lastName());
-        user.setProperty("email_address", options->emailAddress());
-        user.setGroup(options->group());
-        user.setPublicKey("No Name", pubKeyStr);
-
-        request = S9sRpcClient::createUserRequest(
-                user, 
-                options->newPassword(),
-                options->createGroup());
-        S9S_WARNING("-> \n%s", STR(request.toString()));
-        #endif
-
-        for (uint idx = 0; idx < fifos.size(); ++idx)
+        if (useNewRpc)
         {
-            #ifdef USE_NEW_RPC
-            #else
-            S9sVariantMap request;
-            #endif
-            S9sString     escapedJson;
-            S9sString     path = fifos.at(idx);
-            S9sFile       file(path);
+            /*
+             * We create a user object, then we create a createUser request.
+             */
+            user.setProperty("user_name",     userName);
+            user.setProperty("title",         options->title());
+            user.setProperty("first_name",    options->firstName());
+            user.setProperty("last_name",     options->lastName());
+            user.setProperty("email_address", options->emailAddress());
+            user.setGroup(options->group());
+            user.setPublicKey("No Name", pubKeyStr);
 
-            // 
-            // Building up a request for the user creation.
-            //
-            #ifdef USE_NEW_RPC
-            escapedJson = request.toString().escape();
-            #else
+            request = S9sRpcClient::createUserRequest(
+                    user, 
+                    options->newPassword(),
+                    options->createGroup());
+            S9S_WARNING("-> \n%s", STR(request.toString()));
+        }
+        else
+        {
+            /*
+             * For controller <= 1.4.2
+             */
             request["user_name"] = userName;
             request["pubkey"]    = pubKeyStr;
             
@@ -1914,9 +1915,18 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
 
             if (options->createGroup())
                 request["create_group"] = true;
-            
+        }
+
+        for (uint idx = 0; idx < fifos.size(); ++idx)
+        {
+            S9sString     escapedJson;
+            S9sString     path = fifos.at(idx);
+            S9sFile       file(path);
+
+            // 
+            // Building up a request for the user creation.
+            //
             escapedJson = request.toString().escape();
-            #endif
 
             if (options->isJsonRequested())
                 printf("Request: %s\n", STR(request.toString()));

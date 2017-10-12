@@ -303,7 +303,8 @@ S9sRpcClientPrivate::parseHeaders()
         lastIdx += regexp.firstIndex()+1;
     }
 
-    regexp = S9sRegExp("Server: ([^\r\n]*)");
+    lastIdx = 0;
+    regexp  = S9sRegExp("Server: ([^\r\n]*)");
 
     if (regexp == buffer.substr(lastIdx))
         m_serverHeader = regexp[1];

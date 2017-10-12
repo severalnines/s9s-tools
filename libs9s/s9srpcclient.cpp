@@ -389,6 +389,14 @@ S9sRpcClient::authenticateWithKey()
     request["operation"]    = "authenticateResponse";
     request["signature"]    = signature;
 
+    /*
+     * For backward compatibility, if we know that we communicate
+     * with a controller < 1.4.3, use the old method name
+     */
+    if (serverVersion().startsWith("1.4.2") ||
+        serverVersion().startsWith("1.4.1"))
+        request["operation"] = "response";
+
     retval = executeRequest(uri, request);
     if (!retval)
         return false;
@@ -5360,5 +5368,22 @@ S9sRpcClient::serverVersion() const
         return parts.at(1).toString();
 
     return "";
+}
+
+bool
+S9sRpcClient::detectVersion()
+{
+    S9S_DEBUG(" ");
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/auth";
+
+    /*
+     * Firing an intentionally empty request,
+     * so we can parse the controllers version out
+     * from the returned Server: HTTP header
+     */
+    executeRequest(uri, request);
+
+    return !serverVersion().empty();
 }
 

@@ -45,6 +45,7 @@ class S9sRpcClient
         bool canAuthenticate(S9sString &reason) const;
         bool needToAuthenticate() const;
 
+        bool detectVersion();
         S9sString serverVersion() const;
 
         const S9sRpcReply &reply() const;
