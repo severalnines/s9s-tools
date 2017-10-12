@@ -6,10 +6,101 @@ s9s-user \- Command line client for the Severalnines Clustercontrol server.
 .B s9s-cluster
 .RI [OPTION]...
 .RI [USERNAME]...
-.SH DESCRIPTION
-\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
-deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+.SH CREATING THE FIRST USER
+To use the \fBs9s\fP command line tool a Cmon User Account is needed to
+authenticate on the Cmon Controller. These user accounts can be created using
+the \fBs9s\fP program itself by either authenticating with a pre-existint user
+account or bootstrapping the user management creating the very first user. The
+following section describes the authentication and the creation of the first
+user in detail.
 
+If there is a username specified either in the command line using the
+\fB\-\^\-cmon\-user\fP (or \fB\-u\fP) options or in the configuration file
+(either the \fB~/.s9s/s9s.conf\fP or the \fB/etc/s9s.conf\fP file using the
+\fBcmon_user\fP variable name) the program will try to authenticate with this
+username.  Creating the very first user account is of course not possible this
+way. The \fB\-\^\-cmon\-user\fP option and the \fBcmon_user\fP variable is not
+for specifying what user we want to create, it is for setting what user we want
+to use for the connection.
+
+If no user name is set for the authentication and a user creation is requested
+the \fBs9s\fP will try to send a request to the controller through a named pipe.
+This is the only way a user account can be created without authenticating with
+an existing user account, this is the only way the very first first user can be
+created. Here is an example:
+
+.nf
+# \fBs9s user --create --group=admins --generate-key --controller=https://192.168.1.127:9556 --new-password="p" --email-address="laszlo@severalnines.com" admin\fR
+.fi
+
+Please consider the following:
+
+.TP
+.B 1.
+There is no \fB\-\^\-cmon\-user\fP specified, this is the first user we
+create, we do not have any pre-existing user account. This command line is for
+creating the very first user. Please check out the examples section to see how 
+to create additional users.
+
+.TP
+.B 2.
+This is the first run, so we assume no \fB~/.s9s/s9s.conf\fP configuration file
+exists, there is no user name there either.
+
+.TP
+.B 3.
+In the example we create the user with the username "admin". It is the command
+line argument of the program.
+
+.TP
+.B 4. 
+The command specifies the controller to be at \fBhttps://192.168.1.127:9501\fP. 
+The HTTPS protocol will be used later, but to create this first user the 
+\fBs9s\fP will try to use ssh and sudo to access the controller's named pipe on
+the specified host. 
+
+For this to work the UNIX user running this command has to have a passwordless
+SSH and sudo set up to the remote host. If the specified host is the localhost
+the user do not need SSH access, but still needs to be root or have a
+passwordless sudo access because of course the named pipe is not accessible for
+anyone.
+
+.TP
+.B 5.
+Since the UNIX user has no s9s configuration file it will be created. The
+controller URL and the user name will be stored in it under
+\fB~/.s9s/s9s.conf\fP. 
+
+The next time this user runs the program it will use this "admin" user unless
+other user name is set in the command line and will try to connect this
+controller unless other controller is set in the command line.
+
+.TP
+.B 6.
+The password will be set for the user on the controller, but the password will
+never be stored in the configuration file. 
+
+.TP 
+.B 7.
+The \fB\-\^\-generate\-key\fP option is provided, so a new private/public key
+pair will be generated, then stored in the \fB~/s9s/\fP directory and the public
+key will be registered on the controller for the new user. 
+
+The next time the program run it will find the username in the configuration
+file, find the private key in place for the user and will automatically
+authenticate without a password. The command line options will always have 
+precedence, so this automatic authentication is simply the default way, the
+password authentication is always available.
+
+.TP
+.B 8.
+The group for the new user is set to "admins", so this user will have special
+privileges. It is always a good idea to create the very first user with special
+priviles, then other users can be created by this administrator account.
+
+.\"
+.\" 
+.\"
 .SH OPTIONS
 .SS "Main Option"
 The application should always be started using a main option that sets what
@@ -321,26 +412,67 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-The first example will create a new user (if it is not yet created), set some
+
+This example will create a new user (if it is not yet created), set some
 properties for the new user (like the first name and the last name) and grant
-acess to the system using a public SSL key that is created (if it is not yet
-created):
+acess to the system using a public SSL key that is created. This example is very
+similar to the example shown in the "Creating the First User" section, but it
+assumes the controller is running on the localhost:
 
 .nf
 # \fBs9s user \\
     --create \\
     --generate-key \\
-    --first-name="John" \\
-    --last-name="Doe" \\
+    --new-password="secret" \\
+    --first-name="System" \\
+    --last-name="Admin" \\
     --group=admins \\
-    john\fR
+    admin\fR
 .fi
 
-Here is how to get a detailed list of the users managed by the controller.
+Here is an example showing how the next user can be created by this very first
+user:
 
+.nf
+s9s user \\
+    --create \\
+    --cmon-user="admin" \\
+    --password="secret" \\
+    --group="users" \\
+    --create-group \\
+    --email-address="laszlo@email.com" \\
+    --first-name="Some" \\
+    --last-name="Guy"   \\
+    --new-password="hispassword" \\
+    laszlo
+.fi
+
+In this example we specify the existing user that creates the new user by
+passing the \fB\-\-cmon-user\fP and \fB\-\-password\fP command line options.
+This is usually not necessary, the previous example left the username in the
+configuration file and the secret key in the configuration directory.
+
+Please note that we spcify the new user's username as a command line argument
+(it is "laszlo" in this example), his password with the \fB--new-password\fP,
+but we do not request a keypair to be created. The user can generate the key
+pair and register it using this password. The user name of course also change
+the password.
+
+
+Here is how to get a detailed list of the users managed by the controller. The
+printed list contains some basic information about the user's:
+
+.nf
 # \fBs9s user \\
     --list \\
     --long\fR
+
+A ID UNAME  GNAME  EMAIL                   REALNAME
+-  1 system admins -                       System User
+-  2 nobody nobody -                       Default User
+A  3 admin  admins laszlo@severalnines.com -
+Total: 3
+.fi
 
 The following example shows how one user can change the email address of an
 other (existing) user. 
@@ -352,7 +484,6 @@ other (existing) user.
     worf
 \fR
 .fi
-
 
 The following example shows how the system user can add a public key for an
 other user. The public key from a local file is uploaded to the controller and
@@ -400,5 +531,5 @@ for the password change the current password of the system user is used.
     --cmon-user="system" \\
     --password="secret" \\
     --new-password="p" \\
-    "otheruser" 
+    "otheruser" \fR
 .fi

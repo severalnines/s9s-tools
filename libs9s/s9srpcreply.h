@@ -104,6 +104,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printContainers();
         void printContainersLong();
+        void printContainersCompact(const S9sVariantList &containers);
 
         void printProcessList();
         void printProcessListBrief(const int maxLines = -1);
@@ -167,7 +168,7 @@ class S9sRpcReply : public S9sVariantMap
         static const char *serverColorBegin();
         static const char *serverColorEnd();
         
-        static const char *groupColorBegin(const S9sString &groupName);
+        static const char *groupColorBegin(const S9sString &groupName = "");
         static const char *groupColorEnd();
         
         static const char *fileColorBegin(const S9sString &fileName);

@@ -3323,14 +3323,7 @@ S9sRpcReply::printServerStat(
     //
     printf("\n");
     containers = server.containers();
-    for (uint idx = 0u; idx < containers.size(); ++idx)
-    {
-        const S9sContainer container = containers[idx].toContainer();
-
-        printf("  ");
-        printf("%s", STR(container.property("alias").toString()));
-        printf("\n");
-    }
+    printContainersCompact(containers);
 
     printf("\n");
 }
@@ -3672,6 +3665,50 @@ S9sRpcReply::printContainersLong()
                 numberColorBegin(), totalRunning, numberColorEnd());
     }
 }
+
+void
+S9sRpcReply::printContainersCompact(
+        const S9sVariantList &containers)
+{
+    S9sFormat       aliasFormat(containerColorBegin(), containerColorEnd());
+    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat       userFormat(userColorBegin(), userColorEnd());
+    S9sFormat       groupFormat(groupColorBegin(), groupColorEnd());
+
+    for (uint idx = 0u; idx < containers.size(); ++idx)
+    {
+        const S9sContainer container = containers[idx].toContainer();
+        S9sString          user      = container.groupOwnerName();
+        S9sString          group     = container.ownerName();
+        S9sString          alias     = container.alias();
+        S9sString          ipAddress = container.ipAddress("-");
+
+        userFormat.widen(user);
+        groupFormat.widen(group);
+        aliasFormat.widen(alias);
+        ipFormat.widen(ipAddress);
+    }
+    
+    for (uint idx = 0u; idx < containers.size(); ++idx)
+    {
+        const S9sContainer container = containers[idx].toContainer();
+        S9sString          user      = container.groupOwnerName();
+        S9sString          group     = container.ownerName();
+        S9sString          alias     = container.alias();
+        S9sString          ipAddress = container.ipAddress("-");
+        bool               isRunning = container.statusString() == "RUNNING";
+        
+        printf("  ");
+        printf("%c ", isRunning ? 'u' : '-');
+        userFormat.printf(user);
+        groupFormat.printf(group);
+        aliasFormat.printf(alias);
+        ipFormat.printf(ipAddress);
+        printf("\n");
+    }
+}
+
+
 
 void
 S9sRpcReply::printObjectTree()

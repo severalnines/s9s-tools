@@ -186,3 +186,87 @@ S9sContainer::setProperties(
     m_properties = properties;
 }
 
+S9sString 
+S9sContainer::aclString() const
+{
+    return property("acl").toString();
+}
+
+S9sString 
+S9sContainer::alias() const
+{
+    return property("alias").toString();
+}
+
+S9sString 
+S9sContainer::cdtPath() const
+{
+    return property("cdt_path").toString();
+}
+
+S9sString 
+S9sContainer::className() const
+{
+    return property("class_name").toString();
+}
+
+int
+S9sContainer::containerId() const
+{
+    return property("container_id").toInt();
+}
+
+S9sString 
+S9sContainer::hostname() const
+{
+    return property("hostname").toString();
+}
+
+S9sString 
+S9sContainer::ipAddress(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("ip").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString 
+S9sContainer::ownerName() const
+{
+    return property("owner_user_name").toString();
+}
+
+S9sString 
+S9sContainer::groupOwnerName() const
+{
+    return property("owner_group_name").toString();
+}
+
+S9sString 
+S9sContainer::parentServerName() const
+{
+    return property("parent_server").toString();
+}
+
+S9sString 
+S9sContainer::statusString() const
+{
+    return property("status").toString();
+}
+
+S9sString 
+S9sContainer::templateName() const
+{
+    return property("template").toString();
+}
+
+S9sString 
+S9sContainer::type() const
+{
+    return property("type").toString();
+}
+

@@ -44,6 +44,20 @@ class S9sContainer
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
 
+        S9sString aclString() const;
+        S9sString alias() const;
+        S9sString cdtPath() const;
+        S9sString className() const;
+        int containerId() const;
+        S9sString hostname() const;
+        S9sString ipAddress(const S9sString &defaultValue = "") const;
+        S9sString ownerName() const;
+        S9sString groupOwnerName() const;
+        S9sString parentServerName() const;
+        S9sString statusString() const;
+        S9sString templateName() const;
+        S9sString type() const;
+
     private:
         S9sVariantMap    m_properties;
         S9sUrl           m_url;
