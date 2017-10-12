@@ -79,6 +79,8 @@ S9sNode::S9sNode(
 
         if (m_url.protocol() == "lxc")
             m_properties["class_name"] = "CmonContainerServer";
+
+        m_properties["protocol"] = "lxc";
     }
 
     if (!m_properties.contains("class_name"))

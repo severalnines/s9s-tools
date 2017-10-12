@@ -756,6 +756,7 @@ S9sRpcClient::getCpuInfo(
 /**
  * This function will send the "getInfo" call on the "v2/stat" interface. The
  * reply will be something like this:
+ *
  * \code{.js}
  * {
  *     "collected_info": [ 
@@ -5335,14 +5336,42 @@ S9sRpcClient::nodesField(
     return retval;
 }
 
+/**
+ * \param servers The list of objects that will be returned in proper format.
+ *
+ * Certain requests hold the property "servers", a list of objects representing
+ * servers. Currently we only support CmonContainerServer objects there. We
+ * compose this list here from the variant list passed as argument.
+ *
+ * \code{.js}
+ * {
+ *     "operation": "registerServers",
+ *     "request_created": "2017-10-12T12:39:01.252Z",
+ *     "request_id": 3,
+ *     "servers": [ 
+ *     {
+ *         "class_name": "CmonContainerServer",
+ *         "hostname": "host04",
+ *         "protocol": "lxc"
+ *     } ]
+ * }
+ * \endcode
+ */
 S9sVariant
 S9sRpcClient::serversField(
         const S9sVariantList &servers)
 {
-    S9sVariant     retval;
+    S9sVariantList retval;
 
-    retval = servers;
-    return retval;
+    for (uint idx = 0u; idx < servers.size(); ++idx)
+    {
+        S9sVariantMap thisMap = servers[idx].toVariantMap();
+
+        thisMap["class_name"] = "CmonContainerServer";
+        retval << thisMap;
+    }
+
+    return S9sVariant(retval);
 }
 
 /**
