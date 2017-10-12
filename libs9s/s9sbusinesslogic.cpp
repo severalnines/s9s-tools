@@ -614,7 +614,7 @@ S9sBusinessLogic::authenticate(
         {
             PRINT_ERROR("\n"
                         "WARNING: clustercontrol-controller <= 1.4.2 is detected.\n"
-                        "Some feature might doesn't work, please upgrade your controller.\n");
+                        "Some features may not work, please upgrade your controller.\n");
 
             #if 0
             options->setExitStatus(S9sOptions::Failed);
