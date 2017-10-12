@@ -18,6 +18,7 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sserver.h"
+#include "S9sContainer"
 
 //#define DEBUG
 //#define WARNING
@@ -306,3 +307,14 @@ S9sServer::diskNames() const
     return retval;
 }
 
+S9sVariantList
+S9sServer::containers() const
+{
+    S9sVariantList origList = property("containers").toVariantList();
+    S9sVariantList retval;
+
+    for (uint idx = 0u; idx < origList.size(); ++idx)
+        retval << S9sContainer(origList[idx].toVariantMap());
+
+    return retval;
+}

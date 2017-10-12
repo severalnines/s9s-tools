@@ -57,6 +57,8 @@ class S9sServer
         S9sVariantList memoryBankNames() const;
         S9sVariantList diskNames() const;
 
+        S9sVariantList containers() const;
+
     private:
         S9sVariantMap    m_properties;
 };
