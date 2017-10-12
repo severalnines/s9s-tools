@@ -3670,10 +3670,14 @@ void
 S9sRpcReply::printContainersCompact(
         const S9sVariantList &containers)
 {
-    S9sFormat       aliasFormat(containerColorBegin(), containerColorEnd());
-    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
-    S9sFormat       userFormat(userColorBegin(), userColorEnd());
-    S9sFormat       groupFormat(groupColorBegin(), groupColorEnd());
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
+    S9sFormat      aliasFormat(containerColorBegin(), containerColorEnd());
+    S9sFormat      ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat      userFormat(userColorBegin(), userColorEnd());
+    S9sFormat      groupFormat(groupColorBegin(), groupColorEnd());
+    S9sString      indent;
+    int            tableWidth;
 
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
@@ -3689,6 +3693,25 @@ S9sRpcReply::printContainersCompact(
         ipFormat.widen(ipAddress);
     }
     
+    tableWidth = 
+        3 +
+        aliasFormat.realWidth()  + ipFormat.realWidth() +
+        userFormat.realWidth()   + groupFormat.realWidth();
+    
+    if (terminalWidth - tableWidth > 0)
+        indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+
+    printf("%s", headerColorBegin());
+    printf("%s", STR(indent));
+    printf("S ");
+    userFormat.printf("OWNER", false);
+    groupFormat.printf("GROUP", false);
+    aliasFormat.printf("NAME", false);
+    ipFormat.printf("IP ADDRESS", false);
+    printf("%s", headerColorEnd());
+    printf("\n");
+
+
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
         const S9sContainer container = containers[idx].toContainer();
@@ -3698,7 +3721,7 @@ S9sRpcReply::printContainersCompact(
         S9sString          ipAddress = container.ipAddress("-");
         bool               isRunning = container.statusString() == "RUNNING";
         
-        printf("  ");
+        printf("%s", STR(indent));
         printf("%c ", isRunning ? 'u' : '-');
         userFormat.printf(user);
         groupFormat.printf(group);

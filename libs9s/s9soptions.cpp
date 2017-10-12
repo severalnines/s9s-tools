@@ -6899,7 +6899,6 @@ S9sOptions::readOptionsServer(
         { "register",         no_argument,       0, OptionRegister        },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
-        { "tree",             no_argument,       0, OptionTree            },
         { "unregister",       no_argument,       0, OptionUnregister      },
        
         // FIXME: remove this.
@@ -7022,11 +7021,6 @@ S9sOptions::readOptionsServer(
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
-                break;
-
-            case OptionTree:
-                // --tree
-                m_options["tree"] = true;
                 break;
 
             case OptionCreate:
