@@ -5370,3 +5370,20 @@ S9sRpcClient::serverVersion() const
     return "";
 }
 
+bool
+S9sRpcClient::detectVersion()
+{
+    S9S_DEBUG(" ");
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/auth";
+
+    /*
+     * Firing an intentionally empty request,
+     * so we can parse the controllers version out
+     * from the returned Server: HTTP header
+     */
+    executeRequest(uri, request);
+
+    return !serverVersion().empty();
+}
+
