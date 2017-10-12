@@ -609,8 +609,8 @@ S9sBusinessLogic::authenticate(
 
         // I am not sure if this is the best place, but this version
         // of the s9s CLI is not compatible with versions <= 1.4.2
-        if (controllerVersion == "1.4.1" ||
-            controllerVersion == "1.4.2")
+        if (controllerVersion.startsWith("1.4.2") ||
+            controllerVersion.startsWith("1.4.1"))
         {
             PRINT_ERROR("\n"
                         "WARNING: clustercontrol-controller <= 1.4.2 is detected.\n"
