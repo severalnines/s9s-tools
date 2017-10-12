@@ -1863,9 +1863,6 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
         S9sString controller = options->controllerHostName();
         if (controller.empty())
             controller = "127.0.0.1";
-        int port = options->controllerPort();
-        if (port <= 0)
-            port = 9501;
 
         // this one is used by unit/functional tests
         if (S9sFile("/tmp/cmon_test/usermgmt.fifo").exists())
