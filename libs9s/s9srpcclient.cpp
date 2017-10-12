@@ -389,6 +389,13 @@ S9sRpcClient::authenticateWithKey()
     request["operation"]    = "authenticateResponse";
     request["signature"]    = signature;
 
+    /*
+     * For backward compatibility, if we know that we communicate
+     * with a controller < 1.4.3, use the old method name
+     */
+    if (serverVersion() == "1.4.2" || serverVersion() == "1.4.1")
+        request["operation"] = "response";
+
     retval = executeRequest(uri, request);
     if (!retval)
         return false;
