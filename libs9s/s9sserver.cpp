@@ -136,16 +136,23 @@ S9sServer::className() const
 }
 
 S9sString
-S9sServer::model() const
+S9sServer::model(
+        const S9sString &defaultValue) const
 {
-    return property("model").toString();
+    S9sString retval = property("model").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 /**
  * \returns A string encodes the operating system name and version.
  */
 S9sString
-S9sServer::osVersionString() const
+S9sServer::osVersionString(
+        const S9sString &defaultValue) const
 {
     S9sString retval;
 
@@ -162,6 +169,9 @@ S9sServer::osVersionString() const
         retval.appendWord(release);
         retval.appendWord(codeName);
     }
+
+    if (retval.empty())
+        retval = defaultValue;
 
     return retval;
 }

@@ -49,9 +49,9 @@ class S9sServer
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
         S9sString className() const;
-        S9sString model() const;
+        S9sString model(const S9sString &defaultValue = "") const;
 
-        S9sString osVersionString() const;
+        S9sString osVersionString(const S9sString &defaultValue = "") const;
         S9sVariantList processorNames() const;
         S9sVariantList nicNames() const;
         S9sVariantList memoryBankNames() const;

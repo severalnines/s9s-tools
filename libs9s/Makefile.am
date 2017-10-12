@@ -128,39 +128,39 @@ libs9s_public_h_headers =     \
 	s9sparsecontextstate.h    \
 	S9sRegExp                 \
 	s9sregexp.h               \
-	s9sregexp_p.h          \
-	S9sReport          \
-	s9sreport.h          \
-	S9sRpcClient          \
-	s9srpcclient.h          \
+	s9sregexp_p.h             \
+	S9sReport                 \
+	s9sreport.h               \
+	S9sRpcClient              \
+	s9srpcclient.h            \
 	s9srpcclient_p.h          \
-	S9sRpcReply          \
-	s9srpcreply.h          \
-	S9sRsaKey          \
-	s9srsakey.h          \
-	s9srsakey_p.h          \
-	S9sStack          \
-	s9sstack.h          \
-	S9sString          \
-	s9sstring.h              \
-	S9sStringList              \
-	s9sstringlist.h              \
-	S9sTopUi              \
-	s9stopui.h              \
-	s9sunion.h              \
-	S9sUrl              \
-	s9surl.h              \
-	S9sUser              \
-	s9suser.h              \
-	S9sVariant              \
-	S9sVariantArray              \
-	s9svariantarray.h              \
+	S9sRpcReply               \
+	s9srpcreply.h             \
+	S9sRsaKey                 \
+	s9srsakey.h               \
+	s9srsakey_p.h             \
+	S9sStack                  \
+	s9sstack.h                \
+	S9sString                 \
+	s9sstring.h               \
+	S9sStringList             \
+	s9sstringlist.h           \
+	S9sTopUi                  \
+	s9stopui.h                \
+	s9sunion.h                \
+	S9sUrl                    \
+	s9surl.h                  \
+	S9sUser                   \
+	s9suser.h                 \
+	S9sVariant                \
+	S9sVariantArray           \
+	s9svariantarray.h         \
 	s9svariant.h              \
-	S9sVariantList              \
-	s9svariantlist.h              \
-	S9sVariantMap              \
-	s9svariantmap.h              \
-	S9sVector              \
+	S9sVariantList            \
+	s9svariantlist.h          \
+	S9sVariantMap             \
+	s9svariantmap.h           \
+	S9sVector                 \
 	s9svector.h
 
 

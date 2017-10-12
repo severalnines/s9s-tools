@@ -3237,7 +3237,7 @@ S9sRpcReply::printServerStat(
     //
     //
     printf("%s   Model:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR(server.model()));
+    printf("%-16s ", STR(server.model("-")));
     printf("\n");
 
     //
@@ -3315,7 +3315,7 @@ S9sRpcReply::printServerStat(
     // 
     //
     printf("%s      OS:%s ", greyBegin, greyEnd);
-    printf("%-24s", STR(server.osVersionString()));
+    printf("%-24s", STR(server.osVersionString("-")));
     printf("\n");
     
     //
@@ -3678,6 +3678,9 @@ S9sRpcReply::printContainersCompact(
     S9sFormat      groupFormat(groupColorBegin(), groupColorEnd());
     S9sString      indent;
     int            tableWidth;
+
+    if (containers.empty())
+        return;
 
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
