@@ -3208,7 +3208,15 @@ S9sRpcReply::printServerStat(
     //
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR(server.hostName()));
+    printf("%-25s ", STR(server.hostName()));
+    
+    printf("%sOwner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(server.ownerName()), userColorEnd(),
+            groupColorBegin(server.groupOwnerName()), 
+            STR(server.groupOwnerName()), 
+            groupColorEnd());
+
     printf("\n");
 
     //
@@ -3219,18 +3227,12 @@ S9sRpcReply::printServerStat(
     printf("\n");
 
     // 
-    // Line 
+    // "   Alias: ''                        Owner: pipas/users" 
     //
     printf("%s   Alias:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR("'" + server.alias() + "'"));
     //printf("\n");
     
-    printf("%s         Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(server.ownerName()), userColorEnd(),
-            groupColorBegin(server.groupOwnerName()), 
-            STR(server.groupOwnerName()), 
-            groupColorEnd());
     printf("\n");
     
     //
@@ -3685,8 +3687,8 @@ S9sRpcReply::printContainersCompact(
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
         const S9sContainer container = containers[idx].toContainer();
-        S9sString          user      = container.groupOwnerName();
-        S9sString          group     = container.ownerName();
+        S9sString          user      = container.ownerName();
+        S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
         S9sString          ipAddress = container.ipAddress("-");
 
@@ -3718,8 +3720,8 @@ S9sRpcReply::printContainersCompact(
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
         const S9sContainer container = containers[idx].toContainer();
-        S9sString          user      = container.groupOwnerName();
-        S9sString          group     = container.ownerName();
+        S9sString          user      = container.ownerName();
+        S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
         S9sString          ipAddress = container.ipAddress("-");
         bool               isRunning = container.statusString() == "RUNNING";

@@ -135,6 +135,10 @@ S9sServer::className() const
     return property("class_name").toString();
 }
 
+/**
+ * \param defaultValue The string that will be returned if the requested
+ *   information is not available.
+ */
 S9sString
 S9sServer::model(
         const S9sString &defaultValue) const
@@ -148,6 +152,8 @@ S9sServer::model(
 }
 
 /**
+ * \param defaultValue The string that will be returned if the requested
+ *   information is not available.
  * \returns A string encodes the operating system name and version.
  */
 S9sString
