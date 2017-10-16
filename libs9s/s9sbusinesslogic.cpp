@@ -305,8 +305,13 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else if (options->isStartRequested())
         {
-            success = client.startInTree();
+            success = client.startServers();
             client.printMessages("Started.", success);
+            client.setExitStatus();
+        } else if (options->isStopRequested())
+        {
+            success = client.stopServers();
+            client.printMessages("Stopped.", success);
             client.setExitStatus();
         } else if (options->isRegisterRequested())
         {

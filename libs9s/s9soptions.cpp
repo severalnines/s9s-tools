@@ -3362,17 +3362,17 @@ S9sOptions::printHelpServer()
 
     printf(
 "Options for the \"server\" command:\n"
+"  --add-acl                  Adds a new ACL entry to the object.\n"
 "  --create                   Create a new container.\n"
 "  --get-acl                  List the ACL of an object.\n"
-"  --add-acl                  Adds a new ACL entry to the object.\n"
 "  --list-disks               List disks from multiple servers.\n"
 "  --list-memory              List memory modules from multiple servers.\n"
 "  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
-"  --move                     Move an object inside the tree.\n"
 "  --register                 Register an existint container server.\n"
-"  --tree                     Print the object tree.\n"
+"  --start                    Boot up a server.\n"
+"  --stop                     Shut down and power off a server.\n"
 "  --unregister               Unregister a container server.\n"
 "\n"
     );
@@ -6898,6 +6898,7 @@ S9sOptions::readOptionsServer(
         { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
         { "start",            no_argument,       0, OptionStart           },
+        { "stop",             no_argument,       0, OptionStop            },
         { "stat",             no_argument,       0, OptionStat            },
         { "unregister",       no_argument,       0, OptionUnregister      },
        
@@ -7108,6 +7109,11 @@ S9sOptions::readOptionsServer(
             case OptionStart:
                 // --start
                 m_options["start"] = true;
+                break;
+            
+            case OptionStop:
+                // --stop
+                m_options["stop"] = true;
                 break;
             
             case OptionRefresh:

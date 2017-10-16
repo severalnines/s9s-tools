@@ -3775,7 +3775,37 @@ S9sRpcClient::getAcl()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::startServers()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "startServers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
 
+bool
+S9sRpcClient::stopServers()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "shutdownServers";
+    request["servers"]        = serversField(servers);
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * This method will start an object found in the tree.
+ */
 bool
 S9sRpcClient::startInTree()
 {
@@ -3791,8 +3821,7 @@ S9sRpcClient::startInTree()
 
         return false;
     }
-   
-   
+ 
     request["operation"]      = "start";
     request["path"]           = options->extraArgument(0u);
     

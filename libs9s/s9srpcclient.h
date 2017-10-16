@@ -89,6 +89,8 @@ class S9sRpcClient
         bool mkdir();
         bool rmdir();
 
+        bool startServers();
+        bool stopServers();
         bool startInTree();
 
         bool unregisterHost();
