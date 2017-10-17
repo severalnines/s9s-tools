@@ -63,7 +63,7 @@ UtS9sVariant::testConstruct()
     S9sVariant var3 = true;
     S9sVariant var4 = "a string";
     S9sVariant var5 = std::string("another string");
-
+    
     S9S_COMPARE(var1.isInvalid(), true);
     S9S_COMPARE(var2.isInvalid(), false);
     S9S_COMPARE(var2.toInt(), 12);
@@ -91,6 +91,11 @@ UtS9sVariant::testConstruct()
     S9S_COMPARE(var14.toString(), std::string("a string"));
     S9S_COMPARE(var15.isInvalid(), false);
     S9S_COMPARE(var15.toString(), std::string("another string"));
+
+    S9sVariant var16(atof("42.2"));
+
+    S9S_COMPARE(var16.typeName(), "double");
+    S9S_COMPARE(var16.toString(), "42.2");
 
     return true;
 }
