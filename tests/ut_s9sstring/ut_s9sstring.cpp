@@ -150,6 +150,11 @@ UtS9sString::testToInt()
     
     theString = "25.3.2.1";
     S9S_COMPARE(theString.toInt(), 25);
+
+    theString = "25.3";
+    S9S_VERIFY(!theString.looksInteger());
+    S9S_COMPARE(theString.toDouble(), 25.3);
+
     return true;
 }
 

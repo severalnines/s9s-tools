@@ -277,6 +277,11 @@ S9sBusinessLogic::execute()
             success = client.rmdir();
             client.printMessages("Removed.", success);
             client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteFromTree();
+            client.printMessages("Removed.", success);
+            client.setExitStatus();
         } else if (options->isMoveRequested())
         {
             /* 

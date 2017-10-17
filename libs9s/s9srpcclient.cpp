@@ -3720,29 +3720,6 @@ S9sRpcClient::moveInTree()
     return executeRequest(uri, request);
 }
 
-bool
-S9sRpcClient::deleteFromTree()
-{
-    S9sString      uri = "/v2/host/";
-    S9sVariantMap  request;
-    S9sOptions    *options   = S9sOptions::instance();
-    
-    if (options->nExtraArguments() != 1)
-    {
-        PRINT_ERROR(
-                "The --delete option requires one command line argument: "
-                "the full path of the object to delete.");
-
-        return false;
-    }
-   
-   
-    request["operation"]      = "delete";
-    request["path"]           = options->extraArgument(0u);
-    
-    return executeRequest(uri, request);
-}
-
 /**
  * Sends the getAcl request to the controller.
  */
@@ -3971,6 +3948,28 @@ S9sRpcClient::rmdir()
     }
 
     request["operation"]      = "rmdir";
+    request["path"]           = options->extraArgument(0u);
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::deleteFromTree()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --delete option requires one command line argument: "
+                "the full path of the object to be removed.");
+
+        return false;
+    }
+
+    request["operation"]      = "delete";
     request["path"]           = options->extraArgument(0u);
     
     return executeRequest(uri, request);

@@ -7184,12 +7184,13 @@ S9sOptions::readOptionsTree(
         // Main Option
         { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "chown",            no_argument,       0, OptionChOwn           },
+        { "delete",           no_argument,       0, OptionDelete          },
         { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list",             no_argument,       0, 'L'                   },
         { "mkdir",            no_argument,       0, OptionMkdir           },
-        { "rmdir",            no_argument,       0, OptionRmdir           },
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
+        { "rmdir",            no_argument,       0, OptionRmdir           },
         { "tree",             no_argument,       0, OptionTree            },
         
         { "acl",              required_argument, 0, OptionAcl             },
@@ -7344,6 +7345,11 @@ S9sOptions::readOptionsTree(
             case OptionChOwn:
                 // --chown
                 m_options["chown"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"]  = true;
                 break;
             
             case OptionAcl:
@@ -7586,6 +7592,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isListRequested())
+        countOptions++;
+    
+    if (isDeleteRequested())
         countOptions++;
     
     if (countOptions > 1)
