@@ -100,7 +100,7 @@ DOUBLESPECIAL   ({NAN}|{INF})
 
 {DOUBLE}|{DOUBLEWITHEXP} {
     S9S_WARNING("JSON_DOUBLE: \"%s\"/%f", yytext, S9sString(yytext).toDouble());
-    yylval->vval = new S9sVariant(atof(yytext));
+    yylval->vval = new S9sVariant(S9sString(yytext).toDouble());
     return JSON_DOUBLE;
 }
 

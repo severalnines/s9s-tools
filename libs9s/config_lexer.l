@@ -171,7 +171,7 @@ DOUBLEWITHEXP   ({DOUBLE}|{INTEGER})[eE][-+]?{DIGIT}+
 }
 
 {DOUBLE}|{DOUBLEWITHEXP} {
-    S9S_DEBUG("CONFIG_DOUBLE: \"%s\"/%f", yytext, atof(yytext));
+    S9S_DEBUG("CONFIG_DOUBLE: \"%s\"/%f", yytext, S9sString(yytext).toDouble());
     yyextra->tokenFound(yytext);
     yylval->nval = new S9sConfigAstNode(S9sConfigAstNode::Literal, yytext);
     return CONFIG_DOUBLE;
