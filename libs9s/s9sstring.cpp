@@ -285,8 +285,13 @@ double
 S9sString::toDouble(
         const double defaultVal) const
 {
-    if (c_str() != NULL)
-        return atof(c_str());
+    if (!empty() && c_str() != NULL)
+    {
+        S9sString myCopy = *this;
+        myCopy.replace(".", decimalSeparator());
+        
+        return atof(STR(myCopy));
+    }
 
     return defaultVal;
 }
@@ -738,6 +743,18 @@ S9sString::looksULongLong() const
         return false;
 
     return true;
+}
+
+S9sString 
+S9sString::decimalSeparator()
+{
+    S9sString tmp;
+    S9sString retval;
+
+    tmp.sprintf("%3.1f", 0.0f);
+    retval += tmp[1];
+
+    return retval;
 }
 
 S9sString 

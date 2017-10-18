@@ -155,6 +155,7 @@ UtS9sString::testToInt()
     S9S_VERIFY(!theString.looksInteger());
     S9S_COMPARE(theString.toDouble(), 25.3);
 
+    S9S_DEBUG("-> '%s'", STR(S9sString::decimalSeparator()));
     return true;
 }
 
