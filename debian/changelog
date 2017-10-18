@@ -1,3 +1,9 @@
+s9s-tools (1.5.20171018-release0) UNRELEASED; urgency=medium
+
+  * Increased version number to match with clustercontrol release.
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 18 Oct 2017 08:26:39 +0200
+
 s9s-tools (0.1.20171003-nightly0) UNRELEASED; urgency=medium
 
   * NEW DEVELOPER BUILD

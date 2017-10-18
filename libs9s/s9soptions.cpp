@@ -2929,7 +2929,8 @@ S9sOptions::executeInfoRequest()
                "\\__ \\\\__, \\__ \\_____| || (_) | (_) | \\__ \\\n"
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
-        printf("%s %s-%s BUILD %s\n", PACKAGE_NAME, PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
+        printf("%s %s-%s BUILD %s\n",
+            PACKAGE_NAME, PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
         printf("Copyright (C) 2016-2017 Severalnines AB\n");
         printf("\n");
         //printf("Written by ...\n");
