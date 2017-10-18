@@ -3181,6 +3181,10 @@ S9sRpcReply::printServers()
     }
 }
 
+/**
+ * Prints one server in stat format, a format we use when the --stat command
+ * line option is provided.
+ */
 void
 S9sRpcReply::printServerStat(
         S9sServer server)
@@ -3208,7 +3212,7 @@ S9sRpcReply::printServerStat(
     printf("\n");
 
     //
-    //
+    // "    Name: core1                     Owner: pipas/users"
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%-25s ", STR(server.hostName()));
@@ -3223,7 +3227,7 @@ S9sRpcReply::printServerStat(
     printf("\n");
 
     //
-    //
+    // "      IP: 192.168.1.4"
     //
     printf("%s      IP:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(server.ipAddress()));
@@ -3239,7 +3243,7 @@ S9sRpcReply::printServerStat(
     printf("\n");
     
     //
-    //
+    // "   Model: SUN FIRE X4170 SERVER (4583256-1)"
     //
     printf("%s   Model:%s ", greyBegin, greyEnd);
     printf("%-16s ", STR(server.model("-")));
@@ -3276,7 +3280,7 @@ S9sRpcReply::printServerStat(
     }
     
     //
-    // ""
+    // "   Banks: 16 x DIMM 800 MHz (1.2 ns)"
     //
     for (uint idx = 0u; idx < bankNames.size(); ++idx)
     {
@@ -3291,7 +3295,7 @@ S9sRpcReply::printServerStat(
     }
 
     //
-    // ""
+    // "   Disks:  4 x FUJITSU MBE2147RC"
     //
     for (uint idx = 0u; idx < diskNames.size(); ++idx)
     {
@@ -3317,7 +3321,7 @@ S9sRpcReply::printServerStat(
 
         
     //
-    // 
+    // "   Class: CmonContainerServer"
     //
     printf("%s      OS:%s ", greyBegin, greyEnd);
     printf("%-24s", STR(server.osVersionString("-")));
@@ -3333,6 +3337,10 @@ S9sRpcReply::printServerStat(
     printf("\n");
 }
 
+/**
+ * Prints the servers in stat format, a format we use when the --stat command
+ * line option is provided.
+ */
 void
 S9sRpcReply::printServersStat()
 {
