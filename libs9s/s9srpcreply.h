@@ -90,6 +90,7 @@ class S9sRpcReply : public S9sVariantMap
         void printPing();
         void printServers();
         void printServersLong();
+        void printServersBrief();
 
         void printProcessors(S9sString indent = S9sString());
         void printDisks(S9sString indent = S9sString());

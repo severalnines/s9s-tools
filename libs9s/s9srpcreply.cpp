@@ -3173,8 +3173,11 @@ S9sRpcReply::printServers()
     } else if (options->isStatRequested())
     {
         printServersStat();
-    } else {
+    } else if (options->isLongRequested()) 
+    {
         printServersLong();
+    } else {
+        printServersBrief();
     }
 }
 
@@ -3471,6 +3474,37 @@ S9sRpcReply::printServersLong()
 
     if (!options->isBatchRequested())
         printf("Total: %d server(s)\n", total);
+}
+
+/**
+ * Prints the servers in the brief format.
+ */
+void 
+S9sRpcReply::printServersBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    const char     *hostColorBegin = "";
+    const char     *hostColorEnd = "";
+
+    if (syntaxHighlight)
+    {
+        hostColorBegin  = XTERM_COLOR_GREEN;
+        hostColorEnd    = TERM_NORMAL;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
+    }
 }
 
 /**
