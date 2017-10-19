@@ -3841,11 +3841,13 @@ S9sRpcReply::printObjectTreeBrief(
     S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    S9sString       linkTarget = entry["link_target"].toString();
     bool            isDir     = type == "Folder";
     bool            isCluster = type == "Cluster";
     bool            isNode    = type == "Node";
     bool            isServer  = type == "Server";
     bool            isUser    = type == "User";
+    bool            isGroup   = type == "Group";
     bool            isContainer = type == "Container";
     bool            isDatabase = type == "Database";
     S9sString       indent;
@@ -3906,6 +3908,11 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s%s%s", 
                 STR(indent), 
                 userColorBegin(), STR(name), userColorEnd());
+    } else if (isGroup)
+    {
+        printf("%s%s%s%s", 
+                STR(indent), 
+                groupColorBegin(), STR(name), groupColorEnd());
     } else if (isDatabase)
     {
         printf("%s%s%s%s", 
@@ -3915,7 +3922,9 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s", STR(indent), STR(name));
     }
 
-    if (!spec.empty())
+    if (!linkTarget.empty())
+        printf(" -> %s", STR(linkTarget));
+    else if (!spec.empty())
         printf(" (%s)", STR(spec));
 
     printf("\n");
@@ -3983,6 +3992,7 @@ S9sRpcReply::printObjectTreeLong(
     S9sString       owner     = entry["owner_user_name"].toString();
     S9sString       group     = entry["owner_group_name"].toString();
     S9sString       acl       = entry["item_acl"].toString();
+    S9sString       linkTarget = entry["link_target"].toString();
     S9sString       fullPath;
 
     if (owner.empty())
@@ -4007,6 +4017,8 @@ S9sRpcReply::printObjectTreeLong(
         printf("s");
     else if (type == "User")
         printf("u");
+    else if (type == "Group")
+        printf("g");
     else if (type == "Container")
         printf("c");
     else if (type == "Database")
@@ -4043,6 +4055,10 @@ S9sRpcReply::printObjectTreeLong(
     {
         printf("%s%s%s", 
                 userColorBegin(), STR(fullPath), userColorEnd());
+    } else if (type == "Group")
+    {
+        printf("%s%s%s", 
+                groupColorBegin(), STR(fullPath), groupColorEnd());
     } else if (type == "Container")
     {
         printf("%s%s%s", 
@@ -4054,6 +4070,9 @@ S9sRpcReply::printObjectTreeLong(
     } else {
         printf("%s", STR(fullPath));
     }
+
+    if (!linkTarget.empty())
+        printf(" -> %s", STR(linkTarget));
 
     printf("\n");
 
