@@ -4104,7 +4104,13 @@ void
 S9sRpcReply::printObjectTreeLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantMap   entry =  operator[]("cdt").toVariantMap();
+    S9sVariantMap   entry   =  operator[]("cdt").toVariantMap();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
 
     m_ownerFormat = S9sFormat();
     m_groupFormat = S9sFormat();

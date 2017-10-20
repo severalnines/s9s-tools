@@ -222,6 +222,18 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
+mys9s cluster \
+    --create-database \
+    --cluster-name="galera_001" \
+    --db-name="domain_names_diff" \
+    --batch
+
+mys9s cluster \
+    --create-database \
+    --cluster-name="galera_001" \
+    --db-name="whois_records_delta" \
+    --batch
+
 #
 # Creating a database account.
 #
