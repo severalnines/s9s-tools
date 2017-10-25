@@ -260,7 +260,7 @@ S9sBusinessLogic::execute()
         } else if (options->isRemoveAclRequested())
         {
             success = client.removeAcl();
-            client.printMessages("Acl is remove.", success);
+            client.printMessages("Acl is removed.", success);
             client.setExitStatus();
         } else if (options->isChOwnRequested())
         {
