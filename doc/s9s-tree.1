@@ -33,6 +33,10 @@ Print the ACL of an object in the tree.
 .B \-\^\-list
 Print the Cmon Directory Tree in list format.
 
+.TP
+.B \-\^\-mkdir
+Create a new folder in the tree.
+
 .TP 
 .B \-\^\-move 
 Move an object to a new location in the tree.
@@ -40,6 +44,10 @@ Move an object to a new location in the tree.
 .TP
 .B \-\^\-remove\-acl
 Remove an ACL entry from the ACL of an object.
+
+.TP
+.B \-\^\-rmdir
+Remove an empty folder from the tree.
 
 .TP
 .B \-\^\-tree
@@ -174,4 +182,14 @@ the same type already added, the permissions will be overwritten.
     --add-acl \\
     --acl="user:pipas:rw-" \\
     /servers/storage01\fR
+.fi
+
+The following example shows how to change the owner and group for an object in
+the tree:
+
+.nf
+# \fBs9s tree \\
+    --chown \\
+    --owner=admin:admins \\
+    /galera_001/databases/database01\fR
 .fi

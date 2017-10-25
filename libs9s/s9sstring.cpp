@@ -872,6 +872,10 @@ S9sString::pastTime(
     return retval;
 }
 
+/**
+ * Converts the number of seconds to a human readable string representing
+ * uptime, e.g. "00:06:38" or "4 days 17:24:11"
+ */
 S9sString
 S9sString::uptime(
         ulonglong seconds)
