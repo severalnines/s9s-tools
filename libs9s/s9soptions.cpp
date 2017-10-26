@@ -3208,6 +3208,7 @@ S9sOptions::printHelpUser()
 "  --list-keys                List the public keys of a user.\n"
 "  --list                     List the users.\n"
 "  --set                      Change the properties of a user.\n"
+"  --stat                     Print the details of a user.\n"
 "  --whoami                   List the current user only.\n"
 ""
 "\n"
@@ -3449,15 +3450,15 @@ S9sOptions::readOptionsNode(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
-        { "stat",             no_argument,       0,  OptionStat           },
-        { "set",              no_argument,       0,  OptionSet            },
-        { "start",            no_argument,       0,  OptionStart          },
-        { "stop",             no_argument,       0,  OptionStop           },
-        { "restart",          no_argument,       0,  OptionRestart        },
-        { "list-config",      no_argument,       0,  OptionListConfig     },
-        { "change-config",    no_argument,       0,  OptionChangeConfig   },
-        { "pull-config",      no_argument,       0,  OptionPullConfig     },
-        { "push-config",      no_argument,       0,  OptionPushConfig     },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "set",              no_argument,       0, OptionSet             },
+        { "start",            no_argument,       0, OptionStart           },
+        { "stop",             no_argument,       0, OptionStop            },
+        { "restart",          no_argument,       0, OptionRestart         },
+        { "list-config",      no_argument,       0, OptionListConfig      },
+        { "change-config",    no_argument,       0, OptionChangeConfig    },
+        { "pull-config",      no_argument,       0, OptionPullConfig      },
+        { "push-config",      no_argument,       0, OptionPushConfig      },
         { "unregister",       no_argument,       0, OptionUnregister      },
 
         // Cluster information
@@ -4715,26 +4716,19 @@ S9sOptions::checkOptionsUser()
     
     if (isAddKeyRequested())
         countOptions++;
+    
+    if (isStatRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --whoami, --set, --change-password, --list-keys, "
-            "--add-key "
-            " and --create options are mutually exclusive.";
-
+        m_errorMessage = "The main options are mutually exclusive.";
         m_exitStatus = BadOptions;
-
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --whoami, --set, --change-password,"
-            " --list-keys, --add-key, "
-            " and --create options is mandatory.";
-
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
-
         return false;
     }
 
@@ -5064,6 +5058,7 @@ S9sOptions::readOptionsUser(
         { "list",             no_argument,       0, 'L'                   },
         { "list-groups",      no_argument,       0, OptionListGroups      },
         { "set",              no_argument,       0, OptionSet             },
+        { "stat",             no_argument,       0, OptionStat            },
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
         // Options about the user.
@@ -5212,6 +5207,11 @@ S9sOptions::readOptionsUser(
             case OptionWhoAmI:
                 // --whoami
                 m_options["whoami"] = true;
+                break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
                 break;
 
             case OptionSet:
