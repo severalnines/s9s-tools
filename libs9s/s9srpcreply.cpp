@@ -4375,6 +4375,10 @@ S9sRpcReply::printHostTable(
     printf("\n");
 }
 
+/**
+ * Prints one cluster in "stat" format, a very detailed format that is
+ * used when the --stat command line option is provided.
+ */
 void
 S9sRpcReply::printClusterStat(
         S9sCluster &cluster)
@@ -4390,14 +4394,14 @@ S9sRpcReply::printClusterStat(
     //
     title.sprintf(" %s ", STR(cluster.name()));
 
-    printf("%s", TERM_INVERSE/*headerColorBegin()*/);
+    printf("%s", TERM_INVERSE);
     printf("%s", STR(title));
     for (int n = title.length(); n < terminalWidth; ++n)
         printf(" ");
-    printf("%s", TERM_NORMAL /*headerColorEnd()*/);
+    printf("%s", TERM_NORMAL);
     
     //
-    //
+    // "    Name: galera_001                          Owner: pipas/users"
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%s", clusterColorBegin());
@@ -4413,6 +4417,9 @@ S9sRpcReply::printClusterStat(
 
     printf("\n");
 
+    //
+    // "      ID: 1                                   State: STARTED"
+    //
     printf("%s      ID:%s ", greyBegin, greyEnd);
     printf("%-32d ", cluster.clusterId());
     
@@ -6394,10 +6401,98 @@ S9sRpcReply::printUserList()
         return;
     }
 
-    if (options->isLongRequested())
+    if (options->isStatRequested())
+        printUserListStat();
+    else if (options->isLongRequested())
         printUserListLong();
     else
         printUserListBrief();
+}
+
+void 
+S9sRpcReply::printUserListStat()
+{
+    S9sVariantList  userList    = operator[]("users").toVariantList();
+    S9sOptions     *options     = S9sOptions::instance();
+    S9sString       groupFilter = options->group();
+    bool            whoAmIRequested = options->isWhoAmIRequested();
+    int             authUserId  = operator[]("request_user_id").toInt();
+
+    for (uint idx = 0; idx < userList.size(); ++idx)
+    {
+        S9sVariantMap  userMap      = userList[idx].toVariantMap();
+        S9sUser        user         = userMap;
+        S9sString      userName     = user.userName();
+        int            userId       = user.userId();
+        
+        //
+        // Filtering.
+        //
+        if (whoAmIRequested && userId != authUserId)
+            continue;
+
+        if (!options->isStringMatchExtraArguments(userName))
+            continue;
+        
+        if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
+            continue;
+
+        printUserListStat(user);
+    }
+}
+
+void 
+S9sRpcReply::printUserListStat(
+        const S9sUser &user)
+{
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    S9sString   title;
+    
+    //
+    // The title that is in inverse. 
+    //
+    if (!user.fullName().empty())
+        title.sprintf("%s", STR(user.fullName()));
+    else
+        title.sprintf("%s", STR(user.userName()));
+
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    
+    //
+    // "    Name: galera_001                          Owner: pipas/users"
+    //
+    printf("%s    Name:%s ", greyBegin, greyEnd);
+    printf("%s", userColorBegin());
+    printf("%-32s ", STR(user.userName()));
+    printf("%s", userColorEnd());
+    
+    printf("%s   Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(user.ownerName()), userColorEnd(),
+            groupColorBegin(user.groupOwnerName()), 
+            STR(user.groupOwnerName()), 
+            groupColorEnd());
+    
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%sFullname:%s ", greyBegin, greyEnd);
+    printf("%-35s ", STR(user.fullName()));
+    
+    printf("%sEmail:%s ", greyBegin, greyEnd);
+    printf("%-32s ", STR(user.emailAddress()));
+    printf("\n");
+
+    printf("\n\n");
 }
 
 /**

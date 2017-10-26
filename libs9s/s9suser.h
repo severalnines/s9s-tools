@@ -61,6 +61,9 @@ class S9sUser
                 const S9sString &key);
 
         S9sString fullName() const;
+        S9sString ownerName() const;
+        S9sString groupOwnerName() const;
+
 
         S9sString toString(
                 const bool       syntaxHighlight,

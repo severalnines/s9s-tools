@@ -489,7 +489,8 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isUserOperation())
     {
-        if (options->isListRequested() || options->isWhoAmIRequested())
+        if (options->isListRequested() || options->isWhoAmIRequested() ||
+                options->isStatRequested())
         {
             executeUserList(client);
         } else if (options->isListGroupsRequested())

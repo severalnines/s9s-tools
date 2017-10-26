@@ -282,6 +282,46 @@ S9sUser::fullName() const
     return retval;
 }
 
+/**
+ * \returns The name of the user that owns this user. No, it is not slavery,
+ *   owns only the user object, not the person. ;)
+ */
+S9sString
+S9sUser::ownerName() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("owner_user_name"))
+    {
+        retval = m_properties.at("owner_user_name").toString();
+    } else if (m_properties.contains("owner_user_id"))
+    {
+        retval.sprintf("%d", m_properties.at("owner_user_id").toInt());
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The name of the group that owns this user.
+ */
+S9sString
+S9sUser::groupOwnerName() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("owner_group_name"))
+    {
+        retval = m_properties.at("owner_group_name").toString();
+    } else if (m_properties.contains("owner_group_id"))
+    {
+        retval.sprintf("%d", m_properties.at("owner_group_id").toInt());
+    }
+
+    return retval;
+}
+
+
 void
 S9sUser::setGroup(
         const S9sString &groupName)
