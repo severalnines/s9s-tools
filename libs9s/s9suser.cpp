@@ -167,12 +167,13 @@ S9sUser::userName() const
  * \returns The email address of the user.
  */
 S9sString
-S9sUser::emailAddress() const
+S9sUser::emailAddress(
+        const S9sString &defaultValue) const
 {
     if (m_properties.contains("email_address"))
         return m_properties.at("email_address").toString();
 
-    return S9sString();
+    return defaultValue;
 }
 
 /**
@@ -321,6 +322,40 @@ S9sUser::groupOwnerName() const
     return retval;
 }
 
+S9sString
+S9sUser::lastLoginString(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = defaultValue;
+
+    if (m_properties.contains("last_login"))
+        retval = m_properties.at("last_login").toString();
+
+    return retval;
+}
+
+S9sString
+S9sUser::createdString(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = defaultValue;
+
+    if (m_properties.contains("created"))
+        retval = m_properties.at("created").toString();
+
+    return retval;
+}
+
+bool 
+S9sUser::isDisabled() const
+{
+    bool retval = false;
+
+    if (m_properties.contains("disabled"))
+        retval = m_properties.at("disabled").toBoolean();
+
+    return retval;
+}
 
 void
 S9sUser::setGroup(

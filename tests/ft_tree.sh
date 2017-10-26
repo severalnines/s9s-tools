@@ -104,7 +104,7 @@ mys9s user \
     --group="users" \
     --create-group \
     --email-address="laszlo@severalnines.com" \
-    --first-name="László" \
+    --first-name="Laszlo" \
     --last-name="Pere"   \
     --generate-key \
     --new-password="pipas" \

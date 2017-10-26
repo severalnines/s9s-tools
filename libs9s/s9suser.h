@@ -45,7 +45,7 @@ class S9sUser
         void setProperties(const S9sVariantMap &properties);
 
         S9sString userName() const;
-        S9sString emailAddress() const;
+        S9sString emailAddress(const S9sString &defaultValue = "") const;
         int userId() const;
         S9sString firstName() const;
         S9sString lastName() const;
@@ -63,7 +63,9 @@ class S9sUser
         S9sString fullName() const;
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
-
+        S9sString lastLoginString(const S9sString &defaultValue) const;
+        S9sString createdString(const S9sString &defaultValue) const;
+        bool isDisabled() const;
 
         S9sString toString(
                 const bool       syntaxHighlight,

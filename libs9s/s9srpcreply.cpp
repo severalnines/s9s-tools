@@ -6454,9 +6454,11 @@ S9sRpcReply::printUserListStat(
     //
     // The title that is in inverse. 
     //
+#if 1
     if (!user.fullName().empty())
         title.sprintf("%s", STR(user.fullName()));
     else
+#endif
         title.sprintf("%s", STR(user.userName()));
 
     printf("%s", TERM_INVERSE);
@@ -6470,7 +6472,7 @@ S9sRpcReply::printUserListStat(
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%s", userColorBegin());
-    printf("%-32s ", STR(user.userName()));
+    printf("%-25s ", STR(user.userName()));
     printf("%s", userColorEnd());
     
     printf("%s   Owner:%s ", greyBegin, greyEnd);
@@ -6481,15 +6483,46 @@ S9sRpcReply::printUserListStat(
             groupColorEnd());
     
     printf("\n");
+
+    //
+    // "      ID: 3                         Disabled: no"
+    //
+    printf("%s      ID:%s ", greyBegin, greyEnd);
+    printf("%-5d ", user.userId());
+
+    printf("                    %sDisabled:%s ", greyBegin, greyEnd);
+    printf("%s", user.isDisabled() ? "yes" : "no");
+    printf("\n");
     
     //
-    //
+    // "Fullname: László Pere                  Email: laszlo@severalnines.com"
     //
     printf("%sFullname:%s ", greyBegin, greyEnd);
-    printf("%-35s ", STR(user.fullName()));
+    printf("%-28s ", STR(user.fullName()));
     
     printf("%sEmail:%s ", greyBegin, greyEnd);
-    printf("%-32s ", STR(user.emailAddress()));
+    printf("%s ", STR(user.emailAddress("-")));
+    printf("\n");
+
+    //
+    // "  Groups: users"
+    //
+    printf("%s  Groups:%s ", greyBegin, greyEnd);
+    printf("%-30s ", STR(user.groupNames(", ")));
+    printf("\n");
+    
+    //
+    // " Created: 2017-10-26T12:08:55.945Z"
+    //
+    printf("%s Created:%s ", greyBegin, greyEnd);
+    printf("%-30s ", STR(user.createdString("-")));
+    printf("\n");
+
+    //
+    // "   Login: 2017-10-26T12:10:37.762Z"
+    //
+    printf("%s   Login:%s ", greyBegin, greyEnd);
+    printf("%-30s ", STR(user.lastLoginString("-")));
     printf("\n");
 
     printf("\n\n");
