@@ -334,6 +334,11 @@ S9sUser::lastLoginString(
     return retval;
 }
 
+/**
+ * \param defaultValue A string that will be sent back if this information is
+ *   not available.
+ * \returns A date&time string showing when the user was created.
+ */
 S9sString
 S9sUser::createdString(
         const S9sString &defaultValue) const
@@ -346,6 +351,30 @@ S9sUser::createdString(
     return retval;
 }
 
+/**
+ * \param defaultValue A string that will be sent back if this information is
+ *   not available.
+ * \returns A date&time string showing when the last failed login attempt
+ *   happened. 
+ */
+S9sString
+S9sUser::failedLoginString(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    if (m_properties.contains("last_failed_login"))
+        retval = m_properties.at("last_failed_login").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+/**
+ * \returns True if the user is disabled, false otherwise.
+ */
 bool 
 S9sUser::isDisabled() const
 {

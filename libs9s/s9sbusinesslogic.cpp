@@ -1502,6 +1502,20 @@ S9sBusinessLogic::waitForJobWithProgress(
 
         nFailures = 0;
 
+        if (options->isJsonRequested())
+        {
+            reply     = client.reply();
+            printf("%s\n", STR(reply.toString()));
+        
+            fflush(stdout); 
+            finished = reply.progressLine(progressLine, syntaxHighlight);
+
+            if (finished)
+                break;
+
+            sleep(1);
+        }
+        
         /*
          * Printing the title if it is not yet printed.
          */

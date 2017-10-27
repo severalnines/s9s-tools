@@ -6524,6 +6524,13 @@ S9sRpcReply::printUserListStat(
     printf("%s   Login:%s ", greyBegin, greyEnd);
     printf("%-30s ", STR(user.lastLoginString("-")));
     printf("\n");
+    
+    //
+    // 
+    //
+    printf("%s Failure:%s ", greyBegin, greyEnd);
+    printf("%-30s ", STR(user.failedLoginString("-")));
+    printf("\n");
 
     printf("\n\n");
 }

@@ -65,6 +65,8 @@ class S9sUser
         S9sString groupOwnerName() const;
         S9sString lastLoginString(const S9sString &defaultValue) const;
         S9sString createdString(const S9sString &defaultValue) const;
+        S9sString failedLoginString(const S9sString &defaultValue) const;
+
         bool isDisabled() const;
 
         S9sString toString(
