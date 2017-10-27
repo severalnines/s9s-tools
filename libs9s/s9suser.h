@@ -66,8 +66,10 @@ class S9sUser
         S9sString lastLoginString(const S9sString &defaultValue) const;
         S9sString createdString(const S9sString &defaultValue) const;
         S9sString failedLoginString(const S9sString &defaultValue) const;
-
         bool isDisabled() const;
+        bool isSuspended() const;
+        int nFailedLogins() const;
+
 
         S9sString toString(
                 const bool       syntaxHighlight,

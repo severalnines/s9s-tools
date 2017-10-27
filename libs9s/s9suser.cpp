@@ -386,6 +386,37 @@ S9sUser::isDisabled() const
     return retval;
 }
 
+/**
+ * \returns True if the user is suspended, false otherwise.
+ */
+bool 
+S9sUser::isSuspended() const
+{
+    bool retval = false;
+
+    if (m_properties.contains("suspended"))
+        retval = m_properties.at("suspended").toBoolean();
+
+    return retval;
+}
+
+/**
+ * \returns How many failed logins the user has. 
+ *
+ * This counter is reset to 0 when the user successfully authenticates.
+ */
+int
+S9sUser::nFailedLogins() const
+{
+    int retval = 0;
+
+    if (m_properties.contains("n_failed_logins"))
+        retval = m_properties.at("n_failed_logins").toInt();
+
+    return retval;
+}
+
+
 void
 S9sUser::setGroup(
         const S9sString &groupName)

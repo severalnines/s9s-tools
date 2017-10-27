@@ -6503,14 +6503,24 @@ S9sRpcReply::printUserListStat(
     printf("%sEmail:%s ", greyBegin, greyEnd);
     printf("%s ", STR(user.emailAddress("-")));
     printf("\n");
-
+    
+    //
+    // " Suspend: no                   Failed logins: 0"
+    //
+    printf("%s Suspend:%s ", greyBegin, greyEnd);
+    printf("%-19s ", user.isSuspended() ? "yes" : "no");
+    
+    printf("%s Failed logins:%s ", greyBegin, greyEnd);
+    printf("%d", user.nFailedLogins());
+    printf("\n");
+    
     //
     // "  Groups: users"
     //
     printf("%s  Groups:%s ", greyBegin, greyEnd);
     printf("%-30s ", STR(user.groupNames(", ")));
     printf("\n");
-    
+
     //
     // " Created: 2017-10-26T12:08:55.945Z"
     //
@@ -6529,9 +6539,9 @@ S9sRpcReply::printUserListStat(
     // 
     //
     printf("%s Failure:%s ", greyBegin, greyEnd);
-    printf("%-30s ", STR(user.failedLoginString("-")));
-    printf("\n");
-
+    printf("%-24s ", STR(user.failedLoginString("-")));
+    
+    
     printf("\n\n");
 }
 
