@@ -259,6 +259,8 @@ class S9sOptions
         bool isUnregisterRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;
+        bool isEnableRequested() const;
+        bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isRestoreRequested() const;
         bool isRollingRestartRequested() const;

@@ -501,6 +501,16 @@ S9sBusinessLogic::execute()
             success = client.setUser();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->isDisableRequested())
+        {
+            success = client.disableUser();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
+        } else if (options->isEnableRequested())
+        {
+            success = client.enableUser();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else if (options->isChangePasswordRequested())
         {
             success = client.setPassword();

@@ -4841,6 +4841,70 @@ S9sRpcClient::setUser()
 }
 
 bool
+S9sRpcClient::enableUser()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+    bool           retval;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("Only one user can be modified at once.");
+        return false;
+    }
+
+    properties["class_name"] = "CmonUser";
+
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        PRINT_ERROR("The user name should be passed as command line argument.");
+    }
+
+    request["operation"]  = "enable";
+    request["user"]       = properties;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::disableUser()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    S9sVariantMap  properties;
+    bool           retval;
+
+    if (options->nExtraArguments() > 1)
+    {
+        PRINT_ERROR("Only one user can be modified at once.");
+        return false;
+    }
+
+    properties["class_name"] = "CmonUser";
+
+    if (options->nExtraArguments() > 0)
+    {
+        properties["user_name"]  = options->extraArgument(0);
+    } else {
+        PRINT_ERROR("The user name should be passed as command line argument.");
+    }
+
+    request["operation"]  = "disable";
+    request["user"]       = properties;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
 S9sRpcClient::getKeys()
 {
     S9sOptions    *options = S9sOptions::instance();

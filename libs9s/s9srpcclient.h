@@ -203,6 +203,8 @@ class S9sRpcClient
         bool getGroups();
         bool canCreateUser();
         bool setUser();
+        bool enableUser();
+        bool disableUser();
         bool getKeys();
         bool addKey();
         bool setPassword();

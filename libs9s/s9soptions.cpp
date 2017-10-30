@@ -70,6 +70,8 @@ enum S9sOptionType
     OptionVendor,
     OptionCreate,
     OptionDelete,
+    OptionEnable,
+    OptionDisable,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -2247,6 +2249,18 @@ S9sOptions::isDeleteRequested() const
 }
 
 bool
+S9sOptions::isEnableRequested() const
+{
+    return getBool("enable");
+}
+
+bool
+S9sOptions::isDisableRequested() const
+{
+    return getBool("disable");
+}
+
+bool
 S9sOptions::isPingRequested() const
 {
     return getBool("ping");
@@ -3205,6 +3219,8 @@ S9sOptions::printHelpUser()
 "  --add-key                  Register a new public key for a user.\n"
 "  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
+"  --disable                  Preventing users to log in.\n"
+"  --enable                   Enable disabled/suspended users.\n"
 "  --list-keys                List the public keys of a user.\n"
 "  --list                     List the users.\n"
 "  --set                      Change the properties of a user.\n"
@@ -4719,6 +4735,12 @@ S9sOptions::checkOptionsUser()
     
     if (isStatRequested())
         countOptions++;
+    
+    if (isEnableRequested())
+        countOptions++;
+
+    if (isDisableRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -5059,6 +5081,8 @@ S9sOptions::readOptionsUser(
         { "list-groups",      no_argument,       0, OptionListGroups      },
         { "set",              no_argument,       0, OptionSet             },
         { "stat",             no_argument,       0, OptionStat            },
+        { "enable",           no_argument,       0, OptionEnable          },
+        { "disable",          no_argument,       0, OptionDisable         },
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
         // Options about the user.
@@ -5212,6 +5236,16 @@ S9sOptions::readOptionsUser(
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
+                break;
+            
+            case OptionEnable:
+                // --enable
+                m_options["enable"] = true;
+                break;
+            
+            case OptionDisable:
+                // --disable
+                m_options["disable"] = true;
                 break;
 
             case OptionSet:
