@@ -123,6 +123,19 @@ the command line argument. Please check the EXAMPLES section of this
 documentation for some examples.
 
 .TP
+.B \-\^\-disable
+Disable the user (turn on the "disabled" flag of the user). The users that are 
+disabled are not able to log in.
+
+.TP
+.B \-\^\-enable
+Enable the user. This will clear the "disabled" flag of the user so that the
+user will be able to log in again. The "suspended" flag will also be cleared,
+the failed login counter set to 0 and the date&time of the last failed login
+gets deleted, so users who are suspended for failed login attempts will also be
+able to log in.
+
+.TP
 .B \-L, \-\^\-list
 List the users registered for the ClusterControl controller. 
 
