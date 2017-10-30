@@ -224,9 +224,19 @@ The protocol to install and handle MaxScale servers.
 .TP
 .BI \-\-begin= TIMESTAMP 
 The start time of the graph (the X axis). 
+
+.TP
+.BI \-\-density
+If this option is provided will be a probability density function (or histogram)
+instead of a timeline. The X axis shows the measured values (e.g. MByte/s) while
+the Y axis hows how many percent of the measurements contain the value. If for
+example the CPU usage is between 0% and 1% at the 90% of the time the graph 
+will show a 90% bump at the lower end.
+
 .TP
 .BI \-\-end= TIMESTAMP
 The end of the grap.
+
 .TP 
 .BI \-\-graph= GRAPH_NAME
 When providing a valid graph name together with the \fB--stat\fP option a graph

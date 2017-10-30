@@ -251,3 +251,13 @@ fi
 
 mys9s tree --tree --refresh
 
+
+#
+#
+#
+s9s tree --mkdir /w_test
+s9s tree --move /core1 /w_test
+s9s tree --move /galera_001 /w_test
+
+mys9s tree --tree --refresh
+
