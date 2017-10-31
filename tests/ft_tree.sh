@@ -255,9 +255,11 @@ mys9s tree --tree --refresh
 #
 #
 #
-s9s tree --mkdir /w_test
-s9s tree --move /core1 /w_test
-s9s tree --move /galera_001 /w_test
+TEST_PATH="/home/pipas"
+s9s tree --mkdir "$TEST_PATH"
+s9s tree --move /core1 "$TEST_PATH"
+s9s tree --move /galera_001 "$TEST_PATH"
+s9s tree --move /pipas "$TEST_PATH"
 
 mys9s tree --tree --refresh
 
