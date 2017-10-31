@@ -93,7 +93,7 @@ fi
 
 reset_config
 
-#
+#####
 # Creating a user to be a normal user. 
 #
 echo "Creating a user with normal privileges."
@@ -110,7 +110,7 @@ mys9s user \
     --new-password="pipas" \
     "pipas"
 
-#
+#####
 # Creating a user to be a new superuser.
 #
 echo "Creating a user with superuser privileges."
@@ -138,7 +138,7 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-#
+#####
 # Registering a server.
 #
 echo "Registering a container server."
@@ -152,21 +152,7 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-#
-# Moving the server.
-#
-#echo "Moving the server in the tree"
-#mys9s server \
-#    --move \
-#    /core1 /servers
-#
-#exitCode=$?
-#if [ "$exitCode" -ne 0 ]; then
-#    failure "The exit code is ${exitCode} while moving server."
-#    exit 1
-#fi
-
-#
+#####
 # Creating a container.
 #
 echo "Creating a container."
@@ -188,7 +174,7 @@ CONTAINER_IP=$(\
 
 echo "CONTAINER_IP : $CONTAINER_IP"
 
-#
+#####
 # Creating a Galera cluster.
 #
 echo "Creating a cluster."
@@ -207,8 +193,8 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-#
-# Create databases.
+#####
+# Creating databases.
 #
 mys9s cluster \
     --create-database \
@@ -234,7 +220,7 @@ mys9s cluster \
     --db-name="whois_records_delta" \
     --batch
 
-#
+#####
 # Creating a database account.
 #
 mys9s account \
@@ -253,7 +239,8 @@ mys9s tree --tree --refresh
 
 
 #
-#
+# Moving some objects into a sub-folder. The user is moving itself at the last
+# step, so this is a chroot environment.
 #
 TEST_PATH="/home/pipas"
 s9s tree --mkdir "$TEST_PATH"
@@ -263,3 +250,47 @@ s9s tree --move /pipas "$TEST_PATH"
 
 mys9s tree --tree --refresh
 
+#
+# Checking the --get-acl in a chroot environment.
+#
+THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
+THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
+if [ "$THE_PATH" != '"/"' ]; then
+    s9s tree --get-acl --print-json / | jq .
+    failure "The path should be '/' in getAcl reply not '$THE_PATH'."
+    exit 1
+fi
+
+if [ "$THE_NAME" != '""' ]; then
+    s9s tree --get-acl --print-json / | jq .
+    failure "The object name should be empty in getAcl reply."
+    exit 1
+fi
+
+THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
+THE_PATH=$(s9s tree --get-acl --print-json /galera_001 | jq .object_path)
+if [ "$THE_PATH" != '"/"' ]; then
+    s9s tree --get-acl --print-json /galera_001 | jq .
+    failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
+    exit 1
+fi
+
+if [ "$THE_NAME" != '"galera_001"' ]; then
+    s9s tree --get-acl --print-json /galera_001 | jq .
+    failure "The object name should be 'galera_001' in getAcl reply."
+    exit 1
+fi
+
+THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
+THE_PATH=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_path)
+if [ "$THE_PATH" != '"/galera_001"' ]; then
+    s9s tree --get-acl --print-json /galera_001/databases | jq .
+    failure "The path should be '/galera_001' in getAcl reply."
+    exit 1
+fi
+
+if [ "$THE_NAME" != '"databases"' ]; then
+    s9s tree --get-acl --print-json /galera_001/databases | jq .
+    failure "The object name should be 'databases' in getAcl reply."
+    exit 1
+fi
