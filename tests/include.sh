@@ -35,7 +35,7 @@ function color_command()
         -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#g"
 }
 
-function mys9s_oneliner()
+function mys9s()
 {
     local prompt="#"
     local nth=0
@@ -65,11 +65,8 @@ function mys9s_oneliner()
     $S9S $*
 }
 
-function mys9s()
+function mys9s_multiline()
 {
-    mys9s_oneliner $*
-    return $?
-
     local prompt="#"
     local nth=0
 

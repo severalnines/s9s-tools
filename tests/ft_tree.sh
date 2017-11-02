@@ -91,12 +91,18 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
+function print_title()
+{
+    echo ""
+    echo -e "\033[1m$*\033[0;39m"
+}
+
 reset_config
 
 #####
 # Creating a user to be a normal user. 
 #
-echo "Creating a user with normal privileges."
+print_title "Creating a user with normal privileges."
 mys9s user \
     --create \
     --cmon-user="system" \
@@ -113,7 +119,7 @@ mys9s user \
 #####
 # Creating a user to be a new superuser.
 #
-echo "Creating a user with superuser privileges."
+print_title "Creating a user with superuser privileges."
 mys9s user \
     --create \
     --cmon-user="system" \
@@ -141,7 +147,7 @@ fi
 #####
 # Registering a server.
 #
-echo "Registering a container server."
+print_title "Registering a container server."
 mys9s server \
     --register \
     --servers="lxc://core1"
@@ -155,7 +161,7 @@ fi
 #####
 # Creating a container.
 #
-echo "Creating a container."
+print_title "Creating a container."
 mys9s server \
     --create container_001
 
@@ -172,12 +178,12 @@ CONTAINER_IP=$(\
         --batch \
     | awk '{print $7}')
 
-echo "CONTAINER_IP : $CONTAINER_IP"
+#echo "CONTAINER_IP : $CONTAINER_IP"
 
 #####
 # Creating a Galera cluster.
 #
-echo "Creating a cluster."
+print_title "Creating a cluster."
 mys9s cluster \
     --create \
     --cluster-type=galera \
@@ -223,6 +229,7 @@ mys9s cluster \
 #####
 # Creating a database account.
 #
+print_title "Creating database account"
 mys9s account \
     --create \
     --cluster-name="galera_001" \
@@ -235,18 +242,19 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-mys9s tree --tree --refresh
+#mys9s tree --tree --refresh
 
 
 #
 # Moving some objects into a sub-folder. The user is moving itself at the last
 # step, so this is a chroot environment.
 #
+print_title "Moving objects into subfolder"
 TEST_PATH="/home/pipas"
-s9s tree --mkdir "$TEST_PATH"
-s9s tree --move /core1 "$TEST_PATH"
-s9s tree --move /galera_001 "$TEST_PATH"
-s9s tree --move /pipas "$TEST_PATH"
+mys9s tree --mkdir "$TEST_PATH"
+mys9s tree --move /core1 "$TEST_PATH"
+mys9s tree --move /galera_001 "$TEST_PATH"
+mys9s tree --move /pipas "$TEST_PATH"
 
 mys9s tree --tree --refresh
 
@@ -294,3 +302,19 @@ if [ "$THE_NAME" != '"databases"' ]; then
     failure "The object name should be 'databases' in getAcl reply."
     exit 1
 fi
+
+#####
+# Creating a directory.
+#
+print_title "Creating directory"
+mys9s tree \
+    --mkdir \
+    /tmp
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating account."
+    exit 1
+fi
+
+
