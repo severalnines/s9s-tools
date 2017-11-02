@@ -31,12 +31,45 @@ fi
 function color_command()
 {
     sed \
-        -e "s#\(--.\+\)=\([^\\]\+\)#\x1b\[0;33m\1\x1b\[0;39m=\x1b\[1;33m\2\x1b\[0;39m#g" \
+        -e "s#\(--.\+\)=\([^\\]\+\)#\x1b\[0;33m\1\x1b\[0;39m=\x1b\[1;35m\2\x1b\[0;39m#g" \
         -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#g"
+}
+
+function mys9s_oneliner()
+{
+    local prompt="#"
+    local nth=0
+
+    if [ "$PRINT_COMMANDS" ]; then
+        echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
+
+        for argument in $*; do
+            #if [ $nth -gt 0 ]; then
+            #    echo -e "\\"
+            #fi
+
+            if [ $nth -eq 0 ]; then
+                echo -ne "${XTERM_COLOR_BLUE}$argument${TERM_NORMAL}"
+            elif [ $nth -eq 1 ]; then
+                echo -ne " ${XTERM_COLOR_ORANGE}$argument${TERM_NORMAL}"
+            else
+                echo -ne " $argument" | color_command
+            fi
+
+            let nth+=1
+        done
+    
+        echo ""
+    fi
+
+    $S9S $*
 }
 
 function mys9s()
 {
+    mys9s_oneliner $*
+    return $?
+
     local prompt="#"
     local nth=0
 
