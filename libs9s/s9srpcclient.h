@@ -341,6 +341,13 @@ class S9sRpcClient
                 const S9sString      &psqlVersion,
                 bool                  uninstall);
 
+        bool createMongoCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &vendor,
+                const S9sString      &mongoVersion,
+                bool                  uninstall);
+
         bool registerPostgreSql(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);
