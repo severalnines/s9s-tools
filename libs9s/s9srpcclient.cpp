@@ -1848,6 +1848,11 @@ S9sRpcClient::createCluster()
                 mySqlHosts, mgmdHosts, ndbdHosts,
                 osUserName, vendor, dbVersion, uninstall);
     } else {
+        PRINT_ERROR(
+            "Not supported cluster type '%s'.", STR(options->clusterType()));
+
+        options->setExitStatus(S9sOptions::BadOptions);
+
         success = false;
     }
 
