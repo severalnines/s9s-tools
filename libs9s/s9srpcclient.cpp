@@ -2025,7 +2025,7 @@ S9sRpcClient::createGaleraCluster(
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2086,7 +2086,7 @@ S9sRpcClient::createMySqlSingleCluster(
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2222,7 +2222,7 @@ S9sRpcClient::createMySqlReplication(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2364,7 +2364,7 @@ S9sRpcClient::createGroupReplication(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -2507,7 +2507,7 @@ S9sRpcClient::createNdbCluster(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -2585,7 +2585,7 @@ S9sRpcClient::registerNdbCluster(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "add_cluster";
@@ -2659,7 +2659,7 @@ S9sRpcClient::createPostgreSql(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
     
     // 
     // The jobspec describing the command.
@@ -2858,7 +2858,7 @@ S9sRpcClient::createMongoCluster(
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
 
