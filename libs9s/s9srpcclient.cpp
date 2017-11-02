@@ -2648,6 +2648,9 @@ S9sRpcClient::createPostgreSql(
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_key"] = options->osKeyFile();
     
     // 
     // The jobspec describing the command.
