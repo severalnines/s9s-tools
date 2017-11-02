@@ -317,4 +317,38 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
+#####
+# Adding an ACL.
+#
+print_title "Adding an ACL entry"
+mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating account."
+    exit 1
+fi
 
+#####
+# Changing the owner
+#
+print_title "Changing the owner"
+mys9s tree --chown --owner=admin:admins /tmp
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating account."
+    exit 1
+fi
+
+OWNER=$(s9s tree --list /tmp --batch | awk '{print $2}')
+GROUP=$(s9s tree --list /tmp --batch | awk '{print $3}')
+if [ "$OWNER" != 'admin' ]; then
+    s9s tree --list --print-json /tmp | jq .
+    failure "The owner should be 'admin'."
+    exit 1
+fi
+
+if [ "$GROUP" != 'admins' ]; then
+    s9s tree --list --print-json /tmp | jq .
+    failure "The group should be 'admins'."
+    exit 1
+fi

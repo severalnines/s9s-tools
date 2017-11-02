@@ -218,17 +218,9 @@ S9sBusinessLogic::execute()
         {
             S9sRpcReply reply;
             
-            success = client.getTree();
-            if (success)
-            {
-                reply = client.reply();
-                reply.printObjectTreeLong();
-            } else {
-                if (options->isJsonRequested())
-                    printf("%s\n", STR(reply.toString()));
-                else
-                    PRINT_ERROR("%s", STR(client.errorString()));
-            }
+            client.getTree();
+            reply = client.reply();
+            reply.printObjectTreeList();
         } else if (options->isTreeRequested())
         {
             S9sRpcReply reply;

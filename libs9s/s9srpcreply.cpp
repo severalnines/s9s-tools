@@ -3786,13 +3786,17 @@ S9sRpcReply::printObjectTree()
     S9sOptions *options = S9sOptions::instance();
 
     if (options->isJsonRequested())
+    {
         printf("%s\n", STR(toString()));
-    else if (!isOk())
+    } else if (!isOk())
+    {
         PRINT_ERROR("%s", STR(errorString()));
-    else if (options->isLongRequested())
+    } else if (options->isLongRequested())
+    {
         printObjectTreeLong();
-    else 
+    } else {
         printObjectTreeBrief();
+    }
 }
 
 S9sString 
@@ -4095,6 +4099,25 @@ S9sRpcReply::printObjectTreeBrief()
 {
     S9sVariantMap entry =  operator[]("cdt").toVariantMap();
     printObjectTreeBrief(entry, 0, "", false);
+}
+
+/**
+ * Prints the CDT as a list.
+ */
+void
+S9sRpcReply::printObjectTreeList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printObjectTreeLong();
+    }
 }
 
 /**

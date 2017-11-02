@@ -125,6 +125,7 @@ class S9sRpcReply : public S9sVariantMap
         void printScriptTreeBrief();
         
         void printObjectTree();
+        void printObjectTreeList();
         void printObjectTreeBrief();
         void printObjectTreeLong();
         
