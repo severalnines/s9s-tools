@@ -1665,7 +1665,7 @@ S9sRpcClient::createFailJob()
     
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Create Repository";
+    job["title"]          = "Simulated Failure";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -1697,7 +1697,7 @@ S9sRpcClient::createSuccessJob()
     
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Create Repository";
+    job["title"]          = "Simulated Success";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
