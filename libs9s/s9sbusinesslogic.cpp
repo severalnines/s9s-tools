@@ -437,6 +437,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createFailJob();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isSuccessRequested())
+        {
+            success = client.createSuccessJob();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isLogRequested())
         {
             executeJobLog(client);

@@ -1683,6 +1683,38 @@ S9sRpcClient::createFailJob()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::createSuccessJob()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "success";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Repository";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"]   = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \param clusterId the ID of the cluster that will be restarted
  * \returns true if the operation was successful, a reply is received from the

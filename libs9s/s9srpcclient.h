@@ -268,6 +268,7 @@ class S9sRpcClient
         bool getMaintenance();
 
         bool createFailJob();
+        bool createSuccessJob();
 
     protected:
         virtual bool
