@@ -3203,7 +3203,14 @@ S9sRpcReply::printServerStat(
     //
     // The title line that is in inverse. 
     //
-    title.sprintf("%s (%s)", STR(server.hostName()), STR(server.ipAddress()));
+    if (server.hostName() == server.ipAddress())
+    {
+        title = server.hostName();
+    } else {
+        title.sprintf("%s (%s)", 
+                STR(server.hostName()), STR(server.ipAddress()));
+    }
+
     printf("%s", TERM_INVERSE);
     printf("%s", STR(title));
     for (int n = title.length(); n < terminalWidth; ++n)

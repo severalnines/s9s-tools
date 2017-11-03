@@ -433,6 +433,10 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeJobList(client);
+        } else if (options->isFailRequested())
+        {
+            success = client.createFailJob();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isLogRequested())
         {
             executeJobLog(client);

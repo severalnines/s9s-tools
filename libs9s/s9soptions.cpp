@@ -174,6 +174,8 @@ enum S9sOptionType
     OptionListDisks,
     OptionDonor,
     OptionRefresh,
+    OptionFail,
+    OptionSuccess,
 };
 
 /**
@@ -2239,7 +2241,7 @@ S9sOptions::isTreeRequested() const
 }
 
 /**
- * \returns true if the --delete command line option was provided when the
+ * \returns True if the --delete command line option was provided when the
  *   program was started.
  */
 bool
@@ -2248,11 +2250,34 @@ S9sOptions::isDeleteRequested() const
     return getBool("delete");
 }
 
+/**
+ * \returns True if the --fail command line option was provided.
+ */
+bool
+S9sOptions::isFailRequested() const
+{
+    return getBool("fail");
+}
+
+/**
+ * \returns True if the --success command line option was provided.
+ */
+bool
+S9sOptions::isSuccessRequested() const
+{
+    return getBool("success");
+}
+
+/**
+ * \returns True if the --enable command line option was provided.
+ */
 bool
 S9sOptions::isEnableRequested() const
 {
     return getBool("enable");
 }
+
+
 
 bool
 S9sOptions::isDisableRequested() const
@@ -3106,8 +3131,10 @@ S9sOptions::printHelpJob()
     printf(
 "Options for the \"job\" command:\n"
 "  --delete                   Delete the job referenced by the job ID.\n"
+"  --fail                     Create a job that does nothing and fails.\n"
 "  --list                     List the jobs.\n"
 "  --log                      Print the job log messages.\n"
+"  --success                  Create a job that does nothing and succeeds.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
@@ -4428,14 +4455,24 @@ S9sOptions::checkOptionsJob()
     /*
      * Checking if multiple operations are requested.
      */
+
     if (isListRequested())
         countOptions++;
     
-    if (isLogRequested())
+    if (isFailRequested())
+    {
         countOptions++;
+    } else if (isSuccessRequested())
+    {
+        countOptions++;
+    } else { 
+        if (isLogRequested())
+            countOptions++;
 
-    if (isWaitRequested())
-        countOptions++;
+        if (isWaitRequested())
+            countOptions++;
+    }
+
     
     if (isDeleteRequested())
     {
@@ -4450,24 +4487,15 @@ S9sOptions::checkOptionsJob()
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --log, --delete and --wait options are mutually"
-            " exclusive.";
-
+        m_errorMessage = "The main options are mutually exclusive.";
         m_exitStatus = BadOptions;
-
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --log, --delete and --wait"
-            " options is mandatory.";
-
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
-
         return false;
     }
-
 
     return true;
 }
@@ -6537,6 +6565,8 @@ S9sOptions::readOptionsJob(
         { "log",              no_argument,       0, 'G'                   },
         { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0,  OptionDelete         },
+        { "fail",             no_argument,       0,  OptionFail           },
+        { "success",          no_argument,       0,  OptionSuccess        },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -6627,6 +6657,16 @@ S9sOptions::readOptionsJob(
             case OptionDelete: 
                 // --delete
                 m_options["delete"] = true;
+                break;
+
+            case OptionFail:
+                // --fail
+                m_options["fail"] = true;
+                break;
+            
+            case OptionSuccess:
+                // --success
+                m_options["success"] = true;
                 break;
 
             case OptionConfigFile:

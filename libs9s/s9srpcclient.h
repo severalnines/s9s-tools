@@ -267,6 +267,8 @@ class S9sRpcClient
 
         bool getMaintenance();
 
+        bool createFailJob();
+
     protected:
         virtual bool
             executeRequest(
