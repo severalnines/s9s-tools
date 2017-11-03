@@ -1881,6 +1881,10 @@ S9sRpcClient::createCluster()
     } else if (options->clusterType() == "postgresql")
     {
         success = createPostgreSql(hosts, osUserName, dbVersion, uninstall);
+	} else if (options->clusterType() == "mongodb")
+	{
+		success = createMongoCluster(
+				hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -1912,6 +1916,11 @@ S9sRpcClient::createCluster()
                 mySqlHosts, mgmdHosts, ndbdHosts,
                 osUserName, vendor, dbVersion, uninstall);
     } else {
+        PRINT_ERROR(
+            "Not supported cluster type '%s'.", STR(options->clusterType()));
+
+        options->setExitStatus(S9sOptions::BadOptions);
+
         success = false;
     }
 
@@ -2080,7 +2089,7 @@ S9sRpcClient::createGaleraCluster(
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2141,7 +2150,7 @@ S9sRpcClient::createMySqlSingleCluster(
         jobData["cluster_name"] = options->clusterName();
     
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2277,7 +2286,7 @@ S9sRpcClient::createMySqlReplication(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // 
     // The jobspec describing the command.
@@ -2419,7 +2428,7 @@ S9sRpcClient::createGroupReplication(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"]      = options->osKeyFile();
+        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -2562,7 +2571,7 @@ S9sRpcClient::createNdbCluster(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -2640,7 +2649,7 @@ S9sRpcClient::registerNdbCluster(
         jobData["cluster_name"] = options->clusterName();
 
     if (!options->osKeyFile().empty())
-        jobData["ssh_key"] = options->osKeyFile();
+        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "add_cluster";
@@ -2712,6 +2721,9 @@ S9sRpcClient::createPostgreSql(
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
+
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"] = options->osKeyFile();
     
     // 
     // The jobspec describing the command.
@@ -2796,6 +2808,149 @@ S9sRpcClient::registerPostgreSql(
     
     return executeRequest(uri, request);
 }
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::createMongoCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &vendor,
+        const S9sString      &mongoVersion,
+        bool                  uninstall)
+{
+    S9sMap<S9sString, S9sVariantList> nodelistMap;
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  mongosList, configList;
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    bool            retval;
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Mongo cluster.");
+        return false;
+    }
+
+    // classify hosts into separate lists for each replicaset
+    S9sString replsetName = "replica_set_0";
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        S9sNode     node     = hosts[idx].toNode();
+        S9sString   protocol = node.protocol().toLower();
+
+        if(protocol.size())
+            replsetName = protocol;
+
+        if(!nodelistMap.contains(replsetName))
+            nodelistMap[replsetName] = S9sVariantList();
+        nodelistMap[replsetName] << node;
+    }
+
+    if(1 < nodelistMap.size()){
+        if(!nodelistMap.contains("mongos") || !nodelistMap.contains("config")){
+            PRINT_ERROR(
+                    "When multiple replicasets/shards are defined, mongos "
+                    "and config nodes are mandatory to be defined as well.");
+            return false;
+        }
+    }
+
+    // The job_data describing the cluster - config nodes
+    if(nodelistMap.contains("config")){
+        S9sVariantMap configReplSet;
+        configReplSet["rs"] = "config";
+        S9sVariantList members;
+        for (uint idx = 0; idx < nodelistMap["config"].size(); ++idx)
+        {
+            S9sNode node = nodelistMap["config"][idx].toNode();
+            S9sVariantMap member;
+            member["hostname"] = node.hostName();
+            member["port"] = node.port();
+            members.push_back(member);
+        }
+        configReplSet["members"] = members;
+        jobData["config_servers"] = configReplSet;
+    }
+
+    // The job_data describing the cluster - mongos nodes
+    if(nodelistMap.contains("mongos")){
+        S9sVariantList mongos;
+        for (uint idx = 0; idx < nodelistMap["mongos"].size(); ++idx)
+        {
+            S9sNode node = nodelistMap["mongos"][idx].toNode();
+            S9sVariantMap member;
+            member["hostname"] = node.hostName();
+            member["port"] = node.port();
+            mongos.push_back(member);
+        }
+        jobData["mongos_servers"] = mongos;
+    }
+
+    // The job_data describing the cluster - data replicaset nodes
+    S9sVariantList replSets;
+    for(std::map<S9sString, S9sVariantList>::iterator iter = nodelistMap.begin();
+            iter != nodelistMap.end(); iter++)
+    {
+        if(iter->first == "config" || iter->first == "mongos")
+            continue;
+        S9sVariantMap replSet;
+        replSet["rs"] = iter->first;
+        S9sVariantList members;
+        for (uint idx = 0; idx < iter->second.size(); ++idx)
+        {
+            S9sNode node = iter->second[idx].toNode();
+            S9sVariantMap member;
+            member["hostname"] = node.hostName();
+            member["port"] = node.port();
+            members.push_back(member);
+        }
+        replSet["members"] = members;
+        replSets.push_back(replSet);
+    }
+    jobData["replica_sets"] = replSets;
+
+    // The job_data describing the cluster.
+    jobData["cluster_type"]     = "mongodb";
+    jobData["vendor"]           = vendor;
+    jobData["mongodb_version"]  = mongoVersion;
+    jobData["enable_uninstall"] = uninstall;
+    jobData["ssh_user"]         = osUserName;
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"] = options->osKeyFile();
+    jobData["mongodb_user"]     = options->dbAdminUserName();
+    jobData["mongodb_password"] = options->dbAdminPassword();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "create_cluster";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Mongo Cluster";
+    job["job_spec"]       = jobSpec;
+    //job["user_name"]      = options->userName();
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule();
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 bool 
 S9sRpcClient::createNode()
