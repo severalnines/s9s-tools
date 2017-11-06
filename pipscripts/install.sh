@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.2"
+VERSION="0.0.3"
 VERBOSE=""
 LOGFILE=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
@@ -125,13 +125,18 @@ if [ -z "$*" ]; then
     exit 6
 fi
 
+#
+# Going through the servers and installing the pip scripts on all of them.
+#
 for server in $*; do
-    #$SSH $server -- [ ! -d bin ] && mkdir bin
-    #scp pip-* "${server}:bin/"
     echo "Installing on host '$server'."
+
     $SSH $server -- mkdir install_sh_tmp
-    scp pip-* "${server}:install_sh_tmp/"
+    scp pip-* utilityfunctions.sh "${server}:install_sh_tmp/"
 
     $SSH $server -- \
-        sudo cp -vf install_sh_tmp/* /usr/bin && rm -rvf install_sh_tmp
+        sudo cp -vf install_sh_tmp/* /usr/bin
+    
+    $SSH $server -- \
+        rm -rvf install_sh_tmp
 done

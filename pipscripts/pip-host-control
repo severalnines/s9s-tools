@@ -11,6 +11,8 @@ SHUTDOWN=""
 HOST_INFO_FILE="$HOME/.piphostinfo"
 HOST_STATUS_FILE="$HOME/.piphostinfo.status"
 CSV_OUTPUT=""
+
+# This should come from config.
 TEST_REPORT_URL="www:/var/www/html/ft_install/"
 #TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
 
