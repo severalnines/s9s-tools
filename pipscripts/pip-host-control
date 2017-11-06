@@ -16,6 +16,7 @@ CSV_OUTPUT=""
 TEST_REPORT_URL="www:/var/www/html/ft_install/"
 #TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
 
+
 source $MYDIR/utilityfunctions.sh
 
 #
@@ -146,8 +147,6 @@ STATUS_TEXT="$(get_status_text)"
 EOF
 }
 
-
-
 #
 # Storing the host status so that next time we can have the same without the
 # same command line option.
@@ -167,13 +166,13 @@ fi
 scp \
     -o 'StrictHostKeyChecking no' \
     $HOST_INFO_FILE \
-    $TEST_REPORT_URL/$(hostname).hostinfo 
+    $TEST_REPORT_URL/$(hostname).hostinfo  >/dev/null
 
 if [ "$CSV_OUTPUT" ]; then
     scp \
         -o 'StrictHostKeyChecking no' \
         $TEST_REPORT_URL/test_matrix.csv \
-        $CSV_OUTPUT 
+        $CSV_OUTPUT >/dev/null 
 fi
 
 if [ "$SHUTDOWN" == "true" ]; then

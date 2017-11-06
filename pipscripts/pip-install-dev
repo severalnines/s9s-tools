@@ -1,0 +1,222 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.16"
+VERBOSE=""
+LOGFILE=""
+
+source $MYDIR/utilityfunctions.sh
+
+#
+# Prints the help text and exits.
+#
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - Installs a development environment. 
+
+ -h, --help         Print this help and exit.
+ -v, --version      Print version information and exit.
+ --verbose          Print more messages.
+ --log-file=FILE    Store all the messages in the given file too.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hv \
+        -l "help,verbose,version,log-file:,status:,shutdown,csv-output:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+function install_package() 
+{
+    local package
+    local retcode=0
+    local tempfile=$(mktemp)
+
+    package="$1"
+
+    printf "%-32s" "${package}"
+    if dpkg -l | grep $1 > /dev/null 2>&1; then
+        echo "[INSTALLED]"
+    else
+        echo "[INSTALLING]"
+        sudo apt-get -y --force-yes install "$package" >>$tempfile 2>>$tempfile
+        retcode=$?
+
+        if [ "$retcode" != "0" ]; then
+            cat "$tempfile"
+        fi
+    fi
+
+    rm -f "$tempfile"
+    return $retcode
+}
+
+function install_packages()
+{
+    pip-host-control --status="Installing packages..."
+    install_package tree
+    install_package iotop
+    install_package wget
+    install_package git
+    install_package autoconf
+    install_package make
+    install_package g++
+    install_package flex
+    install_package bison
+
+    install_package vagrant
+    install_package virtualbox
+
+    #
+    # Installing mysql-server with a root password.
+    #
+    echo "mysql-server-5.5 mysql-server/root_password password p" |\
+        sudo debconf-set-selections
+    echo "mysql-server-5.5 mysql-server/root_password_again password p" |\
+        sudo debconf-set-selections
+
+    install_package mysql-server
+}
+
+#
+# Downloading clustercontrol source
+#
+function pull_clustercontrol_source()
+{
+    pushd "$HOME" >/dev/null 2>/dev/null 
+
+    pip-host-control --status="Installing clustercontrol..."
+    if [ -d "clustercontrol-enterprise" ]; then
+        cd clustercontrol-enterprise
+        git pull
+    else
+        git clone git@github.com:severalnines/clustercontrol-enterprise.git
+        cd "clustercontrol-enterprise"
+        
+        docs/ubuntu_compile.sh
+        RETCODE=$?
+        echo "+++ RETCODE: $RETCODE"
+
+        if ! grep 'mysql-cluster-gpl-7.2' ~/.bashrc; then
+            # FIXME: This should actually find the directory.
+            echo 'export PATH=/opt/mysql-cluster-gpl-7.2.28-linux2.6-x86_64/bin:$PATH' \
+            >> ~/.bashrc
+            echo "Modified ~.bashrc"
+        fi
+
+    fi
+
+    popd >/dev/null 2>/dev/null
+}
+
+function compile_clustercontrol()
+{
+    local source_dir="$HOME/clustercontrol-enterprise"
+
+    pip-host-control --status="Compiling clustercontrol..."
+    
+    if [ ! -d "$source_dir" ]; then
+        echo "Directory '$source_dir' is not found."
+        return 1
+    fi
+
+    pushd "$source_dir"
+    ./autogen.sh
+    make -j20
+    popd 
+
+    pushd "$source_dir/tests"
+    ./autogen.sh
+    make -j20
+    popd 
+}
+
+function pull_s9s_source()
+{
+    pushd "$HOME" >/dev/null 2>/dev/null 
+
+    pip-host-control --status="Installing s9s..."
+    if [ -d "s9s-tools" ]; then
+        cd s9s-tools
+        git pull
+    else
+        git clone git@github.com:severalnines/s9s-tools.git
+        #cd "s9s-tools"
+    fi
+
+    popd >/dev/null 2>/dev/null
+}
+
+function compile_s9s()
+{
+    local source_dir="$HOME/s9s-tools"
+
+    pip-host-control --status="Compiling s9s..."
+    
+    if [ ! -d "$source_dir" ]; then
+        echo "Directory '$source_dir' is not found."
+        return 1
+    fi
+
+    pushd "$source_dir"
+    ./autogen.sh
+    make -j20
+    popd 
+}
+
+install_packages
+
+pull_clustercontrol_source
+compile_clustercontrol 
+
+pull_s9s_source
+compile_s9s
+
+pip-host-control --status="Idle"
+
