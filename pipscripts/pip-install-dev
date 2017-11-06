@@ -17,7 +17,7 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]...
 
-  $MYNAME - Installs a development environment. 
+  $MYNAME - Installs a development environment to the local server. 
 
  -h, --help         Print this help and exit.
  -v, --version      Print version information and exit.
