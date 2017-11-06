@@ -1,13 +1,13 @@
 # 
 # A very simple makefile to do simple tasks. No automake.
 #
-PACKAGE_VERSION="0.0.2"
+PACKAGE_VERSION="0.0.3"
 
 all: 
 	@echo "Nothing to do with 'all'."
 
 install:
-	install -m0755 pip-* $(DESTDIR)/usr/bin
+	install -m0755 pip-* utilityfunctions.sh $(DESTDIR)/usr/bin
 
 dist: clean
 	VERSION=${PACKAGE_VERSION}; \

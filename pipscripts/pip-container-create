@@ -5,6 +5,7 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
+
 SERVER=""
 PARENT_NAME=ubuntu
 OWNER=${USER}
@@ -172,6 +173,9 @@ function container_names()
     local number=1
     local node_name
 
+    #
+    # If there are container names in the command line we use those.
+    #
     if [ "$1" ]; then
         echo $*
         return 0

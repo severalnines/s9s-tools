@@ -1,0 +1,182 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.16"
+VERBOSE=""
+LOGFILE=""
+
+STATUS_TEXT=""
+SHUTDOWN=""
+HOST_INFO_FILE="$HOME/.piphostinfo"
+HOST_STATUS_FILE="$HOME/.piphostinfo.status"
+CSV_OUTPUT=""
+TEST_REPORT_URL="www:/var/www/html/ft_install/"
+#TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
+
+source $MYDIR/utilityfunctions.sh
+
+#
+# Prints the help text and exits.
+#
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - Controls test server and uploads server status file. 
+
+ -h, --help         Print this help and exit.
+ -v, --version      Print version information and exit.
+ --verbose          Print more messages.
+ --log-file=FILE    Store all the messages in the given file too.
+ --status=TEXT      Set a human readable string as status.
+ --shutdown         This will actually shut down the host. Be careful!
+ --csv-output=FILE  Save the CSV output into the given file.
+
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hv \
+        -l "help,verbose,version,log-file:,status:,shutdown,csv-output:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+        
+        --status)
+            shift
+            STATUS_TEXT=$1
+            shift
+            ;;
+
+        --shutdown)
+            shift
+            SHUTDOWN="true"
+            STATUS_TEXT="Shut down."
+            ;;
+
+        --csv-output)
+            shift
+            CSV_OUTPUT="$1"
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+#
+# Prints the memory size in gigabytes.
+#
+function get_memory_size()
+{
+    local number=$(free | awk '/^Mem:/{print $2}')
+    let number/=1000
+    let number/=1000
+
+    echo $number
+}
+
+function get_disk_size()
+{
+    local number=$(df $HOME | tail -n1 | awk '{print $2}')
+    let number/=1000
+    let number/=1000
+
+    echo $number
+}
+
+function get_status_text()
+{
+    if [ -f "$HOST_STATUS_FILE" ]; then
+        cat "$HOST_STATUS_FILE" | tr -d '\n'
+    fi
+}
+
+#
+# 
+#
+function collect_host_info()
+{
+    cat <<EOF
+HOSTNAME="$(hostname)"
+NUMBER_OF_CORES=$(nproc)
+MEMORY_GIGABYTES=$(get_memory_size)
+DISK_GIGABYTES=$(get_disk_size)
+STATUS_TEXT="$(get_status_text)"
+EOF
+}
+
+
+
+#
+# Storing the host status so that next time we can have the same without the
+# same command line option.
+#
+if [ "$STATUS_TEXT" ]; then
+    echo "$STATUS_TEXT" >"$HOST_STATUS_FILE"
+fi
+
+#
+# Collecting some information about the host and storing in a file.
+#
+collect_host_info >"$HOST_INFO_FILE"
+if [ "$VERBOSE" ]; then
+    cat "$HOST_INFO_FILE"
+fi
+
+scp \
+    -o 'StrictHostKeyChecking no' \
+    $HOST_INFO_FILE \
+    $TEST_REPORT_URL/$(hostname).hostinfo 
+
+if [ "$CSV_OUTPUT" ]; then
+    scp \
+        -o 'StrictHostKeyChecking no' \
+        $TEST_REPORT_URL/test_matrix.csv \
+        $CSV_OUTPUT 
+fi
+
+if [ "$SHUTDOWN" == "true" ]; then
+    if [ $(hostname) != "lpere-home" ]; then
+        sudo poweroff
+    fi
+fi
+
