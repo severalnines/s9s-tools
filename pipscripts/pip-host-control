@@ -9,8 +9,8 @@ LOGFILE=""
 STATUS_TEXT=""
 SHUTDOWN=""
 HOST_INFO_FILE="$HOME/.piphostinfo"
-HOST_STATUS_FILE="$HOME/.piphostinfo.status"
 HOST_LOG_FILE="$HOME/.piphostinfo.log"
+HOST_STATUS="IDLE"
 CSV_OUTPUT=""
 
 # This should come from config.
@@ -41,6 +41,9 @@ Usage:
  --shutdown         This will actually shut down the host. Be careful!
  --csv-output=FILE  Save the CSV output into the given file.
 
+ --idle             Set the status to IDLE.
+ --testing          Set the status to TESTING.
+ --halted           Set the status to HALTED.
 
 EOF
     exit 0
@@ -49,7 +52,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,status:,shutdown,csv-output:" \
+        -l "help,verbose,version,log-file:,log:,status:,shutdown,csv-output:,\
+idle,testing,halted" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -82,20 +86,41 @@ while true; do
         
         --status)
             shift
-            STATUS_TEXT=$1
+            NEW_STATUS_TEXT="$1"
             shift
             ;;
 
         --shutdown)
             shift
             SHUTDOWN="true"
-            STATUS_TEXT="Shut down."
+            NEW_STATUS_TEXT="Shut down."
             ;;
 
         --csv-output)
             shift
             CSV_OUTPUT="$1"
             shift
+            ;;
+
+        --log)
+            shift
+            NEW_LOG_MESSAGE="$1"
+            shift
+            ;;
+
+        --idle)
+            shift
+            NEW_HOST_STATUS="IDLE"
+            ;;
+
+        --testing)
+            shift
+            NEW_HOST_STATUS="TESTING"
+            ;;
+
+        --halted)
+            shift
+            NEW_HOST_STATUS="HALTED"
             ;;
 
         --)
@@ -139,13 +164,6 @@ function get_disk_size()
     echo $number
 }
 
-function get_status_text()
-{
-    if [ -f "$HOST_STATUS_FILE" ]; then
-        cat "$HOST_STATUS_FILE" | tr -d '\n'
-    fi
-}
-
 #
 # Collects the information about this host and prints it into the standard
 # output. 
@@ -157,7 +175,8 @@ HOSTNAME="$(hostname)"
 NUMBER_OF_CORES=$(nproc)
 MEMORY_GIGABYTES=$(get_memory_size)
 DISK_GIGABYTES=$(get_disk_size)
-STATUS_TEXT="$(get_status_text)"
+HOST_STATUS="$HOST_STATUS"
+STATUS_TEXT="$STATUS_TEXT"
 EOF
 }
 
@@ -192,15 +211,30 @@ function upload_file()
 }
 
 #
-# Storing the host status so that next time we can have the same without the
-# same command line option.
+# Loading the properties, then refreshing the properties we got from the command
+# line.
 #
-if [ "$STATUS_TEXT" ]; then
-    echo "$STATUS_TEXT" >"$HOST_STATUS_FILE"
+if [ -f "$HOST_INFO_FILE" ]; then
+    source "$HOST_INFO_FILE"
 fi
 
+if [ "$NEW_STATUS_TEXT" ]; then
+    STATUS_TEXT="$NEW_STATUS_TEXT"
+fi
+
+if [ "$NEW_HOST_STATUS" ]; then
+    HOST_STATUS="$HOST_STATUS"
+fi
+
+#
+#
+#
 if [ ! -f "$HOST_LOG_FILE" ]; then
     append_log_message "Starting log file."
+fi
+
+if [ "$NEW_LOG_MESSAGE" ]; then
+    append_log_message "$NEW_LOG_MESSAGE"
 fi
 
 #

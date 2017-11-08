@@ -27,6 +27,7 @@ OPTION_VENDOR=""
 OPTION_VERSION=""
 OPTION_PID=""
 SERVER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 # This should come from config.
 TEST_REPORT_URL="www:/var/www/html/ft_install/"
@@ -64,6 +65,8 @@ Usage:
                           e.g. centos66,ubuntu1404).
 
 EXAMPLE:
+  $MYNAME --server=blade01 --os=debian8 --vendor=mariadb --sqlversion=5.6
+
   $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=mariadb,percona,codership --sqlversion="5.6,5.7"
   
   $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=postgresql --sqlversion="5.6"
@@ -424,6 +427,8 @@ function compile_source()
     if [ "$OPTION_NO_COMPILE" ]; then
         return 0
     fi
+    
+    pip-host-control --testing --log "Compiling."
 
     # Running autogen in the source root. 
     if [ ! -f autogen.log ]; then
@@ -434,6 +439,7 @@ function compile_source()
         if [ $? -ne 0 ]; then
             message "Failed to compile."
             printError "The ./autogen.sh returned an error."
+            pip-host-control --log "The ./autogen.sh returned an error."
             exit 6
         fi
     fi
@@ -447,6 +453,7 @@ function compile_source()
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
         printError "The make -j10 returned an error."
+        pip-host-control --log "The make -j10 returned an error."
         exit 6
     fi
 
@@ -461,6 +468,7 @@ function compile_source()
         if [ $? -ne 0 ]; then
             message "Failed to compile."
             printError "The ./autogen.sh in tests returned an error."
+            pip-host-control --log "The ./autogen.sh in tests failed."
             exit 6
         fi
     fi
@@ -474,8 +482,11 @@ function compile_source()
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
         printError "The make -j10 returned an error."
+        pip-host-control --log "The make -j10 returned an error."
         exit 6
     fi
+        
+    pip-host-control --log "Finished compiling source."
 }
 
 #
@@ -667,6 +678,7 @@ function main()
     local name="$2"
     local version="$3"
 
+    pip-host-control --testing --log "Preparing test."
     message "Preparing test..."
 
     #
@@ -713,12 +725,16 @@ function main()
     for os in $os; do 
         for version in $version; do
             for test_name in $name; do
+                pip-host-control --log "Running test  $test_name $os $version."
                 run_test "$test_name" "$os" "$version"
+                pip-host-control --log "Finished test $test_name $os $version."
             done
         done
     done
     
     popd >/dev/null 2>/dev/null
+
+    pip-host-control --idle
 
     #
     # If the "shutdown after the test" is requested and the user did not delete
@@ -768,8 +784,6 @@ if [ "$OPTION_PID" ]; then
 
     exit 1
 fi
-
-
 
 if [ "$SERVER" ]; then
     pip-host-control --status="Running tests..."

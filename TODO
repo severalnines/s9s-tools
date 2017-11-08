@@ -1,3 +1,30 @@
+o Setting/adding groups fo users is not implemented.
+
+o The --stat does not show '-' on the missing strings.
+
+$ s9s/s9s user --stat kedz
+kedz                                                                                                          Name: kedz                         Owner: kedz/admins 
+      ID: 3                         Disabled: no
+Fullname:                              Email:  
+ Suspend: no                   Failed logins: 0
+  Groups: users                          
+ Created: -                              
+   Login: 2017-11-08T08:48:14.398Z       
+ Failure: -                        
+
+
+o When no controller runs:
+s9s user --list --print-json
+{
+}
+
+
+
+
+
+
+
+
 o s9s user --set --properties="hostgrouppath=/pécs" pipas
   s9s: unrecognized option '--properties=hostgrouppath=/pécs'
 
