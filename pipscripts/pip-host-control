@@ -37,12 +37,13 @@ Usage:
  --log-file=FILE    Store all the messages in the given file too.
 
  --status=TEXT      Set a human readable string as status.
+ --clear-log        Clear the host log file.
  --log=TEXT         Append a log message to the host log.
  --warning=TEXT     Append a warning message to the host log.
  --error=TEXT       Append a error message to the host log.
  --shutdown         This will actually shut down the host. Be careful!
  --csv-output=FILE  Save the CSV output into the given file.
-
+ 
  --idle             Set the status to IDLE.
  --testing          Set the status to TESTING.
  --halted           Set the status to HALTED.
@@ -54,7 +55,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,log:,error:,warning:,\
+        -l "help,verbose,version,log-file:,clear-log,log:,error:,warning:,\
 status:,shutdown,csv-output:,\
 idle,testing,halted" \
         -- "$@")
@@ -103,6 +104,11 @@ while true; do
             shift
             CSV_OUTPUT="$1"
             shift
+            ;;
+
+        --clear-log)
+            shift
+            CLEAR_LOG="true"
             ;;
 
         --log)
@@ -272,6 +278,10 @@ fi
 #
 #
 #
+if [ "$CLEAR_LOG" ]; then
+    rm -f "$HOST_LOG_FILE"
+fi
+
 if [ ! -f "$HOST_LOG_FILE" ]; then
     append_log_message "Starting log file."
 fi

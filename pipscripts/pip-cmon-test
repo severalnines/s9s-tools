@@ -61,8 +61,7 @@ Usage:
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
-  --os=OS                 The name of the OS to test (multiple values accepted,
-                          e.g. centos66,ubuntu1404).
+  --os=LIST               The name of the OS to test.
 
 EXAMPLE:
   $MYNAME --server=blade01 --os=debian8 --vendor=mariadb --sqlversion=5.6
@@ -144,12 +143,31 @@ while true; do
         --os)
             shift
             OPTION_OS="$1"
+
+            if [ "$OPTION_OS" == "all" ]; then
+                OPTION_OS="centos70,centos66,centos64,centos63,centos56,"
+                OPTION_OS+="debian6,debian7,debian8,"
+                OPTION_OS+="ubuntu1204,ubuntu1404,ubuntu1604"
+            fi
+
             shift
             ;;
 
         --vendor)
             shift
             OPTION_VENDOR="$1"
+
+            if [ "$OPTION_VENDOR" == "all" ]; then
+                OPTION_VENDOR=""
+                OPTION_VENDOR+="mysqlcluster_oracle"
+                OPTION_VENDOR+="mysql_replication_percona"
+                OPTION_VENDOR+="10gen"
+                OPTION_VENDOR+="percona"
+                OPTION_VENDOR+="mariadb"
+                OPTION_VENDOR+="codership"
+                OPTION_VENDOR+="postgresql"
+            fi
+
             shift
             ;;
             
