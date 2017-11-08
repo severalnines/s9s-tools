@@ -2,12 +2,73 @@
 
 UTILITY_FUNCTIONS_VERSION="1.0.0"
 
+TERM_ERASE_EOL="\033[K"
+TERM_HOME="\033[0;0H"
+TERM_NORMAL="\033[0;39m"
+TERM_BOLD="\033[1m"
+TERM_INVERSE="\033[7m"
+XTERM_COLOR_RED="\033[0;31m"
+XTERM_COLOR_GREEN="\033[0;32m"
+XTERM_COLOR_ORANGE="\033[0;33m"
+XTERM_COLOR_BLUE="\033[0;34m"
+XTERM_COLOR_PURPLE="\033[0;35m"
+XTERM_COLOR_CYAN="\033[0;36m"
+XTERM_COLOR_LIGHT_GRAY="\033[0;37m"
+XTERM_COLOR_DARK_GRAY="\033[1;30m"
+XTERM_COLOR_LIGHT_RED="\033[1;31m"
+XTERM_COLOR_LIGHT_GREEN="\033[1;32m"
+XTERM_COLOR_YELLOW="\033[1;33m"
+XTERM_COLOR_LIGHT_BLUE="\033[1;34m"
+XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
+XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
+XTERM_COLOR_WHITE="\033[1;37m"
+
 #
 # Various utility functions that are used (or should be used) in many scrips.
 # This is a very important file, because it makes possible to re-use the code.
 # If we re-use a code in multiple scripts and multiple projects we only need to
 # maintain one instance and work less while achieving more.
 #
+
+#
+# Standard ANSI to HTML filter.
+#
+function terminal_to_html()
+{
+    sed \
+        -e "s#\x1B\[0;31m#<span style='color: red;'>#g" \
+        -e "s#\x1B\[1;31m#<span style='color: red;'>#g" \
+        -e "s#\x1B\[0;32m#<span style='color: green;'>#g" \
+        -e "s#\x1B\[1;32m#<span style='color: green;'>#g" \
+        -e "s#\x1B\[0;33m#<span style='color: orange;'>#g" \
+        -e "s#\x1B\[1;33m#<span style='color: yellow;'>#g" \
+        -e "s#\x1B\[1;35m#<span style='color: purple;'>#g" \
+        -e "s#\x1B\[1m#<span style='font-weight:bold;'>#g" \
+        -e "s#\x1B\[0;39m#</span>#g" 
+}
+
+#
+# Reads the standard input and writes the lines to the standard output. This
+# function will remove the ANSI escape sequences to create pure txt output to be
+# used e.g. in log files.
+#
+function ansi2txt()
+{
+    sed \
+        -e "s#\x1B\[1;31m##g" \
+        -e "s#\x1B\[1;32m##g" \
+        -e "s#\x1B\[1;33m##g" \
+        -e "s#\x1B\[1;34m##g" \
+        -e "s#\x1B\[1;35m##g" \
+        -e "s#\x1B\[0;31m##g" \
+        -e "s#\x1B\[0;32m##g" \
+        -e "s#\x1B\[0;33m##g" \
+        -e "s#\x1B\[0;34m##g" \
+        -e "s#\x1B\[0;35m##g" \
+        -e "s#\x1B\[0;39m##g" \
+        -e "s#\x1B\[1m##g"    \
+        -e "s#\x1B\[0;39m##g" 
+}
 
 #
 # Prints the name of the script and its version number. This funtion gets this
@@ -21,6 +82,8 @@ function printVersionAndExit()
 }
 
 #
+# $*: the error message
+#
 # Prints an error message to the standard error. The text will not mixed up with
 # the data that is printed to the standard output.
 #
@@ -28,13 +91,34 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
+    printf "${XTERM_COLOR_RED}%-28s${TERM_NORMAL} " "$MYNAME" >&2
     echo -e "$*" >&2
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+        echo -e "$datestring ERROR $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
 }
 
+#
+# $*: the warning message
+#
+# Prints a warning message to the standard error. The text will not mixed up
+# with the data that is printed to the standard output.
+#
+function printWarning()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    printf "$XTERM_COLOR_YELLOW%-28s$TERM_NORMAL " "$MYNAME" >&2
+    echo -e "$*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring WARNING $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
 #
 # Prints all the arguments but only if the program is in the verbose mode.
 #
@@ -43,11 +127,42 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
+        printf "${XTERM_COLOR_GREEN}%-28s${TERM_NORMAL} " "$MYNAME" >&2
         echo -e "$*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+        echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the debug mode.
+#
+function printDebug()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$DEBUG" == "true" ]; then
+        printf "${XTERM_COLOR_GREEN}%-28s${TERM_NORMAL} " "$MYNAME" >&2
+        echo -e "$*" >&2
+
+        if [ "$LOGFILE" ]; then
+            echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+        fi
+    fi
+}
+
+#
+# Sets the terminal title. A small courtesy that helps me navigate on the
+# desktop.
+#
+function setTitle()
+{
+    if [ -t 1 ]; then 
+        echo -ne "\033]0;$1\007"
     fi
 }
 
@@ -101,7 +216,7 @@ function date2underscore()
 #
 function epoch2date()
 {
-    echo `date --date @$1 "+%Y-%m-%d"`
+    echo $(date --date @$1 "+%Y-%m-%d")
 }
 
 #
@@ -255,7 +370,9 @@ function countLinesOfFile()
     	return 0
     fi
 
-    if [ "${file: -3}" == ".gz" ]; then
+    if [ "${file: -7}" == ".tar.gz" ]; then
+        nlines=$(tar xOzf $file | wc -l | cut -d' ' -f1)
+    elif [ "${file: -3}" == ".gz" ]; then
         nlines=$(zcat $file | wc -l | cut -d' ' -f1)
     else
         nlines=$(cat $file | wc -l | cut -d' ' -f1)
@@ -314,6 +431,26 @@ function containsElement()
         [[ "$element" == "$1" ]] && return 0; 
     done
   
+    return 1
+}
+
+#
+# $1: the substring
+# $2: and all the others the string to investigate
+#
+# This function will return true if the investigated string contains the
+# substring.
+#
+function containsSubstring() 
+{
+    local reqsubstr="$1"
+    shift
+
+    string="$@"
+    if [ -z "${string##*$reqsubstr*}" ]; then
+        return 0
+    fi
+
     return 1
 }
 
@@ -491,4 +628,120 @@ function checkOtherInstances()
         exit 1
     fi
 }
+
+#
+# $1: percent from 0.0 to 100.0
+#
+function printProgressBar()
+{
+    local percent="$1"
+    local percent_ms=$((percent/10))
+    local percent_ls=$((percent%10))
+
+    echo -en "["
+    echo -en "$XTERM_COLOR_BLUE"
+    for (( c=0; c<=9; c++ )); do  
+        if [ $c -lt $percent_ms ]; then
+            echo -en "█"
+        elif [ $percent_ms -eq $c ]; then
+            #echo " "
+            #echo "-> $percent_ls"
+
+            case "$percent_ls" in 
+                0)
+                    echo -en " "
+                    ;;
+                1)
+                    echo -en "▏"
+                    ;;
+                2)
+                    echo -en "▏"
+                    ;;
+                3)
+                    echo -en "▏"
+                    ;;
+                4)
+                    echo -en "▎"
+                    ;;
+                5)
+                    echo -en "▍"
+                    ;;
+                6)
+                    echo -en "▌"
+                    ;;
+                7)
+                    echo -en "▋"
+                    ;;
+                8)
+                    echo -en "▊"
+                    ;;
+                9)
+                    echo -en "▉"
+                    ;;
+            esac
+        else
+            echo -en " "
+        fi
+    done
+    
+    echo -en "$TERM_NORMAL"
+    echo -en "] "
+    printf "%3d%% " "$percent"
+}
+
+function STR_DIRNAME()
+{
+    echo "$XTERM_COLOR_BLUE$1$TERM_NORMAL"
+}
+
+function STR_DATABASE()
+{
+    echo "$XTERM_COLOR_BLUE$1$TERM_NORMAL"
+}
+
+function STR_DIR()
+{
+    echo "$XTERM_COLOR_BLUE$1$TERM_NORMAL"
+}
+
+function STR_TLD()
+{
+    echo "$XTERM_COLOR_LIGHT_PURPLE$1$TERM_NORMAL"
+}
+
+function STR_FILE()
+{
+    echo "$XTERM_COLOR_LIGHT_GREEN$1$TERM_NORMAL"
+}
+
+function STR_EXECUTABLE()
+{
+    echo "$XTERM_COLOR_LIGHT_GREEN$1$TERM_NORMAL"
+}
+
+function STR_TABLE()
+{
+    echo "$XTERM_COLOR_LIGHT_GREEN$1$TERM_NORMAL"
+}
+
+function STR_LOGFILE()
+{
+    echo "$XTERM_COLOR_ORANGE$1$TERM_NORMAL"
+}
+
+function STR_DATE()
+{
+    echo "$XTERM_COLOR_ORANGE$1$TERM_NORMAL"
+}
+
+function STR_RED()
+{
+    echo -e "${XTERM_COLOR_RED}$1${TERM_NORMAL}"
+}
+
+function STR_GREEN()
+{
+    echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
+}
+
 

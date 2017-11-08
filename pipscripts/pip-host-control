@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.16"
+VERSION="0.0.17"
 VERBOSE=""
 LOGFILE=""
 
@@ -10,6 +10,7 @@ STATUS_TEXT=""
 SHUTDOWN=""
 HOST_INFO_FILE="$HOME/.piphostinfo"
 HOST_STATUS_FILE="$HOME/.piphostinfo.status"
+HOST_LOG_FILE="$HOME/.piphostinfo.log"
 CSV_OUTPUT=""
 
 # This should come from config.
@@ -34,7 +35,9 @@ Usage:
  -v, --version      Print version information and exit.
  --verbose          Print more messages.
  --log-file=FILE    Store all the messages in the given file too.
+
  --status=TEXT      Set a human readable string as status.
+ --log=TEXT         Append a log message to the host log.
  --shutdown         This will actually shut down the host. Be careful!
  --csv-output=FILE  Save the CSV output into the given file.
 
@@ -105,6 +108,14 @@ while true; do
     esac
 done
 
+function append_log_message()
+{
+    local log_message="$*"
+    local date_string="$(date "+%Y-%m-%d %H:%M:%S")"
+
+    echo "$date_string $log_message" >>"$HOST_LOG_FILE"
+}
+
 #
 # Prints the memory size in gigabytes.
 #
@@ -134,7 +145,8 @@ function get_status_text()
 }
 
 #
-# 
+# Collects the information about this host and prints it into the standard
+# output. 
 #
 function collect_host_info()
 {
@@ -147,12 +159,43 @@ STATUS_TEXT="$(get_status_text)"
 EOF
 }
 
+function upload_file()
+{
+    local source_file="$1"
+    local target_file="$2"
+    local temp_file
+    local retcode
+
+    if [ ! -f "$source_file" ]; then
+        printError "File '$source_file' not found."
+        return 1
+    fi
+
+    temp_file=$(mktemp)
+    scp \
+        -o 'StrictHostKeyChecking no' \
+        $HOST_INFO_FILE \
+        $TEST_REPORT_URL/$(hostname).hostinfo \
+        >>"$temp_file" 2>>"$temp_file"
+    
+    retcode=$?
+    if [ "$retcode" != "0" ]; then
+        cat "$temp_file"
+    fi
+
+    return $retcode
+}
+
 #
 # Storing the host status so that next time we can have the same without the
 # same command line option.
 #
 if [ "$STATUS_TEXT" ]; then
     echo "$STATUS_TEXT" >"$HOST_STATUS_FILE"
+fi
+
+if [ ! -f "$HOST_LOG_FILE" ]; then
+    append_log_message "Starting log file."
 fi
 
 #
@@ -163,16 +206,10 @@ if [ "$VERBOSE" ]; then
     cat "$HOST_INFO_FILE"
 fi
 
-scp \
-    -o 'StrictHostKeyChecking no' \
-    $HOST_INFO_FILE \
-    $TEST_REPORT_URL/$(hostname).hostinfo  >/dev/null
+upload_file "$HOST_INFO_FILE" "$TEST_REPORT_URL/$(hostname).hostinfo"
 
 if [ "$CSV_OUTPUT" ]; then
-    scp \
-        -o 'StrictHostKeyChecking no' \
-        $TEST_REPORT_URL/test_matrix.csv \
-        $CSV_OUTPUT >/dev/null 
+    upload_file "$CSV_OUTPUT" "$TEST_REPORT_URL/test_matrix.csv" ""
 fi
 
 if [ "$SHUTDOWN" == "true" ]; then

@@ -1,0 +1,830 @@
+#! /bin/bash
+
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m $MYDIR)
+VERSION="0.0.5"
+VERBOSE=""
+DRY=""
+LOGFILE="$HOME/pip-cmon-test.log"
+EXITCODE=0
+SOURCE_ROOT=""
+
+GIT_HASH=""
+GIT_AUTHOR=""
+GIT_SUBJECT=""
+
+NO_GIT_PULL=""
+OPTION_NO_COMPILE=""
+OPTION_OS=""
+DO_CLEAN=""
+
+SHUT_DOWN_AFTER=""
+SHUT_DOWN_AFTER_OPTION=""
+
+OPTION_TEST_NAME="ft_install"
+OPTION_VENDOR=""
+OPTION_VERSION=""
+OPTION_PID=""
+SERVER=""
+
+# This should come from config.
+TEST_REPORT_URL="www:/var/www/html/ft_install/"
+#TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
+
+source $MYDIR/utilityfunctions.sh
+
+function printHelpAndExit()
+{
+cat <<EOF
+
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - Runs Cmon tests on multiple servers.
+
+  -h, --help              Print this help and exit.
+  -v, --version           Print version information and exit.
+  --verbose               Print more messages.
+  --dry                   Do not run the test, just create some printouts.
+  --log-file=FILE         Store all the messages in the given file too.
+  --server=SERVER         The server or the servers where the tests will run.
+  --blades                Set the servers to my blades.
+  --pid                   Print the PID of the test script if it is running.
+  
+  --no-git-pull           Do not execute 'git pull' before the test.
+  --no-compile            Do not compile the source, use as it is.
+  --shut-down-after       Shut down the test server after the test.
+
+  --test=NAME             The name of the test to run.
+
+  --sqlversion=VERSION    The version to test.
+  --vendor=VENDOR         The vendor name to test.
+  --os=OS                 The name of the OS to test (multiple values accepted,
+                          e.g. centos66,ubuntu1404).
+
+EXAMPLE:
+  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=mariadb,percona,codership --sqlversion="5.6,5.7"
+  
+  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=postgresql --sqlversion="5.6"
+EOF
+
+  exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvj: \
+        -l "help,verbose,dry,version,log-file:,server:,blades,pid,\
+test:,os:,vendor:,sqlversion:,\
+no-git-pull,no-compile,shut-down-after" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        --dry)
+            shift
+            DRY="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
+            SERVER=$(echo $SERVER | tr ',' ' ' | tr ';' ' ')
+            shift
+            ;;
+
+        --blades)
+            shift
+            SERVER="blade01 blade02 blade03 blade04 blade05 blade06 blade07 "
+            SERVER+="blade08 blade10"
+            ;;
+
+        --pid)
+            shift
+            OPTION_PID="true"
+            ;;
+
+        --test)
+            shift
+            OPTION_TEST_NAME="$1"
+            TEST_NAME_OPTION="--test=$OPTION_TEST_NAME"
+            shift
+            ;;
+
+        --os)
+            shift
+            OPTION_OS="$1"
+            shift
+            ;;
+
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+            
+        --sqlversion)
+            shift
+            OPTION_VERSION="$1"
+            shift
+            ;;
+
+        --no-git-pull)
+            shift
+            NO_GIT_PULL="true"
+            NO_GIT_PULL_OPTION="--no-git-pull"
+            ;;
+
+        --no-compile)
+            shift
+            OPTION_NO_COMPILE="true"
+            NO_COMPILE_OPTION="--no-compile"
+            ;;
+
+        --shut-down-after)
+            shift
+            SHUT_DOWN_AFTER="true"
+            SHUT_DOWN_AFTER_OPTION="--shut-down-after"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            printError "Unhandled option $1"
+            exit 1
+            ;;
+    esac
+done
+
+export PATH="$HOME/bin:$PATH"
+
+#
+# Prints a message and also sends it to the server so it is made available as
+# status string.
+#
+function message()
+{
+    echo "$1"
+
+    if [ -z "$DRY" ]; then
+        pip-host-control --status="$1"
+    fi
+}
+
+function test_name_to_test()
+{
+    if [ "$OPTION_TEST_NAME" ]; then
+        echo "$OPTION_TEST_NAME"
+        return 0
+    fi
+
+    echo "ft_install"
+}
+
+#
+# This function prints the version that will be tested.
+#
+function version_to_test()
+{
+    local host_name=$(hostname)
+   
+    #
+    # Command line overrules everything.
+    #
+    if [ "$OPTION_VERSION" ]; then
+        echo "$OPTION_VERSION" | tr ',' ' '
+        return 0
+    fi
+
+    #
+    # Depends on hostname.
+    #
+    case $host_name in
+        host08)
+            echo "5.5"
+            return 0
+            ;;
+
+        *)
+            echo "5.6"
+            return 0
+            ;;
+    esac
+    
+    echo "5.6"
+}
+
+#
+# Prints the name of the vendor to test.
+#
+function vendor_to_test()
+{
+    local host_name=$(hostname)
+
+    #
+    # Command line overrules everything.
+    #
+    if [ "$OPTION_VENDOR" ]; then
+        echo "$OPTION_VENDOR" | tr ',' ' ' | tr ';' ' '
+        return 0
+    fi
+
+    #
+    # This is a very primitive way, it is just a temporary measure.
+    #
+    case $host_name in
+        host01)
+            echo "mysqlcluster_oracle"
+            ;;
+        
+        host02)
+            echo "mysql_replication_percona"
+            ;;
+        
+        host03)
+            echo "10gen"
+            ;;
+        
+        host04)
+            echo "percona"
+            ;;
+        
+        host05)
+            echo "mariadb"
+            ;;
+        
+        host06)
+            echo "codership"
+            ;;
+        
+        host07)
+            echo "postgresql"
+            ;;
+        
+        #host08)
+        *)
+            echo "percona"
+            ;;
+    esac
+}
+
+#
+# Prints one or more operatig system name that should be tested.
+#
+function os_to_test()
+{
+    local host_name=$(hostname)
+   
+    #
+    # Command line option overrules everything.
+    #
+    if [ "$OPTION_OS" ]; then
+        echo $OPTION_OS | tr ',' ' '
+        return 1;
+    fi
+
+    if [ "$OPTION_VENDOR" ]; then
+        case $host_name in
+            host01)
+                echo "centos70"
+                ;;
+        
+            host02)
+                echo "centos66"
+                ;;
+        
+            host03)
+                echo "centos64"
+                ;;
+        
+            host04)
+                echo "debian8"
+                ;;
+        
+            host05)
+                echo "debian7"
+                ;;
+        
+            host06)
+                echo "ubuntu1204"
+                ;;
+        
+            host07)
+                echo "ubuntu1404"
+                ;;
+            
+            host08)
+                echo "centos63"
+                ;;
+        
+            *)
+                echo "centos66"
+                ;;
+        esac
+
+        return 0
+    fi
+
+    echo "centos66"
+}
+
+#
+# Prints the directory name where the source can be found.
+#
+function find_source_directory()
+{
+    local dir_path
+    
+    dir_path="$HOME/clustercontrol-enterprise"
+    if [ -d "$dir_path" ]; then
+        echo "$dir_path"
+        return 0
+    fi
+
+    dir_path="$HOME/Desktop/stuff/work/clustercontrol-enterprise"
+    if [ -d "$dir_path" ]; then
+        echo "$dir_path"
+        return 0
+    fi
+    
+    #
+    # Well, we did not find it, but we did not find any others either.
+    #
+    printError "Coult not find clustercontrol source."
+    echo "$HOME/clustercontrol-enterprise"
+}
+
+#
+# FIXME: This will be more complicated.
+#
+function prepare_source()
+{
+    #
+    # Not gonna pull or clean in dry mode.
+    #
+    if [ "$DRY" ]; then
+        return 0
+    fi
+
+    if [ -z "$NO_GIT_PULL" ]; then
+        message "Running 'git pull'."
+        git pull >/dev/null 2>/dev/null
+        message "Pulled source."
+    fi
+
+    if [ "$DO_CLEAN" ]; then
+        message "Running 'git clean -dfx'."
+        git clean -dfx >/dev/null 2>/dev/null
+        message "Cleaned source."
+    fi
+}
+
+function compile_source()
+{
+    local retcode
+    
+    #
+    # Not gonna compile the source in dry mode or when the --no-compile command
+    # line option is provided.
+    #
+    if [ "$DRY" ]; then
+        return 0
+    fi
+    
+    if [ "$OPTION_NO_COMPILE" ]; then
+        return 0
+    fi
+
+    # Running autogen in the source root. 
+    if [ ! -f autogen.log ]; then
+        message "Running 'autogen.sh'."
+        rm -f autogen.log
+
+        ./autogen.sh >>autogen.log 2>>autogen.log
+        if [ $? -ne 0 ]; then
+            message "Failed to compile."
+            printError "The ./autogen.sh returned an error."
+            exit 6
+        fi
+    fi
+
+    # Running make in source root.
+    message "Running 'make'."
+    rm -f "make.log"
+
+    make -j10 >>make.log 2>>make.log
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        message "Failed to compile ($retcode)."
+        printError "The make -j10 returned an error."
+        exit 6
+    fi
+
+    cd tests
+
+    # Running autogen.sh in the tests directory.
+    if [ ! -f "autogen.log" ]; then
+        message "Running 'autogen.sh' in tests."
+        rm -f autogen.log
+
+        ./autogen.sh >>autogen.log 2>>autogen.log
+        if [ $? -ne 0 ]; then
+            message "Failed to compile."
+            printError "The ./autogen.sh in tests returned an error."
+            exit 6
+        fi
+    fi
+
+    # Running make in tests directory.
+    message "Running 'make' in tests."
+    rm -f "make.log"
+
+    make -j10 >>make.log 2>>make.log
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        message "Failed to compile ($retcode)."
+        printError "The make -j10 returned an error."
+        exit 6
+    fi
+}
+
+#
+# $1: test name
+#
+# The report is a HTML file where we put the report about the test run.
+#
+function report_file_name()
+{
+    local test_name=$1
+    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.html"
+}
+
+#
+# $1: test name
+#
+function result_file_name()
+{
+    local test_name=$1
+    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
+}
+
+#
+# $1: test name
+# $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
+# $3: file with the test program output
+#
+function upload_report_file_ascii()
+{
+    local report_file=$(report_file_name "$1")
+    local tmp_file="/var/tmp/$report_file"
+
+    cat <<EOF >>$tmp_file
+    <html>
+      <h1>Test results for '$1'</h1>
+      <pre>
+EOF
+
+    if [ -f "$3" ]; then
+        cat "$3" >>$tmp_file
+    fi
+    
+    cat <<EOF >>$tmp_file
+      </pre>
+    </thml>
+EOF
+
+    scp "$tmp_file" "$TEST_REPORT_URL"
+    rm -f "$tmp_file"
+}
+
+#
+# $1: test name
+# $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
+# $3: file with the test program output
+#
+function upload_result_file()
+{
+    local result_file=$(result_file_name "$1")
+    local tmp_file="/var/tmp/$result_file"
+
+    upload_report_file_ascii "$1" "$2" "$3"
+    generate_test_result_info "$1" "$2" >$tmp_file
+
+    scp "$tmp_file" "$TEST_REPORT_URL"
+
+    message "Running '$1'"
+
+    rm -f "$tmp_file"
+}
+
+
+#
+# $1: test name
+# $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
+#
+function generate_test_result_info()
+{
+    local git_commit_date=$(git show -s --format=%ci $GIT_HASH)
+    local git_has_local_changes="no"
+
+    if ! git diff-index --quiet HEAD --; then 
+        git_has_local_changes="yes"
+    fi
+
+    cat <<EOF
+test_server="$(hostname)"
+testname="$1"
+githash="$GIT_HASH"
+gitcommitdate="$git_commit_date"
+githaslocalchanges="$git_has_local_changes"
+state="$2"
+report_file="$(report_file_name $1)"
+user="$USER"
+EOF
+}
+
+#
+# $1: the test name
+# $2: the single os name to test
+# $3: the single version to test
+#
+function run_test()
+{
+    local test_name="$1"
+    local os="$2"
+    local version="$3"
+
+    local return_code
+    local tmp_file
+
+    #
+    # Notifying the user about a test is starting.
+    #
+    echo "----8<----8<----8<----8<----8<----8<----"
+    message "Running '$test_name'."
+
+    #
+    # Running the actual test.
+    #
+    case "$test_name" in 
+        ft_*)
+            echo "*** test     : ft_install"
+            echo "*** template : headless"
+            echo "*** vendor   : $(vendor_to_test)"
+            echo "*** version  : $version"
+            if [ -z "$DRY" ]; then
+                if [ -f "Vagrantfile" ]; then
+                    vagrant destroy -f
+                    rm -f "Vagrantfile"
+                fi
+
+                rm -f test_ssh_key.pub*
+
+                $test_name/$test_name \
+                    --template=headless \
+                    --vendor=$(vendor_to_test) \
+                    --mysql-version=$version \
+                    --os="$os"
+            else
+                cat <<EOF
+                $test_name/$test_name 
+                    --template=headless 
+                    --vendor=$(vendor_to_test) 
+                    --mysql-version=$version 
+                    --os="$os"
+EOF
+            fi
+
+            return_code=$?
+            ;;
+
+        ut_*)
+            #
+            # This is under development.
+            #
+            if [ -z "$DRY" ]; then
+                tmp_file=$(mktemp)
+                echo "pwd : $(pwd)" >>$tmp_file
+    
+                #
+                upload_result_file "$test_name" "RUNNING" $tmp_file 
+    
+                # 
+                $test_name/$test_name >>$tmp_file 2>>$tmp_file 
+                return_code=$?
+    
+                if [ $return_code -eq 0 ]; then
+                    upload_result_file "$test_name" "SUCCESS" $tmp_file
+                else
+                    upload_result_file "$test_name" "FAILURE" $tmp_file
+                fi
+            else
+                echo "$test_name/$test_name"
+            fi
+    esac
+            
+    message "Finished running '$test_name' ($return_code)."
+}
+
+#
+# $1: os
+# $2: test name
+# $3: version
+#
+function main()
+{
+    local os="$1"
+    local name="$2"
+    local version="$3"
+
+    message "Preparing test..."
+
+    #
+    # Finding the source root.
+    #
+    SOURCE_ROOT=$(find_source_directory)
+    if [ ! -d $SOURCE_ROOT ]; then
+        printError "Directory '$SOURCE_ROOT' does not exist."
+        exit 6
+    fi
+
+    cd $SOURCE_ROOT
+
+    #
+    # If the user removes this file we cancel the shutdown request, otherwise we
+    # will shut down the server at the end of the test.
+    #
+    if [ "$SHUT_DOWN_AFTER" ]; then
+        if [ -z "$DRY" ]; then
+            touch ~/cmontest_will_shut_down
+        fi
+    fi
+
+    #
+    # Preparing the source, generating a file holding the test results.
+    #
+    prepare_source
+    GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
+    GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
+
+
+    echo "----8<----8<----8<----8<----8<----8<----"
+    generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"
+    echo "----8<----8<----8<----8<----8<----8<----"
+
+    compile_source
+
+    #
+    # Running the test.
+    #
+    pushd tests >/dev/null 2>/dev/null
+    
+    for os in $os; do 
+        for version in $version; do
+            for test_name in $name; do
+                run_test "$test_name" "$os" "$version"
+            done
+        done
+    done
+    
+    popd >/dev/null 2>/dev/null
+
+    #
+    # If the "shutdown after the test" is requested and the user did not delete
+    # the shutdown file we will now shut down the computer.
+    #
+    if [ "$SHUT_DOWN_AFTER" -a -f ~/cmontest_will_shut_down ]; then
+        rm -f ~/cmontest_will_shut_down
+        pip-host-control --shutdown
+    fi
+}
+
+function find_idle_server()
+{
+    for server in $SERVER; do
+        lock_file=$(lockFile)
+
+        other_pid=$( \
+            ssh -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=quiet \
+                $server -- pip-cmon-test --pid)
+
+        printVerbose "server     : '$server'"
+        printVerbose "lock_file  : '$lock_file'"
+        printVerbose "other_pid  : '$other_pid'"
+        if [ "$other_pid" ]; then
+            continue
+        fi
+
+        echo "$server"
+        break
+    done
+}
+
+if [ "$OPTION_PID" ]; then
+    lock_file=$(lockFile)
+    if [ -f "$lock_file" ]; then
+        pid=$(cat "$lock_file")
+        if [[ -e /proc/${pid} ]]; then
+            echo "$pid"
+            exit 0
+        fi
+
+        rm -f "$lock_file"
+        exit 0
+    fi
+
+    exit 1
+fi
+
+
+
+if [ "$SERVER" ]; then
+    pip-host-control --status="Running tests..."
+
+    for os in $(os_to_test); do 
+        for version in $(version_to_test); do
+            for vendor in $(vendor_to_test); do
+                while true; do
+                    idle_server=$(find_idle_server)
+
+                    # Finding a server that is idle and ready to execute a test.
+                    if [ "$idle_server" ]; then
+                        echo "-------------------------------------"
+                        echo -e "idle_server : $(STR_GREEN "$idle_server")"
+                        echo -e "test        : '$vendor' '$os' '$version'"
+
+                        #xterm -title "$idle_server" -hold -e \
+                        ssh -o UserKnownHostsFile=/dev/null \
+                            -o StrictHostKeyChecking=no \
+                            -o LogLevel=quiet \
+                            $idle_server -- nohup pip-cmon-test \
+                                $NO_GIT_PULL_OPTION \
+                                $NO_COMPILE_OPTION \
+                                --os=$os \
+                                --vendor=$vendor \
+                                --sqlversion=$version \
+                                $TEST_NAME_OPTION \
+                                >/dev/null 2>/dev/null &
+
+                        sleep 5
+                        break
+                    else
+                        #echo "NO IDLE SERVER"
+                        sleep 10
+                    fi
+                done
+            done
+        done
+    done
+    
+    pip-host-control --status="Idle"
+
+    #for host in $OPTION_HOSTS; do
+    #    xterm -title "$host" -hold -e \
+    #        ssh $host \
+    #            pip-cmon-test $SHUT_DOWN_AFTER_OPTION &
+    #done
+
+    waitForProcessesToEnd 
+else
+    checkOtherInstances
+    echo "checkOtherInstances : $?"
+
+    main \
+        "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+fi
+
+
