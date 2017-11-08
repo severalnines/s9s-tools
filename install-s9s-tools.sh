@@ -138,9 +138,9 @@ create_local_s9s_user() {
 			# new s9s CLI requires the username defined alone without --cmon-user
 			# only the new one has BUILD info in --version:
 			if s9s --version | grep BUILD >/dev/null; then
-				s9s user --create --generate-key --controller="https://localhost:9501" $cmon_user
+				s9s user --create --generate-key --group=admins --controller="https://localhost:9501" $cmon_user
 			else
-				s9s user --create --generate-key --controller="https://localhost:9501" --cmon-user="$cmon_user"
+				s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
 			fi
 
 			chown -R $cmon_user ~/.s9s
