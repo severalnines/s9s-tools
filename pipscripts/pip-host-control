@@ -38,6 +38,8 @@ Usage:
 
  --status=TEXT      Set a human readable string as status.
  --log=TEXT         Append a log message to the host log.
+ --warning=TEXT     Append a warning message to the host log.
+ --error=TEXT       Append a error message to the host log.
  --shutdown         This will actually shut down the host. Be careful!
  --csv-output=FILE  Save the CSV output into the given file.
 
@@ -52,7 +54,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,log:,status:,shutdown,csv-output:,\
+        -l "help,verbose,version,log-file:,log:,error:,warning:,\
+status:,shutdown,csv-output:,\
 idle,testing,halted" \
         -- "$@")
 
@@ -107,6 +110,18 @@ while true; do
             NEW_LOG_MESSAGE="$1"
             shift
             ;;
+        
+        --warning)
+            shift
+            NEW_WARNING_MESSAGE="$1"
+            shift
+            ;;
+        
+        --error)
+            shift
+            NEW_ERROR_MESSAGE="$1"
+            shift
+            ;;
 
         --idle)
             shift
@@ -133,6 +148,10 @@ while true; do
     esac
 done
 
+#
+# Appends a new log message to the local host log file that will be uploaded tzo
+# the web server.
+#
 function append_log_message()
 {
     local log_message="$*"
@@ -141,6 +160,30 @@ function append_log_message()
     echo "$date_string INFO    $log_message" >>"$HOST_LOG_FILE"
     #echo "$date_string WARNING $log_message" >>"$HOST_LOG_FILE"
     #echo "$date_string ERROR   $log_message" >>"$HOST_LOG_FILE"
+}
+
+#
+# Appends a new log message to the local host log file that will be uploaded tzo
+# the web server.
+#
+function append_warning_message()
+{
+    local log_message="$*"
+    local date_string="$(date "+%Y-%m-%d %H:%M:%S")"
+
+    echo "$date_string WARNING $log_message" >>"$HOST_LOG_FILE"
+}
+
+#
+# Appends a new log message to the local host log file that will be uploaded tzo
+# the web server.
+#
+function append_error_message()
+{
+    local log_message="$*"
+    local date_string="$(date "+%Y-%m-%d %H:%M:%S")"
+
+    echo "$date_string ERROR   $log_message" >>"$HOST_LOG_FILE"
 }
 
 #
@@ -223,7 +266,7 @@ if [ "$NEW_STATUS_TEXT" ]; then
 fi
 
 if [ "$NEW_HOST_STATUS" ]; then
-    HOST_STATUS="$HOST_STATUS"
+    HOST_STATUS="$NEW_HOST_STATUS"
 fi
 
 #
@@ -235,6 +278,14 @@ fi
 
 if [ "$NEW_LOG_MESSAGE" ]; then
     append_log_message "$NEW_LOG_MESSAGE"
+fi
+
+if [ "$NEW_WARNING_MESSAGE" ]; then
+    append_warning_message "$NEW_WARNING_MESSAGE"
+fi
+
+if [ "$NEW_ERROR_MESSAGE" ]; then
+    append_error_message "$NEW_ERROR_MESSAGE"
 fi
 
 #

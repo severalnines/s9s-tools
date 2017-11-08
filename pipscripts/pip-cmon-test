@@ -439,7 +439,7 @@ function compile_source()
         if [ $? -ne 0 ]; then
             message "Failed to compile."
             printError "The ./autogen.sh returned an error."
-            pip-host-control --log "The ./autogen.sh returned an error."
+            pip-host-control --error "The ./autogen.sh returned an error."
             exit 6
         fi
     fi
@@ -453,7 +453,7 @@ function compile_source()
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
         printError "The make -j10 returned an error."
-        pip-host-control --log "The make -j10 returned an error."
+        pip-host-control --error "The make -j10 returned an error."
         exit 6
     fi
 
@@ -468,7 +468,7 @@ function compile_source()
         if [ $? -ne 0 ]; then
             message "Failed to compile."
             printError "The ./autogen.sh in tests returned an error."
-            pip-host-control --log "The ./autogen.sh in tests failed."
+            pip-host-control --error "The ./autogen.sh in tests failed."
             exit 6
         fi
     fi
@@ -482,7 +482,7 @@ function compile_source()
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
         printError "The make -j10 returned an error."
-        pip-host-control --log "The make -j10 returned an error."
+        pip-host-control --error "The make -j10 returned an error."
         exit 6
     fi
         
@@ -614,6 +614,8 @@ function run_test()
             echo "*** vendor   : $(vendor_to_test)"
             echo "*** version  : $version"
             if [ -z "$DRY" ]; then
+                vendor=$(vendor_to_test)
+                tmp_name="$test_name $vendor:$os:$version"
                 if [ -f "Vagrantfile" ]; then
                     vagrant destroy -f
                     rm -f "Vagrantfile"
@@ -621,11 +623,15 @@ function run_test()
 
                 rm -f test_ssh_key.pub*
 
+                pip-host-control --log "Running ${tmp_name}."
+                
                 $test_name/$test_name \
                     --template=headless \
                     --vendor=$(vendor_to_test) \
                     --mysql-version=$version \
                     --os="$os"
+
+                pip-host-control --log "Finished ${tmp_name}."
             else
                 cat <<EOF
                 $test_name/$test_name 
@@ -725,9 +731,7 @@ function main()
     for os in $os; do 
         for version in $version; do
             for test_name in $name; do
-                pip-host-control --log "Running test  $test_name $os $version."
                 run_test "$test_name" "$os" "$version"
-                pip-host-control --log "Finished test $test_name $os $version."
             done
         done
     done
