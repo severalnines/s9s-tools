@@ -113,7 +113,9 @@ function append_log_message()
     local log_message="$*"
     local date_string="$(date "+%Y-%m-%d %H:%M:%S")"
 
-    echo "$date_string $log_message" >>"$HOST_LOG_FILE"
+    echo "$date_string INFO    $log_message" >>"$HOST_LOG_FILE"
+    #echo "$date_string WARNING $log_message" >>"$HOST_LOG_FILE"
+    #echo "$date_string ERROR   $log_message" >>"$HOST_LOG_FILE"
 }
 
 #
@@ -166,6 +168,10 @@ function upload_file()
     local temp_file
     local retcode
 
+    printVerbose "Uploading file"
+    printVerbose "  source : '$source_file'"
+    printVerbose "  target : '$target_file' "
+
     if [ ! -f "$source_file" ]; then
         printError "File '$source_file' not found."
         return 1
@@ -174,8 +180,7 @@ function upload_file()
     temp_file=$(mktemp)
     scp \
         -o 'StrictHostKeyChecking no' \
-        $HOST_INFO_FILE \
-        $TEST_REPORT_URL/$(hostname).hostinfo \
+        "$source_file" "$target_file" \
         >>"$temp_file" 2>>"$temp_file"
     
     retcode=$?
@@ -207,6 +212,7 @@ if [ "$VERBOSE" ]; then
 fi
 
 upload_file "$HOST_INFO_FILE" "$TEST_REPORT_URL/$(hostname).hostinfo"
+upload_file "$HOST_LOG_FILE"  "$TEST_REPORT_URL/$(hostname).hostlog"
 
 if [ "$CSV_OUTPUT" ]; then
     upload_file "$CSV_OUTPUT" "$TEST_REPORT_URL/test_matrix.csv" ""
