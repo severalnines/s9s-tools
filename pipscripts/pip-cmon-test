@@ -616,13 +616,18 @@ function run_test()
     local test_name="$1"
     local os="$2"
     local version="$3"
+    local vendor="$(vendor_to_test)"
 
     local return_code
     local tmp_file
+    local retcode
+    local logfile
 
     #
     # Notifying the user about a test is starting.
     #
+    logfile="$USER::${test_name}::${os}::${vendor}-${version}-${GIT_HASH}.log"
+
     echo "----8<----8<----8<----8<----8<----8<----"
     message "Running '$test_name'."
 
@@ -647,13 +652,17 @@ function run_test()
 
                 pip-host-control --log "Running ${tmp_name}."
                 
+                echo "START" > "$logfile"
                 $test_name/$test_name \
                     --template=headless \
                     --vendor=$(vendor_to_test) \
                     --mysql-version=$version \
-                    --os="$os"
+                    --os="$os" >>"$logfile" 2>>"$logfile"
 
-                pip-host-control --log "Finished ${tmp_name}."
+                retcode=$?
+                pip-host-control --log "Finished ${tmp_name} ($retcode)."
+                scp "$logfile" "$TEST_REPORT_URL"
+                #rm -f "$logfile"
             else
                 cat <<EOF
                 $test_name/$test_name 
