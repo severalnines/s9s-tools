@@ -126,8 +126,8 @@ while true; do
 
         --blades)
             shift
-            SERVER="blade01 blade02 blade03 blade04 blade05 blade06 blade07 "
-            SERVER+="blade08 blade10"
+            SERVER+="blade01 blade02 blade03 blade04 blade05 blade06 blade07 "
+            SERVER+="blade08 blade09 blade10"
             ;;
 
         --pid)
