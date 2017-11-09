@@ -418,12 +418,14 @@ function prepare_source()
     fi
 
     if [ -z "$NO_GIT_PULL" ]; then
+        pip-host-control --log "Pulling source."
         message "Running 'git pull'."
         git pull >/dev/null 2>/dev/null
         message "Pulled source."
     fi
 
     if [ "$DO_CLEAN" ]; then
+        pip-host-control --log "Cleaning source dir."
         message "Running 'git clean -dfx'."
         git clean -dfx >/dev/null 2>/dev/null
         message "Cleaned source."
@@ -702,6 +704,7 @@ function main()
     local name="$2"
     local version="$3"
 
+    pip-host-control --testing --log "--------------------------------------"
     pip-host-control --testing --log "Preparing test."
     message "Preparing test..."
 
@@ -768,16 +771,37 @@ function main()
     fi
 }
 
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local isOK
+
+    isOk=$(ssh -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
 function find_idle_server()
 {
     for server in $SERVER; do
         lock_file=$(lockFile)
 
+        if ! is_server_running_ssh "$server"; then
+            printVerbose "Server '$server' is off-line."
+            continue
+        fi
+
         other_pid=$( \
             ssh -o UserKnownHostsFile=/dev/null \
                 -o StrictHostKeyChecking=no \
                 -o LogLevel=quiet \
-                $server -- pip-cmon-test --pid)
+                "$server" -- pip-cmon-test --pid)
 
         printVerbose "server     : '$server'"
         printVerbose "lock_file  : '$lock_file'"
