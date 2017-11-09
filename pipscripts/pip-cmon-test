@@ -626,7 +626,7 @@ function run_test()
     #
     # Notifying the user about a test is starting.
     #
-    logfile="$USER::${test_name}::${os}::${vendor}-${version}-${GIT_HASH}.log"
+    logfile="$USER-${test_name}-${os}-${vendor}-${version}-${GIT_HASH}.log"
 
     echo "----8<----8<----8<----8<----8<----8<----"
     message "Running '$test_name'."
