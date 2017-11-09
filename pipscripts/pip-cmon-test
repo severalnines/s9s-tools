@@ -69,6 +69,8 @@ EXAMPLE:
   $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=mariadb,percona,codership --sqlversion="5.6,5.7"
   
   $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=postgresql --sqlversion="5.6"
+
+
 EOF
 
   exit 0
@@ -815,6 +817,25 @@ function find_idle_server()
     done
 }
 
+function wait_for_idle_server()
+{
+    local idle_server
+
+    while true; do
+        idle_server=$(find_idle_server)
+  
+        # Finding a server that is idle and ready to execute a test.
+        if [ "$idle_server" ]; then
+            echo "$idle_server"
+            return 0
+        fi
+
+        sleep 10
+    done
+}
+
+
+
 if [ "$OPTION_PID" ]; then
     lock_file=$(lockFile)
     if [ -f "$lock_file" ]; then
@@ -831,54 +852,43 @@ if [ "$OPTION_PID" ]; then
     exit 1
 fi
 
+#
+#
+#
 if [ "$SERVER" ]; then
-    pip-host-control --status="Running tests..."
+    pip-host-control --testing --log="--------------------------------------"
+    pip-host-control --testing --log="Running tests..."
+    pip-host-control --status "Testing..."
 
     for os in $(os_to_test); do 
         for version in $(version_to_test); do
             for vendor in $(vendor_to_test); do
-                while true; do
-                    idle_server=$(find_idle_server)
+                idle_server=$(wait_for_idle_server)
 
-                    # Finding a server that is idle and ready to execute a test.
-                    if [ "$idle_server" ]; then
-                        echo "-------------------------------------"
-                        echo -e "idle_server : $(STR_GREEN "$idle_server")"
-                        echo -e "test        : '$vendor' '$os' '$version'"
+                echo "-------------------------------------"
+                echo -e "idle_server : $(STR_GREEN "$idle_server")"
+                echo -e "test        : '$vendor' '$os' '$version'"
 
-                        #xterm -title "$idle_server" -hold -e \
-                        ssh -o UserKnownHostsFile=/dev/null \
-                            -o StrictHostKeyChecking=no \
-                            -o LogLevel=quiet \
-                            $idle_server -- nohup pip-cmon-test \
-                                $NO_GIT_PULL_OPTION \
-                                $NO_COMPILE_OPTION \
-                                --os=$os \
-                                --vendor=$vendor \
-                                --sqlversion=$version \
-                                $TEST_NAME_OPTION \
-                                >/dev/null 2>/dev/null &
+                pip-host-control --log "Starting test on '$idle_server'."
+                ssh -o UserKnownHostsFile=/dev/null \
+                    -o StrictHostKeyChecking=no \
+                    -o LogLevel=quiet \
+                    $idle_server -- nohup pip-cmon-test \
+                        $NO_GIT_PULL_OPTION \
+                        $NO_COMPILE_OPTION \
+                        --os=$os \
+                        --vendor=$vendor \
+                        --sqlversion=$version \
+                        $TEST_NAME_OPTION \
+                        >/dev/null 2>/dev/null &
 
-                        sleep 5
-                        break
-                    else
-                        #echo "NO IDLE SERVER"
-                        sleep 10
-                    fi
-                done
+                sleep 5
             done
         done
     done
     
-    pip-host-control --status="Idle"
-
-    #for host in $OPTION_HOSTS; do
-    #    xterm -title "$host" -hold -e \
-    #        ssh $host \
-    #            pip-cmon-test $SHUT_DOWN_AFTER_OPTION &
-    #done
-
     waitForProcessesToEnd 
+    pip-host-control --idle --status="Idle"
 else
     checkOtherInstances
     echo "checkOtherInstances : $?"

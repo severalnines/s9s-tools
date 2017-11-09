@@ -18,8 +18,31 @@ s9s user --list --print-json
 {
 }
 
-
-
+o 
+hmm...
+Sent on:
+2:40 pm
+From:
+Krzysztof Książek
+s9s node --change-config --opt-name="log_bin" --opt-value="1" --opt-group="mysqld" --nodes="10.0.0.226:3306"
+s9s node --change-config --opt-name="expire_logs_days" --opt-value="7" --opt-group="mysqld" --nodes="10.0.0.226:3306"
+s9s node --change-config --opt-name="log_slave_updates" --opt-value="1" --opt-group="mysqld" --nodes="10.0.0.226:3306"
+From:
+Krzysztof Książek
+first two work ok
+From:
+Krzysztof Książek
+third one doesn't seem to change anything...
+From:
+Krzysztof Książek
+I'm not sure why
+From:
+Krzysztof Książek
+and sometimes it results in:
+[11520.259877] cmon[27769]: segfault at 48c ip 000000000103919f sp 00007fcc8dff8520 error 4 in cmon[400000+131f000]
+From:
+Krzysztof Książek
+and as this breaks the scenario of adding the slave for my webinar, if you could find some time to look into that, it'd be great
 
 
 
