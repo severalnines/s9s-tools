@@ -2,9 +2,10 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.3"
+VERSION="0.0.4"
 VERBOSE=""
 LOGFILE=""
+SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 export LC_ALL=C
@@ -58,18 +59,20 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... [TARGET_HOST]...
+  $MYNAME [OPTION]... 
 
-  $MYNAME - Monitors various system properties and reports them.
+  $MYNAME - Installs the pip scripts on test servers. 
 
  -h, --help           Print this help and exit.
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
+ --server=SERVER      Name of the server or servers where we install.
+ --blades             Install on blade01 through blade10.
 
 EXAMPLE
 
- ./install.sh core1 host01
+ ./$MYNAME --server="core1,host01"
 
 EOF
     exit 0
@@ -78,7 +81,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,server:,blades" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -110,6 +113,18 @@ while true; do
             shift
             ;;
 
+        --server)
+            shift
+            SERVER=$(echo "$1" | tr ',' ' ')
+            shift
+            ;;
+
+        --blades)
+            shift
+            SERVER="blade01 blade02 blade03 blade04 blade05 "
+            SERVER+="blade06 blade07 blade08 blade09 blade10"
+            ;;
+
         --)
             shift
             break
@@ -120,8 +135,9 @@ while true; do
     esac
 done
 
-if [ -z "$*" ]; then
-    printError "Missing command line arguments."
+if [ -z "$SERVER" ]; then
+    printError "Server name is not specified."
+    printError "Use the --server command line option to set it."
     exit 6
 fi
 

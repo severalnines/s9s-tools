@@ -653,6 +653,15 @@ function run_test()
                 pip-host-control --log "Running ${tmp_name}."
                 
                 echo "START" > "$logfile"
+
+                if [ ! -f "$test_name/$test_name" ]; then
+                    pip-host-control \
+                        --error "Program $test_name was not found." \
+                        --status "Program $test_name was not found."
+                    
+                    return 1
+                fi
+
                 $test_name/$test_name \
                     --template=headless \
                     --vendor=$(vendor_to_test) \
