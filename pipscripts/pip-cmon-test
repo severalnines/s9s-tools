@@ -126,8 +126,13 @@ while true; do
 
         --blades)
             shift
-            SERVER+="blade01 blade02 blade03 blade04 blade05 blade06 blade07 "
-            SERVER+="blade08 blade09 blade10"
+            if [ -f "$HOME/.pip/blades" ]; then
+                SERVER=$(cat "$HOME/.pip/blades" | tr ',' ' ')
+            else
+                SERVER="blade01 blade02 blade03 blade04 blade05 "
+                SERVER+="blade06 blade07 blade08 blade09 blade10"
+                echo "$SERVER" >"$HOME/.pip/blades"
+            fi
             ;;
 
         --pid)
@@ -161,12 +166,12 @@ while true; do
 
             if [ "$OPTION_VENDOR" == "all" ]; then
                 OPTION_VENDOR=""
-                OPTION_VENDOR+="mysqlcluster_oracle"
-                OPTION_VENDOR+="mysql_replication_percona"
-                OPTION_VENDOR+="10gen"
-                OPTION_VENDOR+="percona"
-                OPTION_VENDOR+="mariadb"
-                OPTION_VENDOR+="codership"
+                OPTION_VENDOR+="mysqlcluster_oracle "
+                OPTION_VENDOR+="mysql_replication_percona "
+                OPTION_VENDOR+="10gen "
+                OPTION_VENDOR+="percona "
+                OPTION_VENDOR+="mariadb "
+                OPTION_VENDOR+="codership "
                 OPTION_VENDOR+="postgresql"
             fi
 
@@ -457,11 +462,14 @@ function compile_source()
         message "Running 'autogen.sh'."
         rm -f autogen.log
 
-        ./autogen.sh >>autogen.log 2>>autogen.log
-        if [ $? -ne 0 ]; then
+        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+        retcode $?
+        if [ $retcode -ne 0 ]; then
             message "Failed to compile."
-            printError "The ./autogen.sh returned an error."
-            pip-host-control --error "The ./autogen.sh returned an error."
+            printError "The ./autogen.sh failed."
+            pip-host-control \
+                --tail "$PWD/autogen.log" \
+                --error "The ./autogen.sh returned an error ($retcode)."
             exit 6
         fi
     fi
@@ -470,12 +478,14 @@ function compile_source()
     message "Running 'make'."
     rm -f "make.log"
 
-    make -j10 >>make.log 2>>make.log
+    make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
         printError "The make -j10 returned an error."
-        pip-host-control --error "The make -j10 returned an error."
+        pip-host-control \
+            --tail "$PWD/make.log" \
+            --error "The make -j10 returned an error ($retcode)."
         exit 6
     fi
 
@@ -486,11 +496,14 @@ function compile_source()
         message "Running 'autogen.sh' in tests."
         rm -f autogen.log
 
-        ./autogen.sh >>autogen.log 2>>autogen.log
-        if [ $? -ne 0 ]; then
+        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+        retcode=$?
+        if [ $retcode -ne 0 ]; then
             message "Failed to compile."
-            printError "The ./autogen.sh in tests returned an error."
-            pip-host-control --error "The ./autogen.sh in tests failed."
+            printError "The ./autogen.sh in tests failed."
+            pip-host-control \
+                --tail "$PWD/autogen.log" \
+                --error "The ./autogen.sh in tests returned an error ($retcode)"
             exit 6
         fi
     fi
@@ -499,12 +512,14 @@ function compile_source()
     message "Running 'make' in tests."
     rm -f "make.log"
 
-    make -j10 >>make.log 2>>make.log
+    make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         message "Failed to compile ($retcode)."
-        printError "The make -j10 returned an error."
-        pip-host-control --error "The make -j10 returned an error."
+        printError "The make -j10 failed ($retcode)."
+        pip-host-control \
+            --tail "$PWD/make.log" \
+            --error "The make -j10 returned an error ($retcode)."
         exit 6
     fi
         

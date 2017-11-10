@@ -2,6 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
+MYHOSTNAME=$(hostname)
 VERSION="0.0.17"
 VERBOSE=""
 LOGFILE=""
@@ -41,6 +42,7 @@ Usage:
  --log=TEXT         Append a log message to the host log.
  --warning=TEXT     Append a warning message to the host log.
  --error=TEXT       Append a error message to the host log.
+ --tail=FILENAME    Tail the given file and add the lines to the log file.
  --shutdown         This will actually shut down the host. Be careful!
  --csv-output=FILE  Save the CSV output into the given file.
  
@@ -56,7 +58,7 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,clear-log,log:,error:,warning:,\
-status:,shutdown,csv-output:,\
+tail:,status:,shutdown,csv-output:,\
 idle,testing,halted" \
         -- "$@")
 
@@ -122,7 +124,13 @@ while true; do
             NEW_WARNING_MESSAGE="$1"
             shift
             ;;
-        
+       
+        --tail)
+            shift
+            TAIL_FILE="$1"
+            shift
+            ;;
+
         --error)
             shift
             NEW_ERROR_MESSAGE="$1"
@@ -283,7 +291,16 @@ if [ "$CLEAR_LOG" ]; then
 fi
 
 if [ ! -f "$HOST_LOG_FILE" ]; then
-    append_log_message "Starting log file."
+    append_log_message "Starting log file in '${MYHOSTNAME}:${HOST_LOG_FILE}'."
+fi
+
+if [ "$TAIL_FILE" ]; then
+    append_log_message "The last lines of '$TAIL_FILE':"
+    if [ -f "$TAIL_FILE" ]; then
+        tail -n 100 "$TAIL_FILE" >>"$HOST_LOG_FILE"
+    else
+        append_error_message "File '$TAIL_FILE' was not found."
+    fi
 fi
 
 if [ "$NEW_LOG_MESSAGE" ]; then
