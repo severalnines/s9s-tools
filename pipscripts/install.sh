@@ -121,8 +121,13 @@ while true; do
 
         --blades)
             shift
-            SERVER="blade01 blade02 blade03 blade04 blade05 "
-            SERVER+="blade06 blade07 blade08 blade09 blade10"
+            if [ -f "$HOME/.pip/blades" ]; then
+                SERVER=$(cat "$HOME/.pip/blades" | tr ',' ' ')
+            else
+                SERVER="blade01 blade02 blade03 blade04 blade05 "
+                SERVER+="blade06 blade07 blade08 blade09 blade10"
+                echo "$SERVER" >"$HOME/.pip/blades"
+            fi
             ;;
 
         --)
@@ -144,7 +149,7 @@ fi
 #
 # Going through the servers and installing the pip scripts on all of them.
 #
-for server in $*; do
+for server in $SERVER; do
     echo "Installing on host '$server'."
 
     $SSH $server -- mkdir install_sh_tmp
