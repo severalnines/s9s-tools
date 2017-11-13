@@ -58,6 +58,7 @@ Usage:
   --shut-down-after       Shut down the test server after the test.
 
   --test=NAME             The name of the test to run.
+  --unit-tests            Run all the unit tests.
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
@@ -80,7 +81,7 @@ ARGS=$(\
     getopt \
         -o hvj: \
         -l "help,verbose,dry,version,log-file:,server:,blades,pid,\
-test:,os:,vendor:,sqlversion:,\
+test:,unit-tests,os:,vendor:,sqlversion:,\
 no-git-pull,no-compile,shut-down-after" \
         -- "$@")
 
@@ -145,6 +146,53 @@ while true; do
             OPTION_TEST_NAME="$1"
             TEST_NAME_OPTION="--test=$OPTION_TEST_NAME"
             shift
+            ;;
+
+        --unit-tests)
+            shift
+            OPTION_TEST_NAME="ut_cmonaccount ut_cmonacl ut_cmonbackup "
+            OPTION_TEST_NAME+="ut_cmonbackupdb ut_cmonbackupretention "
+            OPTION_TEST_NAME+="ut_cmonbinaryrecord ut_cmoncell "
+            OPTION_TEST_NAME+="ut_cmonclusterconfig ut_cmoncommandhandler "
+            OPTION_TEST_NAME+="ut_cmonconfigfile ut_cmonconfigproperties "
+            OPTION_TEST_NAME+="ut_cmonconfiguration ut_cmoncpustatcollector "
+            OPTION_TEST_NAME+="ut_cmoncpustats ut_cmoncron "
+            OPTION_TEST_NAME+="ut_cmondatabasestats ut_cmondb "
+            OPTION_TEST_NAME+="ut_cmondiskstats ut_cmondocument "
+            OPTION_TEST_NAME+="ut_cmonencryption ut_cmoneventloop "
+            OPTION_TEST_NAME+="ut_cmonfile ut_cmonhost "
+            OPTION_TEST_NAME+="ut_cmonimperative ut_cmonjob "
+            OPTION_TEST_NAME+="ut_cmonjsonmessage ut_cmonlocalprocess "
+            OPTION_TEST_NAME+="ut_cmonlogger ut_cmonlogmessage "
+            OPTION_TEST_NAME+="ut_cmonmail ut_cmonmailqueue "
+            OPTION_TEST_NAME+="ut_cmonmemorystatcollector ut_cmonmemorystats "
+            OPTION_TEST_NAME+="ut_cmonmetatype ut_cmonmongocluster "
+            OPTION_TEST_NAME+="ut_cmonmysqlcollector ut_cmonmysqlslowlogparser "
+            OPTION_TEST_NAME+="ut_cmonnetworkstatcollector ut_cmonnetworkstats "
+            OPTION_TEST_NAME+="ut_cmonobject ut_cmonpkgversion "
+            OPTION_TEST_NAME+="ut_cmonpluginexecutor ut_cmonprocesscollector "
+            OPTION_TEST_NAME+="ut_cmonprocessmanager "
+            OPTION_TEST_NAME+="ut_cmonprocessstatcollector "
+            OPTION_TEST_NAME+="ut_cmonregexp ut_cmonrpcservice "
+            OPTION_TEST_NAME+="ut_cmonscriptmanager ut_cmonscripts "
+            OPTION_TEST_NAME+="ut_cmonsheet ut_cmonspreadsheetmanager "
+            OPTION_TEST_NAME+="ut_cmonsqlstats ut_cmonsslca "
+            OPTION_TEST_NAME+="ut_cmonstatistics ut_cmonstring "
+            OPTION_TEST_NAME+="ut_cmonthread ut_cmontimer "
+            OPTION_TEST_NAME+="ut_cmonuser ut_cmonvariant "
+            OPTION_TEST_NAME+="ut_cmonwatchdog ut_communication "
+            OPTION_TEST_NAME+="ut_communicationstubbed ut_connect "
+            OPTION_TEST_NAME+="ut_galera ut_galerastubbed "
+            OPTION_TEST_NAME+="ut_haproxy ut_helpers ut_joblogger "
+            OPTION_TEST_NAME+="ut_memcache ut_mongostats "
+            OPTION_TEST_NAME+="ut_mysqladvisor ut_mysqlsinglecluster "
+            OPTION_TEST_NAME+="ut_osversion ut_postgresqlsinglecluster "
+            OPTION_TEST_NAME+="ut_postinst ut_proxysql "
+            OPTION_TEST_NAME+="ut_replication ut_repositorymanager "
+            OPTION_TEST_NAME+="ut_resourcestatcollector ut_s9scluster "
+            OPTION_TEST_NAME+="ut_simplealarm ut_ssh "
+            OPTION_TEST_NAME+="ut_tcpstatcollector ut_tcpstats "
+            OPTION_TEST_NAME+="ut_workflow "
             ;;
 
         --os)
@@ -641,7 +689,6 @@ function run_test()
 
     local return_code
     local tmp_file
-    local retcode
     local logfile
 
     logfile=$(log_file_name "$test_name")
@@ -663,7 +710,6 @@ function run_test()
             echo "*** version  : $version"
             if [ -z "$DRY" ]; then
                 vendor=$(vendor_to_test)
-                tmp_name="$test_name $vendor:$os:$version"
                 if [ -f "Vagrantfile" ]; then
                     vagrant destroy -f
                     rm -f "Vagrantfile"
@@ -671,7 +717,7 @@ function run_test()
 
                 rm -f test_ssh_key.pub*
 
-                pip-host-control --log "Running ${tmp_name}."
+                pip-host-control --log "Running ${test_name}."
                 
                 echo "START" > "$logfile"
 
@@ -689,8 +735,8 @@ function run_test()
                     --mysql-version=$version \
                     --os="$os" >>"$logfile" 2>>"$logfile"
 
-                retcode=$?
-                pip-host-control --log "Finished ${tmp_name} ($retcode)."
+                return_code=$?
+                pip-host-control --log "Finished ${test_name} ($return_code)."
             else
                 cat <<EOF
                 $test_name/$test_name 
@@ -709,7 +755,7 @@ EOF
             # This is under development.
             #
             if [ -z "$DRY" ]; then
-                echo "pwd : $(pwd)" >>$logfile
+                #echo "pwd : $(pwd)" >>$logfile
     
                 #
                 upload_result_file "$test_name" "RUNNING" $logfile
@@ -717,11 +763,21 @@ EOF
                 #
                 # Running the test.
                 #
+                pip-host-control --log "Running ${test_name}."
                 printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
-                $test_name/$test_name >>$logfile 2>>$logfile
+                if [ ! -f "$test_name/$test_name" ]; then
+                    pip-host-control \
+                        --error "Program $test_name was not found." \
+                        --status "Program $test_name was not found."
+                    
+                    return 1
+                fi
+
+                $test_name/$test_name --color >>$logfile 2>>$logfile
                 return_code=$?
     
+                pip-host-control --log "Finished ${test_name} ($return_code)."
                 if [ $return_code -eq 0 ]; then
                     upload_result_file "$test_name" "SUCCESS" $logfile
                 else
@@ -731,11 +787,14 @@ EOF
                 echo "$test_name/$test_name"
             fi
     esac
-    
+   
+    #
+    # Uploading the output of the test program as log file.
+    #
     if [ -f "$logfile" ]; then
         printVerbose "scp \"$logfile\" \"$TEST_REPORT_URL\""
         scp "$logfile" "$TEST_REPORT_URL"
-        #rm -f "$logfile"
+        rm -f "$logfile"
     fi
             
     message "Finished running '$test_name' ($return_code)."
@@ -886,29 +945,34 @@ function run_tests_remote()
     local version
     local vendor
     local idle_server
+    local test_name
 
     for os in $(os_to_test); do 
         for version in $(version_to_test); do
             for vendor in $(vendor_to_test); do
-                idle_server=$(wait_for_idle_server)
+                for test_name in $(echo "$OPTION_TEST_NAME" | tr ',' ' '); do
+                    idle_server=$(wait_for_idle_server)
 
-                echo "-------------------------------------"
-                echo -e "idle_server : $(STR_GREEN "$idle_server")"
-                echo -e "test        : '$vendor' '$os' '$version'"
+                    echo "-------------------------------------"
+                    echo -e "idle_server : $(STR_GREEN "$idle_server")"
+                    echo -e "test        : '$test_name'"
 
-                pip-host-control --log "Starting test on '$idle_server'."
-                ssh -o UserKnownHostsFile=/dev/null \
-                    -o StrictHostKeyChecking=no \
-                    -o LogLevel=quiet \
-                    $idle_server -- nohup pip-cmon-test \
-                        $NO_GIT_PULL_OPTION \
-                        $NO_COMPILE_OPTION \
-                        --os=$os \
-                        --vendor=$vendor \
-                        --sqlversion=$version \
-                        $TEST_NAME_OPTION \
-                        >/dev/null 2>/dev/null &
-                sleep 5
+                    pip-host-control --log "Starting test on '$idle_server'."
+                    ssh -o UserKnownHostsFile=/dev/null \
+                        -o StrictHostKeyChecking=no \
+                        -o LogLevel=quiet \
+                        $idle_server -- nohup pip-cmon-test \
+                            $NO_GIT_PULL_OPTION \
+                            $NO_COMPILE_OPTION \
+                            --os=$os \
+                            --vendor=$vendor \
+                            --sqlversion=$version \
+                            --test="$test_name" \
+                            >/dev/null 2>/dev/null &
+
+                    echo -e "returned    : $test_name on $idle_server"
+                    sleep 2
+                done
             done
         done
     done
