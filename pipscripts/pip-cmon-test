@@ -13,6 +13,7 @@ SOURCE_ROOT=""
 GIT_HASH=""
 GIT_AUTHOR=""
 GIT_SUBJECT=""
+START_EPOCH_TIME="$(date +%s)"
 
 NO_GIT_PULL=""
 OPTION_NO_COMPILE=""
@@ -649,6 +650,15 @@ function upload_result_file()
     rm -f "$tmp_file"
 }
 
+function elapsedTimeString()
+{
+    local start_date="$1"
+    local end_date="$(date +%s)"
+    local T=$((end_date-start_date))
+
+    printf "%02d:%02d:%02d" \
+        "$((T/3600%24))" "$((T/60%60))" "$((T%60))"
+}
 
 #
 # $1: test name
@@ -658,10 +668,14 @@ function generate_test_result_info()
 {
     local git_commit_date=$(git show -s --format=%ci $GIT_HASH)
     local git_has_local_changes="no"
+    local elapsed_time
 
     if ! git diff-index --quiet HEAD --; then 
         git_has_local_changes="yes"
     fi
+
+    elapsed_time="$(date +%s)"
+    let elapsed_time-="$START_EPOCH_TIME"
 
     cat <<EOF
 test_server="$(hostname)"
@@ -672,6 +686,10 @@ githaslocalchanges="$git_has_local_changes"
 state="$2"
 report_file="$(report_file_name $1)"
 user="$USER"
+elapsed_time="$elapsed_time"
+elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
+test_start_epoch="$START_EPOCH_TIME"
+is_unit_test="yes"
 EOF
 }
 
@@ -935,7 +953,7 @@ function wait_for_idle_server()
             return 0
         fi
 
-        sleep 10
+        sleep 3
     done
 }
 
