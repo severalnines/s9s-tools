@@ -13,41 +13,13 @@ clustercontrol-controller version, please check relevant versioned branches
 
 # APT and YUM repositories
 
-Well these repositories are updated on few weekly basis currently.
-
-## Ubuntu DEB repository
-
-LINK: https://launchpad.net/~severalnines/+archive/ubuntu/s9s-tools
-
-```
-sudo add-apt-repository ppa:severalnines/s9s-tools
-sudo apt-get update
-sudo apt-get install s9s-tools
-```
-
-## Debian (+Ubuntu) DEB repositories
-
 See http://repo.severalnines.com/s9s-tools/
 
-To add debian/ubuntu repos the following needs to be done
-```
-# Available distros: wheezy, jessie, precise, trusty, xenial, yakkety, zesty
-DISTRO=jessie
-wget -qO - http://repo.severalnines.com/s9s-tools/${DISTRO}/Release.key | sudo apt-key add -
-echo "deb http://repo.severalnines.com/s9s-tools/${DISTRO}/ ./" | sudo tee /etc/apt/sources.list.d/s9s-tools.list
-sudo apt-get update
-sudo apt-get install s9s-tools
-```
+You can use the following script to install s9s-tools automated:
 
-## YUM Repositories for CentOS 6/7 and RHEL 6/7
+http://repo.severalnines.com/s9s-tools/install-s9s-tools.sh
 
-See http://repo.severalnines.com/s9s-tools/
-
-The repository files for each distribution:
-- http://repo.severalnines.com/s9s-tools/CentOS_6/s9s-tools.repo
-- http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo
-- http://repo.severalnines.com/s9s-tools/RHEL_6/s9s-tools.repo
-- http://repo.severalnines.com/s9s-tools/RHEL_7/s9s-tools.repo
+Download and run the script as sudo (it will set up the repository, installs and initializes the s9s CLI).
 
 # Some screenshots
 
