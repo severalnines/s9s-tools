@@ -546,6 +546,12 @@ function result_file_name()
     echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
 }
 
+function log_file_name()
+{
+    local test_name=$1
+    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.log"
+}
+
 #
 # $1: test name
 # $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
@@ -638,11 +644,11 @@ function run_test()
     local retcode
     local logfile
 
+    logfile=$(log_file_name "$test_name")
+
     #
     # Notifying the user about a test is starting.
     #
-    logfile="$USER-${test_name}-${os}-${vendor}-${version}-${GIT_HASH}.log"
-
     echo "----8<----8<----8<----8<----8<----8<----"
     message "Running '$test_name'."
 
@@ -685,15 +691,13 @@ function run_test()
 
                 retcode=$?
                 pip-host-control --log "Finished ${tmp_name} ($retcode)."
-                scp "$logfile" "$TEST_REPORT_URL"
-                #rm -f "$logfile"
             else
                 cat <<EOF
                 $test_name/$test_name 
                     --template=headless 
                     --vendor=$(vendor_to_test) 
                     --mysql-version=$version 
-                    --os="$os"
+                    --os="$os" 
 EOF
             fi
 
@@ -705,25 +709,34 @@ EOF
             # This is under development.
             #
             if [ -z "$DRY" ]; then
-                tmp_file=$(mktemp)
-                echo "pwd : $(pwd)" >>$tmp_file
+                echo "pwd : $(pwd)" >>$logfile
     
                 #
-                upload_result_file "$test_name" "RUNNING" $tmp_file 
+                upload_result_file "$test_name" "RUNNING" $logfile
     
-                # 
-                $test_name/$test_name >>$tmp_file 2>>$tmp_file 
+                #
+                # Running the test.
+                #
+                printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
+
+                $test_name/$test_name >>$logfile 2>>$logfile
                 return_code=$?
     
                 if [ $return_code -eq 0 ]; then
-                    upload_result_file "$test_name" "SUCCESS" $tmp_file
+                    upload_result_file "$test_name" "SUCCESS" $logfile
                 else
-                    upload_result_file "$test_name" "FAILURE" $tmp_file
+                    upload_result_file "$test_name" "FAILURE" $logfile
                 fi
             else
                 echo "$test_name/$test_name"
             fi
     esac
+    
+    if [ -f "$logfile" ]; then
+        printVerbose "scp \"$logfile\" \"$TEST_REPORT_URL\""
+        scp "$logfile" "$TEST_REPORT_URL"
+        #rm -f "$logfile"
+    fi
             
     message "Finished running '$test_name' ($return_code)."
 }
@@ -867,6 +880,39 @@ function wait_for_idle_server()
     done
 }
 
+function run_tests_remote()
+{
+    local os
+    local version
+    local vendor
+    local idle_server
+
+    for os in $(os_to_test); do 
+        for version in $(version_to_test); do
+            for vendor in $(vendor_to_test); do
+                idle_server=$(wait_for_idle_server)
+
+                echo "-------------------------------------"
+                echo -e "idle_server : $(STR_GREEN "$idle_server")"
+                echo -e "test        : '$vendor' '$os' '$version'"
+
+                pip-host-control --log "Starting test on '$idle_server'."
+                ssh -o UserKnownHostsFile=/dev/null \
+                    -o StrictHostKeyChecking=no \
+                    -o LogLevel=quiet \
+                    $idle_server -- nohup pip-cmon-test \
+                        $NO_GIT_PULL_OPTION \
+                        $NO_COMPILE_OPTION \
+                        --os=$os \
+                        --vendor=$vendor \
+                        --sqlversion=$version \
+                        $TEST_NAME_OPTION \
+                        >/dev/null 2>/dev/null &
+                sleep 5
+            done
+        done
+    done
+}
 
 
 if [ "$OPTION_PID" ]; then
@@ -893,33 +939,7 @@ if [ "$SERVER" ]; then
     pip-host-control --testing --log="Running tests..."
     pip-host-control --status "Testing..."
 
-    for os in $(os_to_test); do 
-        for version in $(version_to_test); do
-            for vendor in $(vendor_to_test); do
-                idle_server=$(wait_for_idle_server)
-
-                echo "-------------------------------------"
-                echo -e "idle_server : $(STR_GREEN "$idle_server")"
-                echo -e "test        : '$vendor' '$os' '$version'"
-
-                pip-host-control --log "Starting test on '$idle_server'."
-                ssh -o UserKnownHostsFile=/dev/null \
-                    -o StrictHostKeyChecking=no \
-                    -o LogLevel=quiet \
-                    $idle_server -- nohup pip-cmon-test \
-                        $NO_GIT_PULL_OPTION \
-                        $NO_COMPILE_OPTION \
-                        --os=$os \
-                        --vendor=$vendor \
-                        --sqlversion=$version \
-                        $TEST_NAME_OPTION \
-                        >/dev/null 2>/dev/null &
-
-                sleep 5
-            done
-        done
-    done
-    
+    run_tests_remote
     waitForProcessesToEnd 
     pip-host-control --idle --status="Idle"
 else
