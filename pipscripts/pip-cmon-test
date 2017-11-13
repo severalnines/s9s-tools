@@ -488,10 +488,23 @@ function prepare_source()
     fi
 }
 
+function find_mysql()
+{
+    for dir in /opt/mysql-cluster-gpl-7*; do
+        if [ -d "$dir" ]; then
+            echo "$dir"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 function compile_source()
 {
     local retcode
-    
+    local mysql_dir=$(find_mysql)
+
     #
     # Not gonna compile the source in dry mode or when the --no-compile command
     # line option is provided.
@@ -504,10 +517,16 @@ function compile_source()
         return 0
     fi
     
+    if [ "$mysql_dir" ]; then
+        export PATH="$mysql_dir/bin:$PATH"
+    fi
+
     pip-host-control --testing --log "Compiling."
+    pip-host-control --log " PATH: $PATH"
+    pip-host-control --log " mysqlshow: $(which mysqlshow)"
 
     # Running autogen in the source root. 
-    if [ ! -f autogen.log ]; then
+    #if [ ! -f autogen.log ]; then
         message "Running 'autogen.sh'."
         rm -f autogen.log
 
@@ -521,7 +540,7 @@ function compile_source()
                 --error "The ./autogen.sh returned an error ($retcode)."
             exit 6
         fi
-    fi
+    #fi
 
     # Running make in source root.
     message "Running 'make'."
@@ -541,7 +560,7 @@ function compile_source()
     cd tests
 
     # Running autogen.sh in the tests directory.
-    if [ ! -f "autogen.log" ]; then
+    #if [ ! -f "autogen.log" ]; then
         message "Running 'autogen.sh' in tests."
         rm -f autogen.log
 
@@ -555,7 +574,7 @@ function compile_source()
                 --error "The ./autogen.sh in tests returned an error ($retcode)"
             exit 6
         fi
-    fi
+    #fi
 
     # Running make in tests directory.
     message "Running 'make' in tests."
