@@ -27,6 +27,9 @@ OPTION_TEST_NAME="ft_install"
 OPTION_VENDOR=""
 OPTION_VERSION=""
 OPTION_PID=""
+
+S9S_OPTION=""
+
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -58,6 +61,7 @@ Usage:
   --no-compile            Do not compile the source, use as it is.
   --shut-down-after       Shut down the test server after the test.
 
+  --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
   --unit-tests            Run all the unit tests.
 
@@ -140,6 +144,11 @@ while true; do
         --pid)
             shift
             OPTION_PID="true"
+            ;;
+
+        --s9s)
+            shift
+            S9S_OPTION="--s9s"
             ;;
 
         --test)
@@ -438,7 +447,7 @@ function os_to_test()
 #
 # Prints the directory name where the source can be found.
 #
-function find_source_directory()
+function find_clustercontrol_source_directory()
 {
     local dir_path
     
@@ -458,6 +467,7 @@ function find_source_directory()
     # Well, we did not find it, but we did not find any others either.
     #
     printError "Coult not find clustercontrol source."
+    pip-host-control --error "Coult not find clustercontrol source."
     echo "$HOME/clustercontrol-enterprise"
 }
 
@@ -859,7 +869,7 @@ function main()
     #
     # Finding the source root.
     #
-    SOURCE_ROOT=$(find_source_directory)
+    SOURCE_ROOT=$(find_clustercontrol_source_directory)
     if [ ! -d $SOURCE_ROOT ]; then
         printError "Directory '$SOURCE_ROOT' does not exist."
         exit 6
@@ -1005,6 +1015,7 @@ function run_tests_remote()
                         $idle_server -- nohup pip-cmon-test \
                             $NO_GIT_PULL_OPTION \
                             $NO_COMPILE_OPTION \
+                            $S9S_OPTION \
                             --os=$os \
                             --vendor=$vendor \
                             --sqlversion=$version \
