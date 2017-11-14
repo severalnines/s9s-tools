@@ -473,6 +473,7 @@ function find_clustercontrol_source_directory()
 
 #
 # FIXME: This will be more complicated.
+# FIXME: This expects to be in the source directory.
 #
 function prepare_source()
 {
@@ -485,16 +486,14 @@ function prepare_source()
 
     if [ -z "$NO_GIT_PULL" ]; then
         pip-host-control --log "Pulling source."
-        message "Running 'git pull'."
         git pull >/dev/null 2>/dev/null
-        message "Pulled source."
+        pip-host-control --log "Pulled source."
     fi
 
     if [ "$DO_CLEAN" ]; then
         pip-host-control --log "Cleaning source dir."
-        message "Running 'git clean -dfx'."
         git clean -dfx >/dev/null 2>/dev/null
-        message "Cleaned source."
+        pip-host-control --log "Cleaned source."
     fi
 }
 
@@ -510,23 +509,47 @@ function find_mysql()
     return 1
 }
 
+#
+# This is the function that finds the clustercontrol-enterprise directory and
+# compiles it.
+#
 function compile_clustercontrol_source()
 {
     local retcode
+    local source_root=$(find_clustercontrol_source_directory)
     local mysql_dir=$(find_mysql)
+    
+    if [ ! -d "$source_root" ]; then
+        pip-host-control --error "Could not find clustercontrol source."
+        return 1
+    fi
+
+    pip-host-control --log "Entering directory '$source_root'..."
+    pushd "$source_root" >/dev/null 2>/dev/null
+    retcode="$?"
+
+    if [ "$retcode" -ne 0 ]; then
+        pip-host-control --error "Could not chmod to '$source_root'."
+        return 1
+    fi
 
     #
     # Not gonna compile the source in dry mode or when the --no-compile command
     # line option is provided.
     #
     if [ "$DRY" ]; then
+        popd >/dev/null 2>/dev/null
         return 0
     fi
     
     if [ "$OPTION_NO_COMPILE" ]; then
+        popd >/dev/null 2>/dev/null
         return 0
     fi
-    
+   
+    ####
+    # Preparing to compile.
+    #
     if [ "$mysql_dir" ]; then
         export PATH="$mysql_dir/bin:$PATH"
     fi
@@ -538,14 +561,12 @@ function compile_clustercontrol_source()
     #
     # Running autogen in the source root. 
     #
-    message "Running 'autogen.sh'."
+    pip-host-control --log "Running 'autogen.sh'."
     rm -f autogen.log
 
     ./autogen.sh >>"autogen.log" 2>>"autogen.log"
     retcode $?
     if [ $retcode -ne 0 ]; then
-        message "Failed to compile."
-        printError "The ./autogen.sh failed."
         pip-host-control \
             --tail "$PWD/autogen.log" \
             --error "The ./autogen.sh returned an error ($retcode)."
@@ -555,14 +576,12 @@ function compile_clustercontrol_source()
     #
     # Running make in source root.
     #
-    message "Running 'make'."
+    pip-host-control --log "Running 'make'."
     rm -f "make.log"
 
     make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        message "Failed to compile ($retcode)."
-        printError "The make -j10 returned an error."
         pip-host-control \
             --tail "$PWD/make.log" \
             --error "The make -j10 returned an error ($retcode)."
@@ -574,14 +593,12 @@ function compile_clustercontrol_source()
     #
     # Running autogen.sh in the tests directory.
     #
-    message "Running 'autogen.sh' in tests."
+    pip-host-control --log "Running 'autogen.sh' in tests."
     rm -f autogen.log
 
     ./autogen.sh >>"autogen.log" 2>>"autogen.log"
     retcode=$?
     if [ $retcode -ne 0 ]; then
-        message "Failed to compile."
-        printError "The ./autogen.sh in tests failed."
         pip-host-control \
             --tail "$PWD/autogen.log" \
             --error "The ./autogen.sh in tests returned an error ($retcode)"
@@ -591,14 +608,12 @@ function compile_clustercontrol_source()
     # 
     # Running make in tests directory.
     #
-    message "Running 'make' in tests."
+    pip-host-control --log "Running 'make' in tests."
     rm -f "make.log"
 
     make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        message "Failed to compile ($retcode)."
-        printError "The make -j10 failed ($retcode)."
         pip-host-control \
             --tail "$PWD/make.log" \
             --error "The make -j10 returned an error ($retcode)."
@@ -647,16 +662,10 @@ function upload_report_file_ascii()
     cat <<EOF >>$tmp_file
     <html>
       <h1>Test results for '$1'</h1>
-      <pre>
-EOF
-
-    if [ -f "$3" ]; then
-        cat "$3" >>$tmp_file
-    fi
-    
-    cat <<EOF >>$tmp_file
-      </pre>
-    </thml>
+      <p>This test created no report. Try to check the programs output for
+      details. The web interface shows the output when clicked on the test's
+      name.</p>
+    </html>
 EOF
 
     scp "$tmp_file" "$TEST_REPORT_URL"
@@ -724,6 +733,12 @@ elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
 test_start_epoch="$START_EPOCH_TIME"
 is_unit_test="yes"
 EOF
+
+  if [ "$S9S_OPTION" ]; then
+      echo "project=\"s9s-tools\""
+  else
+      echo "project=\"clustercontrol-enterprise\""
+  fi
 }
 
 #
@@ -875,8 +890,6 @@ function main()
         exit 6
     fi
 
-    cd $SOURCE_ROOT
-
     #
     # If the user removes this file we cancel the shutdown request, otherwise we
     # will shut down the server at the end of the test.
@@ -890,11 +903,14 @@ function main()
     #
     # Preparing the source, generating a file holding the test results.
     #
+    pushd "$SOURCE_ROOT"
+
     prepare_source
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
-
+    
+    popd 
 
     echo "----8<----8<----8<----8<----8<----8<----"
     generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"
@@ -905,7 +921,8 @@ function main()
     #
     # Running the test.
     #
-    pushd tests >/dev/null 2>/dev/null
+    pip-host-control --log "Entering '$SOURCE_ROOT/tests'..."
+    pushd "$SOURCE_ROOT/tests" >/dev/null 2>/dev/null
     
     for os in $os; do 
         for version in $version; do
@@ -917,7 +934,10 @@ function main()
     
     popd >/dev/null 2>/dev/null
 
-    pip-host-control --idle
+    pip-host-control \
+        --idle \
+        --log    "Finished with tests, idle." \
+        --status "Idle"
 
     #
     # If the "shutdown after the test" is requested and the user did not delete
@@ -997,24 +1017,35 @@ function run_tests_remote()
     local vendor
     local idle_server
     local test_name
+    local no_git_pull_option
+    local no_compile_option
+    declare -A already_compiled
 
     for os in $(os_to_test); do 
         for version in $(version_to_test); do
             for vendor in $(vendor_to_test); do
                 for test_name in $(echo "$OPTION_TEST_NAME" | tr ',' ' '); do
                     idle_server=$(wait_for_idle_server)
+                    no_git_pull_option="$NO_GIT_PULL_OPTION"
+                    no_compile_option="$NO_COMPILE_OPTION"
+
+                    if [ "${already_compiled[$idle_server]}" ]; then
+                        no_git_pull_option="--no-git-pull"
+                        no_compile_option="--no-compile"
+                    fi
 
                     echo "-------------------------------------"
                     echo -e "idle_server : $(STR_GREEN "$idle_server")"
                     echo -e "test        : '$test_name'"
+                    echo -e "compiled    : '${already_compiled[$idle_server]}'"
 
                     pip-host-control --log "Starting test on '$idle_server'."
                     ssh -o UserKnownHostsFile=/dev/null \
                         -o StrictHostKeyChecking=no \
                         -o LogLevel=quiet \
                         $idle_server -- nohup pip-cmon-test \
-                            $NO_GIT_PULL_OPTION \
-                            $NO_COMPILE_OPTION \
+                            $no_git_pull_option \
+                            $no_compile_option \
                             $S9S_OPTION \
                             --os=$os \
                             --vendor=$vendor \
@@ -1022,7 +1053,7 @@ function run_tests_remote()
                             --test="$test_name" \
                             >/dev/null 2>/dev/null &
 
-                    echo -e "returned    : $test_name on $idle_server"
+                    already_compiled[$idle_server]="yes"
                     sleep 2
                 done
             done
