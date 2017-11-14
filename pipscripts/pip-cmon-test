@@ -500,7 +500,7 @@ function find_mysql()
     return 1
 }
 
-function compile_source()
+function compile_clustercontrol_source()
 {
     local retcode
     local mysql_dir=$(find_mysql)
@@ -525,24 +525,26 @@ function compile_source()
     pip-host-control --log " PATH: $PATH"
     pip-host-control --log " mysqlshow: $(which mysqlshow)"
 
+    #
     # Running autogen in the source root. 
-    #if [ ! -f autogen.log ]; then
-        message "Running 'autogen.sh'."
-        rm -f autogen.log
+    #
+    message "Running 'autogen.sh'."
+    rm -f autogen.log
 
-        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
-        retcode $?
-        if [ $retcode -ne 0 ]; then
-            message "Failed to compile."
-            printError "The ./autogen.sh failed."
-            pip-host-control \
-                --tail "$PWD/autogen.log" \
-                --error "The ./autogen.sh returned an error ($retcode)."
-            exit 6
-        fi
-    #fi
+    ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+    retcode $?
+    if [ $retcode -ne 0 ]; then
+        message "Failed to compile."
+        printError "The ./autogen.sh failed."
+        pip-host-control \
+            --tail "$PWD/autogen.log" \
+            --error "The ./autogen.sh returned an error ($retcode)."
+        exit 6
+    fi
 
+    #
     # Running make in source root.
+    #
     message "Running 'make'."
     rm -f "make.log"
 
@@ -559,24 +561,26 @@ function compile_source()
 
     cd tests
 
+    #
     # Running autogen.sh in the tests directory.
-    #if [ ! -f "autogen.log" ]; then
-        message "Running 'autogen.sh' in tests."
-        rm -f autogen.log
+    #
+    message "Running 'autogen.sh' in tests."
+    rm -f autogen.log
 
-        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
-        retcode=$?
-        if [ $retcode -ne 0 ]; then
-            message "Failed to compile."
-            printError "The ./autogen.sh in tests failed."
-            pip-host-control \
-                --tail "$PWD/autogen.log" \
-                --error "The ./autogen.sh in tests returned an error ($retcode)"
-            exit 6
-        fi
-    #fi
+    ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+    retcode=$?
+    if [ $retcode -ne 0 ]; then
+        message "Failed to compile."
+        printError "The ./autogen.sh in tests failed."
+        pip-host-control \
+            --tail "$PWD/autogen.log" \
+            --error "The ./autogen.sh in tests returned an error ($retcode)"
+        exit 6
+    fi
 
+    # 
     # Running make in tests directory.
+    #
     message "Running 'make' in tests."
     rm -f "make.log"
 
@@ -886,7 +890,7 @@ function main()
     generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"
     echo "----8<----8<----8<----8<----8<----8<----"
 
-    compile_source
+    compile_clustercontrol_source
 
     #
     # Running the test.
