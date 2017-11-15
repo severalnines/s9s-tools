@@ -27,10 +27,13 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help      Print this help and exit.
- --verbose       Print more messages.
- --print-json    Print the JSON messages sent and received.
- --log           Print the logs while waiting for the job to be ended.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --print-json     Print the JSON messages sent and received.
+ --log            Print the logs while waiting for the job to be ended.
+ --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
@@ -38,7 +41,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -67,6 +70,23 @@ while true; do
         --print-json)
             shift
             OPTION_PRINT_JSON="--print-json"
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
+            shift
             ;;
 
         --)

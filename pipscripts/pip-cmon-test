@@ -650,6 +650,8 @@ function compile_s9s_source()
         return 1
     fi
     
+    prepare_source
+
     #
     # Not gonna compile the source when the --no-compile command line option is
     # provided.
