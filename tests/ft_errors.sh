@@ -158,7 +158,7 @@ function testJobOperations()
     local output
     local expected
 
-    expected="One of the --list, --log and --wait options is mandatory."
+    expected="One of the main options is mandatory."
     output=$($S9S job --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"

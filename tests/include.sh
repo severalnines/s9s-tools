@@ -120,14 +120,18 @@ function startTests ()
 #
 function endTests ()
 {
-    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-        if isSuccess; then
+    if isSuccess; then
+        if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "SUCCESS: $(basename $0 .sh)"
-            exit 0
-        else
-            echo "FAILURE: $(basename $0 .sh)"
-            exit 1
         fi
+          
+        exit 0
+    else
+        if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
+            echo "FAILURE: $(basename $0 .sh)"
+        fi
+    
+        exit 1
     fi
 }
 
