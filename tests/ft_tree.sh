@@ -181,12 +181,21 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-CONTAINER_IP=$(\
-    s9s server \
-        --list-containers \
-        --long container_001 \
-        --batch \
-    | awk '{print $7}')
+for delay in 1 2 3 4 5 6 7; do
+    CONTAINER_IP=$(\
+        s9s server \
+            --list-containers \
+            --long container_001 \
+            --batch \
+        | awk '{print $7}')
+
+    if [ "$CONTAINER_IP" ]; then
+        break;
+    fi
+
+    echo "Waiting for the ip ($delay)..."
+    sleep 3
+done
 
 if [ -z "$CONTAINER_IP" ]; then
     failure "Container IP could not be found."
