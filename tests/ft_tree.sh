@@ -218,6 +218,7 @@ mys9s cluster \
     --vendor=percona \
     --cluster-name="galera_001" \
     --provider-version=5.6 \
+    --color=always \
     --wait
 
 exitCode=$?
@@ -379,7 +380,7 @@ if [ "$GROUP" != 'admins' ]; then
 fi
 
 # FIXME: Keeping short
-mys9s tree --tree --color=always
+mys9s tree --list --color=always
 pip-container-destroy --server=$SERVER container_001
 exit 0
 
