@@ -99,11 +99,6 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
-function print_title()
-{
-    echo ""
-    echo -e "\033[1m$*\033[0;39m"
-}
 
 reset_config
 

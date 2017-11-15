@@ -551,3 +551,10 @@ function grant_user()
         return 1
     fi
 }
+
+
+function print_title()
+{
+    echo ""
+    echo -e "\033[1m$*\033[0;39m"
+}

@@ -130,7 +130,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    #pip-say "The test to create PostgreSQL cluster is starting now."
+    print_title "The test to create PostgreSQL cluster is starting now."
     
     for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
         [ "$servers" ] && servers+=";"
@@ -189,7 +189,7 @@ function testAddNode()
     local exitCode
 
     #pip-say "The test to add node is starting now."
-    printVerbose "Creating node..."
+    print_title "Creating node..."
 
     LAST_ADDED_NODE=$(create_node)
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -270,6 +270,7 @@ function testConfig()
     local value
 
     #pip-say "The test to check configuration is starting now."
+    print_title "Checking configuration"
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -350,7 +351,7 @@ function testConfig()
 #
 function testCreateAccount()
 {
-    #pip-say "Testing account creation."
+    print_title "Testing account creation."
 
     #
     # This command will create a new account on the cluster.
@@ -390,7 +391,7 @@ function testCreateAccount()
 #
 function testCreateDatabase()
 {
-    #pip-say "Testing database creation."
+    print_title "Testing database creation."
 
     #
     # This command will create a new database on the cluster.
@@ -449,7 +450,7 @@ function testCreateBackup()
 {
     local exitCode
     
-    #pip-say "The test to create a backup is starting."
+    print_title "Testing to create a backup"
 
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -495,7 +496,7 @@ function testRestoreBackup()
     local exitCode
     local backupId
 
-    #pip-say "The test to restore a backup is starting."
+    print_title "Testing to restore a backup"
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -524,7 +525,7 @@ function testRemoveBackup()
     local exitCode
     local backupId
 
-    #pip-say "The test to remove a backup is starting."
+    print_title "The test to remove a backup is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -554,7 +555,7 @@ function testRunScript()
     local exitCode
     local backupId
 
-    #pip-say "The test to run scripts is starting."
+    print_title "The test to run scripts is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -589,7 +590,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    #pip-say "The test of rolling restart is starting now."
+    print_title "The test of rolling restart is starting now."
 
     #
     # Calling for a rolling restart.
@@ -613,7 +614,7 @@ function testDrop()
 {
     local exitCode
 
-    #pip-say "The test to drop the cluster is starting now."
+    print_title "The test to drop the cluster is starting now."
 
     #
     # Starting the cluster.
@@ -635,7 +636,7 @@ function testDrop()
 #
 function testDestroyNodes()
 {
-    #pip-say "The test is now destroying the nodes."
+    print_title "The test is now destroying the nodes."
     pip-container-destroy \
         --server=$CONTAINER_SERVER \
         $ALL_CREATED_IPS \
