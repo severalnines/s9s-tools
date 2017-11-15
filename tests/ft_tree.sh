@@ -378,6 +378,11 @@ if [ "$GROUP" != 'admins' ]; then
     exit 1
 fi
 
+# FIXME: Keeping short
+mys9s tree --tree --color=always
+pip-container-destroy --server=$SERVER container_001
+exit 0
+
 #####
 # Registering second server.
 #
