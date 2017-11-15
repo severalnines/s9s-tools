@@ -887,7 +887,8 @@ function run_test()
             sleep 3
             killall -9 ft_full
             rm -rvf /tmp/cmon_*
-            rm -f ft_full.log
+
+            echo "STARTING..." >ft_full.log
 
             ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
             popd
@@ -897,7 +898,7 @@ function run_test()
             ./$test_name \
                 --print-commands \
                 --reset-config \
-                --server=$(hostname) \
+                --server=storage01 \
                 >>"$logfile" 2>>"$logfile"
 
             return_code=$?
