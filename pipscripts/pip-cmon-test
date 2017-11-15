@@ -5,10 +5,8 @@ MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
 VERSION="0.0.5"
 VERBOSE=""
-DRY=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
-SOURCE_ROOT=""
 
 GIT_HASH=""
 GIT_AUTHOR=""
@@ -51,7 +49,6 @@ Usage:
   -h, --help              Print this help and exit.
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
-  --dry                   Do not run the test, just create some printouts.
   --log-file=FILE         Store all the messages in the given file too.
   --server=SERVER         The server or the servers where the tests will run.
   --blades                Set the servers to my blades.
@@ -85,8 +82,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,dry,version,log-file:,server:,blades,pid,\
-test:,unit-tests,os:,vendor:,sqlversion:,\
+        -l "help,verbose,version,log-file:,server:,blades,pid,\
+test:,unit-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,shut-down-after" \
         -- "$@")
 
@@ -105,11 +102,6 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
-            ;;
-
-        --dry)
-            shift
-            DRY="true"
             ;;
 
         -v|--version)
@@ -282,9 +274,7 @@ function message()
 {
     echo "$1"
 
-    if [ -z "$DRY" ]; then
-        pip-host-control --status="$1"
-    fi
+    pip-host-control --status="$1"
 }
 
 function test_name_to_test()
@@ -471,19 +461,36 @@ function find_clustercontrol_source_directory()
     echo "$HOME/clustercontrol-enterprise"
 }
 
+function find_s9s_source_directory()
+{
+    local dir_path
+    
+    dir_path="$HOME/s9s-tools"
+    if [ -d "$dir_path" ]; then
+        echo "$dir_path"
+        return 0
+    fi
+
+    dir_path="$HOME/Desktop/stuff/work/s9s-tools"
+    if [ -d "$dir_path" ]; then
+        echo "$dir_path"
+        return 0
+    fi
+    
+    #
+    # Well, we did not find it, but we did not find any others either.
+    #
+    printError "Could not find clustercontrol source."
+    pip-host-control --error "Coult not find clustercontrol source."
+    echo "$HOME/s9s-tools"
+}
+
 #
 # FIXME: This will be more complicated.
 # FIXME: This expects to be in the source directory.
 #
 function prepare_source()
 {
-    #
-    # Not gonna pull or clean in dry mode.
-    #
-    if [ "$DRY" ]; then
-        return 0
-    fi
-
     if [ -z "$NO_GIT_PULL" ]; then
         pip-host-control --log "Pulling source."
         git pull >/dev/null 2>/dev/null
@@ -518,7 +525,10 @@ function compile_clustercontrol_source()
     local retcode
     local source_root=$(find_clustercontrol_source_directory)
     local mysql_dir=$(find_mysql)
-    
+   
+    #
+    # Finding the source and entering the directory.
+    #
     if [ ! -d "$source_root" ]; then
         pip-host-control --error "Could not find clustercontrol source."
         return 1
@@ -529,19 +539,14 @@ function compile_clustercontrol_source()
     retcode="$?"
 
     if [ "$retcode" -ne 0 ]; then
-        pip-host-control --error "Could not chmod to '$source_root'."
+        pip-host-control --error "Could not chdir to '$source_root'."
         return 1
     fi
 
     #
-    # Not gonna compile the source in dry mode or when the --no-compile command
-    # line option is provided.
+    # Not gonna compile the source when the --no-compile command line option is
+    # provided.
     #
-    if [ "$DRY" ]; then
-        popd >/dev/null 2>/dev/null
-        return 0
-    fi
-    
     if [ "$OPTION_NO_COMPILE" ]; then
         popd >/dev/null 2>/dev/null
         return 0
@@ -555,8 +560,9 @@ function compile_clustercontrol_source()
     fi
 
     pip-host-control --testing --log "Compiling."
-    pip-host-control --log " PATH: $PATH"
-    pip-host-control --log " mysqlshow: $(which mysqlshow)"
+    #pip-host-control --log " PATH: $PATH"
+    #pip-host-control --log " mysqlshow: $(which mysqlshow)"
+    #pip-host-control --log " pwd: '$PWD'"
 
     #
     # Running autogen in the source root. 
@@ -621,6 +627,91 @@ function compile_clustercontrol_source()
     fi
         
     pip-host-control --log "Finished compiling source."
+}
+
+function compile_s9s_source()
+{
+    local source_root=$(find_s9s_source_directory)
+
+    #
+    # Finding the source and entering the directory.
+    #
+    if [ ! -d "$source_root" ]; then
+        pip-host-control --error "Could not find clustercontrol source."
+        return 1
+    fi
+
+    pip-host-control --log "Entering directory '$source_root'..."
+    pushd "$source_root" >/dev/null 2>/dev/null
+    retcode="$?"
+
+    if [ "$retcode" -ne 0 ]; then
+        pip-host-control --error "Could not chdir to '$source_root'."
+        return 1
+    fi
+    
+    #
+    # Not gonna compile the source when the --no-compile command line option is
+    # provided.
+    #
+    if [ "$OPTION_NO_COMPILE" ]; then
+        popd >/dev/null 2>/dev/null
+        return 0
+    fi
+    
+    #
+    # Running autogen in the source root. 
+    #
+    pip-host-control --log "Running 'autogen.sh'."
+    rm -f autogen.log
+
+    ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+    retcode $?
+    if [ $retcode -ne 0 ]; then
+        pip-host-control \
+            --tail "$PWD/autogen.log" \
+            --error "The ./autogen.sh returned an error ($retcode)."
+        exit 6
+    fi
+    
+    #
+    # Running make in source root.
+    #
+    pip-host-control --log "Running 'make'."
+    rm -f "make.log"
+
+    make -j10 >>"make.log" 2>>"make.log"
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        pip-host-control \
+            --tail "$PWD/make.log" \
+            --error "The make -j10 returned an error ($retcode)."
+        exit 6
+    fi
+
+    pip-host-control --log "Running 'make install'."
+    sudo make install >>"make.log" 2>>"make.log"
+
+    return 1
+}
+
+function compile_source()
+{
+    local retcode
+
+    compile_clustercontrol_source
+
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        return "$retcode"
+    fi
+
+    if [ "$S9S_OPTION" ]; then
+        compile_s9s_source
+        retcode="$?"
+    fi
+
+    return "$retcode"
 }
 
 #
@@ -752,13 +843,26 @@ function run_test()
     local os="$2"
     local version="$3"
     local vendor="$(vendor_to_test)"
-
+    local test_dir
     local return_code
     local tmp_file
     local logfile
 
     logfile=$(log_file_name "$test_name")
+    if [ "$S9S_OPTION" ]; then
+        test_dir=$(find_s9s_source_directory)
+    else
+        test_dir=$(find_clustercontrol_source_directory)
+    fi
 
+    if [ ! -d "$test_dir" ]; then
+        pip-host-control --error "Directory '$test_dir' does not exist."
+        return 1
+    else
+        pip-host-control --log "Entering '$test_dir'..."
+        pushd "$test_dir"
+    fi
+    
     #
     # Notifying the user about a test is starting.
     #
@@ -769,88 +873,95 @@ function run_test()
     # Running the actual test.
     #
     case "$test_name" in 
-        ft_*)
-            echo "*** test     : ft_install"
-            echo "*** template : headless"
-            echo "*** vendor   : $(vendor_to_test)"
-            echo "*** version  : $version"
-            if [ -z "$DRY" ]; then
-                vendor=$(vendor_to_test)
-                if [ -f "Vagrantfile" ]; then
-                    vagrant destroy -f
-                    rm -f "Vagrantfile"
-                fi
+        ft_*.sh)
+            cd tests
 
-                rm -f test_ssh_key.pub*
+            pushd "$(find_clustercontrol_source_directory)/tests"
+            rm -f ft_full.log
 
-                pip-host-control --log "Running ${test_name}."
-                
-                echo "START" > "$logfile"
+            ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
+            popd
 
-                if [ ! -f "$test_name/$test_name" ]; then
-                    pip-host-control \
-                        --error "Program $test_name was not found." \
-                        --status "Program $test_name was not found."
-                    
-                    return 1
-                fi
-
-                $test_name/$test_name \
-                    --template=headless \
-                    --vendor=$(vendor_to_test) \
-                    --mysql-version=$version \
-                    --os="$os" >>"$logfile" 2>>"$logfile"
-
-                return_code=$?
-                pip-host-control --log "Finished ${test_name} ($return_code)."
-            else
-                cat <<EOF
-                $test_name/$test_name 
-                    --template=headless 
-                    --vendor=$(vendor_to_test) 
-                    --mysql-version=$version 
-                    --os="$os" 
-EOF
-            fi
+            upload_result_file "$test_name" "RUNNING" $logfile
+            pip-host-control --log "Running '$test_name'."
+            ./$test_name \
+                --print-commands \
+                --reset-config \
+                --server=$(hostname) \
+                >>"$logfile" 2>>"$logfile"
 
             return_code=$?
+
+            pip-host-control --log "Finished ${test_name} ($return_code)."
+            
+            killall ft_full
+            sleep 3
+            killall -9 ft_full
+            
+            if [ $return_code -eq 0 ]; then
+                upload_result_file "$test_name" "SUCCESS" $logfile
+            else
+                upload_result_file "$test_name" "FAILURE" $logfile
+            fi
+            ;;
+
+        ft_*)
+            if [ -f "Vagrantfile" ]; then
+                vagrant destroy -f
+                rm -f "Vagrantfile"
+            fi
+
+            rm -f test_ssh_key.pub*
+
+            pip-host-control --log "Running ${test_name}."
+                
+            if [ ! -f "$test_name/$test_name" ]; then
+                pip-host-control \
+                    --error "Program $test_name was not found." \
+                    --status "Program $test_name was not found."
+                    
+                return 1
+            fi
+
+            ./$test_name/$test_name \
+                --template=headless \
+                --vendor=$(vendor_to_test) \
+                --mysql-version=$version \
+                --os="$os" >>"$logfile" 2>>"$logfile"
+
+            return_code=$?
+
+            pip-host-control --log "Finished ${test_name} ($return_code)."
             ;;
 
         ut_*)
             #
             # This is under development.
             #
-            if [ -z "$DRY" ]; then
-                #echo "pwd : $(pwd)" >>$logfile
-    
-                #
-                upload_result_file "$test_name" "RUNNING" $logfile
-    
-                #
-                # Running the test.
-                #
-                pip-host-control --log "Running ${test_name}."
-                printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
+            upload_result_file "$test_name" "RUNNING" $logfile
 
-                if [ ! -f "$test_name/$test_name" ]; then
-                    pip-host-control \
-                        --error "Program $test_name was not found." \
-                        --status "Program $test_name was not found."
-                    
-                    return 1
-                fi
+            #
+            # Running the test.
+            #
+            pip-host-control --log "Running ${test_name}."
+            printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
-                $test_name/$test_name --color >>$logfile 2>>$logfile
-                return_code=$?
-    
-                pip-host-control --log "Finished ${test_name} ($return_code)."
-                if [ $return_code -eq 0 ]; then
-                    upload_result_file "$test_name" "SUCCESS" $logfile
-                else
-                    upload_result_file "$test_name" "FAILURE" $logfile
-                fi
+            if [ ! -f "$test_name/$test_name" ]; then
+                pip-host-control \
+                    --error "Program $test_name was not found." \
+                    --status "Program $test_name was not found."
+                
+                return 1
+            fi
+
+            $test_name/$test_name --color >>$logfile 2>>$logfile
+            return_code=$?
+
+            pip-host-control --log "Finished ${test_name} ($return_code)."
+            if [ $return_code -eq 0 ]; then
+                upload_result_file "$test_name" "SUCCESS" $logfile
             else
-                echo "$test_name/$test_name"
+                upload_result_file "$test_name" "FAILURE" $logfile
             fi
     esac
    
@@ -876,6 +987,7 @@ function main()
     local os="$1"
     local name="$2"
     local version="$3"
+    local source_root
 
     pip-host-control --testing --log "--------------------------------------"
     pip-host-control --testing --log "Preparing test."
@@ -884,9 +996,9 @@ function main()
     #
     # Finding the source root.
     #
-    SOURCE_ROOT=$(find_clustercontrol_source_directory)
-    if [ ! -d $SOURCE_ROOT ]; then
-        printError "Directory '$SOURCE_ROOT' does not exist."
+    source_root=$(find_clustercontrol_source_directory)
+    if [ ! -d "$source_root" ]; then
+        printError "Directory '$source_root' does not exist."
         exit 6
     fi
 
@@ -903,7 +1015,7 @@ function main()
     #
     # Preparing the source, generating a file holding the test results.
     #
-    pushd "$SOURCE_ROOT"
+    pushd "$source_root"
 
     prepare_source
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
@@ -916,13 +1028,13 @@ function main()
     generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"
     echo "----8<----8<----8<----8<----8<----8<----"
 
-    compile_clustercontrol_source
+    compile_source
 
     #
     # Running the test.
     #
-    pip-host-control --log "Entering '$SOURCE_ROOT/tests'..."
-    pushd "$SOURCE_ROOT/tests" >/dev/null 2>/dev/null
+    pip-host-control --log "Entering '$source_root/tests'..."
+    pushd "$source_root/tests" >/dev/null 2>/dev/null
     
     for os in $os; do 
         for version in $version; do

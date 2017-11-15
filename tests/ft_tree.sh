@@ -6,6 +6,7 @@ VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
 S9S_CONFIG_DIR="$HOME/.s9s"
+SERVER="core1"
 
 cd $MYDIR
 source include.sh
@@ -25,6 +26,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
@@ -32,7 +34,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -72,6 +74,12 @@ while true; do
         --reset-config)
             shift
             OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
+            shift
             ;;
 
         --)
@@ -150,7 +158,7 @@ fi
 print_title "Registering a container server."
 mys9s server \
     --register \
-    --servers="lxc://core1"
+    --servers="lxc://$SERVER"
 
 exitCode=$?
 if [ "$exitCode" -ne 0 ]; then
@@ -250,9 +258,6 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-#mys9s tree --tree --refresh
-
-
 #
 # Moving some objects into a sub-folder. The user is moving itself at the last
 # step, so this is a chroot environment.
@@ -260,11 +265,11 @@ fi
 print_title "Moving objects into subfolder"
 TEST_PATH="/home/pipas"
 mys9s tree --mkdir "$TEST_PATH"
-mys9s tree --move /core1 "$TEST_PATH"
+mys9s tree --move /$SERVER "$TEST_PATH"
 mys9s tree --move /galera_001 "$TEST_PATH"
 mys9s tree --move /pipas "$TEST_PATH"
 
-mys9s tree --tree --refresh
+mys9s tree --tree --color=always --refresh
 
 #
 # Checking the --get-acl in a chroot environment.
