@@ -218,6 +218,7 @@ fi
 #####
 # Creating databases.
 #
+print_title "Creating databases."
 mys9s cluster \
     --create-database \
     --cluster-name="galera_001" \
