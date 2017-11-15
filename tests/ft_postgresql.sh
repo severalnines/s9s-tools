@@ -130,7 +130,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    #pip-say "The test to create PostgreSQL cluster is starting now."
     
     for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
         [ "$servers" ] && servers+=";"
@@ -188,7 +188,7 @@ function testAddNode()
 {
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    #pip-say "The test to add node is starting now."
     printVerbose "Creating node..."
 
     LAST_ADDED_NODE=$(create_node)
@@ -269,7 +269,7 @@ function testConfig()
     local exitCode
     local value
 
-    pip-say "The test to check configuration is starting now."
+    #pip-say "The test to check configuration is starting now."
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -350,7 +350,7 @@ function testConfig()
 #
 function testCreateAccount()
 {
-    pip-say "Testing account creation."
+    #pip-say "Testing account creation."
 
     #
     # This command will create a new account on the cluster.
@@ -390,7 +390,7 @@ function testCreateAccount()
 #
 function testCreateDatabase()
 {
-    pip-say "Testing database creation."
+    #pip-say "Testing database creation."
 
     #
     # This command will create a new database on the cluster.
@@ -449,7 +449,7 @@ function testCreateBackup()
 {
     local exitCode
     
-    pip-say "The test to create a backup is starting."
+    #pip-say "The test to create a backup is starting."
 
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -495,7 +495,7 @@ function testRestoreBackup()
     local exitCode
     local backupId
 
-    pip-say "The test to restore a backup is starting."
+    #pip-say "The test to restore a backup is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -524,7 +524,7 @@ function testRemoveBackup()
     local exitCode
     local backupId
 
-    pip-say "The test to remove a backup is starting."
+    #pip-say "The test to remove a backup is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -554,7 +554,7 @@ function testRunScript()
     local exitCode
     local backupId
 
-    pip-say "The test to run scripts is starting."
+    #pip-say "The test to run scripts is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -589,7 +589,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    pip-say "The test of rolling restart is starting now."
+    #pip-say "The test of rolling restart is starting now."
 
     #
     # Calling for a rolling restart.
@@ -613,7 +613,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    #pip-say "The test to drop the cluster is starting now."
 
     #
     # Starting the cluster.
@@ -635,7 +635,7 @@ function testDrop()
 #
 function testDestroyNodes()
 {
-    pip-say "The test is now destroying the nodes."
+    #pip-say "The test is now destroying the nodes."
     pip-container-destroy \
         --server=$CONTAINER_SERVER \
         $ALL_CREATED_IPS \
@@ -677,11 +677,11 @@ else
     runFunctionalTest testDestroyNodes
 fi
 
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
-else
-    pip-say "The test script is now finished. Some failures were detected."
-fi
+#if [ "$FAILED" == "no" ]; then
+#    pip-say "The test script is now finished. No errors were detected."
+#else
+#    pip-say "The test script is now finished. Some failures were detected."
+#fi
 
 endTests
 

@@ -62,7 +62,7 @@ function mys9s()
         echo ""
     fi
 
-    $S9S $*
+    $S9S --color=always $*
 }
 
 function mys9s_multiline()
@@ -94,7 +94,7 @@ function mys9s_multiline()
         echo ""
     fi
 
-    $S9S $*
+    $S9S --color=always $*
 }
 
 #
