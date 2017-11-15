@@ -166,6 +166,11 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
+mys9s server \
+    --list \
+    --long \
+    --refresh
+
 #####
 # Creating a container.
 #

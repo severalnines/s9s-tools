@@ -879,6 +879,14 @@ function run_test()
             cd tests
 
             pushd "$(find_clustercontrol_source_directory)/tests"
+            
+            #
+            # Cleaning up before.
+            #
+            killall ft_full
+            sleep 3
+            killall -9 ft_full
+            rm -rvf /tmp/cmon_*
             rm -f ft_full.log
 
             ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
@@ -895,10 +903,14 @@ function run_test()
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
-            
+           
+            #
+            # Cleaning up after.
+            #
             killall ft_full
             sleep 3
             killall -9 ft_full
+            rm -rvf /tmp/cmon_*
             
             if [ $return_code -eq 0 ]; then
                 upload_result_file "$test_name" "SUCCESS" $logfile
