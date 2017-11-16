@@ -35,6 +35,7 @@ Usage:
   --log            Print the logs while waiting for the job to be ended.
   --server=SERVER  The name of the server that will hold the containers.
   --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
 
 EOF
     exit 1
@@ -78,6 +79,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
             ;;
 
         --)
