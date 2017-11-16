@@ -133,7 +133,7 @@ function index_table()
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -161,6 +161,7 @@ function testUser()
     local userName="$USER"
     local myself
 
+    print_title "Testing --whoami"
     myself=$(s9s user --whoami)
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with public key ($myself)"
@@ -187,6 +188,7 @@ function testSystemUsers()
     local column
     local required
 
+    print_title "Testing system users"
     # This command 
     #$S9S user --list --long 
     text=$($S9S user --list --long --batch --color=never)
@@ -255,6 +257,8 @@ function testFailWrongPassword()
     local output
     local exitCode
 
+    print_title "Testing wrong password response"
+
     #
     # Using the wrong password.
     #
@@ -292,6 +296,8 @@ function testFailNoGroup()
 {
     local user_name
 
+    print_title "Testing missing group response"
+
     #
     # Yes, this is a problem, we can't get an error message back from the pipe.
     # The group here does not exists and we did not request the creation of the
@@ -320,6 +326,8 @@ function testFailNoGroup()
 function testCreateUsers()
 {
     local myself
+
+    print_title "Testing creation of users"
 
     #
     # Let's add some users so that we have something to work on.
@@ -477,6 +485,8 @@ function testSetUser()
     local emailAddress
     local exitCode
 
+    print_title "Testing --set option"
+
     #
     # Setting the email address for a user and checking if it set.
     #
@@ -529,6 +539,8 @@ function testSetOtherUser()
     local userName="nobody"
     local emailAddress
     local exitCode
+
+    print_title "Testing --set on other user"
 
     #
     # Setting the email address for a user and checking if it set.
@@ -586,6 +598,8 @@ function testCreateThroughRpc()
     local newUserName="rpc_user"
     local userId
     local myself
+
+    print_title "Testing user creation through RPC"
 
     #
     # Here we pass the --cmon-user and --password options when creating the new
@@ -682,6 +696,8 @@ function testChangePassword()
     local userName="nobody"
     local myself
 
+    print_title "Testing changing of password"
+
     #
     # The 'system' user changes the password for nobody.
     #
@@ -737,6 +753,8 @@ function testPrivateKey()
     local publicKey="$HOME/.s9s/kirk.pub"
     local privateKey="$HOME/.s9s/kirk.key"
     local myself
+
+    print_title "Testing keys"
 
     #
     # We are re-using keys here created in some previous test, so we check if
@@ -798,7 +816,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
     
-    s9s user --list --long
+    mys9s user --list --long
 else
     #runFunctionalTest testPing
     runFunctionalTest testUser
@@ -812,7 +830,7 @@ else
     runFunctionalTest testChangePassword
     runFunctionalTest testPrivateKey
     
-    #s9s user --list --long
+    mys9s user --list --long
 fi
 
 endTests
