@@ -83,7 +83,7 @@ ARGS=$(\
     getopt \
         -o hvj: \
         -l "help,verbose,version,log-file:,server:,blades,pid,\
-test:,unit-tests,os:,vendor:,sqlversion:,s9s,\
+test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,shut-down-after" \
         -- "$@")
 
@@ -152,49 +152,12 @@ while true; do
 
         --unit-tests)
             shift
-            OPTION_TEST_NAME="ut_cmonaccount ut_cmonacl ut_cmonbackup "
-            OPTION_TEST_NAME+="ut_cmonbackupdb ut_cmonbackupretention "
-            OPTION_TEST_NAME+="ut_cmonbinaryrecord ut_cmoncell "
-            OPTION_TEST_NAME+="ut_cmonclusterconfig ut_cmoncommandhandler "
-            OPTION_TEST_NAME+="ut_cmonconfigfile ut_cmonconfigproperties "
-            OPTION_TEST_NAME+="ut_cmonconfiguration ut_cmoncpustatcollector "
-            OPTION_TEST_NAME+="ut_cmoncpustats ut_cmoncron "
-            OPTION_TEST_NAME+="ut_cmondatabasestats ut_cmondb "
-            OPTION_TEST_NAME+="ut_cmondiskstats ut_cmondocument "
-            OPTION_TEST_NAME+="ut_cmonencryption ut_cmoneventloop "
-            OPTION_TEST_NAME+="ut_cmonfile ut_cmonhost "
-            OPTION_TEST_NAME+="ut_cmonimperative ut_cmonjob "
-            OPTION_TEST_NAME+="ut_cmonjsonmessage ut_cmonlocalprocess "
-            OPTION_TEST_NAME+="ut_cmonlogger ut_cmonlogmessage "
-            OPTION_TEST_NAME+="ut_cmonmail ut_cmonmailqueue "
-            OPTION_TEST_NAME+="ut_cmonmemorystatcollector ut_cmonmemorystats "
-            OPTION_TEST_NAME+="ut_cmonmetatype ut_cmonmongocluster "
-            OPTION_TEST_NAME+="ut_cmonmysqlcollector ut_cmonmysqlslowlogparser "
-            OPTION_TEST_NAME+="ut_cmonnetworkstatcollector ut_cmonnetworkstats "
-            OPTION_TEST_NAME+="ut_cmonobject ut_cmonpkgversion "
-            OPTION_TEST_NAME+="ut_cmonpluginexecutor ut_cmonprocesscollector "
-            OPTION_TEST_NAME+="ut_cmonprocessmanager "
-            OPTION_TEST_NAME+="ut_cmonprocessstatcollector "
-            OPTION_TEST_NAME+="ut_cmonregexp ut_cmonrpcservice "
-            OPTION_TEST_NAME+="ut_cmonscriptmanager ut_cmonscripts "
-            OPTION_TEST_NAME+="ut_cmonsheet ut_cmonspreadsheetmanager "
-            OPTION_TEST_NAME+="ut_cmonsqlstats ut_cmonsslca "
-            OPTION_TEST_NAME+="ut_cmonstatistics ut_cmonstring "
-            OPTION_TEST_NAME+="ut_cmonthread ut_cmontimer "
-            OPTION_TEST_NAME+="ut_cmonuser ut_cmonvariant "
-            OPTION_TEST_NAME+="ut_cmonwatchdog ut_communication "
-            OPTION_TEST_NAME+="ut_communicationstubbed ut_connect "
-            OPTION_TEST_NAME+="ut_galera ut_galerastubbed "
-            OPTION_TEST_NAME+="ut_haproxy ut_helpers ut_joblogger "
-            OPTION_TEST_NAME+="ut_memcache ut_mongostats "
-            OPTION_TEST_NAME+="ut_mysqladvisor ut_mysqlsinglecluster "
-            OPTION_TEST_NAME+="ut_osversion ut_postgresqlsinglecluster "
-            OPTION_TEST_NAME+="ut_postinst ut_proxysql "
-            OPTION_TEST_NAME+="ut_replication ut_repositorymanager "
-            OPTION_TEST_NAME+="ut_resourcestatcollector ut_s9scluster "
-            OPTION_TEST_NAME+="ut_simplealarm ut_ssh "
-            OPTION_TEST_NAME+="ut_tcpstatcollector ut_tcpstats "
-            OPTION_TEST_NAME+="ut_workflow "
+            OPTION_UNIT_TESTS="yes"
+            ;;
+        
+        --functional-tests)
+            shift
+            OPTION_FUNCTIONAL_TEST="yes"
             ;;
 
         --os)
@@ -264,7 +227,76 @@ while true; do
     esac
 done
 
-export PATH="$HOME/bin:$PATH"
+if [ "$OPTION_UNIT_TESTS" ]; then
+    if [ "$S9S_OPTION" ]; then
+        OPTION_TEST_NAME+="ut_library ut_s9sbackup ut_s9sconfigfile "
+        OPTION_TEST_NAME+="ut_s9sgraph ut_s9soptions ut_s9srpcclient "
+        OPTION_TEST_NAME+="ut_s9surl ut_s9svariantmap ut_s9saccount "
+        OPTION_TEST_NAME+="ut_s9scluster ut_s9sdatetime ut_s9snode "
+        OPTION_TEST_NAME+="ut_s9sregexp ut_s9sstring ut_s9svariant "
+    else
+        OPTION_TEST_NAME+="ut_cmonaccount ut_cmonacl ut_cmonbackup "
+        OPTION_TEST_NAME+="ut_cmonbackupdb ut_cmonbackupretention "
+        OPTION_TEST_NAME+="ut_cmonbinaryrecord ut_cmoncell "
+        OPTION_TEST_NAME+="ut_cmonclusterconfig ut_cmoncommandhandler "
+        OPTION_TEST_NAME+="ut_cmonconfigfile ut_cmonconfigproperties "
+        OPTION_TEST_NAME+="ut_cmonconfiguration ut_cmoncpustatcollector "
+        OPTION_TEST_NAME+="ut_cmoncpustats ut_cmoncron "
+        OPTION_TEST_NAME+="ut_cmondatabasestats ut_cmondb "
+        OPTION_TEST_NAME+="ut_cmondiskstats ut_cmondocument "
+        OPTION_TEST_NAME+="ut_cmonencryption ut_cmoneventloop "
+        OPTION_TEST_NAME+="ut_cmonfile ut_cmonhost "
+        OPTION_TEST_NAME+="ut_cmonimperative ut_cmonjob "
+        OPTION_TEST_NAME+="ut_cmonjsonmessage ut_cmonlocalprocess "
+        OPTION_TEST_NAME+="ut_cmonlogger ut_cmonlogmessage "
+        OPTION_TEST_NAME+="ut_cmonmail ut_cmonmailqueue "
+        OPTION_TEST_NAME+="ut_cmonmemorystatcollector ut_cmonmemorystats "
+        OPTION_TEST_NAME+="ut_cmonmetatype ut_cmonmongocluster "
+        OPTION_TEST_NAME+="ut_cmonmysqlcollector ut_cmonmysqlslowlogparser "
+        OPTION_TEST_NAME+="ut_cmonnetworkstatcollector ut_cmonnetworkstats "
+        OPTION_TEST_NAME+="ut_cmonobject ut_cmonpkgversion "
+        OPTION_TEST_NAME+="ut_cmonpluginexecutor ut_cmonprocesscollector "
+        OPTION_TEST_NAME+="ut_cmonprocessmanager "
+        OPTION_TEST_NAME+="ut_cmonprocessstatcollector "
+        OPTION_TEST_NAME+="ut_cmonregexp ut_cmonrpcservice "
+        OPTION_TEST_NAME+="ut_cmonscriptmanager ut_cmonscripts "
+        OPTION_TEST_NAME+="ut_cmonsheet ut_cmonspreadsheetmanager "
+        OPTION_TEST_NAME+="ut_cmonsqlstats ut_cmonsslca "
+        OPTION_TEST_NAME+="ut_cmonstatistics ut_cmonstring "
+        OPTION_TEST_NAME+="ut_cmonthread ut_cmontimer "
+        OPTION_TEST_NAME+="ut_cmonuser ut_cmonvariant "
+        OPTION_TEST_NAME+="ut_cmonwatchdog ut_communication "
+        OPTION_TEST_NAME+="ut_communicationstubbed ut_connect "
+        OPTION_TEST_NAME+="ut_galera ut_galerastubbed "
+        OPTION_TEST_NAME+="ut_haproxy ut_helpers ut_joblogger "
+        OPTION_TEST_NAME+="ut_memcache ut_mongostats "
+        OPTION_TEST_NAME+="ut_mysqladvisor ut_mysqlsinglecluster "
+        OPTION_TEST_NAME+="ut_osversion ut_postgresqlsinglecluster "
+        OPTION_TEST_NAME+="ut_postinst ut_proxysql "
+        OPTION_TEST_NAME+="ut_replication ut_repositorymanager "
+        OPTION_TEST_NAME+="ut_resourcestatcollector ut_s9scluster "
+        OPTION_TEST_NAME+="ut_simplealarm ut_ssh "
+        OPTION_TEST_NAME+="ut_tcpstatcollector ut_tcpstats "
+        OPTION_TEST_NAME+="ut_workflow "
+    fi
+fi
+
+if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
+    if [ "$S9S_OPTION" ]; then
+        OPTION_TEST_NAME+="ft_containers.sh ft_create_databases.sh "
+        OPTION_TEST_NAME+="ft_errors.sh ft_galera.sh ft_groupreplication.sh "
+        OPTION_TEST_NAME+="ft_maintenance.sh ft_metatype.sh "
+        OPTION_TEST_NAME+="ft_mysqlreplication.sh ft_ndb.sh "
+        OPTION_TEST_NAME+="ft_postgresqlfailover.sh ft_postgresql.sh "
+        OPTION_TEST_NAME+="ft_postgresqlslave.sh ft_postgresqlstop.sh "
+        OPTION_TEST_NAME+="ft_registergalera.sh ft_registergroupreplication.sh "
+        OPTION_TEST_NAME+="ft_registermysqlreplication.sh ft_registerndb.sh "
+        OPTION_TEST_NAME+="ft_registerpostgresql.sh ft_replication.sh "
+        OPTION_TEST_NAME+="ft_superuser.sh ft_tree.sh ft_user.sh "
+    fi
+fi
+
+#export PATH="$HOME/bin:$PATH"
 
 #
 # Prints a message and also sends it to the server so it is made available as
@@ -573,7 +605,10 @@ function compile_clustercontrol_source()
         export PATH="$mysql_dir/bin:$PATH"
     fi
 
-    pip-host-control --testing --log "Compiling."
+    pip-host-control --testing \
+        --status "Testing..." \
+        --log    "Compiling."
+
     #pip-host-control --log " PATH: $PATH"
     #pip-host-control --log " mysqlshow: $(which mysqlshow)"
     #pip-host-control --log " pwd: '$PWD'"
@@ -1138,7 +1173,9 @@ function main()
     local source_root
 
     pip-host-control --testing --log "--------------------------------------"
-    pip-host-control --testing \
+
+    pip-host-control \
+        --testing \
         --log "Preparing test ($MYNAME ver. $VERSION)."
 
     #

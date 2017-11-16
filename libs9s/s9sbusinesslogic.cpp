@@ -1556,7 +1556,7 @@ S9sBusinessLogic::waitForJobWithProgress(
         if (progressLine.empty())
             goto end_of_loop;
         
-        if (!isTerminal)
+        if (!isTerminal && progressLine == previousProgressLine)
             goto end_of_loop;
         
         // This helps debug the progress values the controller send us.
