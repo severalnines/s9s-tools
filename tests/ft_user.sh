@@ -6,6 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
+SERVER="core1"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -34,6 +35,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
@@ -41,7 +43,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -83,6 +85,12 @@ while true; do
             OPTION_RESET_CONFIG="true"
             ;;
 
+        --server)
+            shift
+            SERVER="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -91,7 +99,7 @@ while true; do
 done
 
 if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
+    printError "The s9s program is not installed."
     exit 7
 fi
 

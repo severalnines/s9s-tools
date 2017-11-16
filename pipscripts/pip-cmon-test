@@ -776,18 +776,40 @@ function upload_result_file()
     local test_state
     local result_file
     local tmp_file
-    
+    local unit_test_option
+    local functional_test_option
+
+    while true; do
+        case "$1" in 
+            --unit-test)
+                shift
+                unit_test_option="--unit-test"
+                ;;
+
+            --functional-test)
+                shift
+                functional_test_option="--functional-test"
+                ;;
+
+            *)
+                break
+        esac
+    done
+
     test_name="$1"
     test_state="$2"
     result_file=$(result_file_name "$test_name")
     tmp_file="/var/tmp/$result_file"
 
     upload_report_file_ascii  "$test_name"  "$test_state" "$3"
-    generate_test_result_info "$test_name" "$test_state" >$tmp_file
+
+    generate_test_result_info \
+        $unit_test_option \
+        $functional_test_option \
+        "$test_name" "$test_state" \
+        >$tmp_file
 
     scp "$tmp_file" "$TEST_REPORT_URL"
-
-    message "Running '$1'"
 
     rm -f "$tmp_file"
 }
@@ -910,22 +932,34 @@ function run_test()
         ft_*.sh)
             cd tests
 
+            #
+            # Running the ft_full
+            #
             pushd "$(find_clustercontrol_source_directory)/tests"
             
-            #
             # Cleaning up before.
-            #
             killall ft_full
             sleep 3
             killall -9 ft_full
             rm -rvf /tmp/cmon_*
 
-            echo "STARTING..." >ft_full.log
+            if [ -x "./ft_full/ft_full" ]; then
+                pip-host-control --log "Running 'ft_full'..."
+                echo "STARTING..." >ft_full.log
+                ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
+                sleep 3
+            else
+                pip-host-control --error "The ft_full/ft_full was not found."
+                pip-host-control --error "  pwd: $PWD"
+                return 1
+            fi
 
-            ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
             popd
 
-            upload_result_file "$test_name" "RUNNING" $logfile
+            upload_result_file \
+                --functional-test \
+                "$test_name" "RUNNING" $logfile
+
             pip-host-control --log "Running '$test_name'."
             ./$test_name \
                 --print-commands \
@@ -937,18 +971,20 @@ function run_test()
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
            
-            #
             # Cleaning up after.
-            #
             killall ft_full
             sleep 3
             killall -9 ft_full
             rm -rvf /tmp/cmon_*
             
             if [ $return_code -eq 0 ]; then
-                upload_result_file "$test_name" "SUCCESS" $logfile
+                upload_result_file \
+                    --functional-test \
+                    "$test_name" "SUCCESS" $logfile
             else
-                upload_result_file "$test_name" "FAILURE" $logfile
+                upload_result_file \
+                    --functional-test \
+                    "$test_name" "FAILURE" $logfile
             fi
             ;;
 
@@ -985,7 +1021,9 @@ function run_test()
             #
             # This is under development.
             #
-            upload_result_file "$test_name" "RUNNING" $logfile
+            upload_result_file \
+                --unit-test \
+                "$test_name" "RUNNING" $logfile
 
             #
             # Running the test.
@@ -1006,9 +1044,13 @@ function run_test()
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
             if [ $return_code -eq 0 ]; then
-                upload_result_file "$test_name" "SUCCESS" $logfile
+                upload_result_file \
+                    --unit-test \
+                    "$test_name" "SUCCESS" $logfile
             else
-                upload_result_file "$test_name" "FAILURE" $logfile
+                upload_result_file \
+                    --unit-test \
+                    "$test_name" "FAILURE" $logfile
             fi
     esac
    

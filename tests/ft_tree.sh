@@ -5,7 +5,6 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-S9S_CONFIG_DIR="$HOME/.s9s"
 SERVER="core1"
 
 cd $MYDIR
