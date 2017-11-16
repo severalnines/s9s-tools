@@ -6,6 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
+SERVER="core1"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -30,18 +31,19 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
+ --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
 }
 
-
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -66,16 +68,26 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
-        --server)
+        --print-json)
             shift
-            CONTAINER_SERVER="$1"
-            shift
+            OPTION_PRINT_JSON="--print-json"
             ;;
 
         --print-commands)
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
             ;;
 
         --)
@@ -86,7 +98,7 @@ while true; do
 done
 
 if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
+    printError "The s9s program is not installed."
     exit 7
 fi
 
@@ -97,6 +109,8 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "Don't know how to create nodes, giving up."
     exit 1
 fi
+
+reset_config
 
 #
 #
