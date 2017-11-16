@@ -82,7 +82,7 @@ function mys9s()
             if [ $nth -eq 0 ]; then
                 echo -ne "${XTERM_COLOR_BLUE}$argument${TERM_NORMAL} "
             elif [ $nth -eq 1 ]; then
-                echo -ne "    ${XTERM_COLOR_PURPLE}$argument${TERM_NORMAL} "
+                echo -ne "    ${XTERM_COLOR_ORANGE}$argument${TERM_NORMAL} "
             else
                 echo -ne "    $argument " | color_command
             fi

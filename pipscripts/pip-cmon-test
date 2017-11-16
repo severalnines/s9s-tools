@@ -775,9 +775,11 @@ function upload_result_file()
     local test_name
     local test_state
     local result_file
+    local log_file
     local tmp_file
     local unit_test_option
     local functional_test_option
+    local pid_to_watch
 
     while true; do
         case "$1" in 
@@ -791,6 +793,12 @@ function upload_result_file()
                 functional_test_option="--functional-test"
                 ;;
 
+            --pid)
+                shift
+                pid_to_watch="$1"
+                shift
+                ;;
+
             *)
                 break
         esac
@@ -799,17 +807,39 @@ function upload_result_file()
     test_name="$1"
     test_state="$2"
     result_file=$(result_file_name "$test_name")
+    log_file=$(log_file_name "$test_name")
     tmp_file="/var/tmp/$result_file"
 
-    upload_report_file_ascii  "$test_name"  "$test_state" "$3"
+    while true; do
+        if [ -f "$log_file" ]; then
+            pip-host-control --log "Uploading '$log_file'."
+            scp "$log_file" "$TEST_REPORT_URL"
+        fi
 
-    generate_test_result_info \
-        $unit_test_option \
-        $functional_test_option \
-        "$test_name" "$test_state" \
-        >$tmp_file
+        upload_report_file_ascii \
+            "$test_name"  "$test_state" "$3"
 
-    scp "$tmp_file" "$TEST_REPORT_URL"
+        generate_test_result_info \
+            $unit_test_option \
+            $functional_test_option \
+            "$test_name" "$test_state" \
+            >$tmp_file
+
+        pip-host-control --log "Uploading '$tmp_file'."
+
+        scp "$tmp_file" "$TEST_REPORT_URL"
+
+        if [ -z "$pid_to_watch" ]; then
+            break
+        fi
+
+        if ! ps --pid $pid_to_watch; then
+            pip-host-control --log "The PID $pid_to_watch ended."
+            break
+        fi
+
+        sleep 5
+    done
 
     rm -f "$tmp_file"
 }
@@ -956,21 +986,31 @@ function run_test()
 
             popd
 
-            upload_result_file \
-                --functional-test \
-                "$test_name" "RUNNING" $logfile
-
+            # 
+            # Running the test script itself.
+            # 
             pip-host-control --log "Running '$test_name'."
             ./$test_name \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
-                >>"$logfile" 2>>"$logfile"
+                >>"$logfile" 2>>"$logfile" &
 
+            test_pid=$!
+
+            upload_result_file \
+                --functional-test \
+                --pid "$test_pid" \
+                "$test_name" "RUNNING" $logfile &
+            
+            watcher_pid=$!
+
+            wait "$test_pid"
             return_code=$?
-
             pip-host-control --log "Finished ${test_name} ($return_code)."
            
+            wait "$watcher_pid"
+
             # Cleaning up after.
             killall ft_full
             sleep 3
@@ -1008,7 +1048,7 @@ function run_test()
 
             ./$test_name/$test_name \
                 --template=headless \
-                --vendor=$(vendor_to_test) \
+                --vendor="$(vendor_to_test)" \
                 --mysql-version=$version \
                 --os="$os" >>"$logfile" 2>>"$logfile"
 

@@ -121,7 +121,7 @@ fi
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -132,9 +132,9 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
+        #pip-say "The controller is off line. Further testing is not possible."
     else
-        pip-say "The controller is on line."
+        #pip-say "The controller is on line."
     fi
 }
 
@@ -147,7 +147,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create Galera cluster is starting now."
+    print_title "Testing the creation of a Galera cluster"
+
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -198,7 +199,7 @@ function testConfig()
     local newValue
     local name
 
-    pip-say "The test to check configuration is starting now."
+    printVerbose "Checking the configuration"
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -378,7 +379,7 @@ function testCreateAccount()
 {
     local userName
 
-    pip-say "Testing account creation."
+    print_title "Testing account creation."
 
     #
     # This command will create a new account on the cluster.
@@ -413,7 +414,7 @@ function testCreateDatabase()
 {
     local userName
 
-    pip-say "Testing database creation."
+    print_title "Testing database creation."
 
     #
     # This command will create a new database on the cluster.
@@ -482,7 +483,7 @@ function testUploadData()
     local reply
     local count=0
 
-    pip-say "Testing data upload on cluster."
+    print_title "Testing data upload on cluster."
 
     #
     # Creating a new database on the cluster.
@@ -563,7 +564,7 @@ function testAddNode()
     local nodes
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    print_title "Addiong a node"
     printVerbose "Creating node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
@@ -594,7 +595,7 @@ function testAddProxySql()
     local nodes
     local exitCode
 
-    pip-say "The test to add ProxySQL node is starting now."
+    print_title "The test to add ProxySQL node is starting now."
     printVerbose "Creating Node..."
     nodeName=$(create_node)
     nodes+="proxySql://$nodeName"
@@ -632,7 +633,7 @@ function testAddRemoveHaProxy()
     local nodes
     local exitCode
     
-    pip-say "The test to add and remove HaProxy node is starting now."
+    print_title "The test to add and remove HaProxy node is starting now."
     node=$(\
         $S9S node --list --long --batch | \
         grep ^g | \
@@ -685,7 +686,7 @@ function testAddHaProxy()
     local nodes
     local exitCode
     
-    pip-say "The test to add HaProxy node is starting now."
+    print_title "The test to add HaProxy node is starting now."
     printVerbose "Creating Node..."
     node=$(create_node)
     nodes+="haProxy://$node"
@@ -716,7 +717,7 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    pip-say "The test to remove node is starting now."
+    print_title "The test to remove node is starting now."
     
     #
     # Removing the last added node.
@@ -741,7 +742,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    pip-say "The test of rolling restart is starting now."
+    print_title "The test of rolling restart is starting now."
 
     #
     # Calling for a rolling restart.
@@ -766,7 +767,7 @@ function testCreateBackup()
 {
     local exitCode
     
-    pip-say "The test to create a backup is starting."
+    print_title "The test to create a backup is starting."
 
     #
     # Calling for a rolling restart.
@@ -793,7 +794,7 @@ function testRestoreBackup()
     local exitCode
     local backupId
 
-    pip-say "The test to restore a backup is starting."
+    print_title "The test to restore a backup is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -822,7 +823,7 @@ function testRemoveBackup()
     local exitCode
     local backupId
 
-    pip-say "The test to remove a backup is starting."
+    print_title "The test to remove a backup is starting."
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -849,7 +850,7 @@ function testStop()
 {
     local exitCode
 
-    pip-say "The test to stop the cluster is starting now."
+    print_title "The test to stop the cluster is starting now."
 
     #
     # Stopping the cluster.
@@ -873,7 +874,7 @@ function testStart()
 {
     local exitCode
 
-    pip-say "The test to start the cluster is starting now."
+    print_title "The test to start the cluster is starting now."
 
     #
     # Starting the cluster.
@@ -892,7 +893,7 @@ function testStart()
 
 function testDestroyNodes()
 {
-    pip-say "The test is now destroying the nodes."
+    print_title "The test is now destroying the nodes."
     pip-container-destroy \
         --server=$CONTAINER_SERVER \
         $ALL_CREATED_IPS \
@@ -942,11 +943,11 @@ else
     runFunctionalTest testDestroyNodes
 fi
 
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
-else
-    pip-say "The test script is now finished. Some failures were detected."
-fi
+#if [ "$FAILED" == "no" ]; then
+#    pip-say "The test script is now finished. No errors were detected."
+#else
+#    pip-say "The test script is now finished. Some failures were detected."
+#fi
 
 endTests
 
