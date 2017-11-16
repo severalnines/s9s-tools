@@ -101,7 +101,10 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+
+reset_config
+
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
