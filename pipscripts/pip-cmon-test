@@ -3,7 +3,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
-VERSION="0.0.5"
+VERSION="0.0.6"
 VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
@@ -456,8 +456,9 @@ function find_clustercontrol_source_directory()
     #
     # Well, we did not find it, but we did not find any others either.
     #
-    printError "Coult not find clustercontrol source."
-    pip-host-control --error "Coult not find clustercontrol source."
+    pip-host-control \
+        --error "Could not find clustercontrol source in '$dir_path'."
+
     echo "$HOME/clustercontrol-enterprise"
 }
 
@@ -465,23 +466,34 @@ function find_s9s_source_directory()
 {
     local dir_path
     
-    dir_path="$HOME/s9s-tools"
-    if [ -d "$dir_path" ]; then
-        echo "$dir_path"
-        return 0
-    fi
-
     dir_path="$HOME/Desktop/stuff/work/s9s-tools"
     if [ -d "$dir_path" ]; then
         echo "$dir_path"
         return 0
     fi
     
+    
+    dir_path="$HOME/s9s-tools"
+    if [ ! -d "$dir_path" ]; then
+        pushd "$HOME"
+        pip-host-control --log "Cloning s9s-tools.git."
+
+        git clone git@github.com:severalnines/s9s-tools.git \
+            >/dev/null 2>/dev/null
+    fi
+
+    if [ -d "$dir_path" ]; then
+        echo "$dir_path"
+        return 0
+    fi
+
+    
     #
     # Well, we did not find it, but we did not find any others either.
     #
-    printError "Could not find clustercontrol source."
-    pip-host-control --error "Coult not find clustercontrol source."
+    pip-host-control \
+        --error "Could not find s9s source in '$dir_path'."
+
     echo "$HOME/s9s-tools"
 }
 
@@ -530,7 +542,7 @@ function compile_clustercontrol_source()
     # Finding the source and entering the directory.
     #
     if [ ! -d "$source_root" ]; then
-        pip-host-control --error "Could not find clustercontrol source."
+        pip-host-control --error "No directory '$source_root' found."
         return 1
     fi
 
@@ -637,7 +649,7 @@ function compile_s9s_source()
     # Finding the source and entering the directory.
     #
     if [ ! -d "$source_root" ]; then
-        pip-host-control --error "Could not find clustercontrol source."
+        pip-host-control --error "No directory '$source_root' found."
         return 1
     fi
 
@@ -1123,8 +1135,8 @@ function main()
     local source_root
 
     pip-host-control --testing --log "--------------------------------------"
-    pip-host-control --testing --log "Preparing test."
-    message "Preparing test..."
+    pip-host-control --testing \
+        --log "Preparing test ($MYNAME ver. $VERSION)."
 
     #
     # Finding the source root.
