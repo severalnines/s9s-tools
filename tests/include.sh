@@ -201,7 +201,12 @@ function printVerbose
 #
 function failure
 {
-    echo "$TEST_SUITE_NAME::$TEST_NAME(): $1."
+    if [ "$TEST_SUITE_NAME" -a "$TEST_NAME" ]; then
+        echo "$TEST_SUITE_NAME::$TEST_NAME(): $1."
+    else
+        echo "FAILURE: $1"
+    fi
+
     FAILED="true"
 }
 

@@ -898,7 +898,7 @@ function run_test()
             ./$test_name \
                 --print-commands \
                 --reset-config \
-                --server=core1 \
+                --server=$(hostname) \
                 >>"$logfile" 2>>"$logfile"
 
             return_code=$?
