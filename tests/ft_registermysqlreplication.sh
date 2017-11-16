@@ -30,18 +30,19 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
+ --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
 }
 
-
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -66,16 +67,26 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
-        --server)
+        --print-json)
             shift
-            CONTAINER_SERVER="$1"
-            shift
+            OPTION_PRINT_JSON="--print-json"
             ;;
 
         --print-commands)
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
             ;;
 
         --)
@@ -90,7 +101,10 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
+
+reset_config
+
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
 
 if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "The 'pip-container-create' program is not found."
