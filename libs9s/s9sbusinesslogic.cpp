@@ -1462,6 +1462,7 @@ S9sBusinessLogic::waitForJobWithProgress(
 {
     S9sOptions    *options         = S9sOptions::instance();
     bool           syntaxHighlight = options->useSyntaxHighlight();
+    bool           isTerminal      = options->isTerminal();
     const char    *rotate[]        = { "/", "-", "\\", "|" };
     int            rotateCycle     = 0;
     S9sRpcReply    reply;
@@ -1555,11 +1556,9 @@ S9sBusinessLogic::waitForJobWithProgress(
         if (progressLine.empty())
             goto end_of_loop;
         
-        #ifdef DEBUG
-        if (progressLine == previousProgressLine)
+        if (!isTerminal)
             goto end_of_loop;
-        #endif
-
+        
         // This helps debug the progress values the controller send us.
         if (options->isDebug() && 
                 !previousProgressLine.empty() &&
