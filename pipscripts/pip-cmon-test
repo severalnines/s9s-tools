@@ -475,11 +475,13 @@ function find_s9s_source_directory()
     
     dir_path="$HOME/s9s-tools"
     if [ ! -d "$dir_path" ]; then
-        pushd "$HOME"
+        pushd "$HOME" >/dev/null 2>/dev/null
         pip-host-control --log "Cloning s9s-tools.git."
 
         git clone git@github.com:severalnines/s9s-tools.git \
             >/dev/null 2>/dev/null
+
+        popd >/dev/null 2>/dev/null
     fi
 
     if [ -d "$dir_path" ]; then
@@ -962,7 +964,7 @@ function run_test()
         return 1
     else
         pip-host-control --log "Entering '$test_dir'..."
-        pushd "$test_dir"
+        pushd "$test_dir" >/dev/null 2>/dev/null
     fi
     
     #
@@ -981,7 +983,8 @@ function run_test()
             #
             # Running the ft_full
             #
-            pushd "$(find_clustercontrol_source_directory)/tests"
+            pushd "$(find_clustercontrol_source_directory)/tests" \
+                >/dev/null 2>/dev/null
             
             # Cleaning up before.
             killall ft_full
@@ -1000,7 +1003,7 @@ function run_test()
                 return 1
             fi
 
-            popd
+            popd >/dev/null 2>/dev/null
 
             # 
             # Running the test script itself.
@@ -1160,14 +1163,14 @@ function main()
     #
     # Preparing the source, generating a file holding the test results.
     #
-    pushd "$source_root"
+    pushd "$source_root" >/dev/null 2>/dev/null
 
     prepare_source
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
     
-    popd 
+    popd >/dev/null 2>/dev/null
 
     echo "----8<----8<----8<----8<----8<----8<----"
     generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"

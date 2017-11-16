@@ -169,7 +169,9 @@ if [ -z "$SERVER" ]; then
         printVersionAndExit
         exit 0
     else
-        echo $EXTRA_OPTIONS | festival --tts
+        if [ "$(which festival)" ]; then
+            echo $EXTRA_OPTIONS | festival --tts
+        fi
     fi
 else
     #
