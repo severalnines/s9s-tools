@@ -21,7 +21,7 @@ DO_CLEAN=""
 SHUT_DOWN_AFTER=""
 SHUT_DOWN_AFTER_OPTION=""
 
-OPTION_TEST_NAME="ft_install"
+OPTION_TEST_NAME=""
 OPTION_VENDOR=""
 OPTION_VERSION=""
 OPTION_PID=""
@@ -157,7 +157,7 @@ while true; do
         
         --functional-tests)
             shift
-            OPTION_FUNCTIONAL_TEST="yes"
+            OPTION_FUNCTIONAL_TESTS="yes"
             ;;
 
         --os)

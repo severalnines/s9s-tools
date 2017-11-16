@@ -111,7 +111,7 @@ fi
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -137,6 +137,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
+    print_title "Creating MySql replication cluster."
     pip-say "The test to create My SQL replication cluster is starting now."
     nodeName=$(create_node)
     nodes+="$nodeName?master;"
@@ -200,6 +201,7 @@ function testStop()
 {
     local exitCode
 
+    print_title "Stopping cluster"
     pip-say "The test to stop cluster is starting now."
 
     #
@@ -224,6 +226,7 @@ function testDrop()
 {
     local exitCode
 
+    print_title "Dropping cluster"
     pip-say "The test to drop the cluster is starting now."
 
     #
@@ -246,6 +249,8 @@ function testDrop()
 #
 function testDestroyNodes()
 {
+    print_title "Destroying containers"
+
     pip-say "The test is now destroying the nodes."
     pip-container-destroy \
         --server=$CONTAINER_SERVER \

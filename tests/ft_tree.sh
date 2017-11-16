@@ -94,7 +94,8 @@ if [ -z "$S9S" ]; then
 fi
 
 if [ -z "$OPTION_RESET_CONFIG" ]; then
-    printError "This test needs the --reset-config to run."
+    printError "This script must remove the s9s config files."
+    printError "Make a copy of ~/.s9s and pass the --reset-config option."
     exit 6
 fi
 
