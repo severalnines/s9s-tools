@@ -810,9 +810,13 @@ function upload_result_file()
     log_file=$(log_file_name "$test_name")
     tmp_file="/var/tmp/$result_file"
 
+    #
+    # If we have a PID we do the uploading until that ends. If not, we just
+    # upload once.
+    #
     while true; do
         if [ -f "$log_file" ]; then
-            pip-host-control --log "Uploading '$log_file'."
+            #pip-host-control --log "Uploading '$log_file'."
             scp "$log_file" "$TEST_REPORT_URL"
         fi
 
@@ -825,7 +829,7 @@ function upload_result_file()
             "$test_name" "$test_state" \
             >$tmp_file
 
-        pip-host-control --log "Uploading '$tmp_file'."
+        #pip-host-control --log "Uploading '$tmp_file'."
 
         scp "$tmp_file" "$TEST_REPORT_URL"
 

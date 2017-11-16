@@ -133,7 +133,7 @@ function testPing()
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
         #pip-say "The controller is off line. Further testing is not possible."
-    else
+    #else
         #pip-say "The controller is on line."
     fi
 }
