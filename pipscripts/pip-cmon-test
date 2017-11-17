@@ -1031,7 +1031,13 @@ function run_test()
                 pip-host-control --log "Running 'ft_full'..."
                 echo "STARTING..." >ft_full.log
                 ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
-                sleep 3
+                for delay in $(seq 1 100); do
+                    if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
+                        break
+                    fi
+
+                    sleep 3
+                done
             else
                 pip-host-control --error "The ft_full/ft_full was not found."
                 pip-host-control --error "  pwd: $PWD"

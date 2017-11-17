@@ -219,6 +219,7 @@ mys9s cluster \
 exitCode=$?
 if [ "$exitCode" -ne 0 ]; then
     failure "The exit code is ${exitCode} while creating container."
+    mys9s job --log --job-id=1
     exit 1
 fi
 

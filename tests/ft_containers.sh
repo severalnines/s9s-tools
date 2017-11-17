@@ -104,6 +104,8 @@ reset_config
 first=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f1)
 last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)  
 
+print_title "Test is under construction"
+
 mys9s user \
     --create \
     --generate-key \
@@ -117,13 +119,30 @@ mys9s user \
     $OPTION_VERBOSE \
     "pipas"
 
-exit 0
 mys9s user --list --long 
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode}"
+    exit 1
+fi
 
 mys9s server \
     --register \
     --servers="lxc://core1?;lxc://storage01"
 
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode}"
+    exit 1
+fi
+
 mys9s server \
     --tree
+
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode}"
+    exit 1
+fi
 

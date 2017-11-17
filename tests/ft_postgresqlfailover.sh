@@ -265,7 +265,7 @@ function testStopMaster()
     # Tring to stop the first added node. 
     # This should fail, because the master is protected.
     #
-    echo "Stopping node on $FIRST_ADDED_NODE"
+    print_title "Stopping node on $FIRST_ADDED_NODE"
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
@@ -281,7 +281,7 @@ function testStopMaster()
     #
     # Stopping it manually.
     #
-    printVerbose "Stopping postgresql on $FIRST_ADDED_NODE"
+    print_title "Stopping postgresql on $FIRST_ADDED_NODE"
     ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
     printVerbose "Stopped postgresql on $FIRST_ADDED_NODE"
 
@@ -303,9 +303,10 @@ function testStopMaster()
     #
     # Manually restarting the the postgresql on the node.
     #
-    printVerbose "Starting postgresql on $FIRST_ADDED_NODE"
+    print_title "Starting postgresql on $FIRST_ADDED_NODE"
     ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql start
-    if wait_for_node_shut_down "$FIRST_ADDED_NODE"; then
+
+    if wait_for_node_online "$FIRST_ADDED_NODE"; then
         printVerbose "Started postgresql on $FIRST_ADDED_NODE"
     else
         failure "Host $FIRST_ADDED_NODE did not come on-line."
@@ -327,7 +328,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Drop the cluster"
 
     #
     # Starting the cluster.
@@ -349,7 +350,7 @@ function testDrop()
 #
 function testDestroyNodes()
 {
-    pip-say "The test is now destroying the nodes."
+    print_title "Destroying the nodes"
     pip-container-destroy \
         --server=$CONTAINER_SERVER \
         $ALL_CREATED_IPS \
@@ -382,9 +383,9 @@ else
 fi
 
 if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
+    echo "The test script is now finished. No errors were detected."
 else
-    pip-say "The test script is now finished. Some failures were detected."
+    echo "The test script is now finished. Some failures were detected."
 fi
 
 endTests
