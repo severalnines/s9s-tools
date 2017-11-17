@@ -27,20 +27,19 @@ function printHelpAndExit()
 cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
- 
+
   $MYNAME - Check for registering group replication clusters.
 
-  -h, --help       Print this help and exit.
-  --verbose        Print more messages.
-  --log            Print the logs while waiting for the job to be ended.
-  --server=SERVER  The name of the server that will hold the containers.
-  --print-commands Do not print unit test info, print the executed commands.
-  --reset-config   Remove and re-generate the ~/.s9s directory.
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --log            Print the logs while waiting for the job to be ended.
+ --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
 }
-
 
 ARGS=$(\
     getopt -o h \
@@ -69,12 +68,6 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
-        --server)
-            shift
-            CONTAINER_SERVER="$1"
-            shift
-            ;;
-
         --print-commands)
             shift
             DONT_PRINT_TEST_MESSAGES="true"
@@ -84,6 +77,12 @@ while true; do
         --reset-config)
             shift
             OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            SERVER="$1"
+            shift
             ;;
 
         --)
@@ -97,6 +96,8 @@ if [ -z "$S9S" ]; then
     echo "The s9s program is not installed."
     exit 7
 fi
+
+reset_config
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
 

@@ -124,6 +124,7 @@ function wait_for_node_become_slave()
     local state
     local waited=0
     local stayed=0
+    local max_wait=240
 
     while true; do
         state=$(s9s node --list --batch --long --node-format="%R" "$nodeName")
@@ -137,7 +138,7 @@ function wait_for_node_become_slave()
             return 0
         fi
 
-        if [ "$waited" -gt 180 ]; then
+        if [ "$waited" -gt $max_wait ]; then
             return 1
         fi
 
@@ -157,6 +158,7 @@ function wait_for_node_online()
     local state
     local waited=0
     local stayed=0
+    local max_wait=240
 
     while true; do
         state=$(s9s node --list --batch --long --node-format="%S" "$nodeName")
@@ -170,7 +172,7 @@ function wait_for_node_online()
             return 0
         fi
 
-        if [ "$waited" -gt 120 ]; then
+        if [ "$waited" -gt $max_wait ]; then
             return 1
         fi
 

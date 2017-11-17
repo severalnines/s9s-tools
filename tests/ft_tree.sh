@@ -16,8 +16,10 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+
+  $MYNAME - Test script for s9s to check various error conditions.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
