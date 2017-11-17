@@ -97,11 +97,13 @@ while true; do
 done
 
 if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
+    printError "The s9s program is not installed."
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+
+reset_config
 
 #
 # 

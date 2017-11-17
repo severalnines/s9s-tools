@@ -32,19 +32,18 @@ Usage:
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
  --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
 
 EOF
     exit 1
 }
 
-
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install,reset-config" \
+        -l "help,verbose,log,print-commands,reset-config,server:,install" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -69,12 +68,6 @@ while true; do
             LOG_OPTION="--log"
             ;;
 
-        --server)
-            shift
-            CONTAINER_SERVER="$1"
-            shift
-            ;;
-
         --print-commands)
             shift
             DONT_PRINT_TEST_MESSAGES="true"
@@ -91,6 +84,13 @@ while true; do
             OPTION_RESET_CONFIG="true"
             ;;
 
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
+            ;;
+
+
         --)
             shift
             break
@@ -104,6 +104,7 @@ if [ -z "$S9S" ]; then
 fi
 
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
+reset_config
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."

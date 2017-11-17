@@ -133,7 +133,7 @@ function index_table()
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -163,6 +163,9 @@ function testTypes()
     local output
     local cmonAccountFound
     local cmonVerbatimFound
+
+    print_title "Testing types"
+    mys9s metatype --list
 
     output=$(s9s metatype --list)
     for typeName in $output; do
@@ -201,6 +204,9 @@ function testProperties()
     local hostNameFound
     local propertyName
 
+    print_title "Testing properties"
+    mys9s metatype --list-properties --type=CmonFile
+
     output=$(s9s metatype --list-properties --type=CmonFile)
     for propertyName in $output; do
         #echo "-> $propertyName"
@@ -220,8 +226,10 @@ function testProperties()
     if [ -z "$hostNameFound" ]; then
         failure "The property 'host_name' was not found."
     fi
-    
-    output=$(s9s metatype --list-properties --type=CmonFile --long --batch user )
+
+    mys9s metatype --list-properties --type=CmonFile --long user
+
+    output=$(s9s metatype --list-properties --type=CmonFile --long --batch user)
     if ! echo "$output" | grep -q "The name of the owner"; then
         failure "Property long list does not match."
     fi

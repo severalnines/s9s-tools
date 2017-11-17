@@ -125,7 +125,7 @@ function dateFormat()
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -151,7 +151,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to check maintenance periods is starting now."
+    print_title "Creating a cluster"
 
     nodeName=$(create_node)
     nodes+="$nodeName;"
@@ -193,7 +193,7 @@ function testCreateMaintenance()
 {
     local reason="test_$$_maintenance"
 
-    pip-say "Testing maintenance now."
+    print_title "Creating maintenance expiration"
 
     #
     # Creating a maintenance period that expires real soon.
@@ -237,7 +237,7 @@ function testCreateMaintenance()
 
 function testCreateTwoPeriods()
 {
-    pip-say "Testing two maintenance periods now."
+    print_title "Testing overlapping maintenance periods"
 
     #
     # Creating a maintenance period that expires real soon and an other one that
@@ -303,7 +303,7 @@ function testDeletePeriods()
     #
     # Creating maintenance periods.
     #
-    pip-say "Testing deleting of maintenance now."
+    print_title "Testing deleting of maintenance"
 
     mys9s \
         maintenance --create \
@@ -312,6 +312,12 @@ function testDeletePeriods()
         --end="$(dateFormat "now + 1 day")" \
         --reason="test_1_$$" \
         --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating maintenance."
+    fi
 
     mys9s \
         maintenance --create \
@@ -320,6 +326,12 @@ function testDeletePeriods()
         --end="$(dateFormat "now + 1 day")" \
         --reason="test_2_$$" \
         --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating maintenance."
+    fi
     
     mys9s \
         maintenance --create \
@@ -364,11 +376,11 @@ function testClusterMaintenance()
 {
     local reason="cluster_maintenance_$$"
 
-    pip-say "Testing cluster maintenance now."
     
     #
     # Creating a maintenance period that expires real soon.
     #
+    print_title "Creating a maintenance period that expires real soon"
     mys9s \
         maintenance --create \
         --cluster-id=$CLUSTER_ID \
@@ -412,7 +424,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the cluster"
 
     #
     # Dropping the cluster.

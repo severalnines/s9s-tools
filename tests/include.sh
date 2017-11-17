@@ -469,7 +469,8 @@ function reset_config()
     if [ -z "$OPTION_RESET_CONFIG" ]; then
         return 0
     fi
-
+    
+    print_title "Removing s9s configuration"
     printVerbose "Rewriting S9S configuration."
     if [ -d "$config_file" ]; then
         rm -rf "$config_file"
