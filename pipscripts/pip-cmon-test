@@ -1036,8 +1036,12 @@ function run_test()
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running 'ft_full'..."
-                echo "STARTING..." >ft_full.log
+
+
+                echo "Starting controller: './ft_full/ft_full'" >ft_full.log
+
                 ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
+
                 for delay in $(seq 1 100); do
                     if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
                         break

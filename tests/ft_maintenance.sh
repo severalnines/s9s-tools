@@ -351,11 +351,10 @@ function testDeletePeriods()
     # The maintenance periods should be there now, so we can remove them.
     #
     #printVerbose "Maintenance immediately:"
-    #s9s maintenance --list --long
+    mys9s maintenance --list --long
     
     for uuid in $(s9s maintenance --list --batch); do
-        #echo "-> $uuid"
-        s9s maintenance --delete --uuid=$uuid --batch 
+        mys9s maintenance --delete --uuid=$uuid --batch 
         if [ "$exitCode" -ne 0 ]; then
             failure "Exit code is not 0 while removing maintenance."
         fi
@@ -365,6 +364,8 @@ function testDeletePeriods()
     if [ "$n_maintenances" -ne 0 ]; then
         failure "There are $n_maintenances remains after the delete."
     fi
+
+    mys9s maintenance --list --long
 
     return 0
 }
@@ -399,7 +400,8 @@ function testClusterMaintenance()
     # The maintenance periods should be there now.
     #
     #printVerbose "Maintenance immediately:"
-    #s9s maintenance --list --long
+    mys9s maintenance --list --long
+
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found: '$reason'."
     fi
@@ -409,7 +411,8 @@ function testClusterMaintenance()
     #
     sleep 10
     #printVerbose "After 15 seconds:"
-    #s9s maintenance --list --long
+    mys9s maintenance --list --long
+
     if s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance should have expired: '$reason'."
     fi

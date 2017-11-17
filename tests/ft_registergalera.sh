@@ -169,7 +169,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the cluster"
 
     #
     # Starting the cluster.
@@ -183,6 +183,7 @@ function testDrop()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 }
 
@@ -190,7 +191,7 @@ function testRegister()
 {
     local exitCode 
 
-    pip-say "The test to register a cluster is starting."
+    print_title "Registering cluster"
 
     #
     # Registering the cluester that we just created and dropped.
@@ -207,9 +208,10 @@ function testRegister()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 
-    #s9s cluster --list --long
+    mys9s cluster --list --long
     #s9s node --list --long
 }
 

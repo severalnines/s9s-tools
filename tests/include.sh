@@ -578,10 +578,15 @@ function destroyNodes()
 {
     if [ "$ALL_CREATED_IPS" ]; then
         print_title "Destroying the containers"
+        echo "     server : $CONTAINER_SERVER"
+        echo " containers : $ALL_CREATED_IPS"
+
         pip-container-destroy \
             --server=$CONTAINER_SERVER \
             "$ALL_CREATED_IPS" \
             >/dev/null 2>/dev/null
+        
+        echo "    retcode : $?"
 
         ALL_CREATED_IPS=""
     fi

@@ -99,7 +99,7 @@ fi
 
 reset_config
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
 
 if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "The 'pip-container-create' program is not found."

@@ -169,7 +169,7 @@ function testJobOperations()
         return 1
     fi
     
-    expected="The main options are mutually exclusive."
+    expected="Main command line options are mutually exclusive."
     output=$($S9S job --list --log --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"

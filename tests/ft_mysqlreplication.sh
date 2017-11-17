@@ -102,7 +102,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
 
 if [ -z "$PIP_CONTAINER_CREATE" ]; then
     printError "The 'pip-container-create' program is not found."
@@ -110,7 +110,6 @@ if [ -z "$PIP_CONTAINER_CREATE" ]; then
     exit 1
 fi
 
-reset_config
 
 #
 #
@@ -192,30 +191,29 @@ function testConfig()
 {
     local exitCode
     local value
-    local newValue
-    local name
+    local newValue="200"
+    local name="max_connections"
 
-    pip-say "The test to check configuration is starting now."
+    print_title "Changing configuration '$name'"
 
     #
     # Listing the configuration values. The exit code should be 0.
     #
     mys9s node \
         --list-config \
-        --nodes=$FIRST_ADDED_NODE #\ >/dev/null
+        --nodes=$FIRST_ADDED_NODE \
+        max_*
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 
     #
     # Changing a configuration value.
     #
-    newValue=200
-    name="max_connections"
-    
     mys9s node \
         --change-config \
         --nodes=$FIRST_ADDED_NODE \
@@ -264,6 +262,8 @@ function testSetConfig()
     local value
     local newValue="64M"
     local name="max_heap_table_size"
+
+    print_title "Changing configuration '$name'"
 
     #
     # Changing a configuration value.
@@ -316,6 +316,8 @@ function testRestartNode()
 {
     local exitCode
 
+    print_title "Restarting node"
+
     #
     # Restarting a node. 
     #
@@ -343,6 +345,8 @@ function testRestartNode()
 function testStopStartNode()
 {
     local exitCode
+
+    print_title "Stopping&starting node"
 
     #
     # First stop.
@@ -388,7 +392,7 @@ function testStopStartNode()
 #
 function testCreateAccount()
 {
-    pip-say "Testing account creation."
+    print_title "Creating account"
 
     #
     # This command will create a new account on the cluster.
@@ -414,8 +418,8 @@ function testAddNode()
     local nodes
     local exitCode
 
-    pip-say "The test to add node is starting now."
-    printVerbose "Creating node..."
+    print_title "Adding a new node"
+    
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -444,8 +448,8 @@ function testAddMaster()
     local nodes
     local exitCode
 
-    pip-say "The test to add master node is starting now."
-    printVerbose "Creating node..."
+    print_title "Adding a master node"
+
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE?master"
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -473,11 +477,11 @@ function testAddMaster()
 #
 function testRemoveNode()
 {
+    print_title "Removing node"
+
     if [ -z "$LAST_ADDED_NODE" ]; then
-        printVerbose "Skipping test."
+        echo "Skipping test."
     fi
-    
-    pip-say "The test to remove node is starting now."
     
     #
     # Removing the last added node.
@@ -502,7 +506,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    pip-say "The test of rolling restart is starting now."
+    print_title "Rolling restart"
 
     #
     # Calling for a rolling restart.
@@ -526,7 +530,7 @@ function testStop()
 {
     local exitCode
 
-    pip-say "The test to stop cluster is starting now."
+    print_title "Stopping the cluster"
 
     #
     # Stopping the cluster.
@@ -550,7 +554,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the cluster"
 
     #
     # Starting the cluster.
@@ -571,6 +575,7 @@ function testDrop()
 # Running the requested tests.
 #
 startTests
+reset_config
 grant_user
 
 if [ "$1" ]; then

@@ -633,7 +633,9 @@ function testAddRemoveHaProxy()
     local nodes
     local exitCode
     
-    print_title "The test to add and remove HaProxy node is starting now."
+    print_title "Adding and removing HaProxy node"
+    mys9s node --list --long 
+
     node=$(\
         $S9S node --list --long --batch | \
         grep ^g | \
@@ -651,9 +653,11 @@ function testAddRemoveHaProxy()
         $LOG_OPTION
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        s9s job --log --job-id=10
+
+        exit 1
     fi
    
     mys9s node --list --long --color=always
