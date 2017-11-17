@@ -283,7 +283,7 @@ fi
 
 if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
     if [ "$S9S_OPTION" ]; then
-        OPTION_TEST_NAME+="ft_containers.sh ft_create_databases.sh "
+        OPTION_TEST_NAME+="ft_containers.sh "
         OPTION_TEST_NAME+="ft_errors.sh ft_galera.sh ft_groupreplication.sh "
         OPTION_TEST_NAME+="ft_maintenance.sh ft_metatype.sh "
         OPTION_TEST_NAME+="ft_mysqlreplication.sh ft_ndb.sh "
