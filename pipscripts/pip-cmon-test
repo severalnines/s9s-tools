@@ -857,6 +857,7 @@ function upload_result_file()
     test_state="$2"
     result_file=$(result_file_name "$test_name")
     log_file=$(log_file_name "$test_name")
+    daemon_log_file="$(basename "$log_file" .log).dlog"
     tmp_file="/var/tmp/$result_file"
 
     #
@@ -881,6 +882,12 @@ function upload_result_file()
         #pip-host-control --log "Uploading '$tmp_file'."
 
         scp "$tmp_file" "$TEST_REPORT_URL"
+
+        if [ -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
+            scp \
+                "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+                "$TEST_REPORT_URL/$daemon_log_file"
+        fi
 
         if [ -z "$pid_to_watch" ]; then
             break
