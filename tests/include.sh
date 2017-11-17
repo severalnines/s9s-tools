@@ -412,7 +412,7 @@ function wait_for_server_ssh()
             let nSuccess=0
 
             # 120 x 5 = 10 minutes
-            if [ "$nTry" -gt 120 ]; then
+            if [ "$nTry" -gt 180 ]; then
                 printVerbose "Server '$serverName' did not came alive."
                 return 1
             fi
@@ -455,7 +455,7 @@ function create_node()
     wait_for_server_ssh "$ip" "$USER"
     retval=$?
     if [ "$retval" -ne 0 ]; then
-        failure "Could not reach created server"
+        echo "Could not reach created server at ip '$ip'." >&2
     fi
 
     echo $ip
