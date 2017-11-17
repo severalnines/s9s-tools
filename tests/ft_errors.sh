@@ -270,7 +270,7 @@ function testNodeOperations()
         return 1
     fi
     
-    expected="The main options are mutually exclusive."
+    expected="Main command line options are mutually exclusive."
     output=$($S9S node --list --set 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message mismatch when operation is missing"
@@ -309,7 +309,7 @@ function testUserOperations()
     local expected
 
     print_title "Testing user operations"
-    expected="One of the --list, --whoami, --set and --create options is mandatory."
+    expected="One of the main options is mandatory."
     output=$($S9S user 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"
@@ -318,7 +318,7 @@ function testUserOperations()
         return 1
     fi
     
-    expected="The --list, --whoami, --set and --create options are mutually exclusive."
+    expected="The main options are mutually exclusive."
     output=$($S9S user --list --create 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"
