@@ -10,7 +10,7 @@ CLUSTER_ID=""
 ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -103,8 +103,7 @@ if [ -z "$S9S" ]; then
     exit 7
 fi
 
-CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
-reset_config
+#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
@@ -267,6 +266,10 @@ function testRollingRestart()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+
+        # FIXME: Is this always going to be job 4?
+        mys9s job --log --job-id=4
+        exit 1
     fi
 }
 
@@ -299,11 +302,17 @@ function testDrop()
 #
 function testDestroyNodes()
 {
-    pip-say "The test is now destroying the nodes."
-    pip-container-destroy \
-        --server=$CONTAINER_SERVER \
-        $ALL_CREATED_IPS \
-        >/dev/null 2>/dev/null
+    if [ "$ALL_CREATED_IPS" ]; then
+        print_title "The test is now destroying the containers"
+        pip-container-destroy \
+            --server=$CONTAINER_SERVER \
+            "$ALL_CREATED_IPS" \
+            >/dev/null 2>/dev/null
+
+        ALL_CREATED_IPS=""
+    fi
+
+    return 0
 }
 
 #
@@ -313,6 +322,7 @@ startTests
 
 reset_config
 grant_user
+trap testDestroyNodes EXIT
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
@@ -327,13 +337,12 @@ else
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
 fi
 
 if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
+    echo "The test script is now finished. No errors were detected."
 else
-    pip-say "The test script is now finished. Some failures were detected."
+    echo "The test script is now finished. Some failures were detected."
 fi
 
 endTests
