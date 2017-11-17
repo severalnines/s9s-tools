@@ -11,9 +11,7 @@ CLUSTER_ID=""
 ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 OPTION_RESET_CONFIG=""
-
-# This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""

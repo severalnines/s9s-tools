@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 cd $MYDIR
 source ./include.sh

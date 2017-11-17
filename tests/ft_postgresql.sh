@@ -11,9 +11,7 @@ CLUSTER_ID=""
 ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
-
-# This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -130,7 +128,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    print_title "The test to create PostgreSQL cluster is starting now."
+    print_title "Creating PostgreSQL cluster"
     
     for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
         [ "$servers" ] && servers+=";"

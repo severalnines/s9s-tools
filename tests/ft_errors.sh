@@ -8,9 +8,7 @@ LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
-
-# This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
@@ -85,7 +83,7 @@ while true; do
 
         --server)
             shift
-            SERVER="$1"
+            CONTAINER_SERVER="$1"
             shift
             ;;
 

@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-SERVER="core1"
+SERVER=""
 
 cd $MYDIR
 source include.sh
@@ -77,7 +77,7 @@ while true; do
 
         --server)
             shift
-            SERVER="$1"
+            CONTAINER_SERVER="$1"
             shift
             ;;
 

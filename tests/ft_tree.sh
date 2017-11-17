@@ -5,7 +5,6 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-SERVER="core1"
 
 cd $MYDIR
 source include.sh
@@ -79,7 +78,7 @@ while true; do
 
         --server)
             shift
-            SERVER="$1"
+            CONTAINER_SERVER="$1"
             shift
             ;;
 
@@ -155,7 +154,7 @@ fi
 print_title "Registering a container server."
 mys9s server \
     --register \
-    --servers="lxc://$SERVER"
+    --servers="lxc://$CONTAINER_SERVER"
 
 exitCode=$?
 if [ "$exitCode" -ne 0 ]; then
@@ -276,7 +275,7 @@ fi
 print_title "Moving objects into subfolder"
 TEST_PATH="/home/pipas"
 mys9s tree --mkdir "$TEST_PATH"
-mys9s tree --move /$SERVER "$TEST_PATH"
+mys9s tree --move /$CONTAINER_SERVER "$TEST_PATH"
 mys9s tree --move /galera_001 "$TEST_PATH"
 mys9s tree --move /pipas "$TEST_PATH"
 
@@ -379,7 +378,7 @@ fi
 
 # FIXME: Keeping short
 mys9s tree --list --color=always
-pip-container-destroy --server=$SERVER container_001
+pip-container-destroy --server=$CONTAINER_SERVER container_001
 exit 0
 
 #####

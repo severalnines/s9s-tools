@@ -449,6 +449,11 @@ function create_node()
         verbose_option="--verbose"
     fi
 
+    if [ -z "$CONTAINER_SERVER" ]; then
+        printError "The container server is not set."
+        return 1
+    fi
+
     printVerbose "Creating container..."
     ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER $1)
     printVerbose "Created '$ip'."

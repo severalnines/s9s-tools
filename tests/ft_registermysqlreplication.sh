@@ -9,9 +9,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
-
-# This is the name of the server that will hold the linux containers.
-CONTAINER_SERVER="core1"
+CONTAINER_SERVER=""
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -226,12 +224,6 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testDrop
     runFunctionalTest testRegister
-fi
-
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were found."
-else
-    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests
