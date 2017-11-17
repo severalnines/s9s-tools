@@ -113,7 +113,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create MySQL replication cluster is starting now."
+    print_title "Creating MySQL Replication Cluster"
+
     nodeName=$(create_node)
     NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -140,14 +141,13 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+        mys9s job --log --job-id=1
         return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-    printVerbose "CLUSTER_ID: '$CLUSTER_ID'"
 
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
