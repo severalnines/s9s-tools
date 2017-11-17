@@ -123,12 +123,16 @@ function endTests ()
     if isSuccess; then
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "SUCCESS: $(basename $0 .sh)"
+        else
+            echo "Test $(basename $0) is successful."
         fi
           
         exit 0
     else
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "FAILURE: $(basename $0 .sh)"
+        else
+            echo "Test $(basename $0) has failed."
         fi
     
         exit 1
@@ -533,6 +537,7 @@ function grant_user()
     local first
     local last
 
+    print_title "Creating first user"
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 

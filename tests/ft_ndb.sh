@@ -322,6 +322,7 @@ startTests
 
 reset_config
 grant_user
+
 trap testDestroyNodes EXIT
 
 if [ "$OPTION_INSTALL" ]; then
@@ -337,12 +338,6 @@ else
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testDrop
-fi
-
-if [ "$FAILED" == "no" ]; then
-    echo "The test script is now finished. No errors were detected."
-else
-    echo "The test script is now finished. Some failures were detected."
 fi
 
 endTests
