@@ -227,7 +227,7 @@ function testClusterOperations()
     local output
     local expected
 
-    expected="One of the following options is mandatory: --list, --stat, --create, --ping, --rolling-restart, --add-node, --create-report, --remove-node, --drop, --stop, --start, --create-account, --delete-account, --create-database, --grant."
+    expected="One of the main options is mandatory."
     output=$($S9S cluster 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."
@@ -236,7 +236,7 @@ function testClusterOperations()
         return 1
     fi
     
-    expected="The following options are mutually exclusive: --list, --stat, --create, --ping, --rolling-restart, --add-node, --remove-node, --drop, --stop, --start, --create-account, --create-report, --delete-account, --create-database, --grant."
+    expected="The main options are mutually exclusive."
     output=$($S9S cluster --list --start 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"
