@@ -99,50 +99,41 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
-reset_config
+#
+# Dropping the cluster from the controller.
+#
+function registerServers()
+{
+    print_title "Registering lxc servers"
+    mys9s server \
+        --register \
+        --servers="lxc://core1?;lxc://storage01"
 
-first=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f1)
-last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)  
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+        exit 1
+    fi
 
-print_title "Test is under construction"
+    mys9s tree --tree
 
-mys9s user \
-    --create \
-    --generate-key \
-    --group="admins" \
-    --new-password="admin" \
-    --controller="https://localhost:9556" \
-    --email-address="laszlo@severalnines.com" \
-    --first-name="$first" \
-    --last-name="$last" \
-    $OPTION_PRINT_JSON \
-    $OPTION_VERBOSE \
-    "pipas"
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+        exit 1
+    fi
+}
 
-mys9s user --list --long 
+#
+# Running the requested tests.
+#
+startTests
+grant_user
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode}"
-    exit 1
+if [ "$1" ]; then
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
+else
+    runFunctionalTest registerServers
 fi
-
-mys9s server \
-    --register \
-    --servers="lxc://core1?;lxc://storage01"
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode}"
-    exit 1
-fi
-
-mys9s server \
-    --tree
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode}"
-    exit 1
-fi
-
