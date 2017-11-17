@@ -632,18 +632,6 @@ function testDrop()
 }
 
 #
-# This will destroy the containers we created.
-#
-function testDestroyNodes()
-{
-    print_title "The test is now destroying the nodes."
-    pip-container-destroy \
-        --server=$CONTAINER_SERVER \
-        $ALL_CREATED_IPS \
-        >/dev/null 2>/dev/null
-}
-
-#
 # Running the requested tests.
 #
 startTests
@@ -675,14 +663,7 @@ else
     runFunctionalTest testRollingRestart
 
     runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
 fi
-
-#if [ "$FAILED" == "no" ]; then
-#    pip-say "The test script is now finished. No errors were detected."
-#else
-#    pip-say "The test script is now finished. Some failures were detected."
-#fi
 
 endTests
 

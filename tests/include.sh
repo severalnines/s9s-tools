@@ -569,3 +569,25 @@ function print_title()
     echo ""
     echo -e "\033[1m$*\033[0;39m"
 }
+
+
+#
+# This will destroy the containers we created.
+#
+function destroyNodes()
+{
+    if [ "$ALL_CREATED_IPS" ]; then
+        print_title "Destroying the containers"
+        pip-container-destroy \
+            --server=$CONTAINER_SERVER \
+            "$ALL_CREATED_IPS" \
+            >/dev/null 2>/dev/null
+
+        ALL_CREATED_IPS=""
+    fi
+
+    return 0
+}
+
+trap destroyNodes EXIT
+

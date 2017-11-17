@@ -298,32 +298,12 @@ function testDrop()
 }
 
 #
-# This will destroy the containers we created.
-#
-function testDestroyNodes()
-{
-    if [ "$ALL_CREATED_IPS" ]; then
-        print_title "The test is now destroying the containers"
-        pip-container-destroy \
-            --server=$CONTAINER_SERVER \
-            "$ALL_CREATED_IPS" \
-            >/dev/null 2>/dev/null
-
-        ALL_CREATED_IPS=""
-    fi
-
-    return 0
-}
-
-#
 # Running the requested tests.
 #
 startTests
 
 reset_config
 grant_user
-
-trap testDestroyNodes EXIT
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster

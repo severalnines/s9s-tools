@@ -124,7 +124,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    print_title "The test to create PostgreSQL cluster is starting now."
+
     nodeName=$(create_node)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
@@ -164,7 +165,7 @@ function testAddNode()
 {
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    print_title "Adding a node"
     printVerbose "Creating node..."
 
     LAST_ADDED_NODE=$(create_node)
@@ -193,6 +194,8 @@ function testStopCluster()
 {
     local exitCode
     local state
+
+    print_title "Stopping the cluster"
 
     #
     # Stopping the cluster and checking if the cluster state is 'STOPPED'.
@@ -229,6 +232,8 @@ function testStartCluster()
     local exitCode
     local state
 
+    print_title "Starting the cluster"
+
     #
     # Starting the cluster and checking if the cluster state is 'STARTED'.
     #
@@ -263,10 +268,10 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the cluster"
 
     #
-    # Starting the cluster.
+    # Dropping the cluster.
     #
     mys9s cluster \
         --drop \
@@ -278,18 +283,6 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
-}
-
-#
-# This will destroy the containers we created.
-#
-function testDestroyNodes()
-{
-    pip-say "The test is now destroying the nodes."
-    pip-container-destroy \
-        --server=$CONTAINER_SERVER \
-        $ALL_CREATED_IPS \
-        >/dev/null 2>/dev/null
 }
 
 #
@@ -313,13 +306,6 @@ else
     runFunctionalTest testStartCluster
 
     runFunctionalTest testDrop
-    runFunctionalTest testDestroyNodes
-fi
-
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
-else
-    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests
