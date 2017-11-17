@@ -160,6 +160,8 @@ function testJobOperations()
     local output
     local expected
 
+    print_title "Testing job operations"
+
     expected="One of the main options is mandatory."
     output=$($S9S job --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -169,7 +171,7 @@ function testJobOperations()
         return 1
     fi
     
-    expected="Main command line options are mutually exclusive."
+    expected="The main options are mutually exclusive."
     output=$($S9S job --list --log --job-id=5 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing"
@@ -189,6 +191,7 @@ function testBackupOperations()
     local output
     local expected
 
+    print_title "Testing backup operations"
     expected="One of the --list, --create, --restore and --delete options is mandatory."
     output=$($S9S backup 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -227,6 +230,7 @@ function testClusterOperations()
     local output
     local expected
 
+    print_title "Testing cluster operations"
     expected="One of the main options is mandatory."
     output=$($S9S cluster 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -256,6 +260,7 @@ function testNodeOperations()
     local output
     local expected
 
+    print_title "Testing node operations"
     expected="One main option is required."
     output=$($S9S node 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -303,6 +308,7 @@ function testUserOperations()
     local output
     local expected
 
+    print_title "Testing user operations"
     expected="One of the --list, --whoami, --set and --create options is mandatory."
     output=$($S9S user 2>&1)
     if [ "$output" != "$expected" ]; then

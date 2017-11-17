@@ -378,6 +378,7 @@ function testStopStartNode()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 
     #for (( q=0; q<10; q++)); do
@@ -393,6 +394,8 @@ function testStopStartNode()
 function testCreateAccount()
 {
     print_title "Creating account"
+
+    mys9s node --list --long 
 
     #
     # This command will create a new account on the cluster.
