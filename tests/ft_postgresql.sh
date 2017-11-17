@@ -178,7 +178,7 @@ function testCreateCluster()
     #s9s node \
     #    --set \
     #    --nodes="$nodes" \
-    #    --properties="hostgrouppath=$CONTAINER_SERVER"
+    #    --properties="cdt_path=$CONTAINER_SERVER"
 }
 
 #

@@ -120,7 +120,7 @@ enum AssignmentState
 
 /**
  * This method implements a parser that will process strings like 
- * "alias = somealias" or "alias = other; hostgrouppath = '/'". These seems to
+ * "alias = somealias" or "alias = other; cdt_path = '/'". These seems to
  * be useful to pass more complex command line strings.
  */
 bool

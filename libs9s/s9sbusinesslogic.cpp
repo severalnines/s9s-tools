@@ -314,7 +314,7 @@ S9sBusinessLogic::execute()
         {
             /* 
              * Here is an example of the server registration:
-             * s9s server --register --servers="lxc://storage01?hostgrouppath=myservers" --print-json --verbose
+             * s9s server --register --servers="lxc://storage01?cdt_path=myservers" --print-json --verbose
              */
             success = client.registerServers();
             client.printServerRegistered(success);
