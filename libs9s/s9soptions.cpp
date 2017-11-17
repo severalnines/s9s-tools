@@ -4570,26 +4570,12 @@ S9sOptions::checkOptionsCluster()
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The following options are mutually exclusive: "
-            "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
-            " --remove-node, --drop, --stop, --start, --create-account,"
-            " --create-report, --list-databases, "
-            " --delete-account, --create-database, --grant, --register"
-            ".";
-
+        m_errorMessage = "The main options are mutually exclusive.";
         m_exitStatus = BadOptions;
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the following options is mandatory: "
-            "--list, --stat, --create, --ping, --rolling-restart, --add-node,"
-            " --create-report,"
-            " --remove-node, --drop, --stop, --start, --create-account,"
-            " --delete-account, --create-database, --grant, --register"
-            ".";
-
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
         return false;
     }
