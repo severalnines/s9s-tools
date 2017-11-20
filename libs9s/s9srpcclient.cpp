@@ -35,7 +35,7 @@
 #define WARNING
 #include "s9sdebug.h"
 
-#define READ_SIZE 512
+#define READ_SIZE 2048
 
 /**
  * Default constructor.
