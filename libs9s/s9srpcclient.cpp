@@ -35,7 +35,7 @@
 #define WARNING
 #include "s9sdebug.h"
 
-#define READ_SIZE 2048
+#define READ_SIZE 10240
 
 /**
  * Default constructor.
@@ -5456,6 +5456,9 @@ S9sRpcClient::doExecuteRequest(
     S9sString    header;
     ssize_t      readLength;
     ssize_t      writtenLength;
+    S9sString    dataToSend; 
+    size_t       dataSize;
+    size_t       payloadSize = 0;
 
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
@@ -5475,6 +5478,9 @@ S9sRpcClient::doExecuteRequest(
                 STR(uri), STR(payload));
     }
 
+    if (!payload.empty())
+        payloadSize = strlen(STR(payload));
+
     header.sprintf(
         "POST %s HTTP/1.0\r\n"
         "Host: %s:%d\r\n"
@@ -5484,14 +5490,14 @@ S9sRpcClient::doExecuteRequest(
         "Transfer-Encoding: identity\r\n"
         "%s"
         "Content-Type: application/json\r\n"
-        "Content-Length: %u\r\n"
+        "Content-Length: %zd\r\n"
         "\r\n",
         STR(uri),
         STR(m_priv->m_hostName),
         m_priv->m_port,
         STR(m_priv->cookieHeaders()),
-        payload.length());
-
+        payloadSize);
+#if 0
     /*
      * Sending the HTTP request header.
      */
@@ -5534,7 +5540,31 @@ S9sRpcClient::doExecuteRequest(
             }
         }
     }
+#else
+    dataToSend = header + payload;
+    dataSize   = strlen(STR(dataToSend));
+    writtenLength = m_priv->write(STR(dataToSend), dataSize);
+    S9S_DEBUG("Size: %zd, written: %zd", dataSize, writtenLength);
+    //S9S_WARNING("dataToSend: \n%s\n", STR(dataToSend));
 
+    if (writtenLength < 0)
+    {
+        // we shall use m_priv->m_errorString TODO
+        S9S_WARNING("Error writing socket: %m");
+
+        // priv shall do this:
+        m_priv->m_errorString.sprintf("Error writing socket: %m");
+        m_priv->close();
+
+        return false;
+    }
+            
+    if (options->isJsonRequested() && options->isVerbose())
+    {
+        printf("Sent request.\n");
+    }
+
+#endif
     /*
      * Reading the reply from the server.
      */
@@ -5550,6 +5580,16 @@ S9sRpcClient::doExecuteRequest(
         S9S_DEBUG("Read length: %zd", readLength);
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
+
+        if (readLength < 0)
+        {
+            m_priv->m_errorString.sprintf(
+                    "Error while readong from controller (%s:%d TLS: %s): %m",
+                    STR(m_priv->m_hostName), m_priv->m_port,
+                    m_priv->m_useTls ? "yes" : "no");
+
+            return false;
+        }
     } while (readLength > 0);
 
     // Closing the buffer with a null terminating byte.
