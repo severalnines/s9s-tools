@@ -5496,7 +5496,7 @@ S9sRpcClient::doExecuteRequest(
      * Sending the HTTP request header.
      */
     writtenLength = m_priv->write(STR(header), header.length());
-    S9S_DEBUG(" Header length: %u, written: %zd", 
+    S9S_DEBUG("Header length: %u, written: %zd", 
             header.length(), writtenLength);
     if (writtenLength < 0)
     {
@@ -5539,7 +5539,6 @@ S9sRpcClient::doExecuteRequest(
      * Reading the reply from the server.
      */
     replyReceived = S9sDateTime::currentDateTime();
-
     m_priv->clearBuffer();
     do
     {
@@ -5557,25 +5556,28 @@ S9sRpcClient::doExecuteRequest(
     m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);
     m_priv->m_buffer[m_priv->m_dataSize] = '\0';
     m_priv->m_dataSize += 1;
-    S9S_DEBUG("reply: '%s'", m_priv->m_buffer); 
+
+    // This is producing a lot of lines.
+    //S9S_DEBUG("reply: '%s'", m_priv->m_buffer); 
 
     // Closing the socket.
     m_priv->close();
    
-    S9S_DEBUG("data received: %d", m_priv->m_dataSize);
+    S9S_DEBUG("total data received: %d", m_priv->m_dataSize);
     if (m_priv->m_dataSize > 1)
     {
         // Lets parse the cookie/HTTP session info from server reply
         m_priv->parseHeaders();
 
         char *tmp = strstr(m_priv->m_buffer, "\r\n\r\n");
-
         if (tmp)
         {
             m_priv->m_jsonReply = (tmp + 4);
 
             if (options->isJsonRequested() && options->isVerbose())
+            {
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
+            }
         }
     } else {
         m_priv->m_errorString.sprintf(
