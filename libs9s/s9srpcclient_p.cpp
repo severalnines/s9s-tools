@@ -122,10 +122,13 @@ S9sRpcClientPrivate::connect()
      */
     timeout.tv_sec  = 60;
     timeout.tv_usec = 0;
-    setsockopt (m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
-                (char*) &timeout, sizeof(timeout));
-    setsockopt (m_socketFd, SOL_SOCKET, SO_SNDTIMEO,
-                (char*) &timeout, sizeof(timeout));
+    setsockopt(
+            m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
+            (char*) &timeout, sizeof(timeout));
+
+    setsockopt(
+            m_socketFd, SOL_SOCKET, SO_SNDTIMEO,
+            (char*) &timeout, sizeof(timeout));
 
     /*
      * lookup
@@ -267,12 +270,17 @@ S9sRpcClientPrivate::read(
         size_t  bufSize)
 {
     ssize_t retval = -1;
+    int     loopCount = 0;
 
     if (m_ssl)
         return SSL_read(m_ssl, buffer, bufSize);
 
     do {
-        retval = ::read (m_socketFd, buffer, bufSize);
+        retval = ::read(m_socketFd, buffer, bufSize);
+
+        loopCount += 1;
+        if (loopCount > 100)
+            break;
     } while (retval == -1 && errno == EINTR);
 
     return retval;

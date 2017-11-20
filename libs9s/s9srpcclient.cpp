@@ -5460,6 +5460,7 @@ S9sRpcClient::doExecuteRequest(
     size_t       dataSize;
     size_t       payloadSize = 0;
 
+    S9S_DEBUG("------------------------");
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
@@ -5544,7 +5545,10 @@ S9sRpcClient::doExecuteRequest(
     dataToSend = header + payload;
     dataSize   = strlen(STR(dataToSend));
     writtenLength = m_priv->write(STR(dataToSend), dataSize);
-    S9S_DEBUG("Size: %zd, written: %zd", dataSize, writtenLength);
+
+    S9S_DEBUG("%s: Size: %zd, written: %zd", 
+            STR(timeStampString()), dataSize, writtenLength);
+
     //S9S_WARNING("dataToSend: \n%s\n", STR(dataToSend));
 
     if (writtenLength < 0)
@@ -5570,27 +5574,36 @@ S9sRpcClient::doExecuteRequest(
      */
     replyReceived = S9sDateTime::currentDateTime();
     m_priv->clearBuffer();
-    do
+    
+    for (;;)
     {
         m_priv->ensureHasBuffer(m_priv->m_dataSize + READ_SIZE);
 
         readLength = m_priv->read(
                 m_priv->m_buffer + m_priv->m_dataSize, READ_SIZE - 1);
 
-        S9S_DEBUG("Read length: %zd", readLength);
+        S9S_DEBUG("%s: Read length: %zd", 
+                STR(timeStampString()), readLength);
+
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
 
         if (readLength < 0)
         {
             m_priv->m_errorString.sprintf(
-                    "Error while readong from controller (%s:%d TLS: %s): %m",
+                    "Error while reading from controller (%s:%d TLS: %s): %m",
                     STR(m_priv->m_hostName), m_priv->m_port,
                     m_priv->m_useTls ? "yes" : "no");
 
             return false;
         }
-    } while (readLength > 0);
+
+        if (readLength == 0)
+            break;
+
+        if (readLength < 0)
+            break;
+    };
 
     // Closing the buffer with a null terminating byte.
     m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);
@@ -5603,7 +5616,8 @@ S9sRpcClient::doExecuteRequest(
     // Closing the socket.
     m_priv->close();
    
-    S9S_DEBUG("total data received: %d", m_priv->m_dataSize);
+    S9S_DEBUG("%s: total received: %zd bytes", 
+            STR(timeStampString()), m_priv->m_dataSize);
     if (m_priv->m_dataSize > 1)
     {
         // Lets parse the cookie/HTTP session info from server reply
@@ -5792,3 +5806,10 @@ S9sRpcClient::detectVersion()
     return !serverVersion().empty();
 }
 
+S9sString 
+S9sRpcClient::timeStampString()
+{
+    S9sDateTime dt = S9sDateTime::currentDateTime();
+
+    return dt.toString();
+}

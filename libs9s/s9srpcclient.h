@@ -389,6 +389,8 @@ class S9sRpcClient
             serversField(
                 const S9sVariantList &servers);
 
+        static S9sString timeStampString();
+
     private:
         S9sRpcClientPrivate *m_priv;
 
