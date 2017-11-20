@@ -31,8 +31,8 @@
 #include <cstring>
 #include <cstdio>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
