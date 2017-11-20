@@ -31,7 +31,7 @@
 #include <cstring>
 #include <cstdio>
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -5455,7 +5455,8 @@ S9sRpcClient::doExecuteRequest(
     S9sDateTime  replyReceived;
     S9sString    header;
     ssize_t      readLength;
-   
+    ssize_t      writtenLength;
+
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
@@ -5494,7 +5495,10 @@ S9sRpcClient::doExecuteRequest(
     /*
      * Sending the HTTP request header.
      */
-    if (m_priv->write(STR(header), header.length()) < 0)
+    writtenLength = m_priv->write(STR(header), header.length());
+    S9S_DEBUG(" Header length: %u, written: %zd", 
+            header.length(), writtenLength);
+    if (writtenLength < 0)
     {
         // we shall use m_priv->m_errorString TODO
         S9S_DEBUG("Error writing socket: %m");
@@ -5511,7 +5515,11 @@ S9sRpcClient::doExecuteRequest(
      */
     if (!payload.empty())
     {
-        if (m_priv->write(STR(payload), payload.length()) < 0)
+        writtenLength = m_priv->write(STR(payload), payload.length());
+        S9S_DEBUG("Payload length: %u, written: %zd", 
+                payload.length(), writtenLength);
+
+        if (writtenLength < 0)
         {
             // we shall use m_priv->m_errorString TODO
             m_priv->m_errorString.sprintf(
@@ -5533,15 +5541,14 @@ S9sRpcClient::doExecuteRequest(
     replyReceived = S9sDateTime::currentDateTime();
 
     m_priv->clearBuffer();
-    readLength = 0;
     do
     {
         m_priv->ensureHasBuffer(m_priv->m_dataSize + READ_SIZE);
 
         readLength = m_priv->read(
-                m_priv->m_buffer + m_priv->m_dataSize, 
-                READ_SIZE - 1);
+                m_priv->m_buffer + m_priv->m_dataSize, READ_SIZE - 1);
 
+        S9S_DEBUG("Read length: %zd", readLength);
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
     } while (readLength > 0);
@@ -5552,10 +5559,10 @@ S9sRpcClient::doExecuteRequest(
     m_priv->m_dataSize += 1;
     S9S_DEBUG("reply: '%s'", m_priv->m_buffer); 
 
-
     // Closing the socket.
     m_priv->close();
-    
+   
+    S9S_DEBUG("data received: %d", m_priv->m_dataSize);
     if (m_priv->m_dataSize > 1)
     {
         // Lets parse the cookie/HTTP session info from server reply
@@ -5572,7 +5579,8 @@ S9sRpcClient::doExecuteRequest(
         }
     } else {
         m_priv->m_errorString.sprintf(
-                "Error reading socket (%s:%d TLS: %s): %m",
+                "No data received from controller (%d, %s:%d TLS: %s): %m",
+                m_priv->m_dataSize,
                 STR(m_priv->m_hostName), m_priv->m_port,
                 m_priv->m_useTls ? "yes" : "no");
 
