@@ -176,6 +176,8 @@ function testCreateCluster()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+        mys9s job --log --job-id=1
+        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
