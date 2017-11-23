@@ -18,7 +18,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
 
-  $MYNAME - Test script for s9s to check various error conditions.
+  $MYNAME - Tests moving objects in the Cmon Directory Tree
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -120,6 +120,12 @@ mys9s user \
     --new-password="pipas" \
     "pipas"
 
+exitCode=$?
+if [ "$exitCode" -ne 0 ]; then
+    failure "The exit code is ${exitCode} while creating user through RPC"
+    exit 1
+fi
+
 #####
 # Creating a user to be a new superuser.
 #
@@ -135,12 +141,6 @@ mys9s user \
     --generate-key \
     --new-password="admin" \
     "admin"
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
 
 exitCode=$?
 if [ "$exitCode" -ne 0 ]; then
@@ -376,99 +376,10 @@ if [ "$GROUP" != 'admins' ]; then
     exit 1
 fi
 
-# FIXME: Keeping short
+#####
+# A final view and exit.
+#
+print_title "Printing tree and ending test"
+
 mys9s tree --list --color=always
-pip-container-destroy --server=$CONTAINER_SERVER container_001
-exit 0
-
-#####
-# Registering second server.
-#
-print_title "Registering second server"
-mys9s server \
-    --register \
-    --servers="lxc://storage01"
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while registering server."
-    exit 1
-fi
-
-OWNER=$(s9s tree --list /storage01 --batch | head -n1 | awk '{print $2}')
-GROUP=$(s9s tree --list /storage01 --batch | head -n1 | awk '{print $3}')
-#if [ "$OWNER" != 'pipas' ]; then
-#    s9s tree --list --print-json /storage01 | jq .
-#    failure "The owner should be 'pipas'."
-#    exit 1
-#fi
-#
-#if [ "$GROUP" != 'users' ]; then
-#    s9s tree --list --print-json /storage01 | jq .
-#    failure "The group should be 'users'."
-#    exit 1
-#fi
-
-
-#####
-# Creating an other container.
-#
-print_title "Creating an other container."
-mys9s server \
-    --create container_002
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    exit 1
-fi
-
-CONTAINER_IP=$(\
-    s9s server \
-        --list-containers \
-        --long container_002 \
-        --batch \
-    | awk '{print $7}')
-
-if [ -z "$CONTAINER_IP" ]; then
-    failure "Container IP could not be found."
-    exit 1
-fi
-
-if [ "$CONTAINER_IP" == "-" ]; then
-    failure "Container IP is invalid."
-    exit 1
-fi
-
-#####
-# Creating a Galera cluster.
-#
-print_title "Creating an other cluster."
-mys9s cluster \
-    --create \
-    --cluster-type=galera \
-    --nodes="$CONTAINER_IP" \
-    --vendor=percona \
-    --cluster-name="galera_002" \
-    --provider-version=5.6 \
-    --wait
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    exit 1
-fi
-
-OWNER=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $2}')
-GROUP=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $3}')
-if [ "$OWNER" != 'pipas' ]; then
-    s9s tree --list --print-json /galera_002 | jq .
-    failure "The owner of '/galera_002' should be 'pipas'."
-    exit 1
-fi
-
-if [ "$GROUP" != 'users' ]; then
-    s9s tree --list --print-json /galera_002 | jq .
-    failure "The group of '/galera_002' should be 'users'."
-    exit 1
-fi
+endTests

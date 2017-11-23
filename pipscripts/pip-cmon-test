@@ -283,6 +283,8 @@ fi
 
 if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
     if [ "$S9S_OPTION" ]; then
+        OPTION_TEST_NAME+="ft_user.sh ft_superuser.sh "
+        OPTION_TEST_NAME+="ft_tree.sh ft_treechroot.sh "
         OPTION_TEST_NAME+="ft_containers.sh "
         OPTION_TEST_NAME+="ft_errors.sh ft_galera.sh ft_groupreplication.sh "
         OPTION_TEST_NAME+="ft_maintenance.sh ft_metatype.sh "
@@ -292,7 +294,6 @@ if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
         OPTION_TEST_NAME+="ft_registergalera.sh ft_registergroupreplication.sh "
         OPTION_TEST_NAME+="ft_registermysqlreplication.sh ft_registerndb.sh "
         OPTION_TEST_NAME+="ft_registerpostgresql.sh ft_replication.sh "
-        OPTION_TEST_NAME+="ft_superuser.sh ft_tree.sh ft_user.sh "
     fi
 fi
 
@@ -1037,11 +1038,11 @@ function run_test()
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running 'ft_full'..."
 
-
                 echo "Starting controller: './ft_full/ft_full'" >ft_full.log
 
                 ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
-
+                backend_pid=$!
+                
                 for delay in $(seq 1 100); do
                     if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
                         break
@@ -1081,6 +1082,24 @@ function run_test()
             pip-host-control --log "Finished ${test_name} ($return_code)."
            
             wait "$watcher_pid"
+
+            if [ $return_code -ne 0 ]; then
+                if [ -z "$(which gdb)" ]; then
+                    pip-host-control --log "Installing gdb."
+                    sudo apt install gdb
+                fi
+
+                pip-host-control --log "Saving backtrace"
+                echo "The backtrave of the ft_full program as it was created"
+                echo "by the pip-cmon-test script:"
+                pushd "$(find_clustercontrol_source_directory)/tests"
+
+                sudo gdb -p $backend_pid -batch \
+                    -ex "thread apply all back" \
+                    -ex "quit" >>ft_full.log
+
+                popd >/dev/null 2>/dev/null
+            fi
 
             # Cleaning up after.
             killall ft_full
