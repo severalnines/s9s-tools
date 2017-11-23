@@ -65,6 +65,7 @@ enum S9sOptionType
     OptionChangePassword,
     OptionDrop,
     OptionOsUser,
+    OptionOsSudoPassword,
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
@@ -301,8 +302,9 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("# Information about the user for the controller to \n");
     userFile.fprintf("# access the nodes.\n");
     userFile.fprintf("#\n");
-    userFile.fprintf("# os_user     = some_user\n");
-    userFile.fprintf("# os_key_file = /home/some_user/.ssh/test_ssh_key\n");
+    userFile.fprintf("# os_user          = some_user\n");
+    userFile.fprintf("# os_sudo_password = some_password\n");
+    userFile.fprintf("# os_key_file      = /home/some_user/.ssh/test_ssh_key\n");
     userFile.fprintf("\n");
 }
 
@@ -1050,6 +1052,31 @@ S9sOptions::providerVersion(
 
         if (retval.empty())
             retval = m_systemConfig.variableValue("provider_version");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns the value of the --os-sudo-password command line option or the user name as
+ *   default.
+ *
+ * The --os-sudo-password is used for executing certain commands with root
+ * os privileges.
+ */
+S9sString
+S9sOptions::osSudoPassword() const
+{
+    S9sString retval;
+
+    if (m_options.contains("os_sudo_password"))
+    {
+        retval = m_options.at("os_sudo_password").toString();
+    } else {
+        retval = m_userConfig.variableValue("os_sudo_password");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("os_sudo_password");
     }
 
     return retval;
@@ -6156,6 +6183,7 @@ S9sOptions::readOptionsCluster(
         { "vendor",           required_argument, 0, OptionVendor          },
         { "provider-version", required_argument, 0, OptionProviderVersion },
         { "os-user",          required_argument, 0, OptionOsUser          },
+        { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
@@ -6409,6 +6437,11 @@ S9sOptions::readOptionsCluster(
             case OptionOsUser:
                 // --os-user
                 m_options["os_user"] = optarg;
+                break;
+
+            case OptionOsSudoPassword:
+                // --os-sudo-password
+                m_options["os_sudo_password"] = optarg;
                 break;
 
             case OptionClusterType:

@@ -1802,6 +1802,7 @@ S9sRpcClient::createCluster()
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList hosts;
     S9sString      osUserName;
+    S9sString      osSudoPassword;
     S9sString      vendor;
     S9sString      dbVersion;
     bool           uninstall = true;
@@ -1832,8 +1833,9 @@ S9sRpcClient::createCluster()
 
     dbVersion    = options->providerVersion(
             options->clusterType() == "postgresql" ? "9.6" : "5.6");
-    osUserName   = options->osUser();
-    vendor       = options->vendor();
+    osUserName     = options->osUser();
+    vendor         = options->vendor();
+    osSudoPassword = options->osSudoPassword();
 
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
@@ -1884,7 +1886,7 @@ S9sRpcClient::createCluster()
 	} else if (options->clusterType() == "mongodb")
 	{
 		success = createMongoCluster(
-				hosts, osUserName, vendor, dbVersion, uninstall);
+				hosts, osUserName, osSudoPassword, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -2819,6 +2821,7 @@ bool
 S9sRpcClient::createMongoCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
+        const S9sString      &osSudoPassword,
         const S9sString      &vendor,
         const S9sString      &mongoVersion,
         bool                  uninstall)
@@ -2921,6 +2924,7 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_version"]  = mongoVersion;
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
+    jobData["sudo_password"]    = osSudoPassword;
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"] = options->osKeyFile();
     jobData["mongodb_user"]     = options->dbAdminUserName();

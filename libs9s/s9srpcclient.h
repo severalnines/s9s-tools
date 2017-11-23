@@ -347,6 +347,7 @@ class S9sRpcClient
         bool createMongoCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
+                const S9sString      &osSudoPassword,
                 const S9sString      &vendor,
                 const S9sString      &mongoVersion,
                 bool                  uninstall);
