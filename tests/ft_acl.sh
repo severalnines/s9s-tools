@@ -241,13 +241,35 @@ function testAcl()
         exit 1
     fi
 
+    # We are now adding a new ACL to the folder, a real ACL entry with a user.
     mys9s tree --add-acl --acl="user:nobody:r-x" /home
-    mys9s tree --get-acl /home
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+        exit 1
+    fi
     
     lines=$(s9s tree --get-acl /home)
     expected="^user:nobody:r-x$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s tree --get-acl /home
+        exit 1
+    fi
+    
+    # Adding an ACL that actually removes some access rights.
+    mys9s tree --add-acl --acl="other::---" /home
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating user through RPC"
+        exit 1
+    fi
+
+    lines=$(s9s tree --get-acl /home)
+    expected="^other::---$"
+    if ! echo "$lines" | grep --quiet "$expected"; then
+        failure "Expected line not found: '$expected'"
+        mys9s tree --get-acl /home
         exit 1
     fi
 }
