@@ -17,9 +17,9 @@ function printHelpAndExit()
 {
 cat << EOF
 Usage: 
-  $MYNAME [OPTION]... [TESTNAME]
+  $MYNAME [OPTION]...
 
-  $MYNAME - Tests moving objects in the Cmon Directory Tree
+  $MYNAME - Creates objects in a chroot CDT environment. 
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -161,9 +161,6 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-#mys9s tree --tree --cmon-user=admin
-#mys9s tree --tree --cmon-user=pipas
-
 #####
 # Registering second server.
 #
@@ -225,7 +222,7 @@ if [ "$CONTAINER_IP" == "-" ]; then
     ALL_CREATED_IPS+=" container_002"
     exit 1
 else
-    ALL_CREATED_IPS+=" $CONTAINER_IP"
+    ALL_CREATED_IPS+="$CONTAINER_IP"
 fi
 
 #####

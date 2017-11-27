@@ -16,9 +16,9 @@ function printHelpAndExit()
 {
 cat << EOF
 Usage: 
-  $MYNAME [OPTION]... [TESTNAME]
+  $MYNAME [OPTION]...
 
-  $MYNAME - Tests moving objects in the Cmon Directory Tree
+  $MYNAME - Tests moving objects in the Cmon Directory Tree.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.

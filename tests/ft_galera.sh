@@ -192,7 +192,7 @@ function testCreateCluster()
 # This function will check the basic getconfig/setconfig features that reads the
 # configuration of one node.
 #
-function testConfig()
+function testSetConfig01()
 {
     local exitCode
     local value
@@ -206,7 +206,7 @@ function testConfig()
     #
     mys9s node \
         --list-config \
-        --nodes=$FIRST_ADDED_NODE #\ >/dev/null
+        --nodes=$FIRST_ADDED_NODE 
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -262,7 +262,7 @@ function testConfig()
 # This test will set a configuration value that contains an SI prefixum,
 # ("54M").
 #
-function testSetConfig()
+function testSetConfig02()
 {
     local exitCode
     local value
@@ -914,8 +914,8 @@ else
 
     runFunctionalTest testCreateCluster
 
-    runFunctionalTest testConfig
-    runFunctionalTest testSetConfig
+    runFunctionalTest testSetConfig01
+    runFunctionalTest testSetConfig02
 
     runFunctionalTest testRestartNode
     runFunctionalTest testStopStartNode
