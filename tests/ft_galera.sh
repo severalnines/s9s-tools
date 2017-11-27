@@ -176,7 +176,7 @@ function testCreateCluster()
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \
-        --vendor=codership \
+        --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
@@ -195,6 +195,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
 }
 
 #
@@ -340,6 +342,7 @@ function testRestartNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
         mys9s job --log --job-id=4
+        mys9s job --log --job-id=5
     fi
 }
 
@@ -932,7 +935,7 @@ else
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
-    runFunctionalTest testUploadData
+    #runFunctionalTest testUploadData
 
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql

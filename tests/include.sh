@@ -285,6 +285,8 @@ function node_state()
     s9s node --list --batch --long --node-format="%S" "$nodeName"
 }
 
+
+
 #
 # This function will wait for a node to pick up a state and stay in that state
 # for a while.
@@ -377,6 +379,62 @@ function wait_for_node_failed()
     wait_for_node_state "$1" "CmonHostFailed"
     return $?
 }
+
+function wait_for_cluster_state()
+{
+    local clusterName="$1"
+    local expectedState="$2"
+    local state
+    local waited=0
+    local stayed=0
+
+    if [ -z "$clusterName" ]; then
+        printError "Expected a cluster name."
+        return 6
+    fi
+
+    if [ -z "$expectedState" ]; then 
+        printError "Expected state name."
+        return 6
+    fi
+
+    while true; do
+        state=$(s9s cluster \
+            --list \
+            --cluster-format="%S" \
+            --cluster-name="$clusterName")
+
+        if [ "$state" == $expectedState ]; then
+            let stayed+=1
+        else
+            let stayed=0
+
+            #
+            # Would be crazy to timeout when we are in the expected state, so we
+            # do check the timeout only when we are not in the expected state.
+            #
+            if [ "$waited" -gt 120 ]; then
+                return 1
+            fi
+        fi
+
+        if [ "$stayed" -gt 10 ]; then
+            return 0
+        fi
+
+        let waited+=1
+        sleep 1
+    done
+
+    return 2
+}
+
+function wait_for_cluster_started()
+{
+    wait_for_cluster_state "$1" "STARTED"
+    return $?
+}
+
 
 #
 # $1: the server name

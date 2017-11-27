@@ -295,7 +295,7 @@ function testRmdir()
     local expected
     local lines
 
-    print_title "Removing a Folder"
+    print_title "Removing the Folder"
 
     # Creating a folder.
     mys9s tree --rmdir /home
