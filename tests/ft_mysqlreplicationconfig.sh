@@ -171,6 +171,8 @@ function checkController()
     local lines
     local expected
 
+    print_title "Checking Controller Config"
+
     controller_ip=$(s9s node --list --long | grep "^c" | awk '{print $5}')
     if [ -z "$controller_ip" ]; then
         failure "Controller was not found."
@@ -181,31 +183,34 @@ function checkController()
     # Checking the configuration values of the controller.
     lines=$(s9s node --list-config --nodes=$controller_ip)
 
-    expected="^-     cdt_path                            /$"
+    expected="^-  *cdt_path  *\\/ *$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s node --list-config --nodes=$controller_ip
         exit 1
     fi
     
-    expected="^-     created_by_job                      1$"
+    expected="^-  *created_by_job  *1 *$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s node --list-config --nodes=$controller_ip
         exit 1
     fi
     
-    expected="^-     group_owner                         4$"
+    expected="^-  *group_owner  *4 *$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s node --list-config --nodes=$controller_ip
         exit 1
     fi
     
-    expected="^-     logfile                             /tmp/cmon_1.log$"
+    expected="^-  *logfile  */tmp/cmon_1.log *$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s node --list-config --nodes=$controller_ip
         exit 1
     fi
 
-    mys9s node --list-config --nodes=$controller_ip
     return 0
 }
 

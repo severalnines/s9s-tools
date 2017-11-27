@@ -185,6 +185,9 @@ function checkTree01()
     return 0
 }
 
+#
+# Creating a folder, checking that it is there.
+#
 function testMkdir()
 {
     local exitCode 
@@ -198,7 +201,7 @@ function testMkdir()
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
+        failure "The exit code is ${exitCode} while creating a folder"
         exit 1
     fi
 
@@ -215,29 +218,38 @@ function testMkdir()
     return 0
 }
 
+#
+# Reading and setting ACL entries.
+#
 function testAcl()
 {
     local lines
     local expected
 
-    mys9s tree --get-acl /home
+    print_title "Testing ACL entries"
+
+    # Checking the default ACL entries.
+    # mys9s tree --get-acl /home
     
     lines=$(s9s tree --get-acl /home)
     expected="^user::rwx$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s tree --get-acl /home
         exit 1
     fi
     
     expected="^group::rwx$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s tree --get-acl /home
         exit 1
     fi
     
     expected="^other::rwx$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        mys9s tree --get-acl /home
         exit 1
     fi
 
@@ -245,7 +257,7 @@ function testAcl()
     mys9s tree --add-acl --acl="user:nobody:r-x" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
+        failure "The exit code is ${exitCode} while adding ACL entry."
         exit 1
     fi
     
@@ -261,7 +273,7 @@ function testAcl()
     mys9s tree --add-acl --acl="other::---" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
+        failure "The exit code is ${exitCode} while adding ACL entry."
         exit 1
     fi
 
@@ -272,6 +284,29 @@ function testAcl()
         mys9s tree --get-acl /home
         exit 1
     fi
+}
+
+#
+# Removing the folder.
+#
+function testRmdir()
+{
+    local exitCode 
+    local expected
+    local lines
+
+    print_title "Removing a Folder"
+
+    # Creating a folder.
+    mys9s tree --rmdir /home
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while removing a folder."
+        exit 1
+    fi
+
+    return 0
 }
 
 #
@@ -290,6 +325,7 @@ else
     runFunctionalTest checkTree01
     runFunctionalTest testMkdir
     runFunctionalTest testAcl
+    runFunctionalTest testRmdir
 fi
 
 endTests
