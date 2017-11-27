@@ -1086,17 +1086,26 @@ function run_test()
             if [ $return_code -ne 0 ]; then
                 if [ -z "$(which gdb)" ]; then
                     pip-host-control --log "Installing gdb."
-                    sudo apt install gdb
+                    sudo apt-get -y --force-yes install gdb
                 fi
 
                 pip-host-control --log "Saving backtrace"
-                echo "The backtrave of the ft_full program as it was created"
-                echo "by the pip-cmon-test script:"
+                echo "The backtrave of the ft_full program as it was created" \
+                    >>ft_full.log
+
+                echo "by the pip-cmon-test script:" \
+                    >>ft_full.log 
                 pushd "$(find_clustercontrol_source_directory)/tests"
 
                 sudo gdb -p $backend_pid -batch \
                     -ex "thread apply all back" \
-                    -ex "quit" >>ft_full.log
+                    -ex "quit" \
+                    >>ft_full.log 2>>ft_full.log
+                
+                sudo gdb -p $backend_pid -batch \
+                    -ex "thread apply all back" \
+                    -ex "quit" \
+                    >>ft_full.backtrace 2>>ft_full.backtrace
 
                 popd >/dev/null 2>/dev/null
             fi

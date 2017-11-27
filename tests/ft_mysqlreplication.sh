@@ -14,6 +14,9 @@ CONTAINER_SERVER=""
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
+nodes=""
+
+
 cd $MYDIR
 source include.sh
 
@@ -124,9 +127,7 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
+        exit 1
     fi
 }
 
@@ -170,6 +171,8 @@ function testCreateCluster()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+        mys9s job --log --job-id=1
+        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -216,12 +219,14 @@ function testConfig()
         --nodes=$FIRST_ADDED_NODE \
         --opt-name=$name \
         --opt-group=MYSQLD \
-        --opt-value=$newValue
+        --opt-value=$newValue \
+        --print-json
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
     
     #
@@ -241,6 +246,7 @@ function testConfig()
 
     if [ "$value" != "$newValue" ]; then
         failure "Configuration value should be $newValue not $value"
+        exit 1
     fi
 
     mys9s node \
@@ -261,6 +267,8 @@ function testSetConfig()
     local name="max_heap_table_size"
 
     print_title "Changing configuration '$name'"
+    
+    mys9s node --list --long
 
     #
     # Changing a configuration value.
@@ -445,13 +453,11 @@ function testAddNode()
 #
 function testAddMaster()
 {
-    local nodes
     local exitCode
 
     print_title "Adding a master node"
 
     LAST_ADDED_NODE=$(create_node)
-    nodes+="$LAST_ADDED_NODE?master"
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
@@ -460,13 +466,14 @@ function testAddMaster()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
+        --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE;master" \
         $LOG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 }
 
@@ -496,6 +503,8 @@ function testRemoveNode()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        mys9s job --log --job-id=6
+        exit 1
     fi
 }
 

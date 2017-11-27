@@ -122,7 +122,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    print_title "The test to create PostgreSQL cluster is starting now."
+    print_title "Creating a PostgreSQL cluster"
 
     nodeName=$(create_node)
     nodes+="$nodeName:8089;"
