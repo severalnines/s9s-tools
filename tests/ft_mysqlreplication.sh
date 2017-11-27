@@ -317,6 +317,8 @@ function testAddNode()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        mys9s job --log --job-id=6
+        exit 1
     fi
 }
 

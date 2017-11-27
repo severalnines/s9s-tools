@@ -124,7 +124,8 @@ function endTests ()
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "SUCCESS: $(basename $0 .sh)"
         else
-            echo "Test $(basename $0) is successful."
+            print_title "Report"
+            echo " Test $(basename $0) is successful."
         fi
           
         exit 0
