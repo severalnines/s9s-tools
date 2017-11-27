@@ -12,6 +12,7 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+PROVIDER_VERSION="9.3"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -31,13 +32,14 @@ Usage:
  
   $MYNAME - Tests various features on PostgreSql. 
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
+ -h, --help          Print this help and exit.
+ --verbose           Print more messages.
+ --log               Print the logs while waiting for the job to be ended.
+ --server=SERVER     The name of the server that will hold the containers.
+ --print-commands    Do not print unit test info, print the executed commands.
+ --install           Just install the cluster and exit.
+ --reset-config      Remove and re-generate the ~/.s9s directory.
+ --provider-version=STRING The SQL server provider version.
 
 EXAMPLES
   Just quickly create a PostgreSQL cluster and add two slave nodes to it
@@ -52,7 +54,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install,reset-config" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config,\
+provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -99,6 +102,12 @@ while true; do
             OPTION_RESET_CONFIG="true"
             ;;
 
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -110,8 +119,6 @@ if [ -z "$S9S" ]; then
     echo "The s9s program is not installed."
     exit 7
 fi
-
-#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 if [ -z $(which pip-container-create) ]; then
     printError "The 'pip-container-create' program is not found."
@@ -128,7 +135,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    print_title "Creating PostgreSQL cluster"
+    print_title "Creating a PostgreSQL cluster"
     
     for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
         [ "$servers" ] && servers+=";"
@@ -157,13 +164,14 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while creating cluster."
+        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -171,12 +179,8 @@ function testCreateCluster()
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
+        exit 1
     fi
-
-    #s9s node \
-    #    --set \
-    #    --nodes="$nodes" \
-    #    --properties="cdt_path=$CONTAINER_SERVER"
 }
 
 #
@@ -186,8 +190,7 @@ function testAddNode()
 {
     local exitCode
 
-    #pip-say "The test to add node is starting now."
-    print_title "Creating node..."
+    print_title "Adding a New Node"
 
     LAST_ADDED_NODE=$(create_node)
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -216,6 +219,8 @@ function testStopStartNode()
 {
     local exitCode
     local state 
+
+    print_title "Stopping and Starting a Node"
 
     #
     # First stop the node.
@@ -267,8 +272,7 @@ function testConfig()
     local exitCode
     local value
 
-    #pip-say "The test to check configuration is starting now."
-    print_title "Checking configuration"
+    print_title "Checking Configuration"
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -335,12 +339,9 @@ function testConfig()
 
     rm -rf tmp
 
-    #
-    # This is just to produce some nice output for the user.
-    #
-    #$S9S node \
-    #    --list-config \
-    #    --nodes=$FIRST_ADDED_NODE 
+    mys9s node \
+        --list-config \
+        --nodes=$FIRST_ADDED_NODE 
 }
 
 #
@@ -358,7 +359,6 @@ function testCreateAccount()
         --create \
         --cluster-id=$CLUSTER_ID \
         --account="joe:password" \
-        --with-database \
         --batch 
     
     exitCode=$?
@@ -378,10 +378,11 @@ function testCreateAccount()
         --batch
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    #if [ "$exitCode" -ne 0 ]; then
-    #    failure "Exit code is not 0 while deleting an account."
-    #fi
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not $exitCode while deleting an account."
+    fi
+
+    mys9s account --list --long
 }
 
 #
@@ -389,7 +390,7 @@ function testCreateAccount()
 #
 function testCreateDatabase()
 {
-    print_title "Testing database creation."
+    print_title "Creating Databases"
 
     #
     # This command will create a new database on the cluster.
@@ -448,7 +449,7 @@ function testCreateBackup()
 {
     local exitCode
     
-    print_title "Testing to create a backup"
+    print_title "Creating Backups"
 
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -482,7 +483,7 @@ function testCreateBackup()
         failure "The exit code is ${exitCode} while creating a backup"
     fi
 
-    # s9s backup --list --long
+    mys9s backup --list --long
     # s9s backup --list --verbose --print-json
 }
 
@@ -494,7 +495,8 @@ function testRestoreBackup()
     local exitCode
     local backupId
 
-    print_title "Testing to restore a backup"
+    print_title "Restoring a Backup"
+
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -512,6 +514,7 @@ function testRestoreBackup()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 }
 
@@ -523,7 +526,8 @@ function testRemoveBackup()
     local exitCode
     local backupId
 
-    print_title "The test to remove a backup is starting."
+    print_title "Removing a Backup"
+
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -541,6 +545,7 @@ function testRemoveBackup()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        exit 1
     fi
 }
 
@@ -553,7 +558,8 @@ function testRunScript()
     local exitCode
     local backupId
 
-    print_title "The test to run scripts is starting."
+    print_title "Running a Script"
+
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -588,7 +594,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    print_title "The test of rolling restart is starting now."
+    print_title "Performing Rolling Restart"
 
     #
     # Calling for a rolling restart.
@@ -612,7 +618,7 @@ function testDrop()
 {
     local exitCode
 
-    print_title "The test to drop the cluster is starting now."
+    print_title "Dropping the Cluster"
 
     #
     # Starting the cluster.
