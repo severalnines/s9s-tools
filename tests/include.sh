@@ -218,9 +218,21 @@ function failure
 function check_exit_code()
 {
     local exitCode="$1"
+    local jobId
 
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}."
+
+        jobId=$(\
+            s9s job --list --batch | \
+            grep FAIL | \
+            tail -n1 | \
+            awk '{print $1}')
+
+        if [ "$jobId" ]; then
+            mys9s job --log --job-id="$jobId"
+        fi
+
         exit $exitCode
     fi
 }

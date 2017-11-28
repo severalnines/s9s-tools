@@ -441,7 +441,8 @@ function testCreateDatabase()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating a database."
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
     fi
     
     #
@@ -458,12 +459,14 @@ function testCreateDatabase()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating account."
+        failure "Exit code is $exitCode while creating account."
+        exit 1
     fi
    
     userName=$(s9s account --list --cluster-id=1 pipas)
     if [ "$userName" != "pipas" ]; then
         failure "Failed to create user 'pipas'."
+        exit 1
     fi
 
     #
@@ -480,7 +483,7 @@ function testCreateDatabase()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting privileges."
+        failure "Exit code is $exitCode while granting privileges."
     fi
 }
 
@@ -508,7 +511,7 @@ function testUploadData()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        return 1
+        exit 1
     fi
 
     #
@@ -522,7 +525,7 @@ function testUploadData()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        return 1
+        exit 1
     fi
 
     #
@@ -539,7 +542,7 @@ function testUploadData()
             -e "SELECT 41+1" | tail -n +2 )
 
     if [ "$reply" != "42" ]; then
-        echo "Cluster failed to execute an SQL statement: '$reply'."
+        failure "Cluster failed to execute an SQL statement: '$reply'."
     fi
 
     #
@@ -575,7 +578,6 @@ function testUploadData()
 function testAddNode()
 {
     local nodes
-    local exitCode
 
     print_title "Adding a node"
 
@@ -593,11 +595,7 @@ function testAddNode()
         --nodes="$nodes" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -607,10 +605,9 @@ function testAddProxySql()
 {
     local node
     local nodes
-    local exitCode
 
-    print_title "The test to add ProxySQL node is starting now."
-    printVerbose "Creating Node..."
+    print_title "Adding a ProxySQL Node"
+
     nodeName=$(create_node)
     nodes+="proxySql://$nodeName"
     ALL_CREATED_IPS+=" $nodeName"
@@ -624,11 +621,7 @@ function testAddProxySql()
         --nodes="$nodes" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     mys9s node \
         --list-config \
@@ -645,7 +638,6 @@ function testAddRemoveHaProxy()
 {
     local node
     local nodes
-    local exitCode
     
     print_title "Adding and removing HaProxy node"
     mys9s node --list --long 
@@ -666,13 +658,7 @@ function testAddRemoveHaProxy()
         --nodes="haProxy://$node" \
         $LOG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        s9s job --log --job-id=10
-
-        exit 1
-    fi
+    check_exit_code $?
    
     mys9s node --list --long --color=always
 
@@ -686,11 +672,7 @@ function testAddRemoveHaProxy()
         --nodes="$node:9600" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
     
     mys9s node --list --long --color=always
 }
@@ -702,10 +684,9 @@ function testAddHaProxy()
 {
     local node
     local nodes
-    local exitCode
     
-    print_title "The test to add HaProxy node is starting now."
-    printVerbose "Creating Node..."
+    print_title "Adding a HaProxy Node"
+
     node=$(create_node)
     nodes+="haProxy://$node"
     ALL_CREATED_IPS+=" $node"
@@ -719,11 +700,7 @@ function testAddHaProxy()
         --nodes="$nodes" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -746,11 +723,7 @@ function testRemoveNode()
         --nodes="$LAST_ADDED_NODE" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -758,8 +731,6 @@ function testRemoveNode()
 #
 function testRollingRestart()
 {
-    local exitCode
-    
     print_title "The test of rolling restart is starting now."
 
     #
@@ -770,11 +741,7 @@ function testRollingRestart()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -783,8 +750,6 @@ function testRollingRestart()
 #
 function testCreateBackup()
 {
-    local exitCode
-    
     print_title "The test to create a backup is starting."
 
     #
@@ -797,11 +762,7 @@ function testCreateBackup()
         --backup-dir=/tmp \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -809,7 +770,6 @@ function testCreateBackup()
 #
 function testRestoreBackup()
 {
-    local exitCode
     local backupId
 
     print_title "The test to restore a backup is starting."
@@ -826,11 +786,7 @@ function testRestoreBackup()
         --backup-id=$backupId \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -838,10 +794,10 @@ function testRestoreBackup()
 #
 function testRemoveBackup()
 {
-    local exitCode
     local backupId
 
-    print_title "The test to remove a backup is starting."
+    print_title "Removing a Backup"
+
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
@@ -854,11 +810,7 @@ function testRemoveBackup()
         --backup-id=$backupId \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -866,9 +818,7 @@ function testRemoveBackup()
 #
 function testStop()
 {
-    local exitCode
-
-    print_title "The test to stop the cluster is starting now."
+    print_title "Stopping Cluster"
 
     #
     # Stopping the cluster.
@@ -878,11 +828,7 @@ function testStop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
@@ -890,9 +836,7 @@ function testStop()
 #
 function testStart()
 {
-    local exitCode
-
-    print_title "The test to start the cluster is starting now."
+    print_title "Starting Cluster"
 
     #
     # Starting the cluster.
@@ -902,11 +846,7 @@ function testStart()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #
