@@ -182,9 +182,9 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
+        failure "Exit code is $exitCode while creating cluster."
+        mys9s job --list
         mys9s job --log --job-id=1
         exit 1
     fi
@@ -577,7 +577,8 @@ function testAddNode()
     local nodes
     local exitCode
 
-    print_title "Addiong a node"
+    print_title "Adding a node"
+
     printVerbose "Creating node..."
     LAST_ADDED_NODE=$(create_node)
     nodes+="$LAST_ADDED_NODE"

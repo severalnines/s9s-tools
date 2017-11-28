@@ -5399,7 +5399,8 @@ S9sRpcReply::printJobListBrief()
         printf("%s\n", STR(title));
     }
     
-    printf("Total: %d\n", total);
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
 }
 
 /**
@@ -5690,7 +5691,8 @@ S9sRpcReply::printJobListLong()
 
     printf("\n");
     
-    printf("Total: %d\n", total);
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
 }
 
 /**

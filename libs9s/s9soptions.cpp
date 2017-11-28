@@ -6582,6 +6582,7 @@ S9sOptions::readOptionsJob(
         // Main Option
         { "wait",             no_argument,       0,  5                    },
         { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
         { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0,  OptionDelete         },
         { "fail",             no_argument,       0,  OptionFail           },
@@ -6709,6 +6710,11 @@ S9sOptions::readOptionsJob(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
                 break;
 
             case OptionJobId:

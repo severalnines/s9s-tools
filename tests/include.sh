@@ -215,6 +215,16 @@ function failure
     FAILED="true"
 }
 
+function check_exit_code()
+{
+    local exitCode="$1"
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
+        exit $exitCode
+    fi
+}
+
 #
 # This function will check if a core file is created and fails the test if so.
 #
