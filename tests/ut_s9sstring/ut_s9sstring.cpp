@@ -375,6 +375,13 @@ UtS9sString::testSplit()
     S9S_COMPARE(list[1], "two");
     S9S_COMPARE(list[2], "three");
 
+    string = ";;one,two;;;;three;";
+    list = string.split(";,");
+    S9S_COMPARE(list.size(), 3);
+    S9S_COMPARE(list[0], "one");
+    S9S_COMPARE(list[1], "two");
+    S9S_COMPARE(list[2], "three");
+
     return true;
 }
 

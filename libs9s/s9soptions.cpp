@@ -877,7 +877,7 @@ bool
 S9sOptions::setNodes(
         const S9sString &value)
 {
-    S9sVariantList nodeStrings = value.split(";");
+    S9sVariantList nodeStrings = value.split(";,");
     S9sVariantList nodes;
 
     for (uint idx = 0; idx < nodeStrings.size(); ++idx)
@@ -923,7 +923,7 @@ bool
 S9sOptions::setServers(
         const S9sString &value)
 {
-    S9sVariantList serverStrings = value.split(";");
+    S9sVariantList serverStrings = value.split(";,");
     S9sVariantList servers;
 
     for (uint idx = 0; idx < serverStrings.size(); ++idx)

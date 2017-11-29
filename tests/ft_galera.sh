@@ -753,7 +753,7 @@ function testCreateBackup()
     print_title "The test to create a backup is starting."
 
     #
-    # Calling for a rolling restart.
+    # Creating the backup.
     #
     mys9s backup \
         --create \
@@ -774,20 +774,19 @@ function testRestoreBackup()
 
     print_title "The test to restore a backup is starting."
     backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
+        head -n1 | \
         awk '{print $1}')
 
     mys9s backup --list --long --batch --cluster-id=$CLUSTER_ID
     
-    s9s backup --list --long --batch --cluster-id=$CLUSTER_ID | awk '{print $1}'
-
     #
-    # Creating a backup. 
+    # Restoring the backup. 
     #
     mys9s backup \
         --restore \
-        --cluster-id=$CLUSTER_ID \
-        --backup-id=1 \
+        --cluster-id="$CLUSTER_ID" \
+        --backup-id="$backupId" \
         $LOG_OPTION
     
     check_exit_code $?

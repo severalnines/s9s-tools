@@ -654,6 +654,7 @@ function print_title()
 {
     echo ""
     echo -e "\033[1m$*\033[0;39m"
+    echo -e "\033[1m-----------------------------------------------\033[0;39m"
 }
 
 
@@ -662,6 +663,15 @@ function print_title()
 #
 function destroyNodes()
 {
+    if [ "$OPTION_INSTALL" ]; then
+        print_title "Leaving the containers"
+        echo "The --install option was provided, not destroying the "
+        echo "containers."
+        echo "     server : $CONTAINER_SERVER"
+        echo " containers : $ALL_CREATED_IPS"
+        return 0
+    fi
+
     if [ "$ALL_CREATED_IPS" ]; then
         print_title "Destroying the containers"
         echo "     server : $CONTAINER_SERVER"
