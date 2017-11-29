@@ -190,6 +190,7 @@ class S9sOptions
         bool noCompression() const;
         bool usePigz() const;
         bool onNode() const;
+        bool onController() const;
         S9sString databases() const;
         bool setParallellism(const S9sString &value);
         bool hasParallellism() const;
