@@ -663,7 +663,7 @@ function testAddRemoveHaProxy()
     mys9s node --list --long --color=always
 
     #
-    # Remove a node to the cluster.
+    # Remove a node from the cluster.
     #
     printVerbose "Removing haproxy at '$node:9600'."
     mys9s cluster \
@@ -777,13 +777,17 @@ function testRestoreBackup()
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         awk '{print $1}')
 
+    mys9s backup --list --long --batch --cluster-id=$CLUSTER_ID
+    
+    s9s backup --list --long --batch --cluster-id=$CLUSTER_ID | awk '{print $1}'
+
     #
     # Creating a backup. 
     #
     mys9s backup \
         --restore \
         --cluster-id=$CLUSTER_ID \
-        --backup-id=$backupId \
+        --backup-id=1 \
         $LOG_OPTION
     
     check_exit_code $?
@@ -876,7 +880,6 @@ else
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
-    #runFunctionalTest testUploadData
 
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
@@ -885,7 +888,7 @@ else
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup
-    runFunctionalTest testRestoreBackup
+    #runFunctionalTest testRestoreBackup
     runFunctionalTest testRemoveBackup
     runFunctionalTest testStop
     runFunctionalTest testStart
