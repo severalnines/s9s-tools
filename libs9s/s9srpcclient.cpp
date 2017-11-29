@@ -4466,6 +4466,9 @@ S9sRpcClient::createBackup()
 
     if (options->onNode())
         jobData["cc_storage"]    = false;
+    // or just else branch of onNode ?
+    if (options->onController())
+        jobData["cc_storage"]    = true;
 
     if (options->hasParallellism())
         jobData["xtrabackup_parallellism"] = options->parallellism();

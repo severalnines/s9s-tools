@@ -106,6 +106,7 @@ enum S9sOptionType
     OptionNoCompression,
     OptionUsePigz,
     OptionOnNode,
+    OptionOnController,
     OptionDatabases,
     OptionParallellism,
     OptionFullPath,
@@ -1707,6 +1708,14 @@ S9sOptions::onNode() const
     return getBool("on_node");
 }
 
+/**
+ * \returns true if the --on-controller command line option was provided.
+ */
+bool
+S9sOptions::onController() const
+{
+    return getBool("on_controller");
+}
 
 /**
  * \returns the value provided with --backup-method or the backup_method
@@ -3215,6 +3224,7 @@ S9sOptions::printHelpBackup()
 "  --full-path                Print the full path of the files.\n"
 "  --no-compression           Do not compress the archive file.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
+"  --on-controller            Stream the backup to the controller host.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "\n"
@@ -3888,6 +3898,7 @@ S9sOptions::readOptionsBackup(
         { "no-compression",   no_argument,       0, OptionNoCompression   },
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
         { "on-node",          no_argument,       0, OptionOnNode          },
+        { "on-controller",    no_argument,       0, OptionOnController    },
         { "databases",        required_argument, 0, OptionDatabases       },
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "full-path",        no_argument,       0, OptionFullPath        },
@@ -4086,6 +4097,11 @@ S9sOptions::readOptionsBackup(
             case OptionOnNode:
                 // --on-node
                 m_options["on_node"] = true;
+                break;
+
+            case OptionOnController:
+                // --on-controller
+                m_options["on_controller"] = true;
                 break;
 
             case OptionDatabases:
