@@ -215,6 +215,10 @@ function failure
     FAILED="true"
 }
 
+#
+# This will check the exit code passed as an argument and print the logs
+# of the last failed job if the exit code is not 0.
+#
 function check_exit_code()
 {
     local exitCode="$1"
@@ -234,6 +238,15 @@ function check_exit_code()
         fi
 
         exit $exitCode
+    fi
+}
+
+function check_exit_code_no_job()
+{
+    local exitCode="$1"
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}."
     fi
 }
 

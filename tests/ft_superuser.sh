@@ -129,6 +129,8 @@ last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)
 # The members of this group all have the superuser privileges, so this user will
 # be able to do anything.
 #
+print_title "Bootstrapping by Creating a Superuser"
+
 mys9s user \
     --create \
     --generate-key \
@@ -142,20 +144,30 @@ mys9s user \
     $OPTION_VERBOSE \
     "$USER"
 
+check_exit_code_no_job $?
 
 #
 # Ok, now we have the username and the key file location stored in the s9s.conf
 # file together with the controller URL. This means we can do anything without
 # passing credentials through the command line:
 #
+print_title "Printing the Users"
+
 mys9s user --list --long 
+
+check_exit_code_no_job $?
 
 #
 # But that does not mean we can't use other users or authenticate with a
 # pasword. Here is how we can use the password:
 #
+print_title "Authenticating with Password"
+
 mys9s user \
     --list \
     --long \
     --cmon-user="$USER" \
     --password="admin"
+
+check_exit_code_no_job $?
+
