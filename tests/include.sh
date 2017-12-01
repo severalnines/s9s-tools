@@ -551,6 +551,22 @@ function create_node()
     echo $ip
 }
 
+function emit_s9s_configuration_file()
+{
+    cat <<EOF
+#
+# This configuration file was created by ${MYNAME} version ${VERSION}.
+# 
+#
+[global]
+controller = https://localhost:9556
+
+[log]
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+EOF
+}
+
 function reset_config()
 {
     local config_dir="$HOME/.s9s"
@@ -561,7 +577,7 @@ function reset_config()
     fi
     
     print_title "Removing s9s configuration"
-    printVerbose "Rewriting S9S configuration."
+
     if [ -d "$config_file" ]; then
         rm -rf "$config_file"
     fi
@@ -570,17 +586,10 @@ function reset_config()
         mkdir "$config_dir"
     fi
 
-    cat >$config_file <<EOF
-#
-# This configuration file was created by ${MYNAME} version ${VERSION}.
-#
-[global]
-controller = https://localhost:9556
+    emit_s9s_configuration_file >$config_file
 
-[log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
-EOF
+    # This goes to the standard output.
+    emit_s9s_configuration_file
 }
 
 #

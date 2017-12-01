@@ -133,7 +133,6 @@ function testCreateCluster()
 {
     local nodes
     local nodeName
-    local exitCode
 
     print_title "Creating a PostgreSQL cluster"
     
@@ -167,12 +166,7 @@ function testCreateCluster()
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-        exit 1
-    fi
+    check_exit_code $?    
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -188,8 +182,6 @@ function testCreateCluster()
 #
 function testAddNode()
 {
-    local exitCode
-
     print_title "Adding a New Node"
 
     LAST_ADDED_NODE=$(create_node)
@@ -204,11 +196,7 @@ function testAddNode()
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?    
 }
 
 #
@@ -217,7 +205,6 @@ function testAddNode()
 #
 function testStopStartNode()
 {
-    local exitCode
     local state 
 
     print_title "Stopping and Starting a Node"
@@ -231,11 +218,7 @@ function testStopStartNode()
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?    
     
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "DEGRADED" ]; then
@@ -251,11 +234,7 @@ function testStopStartNode()
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?    
 
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STARTED" ]; then
@@ -447,8 +426,6 @@ function testCreateDatabase()
 #
 function testCreateBackup()
 {
-    local exitCode
-    
     print_title "Creating Backups"
 
     #
@@ -461,11 +438,7 @@ function testCreateBackup()
         --backup-directory=/tmp \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating a backup."
-    fi
+    check_exit_code $?    
     
     #
     # Creating a backup using the cluster name.
@@ -477,11 +450,7 @@ function testCreateBackup()
         --backup-directory=/tmp \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating a backup"
-    fi
+    check_exit_code $?    
 
     mys9s backup --list --long
     # s9s backup --list --verbose --print-json
@@ -492,30 +461,25 @@ function testCreateBackup()
 #
 function testRestoreBackup()
 {
-    local exitCode
     local backupId
 
     print_title "Restoring a Backup"
 
     backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
+        head -n1 | \
         awk '{print $1}')
 
     #
-    # Calling for a rolling restart.
+    # Restoring the backup. 
     #
     mys9s backup \
         --restore \
         --cluster-id=$CLUSTER_ID \
         --backup-id=$backupId \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+
+    check_exit_code $?    
 }
 
 #
@@ -523,17 +487,17 @@ function testRestoreBackup()
 #
 function testRemoveBackup()
 {
-    local exitCode
     local backupId
 
     print_title "Removing a Backup"
 
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
+        head -n1 | \
         awk '{print $1}')
 
     #
-    # Calling for a rolling restart.
+    # Removing the backup. 
     #
     mys9s backup \
         --delete \
@@ -541,12 +505,7 @@ function testRemoveBackup()
         --batch \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code $?    
 }
 
 #
@@ -592,8 +551,6 @@ function testRunScript()
 #
 function testRollingRestart()
 {
-    local exitCode
-    
     print_title "Performing Rolling Restart"
 
     #
@@ -604,11 +561,7 @@ function testRollingRestart()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?    
 }
 
 #
@@ -616,8 +569,6 @@ function testRollingRestart()
 #
 function testDrop()
 {
-    local exitCode
-
     print_title "Dropping the Cluster"
 
     #
@@ -628,11 +579,7 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?    
 }
 
 #
