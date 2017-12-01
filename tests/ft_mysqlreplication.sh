@@ -347,12 +347,7 @@ function testAddMaster()
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE;master" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code $? 
 }
 
 

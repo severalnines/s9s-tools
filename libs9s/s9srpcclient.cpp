@@ -3048,7 +3048,7 @@ S9sRpcClient::createNode()
                 nMasters += 1;
         }
         
-        if (nSlaves == 0 && nMasters == 0)
+        if (nSlaves == 0 || nMasters == 0)
             success = addNode(clusterId, hosts);
         else
             success = addReplicationSlave(clusterId, hosts);
