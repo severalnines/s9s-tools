@@ -12,6 +12,7 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -209,11 +210,7 @@ function testCreateCluster()
         --provider-version="9.3" \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -228,10 +225,7 @@ function testCreateCluster()
 #
 function testAddNode()
 {
-    local exitCode
-
-    pip-say "The test to add node is starting now."
-    printVerbose "Creating node..."
+    print_title "Adding a Node"
 
     LAST_ADDED_NODE=$(create_node)
     ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
@@ -244,12 +238,10 @@ function testAddNode()
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code $?
+
+    mys9s node --stat --cluster-id=$CLUSTER_ID
 }
 
 #
@@ -258,32 +250,32 @@ function testAddNode()
 #
 function testStopMaster()
 {
-    local exitCode
     local timeLoop="0"
+    local jobId
 
     #
     # Tring to stop the first added node. 
     # This should fail, because the master is protected.
     #
     print_title "Stopping node on $FIRST_ADDED_NODE"
+    #mys9s node --list --long 
+
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION
- 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -eq 0 ]; then
-        failure "The exit code is ${exitCode}, should have failed."
+
+    if [ $? -eq 0 ]; then
+        failure "The controller should have protected master agains restart."
+        exit 1
     fi
 
     #
     # Stopping it manually.
     #
-    print_title "Stopping postgresql on $FIRST_ADDED_NODE"
-    ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
-    printVerbose "Stopped postgresql on $FIRST_ADDED_NODE"
+    print_title "Stopping postgresql Directly on $FIRST_ADDED_NODE"
+    $SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
 
     while true; do
         if [ "$timeLoop" -gt 60 ]; then
@@ -292,7 +284,11 @@ function testStopMaster()
             return 1
         fi
 
-        if s9s node --list --long | grep -v "$FIRST_ADDED_NODE" | grep --quiet ^poM; then
+        if s9s node --list --long | \
+            grep -v "$FIRST_ADDED_NODE" | \
+            grep --quiet ^poM; 
+        then
+            mys9s node --list --long
             break
         fi
     done
@@ -303,8 +299,8 @@ function testStopMaster()
     #
     # Manually restarting the the postgresql on the node.
     #
-    print_title "Starting postgresql on $FIRST_ADDED_NODE"
-    ssh "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql start
+    print_title "Starting postgresql Directly on $FIRST_ADDED_NODE"
+    $SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql start
 
     if wait_for_node_online "$FIRST_ADDED_NODE"; then
         printVerbose "Started postgresql on $FIRST_ADDED_NODE"
@@ -312,11 +308,24 @@ function testStopMaster()
         failure "Host $FIRST_ADDED_NODE did not come on-line."
     fi
 
-#    if wait_for_node_become_slave $FIRST_ADDED_NODE; then
-#        printVerbose "Node $FIRST_ADDED_NODE reslaved."
-#    else
-#        failure "Host $FIRST_ADDED_NODE is still not a slave."
-#    fi
+    if wait_for_node_become_slave $FIRST_ADDED_NODE; then
+        printVerbose "Node $FIRST_ADDED_NODE reslaved."
+        mys9s node --list --long
+    else
+        failure "Host $FIRST_ADDED_NODE is still not a slave"
+        mys9s node --list --long
+        #mys9s node --stat
+        mys9s job --list 
+        jobId=$(\
+            s9s job --list --batch | \
+            grep FAIL | \
+            tail -n1 | \
+            awk '{print $1}')
+
+        if [ "$jobId" ]; then
+            mys9s job --log --job-id="$jobId"
+        fi
+    fi
 
     return 0
 }
@@ -326,9 +335,7 @@ function testStopMaster()
 #
 function testDrop()
 {
-    local exitCode
-
-    print_title "Drop the cluster"
+    print_title "Dropping the Cluster"
 
     #
     # Starting the cluster.
@@ -337,12 +344,8 @@ function testDrop()
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+
+    check_exit_code $?
 }
 
 #

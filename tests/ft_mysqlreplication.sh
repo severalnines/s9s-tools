@@ -473,7 +473,7 @@ else
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
-    runFunctionalTest testAddMaster
+    #runFunctionalTest testAddMaster
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop

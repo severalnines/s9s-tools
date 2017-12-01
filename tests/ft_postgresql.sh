@@ -514,33 +514,36 @@ function testRemoveBackup()
 function testRunScript()
 {
     local output_file=$(mktemp)
+    local script_file="scripts/test_output_lines.js"
     local exitCode
-    local backupId
-
+    
     print_title "Running a Script"
-
-    backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
-        awk '{print $1}')
+    
+    cat $script_file
 
     #
-    # Calling for a rolling restart.
+    # Running a script. 
     #
     mys9s script \
         --cluster-id=$CLUSTER_ID \
-        --execute scripts/test_output_lines.js \
+        --execute "$script_file" \
         2>&1 >$output_file
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
+
+    echo "output: "
+    cat "$output_file"
+
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
+        rm $output_file
+        exit 1
     fi
 
     if ! grep --quiet "This is a warning" $output_file; then
         failure "Script output is not as expected."
-        echo "output: "
-        cat $output_file
+        rm $output_file
+        exit 1
     fi
 
     rm $output_file

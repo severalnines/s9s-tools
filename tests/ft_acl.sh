@@ -102,7 +102,7 @@ fi
 
 function testCreateUsers()
 {
-    print_title "Creating Users"
+    print_title "Creating a User"
 
     mys9s user \
         --create \
@@ -123,7 +123,7 @@ function testCreateUsers()
         exit 1
     fi
 
-    print_title "Creating a user with superuser privileges."
+    print_title "Creating a Superuser"
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -226,10 +226,11 @@ function testAcl()
     local lines
     local expected
 
-    print_title "Testing ACL entries"
-
+    #
     # Checking the default ACL entries.
-    # mys9s tree --get-acl /home
+    #
+    print_title "Checking Default ACL Entries"
+    mys9s tree --get-acl /home
     
     lines=$(s9s tree --get-acl /home)
     expected="^user::rwx$"
@@ -253,7 +254,10 @@ function testAcl()
         exit 1
     fi
 
+    # 
     # We are now adding a new ACL to the folder, a real ACL entry with a user.
+    #
+    print_title "Adding ACL Entry"
     mys9s tree --add-acl --acl="user:nobody:r-x" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -261,15 +265,18 @@ function testAcl()
         exit 1
     fi
     
+    mys9s tree --get-acl /home
     lines=$(s9s tree --get-acl /home)
     expected="^user:nobody:r-x$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
-        mys9s tree --get-acl /home
         exit 1
     fi
     
+    #
     # Adding an ACL that actually removes some access rights.
+    #
+    print_title "Adding Restrictive ACL Entry"
     mys9s tree --add-acl --acl="other::---" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -277,11 +284,11 @@ function testAcl()
         exit 1
     fi
 
+    mys9s tree --get-acl /home
     lines=$(s9s tree --get-acl /home)
     expected="^other::---$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
-        mys9s tree --get-acl /home
         exit 1
     fi
 }
