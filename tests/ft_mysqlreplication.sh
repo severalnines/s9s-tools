@@ -179,7 +179,7 @@ function testCreateCluster()
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
-        failure "Cluster ID '$CLUSTER_ID' is invalid"
+        failure "Cluster was not created."
     fi
 }
 

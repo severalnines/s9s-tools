@@ -556,7 +556,6 @@ function emit_s9s_configuration_file()
     cat <<EOF
 #
 # This configuration file was created by ${MYNAME} version ${VERSION}.
-# 
 #
 [global]
 controller = https://localhost:9556
@@ -610,7 +609,7 @@ function find_cluster_id()
             let nTry+=1
 
             if [ "$nTry" -gt 10 ]; then
-                echo 0
+                echo "NOT-FOUND"
                 break
             else
                 sleep 3
