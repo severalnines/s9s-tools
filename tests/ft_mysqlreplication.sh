@@ -272,7 +272,10 @@ function testCreateAccount()
 {
     print_title "Creating account"
 
-
+    for waiting in $(seq 1 10); do
+        mys9s node --list --long --color=always | cat
+        sleep 10
+    done
     #
     # This command will create a new account on the cluster.
     #
