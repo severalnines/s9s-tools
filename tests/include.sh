@@ -575,7 +575,7 @@ function reset_config()
         return 0
     fi
     
-    print_title "Removing s9s configuration"
+    print_title "Overwriting s9s Configuration"
 
     if [ -d "$config_file" ]; then
         rm -rf "$config_file"

@@ -126,7 +126,7 @@ function testPing()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
+        failure "Exit code is not 0 while pinging controller"
         exit 1
     fi
 }
@@ -170,7 +170,7 @@ function testCreateCluster()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
+        failure "Exit code is not 0 while creating cluster"
         mys9s job --log --job-id=1
         exit 1
     fi
@@ -179,7 +179,7 @@ function testCreateCluster()
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
-        failure "Cluster was not created."
+        failure "Cluster was not created"
     fi
 }
 
@@ -272,7 +272,6 @@ function testCreateAccount()
 {
     print_title "Creating account"
 
-    mys9s node --list --long 
 
     #
     # This command will create a new account on the cluster.
@@ -286,7 +285,9 @@ function testCreateAccount()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account."
+        failure "Exit code is not 0 while creating an account"
+        mys9s node --list --long 
+        mys9s node --stat
     fi
 }
 
