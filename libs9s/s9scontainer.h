@@ -63,6 +63,8 @@ class S9sContainer
         S9sString type() const;
         S9sString configFile() const;
         S9sString rootFsPath() const;
+        S9sString osVersionString(const S9sString &defaultValue = "-") const;
+        S9sString architecture(const S9sString &defaultValue = "-") const;
 
     private:
         S9sVariantMap    m_properties;

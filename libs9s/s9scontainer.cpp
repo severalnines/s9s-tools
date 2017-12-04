@@ -315,3 +315,46 @@ S9sContainer::rootFsPath() const
 {
     return property("root_fs_path").toString();
 }
+
+/**
+ * \returns The processor architecture (e.g. "x86_64").
+ */
+S9sString 
+S9sContainer::architecture(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    retval = property("architecture").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+/**
+ * \returns A string encodes the operating system name and version.
+ */
+S9sString
+S9sContainer::osVersionString(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    S9sVariantMap map = property("os_version").toVariantMap();
+    S9sString     name, release, codeName;
+    
+    name     = map["name"].toString();
+    release  = map["release"].toString();
+    codeName = map["codename"].toString();
+
+    retval.appendWord(name);
+    retval.appendWord(release);
+    retval.appendWord(codeName);
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}

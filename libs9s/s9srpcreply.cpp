@@ -5001,7 +5001,7 @@ S9sRpcReply::printContainerListStat(
     {
         title.sprintf(" %s ", STR(container.alias()));
     } else {
-        title.sprintf(" %s(%s)", 
+        title.sprintf(" %s (%s)", 
                 STR(container.alias()), STR(container.ipAddress()));
     }
 
@@ -5045,7 +5045,7 @@ S9sRpcReply::printContainerListStat(
             typeColorEnd());
     //printf("\n");
     
-    printf("%s  Type:%s ", greyBegin, greyEnd);
+    printf("%s   Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(container.type()));
     printf("\n");
 
@@ -5066,7 +5066,19 @@ S9sRpcReply::printContainerListStat(
     printf("\n");
     
     //
-    // ""
+    // "      OS: ubuntu 16.04 xenial"
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-35s", STR(container.osVersionString()));
+    
+    printf("%s  Arch:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(container.architecture()));
+
+    printf("\n");
+
+    
+    //
+    // "  Config: '/var/lib/lxc/www/config'"
     //
     printf("%s  Config:%s ", greyBegin, greyEnd);
     printf("'%s%s%s'", 
@@ -5075,7 +5087,7 @@ S9sRpcReply::printContainerListStat(
             fileColorEnd());
     
     printf("\n");
-
+    
     //
     //
     //
