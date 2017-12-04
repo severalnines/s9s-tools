@@ -51,12 +51,18 @@ class S9sContainer
         int containerId() const;
         S9sString hostname() const;
         S9sString ipAddress(const S9sString &defaultValue = "") const;
+        S9sString ipv4Addresses(
+                const S9sString &separator = ", ",
+                const S9sString &defaultValue = "-");
+
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
         S9sString parentServerName() const;
         S9sString state() const;
         S9sString templateName() const;
         S9sString type() const;
+        S9sString configFile() const;
+        S9sString rootFsPath() const;
 
     private:
         S9sVariantMap    m_properties;

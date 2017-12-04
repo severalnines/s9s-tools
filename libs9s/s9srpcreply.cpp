@@ -4811,13 +4811,15 @@ S9sRpcReply::printNodeStat(
             STR(cluster.groupOwnerName()), 
             groupColorEnd());
     printf("\n");
-    
+   
+    //
+    // "   Class: CmonPostgreSqlHost         Type: postgres"
+    //
     printf("%s   Class:%s ", greyBegin, greyEnd);
     printf("%s%-24s%s ", 
             typeColorBegin(), 
             STR(node.className()), 
             typeColorEnd());
-    //printf("\n");
     
     printf("%s  Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.nodeType()));
@@ -4995,7 +4997,13 @@ S9sRpcReply::printContainerListStat(
     //
     // The title that is in inverse. 
     //
-    title.sprintf(" %s ", STR(container.alias()));
+    if (container.ipAddress().empty())
+    {
+        title.sprintf(" %s ", STR(container.alias()));
+    } else {
+        title.sprintf(" %s(%s)", 
+                STR(container.alias()), STR(container.ipAddress()));
+    }
 
     printf("%s", TERM_INVERSE);
     printf("%s", STR(title));
@@ -5004,7 +5012,7 @@ S9sRpcReply::printContainerListStat(
     printf("%s", TERM_NORMAL);
     
     //
-    //
+    // "   Name: www                                 Owner: pipas/testgroup"
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%s", clusterColorBegin());
@@ -5018,6 +5026,27 @@ S9sRpcReply::printContainerListStat(
             STR(container.groupOwnerName()), 
             groupColorEnd());
     
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s    IPv4:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.ipv4Addresses()));
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s   Class:%s ", greyBegin, greyEnd);
+    printf("%s%-33s%s ", 
+            typeColorBegin(), 
+            STR(container.className()), 
+            typeColorEnd());
+    //printf("\n");
+    
+    printf("%s  Type:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.type()));
     printf("\n");
 
     //
@@ -5035,6 +5064,26 @@ S9sRpcReply::printContainerListStat(
             clusterStateColorEnd());
 
     printf("\n");
+    
+    //
+    // ""
+    //
+    printf("%s  Config:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(container.configFile()),
+            STR(container.configFile()),
+            fileColorEnd());
+    
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s Root fs:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            XTERM_COLOR_BLUE,
+            STR(container.rootFsPath()),
+            TERM_NORMAL);
 
     printf("\n");
     printf("\n");
@@ -7657,6 +7706,8 @@ S9sRpcReply::fileColorBegin(
         else if (fileName.endsWith(".cnf"))
             return XTERM_COLOR_LIGHT_PURPLE;
         else if (fileName.endsWith(".conf"))
+            return XTERM_COLOR_LIGHT_PURPLE;
+        else if (fileName.endsWith("/config"))
             return XTERM_COLOR_LIGHT_PURPLE;
         else if (fileName.endsWith(".ini"))
             return XTERM_COLOR_LIGHT_PURPLE;

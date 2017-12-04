@@ -234,6 +234,28 @@ S9sContainer::ipAddress(
     return retval;
 }
 
+S9sString 
+S9sContainer::ipv4Addresses(
+        const S9sString &separator,
+        const S9sString &defaultValue)
+{
+    S9sVariantList theList =  property("ipv4_addresses").toVariantList();
+    S9sString      retval;
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        if (!retval.empty())
+            retval += separator;
+
+        retval += theList[idx].toString();
+    }
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 /**
  * \returns The user name of the user that owns this object.
  */
@@ -243,12 +265,18 @@ S9sContainer::ownerName() const
     return property("owner_user_name").toString();
 }
 
+/**
+ * \returns The group name of the group that owns the object.
+ */
 S9sString 
 S9sContainer::groupOwnerName() const
 {
     return property("owner_group_name").toString();
 }
 
+/**
+ * \returns The name of the server that holds the container.
+ */
 S9sString 
 S9sContainer::parentServerName() const
 {
@@ -276,3 +304,14 @@ S9sContainer::type() const
     return property("type").toString();
 }
 
+S9sString 
+S9sContainer::configFile() const
+{
+    return property("configfile").toString();
+}
+
+S9sString 
+S9sContainer::rootFsPath() const
+{
+    return property("root_fs_path").toString();
+}
