@@ -234,6 +234,9 @@ S9sContainer::ipAddress(
     return retval;
 }
 
+/**
+ * \returns The user name of the user that owns this object.
+ */
 S9sString 
 S9sContainer::ownerName() const
 {

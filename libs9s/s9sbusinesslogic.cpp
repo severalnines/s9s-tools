@@ -428,6 +428,23 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isContainerOperation())
+    {
+        if (options->isListRequested() || options->isStatRequested())
+        {
+            /*
+             * s9s container --list
+             * s9s container --stat
+             */
+            S9sRpcReply reply;
+
+            success = client.getContainers();
+            reply = client.reply();
+            reply.printContainers();
+            client.setExitStatus();
+        } else {
+            PRINT_ERROR("Unimplemented main option in 'container' mode.");
+        }
     } else if (options->isJobOperation())
     {
         if (options->isListRequested())
@@ -838,7 +855,6 @@ S9sBusinessLogic::executeNodeList(
     S9sOptions  *options = S9sOptions::instance();
     S9sRpcReply reply;
     bool        success;
-
 
     success = client.getClusters();
     if (success)

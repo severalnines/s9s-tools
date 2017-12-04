@@ -352,6 +352,8 @@ function create_container()
                 -- \
                 --dist ubuntu --release xenial --arch amd64
         fi
+        # This is how we do this on centos (as root of course):
+        # lxc-create -n centos -t centos
     fi
     
     if [ ! -d "/var/lib/lxc/$parent_name" ]; then
@@ -415,6 +417,7 @@ function create_container()
     #
     # Adding to the sudoers.
     #
+    # On centos 7 we also need : lxc-attach -n centos -- yum install sudo
     echo "" >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
     echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" \
         >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"

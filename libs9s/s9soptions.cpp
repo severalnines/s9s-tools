@@ -197,6 +197,7 @@ S9sOptions::S9sOptions() :
      */
     m_modes["backup"]       = Backup;
     m_modes["cluster"]      = Cluster;
+    m_modes["container"]    = Container;
     m_modes["job"]          = Job;
     m_modes["log"]          = Log;
     m_modes["maintenance"]  = Maintenance;
@@ -212,6 +213,7 @@ S9sOptions::S9sOptions() :
     // This helps to fix some typos I always had in the command line.
     m_modes["backups"]      = Backup;
     m_modes["clusters"]     = Cluster;
+    m_modes["containers"]   = Container;
     m_modes["jobs"]         = Job;
     m_modes["logs"]         = Log;
     m_modes["maintenances"] = Maintenance;
@@ -1854,6 +1856,15 @@ S9sOptions::isClusterOperation() const
 }
 
 /**
+ * \returns true if the main operation is "container".
+ */
+bool
+S9sOptions::isContainerOperation() const
+{
+    return m_operationMode == Container;
+}
+
+/**
  * \returns true if the main operation is "job".
  */
 bool
@@ -2882,6 +2893,14 @@ S9sOptions::readOptions(
 
             break;
         
+        case Container:
+            retval = readOptionsContainer(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsContainer();
+
+            break;
+        
         case Job:
             retval = readOptionsJob(*argc, argv);
             
@@ -3059,6 +3078,10 @@ S9sOptions::printHelp()
 
         case Cluster:
             printHelpCluster();
+            break;
+        
+        case Container:
+            printHelpContainer();
             break;
 
         case Node:
@@ -3386,6 +3409,22 @@ S9sOptions::printHelpCluster()
 "  --provider-version=VER     The version of the software.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
+"\n");
+}
+
+void 
+S9sOptions::printHelpContainer()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"container\" command:\n"
+"  --create                   Create and install a new cluster.\n"
+"  --drop                     Drop cluster from the controller.\n"
+"  --list                     List the clusters.\n"
+"  --start                    Start the cluster.\n"
+"  --stat                     Print the details of a cluster.\n"
+"  --stop                     Stop the cluster.\n"
 "\n");
 }
 
@@ -4544,7 +4583,7 @@ S9sOptions::checkOptionsJob()
 }
 
 /**
- * \returns True if the command line options seem to be ok.
+ * \returns True if the command line options seem to be ok for "cluster" mode.
  */
 bool
 S9sOptions::checkOptionsCluster()
@@ -4643,6 +4682,72 @@ S9sOptions::checkOptionsCluster()
     return true;
 }
 
+/**
+ * \returns True if the command line options seem to be ok for "cluster" mode.
+ */
+bool
+S9sOptions::checkOptionsContainer()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isStatRequested())
+        countOptions++;
+
+    if (isCreateRequested())
+        countOptions++;
+
+    if (isPingRequested())
+        countOptions++;
+
+    if (isDropRequested())
+        countOptions++;
+
+    if (isStopRequested())
+        countOptions++;
+
+    if (isStartRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = "The main options are mutually exclusive.";
+        m_exitStatus = BadOptions;
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * Using the --databases is missleading when not creating new backup: the
+     * user might think it is possible to restore one database of an archive.
+     */
+    if (!databases().empty())
+    {
+        if (isListRequested() && isRestoreRequested())
+        {
+            m_errorMessage = 
+                "The --databases option can only be used while creating "
+                "backups.";
+        
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    return true;
+}
 /**
  * \returns True if the command line options seem to be ok.
  */
@@ -6134,7 +6239,7 @@ S9sOptions::checkOptionsMetaType()
 }
 
 /**
- * Reads the command line options in cluster mode.
+ * Reads the command line options in "cluster" mode.
  */
 bool
 S9sOptions::readOptionsCluster(
@@ -6535,6 +6640,239 @@ S9sOptions::readOptionsCluster(
             case OptionDonor:
                 // --donor=ADDRESS
                 m_options["donor"] = optarg;
+                break;
+
+            case '?':
+                // 
+                return false;
+                
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+    
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * Reads the command line options in "container" mode.
+ */
+bool
+S9sOptions::readOptionsContainer(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "human-readable",   no_argument,       0, 'h'                   },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+
+        // Main Option
+        { "ping",             no_argument,       0, OptionPing            },
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "drop",             no_argument,       0, OptionDrop            },
+        { "stop",             no_argument,       0, OptionStop            },
+        { "start",            no_argument,       0, OptionStart           },
+
+        // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "refresh",          no_argument,       0, OptionRefresh         },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VLli:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+            
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionConfigFile:
+                // --config-file=FILE
+                m_options["config_file"] = optarg;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+           
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            /*
+             * The main options.
+             */
+            case 'L': 
+                // -L, --list
+                m_options["list"] = true;
+                break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
+                break;
+            
+            case OptionDrop:
+                // --drop
+                m_options["drop"] = true;
+                break;
+            
+            case OptionStop:
+                // --stop
+                m_options["stop"] = true;
+                break;
+            
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
+                break;
+
+            case OptionPing:
+                // --ping
+                m_options["ping"] = true;
+                break;
+            
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+            
+            case OptionRegister:
+                // --register
+                m_options["register"] = true;
                 break;
 
             case '?':

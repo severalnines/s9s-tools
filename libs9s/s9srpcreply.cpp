@@ -1360,6 +1360,8 @@ S9sRpcReply::printNodeList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
         printNodeListStat();
     else if (options->isLongRequested())
@@ -3566,6 +3568,8 @@ S9sRpcReply::printContainers()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
+    else if (options->isStatRequested())
+        printContainerListStat();
     else 
         printContainersLong();
 }
@@ -4974,6 +4978,64 @@ S9sRpcReply::printNodeListStat()
             
             printNodeStat(cluster, node);
         }
+    }
+}
+
+
+void 
+S9sRpcReply::printContainerListStat(
+        S9sContainer &container)
+{
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    S9sString   title;
+
+    //
+    // The title that is in inverse. 
+    //
+    title.sprintf(" %s ", STR(container.alias()));
+
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    
+    //
+    //
+    //
+    printf("%s    Name:%s ", greyBegin, greyEnd);
+    printf("%s", clusterColorBegin());
+    printf("%-32s ", STR(container.alias()));
+    printf("%s", clusterColorEnd());
+    
+    printf("%s   Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(container.ownerName()), userColorEnd(),
+            groupColorBegin(container.groupOwnerName()), 
+            STR(container.groupOwnerName()), 
+            groupColorEnd());
+
+    printf("\n");
+    printf("\n");
+    printf("\n");
+}
+
+
+void 
+S9sRpcReply::printContainerListStat()
+{
+    //S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("containers").toVariantList();
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sContainer   container(theMap);
+
+        printContainerListStat(container);
     }
 }
 

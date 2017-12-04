@@ -50,6 +50,7 @@ class S9sOptions
             Account,
             Backup,
             Cluster,
+            Container,
             Job,
             Log,
             Maintenance,
@@ -205,6 +206,7 @@ class S9sOptions
         bool isServerOperation() const;
         bool isTreeOperation() const;
         bool isClusterOperation() const;
+        bool isContainerOperation() const;
         bool isJobOperation() const;
         bool isBackupOperation() const;
         bool isProcessOperation() const;
@@ -332,6 +334,7 @@ class S9sOptions
         void checkController();
         void printHelpGeneric();
         void printHelpCluster();
+        void printHelpContainer();
         void printHelpNode();
         void printHelpUser();
         void printHelpAccount();
@@ -355,6 +358,9 @@ class S9sOptions
 
         bool readOptionsCluster(int argc, char *argv[]);
         bool checkOptionsCluster();
+        
+        bool readOptionsContainer(int argc, char *argv[]);
+        bool checkOptionsContainer();
 
         bool readOptionsJob(int argc, char *argv[]);
         bool checkOptionsJob();
