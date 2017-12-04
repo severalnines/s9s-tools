@@ -3777,7 +3777,7 @@ S9sRpcReply::printContainersCompact(
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
         S9sString          ipAddress = container.ipAddress("-");
-        bool               isRunning = container.statusString() == "RUNNING";
+        bool               isRunning = container.state() == "RUNNING";
         
         printf("%s", STR(indent));
         printf("%c ", isRunning ? 'u' : '-');
@@ -5017,6 +5017,24 @@ S9sRpcReply::printContainerListStat(
             groupColorBegin(container.groupOwnerName()), 
             STR(container.groupOwnerName()), 
             groupColorEnd());
+    
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s  Server:%s ", greyBegin, greyEnd);
+    printf("%s", serverColorBegin());
+    printf("%-32s ", STR(container.parentServerName()));
+    printf("%s", serverColorEnd());
+    
+    printf("%s   State:%s ", greyBegin, greyEnd);
+    printf("%s%s%s ", 
+            clusterStateColorBegin(container.state()), 
+            STR(container.state()),
+            clusterStateColorEnd());
+
+    printf("\n");
 
     printf("\n");
     printf("\n");
@@ -7597,14 +7615,17 @@ S9sRpcReply::clusterStateColorBegin(
     {
         if (state == "DEGRADED")
             return XTERM_COLOR_YELLOW;
-        if (state == "FAILURE")
+        else if (state == "FAILURE")
             return XTERM_COLOR_RED;
-        if (state == "STARTED")
+        else if (state == "STARTED")
             return XTERM_COLOR_GREEN;
-        if (state == "STOPPED")
+        else if (state == "STOPPED")
             return XTERM_COLOR_YELLOW;
-        if (state == "SHUTTING_DOWN")
+        else if (state == "SHUTTING_DOWN")
             return XTERM_COLOR_YELLOW;
+        else if (state == "RUNNING")
+            // This is actually for containers...
+            return XTERM_COLOR_GREEN;
         else
             return TERM_NORMAL;
     }

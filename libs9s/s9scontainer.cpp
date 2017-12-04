@@ -255,8 +255,11 @@ S9sContainer::parentServerName() const
     return property("parent_server").toString();
 }
 
+/**
+ * \returns "STOPPED" or "RUNNING".
+ */
 S9sString 
-S9sContainer::statusString() const
+S9sContainer::state() const
 {
     return property("status").toString();
 }

@@ -54,7 +54,7 @@ class S9sContainer
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
         S9sString parentServerName() const;
-        S9sString statusString() const;
+        S9sString state() const;
         S9sString templateName() const;
         S9sString type() const;
 
