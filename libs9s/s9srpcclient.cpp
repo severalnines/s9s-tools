@@ -4336,6 +4336,122 @@ S9sRpcClient::createContainer()
     return executeRequest(uri, request);
 }
 
+/**
+ * Creates a container by initiating a job. Like this:
+ * \code
+   #s9s container --create --log --debug
+ * \endcode
+ */
+bool
+S9sRpcClient::createContainerWithJob()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sVariantList servers  = options->servers();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec, container;
+    S9sString      uri = "/v2/jobs/";
+   
+    /*
+     * Checking the command line options.
+     */
+    container["class_name"] = "CmonContainer";
+
+    if (options->nExtraArguments() == 1)
+    {
+        container["alias"] = options->extraArgument(0);
+    } else if (options->nExtraArguments() == 2)
+    {
+        PRINT_ERROR("Currently only one container can be created at a time.");
+        return false;
+    }
+
+    if (servers.size() > 1)
+    {
+        PRINT_ERROR("Currently only one server can be defined for containers.");
+        return false;
+    } else if (servers.size() == 1) 
+    {
+        container["parent_server"] = servers[0u].toNode().hostName();
+    }
+        
+    /*
+     * Composing the request.
+     */
+    jobData["container"]      = container;
+
+    jobSpec["command"]    = "create_container";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Create Container";
+    job["job_spec"]       = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+    
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::deleteContainerWithJob()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sVariantList servers  = options->servers();
+    S9sVariantMap  request;
+    S9sVariantMap  job, jobData, jobSpec, container;
+    S9sString      uri = "/v2/jobs/";
+   
+    /*
+     * Checking the command line options.
+     */
+    container["class_name"] = "CmonContainer";
+
+    if (options->nExtraArguments() == 1)
+    {
+        container["alias"] = options->extraArgument(0);
+    } else if (options->nExtraArguments() == 2)
+    {
+        PRINT_ERROR("Currently only one container can be deleted at a time.");
+        return false;
+    }
+
+    if (servers.size() > 1)
+    {
+        PRINT_ERROR("Currently only one server can be defined for containers.");
+        return false;
+    } else if (servers.size() == 1) 
+    {
+        container["parent_server"] = servers[0u].toNode().hostName();
+    }
+        
+    /*
+     * Composing the request.
+     */
+    jobData["container"]      = container;
+
+    jobSpec["command"]    = "delete_container";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Delete Container";
+    job["job_spec"]       = jobSpec;
+    
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+    
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
 bool
 S9sRpcClient::deleteContainer()
 {

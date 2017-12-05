@@ -442,6 +442,14 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printContainers();
             client.setExitStatus();
+        } else if (options->isCreateRequested())
+        {
+            success = client.createContainerWithJob();
+            maybeJobRegistered(client, 0, success);
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteContainerWithJob();
+            maybeJobRegistered(client, 0, success);
         } else {
             PRINT_ERROR("Unimplemented main option in 'container' mode.");
         }

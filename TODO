@@ -1,3 +1,8 @@
+o The rpc client returns false, sets the error string, but then returns a reply
+that is an empty json message and so calls like 
+ # s9s container --list #--print-json
+print an empty json message.
+
 o Setting/adding groups fo users is not implemented.
 
 o The --stat does not show '-' on the missing strings.

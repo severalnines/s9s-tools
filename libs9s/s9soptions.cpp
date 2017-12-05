@@ -4044,11 +4044,6 @@ S9sOptions::readOptionsBackup(
                 m_options["restore"] = true;
                 break;
 
-            case OptionDelete:
-                // --delete
-                m_options["delete"]  = true;
-                break;
-
             case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
@@ -4708,7 +4703,7 @@ S9sOptions::checkOptionsContainer()
     if (isPingRequested())
         countOptions++;
 
-    if (isDropRequested())
+    if (isDeleteRequested())
         countOptions++;
 
     if (isStopRequested())
@@ -6701,13 +6696,13 @@ S9sOptions::readOptionsContainer(
         { "config-file",      required_argument, 0, OptionConfigFile      },
 
         // Main Option
-        { "ping",             no_argument,       0, OptionPing            },
-        { "list",             no_argument,       0, 'L'                   },
-        { "stat",             no_argument,       0, OptionStat            },
         { "create",           no_argument,       0, OptionCreate          },
-        { "drop",             no_argument,       0, OptionDrop            },
-        { "stop",             no_argument,       0, OptionStop            },
+        { "delete",           no_argument,       0,  OptionDelete         },
+        { "list",             no_argument,       0, 'L'                   },
+        { "ping",             no_argument,       0, OptionPing            },
         { "start",            no_argument,       0, OptionStart           },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "stop",             no_argument,       0, OptionStop            },
 
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -6717,6 +6712,9 @@ S9sOptions::readOptionsContainer(
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
+        // Other options.
+        { "servers",          required_argument, 0, OptionServers         },
+        
         { 0, 0, 0, 0 }
     };
 
@@ -6835,6 +6833,16 @@ S9sOptions::readOptionsContainer(
             /*
              * The main options.
              */
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"]  = true;
+                break;
+
             case 'L': 
                 // -L, --list
                 m_options["list"] = true;
@@ -6843,11 +6851,6 @@ S9sOptions::readOptionsContainer(
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
-                break;
-            
-            case OptionDrop:
-                // --drop
-                m_options["drop"] = true;
                 break;
             
             case OptionStop:
@@ -6865,14 +6868,19 @@ S9sOptions::readOptionsContainer(
                 m_options["ping"] = true;
                 break;
             
-            case OptionCreate:
-                // --create
-                m_options["create"] = true;
-                break;
-            
             case OptionRegister:
                 // --register
                 m_options["register"] = true;
+                break;
+
+            /*
+             * Other options.
+             */
+            case OptionServers:
+                // --servers=LIST
+                if (!setServers(optarg))
+                    return false;
+
                 break;
 
             case '?':

@@ -3564,10 +3564,10 @@ S9sRpcReply::printContainers()
 {
     S9sOptions *options = S9sOptions::instance();
 
-    if (options->isJsonRequested())
+    if (!isOk())
+        PRINT_ERROR("--> %s", STR(errorString()));
+    else if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
-    else if (!isOk())
-        PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
         printContainerListStat();
     else 

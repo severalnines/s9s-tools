@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-SERVER=""
+CONTAINER_SERVER=""
 
 cd $MYDIR
 source include.sh
@@ -99,29 +99,57 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
+if [ -z "$CONTAINER_SERVER" ]; then
+    printError "No container server specified."
+    printError "Use the --server command line option to set the server."
+    exit 6
+fi
+
 #
-# Dropping the cluster from the controller.
+# This will register the container server. 
 #
-function registerServers()
+function registerServer()
 {
-    print_title "Registering lxc servers"
+    print_title "Registering Container Server"
+
     mys9s server \
         --register \
-        --servers="lxc://core1?;lxc://storage01"
+        --servers="lxc://$CONTAINER_SERVER"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
-    mys9s tree --tree
+    mys9s server --list --long
+    check_exit_code_no_job $?
+}
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+function createContainer()
+{
+    print_title "Creating Container"
+
+    mys9s container \
+        --create \
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_$$"
+    
+    check_exit_code $?
+    
+    mys9s container --list --long
+}
+
+function deleteContainer()
+{
+    print_title "Creating Container"
+
+    mys9s container \
+        --delete \
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_$$"
+    
+    check_exit_code $?
+    
+    mys9s container --list --long
 }
 
 #
@@ -136,5 +164,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest registerServers
+    runFunctionalTest registerServer
+    runFunctionalTest createContainer
+    runFunctionalTest deleteContainer
 fi
