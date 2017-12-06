@@ -5774,6 +5774,11 @@ S9sOptions::readOptionsAccount(
                 // --offset=NUMBER
                 m_options["offset"] = optarg;
                 break;
+
+            case OptionPrivileges:
+                // --privileges=PRIVILEGES
+                m_options["privileges"] = optarg;
+                break;
             
             case '?':
                 // 
