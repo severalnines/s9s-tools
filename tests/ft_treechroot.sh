@@ -118,11 +118,7 @@ mys9s user \
     --new-password="pipas" \
     "pipas"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
+check_exit_code $?
 
 #####
 # Creating a user to be a new superuser.
@@ -140,11 +136,7 @@ mys9s user \
     --new-password="admin" \
     "admin"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
+check_exit_code $?
 
 #####
 # Moving the normal user in the tree.
@@ -155,11 +147,7 @@ TEST_PATH="/home/pipas"
 mys9s tree --mkdir "$TEST_PATH"
 mys9s tree --move /pipas "$TEST_PATH"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
+check_exit_code $?
 
 #####
 # Registering second server.
@@ -170,11 +158,7 @@ mys9s server \
     --cmon-user=pipas \
     --servers="lxc://$CONTAINER_SERVER"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while registering server."
-    exit 1
-fi
+check_exit_code $?
 
 OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch | head -n1 | awk '{print $2}')
 GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch | head -n1 | awk '{print $3}')
@@ -193,16 +177,12 @@ fi
 #####
 # Creating a container.
 #
-print_title "Creating a container."
-mys9s server \
-    --create container_002
+print_title "Creating a Container."
+mys9s container \
+    --create \
+    --wait container_002
 
-
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    exit 1
-fi
+check_exit_code $?
 
 CONTAINER_IP=$(\
     s9s server \
@@ -238,11 +218,7 @@ mys9s cluster \
     --provider-version=5.6 \
     --wait
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    exit 1
-fi
+check_exit_code $?
 
 OWNER=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $2}')
 GROUP=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $3}')
