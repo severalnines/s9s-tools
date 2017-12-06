@@ -168,8 +168,12 @@ mys9s server --list --long --refresh --color=always
 # Creating a container.
 #
 print_title "Creating a container."
-mys9s server \
-    --create container_001
+pip-container-destroy --server="$CONTAINER_SERVER" container_001
+
+mys9s container \
+    --create --log container_001
+
+ALL_CREATED_IPS="container_001"
 
 exitCode=$?
 if [ "$exitCode" -ne 0 ]; then
@@ -177,21 +181,13 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-for delay in 1 2 3 4 5 6 7; do
-    CONTAINER_IP=$(\
-        s9s server \
-            --list-containers \
-            --long container_001 \
-            --batch \
-        | awk '{print $7}')
+CONTAINER_IP=$(\
+    s9s server \
+        --list-containers \
+        --long container_001 \
+        --batch \
+    | awk '{print $7}')
 
-    if [ "$CONTAINER_IP" ]; then
-        break;
-    fi
-
-    echo "Waiting for the ip ($delay)..."
-    sleep 3
-done
 
 if [ -z "$CONTAINER_IP" ]; then
     failure "Container IP could not be found."
@@ -202,6 +198,8 @@ if [ "$CONTAINER_IP" == "-" ]; then
     failure "Container IP is invalid."
     exit 1
 fi
+
+ALL_CREATED_IPS="$CONTAINER_IP"
 
 #####
 # Creating a Galera cluster.
