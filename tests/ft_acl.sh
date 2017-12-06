@@ -152,6 +152,10 @@ function checkTree01()
     local lines=$(s9s tree --cmon-user=admin --list)
 
     print_title "Checking Tree"
+    mys9s tree --cmon-user=admin --tree
+    mys9s tree --cmon-user=admin --tree /groups
+
+    print_title "Checking Tree List"
     mys9s tree --cmon-user=admin --list
 
     # The root directory owned by the system user.
@@ -179,6 +183,25 @@ function checkTree01()
     expected="^urwxr--r--  pipas  admins /pipas$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        exit 1
+    fi
+
+    return 0
+}
+
+function checkTree02()
+{
+    print_title "Checking Access Rights"
+
+    mys9s tree --access --privileges="rwx" --cmon-user="admin" /
+    if [ $? -ne 0 ]; then
+        failure "User 'admin' ha no access to '/'"
+        exit 1
+    fi
+
+    mys9s tree --access --privileges="rwx" --cmon-user="pipas" /
+    if [ $? -ne 0 ]; then
+        failure "User 'pipas' ha no access to '/'"
         exit 1
     fi
 
@@ -330,6 +353,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateUsers
     runFunctionalTest checkTree01
+    runFunctionalTest checkTree02
     runFunctionalTest testMkdir
     runFunctionalTest testAcl
     runFunctionalTest testRmdir

@@ -35,9 +35,16 @@ function color_command()
         -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#g"
 }
 
+function prompt_string
+{
+    local dirname=$(basename $PWD)
+
+    echo "$USER@$HOSTNAME:$dirname\$"
+}
+
 function mys9s_singleline()
 {
-    local prompt="#"
+    local prompt=$(prompt_string)
     local nth=0
 
     if [ "$PRINT_COMMANDS" ]; then
@@ -65,9 +72,9 @@ function mys9s_singleline()
     $S9S --color=always $*
 }
 
-function mys9s()
+function mys9s_multiline()
 {
-    local prompt="#"
+    local prompt=$(prompt_string)
     local nth=0
 
     if [ "$PRINT_COMMANDS" ]; then
@@ -95,6 +102,22 @@ function mys9s()
     fi
 
     $S9S --color=always $*
+}
+
+function mys9s()
+{
+    local n_arguments=0
+    local argument
+
+    for argument in $*; do
+        let n_arguments+=1
+    done
+
+    if [ "$n_arguments" -lt 4 ]; then
+        mys9s_singleline $*
+    else
+        mys9s_multiline $*
+    fi
 }
 
 #
@@ -675,7 +698,9 @@ function print_title()
 {
     echo ""
     echo -e "\033[1m$*\033[0;39m"
-    echo -e "\033[1m-----------------------------------------------\033[0;39m"
+    echo -e "\033[1m\
+-------------------------------------------------------------------------------\
+-\033[0;39m"
 }
 
 
