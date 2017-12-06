@@ -4053,6 +4053,11 @@ S9sOptions::readOptionsBackup(
                 // --restore
                 m_options["restore"] = true;
                 break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
+                break;
 
             case OptionConfigFile:
                 // --config-file=FILE
