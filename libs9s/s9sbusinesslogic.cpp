@@ -236,6 +236,19 @@ S9sBusinessLogic::execute()
                 else
                     PRINT_ERROR("%s", STR(client.errorString()));
             }
+        } else if (options->isAccessRequested())
+        {
+#if 0
+            S9sRpcReply reply;
+
+            success = client.checkAccess();
+            reply = client.reply();
+            reply.printAcl();
+            client.setExitStatus();
+#endif
+            success = client.checkAccess();
+            client.printMessages("Ok", success);
+            client.setExitStatus();
         } else if (options->isGetAclRequested())
         {
             S9sRpcReply reply;

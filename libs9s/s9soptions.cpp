@@ -178,6 +178,7 @@ enum S9sOptionType
     OptionRefresh,
     OptionFail,
     OptionSuccess,
+    OptionAccess,
 };
 
 /**
@@ -1995,6 +1996,15 @@ bool
 S9sOptions::isRmdirRequested() const
 {
     return getBool("rmdir");
+}
+
+/**
+ * \returns True if the --access command line option is provided.
+ */
+bool
+S9sOptions::isAccessRequested() const
+{
+    return getBool("access");
 }
 
 /**
@@ -5748,11 +5758,6 @@ S9sOptions::readOptionsAccount(
                 m_options["db_name"] = optarg;
                 break;
             
-            case OptionPrivileges:
-                // --privileges=PRIVILEGES
-                m_options["privileges"] = optarg;
-                break;
-            
             case OptionAccount:
                 // --account=USERNAME
                 if (!setAccount(optarg))
@@ -7644,6 +7649,7 @@ S9sOptions::readOptionsTree(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
+        { "access",           no_argument,       0, OptionAccess          },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "chown",            no_argument,       0, OptionChOwn           },
         { "delete",           no_argument,       0, OptionDelete          },
@@ -7658,6 +7664,7 @@ S9sOptions::readOptionsTree(
         { "acl",              required_argument, 0, OptionAcl             },
         { "owner",            required_argument, 0, OptionOwner           },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
 
         { 0, 0, 0, 0 }
     };
@@ -7769,6 +7776,9 @@ S9sOptions::readOptionsTree(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
+            /*
+             * Main options.
+             */
             case OptionTree:
                 // --tree
                 m_options["tree"] = true;
@@ -7799,11 +7809,21 @@ S9sOptions::readOptionsTree(
                 m_options["get_acl"] = true;
                 break;
 
+            case OptionAccess:
+                // --access
+                m_options["access"] = true;
+                break;
+
             case OptionAddAcl:
                 // --add-acl
                 m_options["add_acl"] = true;
                 break;
-            
+
+            case OptionRemoveAcl:
+                // --remove-acl
+                m_options["remove_acl"] = true;
+                break;
+
             case OptionChOwn:
                 // --chown
                 m_options["chown"] = true;
@@ -7814,6 +7834,9 @@ S9sOptions::readOptionsTree(
                 m_options["delete"]  = true;
                 break;
             
+            /*
+             * Other command line options.
+             */
             case OptionAcl:
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
@@ -7829,9 +7852,9 @@ S9sOptions::readOptionsTree(
                 m_options["refresh"] = true;
                 break;
             
-            case OptionRemoveAcl:
-                // --remove-acl
-                m_options["remove_acl"] = true;
+            case OptionPrivileges:
+                // --privileges=PRIVILEGES
+                m_options["privileges"] = optarg;
                 break;
 
             case '?':
@@ -8038,6 +8061,9 @@ S9sOptions::checkOptionsTree()
     if (isGetAclRequested())
         countOptions++;
     
+    if (isAccessRequested())
+        countOptions++;
+
     if (isAddAclRequested())
         countOptions++;
 

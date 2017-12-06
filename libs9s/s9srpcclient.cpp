@@ -4054,7 +4054,7 @@ S9sRpcClient::addAcl()
 
         return false;
     }
-   
+
     request["operation"]      = "addAcl";
     request["path"]           = options->extraArgument(0u);
     request["acl"]            = aclString;
@@ -4062,6 +4062,39 @@ S9sRpcClient::addAcl()
     return executeRequest(uri, request);
 }
 
+/**
+ * FIXME: This is not fully imlemented.
+ */
+bool
+S9sRpcClient::checkAccess()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      privileges = options->privileges();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --access option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (privileges.empty())
+    {
+        PRINT_ERROR("The --access requires the --privileges=STRING option.");
+
+        return false;
+    }
+
+    request["operation"]      = "checkAccess";
+    request["path"]           = options->extraArgument(0u);
+    request["privileges"]     = privileges;
+
+    return executeRequest(uri, request);
+}
 
 
 /**

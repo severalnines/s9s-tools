@@ -228,6 +228,7 @@ class S9sOptions
         bool isListPartitionsRequested() const;
         bool isListMemoryRequested() const;
         bool isGetAclRequested() const;
+        bool isAccessRequested() const;
         bool isAddAclRequested() const;
         bool isRemoveAclRequested() const;
         bool isChOwnRequested() const;

@@ -124,17 +124,48 @@ function registerServer()
 
 function createContainer()
 {
+    local owner
+    local container_name="ft_containers_$$"
+    local template
+
     print_title "Creating Container"
 
+    #
+    # Creating a container.
+    #
     mys9s container \
         --create \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_$$"
+        "$container_name"
     
     check_exit_code $?
     
     mys9s container --list --long
+
+    #
+    # Checking the owner.
+    #
+    owner=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $4}')
+
+    if [ "$owner" != "$USER" ]; then
+        failure "The owner is '$owner', should be '$USER'"
+        exit 1
+    fi
+    
+    #
+    # Checking the template.
+    #
+    template=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $3}')
+
+    if [ "$template" != "ubuntu" ]; then
+        failure "The template is '$template', should be 'ubuntu'"
+        exit 1
+    fi
 }
 
 function deleteContainer()

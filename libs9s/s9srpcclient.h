@@ -82,6 +82,7 @@ class S9sRpcClient
         bool moveInTree();
         bool deleteFromTree();
 
+        bool checkAccess();
         bool getAcl();
         bool addAcl();
         bool removeAcl();
