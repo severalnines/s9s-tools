@@ -134,7 +134,7 @@ function testCreateCluster()
     local nodes
     local nodeName
 
-    print_title "Creating a PostgreSQL cluster"
+    print_title "Creating a PostgreSQL Cluster"
     
     for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
         [ "$servers" ] && servers+=";"
@@ -146,7 +146,7 @@ function testCreateCluster()
     fi
 
     #
-    # Creatuing containers.
+    # Creating containers.
     #
     nodeName=$(create_node)
     nodes+="$nodeName:8089;"

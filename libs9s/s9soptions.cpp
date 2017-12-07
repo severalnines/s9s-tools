@@ -3576,6 +3576,7 @@ S9sOptions::readOptionsNode(
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
         { "density",          no_argument,       0, OptionDensity         },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -3599,7 +3600,6 @@ S9sOptions::readOptionsNode(
         { "wait",             no_argument,       0, OptionWait            },
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "force",            no_argument,       0, OptionForce           },
 
@@ -7359,6 +7359,11 @@ S9sOptions::readOptionsServer(
         { "batch",            no_argument,       0, OptionBatch           },
         { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "log",              no_argument,       0, 'G'                   },
+        { "schedule",         required_argument, 0, OptionSchedule        },
 
         // Main Option
         { "add-acl",          no_argument,       0, OptionAddAcl          },
@@ -7596,6 +7601,24 @@ S9sOptions::readOptionsServer(
             case OptionRefresh:
                 // --refresh
                 m_options["refresh"] = true;
+                break;
+
+            /*
+             * Job related options.
+             */
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+            
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
                 break;
 
             case '?':

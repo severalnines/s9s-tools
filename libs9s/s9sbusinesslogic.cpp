@@ -300,7 +300,12 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isServerOperation())
     {
-        if (options->isGetAclRequested())
+        if (options->isCreateRequested())
+        {
+            // s9s server --create  
+            success = client.createServer();
+            maybeJobRegistered(client, 0, success);
+        } else if (options->isGetAclRequested())
         {
             S9sRpcReply reply;
 
@@ -425,12 +430,6 @@ S9sBusinessLogic::execute()
             success = client.getContainers();
             reply = client.reply();
             reply.printContainers();
-            client.setExitStatus();
-        } else if (options->isCreateRequested())
-        {
-            // Container create...
-            success = client.createContainer();
-            client.printMessages("Created.", success);
             client.setExitStatus();
         } else if (options->isDeleteRequested())
         {

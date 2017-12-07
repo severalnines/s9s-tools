@@ -3074,14 +3074,13 @@ S9sRpcClient::addNode(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  request, job, jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
     if (hosts.size() != 1u)
     {
-        PRINT_ERROR("addnode is currently implemented only for one node.");
+        PRINT_ERROR("Addnode is currently implemented only for one node.");
         return false;
     }
     
@@ -3918,6 +3917,48 @@ S9sRpcClient::registerServers()
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::createServer()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request, job, jobData, jobSpec;
+    
+    if (servers.size() != 1u)
+    {
+        PRINT_ERROR(
+                "The createServer is currently implemented only for"
+                " one server at a time.");
+
+        return false;
+    }
+    
+    jobData["server"]           = servers[0].toVariantMap();
+    jobData["install_software"] = true;
+    jobData["disable_firewall"] = true;
+    jobData["disable_selinux"]  = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]          = "create_container_server";
+    jobSpec["job_data"]         = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule(); 
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::moveInTree()
