@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -353,10 +353,12 @@ UtS9sOptions::testSetNodes()
     theMap = nodes[0].toVariantMap();
     S9S_WARNING("-> %s", STR(theMap.toString()));
     S9S_COMPARE(theMap["hostname"], "192.168.30.10");
+    S9S_COMPARE(theMap["protocol"], "mongos");
     
     theMap = nodes[1].toVariantMap();
     S9S_WARNING("-> %s", STR(theMap.toString()));
     S9S_COMPARE(theMap["hostname"], "192.168.30.10");
+    S9S_COMPARE(theMap["protocol"], "mongocfg");
     
     theMap = nodes[2].toVariantMap();
     S9S_WARNING("-> %s", STR(theMap.toString()));
@@ -365,6 +367,7 @@ UtS9sOptions::testSetNodes()
     theMap = nodes[3].toVariantMap();
     S9S_WARNING("-> %s", STR(theMap.toString()));
     S9S_COMPARE(theMap["hostname"], "192.168.30.12");
+    S9S_COMPARE(theMap["rs"],       "replset2");
 
     return true;
 }
