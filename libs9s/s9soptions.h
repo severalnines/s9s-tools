@@ -124,6 +124,9 @@ class S9sOptions
         bool fullUuid() const;
 
         S9sString schedule() const;
+        int timeout() const;
+        bool hasTimeout() const;
+
         int limit() const;
         int offset() const;
         

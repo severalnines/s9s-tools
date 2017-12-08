@@ -257,7 +257,7 @@ function check_exit_code()
             awk '{print $1}')
 
         if [ "$jobId" ]; then
-            mys9s job --log --job-id="$jobId"
+            mys9s job --log --debug --job-id="$jobId"
         fi
 
         exit $exitCode

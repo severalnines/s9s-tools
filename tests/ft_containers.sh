@@ -6,6 +6,7 @@ VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
 CONTAINER_SERVER=""
+CONTAINER_IP=""
 
 cd $MYDIR
 source include.sh
@@ -181,6 +182,25 @@ function createContainer()
     #
     # Checking the owner.
     #
+    CONTAINER_IP=$(\
+        s9s server \
+            --list-containers \
+            --batch \
+            --long  "ft_containers_$$" \
+        | awk '{print $7}')
+    
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "The container was not created or got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "The container got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
     owner=$(\
         s9s container --list --long --batch "$container_name" | \
         awk '{print $4}')
@@ -203,6 +223,58 @@ function createContainer()
     fi
 }
 
+function createServer()
+{
+    print_title "Installing Container as Server"
+
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "Container IP was not found."
+        exit 1
+    fi
+
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "The container has no IP."
+        exit 1
+    fi
+
+    #
+    # Installing the container as a container server.
+    #
+    mys9s server --create --log --timeout=30 --servers="lxc://$CONTAINER_IP"
+    if [ $? -ne 0 ]; then
+        failure "The job failed"
+        exit 1
+    fi
+
+    mys9s tree --tree
+    mys9s server --list --long
+}
+
+function createContainerInContainer()
+{
+    local owner
+    local container_name="ft_containers_sub_$$"
+    local template
+
+    print_title "Creating Container"
+
+    #
+    # Creating a container.
+    #
+    mys9s container \
+        --create \
+        --servers=$CONTAINER_IP \
+        $LOG_OPTION \
+        "$container_name"
+
+    check_exit_code $?
+
+    s9s container --list --long
+}
+
+#
+# This will delete the container we created before.
+#
 function deleteContainer()
 {
     print_title "Deleting Container"
@@ -218,38 +290,6 @@ function deleteContainer()
     mys9s container --list --long
 }
 
-function createServer()
-{
-    local container_ip
-
-    print_title "Installing Container as Server"
-    
-    container_ip=$(\
-        s9s server \
-            --list-containers \
-            --batch \
-            --long  "ft_containers_$$" \
-        | awk '{print $7}')
-
-    if [ -z "$container_ip" ]; then
-        failure "Container IP was not found."
-        exit 1
-    fi
-
-    if [ "$container_ip" == "-" ]; then
-        failure "The container has no IP."
-        exit 1
-    fi
-
-    mys9s server --create --log --servers="lxc://$container_ip"
-    if [ $? -ne 0 ]; then
-        failure "The job failed"
-        exit 1
-    fi
-
-    mys9s tree --tree
-    mys9s server --list --long
-}
 
 #
 # Running the requested tests.
@@ -267,5 +307,6 @@ else
     runFunctionalTest registerServerFails
     runFunctionalTest createContainer
     runFunctionalTest createServer
+    #runFunctionalTest createContainerInContainer
     runFunctionalTest deleteContainer
 fi

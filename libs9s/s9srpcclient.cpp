@@ -3939,6 +3939,9 @@ S9sRpcClient::createServer()
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
+    
+    if (options->hasTimeout())
+        jobData["timeout"] = options->timeout();
 
     // The jobspec describing the command.
     jobSpec["command"]          = "create_container_server";

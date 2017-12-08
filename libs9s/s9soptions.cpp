@@ -83,6 +83,7 @@ enum S9sOptionType
     OptionRestore,
     OptionBackupId,
     OptionSchedule,
+    OptionTimeout,
     OptionPing,
     OptionGroup,
     OptionCreateGroup,
@@ -1211,6 +1212,21 @@ S9sString
 S9sOptions::schedule() const
 {
     return getString("schedule");
+}
+
+int
+S9sOptions::timeout() const
+{
+    if (m_options.contains("timeout"))
+        return m_options.at("timeout").toInt();
+
+    return 0;
+}
+
+bool
+S9sOptions::hasTimeout() const
+{
+    return m_options.contains("timeout");
 }
 
 /**
@@ -3186,9 +3202,10 @@ S9sOptions::printHelpGeneric()
 "  --print-json               Print the sent/received JSon messages.\n"
 "\n"
 "Job related options:\n"
-"  --wait                     Wait until the job ends.\n"
 "  --log                      Wait and monitor job messages.\n"
 "  --schedule=DATE&TIME       Run the job at the specified time.\n"
+"  --timeout=SECONDS          Timeout value for the entire job.\n"
+"  --wait                     Wait until the job ends.\n"
 "\n", STR(m_myName));
 }
 
@@ -3601,6 +3618,7 @@ S9sOptions::readOptionsNode(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
         { "force",            no_argument,       0, OptionForce           },
 
         // Node options. 
@@ -3778,6 +3796,11 @@ S9sOptions::readOptionsNode(
                 m_options["schedule"] = optarg;
                 break;
             
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
             case OptionColor:
                 // --color=COLOR
                 if (optarg)
@@ -3940,6 +3963,7 @@ S9sOptions::readOptionsBackup(
         { "backup-id",        required_argument, 0, OptionBackupId        },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Backup info
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
@@ -4116,6 +4140,11 @@ S9sOptions::readOptionsBackup(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
                 break;
 
             case OptionBackupId:
@@ -6302,6 +6331,7 @@ S9sOptions::readOptionsCluster(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
 
@@ -6518,6 +6548,11 @@ S9sOptions::readOptionsCluster(
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
                 break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
 
             case OptionRefresh:
                 // --refresh
@@ -6725,6 +6760,7 @@ S9sOptions::readOptionsContainer(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
         // Other options.
@@ -6845,6 +6881,11 @@ S9sOptions::readOptionsContainer(
                 m_options["schedule"] = optarg;
                 break;
             
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+
             /*
              * The main options.
              */
@@ -7364,6 +7405,7 @@ S9sOptions::readOptionsServer(
         { "wait",             no_argument,       0, OptionWait            },
         { "log",              no_argument,       0, 'G'                   },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
         { "add-acl",          no_argument,       0, OptionAddAcl          },
@@ -7619,6 +7661,11 @@ S9sOptions::readOptionsServer(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
                 break;
 
             case '?':
