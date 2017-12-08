@@ -25,8 +25,8 @@
 #include <cstdio>
 #include <cstring>
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 UtS9sOptions::UtS9sOptions()
@@ -52,6 +52,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions05, retval);
     PERFORM_TEST(testReadOptions06, retval);
     PERFORM_TEST(testReadOptions07, retval);
+    PERFORM_TEST(testSetNodes,      retval);
 
     return retval;
 }
@@ -306,6 +307,7 @@ UtS9sOptions::testReadOptions06()
 bool
 UtS9sOptions::testReadOptions07()
 {
+#if 0
     S9sOptions *options = S9sOptions::instance();
     bool  success;
     const char *argv[] = 
@@ -328,8 +330,45 @@ UtS9sOptions::testReadOptions07()
     S9S_COMPARE(options->reason(),    "REASON");
 
     S9sOptions::uninit();
+#endif
     return true;
 }
+
+bool
+UtS9sOptions::testSetNodes()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  nodes;
+    S9sVariantMap   theMap;
+    bool            success;
+
+    success = options->setNodes(
+            "mongos://192.168.30.10,mongocfg://192.168.30.10,192.168.30.11,"
+            "192.168.30.12?rs=replset2");
+
+    S9S_VERIFY(success);
+    nodes = options->nodes();
+    S9S_COMPARE(nodes.size(), 4);
+    
+    theMap = nodes[0].toVariantMap();
+    S9S_WARNING("-> %s", STR(theMap.toString()));
+    S9S_COMPARE(theMap["hostname"], "192.168.30.10");
+    
+    theMap = nodes[1].toVariantMap();
+    S9S_WARNING("-> %s", STR(theMap.toString()));
+    S9S_COMPARE(theMap["hostname"], "192.168.30.10");
+    
+    theMap = nodes[2].toVariantMap();
+    S9S_WARNING("-> %s", STR(theMap.toString()));
+    S9S_COMPARE(theMap["hostname"], "192.168.30.11");
+    
+    theMap = nodes[3].toVariantMap();
+    S9S_WARNING("-> %s", STR(theMap.toString()));
+    S9S_COMPARE(theMap["hostname"], "192.168.30.12");
+
+    return true;
+}
+
 
 S9S_UNIT_TEST_MAIN(UtS9sOptions)
 

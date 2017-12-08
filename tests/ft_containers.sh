@@ -122,6 +122,41 @@ function registerServer()
     check_exit_code_no_job $?
 }
 
+function registerServerFails()
+{
+    print_title "Registrations that should Fail"
+
+    # Duplicate entries in one call.
+    mys9s server \
+        --register \
+        --servers="lxc://core2;lxc://core2"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (duplicate entries)"
+        exit 1
+    fi
+
+    # Folder that does not exist.
+    mys9s server \
+        --register \
+        --servers="lxc://core3?cdt_path=/non-existing-folder"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (invalid folder)"
+        exit 1
+    fi
+
+    # The server that we already registered
+    mys9s server \
+        --register \
+        --servers="lxc://$CONTAINER_SERVER"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (server already registered)"
+        exit 1
+    fi
+}
+
 function createContainer()
 {
     local owner
@@ -170,7 +205,7 @@ function createContainer()
 
 function deleteContainer()
 {
-    print_title "Creating Container"
+    print_title "Deleting Container"
 
     mys9s container \
         --delete \
@@ -181,6 +216,39 @@ function deleteContainer()
     check_exit_code $?
     
     mys9s container --list --long
+}
+
+function createServer()
+{
+    local container_ip
+
+    print_title "Installing Container as Server"
+    
+    container_ip=$(\
+        s9s server \
+            --list-containers \
+            --batch \
+            --long  "ft_containers_$$" \
+        | awk '{print $7}')
+
+    if [ -z "$container_ip" ]; then
+        failure "Container IP was not found."
+        exit 1
+    fi
+
+    if [ "$container_ip" == "-" ]; then
+        failure "The container has no IP."
+        exit 1
+    fi
+
+    mys9s server --create --log --servers="lxc://$container_ip"
+    if [ $? -ne 0 ]; then
+        failure "The job failed"
+        exit 1
+    fi
+
+    mys9s tree --tree
+    mys9s server --list --long
 }
 
 #
@@ -196,6 +264,8 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest registerServer
+    runFunctionalTest registerServerFails
     runFunctionalTest createContainer
+    runFunctionalTest createServer
     runFunctionalTest deleteContainer
 fi
