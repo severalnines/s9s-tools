@@ -72,7 +72,12 @@ S9sNode::S9sNode(
         if (m_url.hasPort())
             m_properties["port"] = m_url.port();
     }
-   
+  
+    /*
+     * Here we try to guess the class name from the protocol. This means for
+     * example if you say "lxc://hostname" we will send a "CmonContainerServer"
+     * class object. If you have more protocols you can add them here.
+     */
     if (m_url.hasProtocol())
     {
         S9sString protocol = m_url.protocol().toLower();
