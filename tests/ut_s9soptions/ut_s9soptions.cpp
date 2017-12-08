@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
