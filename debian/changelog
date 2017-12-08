@@ -1,3 +1,9 @@
+s9s-tools (1.5.20171208-release1) UNRELEASED; urgency=medium
+
+  * A new release with MongoDB cluster creation option.
+
+ -- David Kedves <kedazo@severalnines.com>  Fri, 08 Dec 2017 13:51:39 +0100
+
 s9s-tools (1.5.20171113-release1) UNRELEASED; urgency=medium
 
   * Release with clustercontrolclustercontrol 1.5.0
