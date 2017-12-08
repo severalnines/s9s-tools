@@ -2841,14 +2841,30 @@ S9sRpcClient::createMongoCluster(
     }
 
     // classify hosts into separate lists for each replicaset
-    S9sString replsetName = "replica_set_0";
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
+        S9sString   replsetName = "replica_set_0";
+
         S9sNode     node     = hosts[idx].toNode();
         S9sString   protocol = node.protocol().toLower();
 
-        if(protocol.size())
+        if (!protocol.size())
+            protocol = "mongodb";
+
+        if (protocol == "mongos")
             replsetName = protocol;
+        else if (protocol == "mongocfg")
+            replsetName = protocol;
+        else if (protocol == "mongodb")
+        {
+            if (node.hasProperty("rs"))
+                replsetName = node.property("rs").toString();
+        }
+        else
+        {
+            PRINT_ERROR("Protocol name '%s' is invalid.", STR(protocol));
+            return false;
+        }
 
         if(!nodelistMap.contains(replsetName))
             nodelistMap[replsetName] = S9sVariantList();
@@ -2856,25 +2872,26 @@ S9sRpcClient::createMongoCluster(
     }
 
     if(1 < nodelistMap.size()){
-        if(!nodelistMap.contains("mongos") || !nodelistMap.contains("config")){
+        if(!nodelistMap.contains("mongos") || !nodelistMap.contains("mongocfg")){
             PRINT_ERROR(
                     "When multiple replicasets/shards are defined, mongos "
-                    "and config nodes are mandatory to be defined as well.");
+                    "and mongocfg nodes are mandatory to be defined as well.");
             return false;
         }
     }
 
     // The job_data describing the cluster - config nodes
-    if(nodelistMap.contains("config")){
+    if(nodelistMap.contains("mongocfg")){
         S9sVariantMap configReplSet;
         configReplSet["rs"] = "config";
         S9sVariantList members;
-        for (uint idx = 0; idx < nodelistMap["config"].size(); ++idx)
+        for (uint idx = 0; idx < nodelistMap["mongocfg"].size(); ++idx)
         {
-            S9sNode node = nodelistMap["config"][idx].toNode();
+            S9sNode node = nodelistMap["mongocfg"][idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
-            member["port"] = node.port();
+            if (node.port() != 0)
+                member["port"] = node.port();
             members.push_back(member);
         }
         configReplSet["members"] = members;
@@ -2889,7 +2906,8 @@ S9sRpcClient::createMongoCluster(
             S9sNode node = nodelistMap["mongos"][idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
-            member["port"] = node.port();
+            if (node.port() != 0)
+                member["port"] = node.port();
             mongos.push_back(member);
         }
         jobData["mongos_servers"] = mongos;
@@ -2900,7 +2918,7 @@ S9sRpcClient::createMongoCluster(
     for(std::map<S9sString, S9sVariantList>::iterator iter = nodelistMap.begin();
             iter != nodelistMap.end(); iter++)
     {
-        if(iter->first == "config" || iter->first == "mongos")
+        if(iter->first == "mongocfg" || iter->first == "mongos")
             continue;
         S9sVariantMap replSet;
         replSet["rs"] = iter->first;
@@ -2910,7 +2928,14 @@ S9sRpcClient::createMongoCluster(
             S9sNode node = iter->second[idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
-            member["port"] = node.port();
+            if (node.port() != 0)
+                member["port"] = node.port();
+            if (node.hasProperty("arbiter_only"))
+                member["arbiter_only"] = node.property("arbiter_only").toBoolean();
+            if (node.hasProperty("priority"))
+                member["priority"] = node.property("priority").toDouble();
+            if (node.hasProperty("slave_delay"))
+                member["slave_delay"] = node.property("slave_delay").toULongLong();
             members.push_back(member);
         }
         replSet["members"] = members;

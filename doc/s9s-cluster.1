@@ -239,6 +239,15 @@ Use this to install and handle ProxySql servers.
 .TP
 .B maxscale://
 The protocol to install and handle MaxScale servers.
+.TP
+.B mongos://
+The protocol to install and handle mongo router servers.
+.TP
+.B mongocfg://
+The protocol to install and handle mongo config servers.
+.TP
+.B mongodb://
+The protocol to install and handle mongo data servers.
 .RE
 
 .TP
@@ -565,4 +574,30 @@ Status : STOPPED
   Name : ft_postgresqlstop_48273
   Type : POSTGRESQL_SINGLE
  Owner : pipas/users
+.fi
+
+Easiest way to create a mongo cluster with highly recommended forced authentication:
+
+.nf
+# \fBs9s cluster \\
+    --create \\
+    --cluster-type=mongodb \\
+    --vendor=10gen \\
+    --provider-version=3.2 \\
+    --db-admin=adminuser \\
+    --db-admin-passwd=adminpwd \\
+    --nodes="192.168.1.11"\fR
+.fi
+
+A complete example for creating a sharded mongo cluster:
+
+.nf
+# \fBs9s cluster \\
+    --create \\
+    --cluster-type=mongodb \\
+    --vendor=10gen \\
+    --provider-version=3.2 \\
+    --db-admin=adminuser \\
+    --db-admin-passwd=adminpwd \\
+    --nodes="mongos://192.168.1.11;mongos://192.168.1.12;mongos://192.168.1.12;mongocfg://192.168.1.11;mongocfg://192.168.1.12;mongocfg://192.168.1.13;192.168.1.14?priority=5.0;192.168.1.15?arbiter_only=true;192.168.1.16?priority=2;192.168.1.17?rs=replset2;192.168.1.18?rs=replset2&arbiter_only=yes;192.168.1.19?rs=replset2&slave_delay=3&priority=0"\fR
 .fi
