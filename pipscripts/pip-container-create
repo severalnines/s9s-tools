@@ -4,7 +4,7 @@ MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.6"
 VERBOSE=""
-LOGFILE=""
+LOGFILE="$HOME/${MYNAME}.log"
 
 SERVER=""
 PARENT_NAME=""
@@ -34,7 +34,7 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "ERROR: $MYNAME($$) $*" >&2
+    echo -e "ERROR: $*" >&2
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
@@ -90,19 +90,21 @@ Usage:
  --no-ssh-test        Do not test the ssh connection to the container.
  --tmp                Create temporary container.
  --template=CONTAINER Use container as a template for the new container.
- --vendor=DISTRO      Download and install the given distribution.
+ --vendor=VENDOR      Download and install the given distribution.
  --release=RELEASE    Download and install the given release.
 
-  ubuntu	artful  bionic  trusty  xenial  zesty
-  debian	buster  jessie  sid     stretch wheezy
-  alpine	3.4     3.5     3.6     3.7     edge
-  centos	6       7
-  fedora	25      26      27
-  opensuse	42.2    42.3
-  oracle	6       7
-  plamo         5.x     6.x
-  archlinux	current
-  gentoo	current
+       VENDOR                    RELEASE
+       ---------------------------------------------------------
+       ubuntu      artful   bionic   trusty   xenial   zesty
+       debian      buster   jessie   sid      stretch  wheezy
+       alpine      3.4      3.5      3.6      3.7      edge
+       centos      6        7
+       fedora      25       26       27
+       opensuse    42.2     42.3
+       oracle      6        7
+       plamo       5.x      6.x
+       archlinux   current
+       gentoo      current
 
 EXAMPLES:
   pip-container-create --server=host01
@@ -353,6 +355,7 @@ function install_package_in_container()
     local package_name="$2"
     local container_root="/var/lib/lxc/$container_name"
     local container_rootfs="$container_root/rootfs"
+    local retval
 
     if [ ! -d "$container_rootfs" ]; then
         printError "Container root '$container_rootfs' missing."
@@ -364,20 +367,26 @@ function install_package_in_container()
         if [ -z "$APT_UPDATED" ]; then
             lxc-attach -n "$container_name" -- \
                 apt-get -m -qq -y update \
-                >/dev/null 2>/dev/null
+                >"$LOGFILE" 2>"$LOGFILE"
 
             APT_UPDATED="true"
         fi
 
         lxc-attach -n "$container_name" -- \
             apt-get -y --force-yes install "$package_name" \
-            >/dev/null 2>/dev/null
+            >"$LOGFILE" 2>"$LOGFILE"
+        
+        retval=$?
 
-        return $?
+        if [ "$retval" -ne "0" ]; then
+            printError "Installing failed, check '$LOGFILE' for details."
+        fi
     else
         printError "No package manager found in '$container_rootfs'."
         printError "Can not install packages."
     fi
+
+    return $retval
 }
 
 #
@@ -592,11 +601,6 @@ function create_container()
 #
 EXTRA_OPTIONS=$*
 
-#if [ -z "$1" ]; then
-#    printError "The arguments should be container name(s)."
-#    exit 6
-#fi
-
 #
 # Checking root privileges.
 #
@@ -605,6 +609,12 @@ if [ -z "$SERVER" ]; then
         printError "This script has to have root privileges."
         exit 5
     fi
+fi
+
+if [ "$OWNER" == "root" ]; then
+    printError "The owner can't be root."
+    printError "Use the --owner command line option to set the owner account."
+    exit 1
 fi
 
 #
@@ -620,6 +630,20 @@ if [ -z "$SERVER" ]; then
         printVersionAndExit
         exit 0
     else
+        #
+        # The log file.
+        #
+        touch "$LOGFILE"
+
+        if [ ! -f "$LOGFILE" ]; then
+            LOGFILE="/dev/null"
+        fi
+
+        printVerbose "Logfile is '$LOGFILE'."
+
+        #
+        # Actually creating the containers here.
+        #
         for container in $(container_names $*); do
             create_container \
                 "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
