@@ -2,16 +2,19 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.5"
+VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 
 SERVER=""
-PARENT_NAME=ubuntu
+PARENT_NAME=""
+VENDOR_NAME=""
+RELEASE_NAME=""
+
 OWNER=${USER}
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_NO_SSH_TEST=""
-OPTION_TMP=""
+APT_UPDATED=""
 
 #
 # Prints the software version and exits.
@@ -31,7 +34,7 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "$MYNAME($$) $*" >&2
+    echo -e "ERROR: $MYNAME($$) $*" >&2
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
@@ -48,7 +51,7 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
-        echo -e "$*" >&2
+        echo -e "DEBUG  $*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
@@ -86,10 +89,23 @@ Usage:
  --owner=USERNAME     The name of the user to be created.
  --no-ssh-test        Do not test the ssh connection to the container.
  --tmp                Create temporary container.
+ --template=CONTAINER Use container as a template for the new container.
+ --vendor=DISTRO      Download and install the given distribution.
+ --release=RELEASE    Download and install the given release.
 
-EXAMPLE
+  ubuntu	artful  bionic  trusty  xenial  zesty
+  debian	buster  jessie  sid     stretch wheezy
+  alpine	3.4     3.5     3.6     3.7     edge
+  centos	6       7
+  fedora	25      26      27
+  opensuse	42.2    42.3
+  oracle	6       7
+  plamo         5.x     6.x
+  archlinux	current
+  gentoo	current
 
- pip-container-create --server=host01
+EXAMPLES:
+  pip-container-create --server=host01
 
 EOF
     exit 0
@@ -98,7 +114,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test,tmp" \
+        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test,tmp,\
+template:,vendor:,release:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -147,10 +164,25 @@ while true; do
             OPTION_NO_SSH_TEST="true"
             ;;
 
-        --tmp)
+        --template)
             shift
-            OPTION_TMP="true"
-            TMP_OPTION="--tmp"
+            PARENT_NAME="$1"
+            PARENT_NAME_OPTION="--template='$1'"
+            shift
+            ;;
+
+        --vendor)
+            shift
+            VENDOR_NAME="$1"
+            VENDOR_NAME_OPTION="--vendor='$1'"
+            shift
+            ;;
+
+        --release)
+            shift
+            RELEASE_NAME="$1"
+            RELEASE_NAME_OPTION="--release='$1'"
+            shift
             ;;
 
         --)
@@ -159,6 +191,7 @@ while true; do
             ;;
 
         *)
+            break
             ;;
     esac
 done
@@ -302,7 +335,7 @@ function wait_for_server_ssh()
             return 1
         fi
 
-        printVerbose "Server '$owner@$serverName' is not yet reachable."
+        printVerbose "Server '$owner@$serverName' is not yet SSH ready."
         sleep 5
         let nTry+=1
     done
@@ -311,15 +344,107 @@ function wait_for_server_ssh()
 }
 
 #
+# $1: The name of the container.
+# $2: The name of the package.
+#
+function install_package_in_container()
+{
+    local container_name="$1"
+    local package_name="$2"
+    local container_root="/var/lib/lxc/$container_name"
+    local container_rootfs="$container_root/rootfs"
+
+    if [ ! -d "$container_rootfs" ]; then
+        printError "Container root '$container_rootfs' missing."
+        printError "Can not install packages."
+        return 1
+    fi 
+
+    if [ -f "$container_rootfs/usr/bin/apt-get" ]; then
+        if [ -z "$APT_UPDATED" ]; then
+            lxc-attach -n "$container_name" -- \
+                apt-get -m -qq -y update \
+                >/dev/null 2>/dev/null
+
+            APT_UPDATED="true"
+        fi
+
+        lxc-attach -n "$container_name" -- \
+            apt-get -y --force-yes install "$package_name" \
+            >/dev/null 2>/dev/null
+
+        return $?
+    else
+        printError "No package manager found in '$container_rootfs'."
+        printError "Can not install packages."
+    fi
+}
+
+#
 # $1: the name of the new container.
-# $2: the name of the parent container.
+# $2: the name of the parent container if it is provided in the command line
+# $3: the vendor if any
+# $4: the release name if any
 #
 function create_container()
 {
     local new_name="$1"
     local parent_name="$2"
+    local vendor_name="$3"
+    local release_name="$4"
+    local container_root
+    local container_rootfs
     local ip
 
+    #
+    # Checking the command line options.
+    #
+    if [ -z "$new_name" ]; then
+        printError "No name for the new container, giving up."
+        return 1
+    fi
+
+    if [ "$parent_name" -a "$vendor_name" ]; then
+        printError "Template name and vendor name are mutually exclusive."
+        return 1
+    fi
+
+    if [ -z "$parent_name" -a -z "$vendor_name" ]; then
+        if [ -d "/var/lib/lxc/ubuntu" ]; then
+            printVerbose "Chose 'ubuntu' as template."
+            parent_name="ubuntu"
+        else
+            printVerbose "Chose ubuntu xenial."
+            vendor_name="ubuntu"
+            release_name="xenial"
+        fi
+    fi
+    
+    if [ "$vendor_name" == "ubuntu" ]; then
+        if [ -z "$release_name" ]; then
+            printVerbose "Chose 'xenial' release."
+            release_name="xenial"
+        fi
+    fi
+
+    if [ "$vendor_name" ]; then
+        if [ -z "$release_name" ]; then
+            printError "Release name reuired for '$vendor_name'."
+            return 1
+        fi
+    fi
+
+    if [ "$parent_name" ]; then
+        if [ ! -d "/var/lib/lxc/$parent_name" ]; then
+            printError "Template container '$parent_name' does not exist."
+            return 1
+        fi
+    fi
+    
+
+    #
+    # Checking if the software is installed.
+    #
     if [ -z $(which "lxc-create") ]; then
         printVerbose "The lxc-create is not installed, attempting to install."
         apt install -y lxc1
@@ -330,56 +455,62 @@ function create_container()
         exit 2
     fi
 
-    if [ -z "$new_name" ]; then
-        printError "No name for the new container, giving up."
-        return 1
-    fi
-
+    #
+    # Checking if the container already exists.
+    #
     if [ -d "/var/lib/lxc/$new_name" ]; then
         printError "The container '$new_name' already exists."
         return 1
     fi
 
     # 
-    # We can also do something like this:
+    # Creating the container. We either copy an existing container that we use
+    # as template or we download a distribution. 
     #
-    # lxc-create --template=/usr/share/lxc/templates/lxc-debian -n debian
-    #
-    if [ ! -d "/var/lib/lxc/$parent_name" ]; then
-        if [ "$parent_name" == "ubuntu" ]; then
-            lxc-create \
-                -t download -n ubuntu \
+    if [ "$parent_name" ]; then
+        printVerbose "Creating container $new_name from template."
+        lxc-copy -n "$parent_name" --newname="$new_name"
+    else 
+        #
+        # The network configuration is in 
+        # /etc/lxc/default.conf
+        #
+        printVerbose "Creating cointainer with $vendor_name distribution."
+        lxc-create \
+            -t download --name="$new_name" \
                 -- \
-                --dist ubuntu --release xenial --arch amd64
-        fi
-        # This is how we do this on centos (as root of course):
-        # lxc-create -n centos -t centos
+                --dist "$vendor_name" \
+                --release "$release_name" \
+                --arch amd64 \
+                >/dev/null 2>/dev/null
     fi
-    
-    if [ ! -d "/var/lib/lxc/$parent_name" ]; then
-        printError "Could not create '$parent_name'."
+   
+    container_root="/var/lib/lxc/$new_name"
+    container_rootfs="$container_root/rootfs"
+
+    if [ ! -d "$container_root" ]; then
+        printError "Failed to create '$new_name' container."
         return 1
     fi
 
     # 
-    # Creating the new container.
+    # Starting the container. 
     #
-    printVerbose "Creating container $new_name"
-
-    location_option=""
-    if [ "$OPTION_TMP" ]; then
-        printVerbose "Creating ramdisk."
-        mkdir /var/lib/lxc/$new_name
-        mount -t tmpfs -o size=8G tmpfs /var/lib/lxc/$new_name
-    fi
-    
-    lxc-copy $location_option -n $parent_name --newname="$new_name"
     lxc-start -n "$new_name"
+   
+    #
+    # Checking and installing packages.
+    #
+    if [ ! -f "$container_rootfs/usr/sbin/sshd" ]; then
+        printVerbose "Container has no sshd, attempting to install."
+        install_package_in_container "$new_name" "openssh-server"
+    fi
 
     #
     # Creating the new user.
     #
-    # lxc-attach -n node001 -- /usr/sbin/useradd --create-home --shell=/bin/bash pipas 
+    printVerbose "Creating new user."
+
     lxc-attach -n "$new_name" -- \
         /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
         2>/dev/null
@@ -490,7 +621,8 @@ if [ -z "$SERVER" ]; then
         exit 0
     else
         for container in $(container_names $*); do
-            create_container $container $PARENT_NAME
+            create_container \
+                "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
         done
     fi
 else
@@ -512,9 +644,8 @@ else
             sudo $MYNAME \
                 --owner="$OWNER" \
                 --no-ssh-test \
-                $VERSION_OPTION \
-                $VERBOSE_OPTION \
-                $TMP_OPTION \
+                $VERSION_OPTION $VERBOSE_OPTION \
+                $PARENT_NAME_OPTION $VENDOR_NAME_OPTION $RELEASE_NAME_OPTION \
                 $EXTRA_OPTIONS)
 
         printVerbose "Executed on server '$chosen_server'."

@@ -217,10 +217,10 @@ function createContainer()
         s9s container --list --long --batch "$container_name" | \
         awk '{print $3}')
 
-    if [ "$template" != "ubuntu" ]; then
-        failure "The template is '$template', should be 'ubuntu'"
-        exit 1
-    fi
+#    if [ "$template" != "ubuntu" ]; then
+#        failure "The template is '$template', should be 'ubuntu'"
+#        exit 1
+#    fi
 }
 
 function createServer()
