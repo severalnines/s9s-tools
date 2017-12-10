@@ -8,6 +8,7 @@ LOGFILE=""
 CONTAINER=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+STOP_OPTION=""
 
 #
 # Prints the software version and exits.
@@ -65,6 +66,7 @@ Usage:
  --verbose              Print more messages.
  --log-file=FILE        Store all the messages in the given file too.
  --server=SERVER        Create the container on remote server.
+ --stop                 Stop containers that are running.
 
 EOF
     exit 0
@@ -73,7 +75,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:" \
+        -l "help,verbose,version,log-file:,server:,stop" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -111,12 +113,18 @@ while true; do
             shift
             ;;
 
+        --stop)
+            shift
+            STOP_OPTION="--stop"
+            ;;
+
         --)
             shift
             break
             ;;
 
         *)
+            break
             ;;
     esac
 done
@@ -166,6 +174,54 @@ function get_container_names()
 
 function archive_one_container()
 {
+    local container="$1"
+    local tar_file_name
+    local old_tar_file_name
+    local state
+    local stopped
+
+    state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
+    if [ "$state" == "RUNNING" ]; then
+        if [ -z "$STOP_OPTION" ]; then
+            printError "Container '$container' is running (no --stop provided)."
+            retval=1
+        else
+            printVerbose "Stopping container '$container'."
+            lxc-stop -n "$container"
+            stopped=$?
+        fi
+    fi
+        
+    #
+    # Archiving.
+    #
+    cd /var/lib/lxc
+
+    printVerbose "Archiving container '$container'."
+    tar_file_name="${container}-archive.tar"
+    old_tar_file_name="${tar_file_name}.BAK"
+
+    if [ -f "$tar_file_name" ]; then
+        printVerbose "Renaming old archive file."
+        mv "$tar_file_name" "$old_tar_file_name"
+    fi
+    
+    if [ -f "$tar_file_name" ]; then
+        printError "Failed to move '$tar_file_name' aside."
+        return 1
+    fi
+
+    printVerbose "Archiving into '$tar_file_name'."
+    tar --numeric-owner -czf "$tar_file_name" "$container"
+
+    #
+    # If we stopped it, we restart it.
+    #
+    if [ "$stopped" ]; then
+        printVerbose "Starting container '$container'."
+        lxc-start -n "$container"
+    fi
+
     return 0
 }
 
@@ -175,10 +231,13 @@ function check_one_container()
     local state
     local retval=0
 
-    state=$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')
+    state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
+
     if [ "$state" == "RUNNING" ]; then
-        printError "Container '$container' is running."
-        retval=1
+        if [ -z "$STOP_OPTION" ]; then
+            printError "Container '$container' is running (no --stop provided)."
+            retval=1
+        fi
     elif [ "$state" == "STOPPED" ]; then
         printVerbose "Container '$container' is not running."
     else
@@ -205,6 +264,11 @@ function archive_all_containers()
         return $retval
     fi
 
+    for container in $(get_container_names $pattern); do
+        if ! archive_one_container "$container"; then
+            retval=1
+        fi
+    done
 
     return $retval
 }
@@ -218,14 +282,6 @@ if [ -z "$SERVER" ]; then
         exit 0
     else
         archive_all_containers "$EXTRA_OPTIONS"
-        #if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
-        #    printError "Container not found."
-        #    exit 6
-        #fi
-
-        #TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
-        #cd /var/lib/lxc
-        #tar --numeric-owner -czf "$TAR_FILE_NAME" "$CONTAINER"
     fi
 else
     #
@@ -235,8 +291,8 @@ else
     printVerbose "Executing on server '$SERVER'."
     $SSH $SERVER -- \
         sudo $MYNAME \
-            $VERSION_OPTION \
-            $VERBOSE_OPTION \
+            $VERSION_OPTION $VERBOSE_OPTION \
+            $STOP_OPTION \
             "$EXTRA_OPTIONS"
 fi
 
