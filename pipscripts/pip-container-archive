@@ -9,6 +9,11 @@ CONTAINER=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 STOP_OPTION=""
+OUTPUT_DIR=""
+OUTPUT_DIR_OPTION=""
+OWNER=""
+STORAGE_URL=""
+GZIP_OPTION=""
 
 #
 # Prints the software version and exits.
@@ -44,7 +49,7 @@ function printVerbose()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    if [ "$VERBOSE" == "true" ]; then
+    if [ "$VERBOSE" ]; then
         echo -e "DEBUG $*" >&2
     fi
 
@@ -57,7 +62,7 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... [CONTAINER_NAME]...
+  $MYNAME [OPTION]... CONTAINER_NAME
 
   $MYNAME - Creates archives of containers.
 
@@ -67,7 +72,13 @@ Usage:
  --log-file=FILE        Store all the messages in the given file too.
  --server=SERVER        Create the container on remote server.
  --stop                 Stop containers that are running.
+ --output-dir=DIRECTORY The directory where the archive files go.
+ --owner=USERNAME       Sets the owner of the resulting archive files.
+ --storage=URL          The place where the file will be uploaded.
+ --gzip                 Compress the archive with gzip.
 
+EXAMPLES:
+  pip-container-archive --gzip --verbose --stop --server=core1 --output-dir=/home/pipas --owner=pipas --storage="storage01:" dns1
 EOF
     exit 0
 }
@@ -75,7 +86,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,stop" \
+        -l "help,verbose,version,log-file:,server:,stop,output-dir:,owner:,\
+storage:,gzip" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -103,7 +115,7 @@ while true; do
 
         --log-file)
             shift
-            LOGFILE=$(readlink -m "$1")
+            LOGFILE="$(readlink -m "$1")"
             shift
             ;;
 
@@ -118,12 +130,39 @@ while true; do
             STOP_OPTION="--stop"
             ;;
 
+        --output-dir)
+            shift
+            OUTPUT_DIR="$(readlink -m "$1")"
+            OUTPUT_DIR_OPTION="--output-dir=\"$1\""
+            shift
+            ;;
+
+        --owner)
+            shift
+            OWNER="$1"
+            OWNER_OPTION="--owner=\"$1\""
+            shift
+            ;;
+
+        --storage)
+            shift
+            STORAGE_URL="$1"
+            STORAGE_OPTION="--storage=\"$1\""
+            shift
+            ;;
+
+        --gzip)
+            shift
+            GZIP_OPTION="--gzip"
+            ;;
+
         --)
             shift
             break
             ;;
 
         *)
+            printError "Option '$1' not handled."
             break
             ;;
     esac
@@ -158,6 +197,7 @@ function get_container_names()
 {
     local pattern="$1"
     local container
+    local n_containers=0
 
     cd /var/lib/lxc 
    
@@ -167,8 +207,10 @@ function get_container_names()
         fi
 
         echo "$container"
+        let n_containers+=1
     done
 
+    printVerbose "Found $n_containers container(s)."
     return 0
 }
 
@@ -198,7 +240,16 @@ function archive_one_container()
     cd /var/lib/lxc
 
     printVerbose "Archiving container '$container'."
-    tar_file_name="${container}-archive.tar"
+    tar_file_name="${container}-container-archive.tar"
+
+    if [ "$GZIP_OPTION" ]; then
+        tar_file_name+=".gz"
+    fi
+
+    if [ "$OUTPUT_DIR" ]; then
+        tar_file_name="$OUTPUT_DIR/$tar_file_name"
+    fi
+
     old_tar_file_name="${tar_file_name}.BAK"
 
     if [ -f "$tar_file_name" ]; then
@@ -212,7 +263,26 @@ function archive_one_container()
     fi
 
     printVerbose "Archiving into '$tar_file_name'."
-    tar --numeric-owner -czf "$tar_file_name" "$container"
+    if [ "$GZIP_OPTION" ]; then
+        tar --numeric-owner -czf "$tar_file_name" "$container"
+    else
+        tar --numeric-owner -cf "$tar_file_name" "$container"
+    fi
+
+    if [ "$OWNER" ]; then
+        chown "$OWNER:$OWNER" "$tar_file_name"
+    fi
+
+    if [ "$STORAGE_URL" ]; then
+        if [ "$OWNER" ]; then
+            sudo -S -u $OWNER -i \
+                /bin/bash -l -c \
+                    "scp \"$tar_file_name\" \"$STORAGE_URL\""
+        else
+            scp "$tar_file_name" "$STORAGE_URL"
+        fi
+
+    fi
 
     #
     # If we stopped it, we restart it.
@@ -253,8 +323,9 @@ function archive_all_containers()
     local pattern="$1"
     local container
     local retval=0
+    local containers="$(get_container_names $pattern)"
 
-    for container in $(get_container_names $pattern); do
+    for container in $containers; do
         if ! check_one_container "$container"; then
             retval=1
         fi
@@ -264,7 +335,7 @@ function archive_all_containers()
         return $retval
     fi
 
-    for container in $(get_container_names $pattern); do
+    for container in $containers; do
         if ! archive_one_container "$container"; then
             retval=1
         fi
@@ -291,8 +362,10 @@ else
     printVerbose "Executing on server '$SERVER'."
     $SSH $SERVER -- \
         sudo $MYNAME \
+            $GZIP_OPTION \
             $VERSION_OPTION $VERBOSE_OPTION \
-            $STOP_OPTION \
+            $STOP_OPTION $OUTPUT_DIR_OPTION \
+            $OWNER_OPTION $STORAGE_OPTION \
             "$EXTRA_OPTIONS"
 fi
 
