@@ -34,7 +34,7 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "ERROR: $*" >&2
+    echo -e "ERROR $*" >&2
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
@@ -51,7 +51,7 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG  $*" >&2
+        echo -e "DEBUG $*" >&2
     fi
 
     if [ "$LOGFILE" ]; then

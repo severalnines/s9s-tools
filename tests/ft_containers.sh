@@ -240,7 +240,12 @@ function createServer()
     #
     # Installing the container as a container server.
     #
-    mys9s server --create --log --timeout=30 --servers="lxc://$CONTAINER_IP"
+    mys9s server \
+        --create \
+        --log \
+        --timeout=30 \
+        --servers="lxc://$CONTAINER_IP"
+
     if [ $? -ne 0 ]; then
         failure "The job failed"
         exit 1
@@ -310,3 +315,5 @@ else
     #runFunctionalTest createContainerInContainer
     runFunctionalTest deleteContainer
 fi
+
+endTests

@@ -7,6 +7,7 @@ VERBOSE=""
 LOGFILE=""
 CONTAINER=""
 SERVER=""
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 #
 # Prints the software version and exits.
@@ -26,7 +27,7 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "$MYNAME($$) $*" >&2
+    echo -e "ERROR $*" >&2
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
@@ -43,7 +44,7 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
-        echo -e "$MYNAME($$) $*" >&2
+        echo -e "DEBUG $*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
@@ -120,7 +121,6 @@ while true; do
     esac
 done
 
-
 CONTAINER="$1"
 
 #
@@ -146,6 +146,69 @@ if [ -z "$SERVER" ]; then
     fi
 fi
 
+function get_container_names()
+{
+    local pattern="$1"
+    local container
+
+    cd /var/lib/lxc 
+   
+    for container in $pattern; do 
+        if [ ! -d "$container" ]; then
+            continue
+        fi
+
+        echo "$container"
+    done
+
+    return 0
+}
+
+function archive_one_container()
+{
+    return 0
+}
+
+function check_one_container()
+{
+    local container="$1"
+    local state
+    local retval=0
+
+    state=$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')
+    if [ "$state" == "RUNNING" ]; then
+        printError "Container '$container' is running."
+        retval=1
+    elif [ "$state" == "STOPPED" ]; then
+        printVerbose "Container '$container' is not running."
+    else
+        printError "Container '$container' has unknown ($state) state."
+        retval=1
+    fi
+
+    return $retval
+}
+
+function archive_all_containers()
+{
+    local pattern="$1"
+    local container
+    local retval=0
+
+    for container in $(get_container_names $pattern); do
+        if ! check_one_container "$container"; then
+            retval=1
+        fi
+    done
+
+    if [ $retval -ne 0 ]; then
+        return $retval
+    fi
+
+
+    return $retval
+}
+
 #
 # Doing the job.
 #
@@ -154,14 +217,15 @@ if [ -z "$SERVER" ]; then
         printVersionAndExit
         exit 0
     else
-        if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
-            printError "Container not found."
-            exit 6
-        fi
+        archive_all_containers "$EXTRA_OPTIONS"
+        #if [ ! -d "/var/lib/lxc/$CONTAINER" ]; then
+        #    printError "Container not found."
+        #    exit 6
+        #fi
 
-        TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
-        cd /var/lib/lxc
-        tar --numeric-owner -czf "$TAR_FILE_NAME" "$CONTAINER"
+        #TAR_FILE_NAME="${CONTAINER}_$(date "+%Y_%m_%d").tar.gz"
+        #cd /var/lib/lxc
+        #tar --numeric-owner -czf "$TAR_FILE_NAME" "$CONTAINER"
     fi
 else
     #
@@ -169,10 +233,10 @@ else
     # server.
     #
     printVerbose "Executing on server '$SERVER'."
-    ssh $SERVER -- \
+    $SSH $SERVER -- \
         sudo $MYNAME \
             $VERSION_OPTION \
             $VERBOSE_OPTION \
-            $EXTRA_OPTIONS
+            "$EXTRA_OPTIONS"
 fi
 
