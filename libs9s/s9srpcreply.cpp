@@ -3789,8 +3789,9 @@ S9sRpcReply::printContainersCompact(
     }
 }
 
-
-
+/**
+ * Prints the CDT in either a list or a tree format.
+ */
 void
 S9sRpcReply::printObjectTree()
 {
@@ -3948,7 +3949,15 @@ S9sRpcReply::printObjectTreeBrief(
     {
         S9sVariantMap child = entries[idx].toVariantMap();
         bool          last = idx + 1 >= entries.size();
-       
+     
+        // Hidden entries are printed only if the --all command line option is
+        // provided.
+        if (child["item_name"].toString().startsWith(".") &&
+                !options->isAllRequested())
+        {
+            continue;
+        }
+
         if (recursionLevel)
         {
             if (isLast)
@@ -3967,6 +3976,8 @@ void
 S9sRpcReply::walkObjectTree(
         S9sVariantMap       &node)
 {
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sString       name      = node["item_name"].toString();
     S9sString       owner     = node["owner_user_name"].toString();
     S9sString       group     = node["owner_group_name"].toString();
     S9sVariantList  entries   = node["sub_items"].toVariantList();
@@ -3984,6 +3995,12 @@ S9sRpcReply::walkObjectTree(
     {
         S9sVariantMap child = entries[idx].toVariantMap();
         
+        if (child["item_name"].toString().startsWith(".") && 
+                !options->isAllRequested())
+        {
+            continue;
+        }
+
         walkObjectTree(child);
     }
 }
@@ -3999,6 +4016,7 @@ S9sRpcReply::printObjectTreeLong(
         S9sString            indentString,
         bool                 isLast)
 {
+    S9sOptions     *options   = S9sOptions::instance();
     S9sString       name      = entry["item_name"].toString();
     S9sString       path      = entry["item_path"].toString();
     S9sString       spec      = entry["item_spec"].toString();
@@ -4096,6 +4114,12 @@ S9sRpcReply::printObjectTreeLong(
         S9sVariantMap child = entries[idx].toVariantMap();
         bool          last = idx + 1 >= entries.size();
        
+        if (child["item_name"].toString().startsWith(".") && 
+                !options->isAllRequested())
+        {
+            continue;
+        }
+
         printObjectTreeLong(
                 child, recursionLevel + 1, 
                 "", last);

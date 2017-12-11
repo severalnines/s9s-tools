@@ -1,0 +1,146 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYBASENAME=$(basename $0 .sh)
+MYDIR=$(dirname $0)
+VERBOSE=""
+VERSION="0.0.3"
+LOG_OPTION="--wait"
+CONTAINER_SERVER=""
+CONTAINER_IP=""
+
+cd $MYDIR
+source include.sh
+
+#
+# Prints usage information and exits.
+#
+function printHelpAndExit()
+{
+cat << EOF
+Usage: $MYNAME [OPTION]... [TESTNAME]
+ Test script for s9s to check various error conditions.
+
+ -h, --help       Print this help and exit.
+ --verbose        Print more messages.
+ --print-json     Print the JSON messages sent and received.
+ --log            Print the logs while waiting for the job to be ended.
+ --print-commands Do not print unit test info, print the executed commands.
+ --reset-config   Remove and re-generate the ~/.s9s directory.
+ --server=SERVER  Use the given server to create containers.
+
+EOF
+    exit 1
+}
+
+ARGS=$(\
+    getopt -o h \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            OPTION_VERBOSE="--verbose"
+            ;;
+
+        --log)
+            shift
+            LOG_OPTION="--log"
+            ;;
+
+        --print-json)
+            shift
+            OPTION_PRINT_JSON="--print-json"
+            ;;
+
+        --print-commands)
+            shift
+            DONT_PRINT_TEST_MESSAGES="true"
+            PRINT_COMMANDS="true"
+            ;;
+
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+if [ -z "$S9S" ]; then
+    printError "The s9s program is not installed."
+    exit 7
+fi
+
+if [ -z "$OPTION_RESET_CONFIG" ]; then
+    printError "This script must remove the s9s config files."
+    printError "Make a copy of ~/.s9s and pass the --reset-config option."
+    exit 6
+fi
+
+function testMkdir()
+{
+    local lines
+    local expected
+
+    print_title "Creating Folders"
+
+    mys9s tree --mkdir /home/pipas/.config
+
+    check_exit_code_no_job $?
+    mys9s tree --tree
+    mys9s tree --list
+
+    lines=$(s9s tree --list)
+    expected="/home$"
+    if ! echo "$lines" | grep --quiet "$expected"; then
+        failure "Expected line not found: '$expected'"
+        exit 1
+    fi
+
+    expected="/home/pipas$"
+    if ! echo "$lines" | grep --quiet "$expected"; then
+        failure "Expected line not found: '$expected'"
+        exit 1
+    fi
+}
+
+
+#
+# Running the requested tests.
+#
+startTests
+reset_config
+grant_user
+
+if [ "$1" ]; then
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
+else
+    runFunctionalTest testMkdir
+fi
+
+endTests

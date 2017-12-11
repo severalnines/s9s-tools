@@ -182,9 +182,13 @@ function createContainer()
     #
     # Checking if the user can actually log in through ssh.
     #
+    print_title "Checking SSH Access"
+
     if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
         failure "User $owner can not log in to $CONTAINER_IP"
         exit 1
+    else
+        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
 
     #

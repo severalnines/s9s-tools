@@ -177,6 +177,7 @@ enum S9sOptionType
     OptionListDisks,
     OptionDonor,
     OptionRefresh,
+    OptionAll,
     OptionFail,
     OptionSuccess,
     OptionAccess,
@@ -2267,10 +2268,22 @@ S9sOptions::isRegisterRequested() const
     return getBool("register");
 }
 
+/**
+ * \returns True if the --refresh command line option was provided.
+ */
 bool
 S9sOptions::isRefreshRequested() const
 {
     return getBool("refresh");
+}
+
+/**
+ * \returns True if the --all command line option was provided.
+ */
+bool
+S9sOptions::isAllRequested() const
+{
+    return getBool("all");
 }
 
 /**
@@ -7741,6 +7754,7 @@ S9sOptions::readOptionsTree(
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "tree",             no_argument,       0, OptionTree            },
         
+        { "all",              no_argument,       0, OptionAll             },
         { "acl",              required_argument, 0, OptionAcl             },
         { "owner",            required_argument, 0, OptionOwner           },
         { "refresh",          no_argument,       0, OptionRefresh         },
@@ -7917,6 +7931,11 @@ S9sOptions::readOptionsTree(
             /*
              * Other command line options.
              */
+            case OptionAll:
+                // --all
+                m_options["all"] = true;
+                break;
+
             case OptionAcl:
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
