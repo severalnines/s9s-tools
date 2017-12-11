@@ -3556,6 +3556,10 @@ S9sOptions::printHelpTree()
 "  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
+"  --acl=ACL                  One ACL entry to be added or removed.\n"
+"  --all                      Print also the hidden entries.\n"
+"  --owner=USER[:GROUP]       Owner and group of the CDT entry.\n"
+"\n"
     );
 }
 
