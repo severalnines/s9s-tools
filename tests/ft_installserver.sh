@@ -123,10 +123,41 @@ function registerServer()
     check_exit_code_no_job $?
 }
 
-#
-# This will create a container and check if the user can actually log in through
-# ssh.
-#
+function registerServerFails()
+{
+    print_title "Registrations that should Fail"
+
+    # Duplicate entries in one call.
+    mys9s server \
+        --register \
+        --servers="lxc://core2;lxc://core2"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (duplicate entries)"
+        exit 1
+    fi
+
+    # Folder that does not exist.
+    mys9s server \
+        --register \
+        --servers="lxc://core3?cdt_path=/non-existing-folder"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (invalid folder)"
+        exit 1
+    fi
+
+    # The server that we already registered
+    mys9s server \
+        --register \
+        --servers="lxc://$CONTAINER_SERVER"
+
+    if [ $? -eq 0 ]; then
+        failure "Registration should have failed (server already registered)"
+        exit 1
+    fi
+}
+
 function createContainer()
 {
     local owner
@@ -178,26 +209,72 @@ function createContainer()
         failure "The owner is '$owner', should be '$USER'"
         exit 1
     fi
-   
-    #
-    # Checking if the user can actually log in through ssh.
-    #
-    if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
-        failure "User $owner can not log in to $CONTAINER_IP"
-        exit 1
-    fi
-
+    
     #
     # Checking the template.
     #
-#    template=$(\
-#        s9s container --list --long --batch "$container_name" | \
-#        awk '{print $3}')
-#
+    template=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $3}')
+
 #    if [ "$template" != "ubuntu" ]; then
 #        failure "The template is '$template', should be 'ubuntu'"
 #        exit 1
 #    fi
+}
+
+function createServer()
+{
+    print_title "Installing Container as Server"
+
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "Container IP was not found."
+        exit 1
+    fi
+
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "The container has no IP."
+        exit 1
+    fi
+
+    #
+    # Installing the container as a container server.
+    #
+    mys9s server \
+        --create \
+        --log \
+        --timeout=30 \
+        --servers="lxc://$CONTAINER_IP"
+
+    if [ $? -ne 0 ]; then
+        failure "The job failed"
+        exit 1
+    fi
+
+    mys9s tree --tree
+    mys9s server --list --long
+}
+
+function createContainerInContainer()
+{
+    local owner
+    local container_name="ft_containers_sub_$$"
+    local template
+
+    print_title "Creating Container"
+
+    #
+    # Creating a container.
+    #
+    mys9s container \
+        --create \
+        --servers=$CONTAINER_IP \
+        $LOG_OPTION \
+        "$container_name"
+
+    check_exit_code $?
+
+    s9s container --list --long
 }
 
 #
@@ -232,7 +309,10 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest registerServer
+    runFunctionalTest registerServerFails
     runFunctionalTest createContainer
+    runFunctionalTest createServer
+    #runFunctionalTest createContainerInContainer
     runFunctionalTest deleteContainer
 fi
 

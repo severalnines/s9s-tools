@@ -50,7 +50,7 @@ function mys9s_singleline()
     if [ "$PRINT_COMMANDS" ]; then
         echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
 
-        for argument in $*; do
+        for argument in "$@"; do
             #if [ $nth -gt 0 ]; then
             #    echo -e "\\"
             #fi
@@ -69,7 +69,7 @@ function mys9s_singleline()
         echo ""
     fi
 
-    $S9S --color=always $*
+    $S9S --color=always "$@"
 }
 
 function mys9s_multiline()
@@ -81,7 +81,7 @@ function mys9s_multiline()
         echo ""
         echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
 
-        for argument in $*; do
+        for argument in "$@"; do
             if [ $nth -gt 0 ]; then
                 echo -e "\\"
             fi
@@ -101,7 +101,7 @@ function mys9s_multiline()
         echo ""
     fi
 
-    $S9S --color=always $*
+    $S9S --color=always "$@"
 }
 
 function mys9s()
@@ -114,9 +114,9 @@ function mys9s()
     done
 
     if [ "$n_arguments" -lt 4 ]; then
-        mys9s_singleline $*
+        mys9s_singleline "$@"
     else
-        mys9s_multiline $*
+        mys9s_multiline "$@"
     fi
 }
 
@@ -500,10 +500,10 @@ function wait_for_cluster_started()
 function is_server_running_ssh()
 {
     local serverName="$1"
-    local OWNER="$2"
+    local owner="$2"
     local isOK
 
-    isOk=$(sudo -u $OWNER -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    isOk=$(sudo -u $owner -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
     if [ "$isOk" == "OK" ]; then
         return 0
     fi
@@ -691,6 +691,18 @@ function grant_user()
         failure "Exit code is not 0 while granting user."
         return 1
     fi
+
+    #
+    # Adding the user's default SSH public key. This will come handy when we
+    # create a container because this way the user will be able to log in with
+    # the SSH key without password.
+    #
+    mys9s user \
+        --add-key \
+        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --public-key-name="The SSH key"
+
+    #mys9s user --list-keys
 }
 
 
