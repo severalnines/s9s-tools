@@ -133,6 +133,8 @@ class S9sOptions
         int clusterId() const;
         bool hasClusterIdOption() const;
         int backupId() const;
+        int backupRetention() const;
+        bool encryptBackup() const;
         int updateFreq() const;
         S9sString type() const;
 

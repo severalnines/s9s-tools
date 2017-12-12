@@ -1,4 +1,4 @@
-.TH S9S-BACKUP 1 "August 29, 2016"
+.TH S9S-BACKUP 1 "December 12, 2017"
 
 .SH NAME
 s9s-backup \- Command line client for the Severalnines Clustercontrol server.
@@ -257,7 +257,21 @@ The size of the backup file measured in bytes.
 .BI \-\^\-backup\-method= METHOD
 Controls what backup software is going to be used to create the backup. The
 Cmon controller currently supports the following methods: ndb, mysqldump, 
-xtrabackupfull, xtrabackupincr, mongodump, pg_dump, mysqlpump.
+xtrabackupfull, xtrabackupincr, mongodump, pg_dump, pg_basebackup, mysqlpump.
+
+.TP
+.BI \-\^\-backup\-retention= DAYS
+Controls a custom retention period for the backup, otherwise the default global
+setting will be used. Specifying a positive number value here can control 
+how long (in days) the taken backups will be preserved, -1 has a very special
+meaning, it means the backup will be kept forever, while value 0 is the default,
+means prefer the global setting (configurable on UI).
+
+.TP
+.BI \-\^\-encrypt\-backup
+When this option is specified clustercontrol will attempt to encrypt the backup
+files using AES-256 encryption (the key will be auto-generated if not exists yet
+and stored in cluster configuration file).
 
 .TP
 .BI \-\^\-databases= LIST
