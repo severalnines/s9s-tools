@@ -4448,6 +4448,7 @@ bool
 S9sRpcClient::createContainerWithJob()
 {
     S9sOptions    *options  = S9sOptions::instance();
+    S9sString      templateName = options->templateName();
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job, jobData, jobSpec, container;
@@ -4457,6 +4458,9 @@ S9sRpcClient::createContainerWithJob()
      * Checking the command line options.
      */
     container["class_name"] = "CmonContainer";
+
+    if (!templateName.empty())
+        container["template"] = templateName;
 
     if (options->nExtraArguments() == 1)
     {

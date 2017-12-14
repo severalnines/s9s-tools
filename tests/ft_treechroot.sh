@@ -120,6 +120,14 @@ mys9s user \
 
 check_exit_code $?
 
+# An extra key for the SSH login to the container.
+mys9s user \
+    --add-key \
+    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+    --public-key-name="The SSH key"
+
+check_exit_code_no_job $?
+
 #####
 # Creating a user to be a new superuser.
 #
@@ -180,6 +188,7 @@ fi
 print_title "Creating a Container."
 mys9s container \
     --create \
+    --template=ubuntu \
     --wait container_002
 
 check_exit_code $?

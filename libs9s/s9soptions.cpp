@@ -181,6 +181,7 @@ enum S9sOptionType
     OptionFail,
     OptionSuccess,
     OptionAccess,
+    OptionTemplate,
 };
 
 /**
@@ -1658,6 +1659,12 @@ S9sString
 S9sOptions::donor() const
 {
     return getString("donor");
+}
+
+S9sString
+S9sOptions::templateName() const
+{
+    return getString("template");
 }
 
 /**
@@ -6782,6 +6789,7 @@ S9sOptions::readOptionsContainer(
 
         // Other options.
         { "servers",          required_argument, 0, OptionServers         },
+        { "template",         required_argument, 0, OptionTemplate        },
         
         { 0, 0, 0, 0 }
     };
@@ -6954,6 +6962,11 @@ S9sOptions::readOptionsContainer(
                 if (!setServers(optarg))
                     return false;
 
+                break;
+            
+            case OptionTemplate:
+                // --template=ADDRESS
+                m_options["template"] = optarg;
                 break;
 
             case '?':

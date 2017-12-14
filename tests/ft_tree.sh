@@ -126,6 +126,14 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
+# An extra key for the SSH login to the container.
+mys9s user \
+    --add-key \
+    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+    --public-key-name="The SSH key"
+
+check_exit_code_no_job $?
+
 #####
 # Creating a user to be a new superuser.
 #
@@ -142,11 +150,15 @@ mys9s user \
     --new-password="admin" \
     "admin"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
+check_exit_code_no_job $?
+
+# An extra key for the SSH login to the container.
+mys9s user \
+    --add-key \
+    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+    --public-key-name="The SSH key"
+
+check_exit_code_no_job $?
 
 #####
 # Registering a server.
@@ -167,26 +179,34 @@ mys9s server --list --long --refresh --color=always
 #####
 # Creating a container.
 #
-print_title "Creating a container."
+print_title "Creating a Container"
 pip-container-destroy --server="$CONTAINER_SERVER" container_001
+pip-container-destroy --server="$CONTAINER_SERVER" container_002
 
-mys9s container \
-    --create --log container_001
+if true; then
+    mys9s container \
+        --create \
+        --template=ubuntu \
+        $LOG_OPTION \
+        container_001
 
-ALL_CREATED_IPS="container_001"
+    check_exit_code $?
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    exit 1
+    ALL_CREATED_IPS="container_001"
+    CONTAINER_IP=$(\
+        s9s server \
+            --list-containers \
+            --long container_001 \
+            --batch \
+        | awk '{print $7}')
+
+else
+    CONTAINER_IP=$(\
+        pip-container-create --server="$CONTAINER_SERVER" container_001)
+
+    ALL_CREATED_IPS="$CONTAINER_IP"
 fi
 
-CONTAINER_IP=$(\
-    s9s server \
-        --list-containers \
-        --long container_001 \
-        --batch \
-    | awk '{print $7}')
 
 
 if [ -z "$CONTAINER_IP" ]; then
@@ -215,12 +235,7 @@ mys9s cluster \
     --color=always \
     --wait
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating container."
-    mys9s job --log --job-id=1
-    exit 1
-fi
+check_exit_code $?
 
 #####
 # Creating databases.

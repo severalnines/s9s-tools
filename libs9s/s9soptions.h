@@ -186,6 +186,8 @@ class S9sOptions
         S9sString optValue() const;
         S9sString outputDir() const;
         S9sString donor() const;
+        S9sString templateName() const;
+
         bool force() const;
 
 

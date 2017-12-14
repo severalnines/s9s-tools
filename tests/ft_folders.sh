@@ -100,6 +100,11 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
+#
+# This test will create a nested folder structure in one step. Then it will
+# check if the folders are there and the hidden entries are indeed not shown
+# without the --all command line option.
+#
 function testMkdir()
 {
     local lines
@@ -123,6 +128,18 @@ function testMkdir()
     expected="/home/pipas$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
+        exit 1
+    fi
+    
+    expected=".config$"
+    if echo "$lines" | grep --quiet "$expected"; then
+        failure "Hidden entries should not be seen ('$expected')"
+        exit 1
+    fi
+    
+    lines=$(s9s tree --list --all)
+    if ! echo "$lines" | grep --quiet "$expected"; then
+        failure "Hidden entries should shown with --all ('$expected')"
         exit 1
     fi
 }
