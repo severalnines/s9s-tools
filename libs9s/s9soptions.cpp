@@ -104,6 +104,8 @@ enum S9sOptionType
     OptionType,
     OptionBackupMethod,
     OptionBackupDirectory,
+    OptionBackupRetention,
+    OptionBackupEncryption,
     OptionNoCompression,
     OptionUsePigz,
     OptionOnNode,
@@ -1295,6 +1297,20 @@ S9sOptions::hasClusterIdOption() const
     return m_options.contains("cluster_id");
 }
 
+/**
+ * Returns the --backup-retention value.
+ */
+int
+S9sOptions::backupRetention() const
+{
+    int retval = 0;
+
+    if (m_options.contains("backup_retention"))
+        retval = m_options.at("backup_retention").toInt();
+
+    return retval;
+}
+
 int
 S9sOptions::backupId() const
 {
@@ -1706,6 +1722,15 @@ S9sOptions::backupDir() const
     }
 
     return retval;
+}
+
+/**
+ * \returns true if the --encrypt-backup command line option was provided.
+ */
+bool
+S9sOptions::encryptBackup() const
+{
+    return getBool("encrypt_backup");
 }
 
 /**
@@ -3290,6 +3315,8 @@ S9sOptions::printHelpBackup()
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --backup-format            The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
+"  --backup-retention=DAYS    After how many days the backup shall be removed.\n"
+"  --encrypt-backup           AES-256 encrypt the backup files.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --no-compression           Do not compress the archive file.\n"
@@ -3992,6 +4019,8 @@ S9sOptions::readOptionsBackup(
         // Backup info
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
+        { "backup-retention", required_argument, 0, OptionBackupRetention },
+        { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "no-compression",   no_argument,       0, OptionNoCompression   },
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
         { "on-node",          no_argument,       0, OptionOnNode          },
@@ -4184,6 +4213,16 @@ S9sOptions::readOptionsBackup(
             case OptionBackupDirectory:
                 // --backup-directory=DIRECTORY
                 m_options["backup_directory"] = optarg;
+                break;
+
+            case OptionBackupRetention:
+                // --backup-retention=DAYS
+                m_options["backup_retention"] = atoi(optarg);
+                break;
+
+            case OptionBackupEncryption:
+                // --encrypt-backup
+                m_options["encrypt_backup"] = true;
                 break;
                 
             case OptionNoCompression:

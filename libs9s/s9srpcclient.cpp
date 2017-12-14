@@ -4695,6 +4695,13 @@ S9sRpcClient::createBackup()
     if (options->hasParallellism())
         jobData["xtrabackup_parallellism"] = options->parallellism();
 
+    if (options->encryptBackup())
+        jobData["encrypt_backup"] = true;
+
+    // 0: prefer global setting, -1: never delete, >0 delete after N days
+    if (options->backupRetention() != 0)
+        jobData["backup_retention"] = options->backupRetention();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;
