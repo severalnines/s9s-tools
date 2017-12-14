@@ -152,14 +152,6 @@ mys9s user \
 
 check_exit_code_no_job $?
 
-# An extra key for the SSH login to the container.
-mys9s user \
-    --add-key \
-    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-    --public-key-name="The SSH key"
-
-check_exit_code_no_job $?
-
 #####
 # Registering a server.
 #

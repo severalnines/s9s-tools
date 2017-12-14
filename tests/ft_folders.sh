@@ -105,7 +105,7 @@ fi
 # check if the folders are there and the hidden entries are indeed not shown
 # without the --all command line option.
 #
-function testMkdir()
+function testMkdir1()
 {
     local lines
     local expected
@@ -115,6 +115,7 @@ function testMkdir()
     mys9s tree --mkdir /home/pipas/.config
 
     check_exit_code_no_job $?
+
     mys9s tree --tree
     mys9s tree --list
 
@@ -144,6 +145,48 @@ function testMkdir()
     fi
 }
 
+function testMkdir2()
+{
+    local lines
+    local owner
+    local group
+    local name
+
+    print_title "Creating Folders with Failures"
+
+    mys9s tree --mkdir /testMkdir2
+    check_exit_code_no_job $?
+    
+    lines=$(s9s tree --list | grep testMkdir2)
+    owner=$(echo "$lines" | awk '{print $2}')
+    group=$(echo "$lines" | awk '{print $3}')
+    name=$(echo "$lines" | awk '{print $4}')
+    
+    if [ "$owner" != "pipas" ]; then
+        failure "Owner is '$owner', should be 'pipas'"
+        exit 1
+    fi
+    
+    if [ "$group" != "testgroup" ]; then
+        failure "Group is '$group', should be 'testgroup'"
+        exit 1
+    fi
+    
+    if [ "$name" != "/testMkdir2" ]; then
+        failure "Name is '$name', should be '/testMkdir2'"
+        exit 1
+    fi
+    
+    # We should not be able to create a folder that already exists.
+    mys9s tree --mkdir /testMkdir2
+
+    if [ $? -eq 0 ]; then
+        failure "Creating the same folder should have failed"
+        exit 1
+    fi
+
+    return 0
+}
 
 #
 # Running the requested tests.
@@ -157,7 +200,8 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testMkdir
+    runFunctionalTest testMkdir1
+    runFunctionalTest testMkdir2
 fi
 
 endTests
