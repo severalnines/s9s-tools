@@ -158,9 +158,9 @@ function testMkdir2()
     check_exit_code_no_job $?
     
     lines=$(s9s tree --list | grep testMkdir2)
-    owner=$(echo "$lines" | awk '{print $2}')
-    group=$(echo "$lines" | awk '{print $3}')
-    name=$(echo "$lines" | awk '{print $4}')
+    owner=$(echo "$lines" | awk '{print $3}')
+    group=$(echo "$lines" | awk '{print $4}')
+    name=$(echo "$lines" | awk '{print $5}')
     
     if [ "$owner" != "pipas" ]; then
         failure "Owner is '$owner', should be 'pipas'"

@@ -367,17 +367,17 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-OWNER=$(s9s tree --list /tmp --batch | awk '{print $2}')
-GROUP=$(s9s tree --list /tmp --batch | awk '{print $3}')
+OWNER=$(s9s tree --list /tmp --batch | awk '{print $3}')
+GROUP=$(s9s tree --list /tmp --batch | awk '{print $4}')
 if [ "$OWNER" != 'admin' ]; then
     s9s tree --list --print-json /tmp | jq .
-    failure "The owner should be 'admin'."
+    failure "The owner should be 'admin' not '$OWNER'."
     exit 1
 fi
 
 if [ "$GROUP" != 'admins' ]; then
     s9s tree --list --print-json /tmp | jq .
-    failure "The group should be 'admins'."
+    failure "The group should be 'admins' not '$GROUP'."
     exit 1
 fi
 
