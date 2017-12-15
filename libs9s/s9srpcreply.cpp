@@ -3859,6 +3859,7 @@ S9sRpcReply::printObjectTreeBrief(
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
     S9sString       linkTarget = entry["link_target"].toString();
     bool            isDir     = type == "Folder";
+    bool            isFile    = type == "File";
     bool            isCluster = type == "Cluster";
     bool            isNode    = type == "Node";
     bool            isServer  = type == "Server";
@@ -3899,6 +3900,12 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s%s%s", 
                 STR(indent), 
                 folderColorBegin(), STR(name), folderColorEnd());
+    } else if (isFile)
+    {
+        printf("%s%s%s%s", 
+                STR(indent), 
+                fileColorBegin(name), 
+                STR(name), folderColorEnd());
     } else if (isContainer)
     {
         printf("%s%s%s%s", 
@@ -4041,6 +4048,8 @@ S9sRpcReply::printObjectTreeLong(
     fullPath += name;
 
     if (type == "Folder")
+        printf("d");
+    if (type == "File")
         printf("f");
     else if (type == "Cluster")
         printf("c");
@@ -4055,7 +4064,7 @@ S9sRpcReply::printObjectTreeLong(
     else if (type == "Container")
         printf("c");
     else if (type == "Database")
-        printf("d");
+        printf("b");
    
     printf("%s", STR(aclStringToUiString(acl)));
     printf(" ");
@@ -4072,6 +4081,12 @@ S9sRpcReply::printObjectTreeLong(
     {
         printf("%s%s%s", 
                 folderColorBegin(), STR(fullPath), folderColorEnd());
+    } else if (type == "File")
+    {
+        printf("%s%s%s", 
+                fileColorBegin(fullPath), 
+                STR(fullPath), 
+                folderColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
@@ -7750,7 +7765,7 @@ S9sRpcReply::fileColorBegin(
         else if (fileName.endsWith(".pid"))
             return XTERM_COLOR_LIGHT_RED;
         else
-            return TERM_NORMAL;
+            return XTERM_COLOR_11;
     }
 
     return "";
