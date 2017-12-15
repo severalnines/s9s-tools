@@ -300,6 +300,7 @@ class S9sRpcReply : public S9sVariantMap
     private:
         S9sFormat   m_ownerFormat;
         S9sFormat   m_groupFormat;
+        S9sFormat   m_sizeFormat;
         int         m_numberOfObjects;
         int         m_numberOfFolders;
 };

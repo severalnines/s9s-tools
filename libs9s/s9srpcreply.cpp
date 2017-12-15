@@ -3989,9 +3989,26 @@ S9sRpcReply::walkObjectTree(
     S9sString       group     = node["owner_group_name"].toString();
     S9sVariantList  entries   = node["sub_items"].toVariantList();
     S9sString       type      = node["item_type"].toString();
+    S9sString       sizeString;
+
+    if (node.contains("major_device_number") && 
+            node.contains("minor_devide_number"))
+    {
+        int major = node["major_device_number"].toInt();
+        int minor = node["minor_devide_number"].toInt();
+
+        sizeString.sprintf("%d, %d", major, minor);
+    } else if (node.contains("size"))
+    {
+        ulonglong size = node["size"].toULongLong();
+        sizeString.sprintf("%'llu", size);
+    } else {
+        sizeString = "-";
+    }
 
     m_ownerFormat.widen(owner);
     m_groupFormat.widen(group);
+    m_sizeFormat.widen(sizeString);
 
     if (type == "Folder")
         m_numberOfFolders++;
@@ -4034,6 +4051,7 @@ S9sRpcReply::printObjectTreeLong(
     S9sString       acl       = entry["item_acl"].toString();
     S9sString       linkTarget = entry["link_target"].toString();
     S9sString       fullPath;
+    S9sString       sizeString;
 
     if (owner.empty())
         owner.sprintf("%d", entry["owner_user_id"].toInt());
@@ -4047,10 +4065,13 @@ S9sRpcReply::printObjectTreeLong(
 
     fullPath += name;
 
+    /*
+     * The type and then the acl string.
+     */
     if (type == "Folder")
         printf("d");
     if (type == "File")
-        printf("f");
+        printf("-");
     else if (type == "Cluster")
         printf("c");
     else if (type == "Node")
@@ -4069,6 +4090,26 @@ S9sRpcReply::printObjectTreeLong(
     printf("%s", STR(aclStringToUiString(acl)));
     printf(" ");
 
+    if (entry.contains("major_device_number") && 
+            entry.contains("minor_devide_number"))
+    {
+        int major = entry["major_device_number"].toInt();
+        int minor = entry["minor_devide_number"].toInt();
+
+        sizeString.sprintf("%d, %d", major, minor);
+    } else if (entry.contains("size")) 
+    {
+        ulonglong size = entry["size"].toULongLong();
+        sizeString.sprintf("%'llu", size);
+    } else {
+        sizeString = "-";
+    }
+
+    m_sizeFormat.printf(sizeString);
+
+    /*
+     * The owner and the group owner.
+     */
     printf("%s", userColorBegin());
     m_ownerFormat.printf(owner);
     printf("%s", userColorEnd());
@@ -4077,6 +4118,9 @@ S9sRpcReply::printObjectTreeLong(
     m_groupFormat.printf(group);
     printf("%s", groupColorEnd());
 
+    /*
+     * The name.
+     */
     if (type == "Folder")
     {
         printf("%s%s%s", 
@@ -4185,6 +4229,9 @@ S9sRpcReply::printObjectTreeLong()
         return;
     }
 
+    m_sizeFormat = S9sFormat();
+    m_sizeFormat.setRightJustify();
+
     m_ownerFormat = S9sFormat();
     m_groupFormat = S9sFormat();
     m_numberOfObjects = 0;
@@ -4197,11 +4244,13 @@ S9sRpcReply::printObjectTreeLong()
      */
     if (!options->isNoHeaderRequested())
     {
+        m_sizeFormat.widen("SIZE");
         m_ownerFormat.widen("OWNER");
         m_groupFormat.widen("GROUP");
 
         printf("%s", headerColorBegin());
         printf("MODE        ");
+        m_sizeFormat.printf("SIZE");
         m_ownerFormat.printf("OWNER");
         m_groupFormat.printf("GROUP");
         printf("FULL PATH");
