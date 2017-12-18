@@ -283,6 +283,7 @@ fi
 
 if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
     if [ "$S9S_OPTION" ]; then
+        OPTION_TEST_NAME+="ft_cdt.sh "
         OPTION_TEST_NAME+="ft_user.sh ft_superuser.sh ft_acl.sh "
         OPTION_TEST_NAME+="ft_folders.sh ft_tree.sh ft_treechroot.sh "
         OPTION_TEST_NAME+="ft_containers.sh "
