@@ -1,0 +1,22 @@
+#!/usr/bin/expect
+
+set timeout 3
+
+if {[llength $argv] == 0} {
+  send_user "Usage: pdu-expect [on|off] [1-25]\n"
+  exit 1
+}
+
+set host [lindex $argv 0]
+set onoff [lindex $argv 1]
+set number [lindex $argv 2]
+
+spawn telnet $host
+
+expect "User Name :" { send "apc\r" }
+expect "Password  :" { send "apc -c\r" }
+
+# device manager
+expect "APC> " { send "$onoff $number\r" }
+expect "APC> " { send "\r" }
+

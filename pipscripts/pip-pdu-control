@@ -1,0 +1,171 @@
+#! /bin/bash
+
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.1"
+VERBOSE="true"
+LOGFILE=""
+PDU_SERVER="pdu01"
+PDU_OUTLETS="all"
+PDU_OPERATION="on"
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# $*: the error message
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "ERROR $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "DEBUG $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... 
+
+  $MYNAME - Turns on and off pdu outlets.
+
+ -h, --help           Print this help and exit.
+ -v, --version        Print version information and exit.
+ --verbose            Print more messages.
+ --log-file=FILE      Store all the messages in the given file too.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,on,off" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --on)
+            shift
+            PDU_OPERATION="on"
+            ;;
+
+        --off)
+            shift
+            PDU_OPERATION="off"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+#
+# $1: PDU server name
+#
+function create_pdu_config_file()
+{
+    local server="$1"
+    local config_file="$HOME/.pip/$server"
+
+    if [ -z "$server" ]; then
+        printError "No server name while creating config file."
+    fi
+
+    cat >"$config_file" <<EOF
+#
+# PDU configuration file created by $MYNAME $VERSION
+#
+CONF_PDU_SERVER="$server"
+
+CONF_PDU_FIRST_OUTLET="1"
+CONF_PDU_LAST_OUTLET="24"
+CONF_PDU_DELAY="0.1"
+EOF
+}
+
+create_pdu_config_file "$PDU_SERVER"
+
+source "$HOME/.pip/$PDU_SERVER"
+
+#pdu-expect "$PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS"
+#exit $?
+if [ "$PDU_OUTLETS" == "all" ]; then
+    for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
+        pip-pdu-expect \
+            "$PDU_SERVER" "$PDU_OPERATION" "$c" \
+            >/dev/null 2>/dev/null
+
+        sleep "$CONF_PDU_DELAY"
+    done
+else
+    pip-pdu-expect \
+        "$PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS" \
+        >/dev/null 2>/dev/null
+fi
