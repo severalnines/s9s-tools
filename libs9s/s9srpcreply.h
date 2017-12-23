@@ -68,6 +68,7 @@ class S9sRpcReply : public S9sVariantMap
         void printCheckHostsReply();
         void printJobStarted();
         void printJobLog();
+        void printCat();
         void printAcl();
         void printClusterList();
         void printConfigList();

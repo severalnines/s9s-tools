@@ -249,6 +249,15 @@ S9sBusinessLogic::execute()
             success = client.checkAccess();
             client.printMessages("Ok", success);
             client.setExitStatus();
+        } else if (options->isCatRequested())
+        {
+            // s9s tree --cat PATH
+            S9sRpcReply reply;
+
+            success = client.cat();
+            reply = client.reply();
+            reply.printCat();
+            client.setExitStatus();
         } else if (options->isGetAclRequested())
         {
             S9sRpcReply reply;

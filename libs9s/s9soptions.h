@@ -235,6 +235,7 @@ class S9sOptions
         bool isListPartitionsRequested() const;
         bool isListMemoryRequested() const;
         bool isGetAclRequested() const;
+        bool isCatRequested() const;
         bool isAccessRequested() const;
         bool isAddAclRequested() const;
         bool isRemoveAclRequested() const;
@@ -269,6 +270,8 @@ class S9sOptions
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
         bool isAllRequested() const;
+        bool isRecursiveRequested() const;
+        bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;

@@ -168,6 +168,7 @@ enum S9sOptionType
     OptionListProcessors,
     OptionListMemory,
     OptionGetAcl,
+    OptionCat,
     OptionAddAcl,
     OptionRemoveAcl,
     OptionChOwn,
@@ -2020,6 +2021,12 @@ S9sOptions::isGetAclRequested() const
     return getBool("get_acl");
 }
 
+bool
+S9sOptions::isCatRequested() const
+{
+    return getBool("cat");
+}
+
 /**
  * \returns True if the --chown command line option is provided.
  */
@@ -2316,6 +2323,18 @@ bool
 S9sOptions::isAllRequested() const
 {
     return getBool("all");
+}
+
+bool
+S9sOptions::isRecursiveRequested() const
+{
+    return getBool("recursive");
+}
+
+bool
+S9sOptions::isDirectoryRequested() const
+{
+    return getBool("directory");
 }
 
 /**
@@ -7799,6 +7818,7 @@ S9sOptions::readOptionsTree(
 
         // Main Option
         { "access",           no_argument,       0, OptionAccess          },
+        { "cat",              no_argument,       0, OptionCat             },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
         { "chown",            no_argument,       0, OptionChOwn           },
         { "delete",           no_argument,       0, OptionDelete          },
@@ -7810,11 +7830,13 @@ S9sOptions::readOptionsTree(
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "tree",             no_argument,       0, OptionTree            },
         
-        { "all",              no_argument,       0, OptionAll             },
         { "acl",              required_argument, 0, OptionAcl             },
+        { "all",              no_argument,       0, OptionAll             },
+        { "directory",        no_argument,       0, 'd'                   },
         { "owner",            required_argument, 0, OptionOwner           },
-        { "refresh",          no_argument,       0, OptionRefresh         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "recursive",        no_argument,       0, 'R'                   },
+        { "refresh",          no_argument,       0, OptionRefresh         },
 
         { 0, 0, 0, 0 }
     };
@@ -7825,7 +7847,7 @@ S9sOptions::readOptionsTree(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:P:t:VgGu:Rd", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -7958,6 +7980,11 @@ S9sOptions::readOptionsTree(
                 // --get-acl
                 m_options["get_acl"] = true;
                 break;
+            
+            case OptionCat:
+                // --cat
+                m_options["cat"] = true;
+                break;
 
             case OptionAccess:
                 // --access
@@ -7987,24 +8014,25 @@ S9sOptions::readOptionsTree(
             /*
              * Other command line options.
              */
-            case OptionAll:
-                // --all
-                m_options["all"] = true;
-                break;
-
             case OptionAcl:
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
                 break;
             
+            case OptionAll:
+                // --all
+                m_options["all"] = true;
+                break;
+            
+            case 'd':
+                // -d, --directory
+                m_options["directory"] = true;
+                break;
+
+
             case OptionOwner:
                 // --owner=USER | --owner=USER.GROUP
                 m_options["owner"] = optarg;
-                break;
-            
-            case OptionRefresh:
-                // --refresh
-                m_options["refresh"] = true;
                 break;
             
             case OptionPrivileges:
@@ -8012,6 +8040,16 @@ S9sOptions::readOptionsTree(
                 m_options["privileges"] = optarg;
                 break;
 
+            case 'R':
+                // --recursive
+                m_options["recursive"] = true;
+                break;
+
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
+                break;
+            
             case '?':
                 // 
                 return false;
@@ -8214,6 +8252,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
 
     if (isGetAclRequested())
+        countOptions++;
+    
+    if (isCatRequested())
         countOptions++;
     
     if (isAccessRequested())

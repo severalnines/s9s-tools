@@ -4012,6 +4012,29 @@ S9sRpcClient::moveInTree()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::cat()
+{
+    S9sString        uri = "/v2/tree/";
+    S9sVariantMap    request;
+    S9sOptions      *options   = S9sOptions::instance();
+
+    if (options->nExtraArguments() == 1)
+    {
+        request["path"] = options->extraArgument(0u);
+    } else {
+        PRINT_ERROR(
+                "The --cat option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    request["operation"]      = "cat";
+    
+    return executeRequest(uri, request);
+}
+
 /**
  * Sends the getAcl request to the controller.
  */
@@ -4043,6 +4066,8 @@ S9sRpcClient::getAcl()
     
     return executeRequest(uri, request);
 }
+
+
 
 bool
 S9sRpcClient::startServers()

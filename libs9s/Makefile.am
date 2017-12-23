@@ -150,6 +150,8 @@ libs9s_public_h_headers =     \
 	s9sunion.h                \
 	S9sUrl                    \
 	s9surl.h                  \
+	S9sTreeNode               \
+	s9streenode.h             \
 	S9sUser                   \
 	s9suser.h                 \
 	S9sVariant                \
@@ -177,6 +179,7 @@ libs9s_a_SOURCES =            \
 	s9scontainer.cpp          \
 	s9scluster.cpp            \
 	s9sbackup.cpp             \
+	s9streenode.cpp           \
 	s9suser.cpp               \
 	s9sreport.cpp             \
 	s9sgroup.cpp              \

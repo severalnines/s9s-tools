@@ -515,6 +515,11 @@ function create_container()
         install_package_in_container "$new_name" "openssh-server"
     fi
 
+    printVerbose "Removing 'ubuntu' user."
+    lxc-attach -n "$new_name" -- \
+        /usr/sbin/userdel --remove "ubuntu" \
+        2>/dev/null
+
     #
     # Creating the new user.
     #

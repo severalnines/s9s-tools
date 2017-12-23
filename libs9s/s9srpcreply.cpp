@@ -31,6 +31,7 @@
 #include "S9sBackup"
 #include "S9sMessage"
 #include "S9sCmonGraph"
+#include "S9sTreeNode"
 #include "S9sUser"
 #include "S9sAccount"
 #include "S9sGroup"
@@ -267,6 +268,23 @@ S9sRpcReply::clusters()
         theList << operator[]("cluster");
 
     return theList;
+}
+
+void
+S9sRpcReply::printCat()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        S9sString content = operator[]("file_content").toString();
+        printf("%s", STR(content));
+    }
 }
 
 void
@@ -4040,8 +4058,10 @@ S9sRpcReply::printObjectTreeLong(
         S9sString            indentString,
         bool                 isLast)
 {
+    S9sTreeNode     node      = entry;
     S9sOptions     *options   = S9sOptions::instance();
-    S9sString       name      = entry["item_name"].toString();
+    bool            recursive = options->isRecursiveRequested();
+    bool            directory = options->isDirectoryRequested();
     S9sString       path      = entry["item_path"].toString();
     S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
@@ -4053,6 +4073,19 @@ S9sRpcReply::printObjectTreeLong(
     S9sString       fullPath;
     S9sString       sizeString;
 
+    // If the first level is the directory, we skip it if we are not requested
+    // to print the directory itself.
+    if (recursionLevel == 0 && node.isFolder() && !directory)
+        goto recursive_print;
+    
+    if (!recursive && !directory && recursionLevel > 1)
+        return;
+    
+    if (!recursive && directory && recursionLevel > 0)
+        return;
+
+    //printf("%3d ", recursionLevel);
+
     if (owner.empty())
         owner.sprintf("%d", entry["owner_user_id"].toInt());
     
@@ -4063,7 +4096,7 @@ S9sRpcReply::printObjectTreeLong(
     if (!fullPath.endsWith("/"))
         fullPath += "/";
 
-    fullPath += name;
+    fullPath += node.name();
 
     /*
      * The type and then the acl string.
@@ -4124,43 +4157,59 @@ S9sRpcReply::printObjectTreeLong(
     if (type == "Folder")
     {
         printf("%s%s%s", 
-                folderColorBegin(), STR(fullPath), folderColorEnd());
+                folderColorBegin(), 
+                STR(node.name()), 
+                folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
-                fileColorBegin(fullPath), 
-                STR(fullPath), 
+                fileColorBegin(node.name()), 
+                STR(node.name()), 
                 folderColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
-                clusterColorBegin(), STR(fullPath), clusterColorEnd());
+                clusterColorBegin(), 
+                STR(node.name()), 
+                clusterColorEnd());
     } else if (type == "Node")
     {
         printf("%s%s%s", 
-                ipColorBegin(), STR(fullPath), ipColorEnd());
+                ipColorBegin(), 
+                STR(node.name()), 
+                ipColorEnd());
     } else if (type == "Server")
     {
         printf("%s%s%s", 
-                serverColorBegin(), STR(fullPath), serverColorEnd());
+                serverColorBegin(), 
+                STR(node.name()), 
+                serverColorEnd());
     } else if (type == "User")
     {
         printf("%s%s%s", 
-                userColorBegin(), STR(fullPath), userColorEnd());
+                userColorBegin(), 
+                STR(node.name()), 
+                userColorEnd());
     } else if (type == "Group")
     {
         printf("%s%s%s", 
-                groupColorBegin(), STR(fullPath), groupColorEnd());
+                groupColorBegin(), 
+                STR(node.name()), 
+                groupColorEnd());
     } else if (type == "Container")
     {
         printf("%s%s%s", 
-                containerColorBegin(), STR(fullPath), containerColorEnd());
+                containerColorBegin(), 
+                STR(node.name()), 
+                containerColorEnd());
     } else if (type == "Database")
     {
         printf("%s%s%s", 
-                databaseColorBegin(), STR(fullPath), databaseColorEnd());
+                databaseColorBegin(),
+                STR(node.name()), 
+                databaseColorEnd());
     } else {
-        printf("%s", STR(fullPath));
+        printf("%s", STR(node.name()));
     }
 
     if (!linkTarget.empty())
@@ -4168,20 +4217,24 @@ S9sRpcReply::printObjectTreeLong(
 
     printf("\n");
 
-    for (uint idx = 0; idx < entries.size(); ++idx)
-    {
-        S9sVariantMap child = entries[idx].toVariantMap();
-        bool          last = idx + 1 >= entries.size();
-       
-        if (child["item_name"].toString().startsWith(".") && 
-                !options->isAllRequested())
-        {
-            continue;
-        }
+recursive_print:
 
-        printObjectTreeLong(
-                child, recursionLevel + 1, 
-                "", last);
+    {
+        for (uint idx = 0; idx < entries.size(); ++idx)
+        {
+            S9sVariantMap child = entries[idx].toVariantMap();
+            bool          last = idx + 1 >= entries.size();
+       
+            if (child["item_name"].toString().startsWith(".") && 
+                    !options->isAllRequested())
+            {
+                continue;
+            }
+
+            printObjectTreeLong(
+                    child, recursionLevel + 1, 
+                    "", last);
+        }
     }
 }
 
@@ -4221,6 +4274,7 @@ void
 S9sRpcReply::printObjectTreeLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+
     S9sVariantMap   entry   =  operator[]("cdt").toVariantMap();
 
     if (options->isJsonRequested())
@@ -4253,7 +4307,7 @@ S9sRpcReply::printObjectTreeLong()
         m_sizeFormat.printf("SIZE");
         m_ownerFormat.printf("OWNER");
         m_groupFormat.printf("GROUP");
-        printf("FULL PATH");
+        printf("NAME");
         printf("%s\n", headerColorEnd());
 
     }

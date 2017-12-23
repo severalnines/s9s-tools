@@ -165,15 +165,15 @@ function testRootFolder()
     local cell
     local required
 
-    print_title "Testing CDT"
+    print_title "Testing the 'groups' Folder"
 
-    mys9s tree --tree
-    mys9s tree --list
+    #mys9s tree --tree --all 
+    mys9s tree --list --directory /
 
-    lines=$(s9s tree --list --batch)
+    lines=$(s9s tree --list --batch --directory /)
 
     #
-    # 
+    # Testing various properties of the root folder printed by s9s tree --list
     #
     row=1
     column=5
@@ -187,6 +187,67 @@ function testRootFolder()
     column=4
     cell=$(index_table "$lines" $row $column)
     required="admins"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    column=3
+    cell=$(index_table "$lines" $row $column)
+    required="system"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    column=1
+    cell=$(index_table "$lines" $row $column)
+    required="drwxrwxrwx"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    return 0
+}
+
+function testGroupsFolder()
+{
+    local lines
+    local row
+    local column
+    local cell
+    local required
+
+    print_title "Testing the Root Folder" 
+    
+    mys9s tree --list --directory /groups
+
+    lines=$(s9s tree --list --directory --batch /groups)
+
+    #
+    # Testing various properties of the root folder printed by s9s tree --list
+    #
+    row=1
+    column=6
+    cell=$(index_table "$lines" $row $column)
+    required="groups"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    column=5
+    cell=$(index_table "$lines" $row $column)
+    required="admins"
+    if [ "$cell" != "$required" ]; then
+        failure "The cell at $row,$column should be '$required', it is '$cell'"
+        return 1
+    fi
+
+    column=4
+    cell=$(index_table "$lines" $row $column)
+    required="system"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
         return 1
@@ -208,6 +269,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCreateUser
     runFunctionalTest testRootFolder
+    runFunctionalTest testGroupsFolder
 fi
 
 endTests
