@@ -61,6 +61,7 @@ Usage:
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
   --unit-tests            Run all the unit tests.
+  --functional-tests      Run the functional tests.
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
