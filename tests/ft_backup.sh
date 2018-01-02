@@ -11,6 +11,7 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+DATABASE_USER="$USER"
 PROVIDER_VERSION="5.6"
 
 # The IP of the node we added first and last. Empty if we did not.
@@ -142,7 +143,7 @@ function testCreateCluster()
             FIRST_ADDED_NODE=$nodeName
         fi
 
-        ALL_CREATED_IPS+=" $nodeName"
+        #ALL_CREATED_IPS+=" $nodeName"
     done
        
     #
@@ -176,6 +177,113 @@ function testCreateCluster()
 }
 
 #
+# Creating a new account on the cluster.
+#
+function testCreateAccount()
+{
+    local userName
+
+    print_title "Testing account creation."
+
+    #
+    # This command will create a new account on the cluster.
+    #
+    if [ -z "$CLUSTER_ID" ]; then
+        failure "No cluster ID found."
+        return 1
+    fi
+
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="$DATABASE_USER:password@1.2.3.4" \
+        --with-database
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while creating an account."
+    fi
+
+    mys9s account --list --cluster-id=1 "$DATABASE_USER"
+    userName="$(s9s account --list --cluster-id=1 "$DATABASE_USER")"
+    if [ "$userName" != "$DATABASE_USER" ]; then
+        failure "Failed to create user '$DATABASE_USER'."
+        exit 1
+    fi
+}
+
+#
+# Creating a new database on the cluster.
+#
+function testCreateDatabase()
+{
+    local userName
+
+    print_title "Testing database creation."
+
+    #
+    # This command will create a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testCreateDatabase" \
+        --batch
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
+    fi
+
+    mys9s cluster \
+        --list-database \
+        --long \
+        --cluster-id=$CLUSTER_ID 
+
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    mys9s account \
+        --grant \
+        --cluster-id=$CLUSTER_ID \
+        --account="$DATABASE_USER" \
+        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
+        --batch 
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while granting privileges."
+        exit 1
+    fi
+
+    mys9s account --list --cluster-id=1 --long "$DATABASE_USER"
+    return 0
+}
+
+function testCreateBackup()
+{
+    print_title "The test to create a backup is starting."
+
+    #
+    # Creating the backup.
+    #
+    mys9s backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    mys9s backup --list --long 
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -191,6 +299,9 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateAccount
+    runFunctionalTest testCreateDatabase
+    runFunctionalTest testCreateBackup
 fi
 
 endTests
