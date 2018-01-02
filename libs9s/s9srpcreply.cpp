@@ -6245,7 +6245,14 @@ S9sRpcReply::printBackupListLong()
         {
             S9sVariantMap  theMap    = dataList[idx].toVariantMap();
             S9sBackup      backup    = theMap;
-            
+            int            id        = backup.id();
+
+            /*
+             * Filtering.
+             */
+            if (options->hasBackupId() && options->backupId() != id)
+                continue;
+
             for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
             {
                 for (int fileIdx = 0; 

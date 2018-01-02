@@ -1312,12 +1312,19 @@ S9sOptions::backupRetention() const
     return retval;
 }
 
+/**
+ * \returns True if the --backup-id command line option was provided.
+ */
 bool
 S9sOptions::hasBackupId() const
 {
     return m_options.contains("backup_id");
 }
 
+/**
+ * \returns The command line option argument of the --backup-id option or 0 if
+ *   the option is not provided.
+ */
 int
 S9sOptions::backupId() const
 {

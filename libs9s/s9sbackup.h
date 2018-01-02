@@ -63,6 +63,11 @@ class S9sBackup
          * Properties by actual backups and files.
          */
         int nBackups() const;
+
+        S9sString databaseNamesAsString(
+                const int        backupIndex,
+                const S9sString &delimiter) const;
+
         int nFiles(const int backupIndex) const;
 
         S9sString fileName(

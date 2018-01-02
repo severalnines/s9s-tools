@@ -344,6 +344,29 @@ S9sBackup::nBackups() const
     return 0;
 }
 
+S9sString
+S9sBackup::databaseNamesAsString(
+        const int        backupIndex,
+        const S9sString &delimiter) const
+{
+    S9sVariantMap   theMap = backupMap(backupIndex);
+    S9sVariantList  theList;
+    S9sString       retval;
+
+    if (theMap.contains("database_names"))
+        theList = theMap.at("database_names").toVariantList();
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        if (!retval.empty())
+            retval += delimiter;
+
+        retval += theList[idx].toString();
+    }
+
+    return retval;
+}
+
 /**
  * \returns How many files the given backup contains.
  */
