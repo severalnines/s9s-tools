@@ -1312,6 +1312,12 @@ S9sOptions::backupRetention() const
     return retval;
 }
 
+bool
+S9sOptions::hasBackupId() const
+{
+    return m_options.contains("backup_id");
+}
+
 int
 S9sOptions::backupId() const
 {

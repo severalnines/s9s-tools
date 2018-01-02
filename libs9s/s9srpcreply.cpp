@@ -39,7 +39,7 @@
 #include "S9sServer"
 #include "S9sContainer"
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -6123,7 +6123,14 @@ S9sRpcReply::printBackupListBrief()
         {
             S9sVariantMap  theMap    = dataList[idx].toVariantMap();
             S9sBackup      backup    = theMap;
+            int            id        = backup.id();
             
+            /*
+             * Filtering.
+             */
+            if (options->hasBackupId() && options->backupId() != id)
+                continue;
+
             for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
             {
                 for (int fileIdx = 0; 
@@ -6161,8 +6168,16 @@ S9sRpcReply::printBackupListBrief()
 
         for (uint idx2 = 0; idx2 < backups.size(); ++idx2)
         {
-            S9sVariantMap  backup  = backups[idx2].toVariantMap();
-            S9sVariantList files   = backup["files"].toVariantList();
+            S9sVariantMap  backup    = backups[idx2].toVariantMap();
+            S9sVariantList files     = backup["files"].toVariantList();
+            S9sBackup      theBackup = theMap;
+            int            id        = theBackup.id();
+        
+            /*
+             * Filtering.
+             */
+            if (options->hasBackupId() && options->backupId() != id)
+                continue;
 
             for (uint idx1 = 0; idx1 < files.size(); ++idx1)
             {
@@ -6271,6 +6286,16 @@ S9sRpcReply::printBackupListLong()
         int            id        = backup.id(); 
         S9sString      status    = backup.status(); 
 
+        #if 0
+        S9S_DEBUG("*** hasBackupId: %s", 
+                options->hasBackupId() ? "true" : "false");
+        S9S_DEBUG("*** bakupId: %d", options->backupId());
+        S9S_DEBUG("*** id : %d", id);
+        #endif
+
+        if (options->hasBackupId() && options->backupId() != id)
+            continue;
+
         cidFormat.widen(clusterId);
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
@@ -6350,6 +6375,15 @@ S9sRpcReply::printBackupListLong()
         S9sString      status    = backup.status();
         S9sString      root      = backup.rootDir();
 
+        /*
+         * Filtering.
+         */
+        if (options->hasBackupId() && options->backupId() != id)
+            continue;
+
+        /*
+         *
+         */
         if (backups.size() == 0u)
         {
             S9sString     path          = "-";
