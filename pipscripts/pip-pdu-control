@@ -176,14 +176,14 @@ function switch_apc()
     if [ "$PDU_OUTLETS" == "all" ]; then
         for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
             pip-pdu-expect \
-                "$PDU_SERVER" "$PDU_OPERATION" "$c" \
+                "$CONF_PDU_SERVER" "$PDU_OPERATION" "$c" \
                 >/dev/null 2>/dev/null
 
             sleep "$CONF_PDU_DELAY"
         done
     else
         pip-pdu-expect \
-            "$PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS" \
+            "$CONF_PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS" \
             >/dev/null 2>/dev/null
     fi
 }
@@ -222,12 +222,18 @@ function switch_orvibo()
 }
 
 for OPTION_DEVICE in $OPTION_DEVICES; do
-    CONFIG_FILE_PATH="$HOME/.pip/$OPTION_DEVICE"
+    CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
 
-    create_pdu_config_file "$OPTION_DEVICE"
+    #create_pdu_config_file "$OPTION_DEVICE"
+    if [ ! -f "$CONFIG_FILE_PATH" ]; then
+        printError "Config file '$CONFIG_FILE_PATH' does not exist."
+        continue
+    fi
+
     source "$CONFIG_FILE_PATH"
 
     printVerbose "      device : '$OPTION_DEVICE'"
+    printVerbose "      server : '$CONF_PDU_SERVER'"
     printVerbose "    standard : '$CONF_PDU_STANDARD'"
     printVerbose "   operation : '$PDU_OPERATION'"
 
