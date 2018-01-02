@@ -605,7 +605,17 @@ S9sBackup::toString(
 
                     retval += tmp;
                     break;
-                
+               
+                case 'd':
+                    // The list of databases.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(databaseNamesAsString(backupIndex)));
+
+                    retval += tmp;
+                    break;
+                    
                 case 'D':
                     // The description.
                     partFormat += 's';

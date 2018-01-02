@@ -66,7 +66,7 @@ class S9sBackup
 
         S9sString databaseNamesAsString(
                 const int        backupIndex,
-                const S9sString &delimiter) const;
+                const S9sString &delimiter = ",") const;
 
         int nFiles(const int backupIndex) const;
 
