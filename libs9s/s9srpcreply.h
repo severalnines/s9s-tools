@@ -246,9 +246,12 @@ class S9sRpcReply : public S9sVariantMap
         
         void printBackupListFormatString(const bool longFormat);
 
+        void printBackupListDatabasesBrief();
+        void printBackupListDatabasesLong();
+        
         void printBackupListBrief();
         void printBackupListLong();
-        
+
         void printBackupListFilesBrief();
         void printBackupListFilesLong();
         

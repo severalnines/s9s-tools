@@ -204,6 +204,31 @@ S9sBackup::status() const
     return S9sString();    
 }
 
+
+const char *
+S9sBackup::statusColorBegin(
+        const bool syntaxHighlight)
+{
+    if (!syntaxHighlight)
+        return "";
+
+    if (status() == "COMPLETED")
+        return XTERM_COLOR_GREEN;
+    
+    return XTERM_COLOR_RED;
+}
+
+const char *
+S9sBackup::statusColorEnd(
+        const bool syntaxHighlight)
+{
+    if (!syntaxHighlight)
+        return "";
+
+    return TERM_NORMAL;
+}
+
+
 /**
  * \returns The date and time when the backup creation was started as it is in
  *   the JSon reply.
