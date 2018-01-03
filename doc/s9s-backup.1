@@ -309,6 +309,10 @@ files using AES-256 encryption (the key will be auto-generated if not exists yet
 and stored in cluster configuration file).
 
 .TP
+.BI \-\^\-full\-path
+Print the full path of the files.
+
+.TP
 .BI \-\^\-databases= LIST
 A comma separated list of database names. This argument controls which databases
 are going to be archived into the backup file. By default all the databases are
@@ -324,8 +328,8 @@ all the backup methods support multi-thread operations.
 Do not compress the archive file created by the backup.
 
 .TP
-.BI \-\^\-use\-pigz
-Use the pigz program to compress archive.
+.BI \-\^\-title= STRING
+A short human readable string that helps the user to identify the backup later.
 
 .TP
 .BI \-\^\-on\-node
@@ -337,8 +341,8 @@ where it was created.
 Stream and store the created backup files on the controller.
 
 .TP
-.BI \-\^\-full\-path
-Print the full path of the files.
+.BI \-\^\-use\-pigz
+Use the pigz program to compress archive.
 
 .\"
 .\"

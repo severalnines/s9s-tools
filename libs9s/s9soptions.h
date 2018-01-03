@@ -207,6 +207,7 @@ class S9sOptions
         bool hasParallellism() const;
         int parallellism() const;
         bool fullPathRequested() const;
+        bool toIndividualFiles() const;
 
         bool useTls();
 

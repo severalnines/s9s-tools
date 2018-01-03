@@ -273,6 +273,21 @@ function testCreateBackup()
     #
     mys9s backup \
         --create \
+        --title="Backup created by 'ft_backup.sh'" \
+        --to-individual-files \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    #
+    # Creating another backup.
+    #
+    mys9s backup \
+        --create \
+        --title="Another backup" \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \

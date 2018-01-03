@@ -186,6 +186,7 @@ enum S9sOptionType
     OptionSuccess,
     OptionAccess,
     OptionTemplate,
+    OptionIndividualFiles,
 };
 
 /**
@@ -1869,6 +1870,12 @@ S9sOptions::fullPathRequested() const
     return getBool("full_path");
 }
 
+bool
+S9sOptions::toIndividualFiles() const
+{
+    return getBool("to_individual_files");
+}
+
 /**
  * \returns true if the main operation is "node".
  */
@@ -3359,16 +3366,17 @@ S9sOptions::printHelpBackup()
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
-"  --backup-format            The format string used while printing backups.\n"
+"  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-retention=DAYS    After how many days the backup shall be removed.\n"
-"  --encrypt-backup           AES-256 encrypt the backup files.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
+"  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --no-compression           Do not compress the archive file.\n"
-"  --on-node                  Store the archive file on the node itself.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
+"  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
+"  --title=STRING             Title for the backup.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "\n"
     );
@@ -4077,6 +4085,8 @@ S9sOptions::readOptionsBackup(
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
+        { "title",            required_argument, 0, OptionTitle           },
+        { "to-individual-files", no_argument,    0, OptionIndividualFiles },
         { 0, 0, 0, 0 }
     };
 
@@ -4323,6 +4333,16 @@ S9sOptions::readOptionsBackup(
             case OptionBackupFormat:
                 // --backup-format=VALUE
                 m_options["backup_format"] = optarg;
+                break;
+            
+            case OptionTitle:
+                // --title=TITLE
+                m_options["title"] = optarg;
+                break;
+
+            case OptionIndividualFiles:
+                // --to-individual-files
+                m_options["to_individual_files"] = true;
                 break;
 
             case '?':

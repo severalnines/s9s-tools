@@ -4727,6 +4727,11 @@ S9sRpcClient::createBackup()
     if (options->backupRetention() != 0)
         jobData["backup_retention"] = options->backupRetention();
 
+    if (!options->title().empty())
+        jobData["backup_title"] = options->title();
+
+    jobData["backup_individual_schemas"] = options->toIndividualFiles();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;
