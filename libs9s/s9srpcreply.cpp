@@ -5679,6 +5679,7 @@ S9sRpcReply::printJobListBrief()
 
         idFormat.printf(jobId);
         cidFormat.printf(cid);
+
         printf("%s", stateColorStart);
         stateFormat.printf(status);
         printf("%s", stateColorEnd);
@@ -6209,6 +6210,7 @@ void
 S9sRpcReply::printBackupListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  dataList;
     S9sFormat       sizeFormat;
     S9sFormat       hostNameFormat;
@@ -6372,13 +6374,19 @@ S9sRpcReply::printBackupListLong()
 
         idFormat.printf(id);
         cidFormat.printf(clusterId);
+        
+        printf("%s", backup.statusColorBegin(syntaxHighlight));
         stateFormat.printf(status);
+        printf("%s", backup.statusColorEnd(syntaxHighlight));
 
         printf("%s", userColorBegin());
         ownerFormat.printf(owner);
         printf("%s", userColorEnd());
 
+        printf("%s", ipColorBegin());
         hostNameFormat.printf(hostName);
+        printf("%s", ipColorEnd());
+        
         createdFormat.printf(created);
         sizeFormat.printf(sizeString);
         printf("%s", STR(backup.title()));
@@ -6888,13 +6896,19 @@ S9sRpcReply::printBackupListFilesLong()
 
                 idFormat.printf(id);
                 cidFormat.printf(clusterId);
+                
+                printf("%s", backup.statusColorBegin(syntaxHighlight));
                 stateFormat.printf(status);
+                printf("%s", backup.statusColorEnd(syntaxHighlight));
 
                 printf("%s", userColorBegin());
                 ownerFormat.printf(owner);
                 printf("%s", userColorEnd());
 
+                printf("%s", ipColorBegin());
                 hostNameFormat.printf(hostName);
+                printf("%s", ipColorEnd());
+
                 createdFormat.printf(created);
                 sizeFormat.printf(sizeString);
                 printf("%s%s%s", colorBegin, STR(path), colorEnd);
