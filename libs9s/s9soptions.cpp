@@ -3335,6 +3335,11 @@ S9sOptions::printHelpProcess()
     );
 }
 
+/**
+ * Prints the help text for the "backup" mode. Accessible like this:
+ * s9s backup --help
+ *
+ */
 void
 S9sOptions::printHelpBackup()
 {
@@ -3344,6 +3349,8 @@ S9sOptions::printHelpBackup()
 "Options for the \"backup\" command:\n"
 "  --create                   Create a new backup.\n"
 "  --delete                   Delete a previously created backup.\n"
+"  --list-databases           List the backups in database format.\n"
+"  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
 "  --restore                  Restore an existing backup.\n"
 "\n"

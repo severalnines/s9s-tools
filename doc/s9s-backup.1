@@ -10,19 +10,45 @@ s9s-backup \- Command line client for the Severalnines Clustercontrol server.
 deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
 
 .SH OPTIONS
+
+.\"
+.\"
+.\"
 .SS "Main Option"
 The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
 .TP
-.B \-L, \-\-list
+.B \-\^\-create
+Create a new backup.
+
+.TP
+.B \-\^\-delete
+Delete an existing backup.
+
+.TP
+.B \-\^\-list\-databases
+List the backups in database view format. This format is designed to show the
+archived databases in the backups.
+
+.TP
+.B \-\^\-list\-files
+List the backups in file view format. This format is designed to show the
+archive files of the backups.
+
+.TP
+.B \-L, \-\^\-list
 List the backups known for the controller.
 
 .TP
-.B \-\-create
-Create a new backup.
+.B \-\^\-restore
+Restore a backup.
 
+
+.\"
+.\"
+.\"
 .SS Generic Options
 
 .TP
