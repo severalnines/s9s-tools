@@ -46,6 +46,8 @@ class S9sBackup
          */
         S9sString backupHost() const;
         S9sString storageHost() const;
+
+        S9sString title() const;
         int id() const;
         int clusterId() const;
         int jobId() const;

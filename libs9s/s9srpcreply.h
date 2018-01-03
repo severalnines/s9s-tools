@@ -247,6 +247,9 @@ class S9sRpcReply : public S9sVariantMap
         void printBackupListBrief();
         void printBackupListLong();
         
+        void printBackupListFilesBrief();
+        void printBackupListFilesLong();
+        
         void printUserListBrief();
         void printUserListLong();
         

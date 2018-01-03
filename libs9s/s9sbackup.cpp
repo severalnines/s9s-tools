@@ -147,6 +147,15 @@ S9sBackup::storageHost() const
     return S9sString();    
 }
 
+S9sString
+S9sBackup::title() const
+{
+    if (m_properties.contains("title"))
+        return m_properties.at("title").toString();
+
+    return S9sString();
+}
+
 /**
  * \returns The ID of the backup.
  */
