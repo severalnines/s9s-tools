@@ -503,7 +503,7 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isBackupOperation())
     {
-        if (options->isListRequested())
+        if (options->isListRequested() || options->isListFilesRequested())
         {
             executeBackupList(client);
         } else if (options->isCreateRequested())

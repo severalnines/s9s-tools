@@ -297,6 +297,7 @@ class S9sOptions
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isListDatabasesRequested() const; 
+        bool isListFilesRequested() const; 
         bool isDropRequested() const;
         bool isExecuteRequested() const;
         bool isTreeRequested() const;

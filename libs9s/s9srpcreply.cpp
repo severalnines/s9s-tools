@@ -1023,6 +1023,13 @@ S9sRpcReply::printBackupList()
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isListFilesRequested())
+    {
+        // This is the normal view: the title.
+        if (options->isLongRequested())
+            printBackupListFilesLong();
+        else
+            printBackupListFilesBrief();
     } else {
         // This is the normal view: the title.
         if (options->isLongRequested())

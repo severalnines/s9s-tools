@@ -120,6 +120,7 @@ enum S9sOptionType
     OptionDeleteAccount,
     OptionCreateDatabase,
     OptionListDatabases,
+    OptionListFiles,
     OptionAccount,
     OptionWithDatabase,
     OptionObjects,
@@ -2592,6 +2593,12 @@ S9sOptions::isListDatabasesRequested() const
     return getBool("list_databases");
 }
 
+bool
+S9sOptions::isListFilesRequested() const
+{
+    return getBool("list_files");
+}
+
 /**
  * \returns true if the --long command line option was provided.
  */
@@ -4029,10 +4036,12 @@ S9sOptions::readOptionsBackup(
         { "date-format",      required_argument, 0, OptionDateFormat      },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                   },
         { "create",           no_argument,       0,  OptionCreate         },
-        { "restore",          no_argument,       0,  OptionRestore        },
         { "delete",           no_argument,       0,  OptionDelete         },
+        { "list-databases",   no_argument,       0,  OptionListDatabases  },
+        { "list-files",       no_argument,       0,  OptionListFiles      },
+        { "list",             no_argument,       0, 'L'                   },
+        { "restore",          no_argument,       0,  OptionRestore        },
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -4131,6 +4140,16 @@ S9sOptions::readOptionsBackup(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+
+            case OptionListFiles:
+                // --list-files
+                m_options["list_files"] = true;
+                break;
+            
+            case OptionListDatabases:
+                // --list-databases
+                m_options["list_databases"] = true;
                 break;
             
             case OptionWait:
@@ -4609,6 +4628,12 @@ S9sOptions::checkOptionsBackup()
     if (isListRequested())
         countOptions++;
     
+    if (isListDatabasesRequested())
+        countOptions++;
+    
+    if (isListFilesRequested())
+        countOptions++;
+
     if (isCreateRequested())
         countOptions++;
 
