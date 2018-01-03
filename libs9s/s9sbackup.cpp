@@ -760,6 +760,13 @@ S9sBackup::toString(
                             fileSize(backupIndex, fileIndex).toULongLong());
                     retval += tmp;
                     break;
+            
+                case 't':
+                    // The storage host. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(title()));
+                    retval += tmp;
+                    break;
                 
                 case '%':
                     retval += '%';
