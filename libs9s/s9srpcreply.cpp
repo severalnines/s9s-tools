@@ -6169,61 +6169,13 @@ void
 S9sRpcReply::printBackupListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  dataList;
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-
-    if (options->hasBackupFormat())
-        formatString = options->backupFormat();
 
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
         dataList = operator[]("data").toVariantList();
     else if (contains("backup_records"))
         dataList = operator[]("backup_records").toVariantList();
-    
-    /*
-     * If there is a format string we simply print the list using that format.
-     */
-    if (!formatString.empty())
-    {
-        for (uint idx = 0; idx < dataList.size(); ++idx)
-        {
-            S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-            S9sBackup      backup    = theMap;
-            int            id        = backup.id();
-            
-            /*
-             * Filtering.
-             */
-            if (options->hasBackupId() && options->backupId() != id)
-                continue;
-
-            for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
-            {
-                for (int fileIdx = 0; 
-                        fileIdx < backup.nFiles(backupIdx); ++fileIdx)
-                {
-                    S9sString outString;
-                    
-                    outString = backup.toString(
-                            backupIdx, fileIdx, 
-                            syntaxHighlight, formatString);
-
-                    printf("%s", STR(outString));
-                }
-                
-            }
-        }
-        
-        if (!options->isBatchRequested() && contains("total"))
-        {
-            int total = operator[]("total").toInt();
-            printf("Total %d\n", total);
-        }
-
-        return;
-    }
 
     /*
      * We go through the data and print the titles. 
@@ -6250,9 +6202,7 @@ void
 S9sRpcReply::printBackupListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  dataList;
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormat       sizeFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       idFormat;
@@ -6263,57 +6213,11 @@ S9sRpcReply::printBackupListLong()
     //const char     *colorBegin = "";
     //const char     *colorEnd   = "";
    
-    if (options->hasBackupFormat())
-        formatString = options->backupFormat();
-
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
         dataList = operator[]("data").toVariantList();
     else if (contains("backup_records"))
         dataList = operator[]("backup_records").toVariantList();
-   
-    /*
-     * If there is a format string we simply print the list using that format.
-     */
-    if (!formatString.empty())
-    {
-        for (uint idx = 0; idx < dataList.size(); ++idx)
-        {
-            S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-            S9sBackup      backup    = theMap;
-            int            id        = backup.id();
-
-            /*
-             * Filtering.
-             */
-            if (options->hasBackupId() && options->backupId() != id)
-                continue;
-
-            for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
-            {
-                for (int fileIdx = 0; 
-                        fileIdx < backup.nFiles(backupIdx); ++fileIdx)
-                {
-                    S9sString outString;
-                    
-                    outString = backup.toString(
-                            backupIdx, fileIdx, 
-                            syntaxHighlight, formatString);
-
-                    printf("%s", STR(outString));
-                }
-                
-            }
-        }
-        
-        if (!options->isBatchRequested() && contains("total"))
-        {
-            int total = operator[]("total").toInt();
-            printf("Total %d\n", total);
-        }
-
-        return;
-    }
 
     /*
      * Collecting some information.
@@ -6492,63 +6396,16 @@ void
 S9sRpcReply::printBackupListFilesBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  dataList;
     bool            syntaxHighlight = options->useSyntaxHighlight();
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
-
-    if (options->hasBackupFormat())
-        formatString = options->backupFormat();
 
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
         dataList = operator[]("data").toVariantList();
     else if (contains("backup_records"))
         dataList = operator[]("backup_records").toVariantList();
-    
-    /*
-     * If there is a format string we simply print the list using that format.
-     */
-    if (!formatString.empty())
-    {
-        for (uint idx = 0; idx < dataList.size(); ++idx)
-        {
-            S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-            S9sBackup      backup    = theMap;
-            int            id        = backup.id();
-            
-            /*
-             * Filtering.
-             */
-            if (options->hasBackupId() && options->backupId() != id)
-                continue;
-
-            for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
-            {
-                for (int fileIdx = 0; 
-                        fileIdx < backup.nFiles(backupIdx); ++fileIdx)
-                {
-                    S9sString outString;
-                    
-                    outString = backup.toString(
-                            backupIdx, fileIdx, 
-                            syntaxHighlight, formatString);
-
-                    printf("%s", STR(outString));
-                }
-                
-            }
-        }
-        
-        if (!options->isBatchRequested() && contains("total"))
-        {
-            int total = operator[]("total").toInt();
-            printf("Total %d\n", total);
-        }
-
-        return;
-    }
 
     /*
      * We go through the data and print the file names. 
