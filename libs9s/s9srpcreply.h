@@ -244,6 +244,8 @@ class S9sRpcReply : public S9sVariantMap
         void printJobListBrief();
         void printJobListLong();
         
+        void printBackupListFormatString(const bool longFormat);
+
         void printBackupListBrief();
         void printBackupListLong();
         

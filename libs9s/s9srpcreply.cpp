@@ -39,7 +39,7 @@
 #include "S9sServer"
 #include "S9sContainer"
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -1023,6 +1023,9 @@ S9sRpcReply::printBackupList()
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->hasBackupFormat())
+    {
+        printBackupListFormatString(options->isLongRequested());
     } else if (options->isListFilesRequested())
     {
         // This is the normal view: the title.
@@ -6096,6 +6099,69 @@ S9sRpcReply::printCpuStat()
     }
 }
 
+void
+S9sRpcReply::printBackupListFormatString(
+        const bool longFormat)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sString       formatString;
+    S9sVariantList  dataList;
+    
+    if (longFormat)
+    {
+        formatString = options->longBackupFormat();
+
+        if (formatString.empty())
+            formatString = options->backupFormat();
+    } else {
+        formatString = options->backupFormat();
+    }
+
+    // One is RPC 1.0, the other is 2.0.
+    if (contains("data"))
+        dataList = operator[]("data").toVariantList();
+    else if (contains("backup_records"))
+        dataList = operator[]("backup_records").toVariantList();
+
+    S9S_DEBUG(" dataList.size(): %lu",  dataList.size());
+    for (uint idx = 0; idx < dataList.size(); ++idx)
+    {
+        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
+        S9sBackup      backup    = theMap;
+        int            id        = backup.id();
+
+        /*
+         * Filtering.
+         */
+        S9S_DEBUG("      id : %d", id);
+        S9S_DEBUG("nBackups : %d", backup.nBackups());
+        if (options->hasBackupId() && options->backupId() != id)
+            continue;
+
+        for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
+        {
+            S9S_DEBUG("  nFiles : %d", backup.nFiles(backupIdx));
+            for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
+            {
+                S9sString outString;
+                    
+                outString = backup.toString(
+                        backupIdx, fileIdx, 
+                        syntaxHighlight, formatString);
+
+                printf("%s", STR(outString));
+            }        
+        }
+    }
+        
+    if (!options->isBatchRequested() && contains("total"))
+    {
+        int total = operator[]("total").toInt();
+        printf("Total %d\n", total);
+    }
+}
+
 /**
  * Prints the list of backups in its brief format.
  */
@@ -6541,7 +6607,6 @@ void
 S9sRpcReply::printBackupListFilesLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sString       formatString = options->longBackupFormat();
     S9sVariantList  dataList;
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormat       sizeFormat;
@@ -6554,58 +6619,12 @@ S9sRpcReply::printBackupListFilesLong()
     const char     *colorBegin = "";
     const char     *colorEnd   = "";
    
-    if (options->hasBackupFormat())
-        formatString = options->backupFormat();
-
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
         dataList = operator[]("data").toVariantList();
     else if (contains("backup_records"))
         dataList = operator[]("backup_records").toVariantList();
    
-    /*
-     * If there is a format string we simply print the list using that format.
-     */
-    if (!formatString.empty())
-    {
-        for (uint idx = 0; idx < dataList.size(); ++idx)
-        {
-            S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-            S9sBackup      backup    = theMap;
-            int            id        = backup.id();
-
-            /*
-             * Filtering.
-             */
-            if (options->hasBackupId() && options->backupId() != id)
-                continue;
-
-            for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
-            {
-                for (int fileIdx = 0; 
-                        fileIdx < backup.nFiles(backupIdx); ++fileIdx)
-                {
-                    S9sString outString;
-                    
-                    outString = backup.toString(
-                            backupIdx, fileIdx, 
-                            syntaxHighlight, formatString);
-
-                    printf("%s", STR(outString));
-                }
-                
-            }
-        }
-        
-        if (!options->isBatchRequested() && contains("total"))
-        {
-            int total = operator[]("total").toInt();
-            printf("Total %d\n", total);
-        }
-
-        return;
-    }
-
     /*
      * Collecting some information.
      */
