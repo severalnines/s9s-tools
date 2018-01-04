@@ -1870,6 +1870,9 @@ S9sOptions::fullPathRequested() const
     return getBool("full_path");
 }
 
+/**
+ * \returns True if the --to-individual-files command line option was provided.
+ */
 bool
 S9sOptions::toIndividualFiles() const
 {
@@ -3377,6 +3380,7 @@ S9sOptions::printHelpBackup()
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
 "  --title=STRING             Title for the backup.\n"
+"  --to-individual-files      Archive every database into individual files.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
 "\n"
     );

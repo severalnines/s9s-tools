@@ -130,7 +130,8 @@ function _s9s()
                 opts+="--backup-id= --backup-format= "
                 opts+="--backup-directory= --backup-method= --databases= "
                 opts+="--full-path= --no-compression --on-node --on-controller "
-                opts+="--parallellism= --use-pigz --title= "
+                opts+="--parallellism= --title= --use-pigz "
+                opts+="--to-individual-files "
             fi
             
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
