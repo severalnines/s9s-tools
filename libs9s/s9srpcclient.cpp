@@ -4771,6 +4771,62 @@ S9sRpcClient::createBackup()
     return retval;
 }
 
+bool
+S9sRpcClient::verifyBackup()
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    int             clusterId    = options->clusterId();
+    S9sString       clusterName  = options->clusterName();
+    S9sVariantMap   request;
+    S9sVariantMap   job, jobData, jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    bool            retval;
+
+    if (!options->hasBackupId())
+    {
+        PRINT_ERROR("To verify a backup a backup ID has to be provided.");
+        return false;
+    }
+
+    if (options->testServer().empty())
+    {
+        PRINT_ERROR("To verify a backup a test server has to be provided.");
+        return false;
+    }
+
+    jobData["backupid"] = options->backupId();
+    jobData["server_address"] = options->testServer();
+    jobData["disable_firewall"] = true;
+    jobData["disable_selinux"] = true;
+    jobData["install_software"] = true;
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "verify_backup";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Verify Backup";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule();
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    if (options->hasClusterIdOption())
+        request["cluster_id"] = clusterId;
+    else if (options->hasClusterNameOption())
+        request["cluster_name"] = clusterName;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

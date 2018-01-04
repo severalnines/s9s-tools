@@ -512,6 +512,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createBackup();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isVerifyRequested())
+        {
+            success = client.verifyBackup();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isRestoreRequested())
         {
             success = client.restoreBackup();

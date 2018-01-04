@@ -145,6 +145,7 @@ class S9sRpcClient
          * Backup related methods.
          */
         bool createBackup();
+        bool verifyBackup();
         bool restoreBackup();
         
         bool getBackups(const int clusterId);

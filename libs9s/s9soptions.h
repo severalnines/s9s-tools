@@ -287,6 +287,7 @@ class S9sOptions
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isRestoreRequested() const;
+        bool isVerifyRequested() const;
         bool isRollingRestartRequested() const;
         bool isCreateReportRequested() const;
         bool isAddNodeRequested() const;

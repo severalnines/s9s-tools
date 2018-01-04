@@ -380,7 +380,8 @@ command line option.
 .\" 
 .SH EXAMPLES
 .PP
-Here is an example showing how to create a new backup:
+
+Here is an example showing how to create a new backup.
 
 .nf
 # \fBs9s backup \\
@@ -390,7 +391,7 @@ Here is an example showing how to create a new backup:
     --wait\fR
 .fi
 
-Another example simply lists the backup files:
+Another example simply lists the backups:
 
 .nf
 # \fBs9s backup \\
@@ -399,3 +400,17 @@ Another example simply lists the backup files:
     --long -h\fR
 .fi
 
+The next example will create a job to verify the given backup identified by the
+backup ID. The job will attempt to install MySql on the test server using the
+same settings as for the given cluster, then restore the backup on this test
+server. The job is successfull if the backup is succesfully restored on the test
+server.
+
+.nf
+# \fBs9s backup \\
+    --verify \\
+    --log \\
+    --backup-id=1 \\
+    --test-server=192.168.0.55 \\
+    --cluster-id=1
+.fi

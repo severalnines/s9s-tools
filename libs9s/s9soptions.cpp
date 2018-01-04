@@ -81,6 +81,7 @@ enum S9sOptionType
     OptionTimeStyle,
     OptionWait,
     OptionRestore,
+    OptionVerify,
     OptionBackupId,
     OptionSchedule,
     OptionTimeout,
@@ -2464,6 +2465,16 @@ S9sOptions::isRestoreRequested() const
 }
 
 /**
+ * \returns true if the --verify command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isVerifyRequested() const
+{
+    return getBool("verify");
+}
+
+/**
  * \returns true if the --rolling-restart command line option was provided when
  *   the program was started.
  */
@@ -3364,6 +3375,7 @@ S9sOptions::printHelpBackup()
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
 "  --restore                  Restore an existing backup.\n"
+"  --verify                   Verify an existing backup on a test server.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
@@ -4063,6 +4075,7 @@ S9sOptions::readOptionsBackup(
         { "list-files",       no_argument,       0,  OptionListFiles      },
         { "list",             no_argument,       0, 'L'                   },
         { "restore",          no_argument,       0,  OptionRestore        },
+        { "verify",           no_argument,       0,  OptionVerify         },
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -4204,6 +4217,11 @@ S9sOptions::readOptionsBackup(
             case OptionRestore:
                 // --restore
                 m_options["restore"] = true;
+                break;
+            
+            case OptionVerify:
+                // --verify
+                m_options["verify"] = true;
                 break;
             
             case OptionDelete:
@@ -4679,22 +4697,21 @@ S9sOptions::checkOptionsBackup()
     if (isRestoreRequested())
         countOptions++;
     
+    if (isVerifyRequested())
+        countOptions++;
+    
     if (isDeleteRequested())
         countOptions++;
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --create, --restore and --delete options are mutually"
-            " exclusive.";
+        m_errorMessage = "The main options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --create, --restore and --delete options"
-            " is mandatory.";
+        m_errorMessage = "One of the main options is mandatory.";
 
         m_exitStatus = BadOptions;
 
