@@ -187,6 +187,7 @@ enum S9sOptionType
     OptionAccess,
     OptionTemplate,
     OptionIndividualFiles,
+    OptionTestServer,
 };
 
 /**
@@ -3382,6 +3383,7 @@ S9sOptions::printHelpBackup()
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
+"  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "\n"
     );
 }
@@ -4089,6 +4091,7 @@ S9sOptions::readOptionsBackup(
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
+        { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
         { 0, 0, 0, 0 }
@@ -4347,6 +4350,11 @@ S9sOptions::readOptionsBackup(
             case OptionIndividualFiles:
                 // --to-individual-files
                 m_options["to_individual_files"] = true;
+                break;
+
+            case OptionTestServer:
+                // --test-server=HOSTNAME
+                m_options["test_server"] = optarg;
                 break;
 
             case '?':
@@ -8491,6 +8499,16 @@ S9sOptions::title() const
 {
     return getString("title");
 }
+
+/**
+ * \returns The argument of the --test-server command line option.
+ */
+S9sString
+S9sOptions::testServer() const
+{
+    return getString("test_server");
+}
+
 
 /**
  * \returns The argument of the --last-name command line option.

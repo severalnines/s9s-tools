@@ -4733,6 +4733,18 @@ S9sRpcClient::createBackup()
     if (options->toIndividualFiles())
         jobData["backup_individual_schemas"] = true;
 
+    if (!options->testServer().empty())
+    {
+        S9sVariantMap tmpMap;
+
+        tmpMap["disable_firewall"] = true;
+        tmpMap["disable_selinux"]  = true;
+        tmpMap["install_software"] = true;
+        tmpMap["server_address"]   = options->testServer();
+        
+        jobData["verify_backup"]   = tmpMap;
+    }
+
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
     jobSpec["job_data"]   = jobData;

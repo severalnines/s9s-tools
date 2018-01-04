@@ -135,7 +135,7 @@ function testCreateCluster()
     print_title "Testing the creation of a Galera cluster"
 
     for ((n=0;n<nNodes;++n)); do
-        echo "Creating node #${n}."
+        echo "Creating container #${n}."
         nodeName=$(create_node)
         nodes+="$nodeName;"
     
@@ -266,7 +266,7 @@ function testCreateDatabase()
 
 function testCreateBackup()
 {
-    print_title "The test to create a backup is starting."
+    print_title "Creating a Backup"
 
     #
     # Creating the backup.
@@ -281,6 +281,14 @@ function testCreateBackup()
         $LOG_OPTION
     
     check_exit_code $?
+}
+
+function testCreateBackupVerify()
+{
+    local node
+
+    print_title "Creating and Verifying a Backup"
+    node=$(create_node)
 
     #
     # Creating another backup.
@@ -290,12 +298,17 @@ function testCreateBackup()
         --title="Another backup" \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
+        --test-server="$node" \
         --backup-dir=/tmp \
         $LOG_OPTION
     
     check_exit_code $?
 
-    mys9s backup --list --long 
+    mys9s backup --list --long
+    while true; do
+        mys9s job --list 
+        sleep 10
+    done
 }
 
 #
@@ -317,6 +330,7 @@ else
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup
+    runFunctionalTest testCreateBackupVerify
 fi
 
 endTests
