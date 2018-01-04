@@ -3380,10 +3380,10 @@ S9sOptions::printHelpBackup()
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
+"  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
-"  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "\n"
     );
 }
