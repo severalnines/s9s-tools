@@ -264,8 +264,9 @@ function testCreateDatabase()
     return 0
 }
 
-function testCreateBackup()
+function testCreateBackup01()
 {
+    local node
     print_title "Creating a Backup"
 
     #
@@ -281,6 +282,51 @@ function testCreateBackup()
         $LOG_OPTION
     
     check_exit_code $?
+
+    #
+    #
+    #
+    print_title "Verifying the Backup"
+    node=$(create_node)
+
+    mys9s backup \
+        --verify \
+        --cluster-id=$CLUSTER_ID \
+        --backup-id=1 \
+        --test-server="$node" \
+        $LOG_OPTION
+}
+
+function testCreateBackup02()
+{
+    local node
+    print_title "Creating Another Backup"
+
+    #
+    # Creating the backup.
+    #
+    mys9s backup \
+        --create \
+        --title="Backup created by 'ft_backup.sh'" \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    #
+    #
+    #
+    print_title "Verifying the Backup"
+    node=$(create_node)
+
+    mys9s backup \
+        --verify \
+        --cluster-id=$CLUSTER_ID \
+        --backup-id=2 \
+        --test-server="$node" \
+        $LOG_OPTION
 }
 
 function testCreateBackupVerify()
@@ -305,6 +351,8 @@ function testCreateBackupVerify()
     check_exit_code $?
 
     mys9s backup --list --long
+    return 0
+
     while true; do
         mys9s job --list 
         sleep 10
@@ -329,7 +377,8 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
-    runFunctionalTest testCreateBackup
+    runFunctionalTest testCreateBackup01
+    runFunctionalTest testCreateBackup02
     runFunctionalTest testCreateBackupVerify
 fi
 
