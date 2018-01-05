@@ -204,7 +204,6 @@ S9sBackup::status() const
     return S9sString();    
 }
 
-
 const char *
 S9sBackup::statusColorBegin(
         const bool syntaxHighlight)
@@ -228,6 +227,20 @@ S9sBackup::statusColorEnd(
         return "";
 
     return TERM_NORMAL;
+}
+
+/**
+ * Possible values are "Unverified"...
+ */
+S9sString
+S9sBackup::verificationStatus() const
+{
+    S9sVariantMap verificationMap;
+
+    if (m_properties.contains("verified"))
+        verificationMap = m_properties.at("verified").toVariantMap();
+
+    return verificationMap["status"].toString();
 }
 
 
@@ -792,6 +805,13 @@ S9sBackup::toString(
                     // The storage host. 
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(title()));
+                    retval += tmp;
+                    break;
+                
+                case 'v':
+                    // The verification status.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(verificationStatus()));
                     retval += tmp;
                     break;
                 

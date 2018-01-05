@@ -51,9 +51,13 @@ class S9sBackup
         int id() const;
         int clusterId() const;
         int jobId() const;
+        
         S9sString status() const;
         const char *statusColorBegin(const bool syntaxHighlight);
         const char *statusColorEnd(const bool syntaxHighlight);
+
+        S9sString verificationStatus() const;
+        
         S9sVariant begin() const;
         S9sString beginAsString() const;
         S9sVariant end() const;
