@@ -173,7 +173,7 @@ EOF
 
 function switch_apc()
 {
-    if [ "$PDU_OUTLETS" == "all" ]; then
+    if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
         for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
             pip-pdu-expect \
                 "$CONF_PDU_SERVER" "$PDU_OPERATION" "$c" \

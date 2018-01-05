@@ -12,7 +12,7 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 DATABASE_USER="$USER"
-PROVIDER_VERSION="5.6"
+PROVIDER_VERSION="5.7"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -132,7 +132,7 @@ function testCreateCluster()
     local exitCode
     local nNodes=1
 
-    print_title "Testing the creation of a Galera cluster"
+    print_title "Creating a Galera Cluster"
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
@@ -174,6 +174,10 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+
+    #mys9s cluster --list --long
+    #sleep 60
+    #mys9s cluster --list --long
 }
 
 #
@@ -267,6 +271,8 @@ function testCreateDatabase()
 function testCreateBackup01()
 {
     local node
+    local value
+
     print_title "Creating a Backup"
 
     #
@@ -282,6 +288,30 @@ function testCreateBackup01()
         $LOG_OPTION
     
     check_exit_code $?
+
+    value=$(s9s backup --list --backup-id=1 | wc -l)
+    if [ "$value" != 1 ]; then
+        failure "There should be 1 backup in the output"
+        exit 1
+    fi
+    
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
+    if [ "$value" != "COMPLETED" ]; then
+        failure "The backup should be completed"
+        exit 1
+    fi
+
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $4}')
+    if [ "$value" != "$USER" ]; then
+        failure "The owner of the backup should be '$USER'"
+        exit 1
+    fi
+    
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $2}')
+    if [ "$value" != "1" ]; then
+        failure "The cluster ID for the backup should be '1'."
+        exit 1
+    fi
 
     #
     #
