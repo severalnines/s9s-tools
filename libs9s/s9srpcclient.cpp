@@ -4779,6 +4779,7 @@ S9sRpcClient::verifyBackup()
     S9sString       clusterName  = options->clusterName();
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
+    S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -4793,6 +4794,8 @@ S9sRpcClient::verifyBackup()
         PRINT_ERROR("To verify a backup a test server has to be provided.");
         return false;
     }
+    
+    title.sprintf("Verify Backup %d", options->backupId());
 
     jobData["backupid"] = options->backupId();
     jobData["server_address"] = options->testServer();
@@ -4806,7 +4809,7 @@ S9sRpcClient::verifyBackup()
 
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Verify Backup";
+    job["title"]          = title;
     job["job_spec"]       = jobSpec;
 
     if (!options->schedule().empty())

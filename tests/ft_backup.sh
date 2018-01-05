@@ -316,7 +316,7 @@ function testCreateBackup01()
     #
     #
     #
-    print_title "Verifying the Backup"
+    print_title "Verifying Backup 1"
     node=$(create_node)
 
     mys9s backup \
@@ -337,7 +337,7 @@ function testCreateBackup02()
     #
     mys9s backup \
         --create \
-        --title="Backup created by 'ft_backup.sh'" \
+        --title="Second Backup of 'ft_backup.sh'" \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
@@ -348,7 +348,7 @@ function testCreateBackup02()
     #
     #
     #
-    print_title "Verifying the Backup"
+    print_title "Verifying Backup 2"
     node=$(create_node)
 
     mys9s backup \
