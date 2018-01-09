@@ -4669,10 +4669,18 @@ S9sRpcClient::createBackup()
     S9sString       schedule     = options->schedule();
     S9sString       databases    = options->databases();
     S9sNode         backupHost;
+    S9sString       title;
     S9sVariantMap   request;
     S9sVariantMap   job, jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
+
+    if (!backupMethod.empty())
+    {
+        title.sprintf("Create %s Backup", STR(backupMethod));
+    } else {
+        title = "Create Backup";
+    }
 
     if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
     {
@@ -4700,7 +4708,9 @@ S9sRpcClient::createBackup()
         jobData["backupdir"]     = backupDir;
 
     if (!backupMethod.empty())
+    {
         jobData["backup_method"] = backupMethod;
+    }
     
     if (!databases.empty())
         jobData["include_databases"] = databases;
@@ -4751,7 +4761,7 @@ S9sRpcClient::createBackup()
 
     // The job instance describing how the job will be executed.
     job["class_name"]     = "CmonJobInstance";
-    job["title"]          = "Create Backup";
+    job["title"]          = title;
     job["job_spec"]       = jobSpec;
 
     if (!options->schedule().empty())

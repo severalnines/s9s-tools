@@ -173,6 +173,8 @@ EOF
 
 function switch_apc()
 {
+    #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
+
     if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
         for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
             pip-pdu-expect \
@@ -182,6 +184,8 @@ function switch_apc()
             sleep "$CONF_PDU_DELAY"
         done
     else
+#        echo "pip-pdu-expect $CONF_PDU_SERVER $PDU_OPERATION $PDU_OUTLETS"
+
         pip-pdu-expect \
             "$CONF_PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS" \
             >/dev/null 2>/dev/null
@@ -201,15 +205,18 @@ function switch_orvibo()
     #
     case "$PDU_OPERATION" in 
         on)
-            S20control.py poweron $CONF_PDU_SERVER $CONF_PDU_MAC
+            S20control.py poweron $CONF_PDU_SERVER $CONF_PDU_MAC \
+                2>/dev/null >/dev/null
             ;;
 
         off)
-            S20control.py poweroff $CONF_PDU_SERVER $CONF_PDU_MAC
+            S20control.py poweroff $CONF_PDU_SERVER $CONF_PDU_MAC \
+                2>/dev/null >/dev/null
             ;;
 
         state)
-            S20control.py getstate $CONF_PDU_SERVER $CONF_PDU_MAC
+            S20control.py getstate $CONF_PDU_SERVER $CONF_PDU_MAC \
+                2>/dev/null >/dev/null
             if [ $? -eq 0 ]; then
                 echo "on"
             else
@@ -218,8 +225,45 @@ function switch_orvibo()
             ;;
 
     esac
-
 }
+
+#
+# pipas@t7500:~$ curl http://192.168.2.5/cm?cmnd=Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
+# 24.4
+#
+function switch_tasmota()
+{
+    local output
+
+    #
+    #
+    #
+    case "$PDU_OPERATION" in 
+        on)
+            curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20on \
+                2>/dev/null >/dev/null
+            ;;
+
+        off)
+            curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20off \
+                2>/dev/null >/dev/null
+            ;;
+
+        state)
+            output=$(curl \
+                http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
+                2>/dev/null)
+
+            if echo "$output" | grep '"ON"'; then
+                echo "on"
+            else
+                echo "off"
+            fi
+            ;;
+
+    esac
+}
+
 
 for OPTION_DEVICE in $OPTION_DEVICES; do
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
@@ -230,12 +274,25 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
         continue
     fi
 
+    #
+    # Loading the config file.
+    #
+    CONF_PDU_OUTLET=""
+
     source "$CONFIG_FILE_PATH"
+
+    #echo "*** CONF_PDU_OUTLET : $CONF_PDU_OUTLET"
+    if [ "$CONF_PDU_OUTLET" ]; then
+        PDU_OUTLETS="$CONF_PDU_OUTLET"
+    fi
+    
+    #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
 
     printVerbose "      device : '$OPTION_DEVICE'"
     printVerbose "      server : '$CONF_PDU_SERVER'"
     printVerbose "    standard : '$CONF_PDU_STANDARD'"
     printVerbose "   operation : '$PDU_OPERATION'"
+
 
     case "$CONF_PDU_STANDARD" in 
         apc)
@@ -244,6 +301,10 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
 
         orvibo)
             switch_orvibo
+            ;;
+
+        tasmota)
+            switch_tasmota
             ;;
 
         *)

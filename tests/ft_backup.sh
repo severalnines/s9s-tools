@@ -268,6 +268,9 @@ function testCreateDatabase()
     return 0
 }
 
+#
+# The first function that creates a backup.
+#
 function testCreateBackup01()
 {
     local node
@@ -285,6 +288,8 @@ function testCreateBackup01()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
+        --use-pigz \
+        --parallellism=5 \
         $LOG_OPTION
     
     check_exit_code $?
@@ -313,6 +318,25 @@ function testCreateBackup01()
         exit 1
     fi
 
+    # Checking the path.
+    value=$(\
+        s9s backup --list-files --full-path --backup-id=1 | \
+        grep '^/tmp/BACKUP-1/mysql/' | \
+        wc -l)
+    if [ "$value" != 3 ]; then
+        failure "Three files should be in '/tmp/BACKUP-1/mysql/'"
+        mys9s backup --list-files --full-path --backup-id=1
+    fi
+
+    value=$(\
+        s9s backup --list-files --full-path --backup-id=1 | \
+        grep '^/tmp/BACKUP-1/testCreateDatabase/' | \
+        wc -l)
+    if [ "$value" != 3 ]; then
+        failure "Three files should be in '/tmp/BACKUP-1/testCreateDatabase/'"
+        mys9s backup --list-files --full-path --backup-id=1
+    fi
+
     #
     #
     #
@@ -334,6 +358,7 @@ function testCreateBackup02()
 
     #
     # Creating the backup.
+    # Using gzip this time.
     #
     mys9s backup \
         --create \
@@ -389,6 +414,48 @@ function testCreateBackupVerify()
     done
 }
 
+function testCreateBackupMySqlPump()
+{
+    local node
+    print_title "Creating mysqlpump Backup"
+
+    #
+    # Creating the backup.
+    # Using mysqlpump thid time.
+    #
+    mys9s backup \
+        --create \
+        --title="ft_backup.sh mysqlpump backup" \
+        --backup-method=mysqlpump \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
+function testCreateBackupXtrabackup()
+{
+    local node
+    print_title "Creating xtrabackupfull Backup"
+
+    #
+    # Creating the backup.
+    # Using thid time.
+    #
+    mys9s backup \
+        --create \
+        --title="ft_backup.sh xtrabackupfull backup" \
+        --backup-method=xtrabackupfull \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
 #
 # Running the requested tests.
 #
@@ -410,6 +477,9 @@ else
     runFunctionalTest testCreateBackup01
     runFunctionalTest testCreateBackup02
     runFunctionalTest testCreateBackupVerify
+    runFunctionalTest testCreateBackupXtrabackup
+    # The mysqlpump utility is not even installed.
+    #runFunctionalTest testCreateBackupMySqlPump
 fi
 
 endTests
