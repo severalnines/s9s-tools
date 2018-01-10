@@ -17,17 +17,32 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B \-\^\-access 
+Check the access rights for the authenticated user to the given CDT entry. This
+main option is made to be used in shell scripts, the exit code of the s9s
+program shows if the user has the privileges specified in the command line.
+
+.TP
 .B \-\^\-add\-acl
 Add an ACL entry to an object in the tree.
+
+.TP
+.B \-\^\-cat
+This option can be used to print the content of a CDT file entry similar way the
+cat(1) standard utility is used to print normal files.
 
 .TP
 .B \-\^\-chown 
 Change the ownership of an object. The new owner (and optionally the group
 owner) should be passed through the \fB\-\^\-owner\fP command line option.
 
+.TP 
+.B \-\^\-delete
+Remove CDT entries.
+
 .TP
 .B \-\^\-get\-acl
-Print the ACL of an object in the tree.
+Print the ACL of a CDT entry.
 
 .TP
 .B \-\^\-list

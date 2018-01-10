@@ -132,7 +132,7 @@ function testCreateCluster()
     local exitCode
     local nNodes=1
 
-    print_title "Creating a Galera Cluster"
+    print_title "Creating a Cluster"
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
@@ -178,7 +178,55 @@ function testCreateCluster()
 
 function testTree()
 {
-    mys9s tree --tree
+    local retcode
+
+    print_title "Checking Access Rights"
+    mys9s tree --tree --all
+
+    if ! s9s tree --access --privileges="rwx" /; then
+        failure "The user has no access to '/'"
+        exit 1
+    fi
+    
+    if ! s9s tree --access --privileges="r" /groups; then
+        failure "The user has no access to '/groups'"
+        exit 1
+    fi
+    
+    if s9s tree --access --privileges="rwx" /groups; then
+        failure "The user has write access to '/groups'"
+        exit 1
+    fi
+
+    #
+    # Normal user should not have access to some special files.
+    #
+    s9s tree \
+        --access \
+        --privileges="r" \
+        /.runtime/cluster_manager 
+
+    retcode=$?
+    if [ "$retcode" -eq 0 ]; then
+        failure "Normal user should not have access to '/.runtime' files"
+        exit 1
+    fi
+
+    #
+    # Checking if the system user has access to some special files.
+    #
+    s9s tree \
+        --access \
+        --privileges="r" \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/cluster_manager 
+    
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        failure "The system user should have access to '/.runtime' files"
+        exit 1
+    fi
 }
 
 #
