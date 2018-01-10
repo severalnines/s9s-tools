@@ -211,6 +211,7 @@ class S9sOptions
         int parallellism() const;
         bool fullPathRequested() const;
         bool toIndividualFiles() const;
+        bool backupDatadir() const;
 
         bool useTls();
 

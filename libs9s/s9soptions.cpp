@@ -191,6 +191,7 @@ enum S9sOptionType
     OptionTemplate,
     OptionIndividualFiles,
     OptionTestServer,
+    OptionBackupDatadir,
 };
 
 /**
@@ -1904,6 +1905,17 @@ S9sOptions::toIndividualFiles() const
 }
 
 /**
+ * \returns True if the --backup-datadir command line option was provided.
+ */
+bool
+S9sOptions::backupDatadir() const
+{
+    return getBool("backupDatadir");
+}
+
+
+
+/**
  * \returns true if the main operation is "node".
  */
 bool
@@ -3403,6 +3415,7 @@ S9sOptions::printHelpBackup()
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "\n"
+"  --backup-datadir           Backup the SQL data directory before restoring.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
@@ -3676,8 +3689,11 @@ S9sOptions::printHelpTree()
 
     printf(
 "Options for the \"tree\" command:\n"
+"  --access                   Check access rights for a CDT entry.\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --cat                      Print the content of a CDT file.\n"
 "  --chown                    Change the ownership of an object.\n"
+"  --delete                   Remove a CDT entry.\n"
 "  --get-acl                  List the ACL of an object.\n"
 "  --list                     Print the Cmon Directory Tree in list format.\n"
 "  --mkdir                    Create a directory in the Cmon Directory Tree.\n"
@@ -4116,6 +4132,7 @@ S9sOptions::readOptionsBackup(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Backup info
+        { "backup-datadir",   no_argument,       0, OptionBackupDatadir   },
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
@@ -4324,6 +4341,11 @@ S9sOptions::readOptionsBackup(
                 m_options["backup_id"] = atoi(optarg);
                 break;
            
+            case OptionBackupDatadir:
+                // --backup-datadir
+                m_options["backup_datadir"] = true;
+                break;
+
             case OptionBackupMethod:
                 // --backup-method=METHOD
                 m_options["backup_method"] = optarg;

@@ -4865,6 +4865,8 @@ S9sRpcClient::restoreBackup()
     // The job_data describing how the backup will be created.
     jobData["backupid"]   = backupId;
     jobData["bootstrap"]  = true;
+    jobData["backup_datadir_before_restore"] = options->backupDatadir();
+
     if (!options->nodes().empty())
     {
         // on which node we want to restore the backup

@@ -127,7 +127,7 @@ function _s9s()
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--date-format= --cmon-user= --password= "
 
-                opts+="--backup-id= --backup-format= "
+                opts+="--backup-id= --backup-format= --backup-datadir "
                 opts+="--backup-user= --backup-password= "
                 opts+="--backup-directory= --backup-method= --databases= "
                 opts+="--full-path= --no-compression --on-node --on-controller "
@@ -204,9 +204,9 @@ function _s9s()
                 opts+="--job-id= --from= --until= --limit= --offset= "
             fi
         elif [[ ${COMP_WORDS[i]} == "tree" ]]; then
-            main_opt+="--help "
-            main_opt+="--add-acl --get-acl --list --move --remove-acl --tree "
-            main_opt+="--mkdir --rmdir "
+            main_opt+="--help --access --add-acl --cat --chown --delete "
+            main_opt+="--get-acl --list --mkdir --move --remove-acl --rmdir "
+            main_opt+="--tree "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
