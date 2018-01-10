@@ -456,6 +456,49 @@ function testCreateBackupXtrabackup()
     check_exit_code $?
 }
 
+function testCreateBackupXtrabackupIncr()
+{
+    local node
+    print_title "Creating xtrabackupincr Backup"
+
+    #
+    # Creating the backup.
+    # Using thid time.
+    #
+    mys9s backup \
+        --create \
+        --title="ft_backup.sh xtrabackupincr backup" \
+        --backup-method=xtrabackupincr \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
+function testDelete()
+{
+    local id
+    
+    print_title "Deleting Existing Backup"
+
+    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
+    if [ "$id" != "1" ]; then
+        failure "Backup with id 1 was not found"
+        mys9s backup --list --long
+    fi
+
+    mys9s backup --delete --backup-id=1
+    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
+    if [ "$id" == "1" ]; then
+        failure "Backup with id 1 still exists"
+        mys9s backup --list --long
+    fi
+   
+    return 0
+}
+
 #
 # Running the requested tests.
 #
@@ -480,6 +523,8 @@ else
     runFunctionalTest testCreateBackupXtrabackup
     # The mysqlpump utility is not even installed.
     #runFunctionalTest testCreateBackupMySqlPump
+    runFunctionalTest testCreateBackupXtrabackupIncr
+    runFunctionalTest testDelete 
 fi
 
 endTests

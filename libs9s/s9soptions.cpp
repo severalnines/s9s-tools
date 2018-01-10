@@ -83,6 +83,12 @@ enum S9sOptionType
     OptionRestore,
     OptionVerify,
     OptionBackupId,
+    OptionBackupMethod,
+    OptionBackupDirectory,
+    OptionBackupRetention,
+    OptionBackupEncryption,
+    OptionBackupUser,
+    OptionBackupPassword,
     OptionSchedule,
     OptionTimeout,
     OptionPing,
@@ -103,10 +109,6 @@ enum S9sOptionType
     OptionListProperties,
     OptionListContainers,
     OptionType,
-    OptionBackupMethod,
-    OptionBackupDirectory,
-    OptionBackupRetention,
-    OptionBackupEncryption,
     OptionNoCompression,
     OptionUsePigz,
     OptionOnNode,
@@ -1338,6 +1340,26 @@ S9sOptions::backupId() const
         retval = m_options.at("backup_id").toInt();
 
     return retval;
+}
+
+/**
+ * \returns The option argument for the --backup-user option or the empty string
+ *   if the option was not provided.
+ */
+S9sString
+S9sOptions::backupUser() const
+{
+    return getString("backup_user");
+}
+
+/**
+ * \returns The option argument for the --backup-password option or the empty
+ *   string if the option was not provided.
+ */
+S9sString
+S9sOptions::backupPassword() const
+{
+    return getString("backup_password");
 }
 
 /**
@@ -4095,6 +4117,8 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
+        { "backup-user",      required_argument, 0, OptionBackupUser      },
+        { "backup-password",  required_argument, 0, OptionBackupPassword  },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "no-compression",   no_argument,       0, OptionNoCompression   },
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
@@ -4311,6 +4335,16 @@ S9sOptions::readOptionsBackup(
             case OptionBackupRetention:
                 // --backup-retention=DAYS
                 m_options["backup_retention"] = atoi(optarg);
+                break;
+
+            case OptionBackupUser:
+                // --backup-user=USERNAME
+                m_options["backup_user"] = optarg;
+                break;
+
+            case OptionBackupPassword:
+                // --backup-password=PASSWD
+                m_options["backup_password"] = optarg;
                 break;
 
             case OptionBackupEncryption:

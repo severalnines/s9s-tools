@@ -136,6 +136,9 @@ class S9sOptions
         bool hasBackupId() const;
         int backupId() const;
 
+        S9sString backupUser() const;
+        S9sString backupPassword() const;
+
         int backupRetention() const;
         bool encryptBackup() const;
         int updateFreq() const;

@@ -5,7 +5,7 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
 VERBOSE=""
-LOGFILE=""
+LOGFILE="$HOME/.pip/${MYNAME}.log"
 OPTION_DEVICE=""
 PDU_SERVER=""
 PDU_OUTLETS="all"
@@ -137,6 +137,11 @@ done
 
 OPTION_DEVICES="$@"
 
+logger "Log file is: '$LOGFILE'."
+touch "$LOGFILE"
+
+
+LOGFILE="$HOME/.pip/${OPTION_DEVICES}.log"
 if [ -z "$OPTION_DEVICES" ]; then
     printError "Device name is not provided."
     exit 1
@@ -194,6 +199,8 @@ function switch_apc()
 
 function switch_orvibo()
 {
+    local retcode
+
     if [ -z "$CONF_PDU_MAC" ]; then
         printError "MAC address needed to switch Orvibo devices."
         return 1
@@ -215,9 +222,13 @@ function switch_orvibo()
             ;;
 
         state)
+            printVerbose "S20control.py getstate $CONF_PDU_SERVER $CONF_PDU_MAC"
             S20control.py getstate $CONF_PDU_SERVER $CONF_PDU_MAC \
                 2>/dev/null >/dev/null
-            if [ $? -eq 0 ]; then
+            
+            retcode=$?
+            printVerbose "retcode: $retcode"
+            if [ "$retcode" -eq 0 ]; then
                 echo "on"
             else
                 echo "off"
@@ -250,14 +261,25 @@ function switch_tasmota()
             ;;
 
         state)
-            output=$(curl \
-                http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
-                2>/dev/null)
+            printVerbose "Checking switch state."
+            printVerbose "curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20status"
+            if [ -f "$LOGFILE" ]; then
+                output=$(curl \
+                    http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
+                    2>/dev/null)
+            else
+                output=$(curl \
+                    http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
+                    2>"$LOGFILE")
+            fi
 
-            if echo "$output" | grep '"ON"'; then
+            printVerbose "output: $output"
+            if echo "$output" | grep -q '"ON"'; then
+                printVerbose "Result: 'on'"
                 echo "on"
             else
                 echo "off"
+                printVerbose "Result: 'off'"
             fi
             ;;
 
