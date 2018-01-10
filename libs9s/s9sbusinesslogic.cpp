@@ -522,7 +522,7 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isDeleteRequested())
         {
-            success = client.deleteBackupRecord(options->backupId());
+            success = client.deleteBackupRecord();
             client.printMessages("Deleted.", success);
             client.setExitStatus();
         } else {

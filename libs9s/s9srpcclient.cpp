@@ -4932,15 +4932,24 @@ S9sRpcClient::getBackups(
  *   is an error message).
  */
 bool
-S9sRpcClient::deleteBackupRecord(
-        const ulonglong backupId)
+S9sRpcClient::deleteBackupRecord()
 {
     S9sString      uri = "/v2/backup/";
+    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  backupMap;
     bool           retval;
 
-    backupMap["backup_id"]   = backupId;
+    if (!options->hasBackupId())
+    {
+        PRINT_ERROR(
+                "To delete a backup a backup ID has to be provided "
+                "with the --backup-id command line option.");
+        return false;
+    }
+
+    backupMap["backup_id"]   = options->backupId();
+
     request["operation"]     = "deleteBackupRecord";
     request["backup_record"] = backupMap;
 

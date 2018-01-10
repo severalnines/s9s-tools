@@ -149,7 +149,7 @@ class S9sRpcClient
         bool restoreBackup();
         
         bool getBackups(const int clusterId);
-        bool deleteBackupRecord(const ulonglong backupId);
+        bool deleteBackupRecord();
 
         /*
          * Account&database handling.
