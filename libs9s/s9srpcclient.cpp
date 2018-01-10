@@ -4871,12 +4871,14 @@ S9sRpcClient::restoreBackup()
         S9sNode   node    = options->nodes()[0].toNode();
         S9sString address = node.hostName();
 
-        // lets include also portNum if specified
         if (node.hasPort())
             address.sprintf("%s:%d", STR(node.hostName()), node.port());
 
         jobData["server_address"] = address;
     }
+
+    if (!options->databases().empty())
+        jobData["database"] = options->databases();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "restore_backup";
