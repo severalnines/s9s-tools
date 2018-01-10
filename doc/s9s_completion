@@ -128,6 +128,7 @@ function _s9s()
                 opts+="--date-format= --cmon-user= --password= "
 
                 opts+="--backup-id= --backup-format= "
+                opts+="--backup-user= --backup-password= "
                 opts+="--backup-directory= --backup-method= --databases= "
                 opts+="--full-path= --no-compression --on-node --on-controller "
                 opts+="--parallellism= --title= --use-pigz "

@@ -4708,10 +4708,14 @@ S9sRpcClient::createBackup()
         jobData["backupdir"]     = backupDir;
 
     if (!backupMethod.empty())
-    {
         jobData["backup_method"] = backupMethod;
-    }
-    
+   
+    if (!options->backupUser().empty())
+        jobData["backup_user"] = options->backupUser();
+
+    if (!options->backupPassword().empty())
+        jobData["backup_user_password"] = options->backupPassword();
+
     if (!databases.empty())
         jobData["include_databases"] = databases;
 
