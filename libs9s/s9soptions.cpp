@@ -7989,6 +7989,7 @@ S9sOptions::readOptionsTree(
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "recursive",        no_argument,       0, 'R'                   },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "full-path",        no_argument,       0, OptionFullPath        },
 
         { 0, 0, 0, 0 }
     };
@@ -8200,6 +8201,11 @@ S9sOptions::readOptionsTree(
             case OptionRefresh:
                 // --refresh
                 m_options["refresh"] = true;
+                break;
+            
+            case OptionFullPath:
+                // --full-path
+                m_options["full_path"] = true;
                 break;
             
             case '?':

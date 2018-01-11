@@ -24,6 +24,8 @@
 
 #include "s9sglobal.h"
 
+#define DIRSEPARATOR '/'
+
 /**
  * A macro to convert a S9sString to C strings. This actually works with
  * std::strings also.
@@ -117,6 +119,17 @@ class S9sString : public std::string
                 const S9sString     &fileName,
                 S9sString           &content,
                 S9sString           &errorString);
+    
+        static std::string
+            buildPath(
+                    const std::string &path1,
+                    const std::string &path2);
+    
+        static std::string
+            buildPath(
+                    const std::string &path1,
+                    const std::string &path2,
+                    const std::string &path3);
 
         static const S9sString space;
         static const S9sString dash;

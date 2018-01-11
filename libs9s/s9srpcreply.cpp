@@ -39,7 +39,7 @@
 #include "S9sServer"
 #include "S9sContainer"
 
-//#define DEBUG
+#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -3915,6 +3915,11 @@ S9sRpcReply::printObjectTreeBrief(
         tmp += name;
 
         name = tmp;
+    }
+
+    if (options->fullPathRequested())
+    {
+        name = S9sString::buildPath(path, name);
     }
 
     printf("%s", STR(indentString));

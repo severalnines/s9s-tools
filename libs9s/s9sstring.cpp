@@ -1074,3 +1074,45 @@ S9sString::writeFile(
 
     return true;
 }
+
+std::string
+S9sString::buildPath(
+        const std::string &path1,
+        const std::string &path2)
+{
+    std::string retval;
+    bool        needSeparator = 
+        !path1.empty() && 
+        path1[path1.length() - 1] != DIRSEPARATOR &&
+        !path2.empty() && 
+        path2[0] != DIRSEPARATOR;
+
+    bool        removeSeparator = 
+        !path1.empty() && 
+        path1[path1.length() - 1] == DIRSEPARATOR &&
+        !path2.empty() && 
+        path2[0] == DIRSEPARATOR;
+
+    retval += path1;
+
+    if (removeSeparator)
+        retval.resize(retval.size () - 1);
+
+    if (needSeparator)
+        retval += DIRSEPARATOR;
+
+    retval += path2;
+
+    return retval;
+}
+
+std::string
+S9sString::buildPath(
+        const std::string &path1,
+        const std::string &path2,
+        const std::string &path3)
+{
+    std::string first = buildPath(path1, path2);
+
+    return buildPath(first, path3);
+}
