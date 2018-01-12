@@ -4090,6 +4090,7 @@ S9sRpcReply::printObjectTreeLong(
     S9sString       acl       = entry["item_acl"].toString();
     S9sString       linkTarget = entry["link_target"].toString();
     S9sString       fullPath;
+    S9sString       name;
     S9sString       sizeString;
 
     // If the first level is the directory, we skip it if we are not requested
@@ -4116,6 +4117,11 @@ S9sRpcReply::printObjectTreeLong(
         fullPath += "/";
 
     fullPath += node.name();
+
+    if (options->fullPathRequested())
+        name = fullPath;
+    else
+        name = node.name();
 
     /*
      * The type and then the acl string.
@@ -4177,58 +4183,58 @@ S9sRpcReply::printObjectTreeLong(
     {
         printf("%s%s%s", 
                 folderColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
-                fileColorBegin(node.name()), 
+                fileColorBegin(name), 
                 STR(node.name()), 
                 folderColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
                 clusterColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 clusterColorEnd());
     } else if (type == "Node")
     {
         printf("%s%s%s", 
                 ipColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 ipColorEnd());
     } else if (type == "Server")
     {
         printf("%s%s%s", 
                 serverColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 serverColorEnd());
     } else if (type == "User")
     {
         printf("%s%s%s", 
                 userColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 userColorEnd());
     } else if (type == "Group")
     {
         printf("%s%s%s", 
                 groupColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 groupColorEnd());
     } else if (type == "Container")
     {
         printf("%s%s%s", 
                 containerColorBegin(), 
-                STR(node.name()), 
+                STR(name), 
                 containerColorEnd());
     } else if (type == "Database")
     {
         printf("%s%s%s", 
                 databaseColorBegin(),
-                STR(node.name()), 
+                STR(name), 
                 databaseColorEnd());
     } else {
-        printf("%s", STR(node.name()));
+        printf("%s", STR(name));
     }
 
     if (!linkTarget.empty())

@@ -179,6 +179,8 @@ function testCreateCluster()
 function testTree()
 {
     local retcode
+    local files
+    local file
 
     print_title "Checking Access Rights"
     mys9s tree --tree --all
@@ -198,33 +200,62 @@ function testTree()
         exit 1
     fi
 
+    files+="/.runtime/cluster_manager"
+    files+=" /.runtime/host_manager"
+    files+=" /.runtime/job_manager"
+    files+=" /.runtime/mutexes"
+    files+=" /.runtime/server_manager"
+    files+=" /.runtime/threads"
+    files+=" /.runtime/user_manager"
+
     #
     # Normal user should not have access to some special files.
     #
-    s9s tree \
-        --access \
-        --privileges="r" \
-        /.runtime/cluster_manager 
+    for file in $files; do
+        s9s tree \
+            --access \
+            --privileges="r" \
+            "$file"
 
-    retcode=$?
-    if [ "$retcode" -eq 0 ]; then
-        failure "Normal user should not have access to '/.runtime' files"
-        exit 1
-    fi
+        retcode=$?
+        if [ "$retcode" -eq 0 ]; then
+            failure "Normal user should not have access to '/.runtime' files"
+            exit 1
+        fi
+    done
 
     #
     # Checking if the system user has access to some special files.
     #
-    s9s tree \
-        --access \
-        --privileges="r" \
+    for file in $files; do
+        s9s tree \
+            --access \
+            --privileges="r" \
+            --cmon-user=system \
+            --password=secret \
+            "$file" 
+    
+        retcode=$?
+        if [ "$retcode" -ne 0 ]; then
+            failure "The system user should have access to '$file' file"
+            exit 1
+        fi
+    done
+
+    #
+    #
+    #
+    file="/$CLUSTER_NAME/.runtime/state"
+    s9s tree --cat \
         --cmon-user=system \
         --password=secret \
-        /.runtime/cluster_manager 
-    
+        "$file" \
+    | \
+    grep --quiet CmonHostCollector
+
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        failure "The system user should have access to '/.runtime' files"
+        failure "The file file content for '$file' is not ok."
         exit 1
     fi
 }

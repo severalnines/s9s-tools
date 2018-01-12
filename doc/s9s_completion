@@ -248,7 +248,7 @@ function _s9s()
                 opts+="--job-id= --from= --until= --limit= --offset= "
 
                 opts+="--acl= "
-                opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
+                opts+=$(s9s tree --list --batch --recursive --full-path 2>/dev/null | awk '{print $5}')
             fi
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
             main_opt="--help "
