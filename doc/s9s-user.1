@@ -136,10 +136,6 @@ gets deleted, so users who are suspended for failed login attempts will also be
 able to log in.
 
 .TP
-.B \-L, \-\^\-list
-List the users registered for the ClusterControl controller. 
-
-.TP
 .B \-\-list\-groups
 List the user groups maintained by the ClusterControl controller.
 
@@ -150,8 +146,23 @@ Please note that viewing the public keys require special privileges, normal
 users can not view the public keys of other users.
 
 .TP
+.B \-L, \-\^\-list
+List the users registered for the ClusterControl controller. 
+
+.TP
 .B \-\^\-set
 Changes the specified properties of the user.
+
+.TP
+.B \-\^\-set\-group
+Sets the primary group for the specified user. The primary group is the first
+group the user belongs to. This option will remove the user from this primary
+group and add it to the group specified by the \fB\-\^\-group\fP command line
+option.
+
+.TP
+.B \-\^\-stat
+Prints detailed information about the specified user(s).
 
 .TP
 .B \-\^\-whoami
@@ -545,4 +556,18 @@ for the password change the current password of the system user is used.
     --password="secret" \\
     --new-password="p" \\
     "otheruser" \fR
+.fi
+
+The following command will change the primary group of the user "pipas" to
+"admins". This will effectively make the user a member of the superusers and
+grant all the privileges to this user. Please note that the command will be
+using the "system" user and password for authenticating on the controller.
+
+.nf 
+# \fBs9s user \\
+    --set-group \\
+    --group=admins \\
+    --cmon-user=system \\
+    --password=kjh234 \\
+    pipas \fR
 .fi

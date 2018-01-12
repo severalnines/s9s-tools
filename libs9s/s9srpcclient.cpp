@@ -5323,6 +5323,27 @@ S9sRpcClient::addToGroup(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::setGroup()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sUser        user;
+    S9sString      groupName;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when changing the group for a user.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    user.setProperty("user_name", options->extraArgument(0));
+    return addToGroup(user, options->group(), true);
+}
+
 
 /**
  * \returns true if the request sent and a return is received (even if the reply

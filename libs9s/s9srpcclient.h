@@ -206,6 +206,8 @@ class S9sRpcClient
                 const S9sString   &groupName,
                 bool               replacePrimaryGroup);
 
+        bool setGroup();
+
         bool getUsers();
         bool getGroups();
         bool canCreateUser();

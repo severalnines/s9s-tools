@@ -73,6 +73,7 @@ enum S9sOptionType
     OptionDelete,
     OptionEnable,
     OptionDisable,
+    OptionSetGroup,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -2474,7 +2475,14 @@ S9sOptions::isEnableRequested() const
     return getBool("enable");
 }
 
-
+/**
+ * \returns True if the --set-group command line option is provided at startup.
+ */
+bool
+S9sOptions::isSetGroupRequested() const
+{
+    return getBool("set_group");
+}
 
 bool
 S9sOptions::isDisableRequested() const
@@ -3491,9 +3499,11 @@ S9sOptions::printHelpUser()
 "  --create                   Create a new Cmon user.\n"
 "  --disable                  Preventing users to log in.\n"
 "  --enable                   Enable disabled/suspended users.\n"
+"  --list-groups              List user groups.\n"
 "  --list-keys                List the public keys of a user.\n"
 "  --list                     List the users.\n"
 "  --set                      Change the properties of a user.\n"
+"  --set-group                Set the primary group for an existing user.\n"
 "  --stat                     Print the details of a user.\n"
 "  --whoami                   List the current user only.\n"
 ""
@@ -5173,6 +5183,9 @@ S9sOptions::checkOptionsUser()
     
     if (isEnableRequested())
         countOptions++;
+    
+    if (isSetGroupRequested())
+        countOptions++;
 
     if (isDisableRequested())
         countOptions++;
@@ -5504,20 +5517,21 @@ S9sOptions::readOptionsUser(
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
-
-        // Main Option
-        { "change-password",  no_argument,       0, OptionChangePassword  },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "create",           no_argument,       0, OptionCreate          },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
-        { "list-keys",        no_argument,       0, OptionListKeys        },
+
+        // Main Options
         { "add-key",          no_argument,       0, OptionAddKey          },
-        { "list",             no_argument,       0, 'L'                   },
+        { "change-password",  no_argument,       0, OptionChangePassword  },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "disable",          no_argument,       0, OptionDisable         },
+        { "enable",           no_argument,       0, OptionEnable          },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
         { "list-groups",      no_argument,       0, OptionListGroups      },
+        { "list-keys",        no_argument,       0, OptionListKeys        },
+        { "list",             no_argument,       0, 'L'                   },
+        { "set-group",        no_argument,       0, OptionSetGroup        },
         { "set",              no_argument,       0, OptionSet             },
         { "stat",             no_argument,       0, OptionStat            },
-        { "enable",           no_argument,       0, OptionEnable          },
-        { "disable",          no_argument,       0, OptionDisable         },
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
         // Options about the user.
@@ -5686,6 +5700,11 @@ S9sOptions::readOptionsUser(
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
+                break;
+            
+            case OptionSetGroup:
+                // --set-group
+                m_options["set_group"]  = true;
                 break;
            
             case OptionChangePassword:
