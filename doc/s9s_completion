@@ -366,8 +366,11 @@ function _s9s()
                 opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
-            main_opt="--list --whoami --create --help --set --change-password "
-            main_opt+="--list-keys --add-key --list-groups "
+            main_opt="--help "
+            main_opt+="--add-key --change-password --create --disable "
+            main_opt+="--enable --list-groups --list-keys --list "
+            main_opt+="--set --set-group --stat --whoami "
+            
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
