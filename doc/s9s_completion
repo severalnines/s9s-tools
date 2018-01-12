@@ -371,7 +371,6 @@ function _s9s()
             main_opt+="--enable --list-groups --list-keys --list "
             main_opt+="--set --set-group --stat --whoami "
             
-
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
             elif [ "$prev" == "--cmon-user" ]; then
