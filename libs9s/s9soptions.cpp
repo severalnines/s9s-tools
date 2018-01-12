@@ -1076,8 +1076,8 @@ S9sOptions::providerVersion(
 }
 
 /**
- * \returns the value of the --os-sudo-password command line option or the user name as
- *   default.
+ * \returns the value of the --os-sudo-password command line option or the 
+ *   "os_sudo_password" configuration value.
  *
  * The --os-sudo-password is used for executing certain commands with root
  * os privileges.
@@ -1101,12 +1101,38 @@ S9sOptions::osSudoPassword() const
 }
 
 /**
+ * I am working on this.
+ */
+bool
+S9sOptions::hasSshCredentials() 
+{
+    if (m_options.contains("os_user") ||
+        m_userConfig.hasVariable("", "os_user") ||
+        m_systemConfig.hasVariable("", "os_user"))
+    {
+        return true;
+    }
+    
+    if (m_options.contains("os_key_file") ||
+        m_userConfig.hasVariable("", "os_key_file") ||
+        m_systemConfig.hasVariable("", "os_key_file"))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * \returns the value of the --os-user command line option or the user name as
  *   default.
  *
  * The --os-user controls what user name will be used when authenticating on the
  * nodes. This option defaults to the username, that is the username on the
  * localhost running the application.
+ *
+ * This value can also be set in the configuration file using the "us_user" 
+ * key.
  */
 S9sString
 S9sOptions::osUser() const
@@ -1132,6 +1158,9 @@ S9sOptions::osUser() const
 /**
  * \returns The file (on the controller) that will be used as SSH key while
  *   authenticating on the nodes with SSH.
+ *
+ * This value can be set in the configuration file using the "os_key_file"
+ * coonfiguration key.
  */
 S9sString
 S9sOptions::osKeyFile() const

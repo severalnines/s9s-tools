@@ -27,6 +27,14 @@ S9sSshCredentials::S9sSshCredentials() :
 S9sSshCredentials::~S9sSshCredentials()
 {
 }
+        
+S9sSshCredentials &
+S9sSshCredentials::operator=(
+        const S9sVariantMap &rhs)
+{
+    S9sObject::operator=(rhs);
+    return *this;
+}
 
 void
 S9sSshCredentials::setUserName(

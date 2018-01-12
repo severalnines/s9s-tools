@@ -38,6 +38,8 @@ class S9sObject
         void setProperty(const S9sString &name, const int value);
         void setProperties(const S9sVariantMap &properties);
 
+        const S9sVariantMap &toVariantMap() const;
+
         virtual const char *className() { return "S9sObject"; };
 
     private:

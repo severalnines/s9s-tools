@@ -972,7 +972,8 @@ S9sClusterConfigParseContext::addVariable(
 
 /**
  * \param sectionName the name of the section to check or an empty string to
- *   check the global variables
+ *   check the global variables.
+ * \param variableName The name of the variable.
  * \param includingDisabled if it is true the commented-out variables are also
  *   checked
  * \returns true if the given section has a variable with the given name
