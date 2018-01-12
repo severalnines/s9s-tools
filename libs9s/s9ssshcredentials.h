@@ -28,5 +28,12 @@ class S9sSshCredentials : public S9sObject
 
         virtual ~S9sSshCredentials();
         
-        virtual const char *className() { return "S9sSshCredentials"; };
+        virtual const char *className() { return "CmonSshCredentials"; };
+
+        void setUserName(const S9sString &value);
+        void setPassword(const S9sString &value);
+        void setPublicKeyFilePath(const S9sString &value);
+        void setPort(const int value);
+        void setTimeout(const int value);
+        void setTtyForSudo(const bool value);
 };

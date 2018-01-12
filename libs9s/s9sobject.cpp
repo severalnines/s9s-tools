@@ -99,6 +99,23 @@ S9sObject::setProperty(
     }
 }
 
+void
+S9sObject::setProperty(
+        const S9sString &name,
+        const bool       value)
+{
+    m_properties[name] = value;
+}
+
+void
+S9sObject::setProperty(
+        const S9sString &name,
+        const int        value)
+{
+    m_properties[name] = value;
+}
+
+
 /**
  * \param properties The properties to be set as a name -> value mapping.
  *

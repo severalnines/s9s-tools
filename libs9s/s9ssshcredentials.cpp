@@ -28,3 +28,44 @@ S9sSshCredentials::~S9sSshCredentials()
 {
 }
 
+void
+S9sSshCredentials::setUserName(
+        const S9sString &value) 
+{
+    setProperty("user_name", value);
+}
+
+void
+S9sSshCredentials::setPassword(
+        const S9sString &value) 
+{
+    setProperty("password", value);
+}
+
+void
+S9sSshCredentials::setPublicKeyFilePath(
+        const S9sString &value) 
+{
+    setProperty("public_key_file", value);
+}
+
+void
+S9sSshCredentials::setPort(
+        const int value)
+{
+    setProperty("port", value);
+}
+
+void
+S9sSshCredentials::setTimeout(
+        const int value)
+{
+    setProperty("timeout", value);
+}
+
+void
+S9sSshCredentials::setTtyForSudo(
+        const bool value)
+{
+    setProperty("tty_for_sudo", value);
+}

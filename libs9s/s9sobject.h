@@ -34,6 +34,8 @@ class S9sObject
         bool hasProperty(const S9sString &key) const;
         S9sVariant property(const S9sString &name) const;
         void setProperty(const S9sString &name, const S9sString &value);
+        void setProperty(const S9sString &name, const bool value);
+        void setProperty(const S9sString &name, const int value);
         void setProperties(const S9sVariantMap &properties);
 
         virtual const char *className() { return "S9sObject"; };
