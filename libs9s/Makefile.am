@@ -78,6 +78,10 @@ libs9s_public_h_headers =     \
 	json_lexer.h              \
 	json_parser.h             \
 	library.h                 \
+	S9sObject                 \
+	s9sobject.h               \
+	S9sSshCredentials         \
+	s9ssshcredentials.h       \
 	S9sAccount                \
 	s9saccount.h              \
 	S9sBackup                 \
@@ -171,6 +175,8 @@ libs9s_a_SOURCES =            \
     $(libs9s_public_h_headers) \
 	library.cpp               \
 	s9sdebug.cpp              \
+	s9sobject.cpp             \
+	s9ssshcredentials.cpp     \
 	s9sstring.cpp             \
 	s9sformat.cpp             \
 	s9sdatetime.cpp           \
