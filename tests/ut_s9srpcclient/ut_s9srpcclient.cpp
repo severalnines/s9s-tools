@@ -164,10 +164,8 @@ UtS9sRpcClient::testCreateGalera()
     S9S_VERIFY(payload.contains("\"cluster_type\": \"galera\""));
     S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
-    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
-    S9S_VERIFY(payload.contains(
-                "\"mysql_hostnames\": "
-                "[ \"192.168.1.191\", \"192.168.1.192\", \"192.168.1.193\" ]"));
+    S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
+    S9S_VERIFY(payload.contains("\"hostname\": \"192.168.1.193\""));
 
     return true;
 }
@@ -199,7 +197,8 @@ UtS9sRpcClient::testCreateReplication()
     S9S_VERIFY(payload.contains("\"cluster_type\": \"replication\""));
     S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
-    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
+    S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
+
     #if 0
     S9S_VERIFY(payload.contains(
                 "\"mysql_hostnames\": "
@@ -249,7 +248,7 @@ UtS9sRpcClient::testCreateNdbCluster()
     S9S_VERIFY(payload.contains("\"type\": \"mysql\""));
     S9S_VERIFY(payload.contains("\"ssh_user\": \"pip\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"oracle\""));
-    S9S_VERIFY(payload.contains("\"mysql_version\": \"5.6\""));
+    S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
 
     S9S_VERIFY(payload.contains(
                 "\"mgmd_hostnames\": [ \"192.168.1.110\", \"192.168.1.111\","));
