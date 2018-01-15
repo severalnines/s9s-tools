@@ -261,7 +261,6 @@ class S9sOptions
         S9sString ownerUserName() const;
         S9sString ownerGroupName() const;
 
-
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
         bool isListDisksRequested() const;
@@ -358,6 +357,10 @@ class S9sOptions
 
         void printHelp();
 
+    protected:
+        S9sString defaultUserConfigFileName() const;
+        S9sString defaultSystemConfigFileName() const;
+
     private:
         void checkController();
         void printHelpGeneric();
@@ -428,6 +431,7 @@ class S9sOptions
         S9sOptions();
         ~S9sOptions();
 
+        static S9sString   sm_defaultUserConfigFileName;
         static S9sOptions *sm_instance;
 
     private:

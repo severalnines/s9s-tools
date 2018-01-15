@@ -44,6 +44,7 @@ UtS9sOptions::runTest(const char *testName)
     bool retval = true;
 
     PERFORM_TEST(testCreate,        retval);
+    PERFORM_TEST(testConfigFile01,  retval);
     PERFORM_TEST(testController,    retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testReadOptions02, retval);
@@ -72,6 +73,22 @@ UtS9sOptions::testCreate()
     return true;
 }
 
+bool
+UtS9sOptions::testConfigFile01()
+{
+    S9sOptions  *options;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options != NULL);
+
+    return true;
+}
+
+/**
+ * This function tests the S9sOptions::setController() function with various
+ * strings.
+ */
 bool
 UtS9sOptions::testController()
 {

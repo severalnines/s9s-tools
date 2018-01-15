@@ -128,3 +128,9 @@ S9sObject::setProperties(
 {
     m_properties = properties;
 }
+
+const S9sVariantMap &
+S9sObject::toVariantMap() const
+{
+    return m_properties;
+}

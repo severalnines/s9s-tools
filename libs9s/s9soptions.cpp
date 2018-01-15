@@ -45,6 +45,7 @@
 #include "s9sdebug.h"
 
 S9sOptions *S9sOptions::sm_instance = 0;
+S9sString   S9sOptions::sm_defaultUserConfigFileName;
 
 enum S9sOptionType
 {
@@ -326,6 +327,21 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("\n");
 }
 
+S9sString
+S9sOptions::defaultUserConfigFileName() const
+{
+    if (!sm_defaultUserConfigFileName.empty())
+        return sm_defaultUserConfigFileName;
+
+    return S9sString("~/.s9s/s9s.conf");
+}
+
+S9sString
+S9sOptions::defaultSystemConfigFileName() const
+{
+    return S9sString("/etc/s9s.conf");
+}
+
 /**
  * \returns false if there was any error with the configuration file(s), true if
  *   everything went well (even if there are no configuration files).
@@ -333,8 +349,8 @@ S9sOptions::createConfigFiles()
 bool
 S9sOptions::loadConfigFiles()
 {
-    S9sFile userConfig("~/.s9s/s9s.conf");
-    S9sFile systemConfig("/etc/s9s.conf");
+    S9sFile userConfig(defaultUserConfigFileName());
+    S9sFile systemConfig(defaultSystemConfigFileName());
     bool    success;
 
     m_userConfig   = S9sConfigFile();
@@ -359,10 +375,9 @@ S9sOptions::loadConfigFiles()
         success = m_userConfig.parse(STR(content));
         if (!success)
         {
-            printError(
+            PRINT_ERROR(
                     "Error parsing configuration file '%s': %s",
-                    STR(configFile()),
-                    STR(m_userConfig.errorString()));
+                    STR(configFile()), STR(m_userConfig.errorString()));
 
             return false;
         }
@@ -410,7 +425,7 @@ S9sOptions::loadConfigFiles()
         success = systemConfig.readTxtFile(content);
         if (!success)
         {
-            printError(
+            PRINT_ERROR(
                     "Error reading system configuration file: %s",
                     STR(systemConfig.errorString()));
 
@@ -420,7 +435,7 @@ S9sOptions::loadConfigFiles()
         success = m_systemConfig.parse(STR(content));
         if (!success)
         {
-            printError(
+            PRINT_ERROR(
                     "Error parsing system configuration file: %s",
                     STR(m_systemConfig.errorString()));
 
@@ -587,7 +602,7 @@ S9sOptions::controllerUrl()
 }
 
 /**
- * \returns The value of the --config-file command line option or teh empty
+ * \returns The value of the --config-file command line option or the empty
  *   string if
  */
 S9sString
