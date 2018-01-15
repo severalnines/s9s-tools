@@ -46,6 +46,7 @@ UtS9sOptions::runTest(const char *testName)
 
     PERFORM_TEST(testCreate,        retval);
     PERFORM_TEST(testConfigFile01,  retval);
+    PERFORM_TEST(testConfigFile02,  retval);
     PERFORM_TEST(testController,    retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testReadOptions02, retval);
@@ -77,6 +78,8 @@ UtS9sOptions::testCreate()
 bool
 UtS9sOptions::testConfigFile01()
 {
+    const char  *path1 = "tests/s9s_configs/test_config_03.conf";
+    const char  *path2 = "s9s_configs/test_config_03.conf";
     S9sOptions  *options;
     S9sString    configFileName;
 
@@ -84,15 +87,10 @@ UtS9sOptions::testConfigFile01()
     options = S9sOptions::instance();
     S9S_VERIFY(options != NULL);
 
-    if (S9sFile::fileExists("tests/s9s_configs/test_config_03.conf"))
-    {
-        S9sOptions::sm_defaultUserConfigFileName = 
-            "tests/s9s_configs/test_config_03.conf";
-    } else if (S9sFile::fileExists("s9s_configs/test_config_03.conf"))
-    {
-        S9sOptions::sm_defaultUserConfigFileName = 
-            "s9s_configs/test_config_03.conf";
-    }
+    if (S9sFile::fileExists(path1))
+        S9sOptions::sm_defaultUserConfigFileName = path1;
+    else if (S9sFile::fileExists(path2))
+        S9sOptions::sm_defaultUserConfigFileName = path2;
 
     S9S_VERIFY(options->loadConfigFiles());
     
@@ -114,6 +112,32 @@ UtS9sOptions::testConfigFile01()
     // The ssh credentials checked here.
     S9S_COMPARE(options->osUser(),             "osuser_test");
     S9S_COMPARE(options->osKeyFile(),          "oskeyfile_test");
+
+    return true;
+}
+
+bool
+UtS9sOptions::testConfigFile02()
+{
+    const char  *path1 = "tests/s9s_configs/test_config_04.conf";
+    const char  *path2 = "s9s_configs/test_config_04.conf";
+    S9sOptions  *options;
+    S9sString    configFileName;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options != NULL);
+
+    if (S9sFile::fileExists(path1))
+        S9sOptions::sm_defaultUserConfigFileName = path1;
+    else if (S9sFile::fileExists(path2))
+        S9sOptions::sm_defaultUserConfigFileName = path2;
+
+    S9S_VERIFY(options->loadConfigFiles());
+    
+    //S9S_COMPARE(options->m_userConfig.fileName(), "");
+    S9S_COMPARE(options->controllerHostName(), "test_controller");
+    S9S_COMPARE(options->userName(),           "test_user");
 
     return true;
 }

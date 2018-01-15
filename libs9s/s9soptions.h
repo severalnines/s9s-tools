@@ -28,6 +28,7 @@
 #include "S9sConfigFile"
 
 class S9sDateTime;
+class S9sSshCredentials;
 
 #define PRINT_VERBOSE(...) \
     S9sOptions::printVerbose(__VA_ARGS__)
@@ -117,6 +118,12 @@ class S9sOptions
         S9sString osSudoPassword() const;
 
         bool hasSshCredentials();
+        S9sSshCredentials
+            sshCredentials(
+                    const S9sString &categoryName,
+                    const S9sString &hostName);
+
+
         S9sString osUser() const;
         S9sString osKeyFile() const;
 

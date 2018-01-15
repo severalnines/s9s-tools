@@ -27,6 +27,7 @@
 #include "S9sDir"
 #include "s9srsakey.h"
 #include "S9sDateTime"
+#include "S9sSshCredentials"
 
 #include <sys/ioctl.h>
 #include <stdio.h>
@@ -1149,6 +1150,16 @@ S9sOptions::hasSshCredentials()
     }
 
     return false;
+}
+
+S9sSshCredentials
+S9sOptions::sshCredentials(
+        const S9sString &categoryName,
+        const S9sString &hostName)
+{
+    S9sSshCredentials retval;
+
+    return retval;
 }
 
 /**
