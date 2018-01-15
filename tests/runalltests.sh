@@ -73,6 +73,7 @@ runTest ut_s9sbackup $@
 runTest ut_s9saccount $@
 runTest ut_s9svariant $@
 runTest ut_s9svariantmap $@
+runTest ut_s9suser $@
 runTest ut_s9sregexp $@
 runTest ut_s9soptions $@
 runTest ut_s9srpcclient $@

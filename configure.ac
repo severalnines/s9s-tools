@@ -93,6 +93,7 @@ AC_CONFIG_FILES(Makefile                          \
                 tests/ut_s9saccount/Makefile      \
                 tests/ut_s9svariant/Makefile      \
                 tests/ut_s9svariantmap/Makefile   \
+                tests/ut_s9suser/Makefile         \
                 tests/ut_s9sregexp/Makefile       \
                 tests/ut_s9soptions/Makefile      \
                 tests/ut_s9sgraph/Makefile        \

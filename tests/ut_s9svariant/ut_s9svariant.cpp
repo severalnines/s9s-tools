@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2018  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -52,7 +52,7 @@ UtS9sVariant::runTest(const char *testName)
 }
 
 /**
- * This test will check the various types of constructors the CmonVariant class
+ * This test will check the various types of constructors the S9sVariant class
  * have.
  */
 bool
