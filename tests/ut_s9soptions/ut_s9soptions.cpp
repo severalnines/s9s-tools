@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -21,6 +21,7 @@
 
 #include "S9sOptions"
 #include "S9sNode"
+#include "S9sFile"
 
 #include <cstdio>
 #include <cstring>
@@ -77,13 +78,22 @@ bool
 UtS9sOptions::testConfigFile01()
 {
     S9sOptions  *options;
+    S9sString    configFileName;
 
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(options != NULL);
 
-    S9sOptions::sm_defaultUserConfigFileName = 
-        "tests/s9s_configs/test_config_03.conf";
+    if (S9sFile::fileExists("tests/s9s_configs/test_config_03.conf"))
+    {
+        S9sOptions::sm_defaultUserConfigFileName = 
+            "tests/s9s_configs/test_config_03.conf";
+    } else if (S9sFile::fileExists("s9s_configs/test_config_03.conf"))
+    {
+        S9sOptions::sm_defaultUserConfigFileName = 
+            "s9s_configs/test_config_03.conf";
+    }
+
     S9S_VERIFY(options->loadConfigFiles());
     
     //S9S_COMPARE(options->m_userConfig.fileName(), "");
@@ -95,6 +105,9 @@ UtS9sOptions::testConfigFile01()
     S9S_COMPARE(options->backupMethod(),       "mysqldump_test");
     S9S_COMPARE(options->briefJobLogFormat(),  "1%M\\n");
     S9S_COMPARE(options->briefLogFormat(),     "2%M\\n");
+    
+    S9S_COMPARE(options->providerVersion(),    "provider_test");
+    S9S_COMPARE(options->vendor(),             "vendor_test");
 
     S9S_VERIFY(options->onlyAscii());
 

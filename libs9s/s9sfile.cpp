@@ -135,6 +135,18 @@ S9sFile::path() const
     return m_priv->m_path;
 }
 
+bool
+S9sFile::fileExists(
+        const S9sString &path)
+{
+    struct stat buffer;
+    bool        retval = false;
+
+    retval = stat(STR(path), &buffer) == 0;
+
+    return retval;
+}
+
 /**
  * \returns true if a file exists as any directory entry (file, directory,
  *   character special file, anything)
