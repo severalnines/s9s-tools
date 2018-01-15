@@ -57,7 +57,8 @@ class S9sBackup
         const char *statusColorEnd(const bool syntaxHighlight);
 
         S9sString verificationStatus() const;
-        
+        bool encrypted() const;
+
         S9sVariant begin() const;
         S9sString beginAsString() const;
         S9sVariant end() const;

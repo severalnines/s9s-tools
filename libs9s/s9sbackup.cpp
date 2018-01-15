@@ -243,6 +243,18 @@ S9sBackup::verificationStatus() const
     return verificationMap["status"].toString();
 }
 
+bool
+S9sBackup::encrypted() const
+{
+    bool retval = false;
+
+    if (m_properties.contains("encrypted"))
+        retval = m_properties.at("encrypted").toBoolean();
+
+    return retval;
+}
+
+
 
 /**
  * \returns The date and time when the backup creation was started as it is in
@@ -677,6 +689,10 @@ S9sBackup::toString(
                     retval += tmp;
                     break;
                 
+                case 'e':
+                    retval += encrypted() ? "ENCRYPTED" : "UNENCRYPTED";
+                    break;
+
                 case 'E':
                     // The time when the backup creation was finished.
                     partFormat += 's';

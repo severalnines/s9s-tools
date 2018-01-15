@@ -39,7 +39,7 @@
 #include "S9sServer"
 #include "S9sContainer"
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
