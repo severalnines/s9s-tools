@@ -690,7 +690,13 @@ S9sBackup::toString(
                     break;
                 
                 case 'e':
-                    retval += encrypted() ? "ENCRYPTED" : "UNENCRYPTED";
+                    // The encryption status.
+                    partFormat += 's';
+
+                    tmp.sprintf(STR(partFormat), 
+                            encrypted() ? "ENCRYPTED" : "UNENCRYPTED");
+                    
+                    retval += tmp;
                     break;
 
                 case 'E':
