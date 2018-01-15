@@ -70,6 +70,7 @@ is
 .\"
 .SH ENVIRONMENT
 The s9s application will read and consider the following environment variables:
+
 .TP 5 
 CMON_CONTROLLER
 The host name and optionally the port number of the controller that will be
@@ -86,6 +87,16 @@ S9S_ONLY_ASCII
 If this environment variable defined and its value is greater than 0 the program
 will print only ASCII characters (no unicode characters will be used). This is
 the same as using the \fB\-\-only\-ascii\fR command line option.
+
+.TP 5
+S9S_SYSTEM_CONFIG
+The full path of the system wide s9s configuration file. The default file is 
+"/etc/s9s.conf", this environment variable may overule it.
+
+.TP 5
+S9S_USER_CONFIG
+The full path of the user's own s9s configuration file. The default value is 
+"~/.s9s/s9s.conf", this environment variable may overrule it.
 
 .TP 5
 S9S_VERBOSE

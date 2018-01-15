@@ -335,6 +335,9 @@ S9sOptions::defaultUserConfigFileName() const
     if (!sm_defaultUserConfigFileName.empty())
         return sm_defaultUserConfigFileName;
 
+    if (getenv("S9S_USER_CONFIG") != NULL)
+        return S9sString(getenv("S9S_USER_CONFIG"));
+
     return S9sString("~/.s9s/s9s.conf");
 }
 
@@ -344,6 +347,9 @@ S9sOptions::defaultSystemConfigFileName() const
     // This is for testing.
     if (!sm_defaultSystemConfigFileName.empty())
         return sm_defaultSystemConfigFileName;
+
+    if (getenv("S9S_SYSTEM_CONFIG") != NULL)
+        return S9sString(getenv("S9S_SYSTEM_CONFIG"));
 
     return S9sString("/etc/s9s.conf");
 }
