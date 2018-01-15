@@ -432,6 +432,7 @@ class S9sOptions
         ~S9sOptions();
 
         static S9sString   sm_defaultUserConfigFileName;
+        static S9sString   sm_defaultSystemConfigFileName;
         static S9sOptions *sm_instance;
 
     private:

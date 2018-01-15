@@ -82,6 +82,26 @@ UtS9sOptions::testConfigFile01()
     options = S9sOptions::instance();
     S9S_VERIFY(options != NULL);
 
+    S9sOptions::sm_defaultUserConfigFileName = 
+        "tests/s9s_configs/test_config_03.conf";
+    S9S_VERIFY(options->loadConfigFiles());
+    
+    //S9S_COMPARE(options->m_userConfig.fileName(), "");
+    S9S_COMPARE(options->controllerHostName(), "test.controller.name");
+    S9S_COMPARE(options->controllerPort(),     42);
+
+    S9S_COMPARE(options->userName(),           "test_cmon_user");
+    S9S_COMPARE(options->backupDir(),          "/etc/test");
+    S9S_COMPARE(options->backupMethod(),       "mysqldump_test");
+    S9S_COMPARE(options->briefJobLogFormat(),  "1%M\\n");
+    S9S_COMPARE(options->briefLogFormat(),     "2%M\\n");
+
+    S9S_VERIFY(options->onlyAscii());
+
+    // The ssh credentials checked here.
+    S9S_COMPARE(options->osUser(),             "osuser_test");
+    S9S_COMPARE(options->osKeyFile(),          "oskeyfile_test");
+
     return true;
 }
 
@@ -92,7 +112,12 @@ UtS9sOptions::testConfigFile01()
 bool
 UtS9sOptions::testController()
 {
-    S9sOptions *options = S9sOptions::instance();
+    S9sOptions *options;
+
+    S9sOptions::sm_defaultUserConfigFileName = "";
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
 
     S9S_COMPARE(options->controllerHostName(), "");
     S9S_COMPARE(options->controllerPort(),     0);

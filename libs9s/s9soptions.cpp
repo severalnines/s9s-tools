@@ -46,6 +46,7 @@
 
 S9sOptions *S9sOptions::sm_instance = 0;
 S9sString   S9sOptions::sm_defaultUserConfigFileName;
+S9sString   S9sOptions::sm_defaultSystemConfigFileName;
 
 enum S9sOptionType
 {
@@ -330,6 +331,7 @@ S9sOptions::createConfigFiles()
 S9sString
 S9sOptions::defaultUserConfigFileName() const
 {
+    // This is for testing.
     if (!sm_defaultUserConfigFileName.empty())
         return sm_defaultUserConfigFileName;
 
@@ -339,6 +341,10 @@ S9sOptions::defaultUserConfigFileName() const
 S9sString
 S9sOptions::defaultSystemConfigFileName() const
 {
+    // This is for testing.
+    if (!sm_defaultSystemConfigFileName.empty())
+        return sm_defaultSystemConfigFileName;
+
     return S9sString("/etc/s9s.conf");
 }
 
@@ -372,6 +378,7 @@ S9sOptions::loadConfigFiles()
             return false;
         }
 
+        S9S_DEBUG("1: Parsing '%s'.", STR(userConfig.path()));
         success = m_userConfig.parse(STR(content));
         if (!success)
         {
@@ -392,7 +399,7 @@ S9sOptions::loadConfigFiles()
     {
         S9sString content;
 
-        S9S_DEBUG("User config exists.");
+        S9S_DEBUG("2: Parsing '%s'.", STR(userConfig.path()));
         success = userConfig.readTxtFile(content);
         if (!success)
         {
@@ -421,7 +428,7 @@ S9sOptions::loadConfigFiles()
     {
         S9sString content;
 
-        S9S_DEBUG("System config exists.");
+        S9S_DEBUG("3: Parsing '%s'.", STR(systemConfig.path()));
         success = systemConfig.readTxtFile(content);
         if (!success)
         {
@@ -653,7 +660,7 @@ S9sOptions::density() const
 }
 
 /**
- * \returns The value for the "brief_job_log_format" config variable that
+ * \returns The value for the "brief_log_format" config variable that
  *   controls the format of the log lines printed when the --long option is not
  *   provided.
  */
