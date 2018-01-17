@@ -299,6 +299,11 @@ to identify the backup later.
 The verification status of the backup. Possible values are "Unverified",
 "Verified" and "Failed".
 
+.TP
+.B %
+The percent sign itself. Use two percent signs, "%%" the same way the standard
+printf() function interprets it as one percent sign.
+
 .RE
 
 .\"
@@ -360,6 +365,53 @@ Stream and store the created backup files on the controller.
 .BI \-\^\-parallellism= N
 Controls how many threads are used while creating backup. Please note that not
 all the backup methods support multi-thread operations.
+
+.TP 
+.BI \-\^\-subdirectory= MARKUPSTRING
+Sets the name of the subdirectory that holds the newly created backup files.
+The command line option argument is considered to be a subpath that may contain
+the field specifiers using the usual "%X" format:
+
+.RS 7
+
+.TP
+.B B
+The date and time when the backup creation was beginning. 
+
+.TP
+.B H 
+The name of the backup host, the host that created the backup.
+
+.TP
+.B i
+The numerical ID of the cluster.
+
+.TP
+.B I
+The numerical ID of the backup.
+
+.TP
+.B J
+The numerical ID of the job that created the backup.
+
+.TP
+.B M 
+The backup method (e.g. "mysqldump"). 
+
+.TP
+.B O
+The name of the user who initiated the backup job.
+
+.TP
+.B S
+The name of the storage host, the host that stores the backup files.
+
+.TP
+.B %
+The percent sign itself. Use two percent signs, "%%" the same way the standard
+printf() function interprets it as one percent sign.
+
+.RE
 
 .TP
 .BI \-\^\-test\-server= HOSTNAME
