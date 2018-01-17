@@ -89,6 +89,7 @@ enum S9sOptionType
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
+    OptionSubDirectory,
     OptionBackupRetention,
     OptionBackupEncryption,
     OptionBackupUser,
@@ -1834,6 +1835,13 @@ S9sOptions::backupDir() const
     return retval;
 }
 
+S9sString
+S9sOptions::subDirectory() const
+{
+    return getString("subdirectory");
+}
+
+
 /**
  * \returns true if the --encrypt-backup command line option was provided.
  */
@@ -3496,7 +3504,7 @@ S9sOptions::printHelpBackup()
 "  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
-"  --backup-retention=DAYS    After how many days the backup shall be removed.\n"
+"  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
@@ -3505,6 +3513,7 @@ S9sOptions::printHelpBackup()
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
+"  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -4211,23 +4220,24 @@ S9sOptions::readOptionsBackup(
 
         // Backup info
         { "backup-datadir",   no_argument,       0, OptionBackupDatadir   },
-        { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
+        { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
+        { "backup-method",    required_argument, 0, OptionBackupMethod    },
+        { "backup-password",  required_argument, 0, OptionBackupPassword  },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
         { "backup-user",      required_argument, 0, OptionBackupUser      },
-        { "backup-password",  required_argument, 0, OptionBackupPassword  },
-        { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
-        { "no-compression",   no_argument,       0, OptionNoCompression   },
-        { "use-pigz",         no_argument,       0, OptionUsePigz         },
-        { "on-node",          no_argument,       0, OptionOnNode          },
-        { "on-controller",    no_argument,       0, OptionOnController    },
         { "databases",        required_argument, 0, OptionDatabases       },
-        { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
-        { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
+        { "no-compression",   no_argument,       0, OptionNoCompression   },
+        { "on-controller",    no_argument,       0, OptionOnController    },
+        { "on-node",          no_argument,       0, OptionOnNode          },
+        { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
+        { "use-pigz",         no_argument,       0, OptionUsePigz         },
         { 0, 0, 0, 0 }
     };
 
@@ -4484,6 +4494,11 @@ S9sOptions::readOptionsBackup(
                 if (!setParallellism(optarg))
                     return false;
 
+                break;
+
+            case OptionSubDirectory:
+                // --subdirectory=PATTERN
+                m_options["subdirectory"] = optarg;
                 break;
 
             case OptionFullPath:

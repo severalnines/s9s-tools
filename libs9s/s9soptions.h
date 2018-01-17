@@ -208,7 +208,7 @@ class S9sOptions
 
         bool force() const;
 
-
+        S9sString subDirectory() const;
         S9sString backupDir() const;
         S9sString backupMethod() const;
         bool noCompression() const;

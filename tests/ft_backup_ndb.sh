@@ -29,7 +29,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check Galera clusters.
+  $MYNAME - Test script for s9s to check backup in ndb clusters.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -130,40 +130,46 @@ function testCreateCluster()
     local nodes
     local nodeName
     local exitCode
-    local nNodes=1
 
-    print_title "Creating a Galera Cluster"
+    print_title "Creating an NDB Cluster"
 
-    for ((n=0;n<nNodes;++n)); do
-        echo "Creating container #${n}."
-        nodeName=$(create_node)
-        nodes+="$nodeName;"
+    echo "Creating node #0"
+    nodeName=$(create_node)
+    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    #ALL_CREATED_IPS+=" $nodeName"
+    FIRST_ADDED_NODE="$nodeName"
+
+    echo "Creating node #1"
+    nodeName=$(create_node)
+    nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
+    #ALL_CREATED_IPS+=" $nodeName"
     
-        if [ "$n" == "0" ]; then
-            FIRST_ADDED_NODE=$nodeName
-        fi
+    echo "Creating node #2"
+    nodeName=$(create_node)
+    nodes+="ndbd://$nodeName;"
+    #ALL_CREATED_IPS+=" $nodeName"
+    
+    echo "Creating node #3"
+    nodeName=$(create_node)
+    nodes+="ndbd://$nodeName"
+    #ALL_CREATED_IPS+=" $nodeName"
 
-        #ALL_CREATED_IPS+=" $nodeName"
-    done
-       
     #
-    # Creating a Galera cluster.
+    # Creating an NDB cluster.
     #
     mys9s cluster \
         --create \
-        --cluster-type=galera \
+        --cluster-type=ndb \
         --nodes="$nodes" \
-        --vendor=percona \
+        --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=$PROVIDER_VERSION \
+        --provider-version=5.6 \
         $LOG_OPTION
 
     exitCode=$?
+    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
+        failure "Exit code is not 0 while creating cluster."
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -172,12 +178,6 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
-
-    wait_for_cluster_started "$CLUSTER_NAME"
-
-    #mys9s cluster --list --long
-    #sleep 60
-    #mys9s cluster --list --long
 }
 
 #
@@ -223,7 +223,7 @@ function testCreateDatabase()
 {
     local userName
 
-    print_title "Testing database creation."
+    print_title "Creating Database"
 
     #
     # This command will create a new database on the cluster.
@@ -231,8 +231,7 @@ function testCreateDatabase()
     mys9s cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
-        --db-name="testCreateDatabase" \
-        --batch
+        --db-name="testCreateDatabase" 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -281,17 +280,14 @@ function testCreateBackup01()
     #
     # Creating the backup.
     #
+    #    --to-individual-files \
     mys9s backup \
         --create \
-        --title="Backup created by 'ft_backup.sh'" \
-        --to-individual-files \
+        --title="Backup created by 'ft_backup_ndb.sh'" \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
+        --nodes=$FIRST_ADDED_NODE:3306 \
         --backup-dir=/tmp \
-        --subdir="backup-%03i-%04I" \
         --use-pigz \
-        --parallellism=5 \
-        --encrypt-backup \
         $LOG_OPTION
     
     check_exit_code $?
@@ -323,19 +319,19 @@ function testCreateBackup01()
     # Checking the path.
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/backup-001-0001/mysql/' | \
+        grep '^/tmp/BACKUP-1/mysql/' | \
         wc -l)
     if [ "$value" != 3 ]; then
-        failure "Three files should be in '/tmp/backup-001-0001/mysql/'"
+        failure "Three files should be in '/tmp/BACKUP-1/mysql/'"
         mys9s backup --list-files --full-path --backup-id=1
     fi
 
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/backup-001-0001/testCreateDatabase/' | \
+        grep '^/tmp/BACKUP-1/testCreateDatabase/' | \
         wc -l)
     if [ "$value" != 3 ]; then
-        failure "Three files should be in '/tmp/backup-001-0001/testCreateDatabase/'"
+        failure "Three files should be in '/tmp/BACKUP-1/testCreateDatabase/'"
         mys9s backup --list-files --full-path --backup-id=1
     fi
 
@@ -351,154 +347,6 @@ function testCreateBackup01()
         --backup-id=1 \
         --test-server="$node" \
         $LOG_OPTION
-}
-
-function testCreateBackup02()
-{
-    local node
-    print_title "Creating Another Backup"
-
-    #
-    # Creating the backup.
-    # Using gzip this time.
-    #
-    mys9s backup \
-        --create \
-        --title="Second Backup of 'ft_backup.sh'" \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-
-    #
-    #
-    #
-    print_title "Verifying Backup 2"
-    node=$(create_node)
-
-    mys9s backup \
-        --verify \
-        --cluster-id=$CLUSTER_ID \
-        --backup-id=2 \
-        --test-server="$node" \
-        $LOG_OPTION
-}
-
-function testCreateBackupVerify()
-{
-    local node
-
-    print_title "Creating and Verifying a Backup"
-    node=$(create_node)
-
-    #
-    # Creating another backup.
-    #
-    mys9s backup \
-        --create \
-        --title="Another backup" \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --test-server="$node" \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-
-    mys9s backup --list --long
-    return 0
-
-    while true; do
-        mys9s job --list 
-        sleep 10
-    done
-}
-
-function testCreateBackupMySqlPump()
-{
-    local node
-    print_title "Creating mysqlpump Backup"
-
-    #
-    # Creating the backup.
-    # Using mysqlpump thid time.
-    #
-    mys9s backup \
-        --create \
-        --title="ft_backup.sh mysqlpump backup" \
-        --backup-method=mysqlpump \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-}
-
-function testCreateBackupXtrabackup()
-{
-    local node
-    print_title "Creating xtrabackupfull Backup"
-
-    #
-    # Creating the backup.
-    # Using thid time.
-    #
-    mys9s backup \
-        --create \
-        --title="ft_backup.sh xtrabackupfull backup" \
-        --backup-method=xtrabackupfull \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-}
-
-function testCreateBackupXtrabackupIncr()
-{
-    local node
-    print_title "Creating xtrabackupincr Backup"
-
-    #
-    # Creating the backup.
-    # Using thid time.
-    #
-    mys9s backup \
-        --create \
-        --title="ft_backup.sh xtrabackupincr backup" \
-        --backup-method=xtrabackupincr \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-}
-
-function testDelete()
-{
-    local id
-    
-    print_title "Deleting Existing Backup"
-
-    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
-    if [ "$id" != "1" ]; then
-        failure "Backup with id 1 was not found"
-        mys9s backup --list --long
-    fi
-
-    mys9s backup --delete --backup-id=1
-    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
-    if [ "$id" == "1" ]; then
-        failure "Backup with id 1 still exists"
-        mys9s backup --list --long
-    fi
-   
-    return 0
 }
 
 #
@@ -518,15 +366,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateAccount
-    runFunctionalTest testCreateDatabase
+    #runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup01
-    runFunctionalTest testCreateBackup02
-    runFunctionalTest testCreateBackupVerify
-    runFunctionalTest testCreateBackupXtrabackup
-    # The mysqlpump utility is not even installed.
-    #runFunctionalTest testCreateBackupMySqlPump
-    runFunctionalTest testCreateBackupXtrabackupIncr
-    runFunctionalTest testDelete 
 fi
 
 endTests

@@ -4707,6 +4707,9 @@ S9sRpcClient::createBackup()
     if (!backupDir.empty())
         jobData["backupdir"]     = backupDir;
 
+    if (!options->subDirectory().empty())
+        jobData["backupsubdir"]  = options->subDirectory();
+
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
    
