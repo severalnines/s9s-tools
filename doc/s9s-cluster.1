@@ -592,3 +592,12 @@ A complete example for creating a sharded mongo cluster:
     --db-admin-passwd=adminpwd \\
     --nodes="mongos://192.168.1.11;mongos://192.168.1.12;mongos://192.168.1.12;mongocfg://192.168.1.11;mongocfg://192.168.1.12;mongocfg://192.168.1.13;192.168.1.14?priority=5.0;192.168.1.15?arbiter_only=true;192.168.1.16?priority=2;192.168.1.17?rs=replset2;192.168.1.18?rs=replset2&arbiter_only=yes;192.168.1.19?rs=replset2&slave_delay=3&priority=0"\fR
 .fi
+
+Adding a data node to an existing mongo cluster's shard having replicaset name 'replset2':
+
+.nf
+# \fBs9s cluster \\
+    --add-node \\
+    --cluster-id=12 \\
+    --nodes=mongodb://192.168.1.20?rs=replset2\fR
+.fi

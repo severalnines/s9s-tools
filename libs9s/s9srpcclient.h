@@ -387,6 +387,10 @@ class S9sRpcClient
                 const int             clusterId,
                 const S9sVariantList &hosts);
 
+        bool addMongoNode(
+                const int             clusterId,
+                const S9sVariantList &hosts);
+
         static S9sVariant 
             topologyField(
                 const S9sVariantList &nodes);

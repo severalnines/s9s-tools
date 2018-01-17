@@ -2991,6 +2991,7 @@ S9sRpcClient::createNode()
     bool           hasHaproxy  = false;
     bool           hasProxySql = false;
     bool           hasMaxScale = false;
+    bool           hasMongo    = false;
     bool           success;
 
     hosts = options->nodes();
@@ -3015,6 +3016,12 @@ S9sRpcClient::createNode()
             hasProxySql = true;
         else if (protocol == "maxscale")
             hasMaxScale = true;
+        else if (protocol == "mongodb")
+            hasMongo = true;
+        else if (protocol == "mongocfg")
+            hasMongo = true;
+        else if (protocol == "mongos")
+            hasMongo = true;
     }
 
     /*
@@ -3050,6 +3057,9 @@ S9sRpcClient::createNode()
     } else if (hasMaxScale)
     {
         success = addMaxScale(clusterId, hosts);
+    } else if (hasMongo)
+    {
+        success = addMongoNode(clusterId, hosts);
     } else {
         int nSlaves  = 0;
         int nMasters = 0;
@@ -3492,6 +3502,96 @@ S9sRpcClient::addMaxScale(
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
     request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Creates a job that will add a new mongo node to the cluster.
+ */
+bool
+S9sRpcClient::addMongoNode(
+        const int             clusterId,
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request, job, jobData, jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("Addnode is currently implemented only for one node.");
+        return false;
+    }
+
+    S9sNode node = hosts[0].toNode();
+    S9sString protocol = node.protocol().toLower();
+
+    // The job_data describing the cluster.
+    if (hosts[0].isNode())
+        jobData["hostname"] = hosts[0].toNode().hostName();
+    else
+        jobData["hostname"] = hosts[0].toString();
+
+    if (node.hasProperty("rs"))
+        jobData["replicaset"] = node.property("rs").toString();
+
+    if (protocol == "mongos")
+    {
+        jobData["node_type"] = "mongos";
+    } else if (protocol == "mongocfg")
+    {
+        jobData["node_type"] = "mongocfg";
+    } else if (protocol == "mongodb")
+    {
+        jobData["node_type"] = "mongodb";
+
+        if (node.hasProperty("arbiter_only") &&
+                node.property("arbiter_only").toBoolean())
+            jobData["node_type"] = "arbiter";
+    } //else the caller method is buggy
+
+    jobData["install_software"] = true;
+    jobData["disable_firewall"] = true;
+    jobData["disable_selinux"]  = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "addnode";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["class_name"]     = "CmonJobInstance";
+    job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    if (!options->schedule().empty())
+        job["scheduled"] = options->schedule();
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = clusterId;
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    } else {
+        PRINT_ERROR(
+                "Either the --cluster-id or the --cluster-name command line "
+                "option has to be provided.");
+        return false;
+    }
 
     retval = executeRequest(uri, request);
 
