@@ -215,6 +215,8 @@ S9sBackup::statusColorBegin(
         return XTERM_COLOR_GREEN;
     else if (status() == "RUNNING")
         return XTERM_COLOR_YELLOW;
+    else if (status() == "PENDING")
+        return XTERM_COLOR_YELLOW;
     
     return XTERM_COLOR_RED;
 }

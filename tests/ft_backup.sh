@@ -386,6 +386,43 @@ function testCreateBackup02()
         $LOG_OPTION
 }
 
+function testCreateBackup03()
+{
+    local node
+    local retcode
+
+    print_title "Trying to Rewrite Backup"
+
+    #
+    # Creating the backup.
+    #
+    mys9s backup \
+        --create \
+        --title="testCreateBackup03" \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        --subdir="testCreateBackup03" \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    mys9s backup \
+        --create \
+        --title="testCreateBackup03" \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        --subdir="testCreateBackup03" \
+        $LOG_OPTION
+
+    retcode=$?
+    if [ "$retcode" -eq 0 ]; then
+        failure "Overwriting of backup directory should not be possible"
+        exit 1
+    fi
+}
+
 function testCreateBackupVerify()
 {
     local node
@@ -521,6 +558,7 @@ else
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup01
     runFunctionalTest testCreateBackup02
+    runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackupVerify
     runFunctionalTest testCreateBackupXtrabackup
     # The mysqlpump utility is not even installed.
