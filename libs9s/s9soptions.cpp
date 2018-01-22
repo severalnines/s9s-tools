@@ -7394,6 +7394,8 @@ S9sOptions::readOptionsJob(
         { "log-format",       required_argument, 0, OptionLogFormat       },
         { "limit",            required_argument, 0, OptionLimit           },
         { "offset",           required_argument, 0, OptionOffset          },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
 
         { 0, 0, 0, 0 }
     };
@@ -7554,6 +7556,16 @@ S9sOptions::readOptionsJob(
             case OptionOffset:
                 // --offset=NUMBER
                 m_options["offset"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
                 break;
 
             case '?':

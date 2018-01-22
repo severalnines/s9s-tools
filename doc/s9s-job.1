@@ -19,6 +19,10 @@ following:
 .B \-\^\-delete
 Delete the job referenced by the job ID. 
 
+.TP 
+.B \-\^\-fail
+Create a job that does nothing and it fails.
+
 .TP
 .B \-L, \-\-list
 List jobs.
@@ -28,7 +32,11 @@ List jobs.
 Print the job messages of the specified job.
 
 .TP
-.B \-\-wait
+.B \-\^\-success
+Create a job that does nothing and it succeeds.
+
+.TP
+.B \-\^\-wait
 Wait for the specified job to end. While waiting a progress bar will be shown
 unless the silent mode is set.
 
