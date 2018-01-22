@@ -95,6 +95,7 @@ enum S9sOptionType
     OptionBackupUser,
     OptionBackupPassword,
     OptionSchedule,
+    OptionRecurrence,
     OptionTimeout,
     OptionPing,
     OptionGroup,
@@ -1290,10 +1291,23 @@ S9sOptions::fullUuid() const
     return getBool("full_uuid");
 }
 
+/**
+ * \returns The option argument for the --schedule command line option.
+ */
 S9sString
 S9sOptions::schedule() const
 {
     return getString("schedule");
+}
+
+/**
+ * \returns The option argument for the --recurrence command line option.
+ */
+
+S9sString
+S9sOptions::recurrence() const
+{
+    return getString("recurrence");
 }
 
 int
@@ -3428,6 +3442,7 @@ S9sOptions::printHelpGeneric()
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
 "  --schedule=DATE&TIME       Run the job at the specified time.\n"
+"  --recurrence=CRONTABSTRING Timing information for recurring jobs.\n"
 "  --timeout=SECONDS          Timeout value for the entire job.\n"
 "  --wait                     Wait until the job ends.\n"
 "\n", STR(m_myName));
@@ -3868,6 +3883,7 @@ S9sOptions::readOptionsNode(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "force",            no_argument,       0, OptionForce           },
 
@@ -4046,6 +4062,11 @@ S9sOptions::readOptionsNode(
                 m_options["schedule"] = optarg;
                 break;
             
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
             case OptionTimeout:
                 // --timeout=SECONDS
                 m_options["timeout"] = optarg;
@@ -4216,6 +4237,7 @@ S9sOptions::readOptionsBackup(
         { "backup-id",        required_argument, 0, OptionBackupId        },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Backup info
@@ -4417,6 +4439,11 @@ S9sOptions::readOptionsBackup(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
                 break;
             
             case OptionTimeout:
@@ -6667,6 +6694,7 @@ S9sOptions::readOptionsCluster(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
@@ -6885,6 +6913,11 @@ S9sOptions::readOptionsCluster(
                 m_options["schedule"] = optarg;
                 break;
             
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
             case OptionTimeout:
                 // --timeout=SECONDS
                 m_options["timeout"] = optarg;
@@ -7096,6 +7129,7 @@ S9sOptions::readOptionsContainer(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
 
@@ -7216,6 +7250,11 @@ S9sOptions::readOptionsContainer(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
                 break;
             
             case OptionTimeout:
@@ -7747,6 +7786,7 @@ S9sOptions::readOptionsServer(
         { "wait",             no_argument,       0, OptionWait            },
         { "log",              no_argument,       0, 'G'                   },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
@@ -8003,6 +8043,11 @@ S9sOptions::readOptionsServer(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
                 break;
             
             case OptionTimeout:

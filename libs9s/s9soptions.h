@@ -134,6 +134,8 @@ class S9sOptions
         bool fullUuid() const;
 
         S9sString schedule() const;
+        S9sString recurrence() const;
+        
         int timeout() const;
         bool hasTimeout() const;
 
