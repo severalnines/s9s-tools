@@ -3095,7 +3095,9 @@ S9sRpcClient::addNode(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request, job, jobData, jobSpec;
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3120,12 +3122,8 @@ S9sRpcClient::addNode(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3166,7 +3164,8 @@ S9sRpcClient::addReplicationSlave(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     S9sNode        master;
@@ -3225,12 +3224,8 @@ S9sRpcClient::addReplicationSlave(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Slave to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3265,9 +3260,9 @@ S9sRpcClient::addHaProxy(
         const int             clusterId,
         const S9sVariantList &hosts)
 {
-    S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList haProxyNodes;
     S9sVariantList otherNodes;
@@ -3314,12 +3309,8 @@ S9sRpcClient::addHaProxy(
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add HaProxy to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3343,9 +3334,9 @@ S9sRpcClient::addProxySql(
         const int             clusterId,
         const S9sVariantList &hosts)
 {
-    S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList proxyNodes;
     S9sVariantList otherNodes;
@@ -3395,12 +3386,8 @@ S9sRpcClient::addProxySql(
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add ProxySQL to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3426,7 +3413,8 @@ S9sRpcClient::addMaxScale(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList maxScaleNodes;
     S9sVariantList otherNodes;
@@ -3477,12 +3465,8 @@ S9sRpcClient::addMaxScale(
         job["scheduled"] = options->schedule(); 
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add MaxScale to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3509,7 +3493,9 @@ S9sRpcClient::addMongoNode(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request, job, jobData, jobSpec;
+    S9sVariantMap  request;
+    S9sVariantMap  job;
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3555,12 +3541,8 @@ S9sRpcClient::addMongoNode(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3602,7 +3584,8 @@ S9sRpcClient::removeNode()
     S9sNode        host;
     S9sString      hostName, title;
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3637,12 +3620,8 @@ S9sRpcClient::removeNode()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3667,7 +3646,8 @@ S9sRpcClient::stopCluster()
     int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -3684,12 +3664,8 @@ S9sRpcClient::stopCluster()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3711,7 +3687,8 @@ S9sRpcClient::startCluster()
     int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
    
@@ -3724,12 +3701,8 @@ S9sRpcClient::startCluster()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3751,7 +3724,8 @@ S9sRpcClient::startNode()
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3776,12 +3750,8 @@ S9sRpcClient::startNode()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Starting Node";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3803,7 +3773,8 @@ S9sRpcClient::stopNode()
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3831,12 +3802,8 @@ S9sRpcClient::stopNode()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Stopping Node";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3859,7 +3826,8 @@ S9sRpcClient::restartNode()
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3887,12 +3855,8 @@ S9sRpcClient::restartNode()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restarting Node";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -3920,7 +3884,8 @@ S9sRpcClient::dropCluster()
     int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -3934,12 +3899,8 @@ S9sRpcClient::dropCluster()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -4035,7 +3996,9 @@ S9sRpcClient::createServer()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
     S9sString      uri = "/v2/jobs/";
-    S9sVariantMap  request, job, jobData, jobSpec;
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     
     if (servers.size() != 1u)
     {
@@ -4059,12 +4022,8 @@ S9sRpcClient::createServer()
     jobSpec["job_data"]         = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Add Node to Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -4079,7 +4038,7 @@ S9sRpcClient::moveInTree()
 {
     S9sString      uri = "/v2/tree/";
     S9sVariantMap  request;
-    S9sOptions    *options   = S9sOptions::instance();
+    S9sOptions    *options = S9sOptions::instance();
     
     if (options->nExtraArguments() != 2)
     {
@@ -4089,7 +4048,6 @@ S9sRpcClient::moveInTree()
 
         return false;
     }
-   
    
     request["operation"]      = "move";
     request["source_path"]    = options->extraArgument(0u);
@@ -4103,7 +4061,7 @@ S9sRpcClient::cat()
 {
     S9sString        uri = "/v2/tree/";
     S9sVariantMap    request;
-    S9sOptions      *options   = S9sOptions::instance();
+    S9sOptions      *options = S9sOptions::instance();
 
     if (options->nExtraArguments() == 1)
     {
@@ -4129,8 +4087,8 @@ S9sRpcClient::getAcl()
 {
     S9sString        uri = "/v2/host/";
     S9sVariantMap    request;
-    S9sOptions      *options   = S9sOptions::instance();
-    S9sVariantList   servers   = options->servers();
+    S9sOptions      *options = S9sOptions::instance();
+    S9sVariantList   servers = options->servers();
 
     if (!servers.empty())
     {
@@ -4153,15 +4111,13 @@ S9sRpcClient::getAcl()
     return executeRequest(uri, request);
 }
 
-
-
 bool
 S9sRpcClient::startServers()
 {
     S9sString      uri = "/v2/host/";
     S9sVariantMap  request;
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList servers   = options->servers();
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList servers = options->servers();
    
     request["operation"]      = "startServers";
     request["servers"]        = serversField(servers);
@@ -4562,7 +4518,8 @@ S9sRpcClient::createContainerWithJob()
     S9sString      templateName = options->templateName();
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec, container;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
     /*
@@ -4600,12 +4557,8 @@ S9sRpcClient::createContainerWithJob()
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Container";
     job["job_spec"]       = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
     
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
@@ -4620,7 +4573,8 @@ S9sRpcClient::deleteContainerWithJob()
     S9sOptions    *options  = S9sOptions::instance();
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec, container;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
     /*
@@ -4655,12 +4609,8 @@ S9sRpcClient::deleteContainerWithJob()
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Delete Container";
     job["job_spec"]       = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
     
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
@@ -4757,7 +4707,8 @@ S9sRpcClient::createBackup()
     S9sNode         backupHost;
     S9sString       title;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -4853,12 +4804,8 @@ S9sRpcClient::createBackup()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -4881,7 +4828,8 @@ S9sRpcClient::verifyBackup()
     int             clusterId    = options->clusterId();
     S9sString       clusterName  = options->clusterName();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
@@ -4911,12 +4859,8 @@ S9sRpcClient::verifyBackup()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = title;
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -4947,7 +4891,8 @@ S9sRpcClient::restoreBackup()
     int             backupId  = options->backupId();
     S9sString       backupMethod = options->backupMethod();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -4976,12 +4921,8 @@ S9sRpcClient::restoreBackup()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Restore Backup";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
