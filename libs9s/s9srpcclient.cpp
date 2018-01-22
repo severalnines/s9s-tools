@@ -1621,9 +1621,9 @@ S9sRpcClient::createLocalRepository(
         const S9sString   &dbVersion,
         const S9sString   &osRelease)
 {
-    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
 
     jobData["cluster_type"] = clusterType;
@@ -1636,12 +1636,8 @@ S9sRpcClient::createLocalRepository(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Repository";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
@@ -1656,7 +1652,8 @@ S9sRpcClient::createFailJob()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     
     // The jobspec describing the command.
@@ -1664,7 +1661,6 @@ S9sRpcClient::createFailJob()
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Simulated Failure";
     job["job_spec"]       = jobSpec;
 
@@ -1688,7 +1684,8 @@ S9sRpcClient::createSuccessJob()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     
     // The jobspec describing the command.
@@ -1696,7 +1693,6 @@ S9sRpcClient::createSuccessJob()
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Simulated Success";
     job["job_spec"]       = jobSpec;
 
@@ -1727,20 +1723,16 @@ bool
 S9sRpcClient::rollingRestart(
         const int clusterId)
 {
-    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
 
     jobSpec["command"]    = "rolling_restart";
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Rolling Restart";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
@@ -1761,7 +1753,8 @@ S9sRpcClient::createReport(
     S9sOptions    *options = S9sOptions::instance();
     S9sString      outputDir = options->outputDir();
     S9sVariantMap  request;
-    S9sVariantMap  job, jobData, jobSpec;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData, jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -1772,12 +1765,8 @@ S9sRpcClient::createReport(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Error Report";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule(); 
 
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
@@ -1886,7 +1875,8 @@ S9sRpcClient::createCluster()
 	} else if (options->clusterType() == "mongodb")
 	{
 		success = createMongoCluster(
-				hosts, osUserName, osSudoPassword, vendor, dbVersion, uninstall);
+				hosts, osUserName, osSudoPassword, 
+                vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -2067,7 +2057,8 @@ S9sRpcClient::createGaleraCluster(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     if (hosts.size() < 1u)
@@ -2102,12 +2093,8 @@ S9sRpcClient::createGaleraCluster(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Create Galera Cluster";
     job["job_spec"]             = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
 
     // 
     // The request describing we want to register a job instance.
@@ -2128,7 +2115,8 @@ S9sRpcClient::createMySqlSingleCluster(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     if (hosts.size() < 1u)
@@ -2163,12 +2151,8 @@ S9sRpcClient::createMySqlSingleCluster(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Create Single MySql Instance";
     job["job_spec"]             = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
 
     // 
     // The request describing we want to register a job instance.
@@ -2190,7 +2174,8 @@ S9sRpcClient::registerGaleraCluster(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2223,12 +2208,8 @@ S9sRpcClient::registerGaleraCluster(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Register Galera";
     job["job_spec"]             = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
     
     // 
     // The request describing we want to register a job instance.
@@ -2258,9 +2239,9 @@ S9sRpcClient::createMySqlReplication(
         bool                  uninstall)
 {
     S9sOptions     *options = S9sOptions::instance();
-    //S9sVariantList  hostNames;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
     
@@ -2299,7 +2280,6 @@ S9sRpcClient::createMySqlReplication(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
 
@@ -2326,7 +2306,8 @@ S9sRpcClient::registerMySqlReplication(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2359,12 +2340,8 @@ S9sRpcClient::registerMySqlReplication(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Register MySql Replication";
     job["job_spec"]             = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
     
     // 
     // The request describing we want to register a job instance.
@@ -2396,7 +2373,8 @@ S9sRpcClient::createGroupReplication(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  hostNames;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
     
@@ -2437,7 +2415,6 @@ S9sRpcClient::createGroupReplication(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create MySQL Replication Cluster";
     job["job_spec"]       = jobSpec;
 
@@ -2462,7 +2439,8 @@ S9sRpcClient::registerGroupReplication(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2495,12 +2473,8 @@ S9sRpcClient::registerGroupReplication(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Register MySql Replication";
     job["job_spec"]             = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
     
     // 
     // The request describing we want to register a job instance.
@@ -2529,7 +2503,8 @@ S9sRpcClient::createNdbCluster(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
     
@@ -2580,12 +2555,8 @@ S9sRpcClient::createNdbCluster(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create NDB Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -2612,7 +2583,8 @@ S9sRpcClient::registerNdbCluster(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
@@ -2658,12 +2630,8 @@ S9sRpcClient::registerNdbCluster(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Register NDB Cluster";
     job["job_spec"]       = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"] = options->schedule(); 
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -2693,7 +2661,8 @@ S9sRpcClient::createPostgreSql(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() != 1u)
@@ -2736,12 +2705,8 @@ S9sRpcClient::createPostgreSql(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Setup PostgreSQL Server";
     job["job_spec"]             = jobSpec;
-
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
 
     // 
     // The request describing we want to register a job instance.
@@ -2763,7 +2728,8 @@ S9sRpcClient::registerPostgreSql(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2795,12 +2761,8 @@ S9sRpcClient::registerPostgreSql(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["class_name"]           = "CmonJobInstance";
     job["title"]                = "Register PostgreSQL";
     job["job_spec"]             = jobSpec;
-    
-    if (!options->schedule().empty())
-        job["scheduled"]        = options->schedule(); 
     
     // 
     // The request describing we want to register a job instance.
@@ -2830,7 +2792,8 @@ S9sRpcClient::createMongoCluster(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  mongosList, configList;
     S9sVariantMap   request;
-    S9sVariantMap   job, jobData, jobSpec;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData, jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -2866,50 +2829,65 @@ S9sRpcClient::createMongoCluster(
             return false;
         }
 
-        if(!nodelistMap.contains(replsetName))
+        if (!nodelistMap.contains(replsetName))
             nodelistMap[replsetName] = S9sVariantList();
+
         nodelistMap[replsetName] << node;
     }
 
-    if(1 < nodelistMap.size()){
-        if(!nodelistMap.contains("mongos") || !nodelistMap.contains("mongocfg")){
+    if (1 < nodelistMap.size())
+    {
+        if (!nodelistMap.contains("mongos") || 
+                !nodelistMap.contains("mongocfg"))
+        {
             PRINT_ERROR(
                     "When multiple replicasets/shards are defined, mongos "
                     "and mongocfg nodes are mandatory to be defined as well.");
+
             return false;
         }
     }
 
     // The job_data describing the cluster - config nodes
-    if(nodelistMap.contains("mongocfg")){
+    if (nodelistMap.contains("mongocfg"))
+    {
         S9sVariantMap configReplSet;
         configReplSet["rs"] = "config";
         S9sVariantList members;
+
         for (uint idx = 0; idx < nodelistMap["mongocfg"].size(); ++idx)
         {
             S9sNode node = nodelistMap["mongocfg"][idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
+
             if (node.port() != 0)
                 member["port"] = node.port();
+
             members.push_back(member);
         }
+
         configReplSet["members"] = members;
         jobData["config_servers"] = configReplSet;
     }
 
     // The job_data describing the cluster - mongos nodes
-    if(nodelistMap.contains("mongos")){
+    if (nodelistMap.contains("mongos"))
+    {
         S9sVariantList mongos;
+
         for (uint idx = 0; idx < nodelistMap["mongos"].size(); ++idx)
         {
             S9sNode node = nodelistMap["mongos"][idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
+
             if (node.port() != 0)
                 member["port"] = node.port();
+
             mongos.push_back(member);
         }
+
         jobData["mongos_servers"] = mongos;
     }
 
@@ -2918,29 +2896,40 @@ S9sRpcClient::createMongoCluster(
     for(std::map<S9sString, S9sVariantList>::iterator iter = nodelistMap.begin();
             iter != nodelistMap.end(); iter++)
     {
-        if(iter->first == "mongocfg" || iter->first == "mongos")
+        if (iter->first == "mongocfg" || iter->first == "mongos")
             continue;
+
         S9sVariantMap replSet;
         replSet["rs"] = iter->first;
         S9sVariantList members;
+
         for (uint idx = 0; idx < iter->second.size(); ++idx)
         {
             S9sNode node = iter->second[idx].toNode();
             S9sVariantMap member;
             member["hostname"] = node.hostName();
+
             if (node.port() != 0)
                 member["port"] = node.port();
+
             if (node.hasProperty("arbiter_only"))
-                member["arbiter_only"] = node.property("arbiter_only").toBoolean();
+                member["arbiter_only"] = 
+                    node.property("arbiter_only").toBoolean();
+
             if (node.hasProperty("priority"))
                 member["priority"] = node.property("priority").toDouble();
+
             if (node.hasProperty("slave_delay"))
-                member["slave_delay"] = node.property("slave_delay").toULongLong();
+                member["slave_delay"] = 
+                    node.property("slave_delay").toULongLong();
+
             members.push_back(member);
         }
+
         replSet["members"] = members;
         replSets.push_back(replSet);
     }
+
     jobData["replica_sets"] = replSets;
 
     // The job_data describing the cluster.
@@ -2950,26 +2939,23 @@ S9sRpcClient::createMongoCluster(
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
+
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"] = options->osKeyFile();
+
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
-
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["class_name"]     = "CmonJobInstance";
     job["title"]          = "Create Mongo Cluster";
     job["job_spec"]       = jobSpec;
-    //job["user_name"]      = options->userName();
-    if (!options->schedule().empty())
-        job["scheduled"]  = options->schedule();
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -5909,6 +5895,27 @@ S9sRpcClient::getMaintenance()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * This will compose the skeleton job specification map that holds generic
+ * information every job specification can hold.
+ */
+S9sVariantMap 
+S9sRpcClient::composeJob() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  job;
+    
+    job["class_name"]     = "CmonJobInstance";
+    
+    if (!options->schedule().empty())
+        job["scheduled"]  = options->schedule(); 
+    
+    if (!options->recurrence().empty())
+        job["recurrence"]  = options->recurrence(); 
+    
+    return job;
 }
 
 /**

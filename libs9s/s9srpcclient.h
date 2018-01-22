@@ -280,6 +280,8 @@ class S9sRpcClient
         bool createSuccessJob();
 
     protected:
+        virtual S9sVariantMap composeJob() const;
+
         virtual bool
             executeRequest(
                 const S9sString &uri,
