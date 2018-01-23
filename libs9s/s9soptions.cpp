@@ -3441,8 +3441,8 @@ S9sOptions::printHelpGeneric()
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
-"  --schedule=DATE&TIME       Run the job at the specified time.\n"
 "  --recurrence=CRONTABSTRING Timing information for recurring jobs.\n"
+"  --schedule=DATE&TIME       Run the job at the specified time.\n"
 "  --timeout=SECONDS          Timeout value for the entire job.\n"
 "  --wait                     Wait until the job ends.\n"
 "\n", STR(m_myName));

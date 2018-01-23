@@ -174,24 +174,64 @@ The directory where the output file(s) will be created.
 .\"
 .\"
 .SS Job Related Options
-
-.TP
-.B \-\-wait
-If the application created a job (e.g. to create a new cluster) and this command
-line option is provided it will wait until the job is executed. While waiting a
-progress bar will be shown unless the silent mode is set.
+Some operations will start a job on the controller. The following command line
+options can be used in relation to these jobs:
 
 .TP
 .B \-\-log
-If the application created a job (e.g. to create a new cluster) and this command
-line option is provided it will wait until the job is executed. While waiting
-the job logs will be shown unless the silent mode is set.
+If the s9s application created a job and this command line option is provided it
+will wait until the job is executed. While waiting the job logs will be shown
+unless the silent mode is set.
+
+.TP 
+.BI \-\^\-recurrence= CRONTABSTRING
+This option can be used to create recurring jobs, jobs that are repeated over
+and over again until they are manually deleted. Every time the job is repeated a
+new job will be instantiated by copying the original recurring job and starting
+the copy. The option argument is a crontab style string defining the recurrence
+of the job. 
+
+The crontab string must have exactly five space separated fiels as follows:
+
+.nf
+          \fBfield          value
+          ------------      ------\fR
+          minute            0 - 59
+          hour              0 - 23
+          day of the month  1 - 31
+          month             1 - 12
+          day of the week   0 -  7
+.fi
+
+All the fields may be a simple expression or a list of simple expression
+separated by a comma (,). The simple expression is either a star (*)
+representing "all the possible values", an integer number representing the given
+minute, hour, day or month (e.g. 5 for the fifth day of the month), or two
+numbers separated by a dash representing an interval (e.g. 8-16 representing
+every hour from 8 to 16). The simple expression can also define a "step" value,
+so for example "*/2" might stand for "every other hour" or "8-16/2" might stand
+for "every other hour between 8 and 16.
+
+Please check crontab(5) for more details.
 
 .TP
 .BI \-\^\-schedule= DATETIME
 The job will not be executed now but it is scheduled to execute later. The
 datetime string is sent to the backend, so all the formats are supported that is
 supported by the controller.
+
+.TP
+.BI \-\^\-timeout= SECONDS
+Sets the timeout for the created job. If the execution of the job is not done
+before the timeout counted from the start time of the job expires the job will
+fail. Some jobs might not support the timeout feature, the controller might 
+ignore this value.
+
+.TP
+.B \-\-wait
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided the s9s program  will wait until the job is executed.
+While waiting a progress bar will be shown unless the silent mode is set.
 
 .\"
 .\"

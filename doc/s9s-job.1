@@ -288,6 +288,7 @@ specific job.
 # \fBs9s job \\
     --log \\
     --job-id=5\fR
+.fi
 
 Delete the job that has the job ID 41:
 
@@ -295,3 +296,12 @@ Delete the job that has the job ID 41:
 # \fBs9s job \\
     --delete \\
     --job-id=42\fR
+.fi
+
+Create a job that runs in every 5 minutes and does nothing at all. This can be 
+used for testing and demonstrating the recurring jobs without doing any
+significant or dangerous operations.
+
+.nf 
+# \fBs9s job --success --recurrence="*/5 * * * *"\fR
+.fi
