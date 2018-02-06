@@ -365,21 +365,48 @@ function install_package_in_container()
 
     if [ -f "$container_rootfs/usr/bin/apt-get" ]; then
         if [ -z "$APT_UPDATED" ]; then
+            printVerbose "Updating apt package list."
             lxc-attach -n "$container_name" -- \
                 apt-get -m -qq -y update \
-                >"$LOGFILE" 2>"$LOGFILE"
+                >>"$LOGFILE" 2>>"$LOGFILE"
+
+            retval=$?
+            if [ "$retval" -ne 0 ]; then
+                printVerbose "Failed to update APT package list."
+
+                printVerbose "/etc/resolv.conf:"
+                lxc-attach -n "$container_name" -- \
+                    cat /etc/resolv.conf \
+                    >>"$LOGFILE" 2>>"$LOGFILE"
+
+                return $retval
+            fi
 
             APT_UPDATED="true"
         fi
 
+        printVerbose "Installing package '$package_name'"
         lxc-attach -n "$container_name" -- \
             apt-get -y --force-yes install "$package_name" \
-            >"$LOGFILE" 2>"$LOGFILE"
+            >>"$LOGFILE" 2>>"$LOGFILE"
         
         retval=$?
 
         if [ "$retval" -ne "0" ]; then
             printError "Installing failed, check '$LOGFILE' for details."
+            echo "/etc/resolv.conf:" \
+                >>"$LOGFILE" 2>>"$LOGFILE"
+
+            lxc-attach -n "$container_name" -- \
+                cat /etc/resolv.conf \
+                >>"$LOGFILE" 2>>"$LOGFILE"
+            
+            echo "/etc/network/interfaces:" \
+                >>"$LOGFILE" 2>>"$LOGFILE"
+
+            lxc-attach -n "$container_name" -- \
+                cat /etc/network/interfaces \
+                >>"$LOGFILE" 2>>"$LOGFILE"
         fi
     else
         printError "No package manager found in '$container_rootfs'."
@@ -404,6 +431,7 @@ function create_container()
     local container_root
     local container_rootfs
     local ip
+    local retval
 
     #
     # Checking the command line options.
@@ -513,7 +541,17 @@ function create_container()
     if [ ! -f "$container_rootfs/usr/sbin/sshd" ]; then
         printVerbose "Container has no sshd, attempting to install."
         install_package_in_container "$new_name" "openssh-server"
+
+        retval=$?
+        if [ "$retval" -ne 0 ]; then
+            return "$retval"
+        fi
     fi
+    
+    #
+    # Seems to make sense to install this.
+    #
+    install_package_in_container "$new_name" "dnsutils"
 
     printVerbose "Removing 'ubuntu' user."
     lxc-attach -n "$new_name" -- \
@@ -523,7 +561,7 @@ function create_container()
     #
     # Creating the new user.
     #
-    printVerbose "Creating new user."
+    printVerbose "Creating new user 'pipas'."
 
     lxc-attach -n "$new_name" -- \
         /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
@@ -541,8 +579,8 @@ function create_container()
     printVerbose "new_name : $new_name"
     
     #sudo ls -lha /home/$OWNER
-    #printVerbose \
-    #    "/home/$OWNER/.ssh -> /var/lib/lxc/$new_name/rootfs/home/$OWNER"
+    printVerbose \
+        "/home/$OWNER/.ssh -> /var/lib/lxc/$new_name/rootfs/home/$OWNER"
 
     cp -r \
         "/home/$OWNER/.ssh" \
@@ -563,6 +601,7 @@ function create_container()
     # Adding to the sudoers.
     #
     # On centos 7 we also need : lxc-attach -n centos -- yum install sudo
+    printVerbose "Adding '$OWNER' to sudoers."
     echo "" >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
     echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" \
         >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"

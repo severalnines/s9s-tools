@@ -61,11 +61,12 @@ S9sBusinessLogic::execute()
     if (!success)
         return;
 
-    /*
-     *
-     */
     if (options->isClusterOperation())
     {
+        /*
+         * If the cluster operation requested, like
+         * s9s cluster [OPTION]...
+         */
         if (options->isPingRequested())
         {
             executePing(client);

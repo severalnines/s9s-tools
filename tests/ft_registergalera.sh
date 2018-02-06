@@ -38,6 +38,7 @@ Usage:
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --leave-nodes    Do not destroy the nodes at exit.
 
 EOF
     exit 1
@@ -45,7 +46,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install,reset-config" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config,\
+leave-nodes" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -92,6 +94,11 @@ while true; do
             OPTION_RESET_CONFIG="true"
             ;;
 
+        --leave-nodes)
+            shift
+            OPTION_LEAVE_NODES="true"
+            ;;
+
         --)
             shift
             break
@@ -118,21 +125,24 @@ fi
 function testCreateCluster()
 {
     local nodeName
-    local exitCode
 
-    pip-say "The test to create Galera cluster is starting now."
+    print_title "Creating a Cluster"
+
+    echo "Creating node #0"
     nodeName=$(create_node)
     NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
-    NODES+="$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
+    #echo "Creating node #1"
+    #nodeName=$(create_node)
+    #NODES+="$nodeName;"
+    #ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
-    NODES+="$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
+    #echo "Creating node #2"
+    #nodeName=$(create_node)
+    #NODES+="$nodeName"
+    #ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a Galera cluster.
@@ -146,11 +156,7 @@ function testCreateCluster()
         --provider-version=5.6 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -177,19 +183,12 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code $?
 }
 
 function testRegister()
 {
-    local exitCode 
-
-    print_title "Registering cluster"
+    print_title "Registering an Existing Cluster"
 
     #
     # Registering the cluester that we just created and dropped.
@@ -202,12 +201,7 @@ function testRegister()
         --cluster-name=my_cluster_$$ \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code $?
 
     mys9s cluster --list --long
     #s9s node --list --long

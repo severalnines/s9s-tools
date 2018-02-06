@@ -79,6 +79,7 @@ Usage:
 
 EXAMPLES:
   pip-container-archive --gzip --verbose --stop --server=core1 --output-dir=/home/pipas --owner=pipas --storage="storage01:" dns1
+
 EOF
     exit 0
 }

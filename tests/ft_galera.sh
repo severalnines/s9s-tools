@@ -11,7 +11,7 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-PROVIDER_VERSION="5.6"
+PROVIDER_VERSION="5.7"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -39,9 +39,11 @@ Usage:
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --provider-version=STRING The SQL server provider version.
+ --leave-nodes    Do not destroy the nodes at exit.
 
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
+
 EOF
     exit 1
 }
@@ -50,7 +52,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:" \
+provider-version:,leave-nodes" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -101,6 +103,11 @@ while true; do
             shift
             PROVIDER_VERSION="$1"
             shift
+            ;;
+
+        --leave-nodes)
+            shift
+            OPTION_LEAVE_NODES="true"
             ;;
 
         --)

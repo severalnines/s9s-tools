@@ -15,6 +15,9 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+.\"
+.\" Main options 
+.\"
 .TP
 .B \-\-add\-node
 Adds a new node (server) to the cluster or to be more precise creates a new
@@ -27,7 +30,7 @@ line option.
 This option can be used to check the hosts before creating a new cluster.
 
 .TP
-.B \-\-create-account
+.B \-\-create\-account
 Create a new account to be used on the cluster to access the database(s).
 
 .TP
@@ -48,8 +51,13 @@ controller. If the \fB\-\-output-dir\fP command line option is provided the
 report will be created in the given directory on the controller host.
 
 .TP
-.B \-L, \-\-list
-List the clusters managed by the controller.
+.B \-\-delete-account
+Delete an existing account from the cluster.
+
+.TP
+.B \-\-drop
+Removes the cluster from the Cmon controller. The cluster remains operational,
+but the controller will no longer manage or monitor it.
 
 .TP
 .B \-\^\-list\-databases
@@ -59,8 +67,18 @@ of databases would generate high load and so the controller has an upper limit
 built into it.
 
 .TP
-.B \-\-stat
-Print the details of one or more clusters.
+.B \-L, \-\-list
+List the clusters managed by the controller.
+
+.TP
+.B \-\-ping
+Check the connection to the controller.
+
+.TP 
+.B \-\-register
+Registers an existing cluster in the controller. This option is very similar to
+the \fB\-\^\-create\fR option, but it of course will not install a new cluster,
+it just registers one.
 
 .TP
 .B \-\-remove\-node 
@@ -74,23 +92,20 @@ Restart all nodes of the cluster by keeping the cluster alive. This command
 line option will create a job that will restart all the nodes.
 
 .TP
-.B \-\-stop
-Creates and registers and a new job that will stop the cluster when executed.
-
-.TP
 .B \-\-start
 Creates a new job to start the cluster.
 
 .TP
-.B \-\-drop
-Removes the cluster from the Cmon controller. The cluster remains operational,
-but the controller will no longer manage or monitor it.
+.B \-\-stat
+Print the details of one or more clusters.
 
 .TP
-.B \-\-delete-account
-Delete an existing account from the cluster.
+.B \-\-stop
+Creates and registers and a new job that will stop the cluster when executed.
 
-
+.\"
+.\" Generic options
+.\"
 .SS Generic Options
 
 .TP
@@ -640,4 +655,19 @@ Adding a data node to an existing mongo cluster's shard having replicaset name '
     --add-node \\
     --cluster-id=12 \\
     --nodes=mongodb://192.168.1.20?rs=replset2\fR
+.fi
+
+The next example shows how to register a pre-installed cluster. The cluster type
+has to be provided as command line option and the list of nodes is also
+mandatory. These options are necessary so that the controller can check the
+nodes and find the details needed to manage the cluster.
+
+.nf
+# \fBs9s cluster \\
+    --register \\
+    --cluster-type=galera \\
+    --nodes=192.168.0.110;192.168.0.112 \\
+    --vendor=percona \\
+    --cluster-name=my_cluster_23466 \\
+    --wait\fR
 .fi

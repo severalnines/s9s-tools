@@ -721,6 +721,15 @@ function print_title()
 #
 function destroyNodes()
 {
+    if [ "$OPTION_LEAVE_NODES" ]; then
+        print_title "Leaving the containers"
+        echo "The --leave-nodes option was provided, not destroying the "
+        echo "containers."
+        echo "     server : $CONTAINER_SERVER"
+        echo " containers : $ALL_CREATED_IPS"
+        return 0
+    fi
+
     if [ "$OPTION_INSTALL" ]; then
         print_title "Leaving the containers"
         echo "The --install option was provided, not destroying the "

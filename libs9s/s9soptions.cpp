@@ -3667,6 +3667,7 @@ S9sOptions::printHelpCluster()
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
+"  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --start                    Start the cluster.\n"
