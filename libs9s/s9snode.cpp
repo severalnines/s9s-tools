@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -1405,4 +1405,117 @@ S9sNode::selectByProtocol(
         else 
             otherNodes << node;
     }
+}
+
+/**
+ *
+ * \code{.js}
+ * {
+ *     "admin_user": "admin2",
+ *     "backend_info": 
+ *     {
+ *         "backend_servers": [ 
+ *         {
+ *             "Bytes_data_recv": "0",
+ *             "Bytes_data_sent": "0",
+ *             "ConnERR": "0",
+ *             "ConnFree": "0",
+ *             "ConnUsed": "0",
+ *             "Latency": "284",
+ *             "Queries": "0",
+ *             "class_name": "CmonProxySqlServer",
+ *             "comment": "read server",
+ *             "compression": "0",
+ *             "hostgroup_id": "20",
+ *             "hostname": "192.168.0.118",
+ *             "max_connections": "100",
+ *             "max_latency_ms": "0",
+ *             "max_replication_lag": "10",
+ *             "port": "3306",
+ *             "status": "ONLINE",
+ *             "use_ssl": "0",
+ *             "weight": "1000"
+ *         }, 
+ *         . . .
+ * \endcode
+ */
+S9sVariantList 
+S9sNode::backendServers() const
+{
+    S9sVariantList retval;
+
+    if (m_properties.contains("backend_info"))
+    {
+        S9sVariantMap backendInfo = 
+            m_properties.at("backend_info").toVariantMap();
+
+        if (backendInfo.contains("backend_servers"))
+            retval = backendInfo.at("backend_servers").toVariantList();
+    }
+
+    return retval;
+}
+
+bool
+S9sNode::hasBackendServers() const
+{
+    return !backendServers().empty();
+}
+
+uint 
+S9sNode::numberOfBackendServers() const
+{
+    return backendServers().size();
+}
+
+S9sString
+S9sNode::backendServerName(
+        uint index) const
+{
+    S9sVariantList theList = backendServers();
+    S9sString      retval;
+
+    if (index >= 0 && index < theList.size())
+        retval = theList[index]["hostname"].toString();
+
+    return retval;
+}
+
+int
+S9sNode::backendServerPort(
+        uint index) const
+{
+    S9sVariantList theList = backendServers();
+    int            retval  = -1;
+
+    if (index >= 0 && index < theList.size())
+        retval = theList[index]["port"].toInt();
+
+    return retval;
+}
+
+S9sString
+S9sNode::backendServerStatus(
+        uint index) const
+{
+    S9sVariantList theList = backendServers();
+    S9sString      retval;
+
+    if (index >= 0 && index < theList.size())
+        retval = theList[index]["status"].toString();
+
+    return retval;
+}
+
+S9sString
+S9sNode::backendServerComment(
+        uint index) const
+{
+    S9sVariantList theList = backendServers();
+    S9sString      retval;
+
+    if (index >= 0 && index < theList.size())
+        retval = theList[index]["comment"].toString();
+
+    return retval;
 }

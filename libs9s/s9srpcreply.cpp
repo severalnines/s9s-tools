@@ -4905,9 +4905,7 @@ S9sRpcReply::printGraph()
 
 /**
  * Prints one host in the "stat" format, the format that print every single
- * detail.
- * 
- * 
+ * detail. Well, a lot of details anyway.
  */
 void
 S9sRpcReply::printNodeStat(
@@ -5122,7 +5120,81 @@ S9sRpcReply::printNodeStat(
             STR(node.dataDir()),
             TERM_NORMAL);
 
-    printf("\n\n");
+    printf("\n");
+
+    printBackendServersSubList(node);
+}
+
+void
+S9sRpcReply::printBackendServersSubList(
+        const S9sNode &node)
+{
+    if (node.hasBackendServers())
+    {
+        S9sOptions    *options = S9sOptions::instance();
+        int            terminalWidth = options->terminalWidth();
+        S9sFormat      hostNameFormat(ipColorBegin(), ipColorEnd());
+        S9sFormat      portFormat;
+        S9sFormat      statusFormat;
+        S9sFormat      commentFormat;
+        int            tableWidth;
+        S9sString      indent;
+
+        /*
+         *
+         */
+        hostNameFormat.widen("HOSTNAME");
+        portFormat.widen("PORT");
+        statusFormat.widen("STATUS");
+        commentFormat.widen("COMMENT");
+        
+        for (uint idx = 0u; idx < node.numberOfBackendServers(); ++idx)
+        {
+            S9sString hostName = node.backendServerName(idx);
+            int       port     = node.backendServerPort(idx);
+            S9sString status   = node.backendServerStatus(idx);
+            S9sString comment  = node.backendServerComment(idx);
+
+            hostNameFormat.widen(hostName);
+            portFormat.widen(port);
+            statusFormat.widen(status);
+            commentFormat.widen(comment);
+        }
+
+        tableWidth = 3 +
+            hostNameFormat.realWidth() + portFormat.realWidth() +
+            statusFormat.realWidth()   + commentFormat.realWidth();
+    
+        if (terminalWidth - tableWidth > 0)
+            indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+
+        printf("\n");
+        
+        printf("%s", headerColorBegin());
+        printf("%s", STR(indent));
+        hostNameFormat.printf("HOSTNAME", false);
+        portFormat.printf("PORT", false);
+        statusFormat.printf("STATUS", false);
+        commentFormat.printf("COMMENT", false);
+        printf("%s", headerColorEnd());
+        printf("\n");
+
+        for (uint idx = 0u; idx < node.numberOfBackendServers(); ++idx)
+        {
+            S9sString hostName = node.backendServerName(idx);
+            int       port     = node.backendServerPort(idx);
+            S9sString status   = node.backendServerStatus(idx);
+            S9sString comment  = node.backendServerComment(idx);
+
+            printf("%s", STR(indent));
+            hostNameFormat.printf(hostName);
+            portFormat.printf(port);
+            statusFormat.printf(status);
+            commentFormat.printf(comment);
+
+            printf("\n");
+        }
+    }
 }
 
 void 

@@ -134,6 +134,15 @@ class S9sNode
                     S9sVariantList       &otherNodes,
                     const S9sString      &protocol);
 
+        S9sVariantList backendServers() const;
+        bool hasBackendServers() const;
+        uint numberOfBackendServers() const;
+
+        S9sString backendServerName(uint index) const;
+        int backendServerPort(uint index) const;
+        S9sString backendServerStatus(uint index) const;
+        S9sString backendServerComment(uint index) const;
+
     private:
         S9sVariantMap    m_properties;
         S9sUrl           m_url;

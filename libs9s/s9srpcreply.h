@@ -305,6 +305,7 @@ class S9sRpcReply : public S9sVariantMap
 
     private:
         void walkObjectTree(S9sVariantMap &node);
+        void printBackendServersSubList(const S9sNode &node);
 
     private:
         S9sFormat   m_ownerFormat;
