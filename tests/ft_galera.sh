@@ -477,8 +477,7 @@ function testCreateDatabase()
     fi
 
     #
-    # This command will create a new account on the cluster and grant some
-    # rights to the just created database.
+    # This command will grant some rights to the just created database.
     #
     mys9s account \
         --grant \
@@ -486,12 +485,10 @@ function testCreateDatabase()
         --account="pipas" \
         --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
         --batch 
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while granting privileges."
-    fi
+   
+    check_exit_code_no_job $?
+
+    mys9s account --list --long
 }
 
 #

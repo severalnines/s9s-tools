@@ -1207,6 +1207,7 @@ S9sRpcReply::printAccountListLong()
         S9sString      password     = account.password();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
+        S9sString      fullName;
 
         if (!options->isStringMatchExtraArguments(accountName))
             continue;
@@ -1214,12 +1215,14 @@ S9sRpcReply::printAccountListLong()
         if (hostName.empty())
             hostName = "%";
 
+        fullName.sprintf("'%s'@'%s'", STR(accountName), STR(hostName));
+
         if (password.empty())
             password = "N";
         else
             password = "Y";
 
-        accountNameFormat.widen(accountName);
+        accountNameFormat.widen(fullName);
         hostNameFormat.widen(hostName);
         passwordFormat.widen(password);
         maxConnectionsFormat.widen(maxConnections);
@@ -1244,7 +1247,7 @@ S9sRpcReply::printAccountListLong()
         hostNameFormat.printf("HOST");
         #else
         accountNameFormat.printf("NAME");
-        hostNameFormat.printf("");
+        //hostNameFormat.printf("");
         printf(" ");
         #endif
         passwordFormat.printf("P");
@@ -1258,7 +1261,7 @@ S9sRpcReply::printAccountListLong()
 
     columns  = terminalWidth;
     columns -= accountNameFormat.realWidth();
-    columns -= hostNameFormat.realWidth();
+    //columns -= hostNameFormat.realWidth();
     columns -= passwordFormat.realWidth();
     columns -= connectionsFormat.realWidth();
     columns -= maxConnectionsFormat.realWidth();
@@ -1300,15 +1303,6 @@ S9sRpcReply::printAccountListLong()
             password = "Y";
        
         // Johan asked for ''@'' format, this is a temporary solution for that.
-        #if 0
-        printf("%s", colorBegin);
-        accountNameFormat.printf(accountName);
-        printf("%s", colorEnd);
-        
-        printf("%s", hostColorBegin);
-        hostNameFormat.printf(hostName);
-        printf("%s", hostColorEnd);
-        #else
         printf("%s", colorBegin);
         printf("'%s'", STR(accountName));
         printf("%s", colorEnd);
@@ -1319,13 +1313,10 @@ S9sRpcReply::printAccountListLong()
         
         // The 5 is the length of ''@''
         thisWidth = accountName.length() + hostName.length() + 5;
-        requiredWidth = 
-            accountNameFormat.realWidth() + 
-            hostNameFormat.realWidth();
+        requiredWidth = accountNameFormat.realWidth();
 
-        for (int n = thisWidth; n <= requiredWidth; ++n)
+        for (int n = thisWidth; n < requiredWidth; ++n)
             printf(" ");
-        #endif
 
         passwordFormat.printf(password);
         connectionsFormat.printf(connections);
