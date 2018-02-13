@@ -1248,7 +1248,7 @@ S9sRpcReply::printAccountListLong()
         #else
         accountNameFormat.printf("NAME");
         //hostNameFormat.printf("");
-        printf(" ");
+        //printf(" ");
         #endif
         passwordFormat.printf("P");
         connectionsFormat.printf("CONN");
