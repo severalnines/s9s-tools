@@ -3625,27 +3625,14 @@ S9sOptions::printHelpAccount()
     printHelpGeneric();
 
     printf(
-"FIXME: THIS TEXT IS UNDER CONSTRUCTION!\n"
 "Options for the \"account\" command:\n"
-"  --add-key                  Register a new public key for a user.\n"
-"  --change-password          Change the password for an existing user.\n"
-"  --create                   Create a new Cmon user.\n"
-"  --list-keys                List the public keys of a user.\n"
-"  --list                     List the users.\n"
-"  --set                      Change the properties of a user.\n"
-"  --whoami                   List the current user only.\n"
-""
+"  --create                   Create a new account on the cluster.\n"
+"  --delete                   Remove the account from the cluster.\n"
+"  --grant                    Grant privileges for the account.\n"
+"  --list                     List the accounts on the cluster.\n"
 "\n"
-"  --create-group             Create the group if it doesn't exist.\n"
-"  --email-address=ADDRESS    The email address for the user.\n"
-"  --first-name=NAME          The first name of the user.\n"
-"  -g, --generate-key         Generate an RSA keypair for the user.\n"
-"  --group=GROUP_NAME         The primary group for the new user.\n"
-"  --last-name=NAME           The last name of the user.\n"
-"  --public-key-file=FILE     The name of the file where the public key is.\n"
-"  --public-key-name=NAME     The name of the public key.\n"
-"  --title=TITLE              The prefix title for the user.\n"
-"  --user-format=FORMAT       The format string used to print users.\n"
+"  --privileges=PRIVILEGES    The privileges for the account.\n"
+"  --account=ACCOUNT          The account itself.\n"
 "\n");
 }
 
@@ -5935,16 +5922,16 @@ S9sOptions::readOptionsAccount(
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
 
         // Main Option
-        { "change-password",  no_argument,       0, OptionChangePassword  },
-        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        //{ "change-password",  no_argument,       0, OptionChangePassword  },
         { "create",           no_argument,       0, OptionCreate          },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
-        { "list-keys",        no_argument,       0, OptionListKeys        },
-        { "add-key",          no_argument,       0, OptionAddKey          },
+        //{ "generate-key",     no_argument,       0, 'g'                   }, 
+        //{ "list-keys",        no_argument,       0, OptionListKeys        },
+        //{ "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
-        { "set",              no_argument,       0, OptionSet             },
+        //{ "set",              no_argument,       0, OptionSet             },
         { "delete",           no_argument,       0, OptionDelete          },
         { "grant",            no_argument,       0, OptionGrant           },
         
@@ -5953,18 +5940,18 @@ S9sOptions::readOptionsAccount(
         { "cluster-name",     required_argument, 0, 'n'                   },
        
         // Options about the user.
-        { "user-format",      required_argument, 0, OptionUserFormat      }, 
-        { "old-password",     required_argument, 0, OptionOldPassword     }, 
-        { "new-password",     required_argument, 0, OptionNewPassword     }, 
-        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
-        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
+//        { "user-format",      required_argument, 0, OptionUserFormat      }, 
+//        { "old-password",     required_argument, 0, OptionOldPassword     }, 
+//        { "new-password",     required_argument, 0, OptionNewPassword     }, 
+//        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
+//        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
         
-        { "with-database",    no_argument,       0, OptionWithDatabase    },
-        { "db-name",          required_argument, 0, OptionDbName          },
-        { "privileges",       required_argument, 0, OptionPrivileges      },
+//        { "with-database",    no_argument,       0, OptionWithDatabase    },
+//        { "db-name",          required_argument, 0, OptionDbName          },
+//        { "privileges",       required_argument, 0, OptionPrivileges      },
         { "account",          required_argument, 0, OptionAccount,        },
         { "limit",            required_argument, 0, OptionLimit          },
-        { "offset",           required_argument, 0, OptionOffset         },
+//        { "offset",           required_argument, 0, OptionOffset         },
 
         { 0, 0, 0, 0 }
     };
