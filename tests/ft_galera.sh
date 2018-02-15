@@ -163,15 +163,18 @@ function testCreateCluster()
 
     print_title "Testing the creation of a Galera cluster"
 
+    echo "Creating node #0"
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     ALL_CREATED_IPS+=" $nodeName"
     
+    echo "Creating node #1"
     nodeName=$(create_node)
     nodes+="$nodeName;"
     ALL_CREATED_IPS+=" $nodeName"
     
+    echo "Creating node #2"
     nodeName=$(create_node)
     nodes+="$nodeName"
     ALL_CREATED_IPS+=" $nodeName"
@@ -415,15 +418,51 @@ function testCreateAccount()
         --account="john_doe:password@1.2.3.4" \
         --with-database
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account."
-    fi
+    check_exit_code_no_job $?
 
+    #
+    # Checking if the account is created.
+    #
     userName=$(s9s account --list --cluster-id=1 john_doe)
     if [ "$userName" != "john_doe" ]; then
         failure "Failed to create user 'john_doe'."
+        exit 1
     fi
+
+    echo "Before granting."
+    mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
+    
+    #
+    #
+    #
+    mys9s account \
+        --grant \
+        --cluster-id=$CLUSTER_ID \
+        --account="john_doe@1.2.3.4" \
+        --privileges="*.*:ALL" 
+    
+    check_exit_code_no_job $?
+
+    echo "After granting."
+    mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
+
+    #
+    # Dropping the account, checking if it is indeed dropped.
+    #
+    mys9s account \
+        --delete \
+        --cluster-id=$CLUSTER_ID \
+        --account="john_doe@1.2.3.4"
+    
+    check_exit_code_no_job $?
+
+    userName=$(s9s account --list --long john_doe --batch)
+    if [ "$userName" ]; then
+        failure "The account 'john_doe' still exists."
+        mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
+        exit 1
+    fi
+
 }
 
 
@@ -463,13 +502,11 @@ function testCreateDatabase()
         --privileges="testCreateDatabase.*:INSERT,UPDATE" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating account."
-        exit 1
-    fi
-   
+    check_exit_code_no_job $?
+  
+    #
+    # Checking if the account could be created.
+    #
     userName=$(s9s account --list --cluster-id=1 pipas)
     if [ "$userName" != "pipas" ]; then
         failure "Failed to create user 'pipas'."

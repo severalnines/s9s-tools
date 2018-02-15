@@ -5946,9 +5946,9 @@ S9sOptions::readOptionsAccount(
 //        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
 //        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
         
-//        { "with-database",    no_argument,       0, OptionWithDatabase    },
-//        { "db-name",          required_argument, 0, OptionDbName          },
-//        { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "db-name",          required_argument, 0, OptionDbName          },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
         { "account",          required_argument, 0, OptionAccount,        },
         { "limit",            required_argument, 0, OptionLimit          },
 //        { "offset",           required_argument, 0, OptionOffset         },
