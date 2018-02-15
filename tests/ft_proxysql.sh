@@ -13,6 +13,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 PROVIDER_VERSION="5.6"
 N_DATABASE_NODE=1
+PROXY_SERVER=""
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -221,76 +222,6 @@ function testCreateCluster()
 }
 
 #
-# Creating a new account on the cluster.
-#
-function testCreateAccount()
-{
-    local userName
-
-    print_title "Testing account creation."
-
-    #
-    # This command will create a new account on the cluster.
-    #
-    if [ -z "$CLUSTER_ID" ]; then
-        failure "No cluster ID found."
-        return 1
-    fi
-
-    mys9s account \
-        --create \
-        --cluster-id=$CLUSTER_ID \
-        --account="john_doe:password@1.2.3.4" \
-        --with-database
-    
-    check_exit_code_no_job $?
-
-    #
-    # Checking if the account is created.
-    #
-    userName=$(s9s account --list --cluster-id=1 john_doe)
-    if [ "$userName" != "john_doe" ]; then
-        failure "Failed to create user 'john_doe'."
-        exit 1
-    fi
-
-    echo "Before granting."
-    mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
-    
-    #
-    #
-    #
-    mys9s account \
-        --grant \
-        --cluster-id=$CLUSTER_ID \
-        --account="john_doe@1.2.3.4" \
-        --privileges="*.*:ALL" 
-    
-    check_exit_code_no_job $?
-
-    echo "After granting."
-    mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
-
-    #
-    # Dropping the account, checking if it is indeed dropped.
-    #
-    mys9s account \
-        --delete \
-        --cluster-id=$CLUSTER_ID \
-        --account="john_doe@1.2.3.4"
-    
-    check_exit_code_no_job $?
-
-    userName=$(s9s account --list --long john_doe --batch)
-    if [ "$userName" ]; then
-        failure "The account 'john_doe' still exists."
-        mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
-        exit 1
-    fi
-
-}
-
-#
 # Creating a new database on the cluster.
 #
 function testCreateDatabase()
@@ -305,7 +236,7 @@ function testCreateDatabase()
     mys9s cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
-        --db-name="testCreateDatabase" \
+        --db-name="test_database" \
         --batch
     
     exitCode=$?
@@ -323,33 +254,10 @@ function testCreateDatabase()
         --create \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
-        --privileges="testCreateDatabase.*:INSERT,UPDATE" \
+        --privileges="*.*:ALL" \
         --batch
     
     check_exit_code_no_job $?
-  
-    #
-    # Checking if the account could be created.
-    #
-    userName=$(s9s account --list --cluster-id=1 pipas)
-    if [ "$userName" != "pipas" ]; then
-        failure "Failed to create user 'pipas'."
-        exit 1
-    fi
-
-    #
-    # This command will grant some rights to the just created database.
-    #
-    mys9s account \
-        --grant \
-        --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
-        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
-        --batch 
-   
-    check_exit_code_no_job $?
-
-    mys9s account --list --long
 }
 
 
@@ -360,10 +268,12 @@ function testAddProxySql()
 {
     local node
     local nodes
+    local nodeName
 
     print_title "Adding a ProxySQL Node"
 
     nodeName=$(create_node)
+    PROXY_SERVER="$nodeName"
     nodes+="proxySql://$nodeName"
     ALL_CREATED_IPS+=" $nodeName"
 
@@ -377,71 +287,115 @@ function testAddProxySql()
         $LOG_OPTION
     
     check_exit_code $?
-
-    mys9s node \
-        --list-config \
-        --nodes=$nodeName 
 }
 
-#
-# This test will create a user and a database and then upload some data if the
-# data can be found on the local computer.
-#
-function testUploadData()
+function testConnect01()
 {
-    local sql_server
-    local db_name="pipas1"
-    local user_name="pipas1"
-    local password="p"
+    local sql_host="$PROXY_SERVER"
+    local sql_port="6033"
+    local db_name="proxydemo"
+    local sql_user="proxydemo"
+    local sql_password="proxydemo"
     local reply
-    local count=0
 
-    print_title "Testing data upload on cluster."
-    sql_server=$FIRST_ADDED_NODE
-
-    #
-    # Creating a new database on the cluster.
-    #
-    mys9s cluster \
-        --create-database \
-        --db-name=$db_name
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
-
-    #
-    # Creating a new account on the cluster.
-    #
-    mys9s account \
-        --create \
-        --account="$user_name:$password" \
-        --privileges="$db_name.*:ALL"
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
+    print_title "Testing Connection ${sql_user}@${sql_host}."
+    #sql_host="$FIRST_ADDED_NODE"
 
     #
     # Executing a simple SQL statement using the account we created.
     #
-    reply=$(\
+cat <<EOF
         mysql \
             --disable-auto-rehash \
             --batch \
-            -h$sql_server \
-            -u$user_name \
-            -p$password \
+            -h$sql_host \
+            -P$sql_port \
+            -u$sql_user \
+            -p$sql_password \
             $db_name \
-            -e "SELECT 41+1" | tail -n +2 )
+            -e "SELECT 41+1"
+EOF
 
+    reply=$(\
+            mysql \
+                --disable-auto-rehash \
+                --batch \
+                -h$sql_host \
+                -P$sql_port \
+                -u$sql_user \
+                -p$sql_password \
+                $db_name \
+                -e "SELECT 41+1" \
+        | \
+            tail -n +2 \
+        )
+    
     if [ "$reply" != "42" ]; then
-        failure "Cluster failed to execute an SQL statement: '$reply'."
+        failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
+        exit 1
     fi
+}
+
+function testConnect02()
+{
+    local sql_host="$PROXY_SERVER"
+    local sql_port="6033"
+    local db_name="test_database"
+    local sql_user="pipas"
+    local sql_password="password"
+    local reply
+
+    print_title "Testing Connection ${sql_user}@${sql_host}."
+    #sql_host="$FIRST_ADDED_NODE"
+
+    #
+    # Executing a simple SQL statement using the account we created.
+    #
+cat <<EOF
+        mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$sql_host \
+            -P$sql_port \
+            -u$sql_user \
+            -p$sql_password \
+            $db_name \
+            -e "SELECT 41+1"
+EOF
+
+    reply=$(\
+            mysql \
+                --disable-auto-rehash \
+                --batch \
+                -h$sql_host \
+                -P$sql_port \
+                -u$sql_user \
+                -p$sql_password \
+                $db_name \
+                -e "SELECT 41+1" \
+        | \
+            tail -n +2 \
+        )
+    
+    if [ "$reply" != "42" ]; then
+        failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
+        exit 1
+    fi
+}
+
+function testUploadData()
+{
+    local sql_server
+    local db_name="proxydemo"
+    local user_name="proxydemo"
+    local password="proxydemo"
+    
+    local reply
+    local count=0
+
+    print_title "Restoring mysqldump file."
+    #sql_server="$FIRST_ADDED_NODE"
+    sql_server="$PROXY_SERVER"
 
     #
     # Here we upload some tables. This part needs test data...
@@ -456,7 +410,7 @@ function testUploadData()
         printf "\n"
         pv $file | \
             gunzip | \
-            mysql --batch -h$sql_server -u$user_name -pp $db_name
+            mysql --batch -h$PROXY_SERVER -P6033 -u$user_name -p$password $db_name
 
         exitCode=$?
         if [ "$exitCode" -ne 0 ]; then
@@ -516,10 +470,13 @@ else
 
     runFunctionalTest testCreateCluster
 
-    runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
 
     runFunctionalTest testAddProxySql
+
+    runFunctionalTest testConnect01
+    runFunctionalTest testConnect02
+
     runFunctionalTest testUploadData
 fi
 
