@@ -475,7 +475,7 @@ else
     runFunctionalTest testAddProxySql
 
     runFunctionalTest testConnect01
-    runFunctionalTest testConnect02
+    #runFunctionalTest testConnect02
 
     runFunctionalTest testUploadData
 fi

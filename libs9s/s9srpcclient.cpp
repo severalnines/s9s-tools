@@ -3372,8 +3372,8 @@ S9sRpcClient::addProxySql(
         "db_privs": "",
         "db_username": "cmon",
     */
-    printf("WARNING: admin/admin\n");
-    printf("WARNING: proxy-monitor/proxy-monitor\n");
+    //printf("WARNING: admin/admin\n");
+    //printf("WARNING: proxy-monitor/proxy-monitor\n");
 
     jobData["admin_user"]       = "admin2";
     jobData["admin_password"]   = "admin",
