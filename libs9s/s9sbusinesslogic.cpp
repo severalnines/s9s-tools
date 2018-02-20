@@ -300,7 +300,7 @@ S9sBusinessLogic::execute()
         } else if (options->isMoveRequested())
         {
             /* 
-             * s9s server --move "/Hungary" "/"
+             * s9s tree --move "/Hungary" "/"
              */
             success = client.moveInTree();
             client.printMessages("Moved.", success);

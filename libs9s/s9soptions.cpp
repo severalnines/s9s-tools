@@ -3757,17 +3757,23 @@ S9sOptions::printHelpServer()
     printf(
 "Options for the \"server\" command:\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
-"  --create                   Create a new container.\n"
+"  --create                   Creates a new server.\n"
 "  --get-acl                  List the ACL of an object.\n"
 "  --list-disks               List disks from multiple servers.\n"
+"  --list                     List the registered servers.\n"
 "  --list-memory              List memory modules from multiple servers.\n"
 "  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
 "  --register                 Register an existint container server.\n"
 "  --start                    Boot up a server.\n"
+"  --stat                     List details about the server.\n"
 "  --stop                     Shut down and power off a server.\n"
 "  --unregister               Unregister a container server.\n"
+"\n"
+"  --acl=ACLSTRING            The ACL entry to set.\n"
+"  --refresh                  Do not use cached data, collect information.\n"
+"  --servers=LIST             List of servers.\n"
 "\n"
     );
 }
@@ -8000,18 +8006,6 @@ S9sOptions::readOptionsServer(
                 m_options["delete"] = true;
                 break;
             
-            case OptionServers:
-                // --servers=LIST
-                if (!setServers(optarg))
-                    return false;
-
-                break;
-
-            case OptionAcl:
-                // --acl=ACLSTRING
-                m_options["acl"] = optarg;
-                break;
-            
             case OptionStart:
                 // --start
                 m_options["start"] = true;
@@ -8022,10 +8016,6 @@ S9sOptions::readOptionsServer(
                 m_options["stop"] = true;
                 break;
             
-            case OptionRefresh:
-                // --refresh
-                m_options["refresh"] = true;
-                break;
 
             /*
              * Job related options.
@@ -8053,6 +8043,26 @@ S9sOptions::readOptionsServer(
             case OptionTimeout:
                 // --timeout=SECONDS
                 m_options["timeout"] = optarg;
+                break;
+            
+            /*
+             *
+             */
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
+                break;
+            
+            case OptionAcl:
+                // --acl=ACLSTRING
+                m_options["acl"] = optarg;
+                break;
+            
+            case OptionServers:
+                // --servers=LIST
+                if (!setServers(optarg))
+                    return false;
+
                 break;
 
             case '?':

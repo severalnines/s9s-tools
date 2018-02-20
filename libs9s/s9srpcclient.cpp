@@ -3379,6 +3379,7 @@ S9sRpcClient::addProxySql(
     jobData["admin_password"]   = "admin",
     jobData["monitor_user"]     = "proxy-monitor";
     jobData["monitor_password"] = "proxysql-monitor";
+    jobData["import_accounts"]  = true;
 
 
     // The jobspec describing the command.

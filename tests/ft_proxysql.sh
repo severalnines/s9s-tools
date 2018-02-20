@@ -228,7 +228,7 @@ function testCreateDatabase()
 {
     local userName
 
-    print_title "Testing database creation."
+    print_title "Creating Database"
 
     #
     # This command will create a new database on the cluster.
@@ -239,22 +239,35 @@ function testCreateDatabase()
         --db-name="test_database" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
+    check_exit_code_no_job $?
     
     #
-    # This command will create a new account on the cluster and grant some
-    # rights to the just created database.
-    #
+    # Creating accounts. They have various allow host settings and access
+    # rights.
+    # 
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="pipas:password@%" \
         --privileges="*.*:ALL" \
+        --batch
+    
+    check_exit_code_no_job $?
+    
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="test_user1:password@192.%" \
+        --privileges="test_database.*:ALL" \
+        --batch
+    
+    check_exit_code_no_job $?
+    
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="test_user2:password@10.10.1.23" \
+        --privileges="test_database.*:ALL" \
         --batch
     
     check_exit_code_no_job $?
@@ -475,7 +488,7 @@ else
     runFunctionalTest testAddProxySql
 
     runFunctionalTest testConnect01
-    #runFunctionalTest testConnect02
+    runFunctionalTest testConnect02
 
     runFunctionalTest testUploadData
 fi

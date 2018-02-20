@@ -4,6 +4,8 @@ man_MANS =            \
 	s9s-log.1         \
 	s9s-cluster.1     \
 	s9s-node.1        \
+	s9s-server.1      \
+	s9s-container.1   \
 	s9s-process.1     \
 	s9s-backup.1      \
 	s9s-user.1        \

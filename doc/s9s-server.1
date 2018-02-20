@@ -1,0 +1,313 @@
+.TH S9S-NODE 1 "February 20, 2018"
+
+.SH NAME
+s9s-node \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-node
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-\-add-acl
+Adds a new ACL entry to the server or modifies an existing ACL entry.
+
+.TP
+.B \-\-create
+Creates a new server. If this option is provided the controller will use ssh to
+discover the server and install the necessary software packages, modify the
+configuration if needed so that the server can host containers.
+
+.TP
+.B \-\-get\-acl
+List the ACL of a server.
+
+.TP
+.B \-\-list\-disks
+List disks found in one or more servers.
+
+.TP
+.B \-\-list
+List the registered servers.
+
+.TP
+.B \-\-list\-memory
+List memory modules from one or more servers.
+
+.TP
+.B \-\-list\-nics
+List network controllers from one or more servers.
+
+.TP
+.B \-\-list\-partitions
+List partitions from multiple servers.
+
+.TP
+.B \-\-list\-processors
+List processors from one or more servers.
+
+.TP
+.B \-\-register
+Register an existint container server. If this command line option is provided
+the controller will register the server to be used as container server later. No
+software packages are installed or configuration changed.
+
+.TP
+.B \-\-start
+Boot up a server. This option will try to start up a server that is physically
+turned off (using e.g. the wake-on-lan feature).
+
+.TP
+.B \-\-stat
+Print details about one or more servers.
+
+.TP
+.B \-\-stop
+Shut down and power off a server. When this command line option is provided the
+controller will run the shutdown(8) program on the server.
+
+.TP
+.B \-\-unregister
+Unregister a container server, simply removes it from the controller.
+
+
+.\"
+.\" The generic options that we have in all the modes.
+.\"
+.SS Generic Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.\"
+.\" Options Related to Newly Created Jobs
+.\"
+.SS Options Related to Newly Created Jobs
+Some operations will start a job on the controller. The following command line
+options can be used in relation to these jobs:
+
+.TP
+.B \-\-log
+If the s9s application created a job and this command line option is provided it
+will wait until the job is executed. While waiting the job logs will be shown
+unless the silent mode is set.
+
+.TP 
+.BI \-\^\-recurrence= CRONTABSTRING
+This option can be used to create recurring jobs, jobs that are repeated over
+and over again until they are manually deleted. Every time the job is repeated a
+new job will be instantiated by copying the original recurring job and starting
+the copy. The option argument is a crontab style string defining the recurrence
+of the job. 
+
+The crontab string must have exactly five space separated fiels as follows:
+
+.nf
+          \fBfield          value
+          ------------      ------\fR
+          minute            0 - 59
+          hour              0 - 23
+          day of the month  1 - 31
+          month             1 - 12
+          day of the week   0 -  7
+.fi
+
+All the fields may be a simple expression or a list of simple expression
+separated by a comma (,). The simple expression is either a star (*)
+representing "all the possible values", an integer number representing the given
+minute, hour, day or month (e.g. 5 for the fifth day of the month), or two
+numbers separated by a dash representing an interval (e.g. 8-16 representing
+every hour from 8 to 16). The simple expression can also define a "step" value,
+so for example "*/2" might stand for "every other hour" or "8-16/2" might stand
+for "every other hour between 8 and 16.
+
+Please check crontab(5) for more details.
+
+.TP
+.BI \-\^\-schedule= DATETIME
+The job will not be executed now but it is scheduled to execute later. The
+datetime string is sent to the backend, so all the formats are supported that is
+supported by the controller.
+
+.TP
+.BI \-\^\-timeout= SECONDS
+Sets the timeout for the created job. If the execution of the job is not done
+before the timeout counted from the start time of the job expires the job will
+fail. Some jobs might not support the timeout feature, the controller might 
+ignore this value.
+
+.TP
+.B \-\-wait
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided the s9s program  will wait until the job is executed.
+While waiting a progress bar will be shown unless the silent mode is set.
+
+.\"
+.\" Other options. 
+.\"
+.SS Other Options
+
+.TP
+.B \-\-acl= ACLSTRING
+The ACL entry to set.
+
+.TP
+.B \-\-refresh
+Do not use cached data, collect information.
+
+.TP
+.B \-\-servers= LIST
+List of servers.
+
+.\"
+.\" The description of the node list.
+.\"
+.SH SERVER LIST
+Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
+of the servers can be printed. Here is an example of such a list:
+
+.nf
+# \fBs9s server --list --long\fP
+PRV VERSION #C OWNER GROUP     NAME        IP           COMMENT
+lxc 2.0.8    5 pipas testgroup core1       192.168.0.4  Up and running.
+lxc 2.0.8    5 pipas testgroup storage01   192.168.0.17 Up and running.
+Total: 2 server(s)
+.fi
+
+The list contains the following fields:
+.RS 5
+
+.TP 
+.B PRV
+The name of the provider software, the software that will handle containers or
+virtual machines on the server. One server can have only one souch a system, but
+multiple servers can be registered using one physical computer.
+
+.TP
+.B VERSION
+The version of the provider software.
+
+.TP 
+.B #C 
+The number of containers/virtual machines currently hosted by the server.
+
+.TP
+.B OWNER
+The owner of the server object.
+
+.TP
+.B GROUP
+The group owner of the server object.
+
+.TP
+.B NAME 
+The host name of the server.
+
+.TP
+.B IP
+The IP address of the server.
+
+.TP
+.B COMMENT
+A human readable description of the server and its state.
+
+.RE
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+
+Here are some examples showing how to register a server, check the list of
+servers and create a new container. All done in the simplest way it is possible.
+
+.nf
+# \fBs9s server --register --servers=lxc://storage01\fR
+.fi
+
+.nf
+# \fBs9s server --list --long\fR
+
+PRV VERSION #C OWNER GROUP     NAME        IP          COMMENT
+lxc 2.0.8    5 pipas testgroup core1       192.168.0.4 Up and running.
+Total: 1 server(s)
+.fi
+
+.nf
+# \fBs9s container \\
+    --create \\
+    --template=ubuntu \\
+    --servers=core1 \\
+    --wait \\
+    ft_containers_26584\fR
+.fi
+
+.nf
+# \fBs9s container --list --long\fR
+S TYPE TEMPLATE OWNER GROUP     NAME                IP ADDRESS    SERVER 
+- lxc  -        pipas testgroup bestw_controller    -             core1  
+u lxc  -        pipas testgroup dns1                192.168.0.2   core1  
+u lxc  ubuntu   pipas testgroup ft_containers_26584 192.168.0.224 core1  
+u lxc  -        pipas testgroup mqtt                192.168.0.5   core1  
+- lxc  -        pipas testgroup ubuntu              -             core1  
+u lxc  -        pipas testgroup www                 192.168.0.19  core1  
+Total: 6 containers, 4 running.
+.fi
+
