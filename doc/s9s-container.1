@@ -1,9 +1,9 @@
-.TH S9S-NODE 1 "February 20, 2018"
+.TH S9S-CONATINER 1 "February 20, 2018"
 
 .SH NAME
-s9s-node \- Command line client for the Severalnines Clustercontrol server.
+s9s-container \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
-.B s9s-node
+.B s9s-container
 .RI [OPTION]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
@@ -16,5 +16,246 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B \-\-create
+Create and start a new container or virtual machine.
+
+.TP
+.B \-\-delete
+Stop and delete the container or virtual machine.
+
+.TP
 .B \-L, \-\^\-list
-List the nodes managed by the controller.
+List the containers.
+
+.TP
+.B \-\-start
+Start an existing container.
+
+.TP
+.B \-\-stat
+Print the details of a container.
+
+.TP
+.B \-\-stop
+Stop the container. This will not remove the container by default, but it will
+stop it. If the container is set to be deleted on stop (temporary) it will be
+deleted.
+
+.\"
+.\" The generic options that we have in all the modes.
+.\"
+.SS Generic Options
+
+.TP
+.B \-\-help
+Print the help message and exist.
+
+.TP
+.B \-\-debug
+Print even the debug level messages.
+
+.TP
+.B \-v, \-\-verbose
+Print more messages than normally.
+
+.TP
+.B \-V, \-\-version
+Print version information and exit.
+
+.TP
+.BR \-c " [\fIPROT\fP://]\fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" [\fIPROT\fP://]\\fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname (e.g. --controller="https://127.0.0.1:9556").
+
+.TP
+.BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
+The port where the Cmon Controller is waiting for connections.
+
+.TP
+.BI \-u " USERNAME" "\fR,\fP \-\^\-cmon\-user=" USERNAME
+Sets the name of the Cmon user (the name of the account maintained by the Cmon
+Controller) to be used to authenticate. Since most of the functionality needs
+authentication this command line option should be very frequently used or set in
+the configuration file. Please check the documentation of the s9s.conf(5) to see
+how the Cmon User can be set using the \fBcmon_user\fP configuration variable.
+
+.TP
+.BI \-p " PASSWORD" "\fR,\fP \-\^\-password=" PASSWORD
+The password for the Cmon User (whose user name is set using the 
+\fB\-\^\-cmon\-user\fP command line option or using the \fBcmon_user\fP
+configuration value). Providing the password is not mandatory, the user
+authentication can also be done using a private/public keypair automatically.
+
+.TP
+.BI \-\^\-private\-key\-file= FILE
+The path to the private key file that will be used for the authentication. The
+default value for the private key is \fB~/.s9s/username.key\fP.
+
+.TP
+.B \-l, \-\-long
+This option is similar to the -l option for the standard ls UNIX utility
+program. If the program creates a list of objects this option will change its
+format to show more details.
+
+.\"
+.\" Options Related to Newly Created Jobs
+.\"
+.SS Options Related to Newly Created Jobs
+Some operations will start a job on the controller. The following command line
+options can be used in relation to these jobs:
+
+.TP
+.B \-\-log
+If the s9s application created a job and this command line option is provided it
+will wait until the job is executed. While waiting the job logs will be shown
+unless the silent mode is set.
+
+.TP 
+.BI \-\^\-recurrence= CRONTABSTRING
+This option can be used to create recurring jobs, jobs that are repeated over
+and over again until they are manually deleted. Every time the job is repeated a
+new job will be instantiated by copying the original recurring job and starting
+the copy. The option argument is a crontab style string defining the recurrence
+of the job. 
+
+The crontab string must have exactly five space separated fiels as follows:
+
+.nf
+          \fBfield          value
+          ------------      ------\fR
+          minute            0 - 59
+          hour              0 - 23
+          day of the month  1 - 31
+          month             1 - 12
+          day of the week   0 -  7
+.fi
+
+All the fields may be a simple expression or a list of simple expression
+separated by a comma (,). The simple expression is either a star (*)
+representing "all the possible values", an integer number representing the given
+minute, hour, day or month (e.g. 5 for the fifth day of the month), or two
+numbers separated by a dash representing an interval (e.g. 8-16 representing
+every hour from 8 to 16). The simple expression can also define a "step" value,
+so for example "*/2" might stand for "every other hour" or "8-16/2" might stand
+for "every other hour between 8 and 16.
+
+Please check crontab(5) for more details.
+
+.TP
+.BI \-\^\-schedule= DATETIME
+The job will not be executed now but it is scheduled to execute later. The
+datetime string is sent to the backend, so all the formats are supported that is
+supported by the controller.
+
+.TP
+.BI \-\^\-timeout= SECONDS
+Sets the timeout for the created job. If the execution of the job is not done
+before the timeout counted from the start time of the job expires the job will
+fail. Some jobs might not support the timeout feature, the controller might 
+ignore this value.
+
+.TP
+.B \-\-wait
+If the application created a job (e.g. to create a new cluster) and this command
+line option is provided the s9s program  will wait until the job is executed.
+While waiting a progress bar will be shown unless the silent mode is set.
+
+.\"
+.\" Other options. 
+.\"
+.SS Other Options
+
+.TP
+.B --servers= LIST
+A list of servers to work with. 
+
+.TP
+.B --template= NAME 
+The name of the container template.
+
+.\"
+.\" The description of the node list.
+.\"
+.SH SERVER LIST
+Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
+of the containers can be printed. Here is an example of such a list:
+
+.nf
+# \fBs9s container --list --long\fP
+S TYPE TEMPLATE OWNER GROUP     NAME                IP ADDRESS    SERVER 
+- lxc  -        pipas testgroup bestw_controller    -             core1  
+u lxc  -        pipas testgroup dns1                192.168.0.2   core1  
+u lxc  ubuntu   pipas testgroup ft_containers_35698 192.168.0.228 core1  
+u lxc  -        pipas testgroup mqtt                192.168.0.5   core1  
+- lxc  -        pipas testgroup ubuntu              -             core1  
+u lxc  -        pipas testgroup www                 192.168.0.19  core1  
+Total: 6 containers, 4 running.
+.fi
+
+The list contains the following fields:
+.RS 5
+
+.TP 
+.B S
+The abbreviated status information. This is 'u' for a container that is up and
+running and '-' otherwise.
+
+.TP
+.B TYPE
+Shows what kind of container or virtual machine shown in this line, the type of
+the software that provides the virtualization.
+
+.TP
+.B TEMPLATE
+The name of the template that is used to create the container.
+
+.TP
+.B OWNER
+The owner of the server object.
+
+.TP
+.B GROUP
+The group owner of the server object.
+
+.TP
+.B NAME 
+The name of the container. This is not necessarily the hostname, this is a
+unique name to identify the container on the host.
+
+.TP
+.B IP ADDRESS
+The IP address of the container or the '-' character if the container has no IP
+address.
+
+.TP
+.B SERVER
+The server on which the container can be found.
+
+.RE
+
+.\" 
+.\" The examples. The are very helpful for people just started to use the
+.\" application.
+.\" 
+.SH EXAMPLES
+.PP
+
+The following example shows how to create a container. In the command line only
+one server is provided so the container will be created on that server. Should
+there be more than one server or no server at all, the controller would choose
+one server from the pre-registered list of container servers.
+
+The command line in the example also provides a container name. The controller
+will try to create the container under that name. Should there be a container
+already created with the given name on the server the creation will fail. The
+container names should be unique.
+
+.nf
+# \fBs9s container \\
+    --create \\
+    --template=ubuntu \\
+    --servers=core1 \\
+    --wait \\
+    myfirstcontaintainer\fR
+.fi
+

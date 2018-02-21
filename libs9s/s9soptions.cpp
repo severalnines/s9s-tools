@@ -3692,12 +3692,15 @@ S9sOptions::printHelpContainer()
 
     printf(
 "Options for the \"container\" command:\n"
-"  --create                   Create and install a new cluster.\n"
-"  --drop                     Drop cluster from the controller.\n"
-"  --list                     List the clusters.\n"
-"  --start                    Start the cluster.\n"
-"  --stat                     Print the details of a cluster.\n"
-"  --stop                     Stop the cluster.\n"
+"  --create                   Create and start a new container.\n"
+"  --delete                   Stop and delete the container.\n"
+"  --list                     List the containers.\n"
+"  --start                    Start an existing container.\n"
+"  --stat                     Print the details of a container.\n"
+"  --stop                     Stop the container.\n"
+"\n"
+"  --servers=LIST             A list of servers to work with.\n"
+"  --template=NAME            The name of the container template.\n"
 "\n");
 }
 
@@ -7110,9 +7113,9 @@ S9sOptions::readOptionsContainer(
 
         // Main Option
         { "create",           no_argument,       0, OptionCreate          },
-        { "delete",           no_argument,       0,  OptionDelete         },
+        { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
-        { "ping",             no_argument,       0, OptionPing            },
+        //{ "ping",             no_argument,       0, OptionPing            },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
