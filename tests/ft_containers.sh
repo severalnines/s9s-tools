@@ -206,6 +206,25 @@ function createContainer()
 }
 
 #
+# This test will attempt to create a new server (install software and
+# everything). For practical reasons we try to do this on the container we just
+# created, this way wew are not installing software on a real server.
+#
+function createServer()
+{
+    print_title "Creating a Server"
+
+    mys9s server \
+        --create \
+        --servers="lxc://$CONTAINER_IP" \
+        $LOG_OPTION 
+
+    check_exit_code $?
+
+    mys9s server --list --long
+}
+
+#
 # This will delete the container we created before.
 #
 function deleteContainer()
@@ -238,6 +257,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest createServer
     runFunctionalTest deleteContainer
 fi
 

@@ -4023,7 +4023,7 @@ S9sRpcClient::createServer()
     jobSpec["job_data"]         = jobData;
     
     // The job instance describing how the job will be executed.
-    job["title"]          = "Add Node to Cluster";
+    job["title"]          = "Create Container Server";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
