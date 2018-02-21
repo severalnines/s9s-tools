@@ -68,6 +68,8 @@ enum S9sOptionType
     OptionChangePassword,
     OptionDrop,
     OptionOsUser,
+    OptionOsKeyFile,
+    OptionOsPassword,
     OptionOsSudoPassword,
     OptionProviderVersion,
     OptionProperties,
@@ -1144,22 +1146,36 @@ S9sOptions::hasSshCredentials()
         return true;
     }
     
+    if (m_options.contains("os_password") ||
+        m_userConfig.hasVariable("", "os_password") ||
+        m_systemConfig.hasVariable("", "os_password"))
+    {
+        return true;
+    }
+
     if (m_options.contains("os_key_file") ||
         m_userConfig.hasVariable("", "os_key_file") ||
         m_systemConfig.hasVariable("", "os_key_file"))
     {
         return true;
     }
-
+    
     return false;
 }
 
+/**
+ * Related command lin options are --os-user=, --os-key-file=, --os-password=.
+ */
 S9sSshCredentials
 S9sOptions::sshCredentials(
         const S9sString &categoryName,
         const S9sString &hostName)
 {
     S9sSshCredentials retval;
+    
+    retval.setUserName(osUser());
+    retval.setPassword(osPassword());
+    retval.setPublicKeyFilePath(osKeyFile());
 
     return retval;
 }
@@ -1192,6 +1208,24 @@ S9sOptions::osUser() const
 
     if (retval.empty())
         retval = userName();
+
+    return retval;
+}
+
+S9sString
+S9sOptions::osPassword() const
+{
+    S9sString retval;
+
+    if (m_options.contains("os_password"))
+    {
+        retval = m_options.at("os_password").toString();
+    } else {
+        retval = m_userConfig.variableValue("os_password");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("os_password");
+    }
 
     return retval;
 }
@@ -6967,7 +7001,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionOsUser:
-                // --os-user
+                // --os-user=USERNAME
                 m_options["os_user"] = optarg;
                 break;
 
@@ -7820,9 +7854,12 @@ S9sOptions::readOptionsServer(
         // FIXME: remove this.
         //{ "cluster-id",       required_argument, 0, 'i'                   },
         
-        { "servers",          required_argument, 0, OptionServers         },
         { "acl",              required_argument, 0, OptionAcl             },
+        { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
+        { "os-password",      required_argument, 0, OptionOsPassword      },
+        { "os-user",          required_argument, 0, OptionOsUser          },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "servers",          required_argument, 0, OptionServers         },
 
         { 0, 0, 0, 0 }
     };
@@ -8049,16 +8086,31 @@ S9sOptions::readOptionsServer(
                 break;
             
             /*
-             *
+             * Other command line options.
              */
-            case OptionRefresh:
-                // --refresh
-                m_options["refresh"] = true;
-                break;
-            
             case OptionAcl:
                 // --acl=ACLSTRING
                 m_options["acl"] = optarg;
+                break;
+            
+            case OptionOsKeyFile:
+                // --os-key-file=PATH
+                m_options["os_key_file"] = optarg;
+                break;
+            
+            case OptionOsPassword:
+                // --os-password=PASSWORD
+                m_options["os_password"] = optarg;
+                break;
+            
+            case OptionOsUser:
+                // --os-user=USERNAME
+                m_options["os_user"] = optarg;
+                break;
+            
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
                 break;
             
             case OptionServers:

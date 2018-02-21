@@ -27,6 +27,7 @@
 #include "S9sRsaKey"
 #include "S9sDateTime"
 #include "S9sFile"
+#include "S9sSshCredentials"
 
 #include <cstring>
 #include <cstdio>
@@ -6189,13 +6190,21 @@ S9sVariant
 S9sRpcClient::serversField(
         const S9sVariantList &servers)
 {
-    S9sVariantList retval;
+    S9sVariantList  retval;
+    S9sOptions     *options = S9sOptions::instance();
 
     for (uint idx = 0u; idx < servers.size(); ++idx)
     {
         S9sVariantMap thisMap = servers[idx].toVariantMap();
 
         thisMap["class_name"] = "CmonContainerServer";
+        if (options->hasSshCredentials())
+        {
+            thisMap["ssh_credentials"] = 
+                options->sshCredentials(
+                        "", thisMap["hostname"].toString()).toVariantMap();
+        }
+
         retval << thisMap;
     }
 

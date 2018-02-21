@@ -28,6 +28,12 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
+SUPPORTED TESTS:
+  o registerServer   Registers a new container server. No software installed.
+  o createContainer  Creates a new container.
+  o createServer     Creates a server from the previously created container.
+  o deleteContainer  Deletes the previously created container.
+
 EOF
     exit 1
 }
@@ -221,7 +227,7 @@ function createServer()
 
     check_exit_code $?
 
-    mys9s server --list --long
+    #mys9s server --list --long
 }
 
 #
@@ -239,7 +245,7 @@ function deleteContainer()
     
     check_exit_code $?
     
-    mys9s container --list --long
+    #mys9s container --list --long
 }
 
 

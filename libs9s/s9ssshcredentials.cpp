@@ -22,6 +22,7 @@
 S9sSshCredentials::S9sSshCredentials() :
     S9sObject()
 {
+    setProperty("class_name", S9sString("CmonSshCredentials"));
 }
 
 S9sSshCredentials::~S9sSshCredentials()

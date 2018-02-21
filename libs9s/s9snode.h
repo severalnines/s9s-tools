@@ -23,6 +23,8 @@
 #include "S9sUrl"
 #include "S9sCluster"
 
+class S9sSshCredentials;
+
 /**
  * A class that represents a node/host/server. 
  */
@@ -44,6 +46,8 @@ class S9sNode
 
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
+
+        void setSshCredentials(const S9sSshCredentials &credentials);
 
         void setCluster(const S9sCluster &cluster);
         const S9sCluster &cluster() const;

@@ -22,6 +22,7 @@
 #include <S9sUrl>
 #include <S9sVariantMap>
 #include <S9sRpcReply>
+#include <S9sSshCredentials>
 
 //#define DEBUG
 //#define WARNING
@@ -174,6 +175,13 @@ S9sNode::setProperties(
         const S9sVariantMap &properties)
 {
     m_properties = properties;
+}
+
+void 
+S9sNode::setSshCredentials(
+        const S9sSshCredentials &credentials)
+{
+    m_properties["ssh_credentials"] = credentials.toVariantMap();
 }
 
 void

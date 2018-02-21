@@ -126,6 +126,7 @@ class S9sOptions
 
         S9sString osUser() const;
         S9sString osKeyFile() const;
+        S9sString osPassword() const;
 
         S9sString dbAdminUserName(const S9sString &defaultValue = "") const;
         S9sString dbAdminPassword();
