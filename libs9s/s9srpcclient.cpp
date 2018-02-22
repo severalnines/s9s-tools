@@ -3997,6 +3997,7 @@ S9sRpcClient::createServer()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
+    S9sVariantMap  serverMap;
     S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
@@ -4011,7 +4012,15 @@ S9sRpcClient::createServer()
         return false;
     }
     
-    jobData["server"]           = servers[0].toVariantMap();
+    serverMap = servers[0].toVariantMap();
+    if (options->hasSshCredentials())
+    {
+        serverMap["ssh_credentials"] = 
+            options->sshCredentials(
+                    "", serverMap["hostname"].toString()).toVariantMap();
+    }
+    
+    jobData["server"]           = serverMap;
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
@@ -4645,7 +4654,7 @@ S9sRpcClient::deleteContainer()
 bool
 S9sRpcClient::getSupportedClusterTypes()
 {
-    getSshCredentials();
+    //getSshCredentials();
     S9sString      uri = "/v2/discovery/";
     S9sVariantMap  request;
    

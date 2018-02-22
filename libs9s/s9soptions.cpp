@@ -1242,10 +1242,15 @@ S9sOptions::osKeyFile() const
 {
     S9sString retval;
 
-    retval = m_userConfig.variableValue("os_key_file");
+    if (m_options.contains("os_key_file"))
+    {
+        retval = m_options.at("os_key_file").toString();
+    } else {
+        retval = m_userConfig.variableValue("os_key_file");
 
-    if (retval.empty())
-        retval = m_systemConfig.variableValue("os_key_file");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("os_key_file");
+    }
 
     return retval;
 }
