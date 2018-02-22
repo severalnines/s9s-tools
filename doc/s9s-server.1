@@ -332,3 +332,19 @@ u lxc  -        pipas testgroup www                 192.168.0.19  core1
 Total: 6 containers, 4 running.
 .fi
 
+
+.SS
+CREATING A SERVER WITH PASSWORD
+
+The following example will install some software on the given server and
+register it as a container server to be used to host containers. The controller
+will try to access the server using the specified credentials:
+
+.nf
+# \fBs9s server \\
+    --create \\
+    --os-user=testuser \\
+    --os-password=p \\
+    --servers=lxc://192.168.0.250 \\
+    --log\fR
+.fi
