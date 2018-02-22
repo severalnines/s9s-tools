@@ -203,15 +203,36 @@ While waiting a progress bar will be shown unless the silent mode is set.
 .SS Other Options
 
 .TP
-.B \-\-acl= ACLSTRING
+.BI \-\-acl= ACLSTRING
 The ACL entry to set.
+
+.TP 
+.BI \-\-os\-key\-file= PATH
+The ssh key file to authenticate on the server. If none of the os authentication
+options are provided (\fB\-\-os\-key\-file\fR, \fB\-\-os\-password\fR,
+\fB\-\-os\-user\fR) the controller will try top log in with the default 
+settings.
+
+.TP 
+.BI \-\-os\-password= PASSWORD
+The ssh password to authenticate on the server. If none of the os authentication
+options are provided (\fB\-\-os\-key\-file\fR, \fB\-\-os\-password\fR,
+\fB\-\-os\-user\fR) the controller will try top log in with the default 
+settings.
+
+.TP 
+.BI \-\-os\-user= USERNAME
+The ssh username to authenticate on the server. If none of the os authentication
+options are provided (\fB\-\-os\-key\-file\fR, \fB\-\-os\-password\fR,
+\fB\-\-os\-user\fR) the controller will try top log in with the default 
+settings.
 
 .TP
 .B \-\-refresh
 Do not use cached data, collect information.
 
 .TP
-.B \-\-servers= LIST
+.BI \-\-servers= LIST
 List of servers.
 
 .\"
