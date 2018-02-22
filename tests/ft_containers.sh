@@ -121,7 +121,6 @@ function registerServer()
 
     mys9s server \
         --register \
-        --os-user=pipas \
         --servers="lxc://$CONTAINER_SERVER"
 
     check_exit_code_no_job $?
