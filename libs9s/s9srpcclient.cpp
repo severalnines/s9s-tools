@@ -1624,7 +1624,8 @@ S9sRpcClient::createLocalRepository(
 {
     S9sVariantMap  request;
     S9sVariantMap  job     = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
 
     jobData["cluster_type"] = clusterType;
@@ -1653,8 +1654,9 @@ S9sRpcClient::createFailJob()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     
     // The jobspec describing the command.
@@ -1686,7 +1688,8 @@ S9sRpcClient::createSuccessJob()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     
     // The jobspec describing the command.
@@ -1755,7 +1758,8 @@ S9sRpcClient::createReport(
     S9sString      outputDir = options->outputDir();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -2118,7 +2122,8 @@ S9sRpcClient::createMySqlSingleCluster(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     if (hosts.size() < 1u)
