@@ -2182,7 +2182,8 @@ S9sRpcClient::registerGaleraCluster(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2248,7 +2249,8 @@ S9sRpcClient::createMySqlReplication(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
     
@@ -2313,8 +2315,9 @@ S9sRpcClient::registerMySqlReplication(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2377,13 +2380,14 @@ S9sRpcClient::createGroupReplication(
         const S9sString      &mySqlVersion,
         bool                  uninstall)
 {
-    S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList  hostNames;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    bool            retval;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hostNames;
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
     
     if (hosts.size() < 1u)
     {
@@ -2447,7 +2451,8 @@ S9sRpcClient::registerGroupReplication(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2511,7 +2516,8 @@ S9sRpcClient::createNdbCluster(
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
     
@@ -2591,7 +2597,8 @@ S9sRpcClient::registerNdbCluster(
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
@@ -2669,7 +2676,8 @@ S9sRpcClient::createPostgreSql(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() != 1u)
@@ -2736,7 +2744,8 @@ S9sRpcClient::registerPostgreSql(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
     if (hosts.size() < 1u)
@@ -2800,7 +2809,8 @@ S9sRpcClient::createMongoCluster(
     S9sVariantList  mongosList, configList;
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -3104,7 +3114,8 @@ S9sRpcClient::addNode(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3172,7 +3183,8 @@ S9sRpcClient::addReplicationSlave(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     S9sNode        master;
@@ -3269,7 +3281,8 @@ S9sRpcClient::addHaProxy(
 {
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList haProxyNodes;
     S9sVariantList otherNodes;
@@ -3343,7 +3356,8 @@ S9sRpcClient::addProxySql(
 {
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList proxyNodes;
     S9sVariantList otherNodes;
@@ -3422,7 +3436,8 @@ S9sRpcClient::addMaxScale(
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList maxScaleNodes;
     S9sVariantList otherNodes;
@@ -3502,8 +3517,9 @@ S9sRpcClient::addMongoNode(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job;
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3593,7 +3609,8 @@ S9sRpcClient::removeNode()
     S9sString      hostName, title;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
@@ -3655,7 +3672,8 @@ S9sRpcClient::stopCluster()
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -3696,7 +3714,8 @@ S9sRpcClient::startCluster()
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
    
@@ -3733,7 +3752,8 @@ S9sRpcClient::startNode()
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3782,7 +3802,8 @@ S9sRpcClient::stopNode()
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3835,7 +3856,8 @@ S9sRpcClient::restartNode()
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
@@ -3893,7 +3915,8 @@ S9sRpcClient::dropCluster()
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
@@ -4536,7 +4559,8 @@ S9sRpcClient::createContainerWithJob()
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec, container;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
     /*
@@ -4591,7 +4615,8 @@ S9sRpcClient::deleteContainerWithJob()
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec, container;
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
     /*
@@ -4725,7 +4750,8 @@ S9sRpcClient::createBackup()
     S9sString       title;
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
@@ -4846,7 +4872,8 @@ S9sRpcClient::verifyBackup()
     S9sString       clusterName  = options->clusterName();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
@@ -4909,7 +4936,8 @@ S9sRpcClient::restoreBackup()
     S9sString       backupMethod = options->backupMethod();
     S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
