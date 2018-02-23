@@ -33,7 +33,7 @@
 #include <cstdio>
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
@@ -2058,8 +2058,9 @@ S9sRpcClient::createGaleraCluster(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData, jobSpec;
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     
     if (hosts.size() < 1u)
@@ -5866,8 +5867,30 @@ S9sRpcClient::composeJob() const
     
     if (!options->recurrence().empty())
         job["recurrence"]  = options->recurrence(); 
-    
+  
     return job;
+}
+
+S9sVariantMap 
+S9sRpcClient::composeJobData() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  jobData;
+
+    if (options->hasContainers())
+    {
+        S9sVariantList   theList = options->containers();
+        S9sVariantList   containers;
+
+        for (uint idx = 0u; idx < theList.size(); ++idx)
+        {
+            containers << theList[idx].toVariantMap();
+        }
+        
+        jobData["containers"]  = containers;
+    }
+
+    return jobData;
 }
 
 /**

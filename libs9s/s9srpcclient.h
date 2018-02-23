@@ -281,6 +281,7 @@ class S9sRpcClient
 
     protected:
         virtual S9sVariantMap composeJob() const;
+        virtual S9sVariantMap composeJobData() const;
 
         virtual bool
             executeRequest(

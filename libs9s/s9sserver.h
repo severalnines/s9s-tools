@@ -43,6 +43,7 @@ class S9sServer
         S9sString alias() const;
         S9sString version() const;
         S9sString ipAddress() const;
+        S9sString protocol() const;
 
         int nContainers() const;
 

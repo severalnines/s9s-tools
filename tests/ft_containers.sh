@@ -230,6 +230,16 @@ function createServer()
     #mys9s server --list --long
 }
 
+function createServerCloud()
+{
+    print_title "Creating cmon-cloud Server"
+
+    mys9s server \
+        --create \
+        --servers=cmon-cloud://10.10.10.1 \
+        --log
+}
+
 #
 # This will delete the container we created before.
 #
@@ -264,6 +274,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createServer
+    runFunctionalTest createServerCloud
     runFunctionalTest deleteContainer
 fi
 

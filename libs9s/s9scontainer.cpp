@@ -29,15 +29,22 @@
 
 S9sContainer::S9sContainer()
 {
-    //m_properties["class_name"] = "CmonContainer";
+    m_properties["class_name"] = "CmonContainer";
+}
+
+S9sContainer::S9sContainer(
+        const S9sContainer &orig)
+{
+    m_properties = orig.m_properties;
+    m_url        = orig.m_url;
 }
  
 S9sContainer::S9sContainer(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
-    //if (!m_properties.contains("class_name"))
-    //    m_properties["class_name"] = "CmonContainer";
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonContainer";
 }
 
 /**
@@ -55,7 +62,7 @@ S9sContainer::S9sContainer(
     if (success)
     {
         S9S_WARNING("parsed as json");
-        m_url = m_properties["hostname"].toString();
+        m_url = m_properties["alias"].toString();
 
         if (m_properties.contains("port"))
             m_url.setPort(m_properties["port"].toInt());
@@ -67,12 +74,13 @@ S9sContainer::S9sContainer(
         m_url = S9sUrl(stringRep);
 
         m_properties = m_url.properties();
-        m_properties["hostname"] = m_url.hostName();
+        m_properties["alias"] = m_url.hostName();
 
         if (m_url.hasPort())
             m_properties["port"] = m_url.port();
     }
-   
+  
+    #if 0
     if (m_url.hasProtocol())
     {
         S9sString protocol = m_url.protocol().toLower();
@@ -80,9 +88,10 @@ S9sContainer::S9sContainer(
         if (m_url.protocol() == "lxc")
             m_properties["class_name"] = "CmonContainerServer";
     }
+    #endif
 
     if (!m_properties.contains("class_name"))
-        m_properties["class_name"] = "CmonHost";
+        m_properties["class_name"] = "CmonContainer";
 }
 
 S9sContainer::~S9sContainer()

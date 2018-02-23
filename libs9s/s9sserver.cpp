@@ -111,6 +111,12 @@ S9sServer::ipAddress() const
     return property("ip").toString();
 }
 
+S9sString
+S9sServer::protocol() const
+{
+    return property("protocol").toString();
+}
+
 int
 S9sServer::nContainers() const
 {

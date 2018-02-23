@@ -3262,7 +3262,11 @@ S9sRpcReply::printServerStat(
     // "      IP: 192.168.1.4"
     //
     printf("%s      IP:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR(server.ipAddress()));
+    printf("%-22s ", STR(server.ipAddress()));
+
+    printf("%sProtocol:%s ", greyBegin, greyEnd);
+    printf("%-25s ", STR(server.protocol()));
+
     printf("\n");
 
     // 
@@ -3410,7 +3414,7 @@ S9sRpcReply::printServersLong()
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
         S9sServer      server   = theMap;
         S9sString      hostName = server.hostName();
-        S9sString      prot     = "lxc";
+        S9sString      prot     = server.protocol();
         S9sString      version  = server.version();
         S9sString      owner    = server.ownerName();
         S9sString      group    = server.groupOwnerName();
@@ -3422,6 +3426,9 @@ S9sRpcReply::printServersLong()
 
         if (version.empty())
             version = "-";
+        
+        if (prot.empty())
+            prot = "-";
 
         protocolFormat.widen(prot);
         versionFormat.widen(version);
@@ -3461,7 +3468,7 @@ S9sRpcReply::printServersLong()
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
         S9sString      hostName = theMap["hostname"].toString();
-        S9sString      prot     = "lxc";
+        S9sString      prot     = theMap["protocol"].toString();
         S9sString      version  = theMap["version"].toString();
         S9sString      status   = theMap["hoststatus"].toString();
         S9sString      owner    = theMap["owner_user_name"].toString();
@@ -3475,6 +3482,9 @@ S9sRpcReply::printServersLong()
 
         if (version.empty())
             version = "-";
+        
+        if (prot.empty())
+            prot = "-";
 
         // FIXME: I am not sure this is actually user friendly.
         if (syntaxHighlight)

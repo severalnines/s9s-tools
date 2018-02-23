@@ -27,6 +27,7 @@
 #include "S9sDir"
 #include "s9srsakey.h"
 #include "S9sDateTime"
+#include "S9sContainer"
 #include "S9sSshCredentials"
 
 #include <sys/ioctl.h>
@@ -61,6 +62,7 @@ enum S9sOptionType
     OptionNoHeader,
     OptionNodes,
     OptionServers,
+    OptionContainers,
     OptionAddNode,
     OptionRemoveNode,
     OptionJobId,
@@ -996,7 +998,8 @@ S9sOptions::setServers(
 }
 
 /**
- * \returns the node list, one host name in every list item
+ * \returns a list of S9sNode objects that are passed as a command line option
+ *   argument for the --servers command line option.
  */
 S9sVariantList
 S9sOptions::servers() const
@@ -1006,6 +1009,50 @@ S9sOptions::servers() const
 
     return S9sVariantList();
 }
+
+bool
+S9sOptions::setContainers(
+        const S9sString &value)
+{
+    S9sVariantList containerStrings = value.split(";,");
+    S9sVariantList containers;
+
+    for (uint idx = 0; idx < containerStrings.size(); ++idx)
+    {
+        S9sString     containerString = containerStrings[idx].toString();
+        S9sContainer  container(containerString.trim());
+
+        #if 0
+        if (container.hasError())
+        {
+            PRINT_ERROR("%s", STR(node.fullErrorString()));
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        #endif
+
+        containers << container;
+    }
+
+    m_options["containers"] = containers;
+    return true;
+}
+
+bool
+S9sOptions::hasContainers() const
+{
+    return m_options.contains("containers");
+}
+
+S9sVariantList
+S9sOptions::containers() const
+{
+    if (m_options.contains("containers"))
+        return m_options.at("containers").toVariantList();
+
+    return S9sVariantList();
+}
+
 /**
  * \returns the vendor name as it is set by the --vendor command line option.
  */
@@ -6762,6 +6809,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "output-dir",       required_argument, 0, OptionOutputDir       },
         { "donor",            required_argument, 0, OptionDonor           },
+        { "containers",       required_argument, 0, OptionContainers      },
         { 0, 0, 0, 0 }
     };
 
@@ -7093,6 +7141,11 @@ S9sOptions::readOptionsCluster(
             case OptionDonor:
                 // --donor=ADDRESS
                 m_options["donor"] = optarg;
+                break;
+
+            case OptionContainers:
+                // --containers=LIST
+                setContainers(optarg);
                 break;
 
             case '?':

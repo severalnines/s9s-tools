@@ -101,6 +101,10 @@ class S9sOptions
         bool setServers(const S9sString &value);
         S9sVariantList servers() const;
 
+        bool setContainers(const S9sString &value);
+        bool hasContainers() const;
+        S9sVariantList containers() const;
+
         S9sString briefJobLogFormat() const;
         S9sString briefLogFormat() const;
         S9sString longLogFormat() const;

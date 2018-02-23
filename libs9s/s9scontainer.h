@@ -30,6 +30,7 @@ class S9sContainer
 {
     public:
         S9sContainer();
+        S9sContainer(const S9sContainer &orig);
         S9sContainer(const S9sVariantMap &properties);
         S9sContainer(const S9sString &stringRep);
 

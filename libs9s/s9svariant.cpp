@@ -455,6 +455,8 @@ S9sVariant::toContainer() const
             return sm_emptyContainer;
 
         case Container:
+            S9S_WARNING("container: %p", m_union.containerValue);
+            S9S_WARNING("    alias: %s", STR(m_union.containerValue->alias()));
             return *m_union.containerValue;
     }
             
@@ -928,7 +930,7 @@ S9sVariant::toString() const
         retval = "{" + retval + "}";
     #endif
     } else {
-        //CMON_WARNING("Not implemented for %s", STR(typeName()));
+        S9S_WARNING("Not implemented for %s", STR(typeName()));
     }
 
     return retval;
