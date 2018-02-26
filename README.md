@@ -31,4 +31,6 @@ Download and run the script as sudo (it will set up the repository, installs and
 ![Screenshot06](screenshots/screen-06.png)
 ![Screenshot07](screenshots/screen-07.png)
 ![Screenshot08](screenshots/screen-08.png)
+![Screenshot09](screenshots/screen-09.png)
+![Screenshot10](screenshots/screen-10.png)
 
