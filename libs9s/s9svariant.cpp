@@ -33,8 +33,8 @@
 #include "S9sAccount"
 #include "S9sDateTime"
 
-#define DEBUG
-#define WARNING
+//#define DEBUG
+//#define WARNING
 #include "s9sdebug.h"
 
 static const double tbyte = 1024.0 * 1024.0 * 1024.0 * 1024.0;

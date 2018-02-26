@@ -267,6 +267,7 @@ S9sServer::memoryBankNames() const
 {
     S9sVariantList  retval;
     S9sVariantMap   bankModels;
+    S9sVariantMap   bankSizes;
     S9sVariantMap   memory  = property("memory").toVariantMap();
     S9sVariantList  bankList = memory["banks"].toVariantList();
 
@@ -274,17 +275,28 @@ S9sServer::memoryBankNames() const
     {
         S9sVariantMap bank   = bankList[idx1].toVariantMap();
         S9sString     model  = bank["name"].toString();
+        ulonglong     size   = bank["size"].toULongLong();
 
         bankModels[model] += 1;
+        bankSizes[model]   = size;
     }
 
     for (uint idx = 0; idx < bankModels.keys().size(); ++idx)
     {
         S9sString  name   = bankModels.keys().at(idx);
         int        volume = bankModels[name].toInt();
+        ulonglong  size   = bankSizes[name].toULongLong();
         S9sString  line;
 
-        line.sprintf("%2d x %s", volume, STR(name));
+        if (size != 0ull)
+        {
+            line.sprintf("%2d x %d Gbyte %s", 
+                    volume, size / (1024ull * 1024ull * 1024ull),
+                    STR(name));
+        } else {
+            line.sprintf("%2d x %s", volume, STR(name));
+        }
+
 
         retval << line;
     }
