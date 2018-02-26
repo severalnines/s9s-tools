@@ -7,6 +7,7 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 CONTAINER_SERVER=""
 CONTAINER_IP=""
+CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
 source include.sh
@@ -31,6 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a new container.
+  o createCluster    Creates a new cluster on containers on the fly.
   o createServer     Creates a server from the previously created container.
   o deleteContainer  Deletes the previously created container.
 
@@ -211,6 +213,57 @@ function createContainer()
 #    fi
 }
 
+function createCluster()
+{
+    local node001="node001_$$"
+    local node002="node002_$$"
+
+    print_title "Creating a Cluster"
+    mys9s cluster \
+        --create \
+        --cluster-name="$CLUSTER_NAME" \
+        --cluster-type=galera \
+        --provider-version="5.6" \
+        --vendor=percona \
+        --nodes="$node001" \
+        --containers="$node001" \
+        $LOG_OPTION
+
+    check_exit_code $?
+
+    while true; do 
+        CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+        
+        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
+            break;
+        fi
+
+        echo "Cluster '$CLUSTER_NAME' not found."
+        s9s cluster --list --long
+        sleep 5
+    done
+
+    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    #
+    #
+    #
+    print_title "Adding a ProxySql Node"
+
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="proxysql://$node002" \
+        --containers="$node002" \
+        $LOG_OPTION
+
+    check_exit_code $?
+}
+
 #
 # This test will attempt to create a new server (install software and
 # everything). For practical reasons we try to do this on the container we just
@@ -273,6 +326,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest createCluster
     runFunctionalTest createServer
     runFunctionalTest createServerCloud
     runFunctionalTest deleteContainer
