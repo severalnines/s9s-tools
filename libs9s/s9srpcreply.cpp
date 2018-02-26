@@ -3381,12 +3381,17 @@ void
 S9sRpcReply::printServersStat()
 {
     S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sOptions     *options = S9sOptions::instance();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
         S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
 
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+        
         printServerStat(server);
     }
 }
