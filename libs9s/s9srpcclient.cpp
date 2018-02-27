@@ -4592,13 +4592,19 @@ S9sRpcClient::createContainerWithJob()
     /*
      * Composing the request.
      */
-    jobData["container"]      = container;
+    if (jobData.contains("containers"))
+    {
+        jobSpec["command"]    = "create_containers";
+        job["title"]          = "Create Containers";
+    } else {
+        jobData["container"]  = container;
+        jobSpec["command"]    = "create_container";
+        job["title"]          = "Create Container";
+    }
 
-    jobSpec["command"]    = "create_container";
     jobSpec["job_data"]   = jobData;
     
     // The job instance describing how the job will be executed.
-    job["title"]          = "Create Container";
     job["job_spec"]       = jobSpec;
     
     // The request describing we want to register a job instance.    
@@ -5908,6 +5914,7 @@ S9sVariantMap
 S9sRpcClient::composeJobData() const
 {
     S9sOptions    *options = S9sOptions::instance();
+    S9sString      templateName = options->templateName();
     S9sVariantMap  jobData;
 
     if (options->hasContainers())
@@ -5917,7 +5924,12 @@ S9sRpcClient::composeJobData() const
 
         for (uint idx = 0u; idx < theList.size(); ++idx)
         {
-            containers << theList[idx].toVariantMap();
+            S9sVariantMap containerMap = theList[idx].toVariantMap();
+
+            if (!templateName.empty())
+                containerMap["template"] = templateName;
+
+            containers << containerMap;
         }
         
         jobData["containers"]  = containers;

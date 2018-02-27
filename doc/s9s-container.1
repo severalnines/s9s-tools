@@ -166,6 +166,31 @@ While waiting a progress bar will be shown unless the silent mode is set.
 .SS Other Options
 
 .TP
+.BI \-\^\-containers= LIST
+A list of containers to be created or managed. The containers can be passed as
+command line options (suitable for simple commands) or as an option argument for
+this command line option.
+
+The command line option argument is one or more containers separated by the ';'
+character. Each container is an URL defining the container name (an alias for
+the container) and zero or more properties. The string
+\fB"container05?parent_server=core1;container06?parent_server=core2"\fP for
+example defines two containers one on one server and the other is on an other
+server.
+
+To see what properties are supported in the controller for the containers one
+may use the following command:
+
+.nf
+# \fBs9s metatype --list-properties --type=CmonContainer --long\fR
+ST NAME            UNIT DESCRIPTION
+r- acl             -    The access control list.
+r- alias           -    The name of the container.
+r- architecture    -    The processor architecture.
+ . . .
+.fi
+
+.TP
 .B --servers= LIST
 A list of servers to work with. 
 

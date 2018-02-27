@@ -326,6 +326,13 @@ supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
 
 .TP
+.BI \-\^\-containers= LIST
+A list of containers to be created and used by the created job. This command
+line option can be used to create container (virtual machines) and then install
+clusters on them or just add them to an existing cluster as nodes. Please check 
+s9s-container(1) for further details.
+
+.TP
 .BI \-\^\-donor= ADDRESS
 Currently this option is used when starting a cluster. It can be used to control
 which node will be started first and used for the others as donor.

@@ -3752,20 +3752,21 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
-"    the following types are supported: galera, mysqlreplication,\n"
-"    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
-"    postgresql.\n"
-"  --donor=ADDRESS            The address of the donor node when starting.\n"
+"  --containers=LIST          List of containers to be created.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
+"  --donor=ADDRESS            The address of the donor node when starting.\n"
+"    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
 "  --opt-value=VALUE          The value for the configuration item.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
+"    postgresql.\n"
 "  --provider-version=VER     The version of the software.\n"
+"    the following types are supported: galera, mysqlreplication,\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
 "\n");
@@ -3785,6 +3786,7 @@ S9sOptions::printHelpContainer()
 "  --stat                     Print the details of a container.\n"
 "  --stop                     Stop the container.\n"
 "\n"
+"  --containers=LIST          List of containers to be created.\n"
 "  --servers=LIST             A list of servers to work with.\n"
 "  --template=NAME            The name of the container template.\n"
 "\n");
@@ -7228,6 +7230,7 @@ S9sOptions::readOptionsContainer(
         // Other options.
         { "servers",          required_argument, 0, OptionServers         },
         { "template",         required_argument, 0, OptionTemplate        },
+        { "containers",       required_argument, 0, OptionContainers      },
         
         { 0, 0, 0, 0 }
     };
@@ -7410,6 +7413,11 @@ S9sOptions::readOptionsContainer(
             case OptionTemplate:
                 // --template=ADDRESS
                 m_options["template"] = optarg;
+                break;
+            
+            case OptionContainers:
+                // --containers=LIST
+                setContainers(optarg);
                 break;
 
             case '?':
