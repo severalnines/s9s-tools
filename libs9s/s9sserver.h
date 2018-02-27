@@ -59,6 +59,10 @@ class S9sServer
         S9sVariantList diskNames() const;
 
         S9sVariantList containers() const;
+        double totalMemoryGBytes() const;
+        int nCpus() const;
+        int nCores() const;
+        int nThreads() const;
 
     private:
         S9sVariantMap    m_properties;

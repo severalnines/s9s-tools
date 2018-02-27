@@ -60,8 +60,10 @@ class S9sContainer
         S9sString groupOwnerName() const;
         S9sString parentServerName() const;
         S9sString state() const;
+        bool autoStart() const;
         S9sString templateName() const;
         S9sString type() const;
+        double memoryLimitGBytes() const;
         S9sString configFile() const;
         S9sString rootFsPath() const;
         S9sString osVersionString(const S9sString &defaultValue = "-") const;

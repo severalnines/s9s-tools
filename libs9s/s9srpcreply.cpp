@@ -3286,6 +3286,16 @@ S9sRpcReply::printServerStat(
     printf("\n");
 
     //
+    //
+    //
+    printf("%s Summary:%s ", greyBegin, greyEnd);
+    printf("%.0fGB RAM", server.totalMemoryGBytes());
+    printf(", %d CPUs", server.nCpus());
+    printf(", %d cores", server.nCores());
+    printf(", %d threads", server.nThreads());
+    printf("\n");
+
+    //
     // "  CPU(s): 2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
     //
     for (uint idx = 0u; idx < processorNames.size(); ++idx)
@@ -5311,7 +5321,7 @@ S9sRpcReply::printContainerListStat(
     printf("\n");
     
     //
-    // "      OS: ubuntu 16.04 xenial"
+    // "      OS: ubuntu 16.04 xenial                  Arch: x86_64"
     //
     printf("%s      OS:%s ", greyBegin, greyEnd);
     printf("%-35s", STR(container.osVersionString()));
@@ -5321,7 +5331,21 @@ S9sRpcReply::printContainerListStat(
 
     printf("\n");
 
+    //
+    //
+    //
+    printf("%s   Start:%s ", greyBegin, greyEnd);
+    printf("%s",  container.autoStart() ? "y" : "n");
+    printf("\n");
     
+    //
+    //
+    //
+    printf("%s  Limits:%s ", greyBegin, greyEnd);
+    printf("%.0fGB RAM",  container.memoryLimitGBytes());
+    printf("\n");
+
+
     //
     // "  Config: '/var/lib/lxc/www/config'"
     //
@@ -5336,7 +5360,7 @@ S9sRpcReply::printContainerListStat(
     //
     //
     //
-    printf("%s Root fs:%s ", greyBegin, greyEnd);
+    printf("%s Root FS:%s ", greyBegin, greyEnd);
     printf("'%s%s%s'", 
             XTERM_COLOR_BLUE,
             STR(container.rootFsPath()),

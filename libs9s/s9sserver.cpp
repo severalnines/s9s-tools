@@ -352,3 +352,65 @@ S9sServer::containers() const
 
     return retval;
 }
+
+double
+S9sServer::totalMemoryGBytes() const
+{
+    S9sVariantMap  memory = property("memory").toVariantMap();
+    S9sVariantList banks  = memory["banks"].toVariantList();
+    ulonglong      sum    = 0ull;
+    double         retval;// = memory["memory_total_mb"].toDouble();
+    
+    for (uint idx = 0u; idx < banks.size(); ++idx)
+        sum += banks[idx]["size"].toULongLong();
+
+    if (sum > 0ull)
+    {
+        retval = sum / (1024.0 * 1024.0 * 1024.0);
+    } else {
+        retval  = memory["memory_total_mb"].toDouble();
+        retval /= 1024.0;
+    }
+
+    return retval;
+}
+
+int 
+S9sServer::nCpus() const
+{
+    S9sVariantList  cpus = property("processors").toVariantList();
+    return (int) cpus.size();
+}
+
+int 
+S9sServer::nCores() const
+{
+    S9sVariantList cpus   = property("processors").toVariantList();
+    int            retval = 0;
+
+    for (uint idx = 0u; idx < cpus.size(); ++idx)
+    {
+        S9sVariantMap cpuMap = cpus[idx].toVariantMap();
+
+        retval += cpuMap["cores"].toInt();
+    }
+
+    return retval;
+}
+
+int 
+S9sServer::nThreads() const
+{
+    S9sVariantList cpus   = property("processors").toVariantList();
+    int            retval = 0;
+
+    for (uint idx = 0u; idx < cpus.size(); ++idx)
+    {
+        S9sVariantMap cpuMap = cpus[idx].toVariantMap();
+
+        retval += cpuMap["siblings"].toInt();
+    }
+
+    return retval;
+}
+

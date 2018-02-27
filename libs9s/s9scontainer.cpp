@@ -301,6 +301,19 @@ S9sContainer::state() const
     return property("status").toString();
 }
 
+/**
+ * \returns True if the container is automatically started when the server is
+ * started.
+ */
+bool
+S9sContainer::autoStart() const
+{
+    return property("autostart").toBoolean();
+}
+
+/**
+ * \returns The template name that was used to create the container.
+ */
 S9sString 
 S9sContainer::templateName() const
 {
@@ -311,6 +324,17 @@ S9sString
 S9sContainer::type() const
 {
     return property("type").toString();
+}
+
+double
+S9sContainer::memoryLimitGBytes() const
+{
+    ulonglong retval;
+
+    retval  = property("memory_limit").toULongLong();
+    retval /= (1024ull * 1024ull * 1024ull);
+
+    return (double) retval;
 }
 
 S9sString 
