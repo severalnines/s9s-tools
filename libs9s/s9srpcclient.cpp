@@ -6035,7 +6035,8 @@ S9sRpcClient::composeJobDataOneContainer() const
         containerMap = containerList[0u].toVariantMap();
     } else if (options->nExtraArguments() == 1)
     {
-        containerMap["alias"] = options->extraArgument(0);
+        containerMap["alias"]      = options->extraArgument(0);
+        containerMap["class_name"] = "CmonContainer";
     }
     
     // Adding extra properties to the container.
