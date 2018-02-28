@@ -441,12 +441,14 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printContainers();
             client.setExitStatus();
+#if 0
         } else if (options->isDeleteRequested())
         {
             // s9s server --delete NAME
             success = client.deleteContainer();
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+#endif
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -471,6 +473,14 @@ S9sBusinessLogic::execute()
         } else if (options->isDeleteRequested())
         {
             success = client.deleteContainerWithJob();
+            maybeJobRegistered(client, 0, success);
+        } else if (options->isStopRequested())
+        {
+            success = client.stopContainerWithJob();
+            maybeJobRegistered(client, 0, success);
+        } else if (options->isStartRequested())
+        {
+            success = client.startContainerWithJob();
             maybeJobRegistered(client, 0, success);
         } else {
             PRINT_ERROR("Unimplemented main option in 'container' mode.");

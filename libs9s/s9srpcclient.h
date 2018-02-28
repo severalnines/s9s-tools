@@ -103,7 +103,9 @@ class S9sRpcClient
         bool createContainer();
         bool createContainerWithJob();
         bool deleteContainerWithJob();
-        bool deleteContainer();
+        bool startContainerWithJob();
+        bool stopContainerWithJob();
+        //bool deleteContainer();
 
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);
@@ -282,6 +284,7 @@ class S9sRpcClient
     protected:
         virtual S9sVariantMap composeJob() const;
         virtual S9sVariantMap composeJobData() const;
+        virtual S9sVariantMap composeJobDataOneContainer() const;
 
         virtual bool
             executeRequest(

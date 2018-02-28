@@ -3127,9 +3127,11 @@ S9sRpcClient::addNode(
     
     // The job_data describing the cluster.
     if (hosts[0].isNode())
+    {
         jobData["hostname"] = hosts[0].toNode().hostName();
-    else 
+    } else {
         jobData["hostname"] = hosts[0].toString();
+    }
 
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
@@ -4469,8 +4471,6 @@ S9sRpcClient::unregisterHost()
     return executeRequest(uri, request);
 }
 
-
-
 bool
 S9sRpcClient::getContainers()
 {
@@ -4516,9 +4516,9 @@ bool
 S9sRpcClient::createContainer()
 {
     S9sString      uri = "/v2/host/";
-    S9sVariantMap  request;
     S9sOptions    *options    = S9sOptions::instance();
     S9sVariantList servers    = options->servers();
+    S9sVariantMap  request;
    
     if (options->nExtraArguments() == 1)
     {
@@ -4535,9 +4535,6 @@ S9sRpcClient::createContainer()
     }
 
     request["operation"]      = "createContainer";
-    //request["start"]          = true;
-    //request["wait_for_start"] = true;
-    //request["check_ssh"]      = true;
 
     if (!servers.empty())
         request["servers"] = serversField(servers);
@@ -4614,45 +4611,49 @@ S9sRpcClient::createContainerWithJob()
     return executeRequest(uri, request);
 }
 
+/**
+ * This will delete a container by registering a "delete_container" job.
+ *
+ * \code{.js}
+ * {
+ *     "command": "delete_container",
+ *     "id": 6,
+ *     "job_data": 
+ *     {
+ *         "container": 
+ *         {
+ *             "alias": "ft_containers_12848",
+ *             "parent_server": "core1"
+ *         },
+ *         "servers": [ 
+ *         {
+ *             "class_name": "CmonContainerServer",
+ *             "hostname": "core1"
+ *         } ]
+ *     },
+ *     "owner_user_id": 3,
+ *     "owner_user_name": "pipas"
+ * }
+ * \endcode
+ */
 bool
 S9sRpcClient::deleteContainerWithJob()
 {
-    S9sOptions    *options  = S9sOptions::instance();
-    S9sVariantList servers  = options->servers();
+    S9sVariantMap  job      = composeJob();
+    S9sVariantMap  jobData  = composeJobDataOneContainer();
+    S9sVariantMap  jobSpec;
     S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
-    S9sVariantMap  jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
     /*
-     * Checking the command line options.
+     * Checking the command line options happen in previously called functions.
      */
-    container["class_name"] = "CmonContainer";
-
-    if (options->nExtraArguments() == 1)
-    {
-        container["alias"] = options->extraArgument(0);
-    } else if (options->nExtraArguments() == 2)
-    {
-        PRINT_ERROR("Currently only one container can be deleted at a time.");
+    if (jobData.empty())
         return false;
-    }
 
-    if (servers.size() > 1)
-    {
-        PRINT_ERROR("Currently only one server can be defined for containers.");
-        return false;
-    } else if (servers.size() == 1) 
-    {
-        container["parent_server"] = servers[0u].toNode().hostName();
-    }
-        
     /*
      * Composing the request.
      */
-    jobData["container"]      = container;
-
     jobSpec["command"]    = "delete_container";
     jobSpec["job_data"]   = jobData;
     
@@ -4660,13 +4661,79 @@ S9sRpcClient::deleteContainerWithJob()
     job["title"]          = "Delete Container";
     job["job_spec"]       = jobSpec;
     
-    // The request describing we want to register a job instance.    
+    // The request describing we want to start a new job. 
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
     
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::startContainerWithJob()
+{
+    S9sVariantMap  job      = composeJob();
+    S9sVariantMap  jobData  = composeJobDataOneContainer();
+    S9sVariantMap  jobSpec;
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/jobs/";
+   
+    /*
+     * Checking the command line options happen in previously called functions.
+     */
+    if (jobData.empty())
+        return false;
+
+    /*
+     * Composing the request.
+     */
+    jobSpec["command"]    = "start_container";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Start Container";
+    job["job_spec"]       = jobSpec;
+    
+    // The request describing we want to start a new job. 
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::stopContainerWithJob()
+{
+    S9sVariantMap  job      = composeJob();
+    S9sVariantMap  jobData  = composeJobDataOneContainer();
+    S9sVariantMap  jobSpec;
+    S9sVariantMap  request;
+    S9sString      uri = "/v2/jobs/";
+   
+    /*
+     * Checking the command line options happen in previously called functions.
+     */
+    if (jobData.empty())
+        return false;
+
+    /*
+     * Composing the request.
+     */
+    jobSpec["command"]    = "stop_container";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Stop Container";
+    job["job_spec"]       = jobSpec;
+    
+    // The request describing we want to start a new job. 
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+#if 0
+// This one does not create a job, it is deprecated.
 bool
 S9sRpcClient::deleteContainer()
 {
@@ -4687,6 +4754,7 @@ S9sRpcClient::deleteContainer()
     
     return executeRequest(uri, request);
 }
+#endif
 
 bool
 S9sRpcClient::getSupportedClusterTypes()
@@ -5932,8 +6000,56 @@ S9sRpcClient::composeJobData() const
             containers << containerMap;
         }
         
-        jobData["containers"]  = containers;
+        jobData["containers"] = containers;
     }
+
+    return jobData;
+}
+
+S9sVariantMap 
+S9sRpcClient::composeJobDataOneContainer() const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  jobData;
+    S9sVariantList containerList;
+    S9sString      templateName = options->templateName();
+    S9sVariantMap  containerMap;
+    S9sVariantList servers  = options->servers();
+    
+    if (options->hasContainers())
+        containerList = options->containers();
+
+    if (options->nExtraArguments() + containerList.size() > 1)
+    {
+        PRINT_ERROR("Multiple container names in the command line.");
+        return jobData;
+    } if (options->nExtraArguments() + containerList.size() == 0)
+    {
+        PRINT_ERROR("No container is specified in the command line.");
+        return jobData;
+    }
+
+    // Finding the container.
+    if (options->hasContainers() && !containerList.empty())
+    {
+        containerMap = containerList[0u].toVariantMap();
+    } else if (options->nExtraArguments() == 1)
+    {
+        containerMap["alias"] = options->extraArgument(0);
+    }
+    
+    // Adding extra properties to the container.
+    if (!templateName.empty())
+        containerMap["template"] = templateName;
+
+    if (servers.size() == 1)
+        containerMap["parent_server"] = servers[0u].toNode().hostName();
+
+    //
+    jobData["container"] = containerMap;
+    
+    if (!servers.empty())
+        jobData["servers"] = serversField(servers);
 
     return jobData;
 }

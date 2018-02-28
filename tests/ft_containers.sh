@@ -302,7 +302,6 @@ function deleteContainer()
 
     mys9s container \
         --delete \
-        --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "ft_containers_$$"
     
