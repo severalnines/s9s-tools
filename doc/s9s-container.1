@@ -17,7 +17,10 @@ following:
 
 .TP
 .B \-\-create
-Create and start a new container or virtual machine.
+Create and start a new container or virtual machine. If this option is provided
+the controller will create a new job that creates a container. By default the
+container will also be started, an account will be created, passwordless sudo
+granted and the controller will wait the controller to obtain an IP address.
 
 .TP
 .B \-\-delete
@@ -169,7 +172,9 @@ While waiting a progress bar will be shown unless the silent mode is set.
 .BI \-\^\-containers= LIST
 A list of containers to be created or managed. The containers can be passed as
 command line options (suitable for simple commands) or as an option argument for
-this command line option.
+this command line option. The \fBs9s container \-\-stop node01\fP and the 
+\fBs9s container \-\-stop \-\-containers=node01\fP commands for example are
+equivalent.
 
 The command line option argument is one or more containers separated by the ';'
 character. Each container is an URL defining the container name (an alias for
@@ -196,12 +201,30 @@ A list of servers to work with.
 
 .TP
 .B --template= NAME 
-The name of the container template.
+The name of the container template. Defining a template is an easy way to set a
+number of complex propeties without actually enumerating them in the command
+line one by one. 
+
+The actual interpretation of the template name is up to the virtualization
+backend that is the protocol of the container server. The \fBlxc\fP backend for
+example considers the template to be an already created container, it simply
+creates the new container by copying the template container so the new container
+inherits everything.
+
+The template name can also be provided as a property name for the container, so
+the command \fBs9s container \-\-create 
+\-\-containers="node02?template=ubuntu;node03" \-\-log\fP for example will
+create two containers, one using a template, the other using the default
+settings.
+
+Please note that the \fB\-\-template\fP command line option is not mandatory, if
+emitted suitable default values will be chosen, but if the template is provided
+and the template is not found the creation of the new container will fail.
 
 .\"
 .\" The description of the node list.
 .\"
-.SH SERVER LIST
+.SH CONTAINER LIST
 Using the \fB\-\-list\fP and \fB\-\-long\fP command line options a detailed list
 of the containers can be printed. Here is an example of such a list:
 
@@ -265,22 +288,26 @@ The server on which the container can be found.
 .SH EXAMPLES
 .PP
 
-The following example shows how to create a container. In the command line only
-one server is provided so the container will be created on that server. Should
-there be more than one server or no server at all, the controller would choose
-one server from the pre-registered list of container servers.
-
-The command line in the example also provides a container name. The controller
-will try to create the container under that name. Should there be a container
-already created with the given name on the server the creation will fail. The
-container names should be unique.
+Here is an example showing the simplest way to create a container. To create a
+container no special information needed, every settings will use the default
+values. For this of course at least one container server has to be
+pre-registered and properly working.
 
 .nf
-# \fBs9s container \\
-    --create \\
-    --template=ubuntu \\
-    --servers=core1 \\
-    --wait \\
-    myfirstcontaintainer\fR
+# \fBs9s container --create --wait\fR
+.fi
+
+Using teh default, automatically chosen container names might not be the easiest
+way, so here is an example that provides a container name.
+
+.nf
+# \fBs9s container --create --wait node01\fR
+.fi
+
+This is equivalent with the following example that provides the container name
+through a command line option.
+
+.nf
+# \fBs9s container --create --wait --containers="node01"\fR
 .fi
 
