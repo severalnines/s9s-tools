@@ -207,6 +207,13 @@ S9sContainer::alias() const
     return property("alias").toString();
 }
 
+void
+S9sContainer::setAlias(
+        const S9sString &alias)
+{
+    setProperty("alias", alias);
+}
+
 S9sString 
 S9sContainer::cdtPath() const
 {
@@ -318,6 +325,13 @@ S9sString
 S9sContainer::templateName() const
 {
     return property("template").toString();
+}
+
+void
+S9sContainer::setTemplate(
+        const S9sString &templateName)
+{
+    setProperty("template", templateName);
 }
 
 S9sString 

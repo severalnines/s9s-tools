@@ -47,6 +47,7 @@ class S9sContainer
 
         S9sString aclString() const;
         S9sString alias() const;
+        void setAlias(const S9sString &alias);
         S9sString cdtPath() const;
         S9sString className() const;
         int containerId() const;
@@ -62,6 +63,7 @@ class S9sContainer
         S9sString state() const;
         bool autoStart() const;
         S9sString templateName() const;
+        void setTemplate(const S9sString &templateName);
         S9sString type() const;
         double memoryLimitGBytes() const;
         S9sString configFile() const;

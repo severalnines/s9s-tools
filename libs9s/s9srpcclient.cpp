@@ -28,6 +28,7 @@
 #include "S9sDateTime"
 #include "S9sFile"
 #include "S9sSshCredentials"
+#include "S9sContainer"
 
 #include <cstring>
 #include <cstdio>
@@ -4556,7 +4557,7 @@ S9sRpcClient::createContainerWithJob()
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobData = composeJobData(true);
     S9sVariantMap  jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
@@ -4571,10 +4572,6 @@ S9sRpcClient::createContainerWithJob()
     if (options->nExtraArguments() == 1)
     {
         container["alias"] = options->extraArgument(0);
-    } else if (options->nExtraArguments() == 2)
-    {
-        PRINT_ERROR("Currently only one container can be created at a time.");
-        return false;
     }
 
     if (servers.size() > 1)
@@ -5979,16 +5976,18 @@ S9sRpcClient::composeJob() const
 }
 
 S9sVariantMap 
-S9sRpcClient::composeJobData() const
+S9sRpcClient::composeJobData(
+        bool argumentsAreContainers) const
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sString      templateName = options->templateName();
     S9sVariantMap  jobData;
+    S9sVariantList containers;
 
+    // The --containers option.
     if (options->hasContainers())
     {
         S9sVariantList   theList = options->containers();
-        S9sVariantList   containers;
 
         for (uint idx = 0u; idx < theList.size(); ++idx)
         {
@@ -6000,8 +5999,26 @@ S9sRpcClient::composeJobData() const
             containers << containerMap;
         }
         
-        jobData["containers"] = containers;
     }
+
+    // Command line arguments interpreted as containers.
+    if (argumentsAreContainers)
+    {
+        for (uint idx = 0; idx < options->nExtraArguments(); ++idx)
+        {
+            S9sContainer container;
+    
+            container.setAlias(options->extraArgument(idx));
+            
+            if (!templateName.empty())
+                container.setTemplate(templateName);
+
+            containers << container.toVariantMap();
+        }
+    }
+
+    if (!containers.empty())
+        jobData["containers"] = containers;
 
     return jobData;
 }
