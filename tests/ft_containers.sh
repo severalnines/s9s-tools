@@ -8,6 +8,7 @@ LOG_OPTION="--wait"
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 CLUSTER_NAME="${MYBASENAME}_$$"
+LAST_CONTAINER_NAME=""
 
 cd $MYDIR
 source include.sh
@@ -32,6 +33,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a new container.
+  o restartContainer Stop then start the container.
   o createCluster    Creates a new cluster on containers on the fly.
   o createServer     Creates a server from the previously created container.
   o deleteContainer  Deletes the previously created container.
@@ -211,6 +213,30 @@ function createContainer()
 #        failure "The template is '$template', should be 'ubuntu'"
 #        exit 1
 #    fi
+    LAST_CONTAINER_NAME=$container_name
+}
+
+function restartContainer()
+{
+    if [ -z "$LAST_CONTAINER_NAME" ]; then
+        return 0
+    fi
+
+    #
+    # 
+    #
+    print_title "Stopping Container"
+
+    mys9s container --stop $LOG_OPTION $LAST_CONTAINER_NAME
+    check_exit_code $?
+
+    #
+    # 
+    #
+    print_title "Starting Container"
+
+    mys9s container --start $LOG_OPTION $LAST_CONTAINER_NAME
+    check_exit_code $?
 }
 
 function createCluster()
@@ -325,6 +351,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest restartContainer
     runFunctionalTest createCluster
     runFunctionalTest createServer
     runFunctionalTest createServerCloud
