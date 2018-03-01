@@ -243,6 +243,7 @@ function createCluster()
 {
     local node001="node001_$$"
     local node002="node002_$$"
+    local node003="node003_$$"
 
     print_title "Creating a Cluster"
     mys9s cluster \
@@ -251,8 +252,8 @@ function createCluster()
         --cluster-type=galera \
         --provider-version="5.6" \
         --vendor=percona \
-        --nodes="$node001" \
-        --containers="$node001" \
+        --nodes="$node001;$node002" \
+        --containers="$node001;$node002" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -283,8 +284,8 @@ function createCluster()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="proxysql://$node002" \
-        --containers="$node002" \
+        --nodes="proxysql://$node003" \
+        --containers="$node003" \
         $LOG_OPTION
 
     check_exit_code $?
