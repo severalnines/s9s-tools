@@ -40,6 +40,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Thu Mar  1 2018 David Kedves <kedazo@severalnines.com> 1.5.20180301
+- New patch release
 * Fri Dec  8 2017 David Kedves <kedazo@severalnines.com> 1.5.20171208
 - A new release with MongoDB cluster creation possibility
 * Mon Nov 13 2017 David Kedves <kedazo@severalnines.com> 1.5.20171113
