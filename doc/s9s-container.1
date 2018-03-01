@@ -4,51 +4,15 @@
 s9s-container \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
 .B s9s-container
-.RI [OPTION]... [CONTAINER]...
+.RI [OPTION]... 
+.RI [CONTAINER]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
 deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
 
-.SH CMON-CLOUD VIRTUALIZATION
-The cmon-cloud containers are an experimental virtualization backend currently
-added to the Cmon Controller as a brand new feature. More documentation will
-be added here.
-
-.SH LXC CONTAINERS
-Handling lxc containers is a new feature added to the Cmon Controller and the
-s9s command line tool. The basic functionality is available and tested,
-containers can created, started, stopped, deleted, even creating containers on
-the fly while installing clusters or cluster nodes is possible.
-
-For the lxc containers one needs a container server, a computer that has the lxc
-software installed and configured and of course needs a proper account to access
-the container server from the Cmon Controller. 
-
-One can set up an lxc container server in two easy and one not so easy steps:
-
-.TP
-.B 1)
-Install a Linux server and set it up so that the root user can ssh in from the
-Cmon Controller with a key, without a password. Creating such an access for the
-superuser is of course not the only way, it is just the easiest.
-
-.TP
-.B 2) 
-Register the server as a container server on the Cmon Controller by issuing the
-\fBs9s server --register --servers="lxc://IP_ADDRESS"\fP command. This will
-install the necessary software and register the server as a container server to
-be used later.
-
-.TP 
-.B 3) 
-The hard part is the network configuration on the container server. Most of the
-distributions by default have a network configuration that provides local (host
-only) IP address for the newly created containers. In order to provide public IP
-address for the containers the container server must have some sort of bridging
-or NAT configured. 
-
-A possible way to configure the network for public IP is described here:
-\fBhttps://insights.ubuntu.com/2015/11/10/converting-eth0-to-br0-and-getting-all-your-lxc-or-lxd-onto-your-lan\fP
+In order to utilize the s9s command line tool and the Cmon Controller to create
+virtual machines or containers one needs to register a container server first.
+The installation of such a container server is documented in s9s-server(1). 
 
 .SH OPTIONS
 .SS "Main Option"
