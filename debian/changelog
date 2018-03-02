@@ -1,3 +1,10 @@
+s9s-tools (1.5.20180302-release1) UNRELEASED; urgency=medium
+
+  * PostgreSQL create_cluster support (previously only one node could be
+    deployed at a time)
+
+ -- David Kedves <kedazo@severalnines.com>  Fri, 02 Mar 2018 10:32:58 +0100
+
 s9s-tools (1.5.20180301-release1) UNRELEASED; urgency=medium
 
   * A new patch release
