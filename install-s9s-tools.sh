@@ -44,7 +44,6 @@ do_release_file() {
                 [[ $? -eq 0 ]] && rhel_version=7 && break
                 $(grep -q "21" $file)
                 [[ $? -eq 0 ]] && rhel_version=7 && break
-                break
             fi
         fi
     done

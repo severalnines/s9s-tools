@@ -2681,11 +2681,9 @@ S9sRpcClient::createPostgreSql(
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
 
-    if (hosts.size() != 1u)
+    if (hosts.size() < 1u)
     {
-        PRINT_ERROR(
-                "Creating a PostgreSQL cluster currently only possible "
-                "with one server in it.");
+        PRINT_ERROR("Missing node list while creating PostgreSQL cluster.");
         return false;
     }
 
@@ -2694,12 +2692,7 @@ S9sRpcClient::createPostgreSql(
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
-    
-    jobData["hostname"]         = hosts[0].toNode().hostName();
-
-    if (hosts[0].toNode().hasPort())
-        jobData["port"] = hosts[0].toNode().port();
-
+    jobData["nodes"]            = nodesField(hosts);
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["version"]          = psqlVersion;
@@ -2715,13 +2708,13 @@ S9sRpcClient::createPostgreSql(
     // 
     // The jobspec describing the command.
     //
-    jobSpec["command"]          = "setup_server";
+    jobSpec["command"]          = "create_cluster";
     jobSpec["job_data"]         = jobData;
 
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Setup PostgreSQL Server";
+    job["title"]                = "Creating PostgreSQL Cluster";
     job["job_spec"]             = jobSpec;
 
     // 
