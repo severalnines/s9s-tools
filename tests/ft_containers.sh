@@ -36,6 +36,7 @@ SUPPORTED TESTS:
   o restartContainer Stop then start the container.
   o createCluster    Creates a new cluster on containers on the fly.
   o createServer     Creates a server from the previously created container.
+  o failOnContainers Testing on unexisting containers.
   o deleteContainer  Deletes the previously created container.
 
 EOF
@@ -132,6 +133,16 @@ function registerServer()
     mys9s server --list --long
     check_exit_code_no_job $?
 }
+
+function registerServerCmonCloud()
+{
+    print_title "Registering Container Server"
+
+    mys9s server \
+        --register \
+        --servers="cmon-cloud://10.10.1.1"
+}
+
 
 #
 # This will create a container and check if the user can actually log in through
@@ -252,8 +263,8 @@ function createCluster()
         --cluster-type=galera \
         --provider-version="5.6" \
         --vendor=percona \
-        --nodes="$node001;$node002" \
-        --containers="$node001;$node002" \
+        --nodes="$node001" \
+        --containers="$node001" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -306,18 +317,77 @@ function createServer()
         $LOG_OPTION 
 
     check_exit_code $?
-
-    #mys9s server --list --long
 }
 
-function createServerCloud()
-{
-    print_title "Creating cmon-cloud Server"
+#function createServerCloud()
+#{
+#    print_title "Creating cmon-cloud Server"
+#
+#    mys9s server \
+#        --create \
+#        --servers=cmon-cloud://$CONTAINER_IP \
+#        --log
+#
+#    mys9s server --list --long
+#
+#    mys9s container \
+#        --create \
+#        --template=ubuntu16.04 \
+#        --log \
+#        vhost1
+#}
 
-    mys9s server \
-        --create \
-        --servers=cmon-cloud://10.10.10.1 \
-        --log
+#
+# This will try to manipulate a container that does not exist. The jobs should
+# fail, the return value should be false.
+#
+function failOnContainers()
+{
+    local retcode
+
+    print_title "Trying to Manipulate Unexisting Containers"
+
+    #
+    #
+    #
+    mys9s container \
+        --delete \
+        $LOG_OPTION \
+        "unexisting_container_$$"
+
+    retcode=$?
+    if [ $retcode -eq 0 ]; then
+        failure "Reporting success while deleting unexsiting container."
+        exit 1
+    fi
+    
+    #
+    #
+    #
+    mys9s container \
+        --stop \
+        $LOG_OPTION \
+        "unexisting_container_$$"
+
+    retcode=$?
+    if [ $retcode -eq 0 ]; then
+        failure "Reporting success while stopping unexsiting container."
+        exit 1
+    fi
+    
+    #
+    #
+    #
+    mys9s container \
+        --start \
+        $LOG_OPTION \
+        "unexisting_container_$$"
+
+    retcode=$?
+    if [ $retcode -eq 0 ]; then
+        failure "Reporting success while starting unexsiting container."
+        exit 1
+    fi
 }
 
 #
@@ -355,7 +425,8 @@ else
     runFunctionalTest restartContainer
     runFunctionalTest createCluster
     runFunctionalTest createServer
-    runFunctionalTest createServerCloud
+    #runFunctionalTest createServerCloud
+    runFunctionalTest failOnContainers
     runFunctionalTest deleteContainer
 fi
 

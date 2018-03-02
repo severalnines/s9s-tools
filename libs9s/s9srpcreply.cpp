@@ -3207,6 +3207,8 @@ S9sRpcReply::printServers()
 }
 
 /**
+ * \param server The server to print.
+ *
  * Prints one server in stat format, a format we use when the --stat command
  * line option is provided.
  */
@@ -3289,7 +3291,8 @@ S9sRpcReply::printServerStat(
     //
     //
     printf("%s Summary:%s ", greyBegin, greyEnd);
-    printf("%.0fGB RAM", server.totalMemoryGBytes());
+    printf("%2d VMs", server.nContainers());
+    printf(", %.0fGB RAM", server.totalMemoryGBytes());
     printf(", %d CPUs", server.nCpus());
     printf(", %d cores", server.nCores());
     printf(", %d threads", server.nThreads());

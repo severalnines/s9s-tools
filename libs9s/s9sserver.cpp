@@ -117,6 +117,9 @@ S9sServer::protocol() const
     return property("protocol").toString();
 }
 
+/**
+ * \returns How many containers this server has.
+ */
 int
 S9sServer::nContainers() const
 {
