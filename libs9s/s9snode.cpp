@@ -85,6 +85,8 @@ S9sNode::S9sNode(
 
         if (m_url.protocol() == "lxc")
             m_properties["class_name"] = "CmonContainerServer";
+        else if (m_url.protocol() == "cmon-cloud")
+            m_properties["class_name"] = "CmonContainerServer";
 
         m_properties["protocol"] = m_url.protocol();
     }
