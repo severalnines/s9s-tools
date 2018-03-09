@@ -6401,7 +6401,9 @@ S9sRpcClient::serversField(
     {
         S9sVariantMap thisMap = servers[idx].toVariantMap();
 
-        thisMap["class_name"] = "CmonContainerServer";
+        if (thisMap["class_name"].toString().empty())
+            thisMap["class_name"] = "CmonContainerServer";
+
         if (options->hasSshCredentials())
         {
             thisMap["ssh_credentials"] = 

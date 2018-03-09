@@ -3299,6 +3299,15 @@ S9sRpcReply::printServerStat(
     printf("\n");
 
     //
+    //
+    //
+    printf("%s  Limits:%s ", greyBegin, greyEnd);
+    printf("%s/%s VMs", 
+            STR(server.nContainersMaxString()),
+            STR(server.nRunningContainersMaxString()));
+    printf("\n");
+
+    //
     // "  CPU(s): 2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
     //
     for (uint idx = 0u; idx < processorNames.size(); ++idx)
@@ -3719,9 +3728,10 @@ S9sRpcReply::printContainersLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sContainer   container(theMap);
         S9sString      alias  = theMap["alias"].toString();
         S9sString      ip     = theMap["ip"].toString();
-        bool           isRunning = theMap["status"] == "RUNNING";
+        bool           isRunning    = theMap["status"] == "RUNNING";
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
@@ -3739,8 +3749,8 @@ S9sRpcReply::printContainersLong()
 
         if (ip.empty())
             ip = "-";
-        
-        printf("%c ", isRunning ? 'u' : '-');
+       
+        printf("%c ", container.stateAsChar());
         
         typeFormat.printf(type);
         templateFormat.printf(templateName);
@@ -3828,10 +3838,10 @@ S9sRpcReply::printContainersCompact(
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
         S9sString          ipAddress = container.ipAddress("-");
-        bool               isRunning = container.state() == "RUNNING";
         
         printf("%s", STR(indent));
-        printf("%c ", isRunning ? 'u' : '-');
+        printf("%c ", container.stateAsChar());
+
         userFormat.printf(user);
         groupFormat.printf(group);
         aliasFormat.printf(alias);

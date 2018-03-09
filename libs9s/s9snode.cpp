@@ -76,7 +76,7 @@ S9sNode::S9sNode(
   
     /*
      * Here we try to guess the class name from the protocol. This means for
-     * example if you say "lxc://hostname" we will send a "CmonContainerServer"
+     * example if you say "lxc://hostname" we will send a "CmonLxcServer"
      * class object. If you have more protocols you can add them here.
      */
     if (m_url.hasProtocol())
@@ -84,9 +84,9 @@ S9sNode::S9sNode(
         S9sString protocol = m_url.protocol().toLower();
 
         if (m_url.protocol() == "lxc")
-            m_properties["class_name"] = "CmonContainerServer";
+            m_properties["class_name"] = "CmonLxcServer";
         else if (m_url.protocol() == "cmon-cloud")
-            m_properties["class_name"] = "CmonContainerServer";
+            m_properties["class_name"] = "CmonCloudServer";
 
         m_properties["protocol"] = m_url.protocol();
     }

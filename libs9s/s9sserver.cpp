@@ -126,6 +126,46 @@ S9sServer::nContainers() const
     return property("containers").size();
 }
 
+int
+S9sServer::nContainersMax() const
+{
+    return property("max_containers").toInt();
+}
+
+S9sString
+S9sServer::nContainersMaxString() const
+{
+    int       integerValue = nContainersMax();
+    S9sString stringValue;
+
+    if (integerValue >= 0)
+        stringValue.sprintf("%d", integerValue);
+    else
+        stringValue = "-";
+
+    return stringValue;
+}
+
+int
+S9sServer::nRunningContainersMax() const
+{
+    return property("max_containers_running").toInt();
+}
+
+S9sString
+S9sServer::nRunningContainersMaxString() const
+{
+    int       integerValue = nRunningContainersMax();
+    S9sString stringValue;
+
+    if (integerValue >= 0)
+        stringValue.sprintf("%d", integerValue);
+    else
+        stringValue = "-";
+
+    return stringValue;
+}
+
 S9sString
 S9sServer::ownerName() const
 {

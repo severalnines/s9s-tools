@@ -245,32 +245,47 @@ function switch_orvibo()
 function switch_tasmota()
 {
     local output
+    local url="http://$CONF_PDU_SERVER/cm?cmnd="
+    local logfile="$LOGFILE"
+
+    if [ -z "$logfile" ]; then
+        logfile="/dev/null"
+    fi
 
     #
     #
     #
     case "$PDU_OPERATION" in 
         on)
-            curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20on \
-                2>/dev/null >/dev/null
+            if [ -z "$CONF_PDU_OUTLET" ]; then
+                curl ${url}Power%20on \
+                    2>/dev/null >/dev/null
+            else
+                curl ${url}Power${CONF_PDU_OUTLET}%20on \
+                    2>/dev/null >/dev/null
+            fi
             ;;
 
         off)
-            curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20off \
-                2>/dev/null >/dev/null
+            if [ -z "$CONF_PDU_OUTLET" ]; then            
+                curl ${url}Power%20off \
+                    2>/dev/null >/dev/null
+            else
+                curl ${url}Power${CONF_PDU_OUTLET}%20off \
+                    2>/dev/null >/dev/null
+            fi
             ;;
 
         state)
             printVerbose "Checking switch state."
-            printVerbose "curl http://$CONF_PDU_SERVER/cm?cmnd=Power%20status"
-            if [ -f "$LOGFILE" ]; then
+            if [ -z "$CONF_PDU_OUTLET" ]; then
                 output=$(curl \
-                    http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
-                    2>/dev/null)
+                    ${url}Power%20status \
+                    2>$logfile)
             else
                 output=$(curl \
-                    http://$CONF_PDU_SERVER/cm?cmnd=Power%20status \
-                    2>"$LOGFILE")
+                    ${url}Power${CONF_PDU_OUTLET}%20status \
+                    2>$logfile)
             fi
 
             printVerbose "output: $output"

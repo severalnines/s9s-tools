@@ -308,6 +308,24 @@ S9sContainer::state() const
     return property("status").toString();
 }
 
+int
+S9sContainer::stateAsChar() const
+{
+    S9sString    theStatus = state();
+
+    if (theStatus == "RUNNING")
+        return 'u';
+    else if (theStatus == "TERMINATED")
+        return 't';
+    else if (theStatus == "QUEUED")
+        return 'q';
+    else if (theStatus == "STOPPED")
+        return 's';
+        
+    return '?';
+}
+
+
 /**
  * \returns True if the container is automatically started when the server is
  * started.

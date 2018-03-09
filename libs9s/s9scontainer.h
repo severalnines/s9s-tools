@@ -61,6 +61,7 @@ class S9sContainer
         S9sString groupOwnerName() const;
         S9sString parentServerName() const;
         S9sString state() const;
+        int stateAsChar() const;
         bool autoStart() const;
         S9sString templateName() const;
         void setTemplate(const S9sString &templateName);

@@ -46,6 +46,10 @@ class S9sServer
         S9sString protocol() const;
 
         int nContainers() const;
+        int nContainersMax() const;
+        S9sString nContainersMaxString() const;
+        int nRunningContainersMax() const;
+        S9sString nRunningContainersMaxString() const;
 
         S9sString ownerName() const;
         S9sString groupOwnerName() const;

@@ -122,16 +122,38 @@ fi
 #
 function registerServer()
 {
+    local class
+
     print_title "Registering Container Server"
 
+    #
+    # Creating a container.
+    #
     mys9s server \
         --register \
-        --servers="lxc://$CONTAINER_SERVER"
+        --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
 
     mys9s server --list --long
     check_exit_code_no_job $?
+
+    #
+    # Checking the class is very important.
+    #
+    class=$(\
+        s9s server --stat "$CONTAINER_SERVER" \
+        | grep "Class:" | awk '{print $2}')
+
+    if [ "$class" != "CmonLxcServer" ]; then
+        failure "Created server has a '$class' class and not 'CmonLxcServer'."
+        exit 1
+    fi
+    
+    #
+    # Checking the state... TBD
+    #
+    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
 function registerServerCmonCloud()
@@ -151,7 +173,7 @@ function registerServerCmonCloud()
 function createContainer()
 {
     local owner
-    local container_name="ft_containers_$$"
+    local container_name="ft_containers_00_$$"
     local template
 
     print_title "Creating Container"
@@ -177,7 +199,7 @@ function createContainer()
         s9s server \
             --list-containers \
             --batch \
-            --long  "ft_containers_$$" \
+            --long  "ft_containers_00_$$" \
         | awk '{print $7}')
     
     if [ -z "$CONTAINER_IP" ]; then
@@ -216,45 +238,73 @@ function createContainer()
     #
     # Checking the template.
     #
-#    template=$(\
-#        s9s container --list --long --batch "$container_name" | \
-#        awk '{print $3}')
-#
-#    if [ "$template" != "ubuntu" ]; then
-#        failure "The template is '$template', should be 'ubuntu'"
-#        exit 1
-#    fi
+    template=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $3}')
+
+    if [ "$template" != "ubuntu" ]; then
+        failure "The template is '$template', should be 'ubuntu'"
+        exit 1
+    fi
+
+    #
+    # We will manipulate this container in other tests.
+    #
     LAST_CONTAINER_NAME=$container_name
 }
 
+#
+# This test will call --stop and then --start on a previously created container.
+#
 function restartContainer()
 {
-    if [ -z "$LAST_CONTAINER_NAME" ]; then
+    local container_name="$LAST_CONTAINER_NAME"
+    local status_field
+
+    if [ -z "$container_name" ]; then
         return 0
     fi
 
     #
-    # 
+    # Stopping the previously created continer. 
     #
     print_title "Stopping Container"
 
-    mys9s container --stop $LOG_OPTION $LAST_CONTAINER_NAME
+    mys9s container --stop $LOG_OPTION "$container_name"
     check_exit_code $?
 
+    status_field=$(\
+        s9s container --list --long --batch "$container_name" \
+        | awk '{print $1}')
+
+    if [ "$status_field" != "-" ]; then
+        failure "Status is '$status_field' instead of '-'."
+        exit 1
+    fi
+
     #
-    # 
+    # Starting the container we just stopped.
     #
     print_title "Starting Container"
 
-    mys9s container --start $LOG_OPTION $LAST_CONTAINER_NAME
+    mys9s container --start $LOG_OPTION "$container_name"
     check_exit_code $?
+    
+    status_field=$(\
+        s9s container --list --long --batch "$container_name" \
+        | awk '{print $1}')
+    
+    if [ "$status_field" != "u" ]; then
+        failure "Status is '$status_field' instead of 'u'."
+        exit 1
+    fi
 }
 
 function createCluster()
 {
-    local node001="node001_$$"
-    local node002="node002_$$"
-    local node003="node003_$$"
+    local node001="ft_containers_01_$$"
+    local node002="ft_containers_02_$$"
+    local node003="ft_containers_03_$$"
 
     print_title "Creating a Cluster"
     mys9s cluster \
@@ -309,14 +359,35 @@ function createCluster()
 #
 function createServer()
 {
+    local class
+
     print_title "Creating a Server"
 
+    #
+    # Creating a new server, installing software and everything.
+    #
     mys9s server \
         --create \
         --servers="lxc://$CONTAINER_IP" \
         $LOG_OPTION 
 
     check_exit_code $?
+
+    #
+    # Checking the class is very important.
+    #
+    class=$(\
+        s9s server --stat "$CONTAINER_IP" | grep "Class:" | awk '{print $2}')
+
+    if [ "$class" != "CmonLxcServer" ]; then
+        failure "Created server has a '$class' class and not 'CmonLxcServer'."
+        exit 1
+    fi
+
+    #
+    # Checking the state... TBD
+    #
+    mys9s tree --cat /$CONTAINER_IP/.runtime/state
 }
 
 #function createServerCloud()
@@ -400,7 +471,7 @@ function deleteContainer()
     mys9s container \
         --delete \
         $LOG_OPTION \
-        "ft_containers_$$"
+        "ft_containers_00_$$"
     
     check_exit_code $?
     
