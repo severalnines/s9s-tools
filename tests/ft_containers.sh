@@ -277,7 +277,7 @@ function restartContainer()
         s9s container --list --long --batch "$container_name" \
         | awk '{print $1}')
 
-    if [ "$status_field" != "-" ]; then
+    if [ "$status_field" != "s" ]; then
         failure "Status is '$status_field' instead of '-'."
         exit 1
     fi

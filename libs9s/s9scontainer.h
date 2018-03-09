@@ -19,6 +19,7 @@
  */
 #pragma once
 
+#include "S9sObject"
 #include "S9sVariantMap"
 #include "S9sUrl"
 #include "S9sCluster"
@@ -26,7 +27,7 @@
 /**
  * A class that represents a node/host/server. 
  */
-class S9sContainer
+class S9sContainer : public S9sObject
 {
     public:
         S9sContainer();
@@ -38,18 +39,18 @@ class S9sContainer
 
         S9sContainer &operator=(const S9sVariantMap &rhs);
 
-        bool hasProperty(const S9sString &key) const;
-        S9sVariant property(const S9sString &name) const;
-        void setProperty(const S9sString &name, const S9sString &value);
+        virtual const S9sVariantMap &toVariantMap() const;
 
-        const S9sVariantMap &toVariantMap() const;
-        void setProperties(const S9sVariantMap &properties);
+        virtual S9sString name() const;
 
-        S9sString aclString() const;
         S9sString alias() const;
         void setAlias(const S9sString &alias);
+
+        S9sString id() const;
+        
         S9sString cdtPath() const;
         S9sString className() const;
+
         int containerId() const;
         S9sString hostname() const;
         S9sString ipAddress(const S9sString &defaultValue = "") const;
@@ -73,6 +74,5 @@ class S9sContainer
         S9sString architecture(const S9sString &defaultValue = "-") const;
 
     private:
-        S9sVariantMap    m_properties;
         S9sUrl           m_url;
 };

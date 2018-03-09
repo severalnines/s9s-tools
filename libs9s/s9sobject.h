@@ -25,6 +25,7 @@ class S9sObject
 {
     public:
         S9sObject();
+        S9sObject(const S9sObject &orig);
         S9sObject(const S9sVariantMap &properties);
         
         virtual ~S9sObject();
@@ -38,11 +39,16 @@ class S9sObject
         void setProperty(const S9sString &name, const int value);
         void setProperties(const S9sVariantMap &properties);
 
-        const S9sVariantMap &toVariantMap() const;
+        virtual const S9sVariantMap &toVariantMap() const;
 
         virtual const char *className() { return "S9sObject"; };
 
-    private:
+        virtual S9sString name() const;
+
+        S9sString aclString() const;
+        S9sString aclShortString() const;
+
+    protected:
         S9sVariantMap    m_properties;
 };
 

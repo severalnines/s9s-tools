@@ -23,7 +23,13 @@ S9sObject::S9sObject()
 {
     m_properties["class_name"] = className();
 }
- 
+
+S9sObject::S9sObject(
+        const S9sObject &orig)
+{
+    m_properties = orig.m_properties;
+}
+
 S9sObject::S9sObject(
         const S9sVariantMap &properties) :
     m_properties(properties)
@@ -133,4 +139,28 @@ const S9sVariantMap &
 S9sObject::toVariantMap() const
 {
     return m_properties;
+}
+
+S9sString 
+S9sObject::name() const
+{
+    return property("alias").toString();
+}
+
+S9sString 
+S9sObject::aclString() const
+{
+    return property("acl").toString();
+}
+
+S9sString 
+S9sObject::aclShortString() const
+{
+    S9sString retval = property("acl").toString();
+
+    retval.replace("user::", "");
+    retval.replace(",group::", "");
+    retval.replace(",other::", "");
+
+    return retval;
 }

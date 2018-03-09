@@ -5287,20 +5287,42 @@ S9sRpcReply::printContainerListStat(
     printf("%-32s ", STR(container.alias()));
     printf("%s", clusterColorEnd());
     
+    
+    printf("\n");
+   
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", folderColorBegin());
+    printf("%-32s ", STR(container.cdtPath()));
+    printf("%s", clusterColorEnd());
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s    IPv4:%s ", greyBegin, greyEnd);
+    printf("%-33s", STR(container.ipv4Addresses()));
+
     printf("%s   Owner:%s ", greyBegin, greyEnd);
     printf("%s%s%s/%s%s%s ", 
             userColorBegin(), STR(container.ownerName()), userColorEnd(),
             groupColorBegin(container.groupOwnerName()), 
             STR(container.groupOwnerName()), 
             groupColorEnd());
-    
+
     printf("\n");
     
     //
     //
     //
-    printf("%s    IPv4:%s ", greyBegin, greyEnd);
-    printf("%s", STR(container.ipv4Addresses()));
+    printf("%s      ID:%s ", greyBegin, greyEnd);
+    printf("%-37s", STR(container.id()));
+
+    printf("%s ACL:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.aclShortString()));
+
     printf("\n");
     
     //
