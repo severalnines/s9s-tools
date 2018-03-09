@@ -46,20 +46,14 @@ class S9sContainer : public S9sObject
         S9sString alias() const;
         void setAlias(const S9sString &alias);
 
-        S9sString id() const;
-        
-        S9sString cdtPath() const;
-        S9sString className() const;
+        virtual S9sString className() const;
 
-        int containerId() const;
         S9sString hostname() const;
         S9sString ipAddress(const S9sString &defaultValue = "") const;
         S9sString ipv4Addresses(
                 const S9sString &separator = ", ",
                 const S9sString &defaultValue = "-");
 
-        S9sString ownerName() const;
-        S9sString groupOwnerName() const;
         S9sString parentServerName() const;
         S9sString state() const;
         int stateAsChar() const;

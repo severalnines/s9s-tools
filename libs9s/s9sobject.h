@@ -41,13 +41,17 @@ class S9sObject
 
         virtual const S9sVariantMap &toVariantMap() const;
 
-        virtual const char *className() { return "S9sObject"; };
+        virtual S9sString className() const;
 
         virtual S9sString name() const;
+        virtual S9sString id() const;
+        virtual S9sString cdtPath() const;
 
         S9sString aclString() const;
         S9sString aclShortString() const;
-
+        
+        S9sString ownerName() const;
+        S9sString groupOwnerName() const;
     protected:
         S9sVariantMap    m_properties;
 };

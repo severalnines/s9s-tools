@@ -34,7 +34,8 @@ S9sObject::S9sObject(
         const S9sVariantMap &properties) :
     m_properties(properties)
 {
-    m_properties["class_name"] = className();
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = className();
 }
 
 S9sObject::~S9sObject()
@@ -49,6 +50,13 @@ S9sObject::operator=(
     
     return *this;
 }
+
+S9sString 
+S9sObject::className() const 
+{
+    return "S9sObject"; 
+}
+
 
 /**
  * \returns True if a property with the given key exists.
@@ -163,4 +171,34 @@ S9sObject::aclShortString() const
     retval.replace(",other::", "");
 
     return retval;
+}
+
+S9sString 
+S9sObject::id() const
+{
+    return property("id").toString();
+}
+
+S9sString 
+S9sObject::cdtPath() const
+{
+    return property("cdt_path").toString();
+}
+
+/**
+ * \returns The user name of the user that owns this object.
+ */
+S9sString 
+S9sObject::ownerName() const
+{
+    return property("owner_user_name").toString();
+}
+
+/**
+ * \returns The group name of the group that owns the object.
+ */
+S9sString 
+S9sObject::groupOwnerName() const
+{
+    return property("owner_group_name").toString();
 }

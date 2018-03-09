@@ -156,27 +156,9 @@ S9sContainer::setAlias(
 }
 
 S9sString 
-S9sContainer::id() const
-{
-    return property("id").toString();
-}
-
-S9sString 
-S9sContainer::cdtPath() const
-{
-    return property("cdt_path").toString();
-}
-
-S9sString 
 S9sContainer::className() const
 {
     return property("class_name").toString();
-}
-
-int
-S9sContainer::containerId() const
-{
-    return property("container_id").toInt();
 }
 
 S9sString 
@@ -220,24 +202,6 @@ S9sContainer::ipv4Addresses(
 }
 
 /**
- * \returns The user name of the user that owns this object.
- */
-S9sString 
-S9sContainer::ownerName() const
-{
-    return property("owner_user_name").toString();
-}
-
-/**
- * \returns The group name of the group that owns the object.
- */
-S9sString 
-S9sContainer::groupOwnerName() const
-{
-    return property("owner_group_name").toString();
-}
-
-/**
  * \returns The name of the server that holds the container.
  */
 S9sString 
@@ -271,7 +235,6 @@ S9sContainer::stateAsChar() const
         
     return '?';
 }
-
 
 /**
  * \returns True if the container is automatically started when the server is
