@@ -3245,31 +3245,26 @@ S9sRpcReply::printServerStat(
     printf("%s", TERM_NORMAL);
     printf("\n");
 
-    //
-    // "    Name: core1                     Owner: pipas/users"
-    //
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%-25s ", STR(server.hostName()));
-    
-    printf("%sOwner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(server.ownerName()), userColorEnd(),
-            groupColorBegin(server.groupOwnerName()), 
-            STR(server.groupOwnerName()), 
-            groupColorEnd());
-
-    printf("\n");
+    printObjectStat(server);
 
     //
     // "      IP: 192.168.1.4"
     //
     printf("%s      IP:%s ", greyBegin, greyEnd);
-    printf("%-22s ", STR(server.ipAddress()));
+    printf("%-33s ", STR(server.ipAddress()));
 
     printf("%sProtocol:%s ", greyBegin, greyEnd);
     printf("%-25s ", STR(server.protocol()));
 
     printf("\n");
+    
+    //
+    // ""
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-24s", STR(server.osVersionString("-")));
+    printf("\n");
+    
 
     // 
     // "   Alias: ''                        Owner: pipas/users" 
@@ -3366,25 +3361,7 @@ S9sRpcReply::printServerStat(
 
         printf("%s\n", STR(diskNames[idx].toString()));
     }
-
-    //
-    //
-    //
-    printf("%s   Class:%s ", greyBegin, greyEnd);
-    printf("%s%-24s%s ", 
-            typeColorBegin(), 
-            STR(server.className()), 
-            typeColorEnd());
-    printf("\n");
-
         
-    //
-    // "   Class: CmonContainerServer"
-    //
-    printf("%s      OS:%s ", greyBegin, greyEnd);
-    printf("%-24s", STR(server.osVersionString("-")));
-    printf("\n");
-    
     //
     //
     //
@@ -5251,6 +5228,69 @@ S9sRpcReply::printNodeListStat()
     }
 }
 
+void 
+S9sRpcReply::printObjectStat(
+        S9sObject    &object)
+{
+    //S9sOptions *options = S9sOptions::instance();
+    //int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    
+    //
+    // "   Name: www"
+    //
+    printf("%s    Name:%s ", greyBegin, greyEnd);
+    printf("%s", clusterColorBegin());
+    printf("%-32s ", STR(object.name()));
+    printf("%s", clusterColorEnd());
+    
+    printf("\n");
+   
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", folderColorBegin());
+    printf("%-32s ", STR(object.cdtPath()));
+    printf("%s", clusterColorEnd());
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s   Class:%s ", greyBegin, greyEnd);
+    printf("%s%-33s%s ", 
+            typeColorBegin(), 
+            STR(object.className()), 
+            typeColorEnd());
+    
+    printf("%s   Owner:%s ", greyBegin, greyEnd);
+    printf("%s%s%s/%s%s%s ", 
+            userColorBegin(), STR(object.ownerName()), userColorEnd(),
+            groupColorBegin(object.groupOwnerName()), 
+            STR(object.groupOwnerName()), 
+            groupColorEnd());
+    
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s      ID:%s ", greyBegin, greyEnd);
+    printf("%-38s", STR(object.id()));
+
+    printf("%s ACL:%s ", greyBegin, greyEnd);
+    printf("%s", STR(object.aclShortString()));
+
+#if 0
+    printf("\n");
+    printf(
+        "--------------------------------------------------------------------"
+        "------------");
+#endif
+    printf("\n");
+}
 
 void 
 S9sRpcReply::printContainerListStat(
@@ -5279,72 +5319,37 @@ S9sRpcReply::printContainerListStat(
         printf(" ");
     printf("%s", TERM_NORMAL);
     
-    //
-    // "   Name: www                                 Owner: pipas/testgroup"
-    //
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%s", clusterColorBegin());
-    printf("%-32s ", STR(container.alias()));
-    printf("%s", clusterColorEnd());
-    
-    
-    printf("\n");
-   
-    //
-    //
-    //
-    printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", folderColorBegin());
-    printf("%-32s ", STR(container.cdtPath()));
-    printf("%s", clusterColorEnd());
-    printf("\n");
+    printObjectStat(container);
+
 
     //
     //
     //
     printf("%s    IPv4:%s ", greyBegin, greyEnd);
-    printf("%-33s", STR(container.ipv4Addresses()));
+    printf("%-35s", STR(container.ipv4Addresses()));
 
-    printf("%s   Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(container.ownerName()), userColorEnd(),
-            groupColorBegin(container.groupOwnerName()), 
-            STR(container.groupOwnerName()), 
-            groupColorEnd());
-
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-37s", STR(container.id()));
-
-    printf("%s ACL:%s ", greyBegin, greyEnd);
-    printf("%s", STR(container.aclShortString()));
-
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%s   Class:%s ", greyBegin, greyEnd);
-    printf("%s%-33s%s ", 
-            typeColorBegin(), 
-            STR(container.className()), 
-            typeColorEnd());
-    //printf("\n");
-    
     printf("%s   Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(container.type()));
-    printf("\n");
 
+    printf("\n");
+     
+    //
+    // "      OS: ubuntu 16.04 xenial                  Arch: x86_64"
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.osVersionString()));
+    
+    printf("%s  Arch:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(container.architecture()));
+
+    printf("\n");
+    
     //
     //
     //
     printf("%s  Server:%s ", greyBegin, greyEnd);
     printf("%s", serverColorBegin());
-    printf("%-32s ", STR(container.parentServerName()));
+    printf("%-33s ", STR(container.parentServerName()));
     printf("%s", serverColorEnd());
     
     printf("%s   State:%s ", greyBegin, greyEnd);
@@ -5352,17 +5357,6 @@ S9sRpcReply::printContainerListStat(
             clusterStateColorBegin(container.state()), 
             STR(container.state()),
             clusterStateColorEnd());
-
-    printf("\n");
-    
-    //
-    // "      OS: ubuntu 16.04 xenial                  Arch: x86_64"
-    //
-    printf("%s      OS:%s ", greyBegin, greyEnd);
-    printf("%-35s", STR(container.osVersionString()));
-    
-    printf("%s  Arch:%s ", greyBegin, greyEnd);
-    printf("%s ", STR(container.architecture()));
 
     printf("\n");
 
@@ -5410,13 +5404,16 @@ S9sRpcReply::printContainerListStat(
 void 
 S9sRpcReply::printContainerListStat()
 {
-    //S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
+
+        if (!options->isStringMatchExtraArguments(container.name()))
+            continue;
 
         printContainerListStat(container);
     }

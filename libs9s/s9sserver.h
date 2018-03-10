@@ -19,26 +19,26 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "S9sObject"
 
 /**
  * A class that represents a hardware server.
  */
-class S9sServer
+class S9sServer : public S9sObject
 {
     public:
         S9sServer();
+        S9sServer(const S9sServer &orig);
         S9sServer(const S9sVariantMap &properties);
 
         virtual ~S9sServer();
 
         S9sServer &operator=(const S9sVariantMap &rhs);
-                
-        bool hasProperty(const S9sString &key) const;
-        S9sVariant property(const S9sString &name) const;
+        
+        virtual S9sString className() const;
 
-        void setProperties(const S9sVariantMap &properties);
-
+        virtual S9sString name() const;
+        virtual S9sString id() const;
         S9sString hostName() const;
         S9sString alias() const;
         S9sString version() const;
@@ -53,7 +53,6 @@ class S9sServer
 
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
-        S9sString className() const;
         S9sString model(const S9sString &defaultValue = "") const;
 
         S9sString osVersionString(const S9sString &defaultValue = "") const;

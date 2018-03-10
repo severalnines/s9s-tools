@@ -24,14 +24,21 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-S9sServer::S9sServer()
+S9sServer::S9sServer() :
+    S9sObject()
 {
     m_properties["class_name"] = "CmonHost";
 }
 
 S9sServer::S9sServer(
+        const S9sServer &orig) :
+    S9sObject(orig)
+{
+}
+
+S9sServer::S9sServer(
         const S9sVariantMap &properties) :
-    m_properties(properties)
+    S9sObject(properties)
 {
     if (!m_properties.contains("class_name"))
         m_properties["class_name"] = "CmonHost";
@@ -50,41 +57,22 @@ S9sServer::operator=(
     return *this;
 }
 
-/**
- * \returns True if a property with the given key exists.
- */
-bool
-S9sServer::hasProperty(
-        const S9sString &key) const
+S9sString 
+S9sServer::className() const
 {
-    return m_properties.contains(key);
+    return property("class_name").toString();
 }
 
-/**
- * \returns The value of the property with the given name or the empty
- *   S9sVariant object if the property is not set.
- */
-S9sVariant
-S9sServer::property(
-        const S9sString &name) const
+S9sString 
+S9sServer::name() const
 {
-    if (m_properties.contains(name))
-        return m_properties.at(name);
-
-    return S9sVariant();
+    return hostName();
 }
 
-/**
- * \param properties The properties to be set as a name -> value mapping.
- *
- * Sets all the properties in one step. All the existing properties will be
- * deleted, then the new properties set.
- */
-void
-S9sServer::setProperties(
-        const S9sVariantMap &properties)
+S9sString
+S9sServer::id() const
 {
-    m_properties = properties;
+    return property("hostId").toString();
 }
 
 S9sString
@@ -176,12 +164,6 @@ S9sString
 S9sServer::groupOwnerName() const
 {
     return property("owner_group_name").toString();
-}
-
-S9sString
-S9sServer::className() const
-{
-    return property("class_name").toString();
 }
 
 /**

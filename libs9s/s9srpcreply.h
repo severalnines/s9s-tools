@@ -21,6 +21,7 @@
 
 #include "S9sVariantMap"
 #include "S9sFormat"
+#include "S9sObject"
 
 class S9sNode;
 class S9sCluster;
@@ -107,10 +108,13 @@ class S9sRpcReply : public S9sVariantMap
                 const S9sString &serverName, 
                 const S9sString &containerName);
 
+        void printObjectStat(S9sObject &object);
+
         void printContainers();
         void printContainersLong();
         void printContainersCompact(const S9sVariantList &containers);
         void printContainerListStat();
+
         void printContainerListStat(S9sContainer &container);
 
         void printProcessList();
