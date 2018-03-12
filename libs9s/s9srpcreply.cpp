@@ -3606,7 +3606,7 @@ S9sRpcReply::printContainers()
     else if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (options->isStatRequested())
-        printContainerListStat();
+        printContainerStat();
     else 
         printContainersLong();
 }
@@ -5293,7 +5293,7 @@ S9sRpcReply::printObjectStat(
 }
 
 void 
-S9sRpcReply::printContainerListStat(
+S9sRpcReply::printContainerStat(
         S9sContainer &container)
 {
     S9sOptions *options = S9sOptions::instance();
@@ -5323,16 +5323,38 @@ S9sRpcReply::printContainerListStat(
 
 
     //
-    //
+    // "    IPv4: 54.93.99.244                          Type: cmon-cloud"
     //
     printf("%s    IPv4:%s ", greyBegin, greyEnd);
-    printf("%-35s", STR(container.ipv4Addresses()));
+    printf("%-37s", STR(container.ipv4Addresses()));
 
-    printf("%s   Type:%s ", greyBegin, greyEnd);
+    printf("%s Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(container.type()));
 
     printf("\n");
      
+    //
+    //
+    //
+    printf("%sTemplate:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.templateName()));
+
+    printf("%s Image:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.image()));
+
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s  Region:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.region()));
+
+    //printf("%s Image:%s ", greyBegin, greyEnd);
+    //printf("%s", STR(container.image()));
+
+    printf("\n");
+
     //
     // "      OS: ubuntu 16.04 xenial                  Arch: x86_64"
     //
@@ -5402,7 +5424,7 @@ S9sRpcReply::printContainerListStat(
 
 
 void 
-S9sRpcReply::printContainerListStat()
+S9sRpcReply::printContainerStat()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("containers").toVariantList();
@@ -5415,7 +5437,7 @@ S9sRpcReply::printContainerListStat()
         if (!options->isStringMatchExtraArguments(container.name()))
             continue;
 
-        printContainerListStat(container);
+        printContainerStat(container);
     }
 }
 

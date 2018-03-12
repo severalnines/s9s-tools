@@ -66,8 +66,5 @@ class S9sServer : public S9sObject
         int nCpus() const;
         int nCores() const;
         int nThreads() const;
-
-    private:
-        S9sVariantMap    m_properties;
 };
 

@@ -58,8 +58,16 @@ class S9sContainer : public S9sObject
         S9sString state() const;
         int stateAsChar() const;
         bool autoStart() const;
+
+        S9sString image() const;
+        void setImage(const S9sString &image);
+
         S9sString templateName() const;
         void setTemplate(const S9sString &templateName);
+       
+        S9sString region() const;
+        void setRegion(const S9sString &image);
+
         S9sString type() const;
         double memoryLimitGBytes() const;
         S9sString configFile() const;

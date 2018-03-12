@@ -193,9 +193,9 @@ S9sServer::osVersionString(
 {
     S9sString retval;
 
-    if (m_properties.contains("distribution"))
+    if (hasProperty("distribution"))
     {
-        S9sVariantMap map = m_properties.at("distribution").toVariantMap();
+        S9sVariantMap map = property("distribution").toVariantMap();
         S9sString     name, release, codeName;
         
         name     = map["name"].toString();

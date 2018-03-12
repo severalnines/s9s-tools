@@ -113,9 +113,9 @@ class S9sRpcReply : public S9sVariantMap
         void printContainers();
         void printContainersLong();
         void printContainersCompact(const S9sVariantList &containers);
-        void printContainerListStat();
+        void printContainerStat();
 
-        void printContainerListStat(S9sContainer &container);
+        void printContainerStat(S9sContainer &container);
 
         void printProcessList();
         void printProcessListBrief(const int maxLines = -1);

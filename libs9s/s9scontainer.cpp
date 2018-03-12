@@ -139,13 +139,18 @@ S9sContainer::toVariantMap() const
 S9sString 
 S9sContainer::name() const
 {
-    return property("alias").toString();
+    S9sString retval = property("alias").toString();
+
+    if (retval.empty())
+        retval = "-";
+
+    return retval;
 }
 
 S9sString 
 S9sContainer::alias() const
 {
-    return property("alias").toString();
+    return name();
 }
 
 void
@@ -260,6 +265,32 @@ S9sContainer::setTemplate(
         const S9sString &templateName)
 {
     setProperty("template", templateName);
+}
+
+S9sString 
+S9sContainer::image() const
+{
+    return property("image").toString();
+}
+
+void
+S9sContainer::setImage(
+        const S9sString &image)
+{
+    setProperty("image", image);
+}
+
+S9sString 
+S9sContainer::region() const
+{
+    return property("region").toString();
+}
+
+void
+S9sContainer::setRegion(
+        const S9sString &image)
+{
+    setProperty("region", image);
 }
 
 S9sString 
