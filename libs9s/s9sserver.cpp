@@ -82,9 +82,13 @@ S9sServer::hostName() const
 }
 
 S9sString
-S9sServer::alias() const
+S9sServer::alias(
+        const S9sString &defaultValue) const
 {
-    return property("alias").toString();
+    if (hasProperty("alias"))
+        return property("alias").toString();
+
+    return defaultValue;
 }
 
 S9sString

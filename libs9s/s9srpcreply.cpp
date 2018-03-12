@@ -3270,7 +3270,7 @@ S9sRpcReply::printServerStat(
     // "   Alias: ''                        Owner: pipas/users" 
     //
     printf("%s   Alias:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR("'" + server.alias() + "'"));
+    printf("%-16s ", STR(server.alias("-")));
     //printf("\n");
     
     printf("\n");
