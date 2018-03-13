@@ -199,6 +199,7 @@ enum S9sOptionType
     OptionSuccess,
     OptionAccess,
     OptionTemplate,
+    OptionImage,
     OptionIndividualFiles,
     OptionTestServer,
     OptionBackupDatadir,
@@ -1888,10 +1889,22 @@ S9sOptions::donor() const
     return getString("donor");
 }
 
+/**
+ * \returns The value for the --template= command line option.
+ */
 S9sString
 S9sOptions::templateName() const
 {
     return getString("template");
+}
+
+/**
+ * \returns The value for the --image= command line option.
+ */
+S9sString
+S9sOptions::imageName() const
+{
+    return getString("image");
 }
 
 /**
@@ -3787,6 +3800,7 @@ S9sOptions::printHelpContainer()
 "  --stop                     Stop the container.\n"
 "\n"
 "  --containers=LIST          List of containers to be created.\n"
+"  --image=NAME               The name of the image for the container.\n"
 "  --servers=LIST             A list of servers to work with.\n"
 "  --template=NAME            The name of the container template.\n"
 "\n");
@@ -7228,9 +7242,10 @@ S9sOptions::readOptionsContainer(
         { "refresh",          no_argument,       0, OptionRefresh         },
 
         // Other options.
+        { "containers",       required_argument, 0, OptionContainers      },
+        { "image",            required_argument, 0, OptionImage           },
         { "servers",          required_argument, 0, OptionServers         },
         { "template",         required_argument, 0, OptionTemplate        },
-        { "containers",       required_argument, 0, OptionContainers      },
         
         { 0, 0, 0, 0 }
     };
@@ -7402,7 +7417,17 @@ S9sOptions::readOptionsContainer(
 
             /*
              * Other options.
-             */
+             */ 
+            case OptionContainers:
+                // --containers=LIST
+                setContainers(optarg);
+                break;
+
+            case OptionImage:
+                // --image=image
+                m_options["image"] = optarg;
+                break;
+                
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -7413,11 +7438,6 @@ S9sOptions::readOptionsContainer(
             case OptionTemplate:
                 // --template=ADDRESS
                 m_options["template"] = optarg;
-                break;
-            
-            case OptionContainers:
-                // --containers=LIST
-                setContainers(optarg);
                 break;
 
             case '?':

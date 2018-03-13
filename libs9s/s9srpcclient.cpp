@@ -4506,6 +4506,7 @@ S9sRpcClient::getServers()
 /**
  * Sends a request to create a container.
  */
+#if 0
 bool
 S9sRpcClient::createContainer()
 {
@@ -4535,6 +4536,7 @@ S9sRpcClient::createContainer()
     
     return executeRequest(uri, request);
 }
+#endif
 
 /**
  * Creates a container by initiating a job. Like this:
@@ -4547,6 +4549,7 @@ S9sRpcClient::createContainerWithJob()
 {
     S9sOptions    *options  = S9sOptions::instance();
     S9sString      templateName = options->templateName();
+    S9sString      imageName    = options->imageName();
     S9sVariantList servers  = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
@@ -4554,18 +4557,16 @@ S9sRpcClient::createContainerWithJob()
     S9sVariantMap  jobSpec, container;
     S9sString      uri = "/v2/jobs/";
    
-    /*
-     * Checking the command line options.
-     */
     container["class_name"] = "CmonContainer";
 
     if (!templateName.empty())
         container["template"] = templateName;
+    
+    if (!imageName.empty())
+        container["image"] = imageName;
 
     if (options->nExtraArguments() == 1)
-    {
         container["alias"] = options->extraArgument(0);
-    }
 
     if (servers.size() > 1)
     {
@@ -5974,6 +5975,7 @@ S9sRpcClient::composeJobData(
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sString      templateName = options->templateName();
+    S9sString      imageName    = options->imageName();
     S9sVariantMap  jobData;
     S9sVariantList containers;
 
@@ -5989,9 +5991,11 @@ S9sRpcClient::composeJobData(
             if (!templateName.empty())
                 containerMap["template"] = templateName;
 
+            if (!imageName.empty())
+                containerMap["image"] = imageName;
+
             containers << containerMap;
         }
-        
     }
 
     // Command line arguments interpreted as containers.
@@ -6005,6 +6009,9 @@ S9sRpcClient::composeJobData(
             
             if (!templateName.empty())
                 container.setTemplate(templateName);
+            
+            if (!imageName.empty())
+                container.setImage(imageName);
 
             containers << container.toVariantMap();
         }

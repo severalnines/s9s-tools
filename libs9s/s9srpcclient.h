@@ -100,7 +100,7 @@ class S9sRpcClient
         bool unregisterHost();
         bool getContainers();
         bool getServers();
-        bool createContainer();
+        //bool createContainer();
         bool createContainerWithJob();
         bool deleteContainerWithJob();
         bool startContainerWithJob();
