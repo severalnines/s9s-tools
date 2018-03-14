@@ -2966,12 +2966,22 @@ S9sOptions::extraArgument(
  * \returns true if the program should use syntax highlighting in its output.
  */
 bool
-S9sOptions::useSyntaxHighlight() const
+S9sOptions::useSyntaxHighlight() 
 {
-    S9sString configValue = "auto";
+    S9sString configValue;
 
     if (m_options.contains("color"))
+    {
         configValue = m_options.at("color").toString();
+    } else {
+        configValue = m_userConfig.variableValue("color");
+
+        if (configValue.empty())
+            configValue = m_systemConfig.variableValue("color");
+    }
+
+    if (configValue.empty())
+        configValue = "auto";
 
     if (configValue.toLower() == "auto")
     {

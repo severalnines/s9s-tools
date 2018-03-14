@@ -151,7 +151,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_WHITE        "\033[1;37m"
 
 #define XTERM_COLOR_SERVER       "\033[92m"
-#define XTERM_COLOR_NODE         "\033[2m\033[38;5;120m"
+#define XTERM_COLOR_NODE         "\033[1m\033[38;5;198m"
 #define XTERM_COLOR_IP           "\033[1;2m\033[38;5;176m"
 #define XTERM_COLOR_NIC_UP       "\033[1;2m\033[38;5;40m"
 #define XTERM_COLOR_NIC_NOLINK   "\033[1;2m\033[38;5;184m"

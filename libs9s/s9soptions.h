@@ -338,7 +338,7 @@ class S9sOptions
         uint nExtraArguments() const;
         S9sString extraArgument(uint idx);
 
-        bool useSyntaxHighlight() const;
+        bool useSyntaxHighlight();
         bool humanReadable() const;
         void setHumanReadable(const bool value = true);
 
