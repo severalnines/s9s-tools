@@ -59,13 +59,16 @@ class S9sContainer : public S9sObject
         int stateAsChar() const;
         bool autoStart() const;
 
+        S9sString provider(const S9sString &defaultValue = "") const;
+        void setProvider(const S9sString &providerName);
+
         S9sString image() const;
         void setImage(const S9sString &image);
 
         S9sString templateName() const;
         void setTemplate(const S9sString &templateName);
        
-        S9sString region() const;
+        S9sString region(const S9sString &defaultValue = "") const;
         void setRegion(const S9sString &image);
 
         S9sString type() const;

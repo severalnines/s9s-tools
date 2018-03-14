@@ -5336,22 +5336,22 @@ S9sRpcReply::printContainerStat(
     //
     //
     //
-    printf("%sTemplate:%s ", greyBegin, greyEnd);
-    printf("%-36s", STR(container.templateName()));
+    printf("%s   Cloud:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.provider("-")));
 
-    printf("%s Image:%s ", greyBegin, greyEnd);
-    printf("%s", STR(container.image()));
+    printf("%s  Region:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.region("-")));
 
     printf("\n");
 
     //
     //
     //
-    printf("%s  Region:%s ", greyBegin, greyEnd);
-    printf("%-36s", STR(container.region()));
+    printf("%sTemplate:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.templateName()));
 
-    //printf("%s Image:%s ", greyBegin, greyEnd);
-    //printf("%s", STR(container.image()));
+    printf("%s Image:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.image()));
 
     printf("\n");
 

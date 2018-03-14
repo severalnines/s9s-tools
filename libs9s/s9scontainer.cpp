@@ -268,6 +268,25 @@ S9sContainer::setTemplate(
 }
 
 S9sString 
+S9sContainer::provider(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("provider").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+void
+S9sContainer::setProvider(
+        const S9sString &providerName)
+{
+    setProperty("provider", providerName);
+}
+
+S9sString 
 S9sContainer::image() const
 {
     return property("image").toString();
@@ -281,9 +300,16 @@ S9sContainer::setImage(
 }
 
 S9sString 
-S9sContainer::region() const
+S9sContainer::region(
+        const S9sString &defaultValue) const
 {
-    return property("region").toString();
+    S9sString retval = property("region").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+
 }
 
 void
