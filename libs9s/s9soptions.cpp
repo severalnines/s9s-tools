@@ -199,6 +199,7 @@ enum S9sOptionType
     OptionSuccess,
     OptionAccess,
     OptionTemplate,
+    OptionCloud,
     OptionImage,
     OptionIndividualFiles,
     OptionTestServer,
@@ -1896,6 +1897,12 @@ S9sString
 S9sOptions::templateName() const
 {
     return getString("template");
+}
+
+S9sString
+S9sOptions::cloudName() const
+{
+    return getString("cloud");
 }
 
 /**
@@ -3809,6 +3816,7 @@ S9sOptions::printHelpContainer()
 "  --stat                     Print the details of a container.\n"
 "  --stop                     Stop the container.\n"
 "\n"
+"  --cloud=PROVIDER           The name of the cloud provider.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --image=NAME               The name of the image for the container.\n"
 "  --servers=LIST             A list of servers to work with.\n"
@@ -7252,6 +7260,7 @@ S9sOptions::readOptionsContainer(
         { "refresh",          no_argument,       0, OptionRefresh         },
 
         // Other options.
+        { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "image",            required_argument, 0, OptionImage           },
         { "servers",          required_argument, 0, OptionServers         },
@@ -7427,7 +7436,12 @@ S9sOptions::readOptionsContainer(
 
             /*
              * Other options.
-             */ 
+             */
+            case OptionCloud:
+                // --cloud=NAME
+                m_options["cloud"] = optarg;
+                break;
+
             case OptionContainers:
                 // --containers=LIST
                 setContainers(optarg);

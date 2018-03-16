@@ -4550,7 +4550,8 @@ S9sRpcClient::createContainerWithJob()
     S9sOptions    *options  = S9sOptions::instance();
     S9sString      templateName = options->templateName();
     S9sString      imageName    = options->imageName();
-    S9sVariantList servers  = options->servers();
+    S9sString      cloudName    = options->cloudName();
+    S9sVariantList servers      = options->servers();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData(true);
@@ -4564,6 +4565,9 @@ S9sRpcClient::createContainerWithJob()
     
     if (!imageName.empty())
         container["image"] = imageName;
+
+    if (!cloudName.empty())
+        container["provider"] = cloudName;
 
     if (options->nExtraArguments() == 1)
         container["alias"] = options->extraArgument(0);
@@ -5975,6 +5979,7 @@ S9sRpcClient::composeJobData(
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sString      templateName = options->templateName();
+    S9sString      cloudName    = options->cloudName();
     S9sString      imageName    = options->imageName();
     S9sVariantMap  jobData;
     S9sVariantList containers;
@@ -5994,6 +5999,9 @@ S9sRpcClient::composeJobData(
             if (!imageName.empty())
                 containerMap["image"] = imageName;
 
+            if (!cloudName.empty())
+                containerMap["provider"] = cloudName;
+
             containers << containerMap;
         }
     }
@@ -6012,6 +6020,9 @@ S9sRpcClient::composeJobData(
             
             if (!imageName.empty())
                 container.setImage(imageName);
+            
+            if (!cloudName.empty())
+                container.setProvider(cloudName);
 
             containers << container.toVariantMap();
         }

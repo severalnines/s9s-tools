@@ -3633,6 +3633,7 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
     int             totalRunning = 0;
@@ -3650,6 +3651,7 @@ S9sRpcReply::printContainersLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sContainer   container(theMap);
         S9sString      alias  = theMap["alias"].toString();
         S9sString      ip     = theMap["ip"].toString();
         S9sString      parent = theMap["parent_server"].toString();
@@ -3659,6 +3661,9 @@ S9sRpcReply::printContainersLong()
         S9sString      templateName = theMap["template"].toString();
 
         if (!options->isStringMatchExtraArguments(alias))
+            continue;
+
+        if (!cloudName.empty() && container.provider() != cloudName)
             continue;
 
         if (ip.empty())
@@ -3719,6 +3724,9 @@ S9sRpcReply::printContainersLong()
             totalRunning++;
         
         if (!options->isStringMatchExtraArguments(alias))
+            continue;
+        
+        if (!cloudName.empty() && container.provider() != cloudName)
             continue;
 
         if (templateName.empty())
@@ -5443,12 +5451,16 @@ void
 S9sRpcReply::printContainerStat()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
+
+        if (!cloudName.empty() && container.provider() != cloudName)
+            continue;
 
         if (!options->isStringMatchExtraArguments(container.name()))
             continue;

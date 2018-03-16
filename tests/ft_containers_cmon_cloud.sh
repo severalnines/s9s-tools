@@ -303,11 +303,10 @@ function createFail()
         return 0
     fi
 
-    print_title "Creating Container with Duplicate Name"
-
     #
     # Creating a container.
     #
+    print_title "Creating Container with Duplicate Name"
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
@@ -318,6 +317,24 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with duplicate name should have failed."
+        exit 1
+    fi
+    
+    #
+    # Creating a container with invalid provider.
+    #
+    print_title "Creating Container with Invalid Provider"
+    mys9s container \
+        --create \
+        --cloud="no_such_cloud" \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_cmon_cloud"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with invalid cloud should have failed."
         exit 1
     fi
 }
