@@ -5301,6 +5301,7 @@ S9sRpcReply::printContainerStat(
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
     S9sString   title;
+    S9sString   tmpString;
 
     //
     // The title that is in inverse. 
@@ -5393,8 +5394,23 @@ S9sRpcReply::printContainerStat(
     //
     //
     printf("%s  Limits:%s ", greyBegin, greyEnd);
-    printf("%.0fGB RAM",  container.memoryLimitGBytes());
-    printf("\n");
+
+    tmpString = "";
+    if (container.memoryLimitGBytes() > 0)
+        tmpString.aprintf("%.0fGB RAM",  container.memoryLimitGBytes());
+
+    for (uint idx = 0u; idx < container.nVolumes(); ++idx)
+    {
+        if (!tmpString.empty())
+            printf(", ");
+        
+        ::printf("%dGB %s", 
+                container.volumeGigaBytes(idx), 
+                STR(container.volumeType(idx).toUpper()));
+    }
+
+    ::printf("%s", STR(tmpString));
+    ::printf("\n");
 
 
     //

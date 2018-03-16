@@ -348,6 +348,39 @@ S9sContainer::rootFsPath() const
     return property("root_fs_path").toString();
 }
 
+uint
+S9sContainer::nVolumes() const
+{
+    S9sVariantList volumes = property("volumes").toVariantList();
+
+    return volumes.size();
+}
+
+int 
+S9sContainer::volumeGigaBytes(
+        uint idx) const
+{
+    S9sVariantList volumes = property("volumes").toVariantList();
+    
+    if (idx < volumes.size())
+        return volumes[idx]["size"].toInt();
+
+    return 0;
+}
+
+S9sString 
+S9sContainer::volumeType(
+        uint idx) const
+{
+    S9sVariantList volumes = property("volumes").toVariantList();
+    
+    if (idx < volumes.size())
+        return volumes[idx]["type"].toString();
+
+    return "";
+}
+
+
 /**
  * \returns The processor architecture (e.g. "x86_64").
  */

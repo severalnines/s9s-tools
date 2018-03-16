@@ -60,6 +60,7 @@ class S9sString : public std::string
 
         void sprintf(const char *formatString, ...);
         void vsprintf(const char *formatString, va_list arguments);
+        void aprintf(const char *formatString, ...);
 
         S9sVariantList split(const char *ifs = ";, ") const;
         S9sString &appendWord(const S9sString &word);

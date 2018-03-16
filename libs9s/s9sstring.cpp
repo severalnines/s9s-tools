@@ -204,6 +204,23 @@ S9sString::sprintf(
 }
 
 /**
+ */
+void
+S9sString::aprintf(
+        const char *formatString,
+        ...)
+{
+    S9sString  toAppend;
+    va_list    arguments;
+
+    va_start(arguments, formatString);
+    toAppend.vsprintf(formatString, arguments);
+    va_end(arguments);
+
+    *this += toAppend;
+}
+
+/**
  * \param formatString a standard printf() style formatstring.
  * \param arguments standard printf() style arguments.
  */

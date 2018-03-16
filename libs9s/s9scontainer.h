@@ -75,6 +75,11 @@ class S9sContainer : public S9sObject
         double memoryLimitGBytes() const;
         S9sString configFile() const;
         S9sString rootFsPath() const;
+
+        uint nVolumes() const;
+        int volumeGigaBytes(uint idx) const;
+        S9sString volumeType(uint idx) const;
+
         S9sString osVersionString(const S9sString &defaultValue = "-") const;
         S9sString architecture(const S9sString &defaultValue = "-") const;
 
