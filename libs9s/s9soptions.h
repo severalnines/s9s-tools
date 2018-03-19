@@ -262,6 +262,7 @@ class S9sOptions
         bool isHelpRequested() const;
         bool isListRequested() const;
         bool isListPartitionsRequested() const;
+        bool isListImagesRequested() const;
         bool isListMemoryRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;

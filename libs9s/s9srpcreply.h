@@ -102,6 +102,8 @@ class S9sRpcReply : public S9sVariantMap
         void printPartitions(S9sString indent = S9sString());
         void printNics(S9sString indent = S9sString());
         void printMemoryBanks(S9sString indent = S9sString());
+        void printImages();
+
         
         // Handling containers.
         S9sContainer container(

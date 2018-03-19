@@ -38,6 +38,7 @@
 #include "S9sReport"
 #include "S9sServer"
 #include "S9sContainer"
+#include "S9sStringList"
 
 //#define DEBUG
 //#define WARNING
@@ -3182,6 +3183,37 @@ S9sRpcReply::printMemoryBanks(
             numberColorBegin(), (int)(totalSize/1024), numberColorEnd(), 
             numberColorBegin(), (int)(freeSize/1024), numberColorEnd());
     }
+}
+
+void
+S9sRpcReply::printImages()
+{
+    //S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sStringList   collectedList;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList images = theMap["images"].toVariantList();
+
+        for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+        {
+            S9sString      image = images[idx1].toString();
+
+            if (collectedList.contains(image))
+                continue;
+
+            collectedList << image;
+        }
+    }
+    
+    for (uint idx = 0; idx < collectedList.size(); ++idx)
+    {
+        ::printf("%s ", STR(collectedList[idx]));
+    }
+
+    ::printf("\n");
 }
 
 void

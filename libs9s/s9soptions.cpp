@@ -204,6 +204,7 @@ enum S9sOptionType
     OptionIndividualFiles,
     OptionTestServer,
     OptionBackupDatadir,
+    OptionListImages,
 };
 
 /**
@@ -2261,6 +2262,15 @@ S9sOptions::isListPartitionsRequested() const
 }
 
 /**
+ * \returns True if the --list-images command line option is provided.
+ */
+bool
+S9sOptions::isListImagesRequested() const
+{
+    return getBool("list_images");
+}
+
+/**
  * \returns True if the --list-memory command line option is provided.
  */
 bool
@@ -3883,6 +3893,7 @@ S9sOptions::printHelpServer()
 "  --create                   Creates a new server.\n"
 "  --get-acl                  List the ACL of an object.\n"
 "  --list-disks               List disks from multiple servers.\n"
+"  --list-images              List the supported images.\n"
 "  --list                     List the registered servers.\n"
 "  --list-memory              List memory modules from multiple servers.\n"
 "  --list-nics                List network controllers from multiple servers.\n"
@@ -7952,6 +7963,7 @@ S9sOptions::readOptionsServer(
         { "get-acl",          no_argument,       0, OptionGetAcl          },
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list-disks",       no_argument,       0, OptionListDisks       },
+        { "list-images",      no_argument,       0, OptionListImages      },
         { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-nics",        no_argument,       0, OptionListNics        },
         { "list",             no_argument,       0, 'L'                   },
@@ -7960,8 +7972,8 @@ S9sOptions::readOptionsServer(
         { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
         { "start",            no_argument,       0, OptionStart           },
-        { "stop",             no_argument,       0, OptionStop            },
         { "stat",             no_argument,       0, OptionStat            },
+        { "stop",             no_argument,       0, OptionStop            },
         { "unregister",       no_argument,       0, OptionUnregister      },
        
         // FIXME: remove this.
@@ -8122,6 +8134,11 @@ S9sOptions::readOptionsServer(
             case OptionListPartitions:
                 // --list-partitions
                 m_options["list_partitions"] = true;
+                break;
+            
+            case OptionListImages:
+                // --list-images
+                m_options["list_images"] = true;
                 break;
             
             case OptionListMemory:
@@ -8657,6 +8674,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListPartitionsRequested())
+        countOptions++;
+    
+    if (isListImagesRequested())
         countOptions++;
     
     if (isListMemoryRequested())

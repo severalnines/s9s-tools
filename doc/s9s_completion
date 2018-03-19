@@ -54,7 +54,7 @@ function _s9s_has_options()
 function _s9s_no_command()
 {
     if ! _s9s_has_options "account" "backup" "cluster" "job" "maint" "node" \
-        "process" "user" "script" "metatype" "log" "server" "tree"; 
+        "process" "user" "script" "metatype" "log" "server" "container" "tree"; 
     then
         return 0
     fi
@@ -83,7 +83,7 @@ function _s9s()
     #
     if _s9s_no_command; then
         opts+="account backup cluster job maint node process user script "
-        opts+="metatype log server tree"
+        opts+="metatype log server container tree"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -249,6 +249,23 @@ function _s9s()
 
                 opts+="--acl= "
                 opts+=$(s9s tree --list --batch --recursive --full-path 2>/dev/null | awk '{print $5}')
+            fi
+        elif [[ ${COMP_WORDS[i]} == "container" ]]; then
+            main_opt+="--help "
+            main_opt+="--create --delete --list --start --stat --stop "
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            elif [ "$prev" == "--image" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s server --list-images)
+            else
+                opts+="--cloud= --containers= --image= --servers= --template= "
             fi
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
             main_opt="--help "
