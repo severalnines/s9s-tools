@@ -33,6 +33,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a new container.
+  o createContainers Creates several new containers with various images.
   o restartContainer Stop then start the container.
   o createCluster    Creates a new cluster on containers on the fly.
   o createServer     Creates a server from the previously created container.
@@ -254,6 +255,93 @@ function createContainer()
 }
 
 #
+# This will create a container and check if the user can actually log in through
+# ssh.
+#
+function createContainers()
+{
+    local container_name1="ft_containers_10_$$"
+    local container_name2="ft_containers_11_$$"
+    local container_name3="ft_containers_12_$$"
+    local container_name4="ft_containers_13_$$"
+    local owner
+    local template
+    local container_ip
+
+    #
+    # Creating a container Centos 7.
+    #
+    print_title "Creating Centos 7 Container"
+    mys9s container \
+        --create \
+        --image=centos_7
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$container_name1"
+    
+    check_exit_code $?
+    check_container "$container_name1"
+
+    #
+    # Creating a container Centos 6.
+    #
+    print_title "Creating Centos 6 Container"
+    mys9s container \
+        --create \
+        --image=centos_6
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$container_name2"
+    
+    check_exit_code $?
+    check_container "$container_name2"
+    
+    #
+    # Creating a container Debian Wheezy.
+    #
+    print_title "Creating Debian Wheezy Container"
+    mys9s container \
+        --create \
+        --image=debian_wheezy
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$container_name3"
+    
+    check_exit_code $?
+    check_container "$container_name3"
+    
+    #
+    # Creating a container Debian Wheezy.
+    #
+    print_title "Creating Debian Stretch Container"
+    mys9s container \
+        --create \
+        --image=debian_stretch
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$container_name4"
+    
+    check_exit_code $?
+    check_container "$container_name4"
+
+    #
+    # Deleting the containers we just created.
+    #
+    print_title "Deleting Containers"
+    mys9s container --delete --wait "$container_name1"
+    check_exit_code $?
+    
+    mys9s container --delete --wait "$container_name2"
+    check_exit_code $?
+    
+    mys9s container --delete --wait "$container_name3"
+    check_exit_code $?
+    
+    mys9s container --delete --wait "$container_name4"
+    check_exit_code $?
+}
+
+#
 # This test will call --stop and then --start on a previously created container.
 #
 function restartContainer()
@@ -360,6 +448,10 @@ function createCluster()
 function createServer()
 {
     local class
+
+    if [ -z "$CONTAINER_IP" ]; then
+        return 0
+    fi
 
     print_title "Creating a Server"
 
@@ -493,6 +585,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest createContainers
     runFunctionalTest restartContainer
     runFunctionalTest createCluster
     runFunctionalTest createServer

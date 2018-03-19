@@ -273,6 +273,41 @@ function check_exit_code_no_job()
     fi
 }
 
+function check_container()
+{
+    local container_name="$1"
+    local container_ip
+    
+    #
+    # Checking the container IP.
+    #
+    container_ip=$(\
+        s9s server \
+            --list-containers \
+            --batch \
+            --long  "$container_name" \
+        | awk '{print $7}')
+    
+    if [ -z "$container_ip" ]; then
+        failure "The container was not created or got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    if [ "$container_ip" == "-" ]; then
+        failure "The container got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+   
+    if ! is_server_running_ssh "$container_ip" "$owner"; then
+        failure "User $owner can not log in to $container_ip"
+        exit 1
+    else
+        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+    fi
+}
+
 #
 # This function will check if a core file is created and fails the test if so.
 #
