@@ -68,6 +68,12 @@ this variable is interpreted the same way the value for the
 brief_job_log_format = "%32B:%-5L: %-7S %M\\n"
 
 .TP
+\fBcmon_user\fP
+The Cmon user name used to authenticate the user on the Cmon system and 
+identify the owner of the objects the user creates (e.g. owner of the cluster).
+This value can also be set using the \fB--cmon-user\fP command line option.
+
+.TP
 \fBcolor\fP
 Controls if the syntax highlight will be used on the output, Same as the
 \fB\-\^\-color=\fP command line option. Valid values are \fBalways\fP,
@@ -159,10 +165,14 @@ The version of the SQL software that will be installed when no value is set by
 the \fB--provider-version\fP command line option.
 
 .TP
-\fBcmon_user\fP
-The Cmon user name used to authenticate the user on the Cmon system and 
-identify the owner of the objects the user creates (e.g. owner of the cluster).
-This value can also be set using the \fB--cmon-user\fP command line option.
+\fBtruncate\fP
+Controls if the strings too long to be displayed in the terminal should be
+truncated or not. Valid values are \fBalways\fP, \fBnever\fP and \fBauto\fP.
+The default value is \fBauto\fP which means the strings will be truncated if the
+standard output is connected to the terminal.
+
+.B EXAMPLE:
+truncate = never
 
 .TP
 \fBvendor\fP 

@@ -188,6 +188,16 @@ S9sString::appendWord(
     return *this;
 }
 
+int
+S9sString::terminalLength() const
+{
+    S9sString copy = *this;
+
+    copy.replace("…", ".");
+
+    return copy.length();
+}
+
 /**
  * \param formatString a standard printf() style formatstring.
  */

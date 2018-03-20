@@ -118,8 +118,8 @@ void
 S9sFormat::widen(
         const S9sString &value)
 {
-    if ((int)value.length() > m_width)
-        m_width = (int) value.length();
+    if ((int)value.terminalLength() > m_width)
+        m_width = (int) value.terminalLength();
 }
 
 /**
@@ -215,11 +215,11 @@ S9sFormat::printf(
                 {
                     S9sString alignString;
 
-                    if (m_width > (int) value.length())
+                    if (m_width > (int) value.terminalLength())
                     {
                         alignString = 
                             S9sString(" ") * 
-                            ((m_width - value.length()) / 2);
+                            ((m_width - value.terminalLength()) / 2);
                     }
                
                     myValue = alignString + myValue;

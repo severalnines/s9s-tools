@@ -341,6 +341,7 @@ class S9sOptions
         S9sString extraArgument(uint idx);
 
         bool useSyntaxHighlight();
+        bool truncate();
         bool humanReadable() const;
         void setHumanReadable(const bool value = true);
 

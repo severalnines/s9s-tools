@@ -155,6 +155,25 @@ S9sObject::name() const
     return property("alias").toString();
 }
 
+S9sString
+S9sObject::name(
+        const int columns) const
+{
+    S9sString retval = name();
+
+    if (columns <= 0)
+        return retval;
+
+    if ((int)retval.length() > columns)
+    {
+        retval.resize(columns);
+        retval += "…";
+    }
+
+    return retval;
+}
+
+
 S9sString 
 S9sObject::aclString() const
 {

@@ -3665,6 +3665,7 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            truncate = options->truncate();
     S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
@@ -3676,6 +3677,7 @@ S9sRpcReply::printContainersLong()
     S9sFormat       groupFormat;
     S9sFormat       typeFormat;
     S9sFormat       templateFormat;
+    int             nameWidth = truncate ? 32 : 0;
 
     /*
      * First run-through: collecting some information.
@@ -3684,13 +3686,13 @@ S9sRpcReply::printContainersLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
-        S9sString      alias  = theMap["alias"].toString();
+        S9sString      alias  = container.name(nameWidth);
         S9sString      ip     = theMap["ip"].toString();
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
-        S9sString      type   = theMap["type"].toString();
-        S9sString      templateName = theMap["template"].toString();
+        S9sString      type   = container.provider("-");
+        S9sString      templateName = container.templateName(truncate);
 
         if (!options->isStringMatchExtraArguments(alias))
             continue;
@@ -3715,7 +3717,7 @@ S9sRpcReply::printContainersLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        typeFormat.widen("TYPE");
+        typeFormat.widen("CLD");
         templateFormat.widen("TEMPLATE");
         userFormat.widen("OWNER");
         groupFormat.widen("GROUP");
@@ -3725,7 +3727,7 @@ S9sRpcReply::printContainersLong()
 
         printf("%s", headerColorBegin());
         printf("S ");
-        typeFormat.printf("TYPE", false);
+        typeFormat.printf("CLD", false);
         templateFormat.printf("TEMPLATE", false);
         userFormat.printf("OWNER", false);
         groupFormat.printf("GROUP", false);
@@ -3743,14 +3745,14 @@ S9sRpcReply::printContainersLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
-        S9sString      alias  = theMap["alias"].toString();
+        S9sString      alias  = container.name(nameWidth);
         S9sString      ip     = theMap["ip"].toString();
-        bool           isRunning    = theMap["status"] == "RUNNING";
+        bool           isRunning = theMap["status"] == "RUNNING";
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
-        S9sString      type   = theMap["type"].toString();
-        S9sString      templateName = theMap["template"].toString();
+        S9sString      type   = container.provider("-");
+        S9sString      templateName = container.templateName(truncate);
 
         if (isRunning)
             totalRunning++;

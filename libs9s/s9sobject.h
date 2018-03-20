@@ -44,6 +44,8 @@ class S9sObject
         virtual S9sString className() const;
 
         virtual S9sString name() const;
+        virtual S9sString name(const int columns) const;
+
         virtual S9sString id() const;
         virtual S9sString cdtPath() const;
 

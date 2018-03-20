@@ -42,6 +42,7 @@ class S9sContainer : public S9sObject
         virtual const S9sVariantMap &toVariantMap() const;
 
         virtual S9sString name() const;
+        S9sString name(const int columns) const;
 
         S9sString alias() const;
         void setAlias(const S9sString &alias);
@@ -65,7 +66,7 @@ class S9sContainer : public S9sObject
         S9sString image() const;
         void setImage(const S9sString &image);
 
-        S9sString templateName() const;
+        S9sString templateName(bool truncate = false) const;
         void setTemplate(const S9sString &templateName);
        
         S9sString region(const S9sString &defaultValue = "") const;

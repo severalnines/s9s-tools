@@ -58,6 +58,8 @@ class S9sString : public std::string
         inline bool contains(char c) const;
         inline bool contains(const char *s) const;
 
+        int terminalLength() const;
+
         void sprintf(const char *formatString, ...);
         void vsprintf(const char *formatString, va_list arguments);
         void aprintf(const char *formatString, ...);
@@ -112,9 +114,9 @@ class S9sString : public std::string
         static S9sString readStdIn();
         
         static bool readFile(
-                    const S9sString &fileName,
-                    S9sString       &content,
-                    S9sString       &errorString);
+                const S9sString     &fileName,
+                S9sString           &content,
+                S9sString           &errorString);
 
         static bool writeFile(
                 const S9sString     &fileName,

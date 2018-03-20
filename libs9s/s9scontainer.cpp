@@ -147,6 +147,24 @@ S9sContainer::name() const
     return retval;
 }
 
+S9sString
+S9sContainer::name(
+        const int columns) const
+{
+    S9sString retval = name();
+
+    if (columns <= 0)
+        return retval;
+
+    if ((int)retval.length() > columns)
+    {
+        retval.resize(columns);
+        retval += "…";
+    }
+
+    return retval;
+}
+
 S9sString 
 S9sContainer::alias() const
 {
@@ -255,9 +273,24 @@ S9sContainer::autoStart() const
  * \returns The template name that was used to create the container.
  */
 S9sString 
-S9sContainer::templateName() const
+S9sContainer::templateName(
+        bool truncate) const
 {
-    return property("template").toString();
+    S9sString retval = property("template").toString();
+    S9sString shortVersion;
+
+    if (!truncate)
+        return retval;
+
+    for (uint idx = 0u; idx < retval.length(); ++idx)
+    {
+        if (retval[idx] == ' ')
+            break;
+
+        shortVersion += retval[idx];
+    }
+
+    return shortVersion;
 }
 
 void

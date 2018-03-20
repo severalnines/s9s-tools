@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2017  Severalnines AB
+ * Copyright (C) 2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -2995,6 +2995,38 @@ S9sOptions::useSyntaxHighlight()
 
         if (configValue.empty())
             configValue = m_systemConfig.variableValue("color");
+    }
+
+    if (configValue.empty())
+        configValue = "auto";
+
+    if (configValue.toLower() == "auto")
+    {
+        if (isBatchRequested())
+            return false;
+
+        return isatty(fileno(stdout)) ? true : false;
+    } else if (configValue.toLower() == "always")
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool
+S9sOptions::truncate()
+{
+    S9sString configValue;
+
+    if (m_options.contains("truncate"))
+    {
+        configValue = m_options.at("truncate").toString();
+    } else {
+        configValue = m_userConfig.variableValue("truncate");
+
+        if (configValue.empty())
+            configValue = m_systemConfig.variableValue("truncate");
     }
 
     if (configValue.empty())
