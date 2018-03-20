@@ -277,7 +277,8 @@ function check_container()
 {
     local container_name="$1"
     local container_ip
-    
+    local owner
+
     #
     # Checking the container IP.
     #
@@ -299,7 +300,16 @@ function check_container()
         s9s container --list --long
         exit 1
     fi
-   
+  
+    owner=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $4}')
+
+    if [ "$owner" != "$USER" ]; then
+        failure "The owner is '$owner', should be '$USER'"
+        exit 1
+    fi
+
     if ! is_server_running_ssh "$container_ip" "$owner"; then
         failure "User $owner can not log in to $container_ip"
         exit 1

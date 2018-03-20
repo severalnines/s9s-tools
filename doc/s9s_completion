@@ -226,8 +226,9 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
             main_opt+="--help "
-            main_opt+="--create --list-disks --list-memory --list-nics "
-            main_opt+="--list-partitions --list-processors --list-containers "
+            main_opt+="--create --list-disks --list-images --list-memory "
+            main_opt+="--list-nics --list-partitions --list-processors "
+            main_opt+="--list-containers "
             main_opt+="--register --unregister --start --stop "
             main_opt+="--tree --unregister --get-acl --set-acl"
             

@@ -274,7 +274,7 @@ function createContainers()
     print_title "Creating Centos 7 Container"
     mys9s container \
         --create \
-        --image=centos_7
+        --image=centos_7 \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name1"
@@ -288,7 +288,7 @@ function createContainers()
     print_title "Creating Centos 6 Container"
     mys9s container \
         --create \
-        --image=centos_6
+        --image=centos_6 \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name2"
@@ -302,7 +302,7 @@ function createContainers()
     print_title "Creating Debian Wheezy Container"
     mys9s container \
         --create \
-        --image=debian_wheezy
+        --image=debian_wheezy \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name3"
@@ -316,7 +316,7 @@ function createContainers()
     print_title "Creating Debian Stretch Container"
     mys9s container \
         --create \
-        --image=debian_stretch
+        --image=debian_stretch \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name4"
