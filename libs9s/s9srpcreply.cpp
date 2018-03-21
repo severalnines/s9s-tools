@@ -3186,6 +3186,111 @@ S9sRpcReply::printMemoryBanks(
 }
 
 void
+S9sRpcReply::printSubnets()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       cloudFormat;
+    S9sFormat       regionFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       cidrFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat       vpcFormat;
+    S9sFormat       idFormat;
+    int             nSubnetsFound = 0;
+    S9sStringList   regions;
+
+    S9S_WARNING("------------");
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        int            nSubnets = server.nSubnets();
+
+        for (int idx1 = 0; idx1 < nSubnets; ++idx1)
+        {
+            S9sString cloud  = server.subnetProvider(idx1);
+            S9sString region = server.subnetRegion(idx1);
+            S9sString cidr   = server.subnetCidr(idx1);
+            S9sString vpcId  = server.subnetVpcId(idx1);
+            S9sString id     = server.subnetId(idx1);
+
+            cloudFormat.widen(cloud);
+            regionFormat.widen(region);
+            hostNameFormat.widen(hostName);
+            cidrFormat.widen(cidr);
+            vpcFormat.widen(vpcId);
+            idFormat.widen(id);
+
+            if (!regions.contains(region))
+                regions << region;
+
+            ++nSubnetsFound;
+        }
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        cloudFormat.widen("CLD");
+        regionFormat.widen("REGION");
+        hostNameFormat.widen("SERVER");
+        cidrFormat.widen("CIDR");
+        vpcFormat.widen("VPC");
+        idFormat.widen("ID");
+
+        printf("%s", headerColorBegin());
+        cloudFormat.printf("CLD");
+        regionFormat.printf("REGION");
+        hostNameFormat.printf("SERVER");
+        cidrFormat.printf("CIDR", false);
+        vpcFormat.printf("VPC");
+        idFormat.printf("ID");
+        printf("%s", headerColorEnd());
+        printf("\n");
+
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        int            nSubnets = server.nSubnets();
+
+        for (int idx1 = 0; idx1 < nSubnets; ++idx1)
+        {
+            S9sString cloud  = server.subnetProvider(idx1);
+            S9sString region = server.subnetRegion(idx1);
+            S9sString cidr   = server.subnetCidr(idx1);
+            S9sString vpcId  = server.subnetVpcId(idx1);
+            S9sString id     = server.subnetId(idx1);
+
+            hostNameFormat.setColor(
+                    server.colorBegin(syntaxHighlight),
+                    server.colorEnd(syntaxHighlight));
+            
+            cloudFormat.printf(cloud);
+            regionFormat.printf(region);
+            hostNameFormat.printf(hostName);
+            cidrFormat.printf(cidr);
+            vpcFormat.printf(vpcId);
+            idFormat.printf(id);
+
+            ::printf("\n");
+        }
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total %s%d%s subnet(s) in %s%d%s region(s).\n",
+                numberColorBegin(), nSubnetsFound, numberColorEnd(),
+                numberColorBegin(), (int)regions.size(), numberColorEnd()
+                );
+    }
+}
+
+void
 S9sRpcReply::printImages()
 {
     S9sOptions     *options = S9sOptions::instance();

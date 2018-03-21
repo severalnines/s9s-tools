@@ -115,6 +115,88 @@ S9sServer::status() const
     return property("hoststatus").toString();
 }
 
+S9sVariantList 
+S9sServer::subnets() const
+{
+    return property("subnets").toVariantList();
+}
+
+int
+S9sServer::nSubnets() const
+{
+    return (int) subnets().size();
+}
+
+S9sString
+S9sServer::subnetCidr(
+        const int idx) const
+{
+    S9sVariantList theList = subnets();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["cidr"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::subnetRegion(
+        const int idx) const
+{
+    S9sVariantList theList = subnets();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["region"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::subnetProvider(
+        const int idx) const
+{
+    S9sVariantList theList = subnets();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["provider"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::subnetId(
+        const int idx) const
+{
+    S9sVariantList theList = subnets();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["id"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::subnetVpcId(
+        const int idx) const
+{
+    S9sVariantList theList = subnets();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["vpc_id"].toString();
+    return retval;
+}
+
 const char *
 S9sServer::colorBegin(
         bool    useSyntaxHighLight) const

@@ -205,6 +205,7 @@ enum S9sOptionType
     OptionTestServer,
     OptionBackupDatadir,
     OptionListImages,
+    OptionListSubnets,
 };
 
 /**
@@ -2271,6 +2272,15 @@ S9sOptions::isListImagesRequested() const
 }
 
 /**
+ * \returns True if the --list-subnets command line option is provided.
+ */
+bool
+S9sOptions::isListSubnetsRequested() const
+{
+    return getBool("list_subnets");
+}
+
+/**
  * \returns True if the --list-memory command line option is provided.
  */
 bool
@@ -3931,6 +3941,7 @@ S9sOptions::printHelpServer()
 "  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
+"  --list-subnets             List the supported subnets.\n"
 "  --register                 Register an existint container server.\n"
 "  --start                    Boot up a server.\n"
 "  --stat                     List details about the server.\n"
@@ -8001,6 +8012,7 @@ S9sOptions::readOptionsServer(
         { "list",             no_argument,       0, 'L'                   },
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
+        { "list-subnets",     no_argument,       0, OptionListSubnets     },
         { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
         { "start",            no_argument,       0, OptionStart           },
@@ -8191,6 +8203,11 @@ S9sOptions::readOptionsServer(
             case OptionListProcessors:
                 // --list-processors
                 m_options["list_processors"] = true;
+                break;
+            
+            case OptionListSubnets:
+                // --list-subnets
+                m_options["list_subnets"] = true;
                 break;
             
             case OptionListNics:
@@ -8721,6 +8738,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListProcessorsRequested())
+        countOptions++;
+    
+    if (isListSubnetsRequested())
         countOptions++;
     
     if (isListNicsRequested())

@@ -46,6 +46,14 @@ class S9sServer : public S9sObject
         S9sString protocol() const;
         S9sString status() const;
 
+        S9sVariantList subnets() const;
+        int nSubnets() const;
+        S9sString subnetCidr(const int idx) const;
+        S9sString subnetRegion(const int idx) const;
+        S9sString subnetProvider(const int idx) const;
+        S9sString subnetId(const int idx) const;
+        S9sString subnetVpcId(const int idx) const;
+
         const char *colorBegin(bool useSyntaxHighLight) const;
         const char *colorEnd(bool useSyntaxHighLight) const;
 

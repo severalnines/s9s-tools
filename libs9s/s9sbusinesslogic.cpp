@@ -397,6 +397,17 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printMemoryBanks();
             client.setExitStatus();
+        } else if (options->isListSubnetsRequested())
+        {
+            /*
+             * s9s server --list-memory
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printSubnets();
+            client.setExitStatus();
         } else if (options->isListImagesRequested())
         {
             /*
