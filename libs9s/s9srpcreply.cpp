@@ -3199,7 +3199,11 @@ S9sRpcReply::printImages()
 
         for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
         {
-            S9sString      image = images[idx1].toString();
+            S9sVariantMap imageMap = images[idx1].toVariantMap();
+            S9sString     image    = imageMap["name"].toString();
+
+            if (image.empty())
+                continue;
 
             if (collectedList.contains(image))
                 continue;
@@ -3665,19 +3669,20 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             terminalWidth = options->terminalWidth();
+    int             nColumns;
     bool            truncate = options->truncate();
     S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
     int             totalRunning = 0;
-    S9sFormat       aliasFormat(containerColorBegin(), containerColorEnd());
-    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
-    S9sFormat       parentFormat;
-    S9sFormat       userFormat(userColorBegin(), userColorEnd());
-    S9sFormat       groupFormat;
+    
     S9sFormat       typeFormat;
     S9sFormat       templateFormat;
-    int             nameWidth = truncate ? 32 : 0;
+    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat       userFormat(userColorBegin(), userColorEnd());
+    S9sFormat       groupFormat;
+    S9sFormat       parentFormat;
 
     /*
      * First run-through: collecting some information.
@@ -3686,7 +3691,7 @@ S9sRpcReply::printContainersLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
-        S9sString      alias  = container.name(nameWidth);
+        S9sString      alias  = container.name();
         S9sString      ip     = theMap["ip"].toString();
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
@@ -3705,7 +3710,6 @@ S9sRpcReply::printContainersLong()
 
         userFormat.widen(user);
         groupFormat.widen(group);
-        aliasFormat.widen(alias);
         ipFormat.widen(ip);
         parentFormat.widen(parent);
         typeFormat.widen(type);
@@ -3721,7 +3725,6 @@ S9sRpcReply::printContainersLong()
         templateFormat.widen("TEMPLATE");
         userFormat.widen("OWNER");
         groupFormat.widen("GROUP");
-        aliasFormat.widen("NAME");
         ipFormat.widen("IP ADDRESS");
         parentFormat.widen("SERVER");
 
@@ -3731,13 +3734,23 @@ S9sRpcReply::printContainersLong()
         templateFormat.printf("TEMPLATE", false);
         userFormat.printf("OWNER", false);
         groupFormat.printf("GROUP", false);
-        aliasFormat.printf("NAME", false);
         ipFormat.printf("IP ADDRESS", false);
         parentFormat.printf("SERVER", false);
+        ::printf("NAME");
 
         printf("%s\n", headerColorEnd());
     }
 
+    nColumns  = 0;
+    nColumns += 2;
+    nColumns += typeFormat.realWidth();
+    nColumns += templateFormat.realWidth();
+    nColumns += userFormat.realWidth();
+    nColumns += groupFormat.realWidth();
+    nColumns += ipFormat.realWidth();
+    nColumns += parentFormat.realWidth();
+    
+    
     /*
      * Second run: doing the actual printing.
      */    
@@ -3745,7 +3758,7 @@ S9sRpcReply::printContainersLong()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
-        S9sString      alias  = container.name(nameWidth);
+        S9sString      alias  = container.name();
         S9sString      ip     = theMap["ip"].toString();
         bool           isRunning = theMap["status"] == "RUNNING";
         S9sString      parent = theMap["parent_server"].toString();
@@ -3768,6 +3781,17 @@ S9sRpcReply::printContainersLong()
 
         if (ip.empty())
             ip = "-";
+
+        if (truncate && nColumns < terminalWidth)
+        {
+            int remaining  = terminalWidth - nColumns;
+
+            if (remaining < (int) alias.length())
+            {
+                alias.resize(remaining - 1);
+                alias += "…";
+            }  
+        }
        
         printf("%c ", container.stateAsChar());
         
@@ -3782,13 +3806,16 @@ S9sRpcReply::printContainersLong()
         groupFormat.printf(group);
         printf("%s", groupColorEnd());
 
-        aliasFormat.printf(alias);
-
         ipFormat.printf(ip);
 
         printf("%s", serverColorBegin());
         parentFormat.printf(parent);
         printf("%s", serverColorEnd());
+
+        ::printf("%s%s%s", 
+                containerColorBegin(), 
+                STR(alias),
+                containerColorEnd());
 
         printf("\n");
     }
