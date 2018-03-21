@@ -3189,6 +3189,7 @@ void
 S9sRpcReply::printImages()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sStringList   collectedList;
 
@@ -3203,9 +3204,14 @@ S9sRpcReply::printImages()
 
             if (!options->isStringMatchExtraArguments(hostName))
                 continue;
+           
+            // Printing the server name in color.
+            ::printf("%s%s%s:", 
+                    server.colorBegin(syntaxHighlight),
+                    STR(hostName),
+                    server.colorEnd(syntaxHighlight));
 
-            ::printf("%s:", STR(hostName));
-
+            // Collecting all the images the given server supports.
             for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
             {
                 S9sVariantMap imageMap = images[idx1].toVariantMap();
@@ -3220,6 +3226,7 @@ S9sRpcReply::printImages()
                 collectedList << image;
             }
 
+            // Printing the images.
             for (uint idx = 0; idx < collectedList.size(); ++idx)
                 ::printf(" %s", STR(collectedList[idx]));
         
@@ -3541,10 +3548,11 @@ S9sRpcReply::printServersLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
-        S9sString      hostName = theMap["hostname"].toString();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
         S9sString      prot     = theMap["protocol"].toString();
         S9sString      version  = theMap["version"].toString();
-        S9sString      status   = theMap["hoststatus"].toString();
+        S9sString      status   = server.status();
         S9sString      owner    = theMap["owner_user_name"].toString();
         S9sString      group    = theMap["owner_group_name"].toString();
         S9sString      message  = theMap["message"].toString();
@@ -3560,21 +3568,9 @@ S9sRpcReply::printServersLong()
         if (prot.empty())
             prot = "-";
 
-        // FIXME: I am not sure this is actually user friendly.
-        if (syntaxHighlight)
-        {
-            if (status == "CmonHostRecovery" ||
-                    status == "CmonHostShutDown")
-            {
-                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
-            } else if (status == "CmonHostUnknown" ||
-                    status == "CmonHostOffLine")
-            {
-                hostNameFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
-            } else {
-                hostNameFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
-            }
-        }
+        hostNameFormat.setColor(
+                server.colorBegin(syntaxHighlight),
+                server.colorEnd(syntaxHighlight));
         
         protocolFormat.printf(prot);
         versionFormat.printf(version);

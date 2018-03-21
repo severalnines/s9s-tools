@@ -44,6 +44,11 @@ class S9sServer : public S9sObject
         S9sString version() const;
         S9sString ipAddress() const;
         S9sString protocol() const;
+        S9sString status() const;
+
+        const char *colorBegin(bool useSyntaxHighLight) const;
+        const char *colorEnd(bool useSyntaxHighLight) const;
+
 
         int nContainers() const;
         int nContainersMax() const;

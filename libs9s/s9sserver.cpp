@@ -109,6 +109,45 @@ S9sServer::protocol() const
     return property("protocol").toString();
 }
 
+S9sString
+S9sServer::status() const
+{
+    return property("hoststatus").toString();
+}
+
+const char *
+S9sServer::colorBegin(
+        bool    useSyntaxHighLight) const
+{
+    const char *retval = "";
+
+    if (useSyntaxHighLight)
+    {
+        S9sString myStatus = status();
+
+        if (myStatus == "CmonHostRecovery" ||
+                myStatus == "CmonHostShutDown")
+        {
+            retval = XTERM_COLOR_YELLOW;
+        } else if (myStatus == "CmonHostUnknown" ||
+                myStatus == "CmonHostOffLine")
+        {
+            retval = XTERM_COLOR_RED;
+        } else {
+            retval = XTERM_COLOR_GREEN;
+        }
+    }
+
+    return retval;
+}
+
+const char *
+S9sServer::colorEnd(
+        bool    useSyntaxHighLight) const
+{
+    return useSyntaxHighLight ? TERM_NORMAL : "";
+}
+
 /**
  * \returns How many containers this server has.
  */
