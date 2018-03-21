@@ -3188,36 +3188,70 @@ S9sRpcReply::printMemoryBanks(
 void
 S9sRpcReply::printImages()
 {
-    //S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sStringList   collectedList;
 
-    for (uint idx = 0; idx < theList.size(); ++idx)
+    if (options->isLongRequested())
     {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        S9sVariantList images = theMap["images"].toVariantList();
-
-        for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+        for (uint idx = 0; idx < theList.size(); ++idx)
         {
-            S9sVariantMap imageMap = images[idx1].toVariantMap();
-            S9sString     image    = imageMap["name"].toString();
+            S9sVariantMap  theMap   = theList[idx].toVariantMap();
+            S9sServer      server   = theMap;
+            S9sString      hostName = server.hostName();
+            S9sVariantList images   = theMap["images"].toVariantList();
 
-            if (image.empty())
+            if (!options->isStringMatchExtraArguments(hostName))
                 continue;
 
-            if (collectedList.contains(image))
-                continue;
+            ::printf("%s:", STR(hostName));
 
-            collectedList << image;
+            for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+            {
+                S9sVariantMap imageMap = images[idx1].toVariantMap();
+                S9sString     image    = imageMap["name"].toString();
+
+                if (image.empty())
+                    continue;
+
+                if (collectedList.contains(image))
+                    continue;
+
+                collectedList << image;
+            }
+
+            for (uint idx = 0; idx < collectedList.size(); ++idx)
+                ::printf(" %s", STR(collectedList[idx]));
+        
+            ::printf("\n");
         }
-    }
-    
-    for (uint idx = 0; idx < collectedList.size(); ++idx)
-    {
-        ::printf("%s ", STR(collectedList[idx]));
-    }
+    } else {
 
-    ::printf("\n");
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap = theList[idx].toVariantMap();
+            S9sVariantList images = theMap["images"].toVariantList();
+
+            for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+            {
+                S9sVariantMap imageMap = images[idx1].toVariantMap();
+                S9sString     image    = imageMap["name"].toString();
+
+                if (image.empty())
+                    continue;
+
+                if (collectedList.contains(image))
+                    continue;
+
+                collectedList << image;
+            }
+        }
+    
+        for (uint idx = 0; idx < collectedList.size(); ++idx)
+            ::printf("%s ", STR(collectedList[idx]));
+
+        ::printf("\n");
+    }
 }
 
 void
