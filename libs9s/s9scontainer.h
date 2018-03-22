@@ -50,7 +50,11 @@ class S9sContainer : public S9sObject
         virtual S9sString className() const;
 
         S9sString hostname() const;
-        S9sString ipAddress(const S9sString &defaultValue = "") const;
+
+        S9sString ipAddress(
+                const S9s::AddressType    addressType,
+                const S9sString          &defaultValue = "") const;
+
         S9sString ipv4Addresses(
                 const S9sString &separator = ", ",
                 const S9sString &defaultValue = "-");
@@ -60,13 +64,21 @@ class S9sContainer : public S9sObject
         int stateAsChar() const;
         bool autoStart() const;
 
+        S9sVariantMap subNet() const;
+        S9sString subnetId(const S9sString &defaultValue) const;
+        S9sString subnetCidr(const S9sString &defaultValue) const;
+
         S9sString provider(const S9sString &defaultValue = "") const;
         void setProvider(const S9sString &providerName);
+        S9sString subnetVpcId(const S9sString &defaultValue) const;
 
-        S9sString image() const;
+        S9sString image(const S9sString &defaultValue = "") const;
         void setImage(const S9sString &image);
 
-        S9sString templateName(bool truncate = false) const;
+        S9sString templateName(
+                const S9sString  &defaultValue,
+                bool              truncate = false) const;
+        
         void setTemplate(const S9sString &templateName);
        
         S9sString region(const S9sString &defaultValue = "") const;

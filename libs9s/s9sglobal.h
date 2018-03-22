@@ -27,6 +27,14 @@ namespace S9s
         UnknownSyntax,
         MongoConfigSyntax = YamlSyntax
     };
+
+    enum AddressType 
+    {
+        PublicIpv4Address,
+        PrivateIpv4Address,
+        PublicDnsName,
+        PrivateDnsName,
+    };
 };
 
 /**

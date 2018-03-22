@@ -136,6 +136,8 @@ class S9sOptions
         S9sString dbAdminPassword();
         S9sString clusterType() const;
         S9sString formatDateTime(S9sDateTime value) const;
+        S9s::AddressType addressType() const;
+
         bool fullUuid() const;
 
         S9sString schedule() const;

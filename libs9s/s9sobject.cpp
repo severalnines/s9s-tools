@@ -193,9 +193,15 @@ S9sObject::aclShortString() const
 }
 
 S9sString 
-S9sObject::id() const
+S9sObject::id(
+        const S9sString &defaultValue) const
 {
-    return property("id").toString();
+    S9sString retval = property("id").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 S9sString 

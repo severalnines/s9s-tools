@@ -3207,6 +3207,9 @@ S9sRpcReply::printTemplates()
         S9sString      hostName = server.hostName();
         int            nTemplates = server.nTemplates();
 
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
         for (int idx1 = 0; idx1 < nTemplates; ++idx1)
         {
             S9sString cloud  = server.templateProvider(idx1);
@@ -3248,6 +3251,9 @@ S9sRpcReply::printTemplates()
         S9sServer      server   = theMap;
         S9sString      hostName = server.hostName();
         int            nTemplates = server.nTemplates();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
 
         for (int idx1 = 0; idx1 < nTemplates; ++idx1)
         {
@@ -3896,6 +3902,7 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9s::AddressType addressType = options->addressType();
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
     bool            truncate = options->truncate();
@@ -3919,12 +3926,12 @@ S9sRpcReply::printContainersLong()
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
         S9sString      alias  = container.name();
-        S9sString      ip     = theMap["ip"].toString();
+        S9sString      ip     = container.ipAddress(addressType, "-");
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
         S9sString      type   = container.provider("-");
-        S9sString      templateName = container.templateName(truncate);
+        S9sString      templateName = container.templateName("-", truncate);
 
         if (!options->isStringMatchExtraArguments(alias))
             continue;
@@ -3986,13 +3993,13 @@ S9sRpcReply::printContainersLong()
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sContainer   container(theMap);
         S9sString      alias  = container.name();
-        S9sString      ip     = theMap["ip"].toString();
+        S9sString      ip     = container.ipAddress(addressType, "-");
         bool           isRunning = theMap["status"] == "RUNNING";
         S9sString      parent = theMap["parent_server"].toString();
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
         S9sString      type   = container.provider("-");
-        S9sString      templateName = container.templateName(truncate);
+        S9sString      templateName = container.templateName("-", truncate);
 
         if (isRunning)
             totalRunning++;
@@ -4002,9 +4009,6 @@ S9sRpcReply::printContainersLong()
         
         if (!cloudName.empty() && container.provider() != cloudName)
             continue;
-
-        if (templateName.empty())
-            templateName = "-";
 
         if (ip.empty())
             ip = "-";
@@ -4060,6 +4064,7 @@ S9sRpcReply::printContainersCompact(
         const S9sVariantList &containers)
 {
     S9sOptions    *options = S9sOptions::instance();
+    S9s::AddressType addressType = options->addressType();
     int            terminalWidth = options->terminalWidth();
     S9sFormat      aliasFormat(containerColorBegin(), containerColorEnd());
     S9sFormat      ipFormat(ipColorBegin(), ipColorEnd());
@@ -4077,7 +4082,7 @@ S9sRpcReply::printContainersCompact(
         S9sString          user      = container.ownerName();
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
-        S9sString          ipAddress = container.ipAddress("-");
+        S9sString          ipAddress = container.ipAddress(addressType, "-");
 
         userFormat.widen(user);
         groupFormat.widen(group);
@@ -4098,8 +4103,8 @@ S9sRpcReply::printContainersCompact(
     printf("S ");
     userFormat.printf("OWNER", false);
     groupFormat.printf("GROUP", false);
-    aliasFormat.printf("NAME", false);
     ipFormat.printf("IP ADDRESS", false);
+    aliasFormat.printf("NAME", false);
     printf("%s", headerColorEnd());
     printf("\n");
 
@@ -4110,15 +4115,15 @@ S9sRpcReply::printContainersCompact(
         S9sString          user      = container.ownerName();
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
-        S9sString          ipAddress = container.ipAddress("-");
+        S9sString          ipAddress = container.ipAddress(addressType, "-");
         
         printf("%s", STR(indent));
         printf("%c ", container.stateAsChar());
 
         userFormat.printf(user);
         groupFormat.printf(group);
-        aliasFormat.printf(alias);
         ipFormat.printf(ipAddress);
+        aliasFormat.printf(alias);
         printf("\n");
     }
 }
@@ -5574,7 +5579,7 @@ S9sRpcReply::printObjectStat(
     //
     //
     printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-38s", STR(object.id()));
+    printf("%-38s", STR(object.id("-")));
 
     printf("%s ACL:%s ", greyBegin, greyEnd);
     printf("%s", STR(object.aclShortString()));
@@ -5593,6 +5598,7 @@ S9sRpcReply::printContainerStat(
         S9sContainer &container)
 {
     S9sOptions *options = S9sOptions::instance();
+    S9s::AddressType addressType = options->addressType();
     int         terminalWidth = options->terminalWidth();
     const char *greyBegin = greyColorBegin();
     const char *greyEnd   = greyColorEnd();
@@ -5602,12 +5608,13 @@ S9sRpcReply::printContainerStat(
     //
     // The title that is in inverse. 
     //
-    if (container.ipAddress().empty())
+    if (container.ipAddress(addressType).empty())
     {
         title.sprintf(" %s ", STR(container.alias()));
     } else {
         title.sprintf(" %s (%s)", 
-                STR(container.alias()), STR(container.ipAddress()));
+                STR(container.alias()), 
+                STR(container.ipAddress(addressType)));
     }
 
     printf("%s", TERM_INVERSE);
@@ -5631,13 +5638,32 @@ S9sRpcReply::printContainerStat(
     printf("\n");
      
     //
-    //
+    // "   Cloud: az                                  Region: Southeast Asia"
     //
     printf("%s   Cloud:%s ", greyBegin, greyEnd);
     printf("%-34s", STR(container.provider("-")));
 
     printf("%s  Region:%s ", greyBegin, greyEnd);
-    printf("%-36s", STR(container.region("-")));
+    printf("%s", STR(container.region("-")));
+
+    printf("\n");
+
+    //
+    // "  Subnet: subnet-6a1d1c12                       CIDR: 172.31.0.0/20"
+    //
+    printf("%s  Subnet:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.subnetId("-")));
+    
+    printf("%s    CIDR:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.subnetCidr("-")));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s  VPC ID:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.subnetVpcId("-")));
 
     printf("\n");
 
@@ -5645,10 +5671,10 @@ S9sRpcReply::printContainerStat(
     //
     //
     printf("%sTemplate:%s ", greyBegin, greyEnd);
-    printf("%-36s", STR(container.templateName()));
+    printf("%-36s", STR(container.templateName("-")));
 
     printf("%s Image:%s ", greyBegin, greyEnd);
-    printf("%s", STR(container.image()));
+    printf("%s", STR(container.image("-")));
 
     printf("\n");
 

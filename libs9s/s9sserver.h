@@ -38,7 +38,7 @@ class S9sServer : public S9sObject
         virtual S9sString className() const;
 
         virtual S9sString name() const;
-        virtual S9sString id() const;
+        virtual S9sString id(const S9sString &defaultValue = "") const;
         S9sString hostName() const;
         S9sString alias(const S9sString &defaultValue = "") const;
         S9sString version() const;

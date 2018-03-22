@@ -190,14 +190,47 @@ S9sContainer::hostname() const
     return property("hostname").toString();
 }
 
+/**
+ *
+        "network": 
+        {
+            "private_ip": [ "172.31.12.5", "ip-1.compute.internal" ],
+            "public_ip": [ "54.93.99.244", "ec2.com" ]
+        },
+*/
 S9sString 
 S9sContainer::ipAddress(
-        const S9sString &defaultValue) const
+        const S9s::AddressType    addressType,
+        const S9sString          &defaultValue) const
 {
-    S9sString retval = property("ip").toString();
+    S9sString retval; 
+    
+    if (hasProperty("network"))
+    {
+        S9sVariantList addressList;
+        
+        if (addressType == S9s::PublicIpv4Address ||
+                addressType == S9s::PublicDnsName)
+        {
+            addressList = property("network")["public_ip"].toVariantList();
+        } else {
+            addressList = property("network")["private_ip"].toVariantList();
+        }
 
-    if (retval.empty())
-        retval = defaultValue;
+        if (addressType == S9s::PublicIpv4Address ||
+            addressType == S9s::PrivateIpv4Address)
+        {
+            if (addressList.size() > 0u)
+                retval = addressList[0u].toString();
+        } else {
+            if (addressList.size() > 1u)
+                retval = addressList[1u].toString();
+        }
+    } else {
+        retval = property("ip").toString();
+        if (retval.empty())
+            retval = defaultValue;
+    }
 
     return retval;
 }
@@ -270,27 +303,100 @@ S9sContainer::autoStart() const
 }
 
 /**
+ * \code{.js}
+ * "subnet": 
+ * {
+ *     "az": "",
+ *     "cidr": "10.0.0.0/24",
+ *     "class_name": "CmonSubnet",
+ *     "id": "bunin-vpc - bunin-subnet",
+ *     "name": "bunin-subnet",
+ *     "provider": "az",
+ *     "region": "southeastasia",
+ *     "status": "Succeeded",
+ *     "vpc_id": "bunin-vpc"
+ * },
+ * \endcode
+ */
+S9sVariantMap
+S9sContainer::subNet() const
+{
+    return property("subnet").toVariantMap();
+}
+
+S9sString 
+S9sContainer::subnetId(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+    
+    retval = subNet()["id"].toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString 
+S9sContainer::subnetCidr(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+    
+    retval = subNet()["cidr"].toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString 
+S9sContainer::subnetVpcId(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+    
+    retval = subNet()["vpc_id"].toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+/**
+ * \param truncate If this is true the template name will be truncated at the
+ *   first space.
  * \returns The template name that was used to create the container.
  */
 S9sString 
 S9sContainer::templateName(
-        bool truncate) const
+        const S9sString  &defaultValue,
+        bool              truncate) const
 {
     S9sString retval = property("template").toString();
-    S9sString shortVersion;
 
-    if (!truncate)
-        return retval;
-
-    for (uint idx = 0u; idx < retval.length(); ++idx)
+    if (truncate)
     {
-        if (retval[idx] == ' ')
-            break;
+        S9sString shortVersion;
 
-        shortVersion += retval[idx];
+        for (uint idx = 0u; idx < retval.length(); ++idx)
+        {
+            if (retval[idx] == ' ')
+                break;
+
+            shortVersion += retval[idx];
+        }
+
+        retval = shortVersion;
     }
 
-    return shortVersion;
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 void
@@ -320,9 +426,15 @@ S9sContainer::setProvider(
 }
 
 S9sString 
-S9sContainer::image() const
+S9sContainer::image(
+        const S9sString &defaultValue) const
 {
-    return property("image").toString();
+    S9sString retval = property("image").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 void

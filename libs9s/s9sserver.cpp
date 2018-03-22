@@ -70,9 +70,15 @@ S9sServer::name() const
 }
 
 S9sString
-S9sServer::id() const
+S9sServer::id(
+        const S9sString &defaultValue) const
 {
-    return property("hostId").toString();
+    S9sString retval = property("hostId").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 S9sString
