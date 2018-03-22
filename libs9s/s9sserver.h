@@ -54,6 +54,13 @@ class S9sServer : public S9sObject
         S9sString subnetId(const int idx) const;
         S9sString subnetVpcId(const int idx) const;
 
+        S9sVariantList templates() const;
+        int nTemplates() const;
+        S9sString templateName(const int idx) const;
+        S9sString templateRegion(const int idx) const;
+        S9sString templateProvider(const int idx) const;
+
+
         const char *colorBegin(bool useSyntaxHighLight) const;
         const char *colorEnd(bool useSyntaxHighLight) const;
 

@@ -197,6 +197,61 @@ S9sServer::subnetVpcId(
     return retval;
 }
 
+S9sVariantList 
+S9sServer::templates() const
+{
+    return property("templates").toVariantList();
+}
+
+int
+S9sServer::nTemplates() const
+{
+    return (int) templates().size();
+}
+
+S9sString
+S9sServer::templateName(
+        const int idx) const
+{
+    S9sVariantList theList = templates();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["name"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::templateRegion(
+        const int idx) const
+{
+    S9sVariantList theList = templates();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["region"].toString();
+    return retval;
+}
+
+S9sString
+S9sServer::templateProvider(
+        const int idx) const
+{
+    S9sVariantList theList = templates();
+    S9sString      retval;
+
+    if (idx < 0 || idx >= (int)theList.size())
+        return retval;
+
+    retval = theList[idx]["provider"].toString();
+    return retval;
+}
+
+
 const char *
 S9sServer::colorBegin(
         bool    useSyntaxHighLight) const

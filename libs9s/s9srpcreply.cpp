@@ -3186,6 +3186,98 @@ S9sRpcReply::printMemoryBanks(
 }
 
 void
+S9sRpcReply::printTemplates()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       cloudFormat;
+    S9sFormat       regionFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       nameFormat;
+    S9sFormat       vpcFormat;
+    S9sFormat       idFormat;
+    int             nTemplatesFound = 0;
+    S9sStringList   regions;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        int            nTemplates = server.nTemplates();
+
+        for (int idx1 = 0; idx1 < nTemplates; ++idx1)
+        {
+            S9sString cloud  = server.templateProvider(idx1);
+            S9sString region = server.templateRegion(idx1);
+            S9sString name   = server.templateName(idx1);
+
+            cloudFormat.widen(cloud);
+            regionFormat.widen(region);
+            hostNameFormat.widen(hostName);
+            nameFormat.widen(name);
+
+            if (!regions.contains(region))
+                regions << region;
+
+            ++nTemplatesFound;
+        }
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        cloudFormat.widen("CLD");
+        regionFormat.widen("REGION");
+        hostNameFormat.widen("SERVER");
+        nameFormat.widen("TEMPLATE");
+
+        printf("%s", headerColorBegin());
+        cloudFormat.printf("CLD");
+        regionFormat.printf("REGION");
+        hostNameFormat.printf("SERVER");
+        nameFormat.printf("TEMPLATE", false);
+        printf("%s", headerColorEnd());
+        printf("\n");
+
+    }
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        int            nTemplates = server.nTemplates();
+
+        for (int idx1 = 0; idx1 < nTemplates; ++idx1)
+        {
+            S9sString cloud  = server.templateProvider(idx1);
+            S9sString region = server.templateRegion(idx1);
+            S9sString name   = server.templateName(idx1);
+
+            hostNameFormat.setColor(
+                    server.colorBegin(syntaxHighlight),
+                    server.colorEnd(syntaxHighlight));
+            
+            cloudFormat.printf(cloud);
+            regionFormat.printf(region);
+            hostNameFormat.printf(hostName);
+            nameFormat.printf(name);
+
+            ::printf("\n");
+        }
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total %s%d%s template(s) in %s%d%s region(s).\n",
+                numberColorBegin(), nTemplatesFound, numberColorEnd(),
+                numberColorBegin(), (int)regions.size(), numberColorEnd()
+                );
+    }
+}
+
+void
 S9sRpcReply::printSubnets()
 {
     S9sOptions     *options = S9sOptions::instance();

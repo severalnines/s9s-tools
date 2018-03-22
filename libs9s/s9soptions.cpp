@@ -206,6 +206,7 @@ enum S9sOptionType
     OptionBackupDatadir,
     OptionListImages,
     OptionListSubnets,
+    OptionListTemplates,
 };
 
 /**
@@ -2281,6 +2282,15 @@ S9sOptions::isListSubnetsRequested() const
 }
 
 /**
+ * \returns True if the --list-templates command line option is provided.
+ */
+bool
+S9sOptions::isListTemplatesRequested() const
+{
+    return getBool("list_templates");
+}
+
+/**
  * \returns True if the --list-memory command line option is provided.
  */
 bool
@@ -3942,6 +3952,7 @@ S9sOptions::printHelpServer()
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
 "  --list-subnets             List the supported subnets.\n"
+"  --list-templates           List the supported templates.\n"
 "  --register                 Register an existint container server.\n"
 "  --start                    Boot up a server.\n"
 "  --stat                     List details about the server.\n"
@@ -8013,6 +8024,7 @@ S9sOptions::readOptionsServer(
         { "list-partitions",  no_argument,       0, OptionListPartitions  },
         { "list-processors",  no_argument,       0, OptionListProcessors  },
         { "list-subnets",     no_argument,       0, OptionListSubnets     },
+        { "list-templates",   no_argument,       0, OptionListTemplates   },
         { "move",             no_argument,       0, OptionMove            },
         { "register",         no_argument,       0, OptionRegister        },
         { "start",            no_argument,       0, OptionStart           },
@@ -8208,6 +8220,11 @@ S9sOptions::readOptionsServer(
             case OptionListSubnets:
                 // --list-subnets
                 m_options["list_subnets"] = true;
+                break;
+            
+            case OptionListTemplates:
+                // --list-templates
+                m_options["list_templates"] = true;
                 break;
             
             case OptionListNics:
@@ -8741,6 +8758,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListSubnetsRequested())
+        countOptions++;
+    
+    if (isListTemplatesRequested())
         countOptions++;
     
     if (isListNicsRequested())

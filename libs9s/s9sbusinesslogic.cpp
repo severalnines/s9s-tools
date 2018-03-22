@@ -408,6 +408,17 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printSubnets();
             client.setExitStatus();
+        } else if (options->isListTemplatesRequested())
+        {
+            /*
+             * s9s server --list-memory
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printTemplates();
+            client.setExitStatus();
         } else if (options->isListImagesRequested())
         {
             /*
