@@ -3902,6 +3902,8 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sString       subnetId  = options->subnetId();
+    S9sString       vpcId     = options->vpcId();
     S9s::AddressType addressType = options->addressType();
     int             terminalWidth = options->terminalWidth();
     int             nColumns;
@@ -3937,6 +3939,12 @@ S9sRpcReply::printContainersLong()
             continue;
 
         if (!cloudName.empty() && container.provider() != cloudName)
+            continue;
+        
+        if (!subnetId.empty() && container.subnetId() != subnetId)
+            continue;
+        
+        if (!vpcId.empty() && vpcId != container.subnetVpcId())
             continue;
 
         if (ip.empty())
@@ -4007,6 +4015,12 @@ S9sRpcReply::printContainersLong()
         if (!options->isStringMatchExtraArguments(alias))
             continue;
         
+        if (!subnetId.empty() && container.subnetId() != subnetId)
+            continue;
+        
+        if (!vpcId.empty() && vpcId != container.subnetVpcId())
+            continue;
+
         if (!cloudName.empty() && container.provider() != cloudName)
             continue;
 
@@ -5766,6 +5780,7 @@ S9sRpcReply::printContainerStat()
 {
     S9sOptions     *options   = S9sOptions::instance();
     S9sString       subnetId  = options->subnetId();
+    S9sString       vpcId     = options->vpcId();
     S9sString       cloudName = options->cloudName();
     S9sVariantList  theList   = operator[]("containers").toVariantList();
     
@@ -5779,9 +5794,13 @@ S9sRpcReply::printContainerStat()
 
         if (!subnetId.empty() && container.subnetId() != subnetId)
             continue;
+        
+        if (!vpcId.empty() && vpcId != container.subnetVpcId())
+            continue;
 
         if (!options->isStringMatchExtraArguments(container.name()))
             continue;
+
 
         printContainerStat(container);
     }

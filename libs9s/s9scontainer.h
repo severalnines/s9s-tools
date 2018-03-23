@@ -70,7 +70,7 @@ class S9sContainer : public S9sObject
 
         S9sString provider(const S9sString &defaultValue = "") const;
         void setProvider(const S9sString &providerName);
-        S9sString subnetVpcId(const S9sString &defaultValue) const;
+        S9sString subnetVpcId(const S9sString &defaultValue = "") const;
 
         S9sString image(const S9sString &defaultValue = "") const;
         void setImage(const S9sString &image);
