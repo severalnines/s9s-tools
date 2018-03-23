@@ -3,6 +3,7 @@
 #
 
 AM_CPPFLAGS  = -Wall -Werror -fno-strict-aliasing
+AM_CPPFLAGS += -std=c++0x
 AM_CPPFLAGS += -Wno-deprecated-declarations
 AM_CPPFLAGS += -fPIC -pipe
 MY_LDFLAGS = -Wl,--whole-archive libs9s.a -Wl,--no-whole-archive

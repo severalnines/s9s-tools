@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -83,15 +83,15 @@ class S9sString : public std::string
         bool startsWith(const char *str) const;
         bool endsWith(S9sString const &ending) const;
 
-#if 0
         bool regMatch(const S9sString &regExp) const;
+
         bool regMatch(const S9sString &regExp, S9sString &matched) const;
 
         bool regMatch(
                 const S9sString   &regExp, 
                 S9sString         &matched1, 
                 S9sString         &matched2) const;
-#endif
+
         void replace(const S9sString &from, const S9sString &to);
         void replace(size_t pos, size_t len, const S9sString &str);
         void replace(S9sRegExp &regExp, S9sString replacement);
@@ -102,6 +102,8 @@ class S9sString : public std::string
         bool looksBoolean() const;
         bool looksInteger() const;
         bool looksULongLong() const;
+        bool looksLikeIpAddress() const;
+
 
         static S9sString decimalSeparator();
 

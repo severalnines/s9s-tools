@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <regex.h>
 #include "S9sRegExp"
 
 // Let's read in 16KB chunks
@@ -373,7 +374,6 @@ S9sString::replace(
     }
 }
 
-#if 0
 bool
 S9sString::regMatch(
         const S9sString &regExp) const
@@ -469,7 +469,6 @@ S9sString::regMatch(
 
     return retval;
 }
-#endif
 
 void
 S9sString::replace(
@@ -771,6 +770,14 @@ S9sString::looksULongLong() const
 
     return true;
 }
+
+bool
+S9sString::looksLikeIpAddress() const
+{
+    return regMatch("([0-9]{1,3}\\.){3}[0-9]{1,3}");
+}
+
+
 
 S9sString 
 S9sString::decimalSeparator()
