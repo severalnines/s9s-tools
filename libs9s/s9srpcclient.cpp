@@ -4552,25 +4552,32 @@ S9sRpcClient::createContainerWithJob()
     S9sString      imageName    = options->imageName();
     S9sString      cloudName    = options->cloudName();
     S9sVariantList servers      = options->servers();
+    S9sString      subnetId     = options->subnetId();
+    S9sString      vpcId        = options->vpcId();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData(true);
-    S9sVariantMap  jobSpec, container;
+    S9sVariantMap  jobSpec;
+    S9sContainer   container;
     S9sString      uri = "/v2/jobs/";
    
-    container["class_name"] = "CmonContainer";
-
     if (!templateName.empty())
-        container["template"] = templateName;
+        container.setTemplate(templateName);
     
     if (!imageName.empty())
-        container["image"] = imageName;
+        container.setImage(imageName);
 
     if (!cloudName.empty())
-        container["provider"] = cloudName;
+        container.setProvider(cloudName);
 
     if (options->nExtraArguments() == 1)
-        container["alias"] = options->extraArgument(0);
+        container.setAlias(options->extraArgument(0));
+    
+    if (!cloudName.empty())
+        container.setProvider(cloudName);
+
+    if (!subnetId.empty())
+        container.setSubnetId(subnetId);
 
     if (servers.size() > 1)
     {
@@ -4578,7 +4585,7 @@ S9sRpcClient::createContainerWithJob()
         return false;
     } else if (servers.size() == 1) 
     {
-        container["parent_server"] = servers[0u].toNode().hostName();
+        container.setParentServerName(servers[0u].toNode().hostName());
     }
         
     /*
@@ -4589,7 +4596,7 @@ S9sRpcClient::createContainerWithJob()
         jobSpec["command"]    = "create_containers";
         job["title"]          = "Create Containers";
     } else {
-        jobData["container"]  = container;
+        jobData["container"]  = container.toVariantMap();
         jobSpec["command"]    = "create_container";
         job["title"]          = "Create Container";
     }
@@ -5981,6 +5988,8 @@ S9sRpcClient::composeJobData(
     S9sString      templateName = options->templateName();
     S9sString      cloudName    = options->cloudName();
     S9sString      imageName    = options->imageName();
+    S9sString      subnetId     = options->subnetId();
+    S9sString      vpcId        = options->vpcId();
     S9sVariantMap  jobData;
     S9sVariantList containers;
 
@@ -5992,17 +6001,24 @@ S9sRpcClient::composeJobData(
         for (uint idx = 0u; idx < theList.size(); ++idx)
         {
             S9sVariantMap containerMap = theList[idx].toVariantMap();
+            S9sContainer  container(containerMap);
 
             if (!templateName.empty())
-                containerMap["template"] = templateName;
+                container.setTemplate(templateName);
 
             if (!imageName.empty())
-                containerMap["image"] = imageName;
+                container.setImage(imageName);
 
             if (!cloudName.empty())
-                containerMap["provider"] = cloudName;
+                container.setProvider(cloudName);
 
-            containers << containerMap;
+            if (!subnetId.empty())
+                container.setSubnetId(subnetId);
+
+            if (!vpcId.empty())
+                container.setSubnetVpcId(vpcId);
+
+            containers << container.toVariantMap();
         }
     }
 
@@ -6023,6 +6039,12 @@ S9sRpcClient::composeJobData(
             
             if (!cloudName.empty())
                 container.setProvider(cloudName);
+            
+            if (!subnetId.empty())
+                container.setSubnetId(subnetId);
+
+            if (!vpcId.empty())
+                container.setSubnetVpcId(vpcId);
 
             containers << container.toVariantMap();
         }

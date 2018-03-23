@@ -60,17 +60,23 @@ class S9sContainer : public S9sObject
                 const S9sString &defaultValue = "-");
 
         S9sString parentServerName() const;
+        void setParentServerName(const S9sString &value);
+
         S9sString state() const;
         int stateAsChar() const;
         bool autoStart() const;
 
         S9sVariantMap subNet() const;
+        
         S9sString subnetId(const S9sString &defaultValue = "") const;
+        void setSubnetId(const S9sString &value);
+
+        S9sString subnetVpcId(const S9sString &defaultValue = "") const;
+        void setSubnetVpcId(const S9sString &value);
         S9sString subnetCidr(const S9sString &defaultValue = "") const;
 
         S9sString provider(const S9sString &defaultValue = "") const;
         void setProvider(const S9sString &providerName);
-        S9sString subnetVpcId(const S9sString &defaultValue = "") const;
 
         S9sString image(const S9sString &defaultValue = "") const;
         void setImage(const S9sString &image);

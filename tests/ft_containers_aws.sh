@@ -238,6 +238,7 @@ function createContainer()
     #
     mys9s container \
         --create \
+        --subnet-id=subnet-81a382cb \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name"
@@ -295,6 +296,10 @@ function createContainer()
     LAST_CONTAINER_NAME=$container_name
 }
 
+#
+# This will try to create some containers with values that should cause failures
+# (like duplicate names).
+#
 function createFail()
 {
     local exitCode

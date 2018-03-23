@@ -266,6 +266,13 @@ S9sContainer::parentServerName() const
     return property("parent_server").toString();
 }
 
+void
+S9sContainer::setParentServerName(
+        const S9sString &value)
+{
+    setProperty("parent_server", value);
+}
+
 /**
  * \returns "STOPPED" or "RUNNING".
  */
@@ -338,6 +345,16 @@ S9sContainer::subnetId(
     return retval;
 }
 
+void
+S9sContainer::setSubnetId(
+        const S9sString &value)
+{
+    S9sVariantMap subnetMap = subNet();
+
+    subnetMap["id"] = value;
+    setProperty("subnet", subnetMap);
+}
+
 S9sString 
 S9sContainer::subnetCidr(
         const S9sString &defaultValue) const
@@ -365,6 +382,17 @@ S9sContainer::subnetVpcId(
 
     return retval;
 }
+
+void
+S9sContainer::setSubnetVpcId(
+        const S9sString &value)
+{
+    S9sVariantMap subnetMap = subNet();
+
+    subnetMap["vpc_id"] = value;
+    setProperty("subnet", subnetMap);
+}
+
 
 /**
  * \param truncate If this is true the template name will be truncated at the
