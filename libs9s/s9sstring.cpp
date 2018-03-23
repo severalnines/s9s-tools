@@ -777,8 +777,6 @@ S9sString::looksLikeIpAddress() const
     return regMatch("([0-9]{1,3}\\.){3}[0-9]{1,3}");
 }
 
-
-
 S9sString 
 S9sString::decimalSeparator()
 {

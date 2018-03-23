@@ -199,6 +199,8 @@ enum S9sOptionType
     OptionSuccess,
     OptionAccess,
     OptionTemplate,
+    OptionSubnetId,
+    OptionVpcId,
     OptionCloud,
     OptionImage,
     OptionIndividualFiles,
@@ -1909,10 +1911,25 @@ S9sOptions::templateName() const
     return getString("template");
 }
 
+/**
+ * \returns The value for the --cloud= command line option.
+ */
 S9sString
 S9sOptions::cloudName() const
 {
     return getString("cloud");
+}
+
+S9sString
+S9sOptions::subnetId() const
+{
+    return getString("subnet_id");
+}
+
+S9sString
+S9sOptions::vpcId() const
+{
+    return getString("vpc_id");
 }
 
 /**
@@ -3889,7 +3906,9 @@ S9sOptions::printHelpContainer()
 "  --containers=LIST          List of containers to be created.\n"
 "  --image=NAME               The name of the image for the container.\n"
 "  --servers=LIST             A list of servers to work with.\n"
+"  --subnet-id=ID             The ID of the subnet.\n"
 "  --template=NAME            The name of the container template.\n"
+"  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "\n");
 }
 
@@ -7336,7 +7355,9 @@ S9sOptions::readOptionsContainer(
         { "containers",       required_argument, 0, OptionContainers      },
         { "image",            required_argument, 0, OptionImage           },
         { "servers",          required_argument, 0, OptionServers         },
+        { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
+        { "vpc-id",           required_argument, 0, OptionVpcId           },
         
         { 0, 0, 0, 0 }
     };
@@ -7530,10 +7551,20 @@ S9sOptions::readOptionsContainer(
                     return false;
 
                 break;
+
+            case OptionSubnetId:
+                // --subnet-id=ID
+                m_options["subnet_id"] = optarg;
+                break;
             
             case OptionTemplate:
-                // --template=ADDRESS
+                // --template=NAME
                 m_options["template"] = optarg;
+                break;
+            
+            case OptionVpcId:
+                // --vpc-id=ID
+                m_options["vpc_id"] = optarg;
                 break;
 
             case '?':

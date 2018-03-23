@@ -215,6 +215,8 @@ class S9sOptions
         S9sString donor() const;
         S9sString templateName() const;
         S9sString cloudName() const;
+        S9sString subnetId() const;
+        S9sString vpcId() const;
         S9sString imageName() const;
 
         bool force() const;

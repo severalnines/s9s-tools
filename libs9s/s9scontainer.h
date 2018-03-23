@@ -65,8 +65,8 @@ class S9sContainer : public S9sObject
         bool autoStart() const;
 
         S9sVariantMap subNet() const;
-        S9sString subnetId(const S9sString &defaultValue) const;
-        S9sString subnetCidr(const S9sString &defaultValue) const;
+        S9sString subnetId(const S9sString &defaultValue = "") const;
+        S9sString subnetCidr(const S9sString &defaultValue = "") const;
 
         S9sString provider(const S9sString &defaultValue = "") const;
         void setProvider(const S9sString &providerName);

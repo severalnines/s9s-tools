@@ -5764,9 +5764,10 @@ S9sRpcReply::printContainerStat(
 void 
 S9sRpcReply::printContainerStat()
 {
-    S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sString       subnetId  = options->subnetId();
     S9sString       cloudName = options->cloudName();
-    S9sVariantList  theList = operator[]("containers").toVariantList();
+    S9sVariantList  theList   = operator[]("containers").toVariantList();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -5774,6 +5775,9 @@ S9sRpcReply::printContainerStat()
         S9sContainer   container(theMap);
 
         if (!cloudName.empty() && container.provider() != cloudName)
+            continue;
+
+        if (!subnetId.empty() && container.subnetId() != subnetId)
             continue;
 
         if (!options->isStringMatchExtraArguments(container.name()))
