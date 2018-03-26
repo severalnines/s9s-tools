@@ -3305,6 +3305,7 @@ S9sRpcReply::printSubnets()
         return;
     }
 
+    // If no --long option is provided we print a simple list.
     if (!options->isLongRequested())
     {
         S9sVariantMap subnetsMap;
@@ -5654,6 +5655,7 @@ S9sRpcReply::printContainerStat(
     const char *greyEnd   = greyColorEnd();
     S9sString   title;
     S9sString   tmpString;
+    S9sString   tmp;
 
     //
     // The title that is in inverse. 
@@ -5684,6 +5686,19 @@ S9sRpcReply::printContainerStat(
 
     printf("%s Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(container.type()));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    tmp = container.ipAddress(S9s::PublicIpv4Address, "-");
+    printf("%sPublicIp:%s ", greyBegin, greyEnd);
+    printf("%s%-32s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
+
+    tmp = container.ipAddress(S9s::PrivateIpv4Address, "-");
+    printf("%sPrivateIp:%s ", greyBegin, greyEnd);
+    printf("%s%s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
 
     printf("\n");
      
@@ -8775,18 +8790,20 @@ S9sRpcReply::containerColorEnd()
 }
 
 const char *
-S9sRpcReply::ipColorBegin()
+S9sRpcReply::ipColorBegin(
+        const S9sString &ip)
 {
-    if (useSyntaxHighLight())
+    if (useSyntaxHighLight() && ip.looksLikeIpAddress())
         return XTERM_COLOR_IP;
 
     return "";
 }
 
 const char *
-S9sRpcReply::ipColorEnd() 
+S9sRpcReply::ipColorEnd(
+        const S9sString &ip) 
 {
-    if (useSyntaxHighLight())
+    if (useSyntaxHighLight() && ip.looksLikeIpAddress())
         return TERM_NORMAL;
 
     return "";

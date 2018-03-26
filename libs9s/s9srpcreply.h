@@ -175,8 +175,8 @@ class S9sRpcReply : public S9sVariantMap
         static const char *containerColorBegin();
         static const char *containerColorEnd();
         
-        static const char *ipColorBegin();
-        static const char *ipColorEnd();
+        static const char *ipColorBegin(const S9sString &ip = "1.1.1.1");
+        static const char *ipColorEnd(const S9sString &ip = "1.1.1.1");
         
         static const char *userColorBegin();
         static const char *userColorEnd();
