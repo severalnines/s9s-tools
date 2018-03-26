@@ -3297,6 +3297,42 @@ S9sRpcReply::printSubnets()
     S9sFormat       idFormat;
     int             nSubnetsFound = 0;
     S9sStringList   regions;
+   
+    // If the json is requested we simply print it and that's all.
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    if (!options->isLongRequested())
+    {
+        S9sVariantMap subnetsMap;
+
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap   = theList[idx].toVariantMap();
+            S9sServer      server   = theMap;
+            S9sString      hostName = server.hostName();
+            int            nSubnets = server.nSubnets();
+
+            for (int idx1 = 0; idx1 < nSubnets; ++idx1)
+            {
+                S9sString cloud  = server.subnetProvider(idx1);
+                S9sString id     = server.subnetId(idx1);
+
+                subnetsMap[id] = id;
+            }
+        }
+
+        foreach(S9sVariant name, subnetsMap)
+        {
+            ::printf("%s ", STR(name.toString()));
+        }
+
+        ::printf("\n");
+        return;
+    }
 
     S9S_WARNING("------------");
     for (uint idx = 0; idx < theList.size(); ++idx)
