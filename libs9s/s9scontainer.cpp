@@ -204,7 +204,17 @@ S9sContainer::ipAddress(
         const S9sString          &defaultValue) const
 {
     S9sString retval; 
-    
+   
+    if (addressType == S9s::AnyIpv4Address)
+    {
+        retval = ipAddress(S9s::PublicIpv4Address);
+
+        if (retval.empty())
+            retval = ipAddress(S9s::PrivateIpv4Address, defaultValue);
+
+        return retval;
+    }
+
     if (hasProperty("network"))
     {
         S9sVariantList addressList;
@@ -228,13 +238,24 @@ S9sContainer::ipAddress(
         }
     } else {
         retval = property("ip").toString();
-        if (retval.empty())
-            retval = defaultValue;
     }
+
+    if (retval.empty())
+        retval = defaultValue;
 
     return retval;
 }
 
+/**
+ *
+ * \code{.js}
+ * "network": 
+ * {
+ *     "private_ip": [ "172.31.5.246", "ip-172-31-5-246.eu" ],
+ *     "public_ip": [ "52.59.220.19", "ec2-52-59-220-19.eu" ]
+ * },
+ * \endcode
+ */
 S9sString 
 S9sContainer::ipv4Addresses(
         const S9sString &separator,
@@ -244,6 +265,7 @@ S9sContainer::ipv4Addresses(
 
     if (hasProperty("network"))
     {
+        // The new way.
         S9sVariantList addressList;
 
         addressList = property("network")["public_ip"].toVariantList();
@@ -277,6 +299,7 @@ S9sContainer::ipv4Addresses(
         if (retval.empty())
             retval = defaultValue;
     } else {
+        // This is the old way around.
         S9sVariantList theList =  property("ipv4_addresses").toVariantList();
 
         for (uint idx = 0u; idx < theList.size(); ++idx)

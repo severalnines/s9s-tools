@@ -1381,7 +1381,7 @@ S9sOptions::formatDateTime(
 S9s::AddressType
 S9sOptions::addressType() const
 {
-    return S9s::PublicIpv4Address;
+    return S9s::AnyIpv4Address;
     //return S9s::PrivateIpv4Address;
 }
 

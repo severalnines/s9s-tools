@@ -32,6 +32,8 @@ namespace S9s
     {
         PublicIpv4Address,
         PrivateIpv4Address,
+        // First public, if it is not set private address.
+        AnyIpv4Address,
         PublicDnsName,
         PrivateDnsName,
     };
