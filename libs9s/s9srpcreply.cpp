@@ -5694,7 +5694,7 @@ S9sRpcReply::printContainerStat(
     //
     tmp = container.ipAddress(S9s::PublicIpv4Address, "-");
     printf("%sPublicIp:%s ", greyBegin, greyEnd);
-    printf("%s%-32s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
+    printf("%s%-33s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
 
     tmp = container.ipAddress(S9s::PrivateIpv4Address, "-");
     printf("%sPrivateIp:%s ", greyBegin, greyEnd);

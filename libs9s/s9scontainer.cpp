@@ -240,20 +240,58 @@ S9sContainer::ipv4Addresses(
         const S9sString &separator,
         const S9sString &defaultValue)
 {
-    S9sVariantList theList =  property("ipv4_addresses").toVariantList();
     S9sString      retval;
 
-    for (uint idx = 0u; idx < theList.size(); ++idx)
+    if (hasProperty("network"))
     {
-        if (!retval.empty())
-            retval += separator;
+        S9sVariantList addressList;
 
-        retval += theList[idx].toString();
+        addressList = property("network")["public_ip"].toVariantList();
+        for (uint idx = 0u; idx < addressList.size(); ++idx)
+        {
+            S9sString address = addressList[idx].toString();
+
+            if (!address.looksLikeIpAddress())
+                continue;
+
+            if (!retval.empty())
+                retval += separator;
+
+            retval += address;
+        }
+
+        addressList = property("network")["private_ip"].toVariantList();
+        for (uint idx = 0u; idx < addressList.size(); ++idx)
+        {
+            S9sString address = addressList[idx].toString();
+
+            if (!address.looksLikeIpAddress())
+                continue;
+
+            if (!retval.empty())
+                retval += separator;
+
+            retval += address;
+        }
+
+        if (retval.empty())
+            retval = defaultValue;
+    } else {
+        S9sVariantList theList =  property("ipv4_addresses").toVariantList();
+
+        for (uint idx = 0u; idx < theList.size(); ++idx)
+        {
+            if (!retval.empty())
+                retval += separator;
+
+            retval += theList[idx].toString();
+        }
+
+        if (retval.empty())
+            retval = defaultValue;
+
     }
-
-    if (retval.empty())
-        retval = defaultValue;
-
+        
     return retval;
 }
 
