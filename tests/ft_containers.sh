@@ -200,8 +200,9 @@ function createContainer()
         s9s server \
             --list-containers \
             --batch \
-            --long  "ft_containers_00_$$" \
-        | awk '{print $7}')
+            --long  \
+            "ft_containers_00_$$" \
+        | awk '{print $6}')
     
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
@@ -453,7 +454,7 @@ function createServer()
         return 0
     fi
 
-    print_title "Creating a Server"
+    print_title "Creating a Server on a Container"
 
     #
     # Creating a new server, installing software and everything.

@@ -238,7 +238,6 @@ function createContainer()
     #
     mys9s container \
         --create \
-        --subnet-id=subnet-81a382cb \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name"
