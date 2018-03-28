@@ -3970,7 +3970,7 @@ S9sRpcReply::printContainersLong()
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
         S9sString      type   = container.provider("-");
-        S9sString      templateName = container.templateName("-", truncate);
+        S9sString      templateName = container.templateName("-", true);
 
         if (!options->isStringMatchExtraArguments(alias))
             continue;
@@ -4044,7 +4044,7 @@ S9sRpcReply::printContainersLong()
         S9sString      user   = theMap["owner_user_name"].toString();
         S9sString      group  = theMap["owner_group_name"].toString();
         S9sString      type   = container.provider("-");
-        S9sString      templateName = container.templateName("-", truncate);
+        S9sString      templateName = container.templateName("-", true);
 
         if (isRunning)
             totalRunning++;

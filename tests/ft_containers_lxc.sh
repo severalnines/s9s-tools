@@ -33,6 +33,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a new container.
+  o createFail       A container creation that should fail.
   o createContainers Creates several new containers with various images.
   o restartContainer Stop then start the container.
   o createCluster    Creates a new cluster on containers on the fly.
@@ -174,7 +175,7 @@ function registerServerCmonCloud()
 function createContainer()
 {
     local owner
-    local container_name="ft_containers_00_$$"
+    local container_name="ft_containers_lxc_00_$$"
     local template
 
     print_title "Creating Container"
@@ -194,14 +195,14 @@ function createContainer()
     mys9s container --list --long
 
     #
-    # Checking the owner.
+    # Checking the ip and the owner.
     #
     CONTAINER_IP=$(\
         s9s server \
             --list-containers \
             --batch \
             --long  \
-            "ft_containers_00_$$" \
+            "$container_name" \
         | awk '{print $6}')
     
     if [ -z "$CONTAINER_IP" ]; then
@@ -221,7 +222,7 @@ function createContainer()
         awk '{print $4}')
 
     if [ "$owner" != "$USER" ]; then
-        failure "The owner is '$owner', should be '$USER'"
+        failure "The owner of '$container_name' is '$owner', should be '$USER'"
         exit 1
     fi
    
@@ -256,15 +257,98 @@ function createContainer()
 }
 
 #
+# This will try to create some containers with values that should cause failures
+# (like duplicate names).
+#
+function createFail()
+{
+    local exitCode
+
+    if [ -z "$LAST_CONTAINER_NAME" ]; then
+        return 0
+    fi
+
+    #
+    # Creating a container.
+    #
+    print_title "Creating Container with Duplicate Name"
+    mys9s container \
+        --create \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$LAST_CONTAINER_NAME"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with duplicate name should have failed."
+        exit 1
+    fi
+    
+    #
+    # Creating a container with invalid provider.
+    #
+    print_title "Creating Container with Invalid Provider"
+    mys9s container \
+        --create \
+        --cloud="no_such_cloud" \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_aws"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with invalid cloud should have failed."
+        exit 1
+    fi
+    
+    #
+    # Creating a container with invalid subnet.
+    #
+    print_title "Creating Container with Invalid Provider"
+    mys9s container \
+        --create \
+        --subnet-id="no_such_subnet" \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_aws"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with invalid subnet should have failed."
+        exit 1
+    fi
+
+    #
+    # Creating a container with invalid image.
+    #
+    print_title "Creating Container with Invalid Provider"
+    mys9s container \
+        --create \
+        --image="no_such_image" \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_aws"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with invalid image should have failed."
+        exit 1
+    fi
+}
+#
 # This will create a container and check if the user can actually log in through
 # ssh.
 #
 function createContainers()
 {
-    local container_name1="ft_containers_10_$$"
-    local container_name2="ft_containers_11_$$"
-    local container_name3="ft_containers_12_$$"
-    local container_name4="ft_containers_13_$$"
+    local container_name1="ft_containers_lxc_10_$$"
+    local container_name2="ft_containers_lxc_11_$$"
+    local container_name3="ft_containers_lxc_12_$$"
+    local container_name4="ft_containers_lxc_13_$$"
     local owner
     local template
     local container_ip
@@ -391,10 +475,12 @@ function restartContainer()
 
 function createCluster()
 {
-    local node001="ft_containers_01_$$"
-    local node002="ft_containers_02_$$"
-    local node003="ft_containers_03_$$"
+    local node001="ft_containers_lxc_01_$$"
+    local node002="ft_containers_lxc_02_$$"
 
+    #
+    # Creating a Cluster.
+    #
     print_title "Creating a Cluster"
     mys9s cluster \
         --create \
@@ -427,15 +513,15 @@ function createCluster()
     fi
 
     #
-    #
+    # Adding a proxysql node.
     #
     print_title "Adding a ProxySql Node"
 
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="proxysql://$node003" \
-        --containers="$node003" \
+        --nodes="proxysql://$node002" \
+        --containers="$node002" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -482,24 +568,6 @@ function createServer()
     #
     mys9s tree --cat /$CONTAINER_IP/.runtime/state
 }
-
-#function createServerCloud()
-#{
-#    print_title "Creating cmon-cloud Server"
-#
-#    mys9s server \
-#        --create \
-#        --servers=cmon-cloud://$CONTAINER_IP \
-#        --log
-#
-#    mys9s server --list --long
-#
-#    mys9s container \
-#        --create \
-#        --template=ubuntu16.04 \
-#        --log \
-#        vhost1
-#}
 
 #
 # This will try to manipulate a container that does not exist. The jobs should
@@ -564,7 +632,7 @@ function deleteContainer()
     mys9s container \
         --delete \
         $LOG_OPTION \
-        "ft_containers_00_$$"
+        "ft_containers_lxc_00_$$"
     
     check_exit_code $?
     
@@ -586,13 +654,13 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest createFail
     runFunctionalTest createContainers
     runFunctionalTest restartContainer
-    runFunctionalTest createCluster
     runFunctionalTest createServer
-    #runFunctionalTest createServerCloud
     runFunctionalTest failOnContainers
     runFunctionalTest deleteContainer
+    runFunctionalTest createCluster
 fi
 
 endTests

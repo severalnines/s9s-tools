@@ -231,7 +231,7 @@ function registerServer()
 function createContainer()
 {
     local owner
-    local container_name="ft_containers_aws_00_$$"
+    local container_name="ftcontainersaz00$$"
     local template
 
     print_title "Creating Container"
@@ -241,6 +241,8 @@ function createContainer()
     #
     mys9s container \
         --create \
+        --cloud=az \
+        --template="Standard_A2" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name"
@@ -278,6 +280,9 @@ function createContainer()
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
+        cat <<EOF
+s9s container --list --long --batch "$container_name" | awk '{print \$4}'
+EOF
         exit 1
     fi
    
@@ -317,6 +322,8 @@ function createFail()
     print_title "Creating Container with Duplicate Name"
     mys9s container \
         --create \
+        --cloud=az \
+        --template="Standard_A2" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$LAST_CONTAINER_NAME"
@@ -352,6 +359,8 @@ function createFail()
     print_title "Creating Container with Invalid Provider"
     mys9s container \
         --create \
+        --cloud=az \
+        --template="Standard_A2" \
         --subnet-id="no_such_subnet" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
@@ -370,6 +379,7 @@ function createFail()
     print_title "Creating Container with Invalid Provider"
     mys9s container \
         --create \
+        --cloud=az \
         --image="no_such_image" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
@@ -421,6 +431,8 @@ function createCluster()
         --provider-version="5.6" \
         --vendor=percona \
         --nodes="$node001" \
+        --cloud=az \
+        --template="Standard_A2" \
         --containers="$node001" \
         $LOG_OPTION
 
@@ -453,6 +465,7 @@ function createCluster()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="proxysql://$node002" \
+        --cloud=az \
         --containers="$node002" \
         $LOG_OPTION
 
