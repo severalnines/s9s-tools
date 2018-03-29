@@ -6934,7 +6934,15 @@ S9sOptions::readOptionsCluster(
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "output-dir",       required_argument, 0, OptionOutputDir       },
         { "donor",            required_argument, 0, OptionDonor           },
+       
+        // Options for containers.
+        { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
+        { "image",            required_argument, 0, OptionImage           },
+        { "servers",          required_argument, 0, OptionServers         },
+        { "subnet-id",        required_argument, 0, OptionSubnetId        },
+        { "template",         required_argument, 0, OptionTemplate        },
+        { "vpc-id",           required_argument, 0, OptionVpcId           },
         { 0, 0, 0, 0 }
     };
 
@@ -7268,9 +7276,44 @@ S9sOptions::readOptionsCluster(
                 m_options["donor"] = optarg;
                 break;
 
+            /*
+             * Options for clouds.
+             */
+            case OptionCloud:
+                // --cloud=NAME
+                m_options["cloud"] = optarg;
+                break;
+                
             case OptionContainers:
                 // --containers=LIST
                 setContainers(optarg);
+                break;
+            
+            case OptionImage:
+                // --image=image
+                m_options["image"] = optarg;
+                break;
+                
+            case OptionServers:
+                // --servers=LIST
+                if (!setServers(optarg))
+                    return false;
+
+                break;
+
+            case OptionSubnetId:
+                // --subnet-id=ID
+                m_options["subnet_id"] = optarg;
+                break;
+            
+            case OptionTemplate:
+                // --template=NAME
+                m_options["template"] = optarg;
+                break;
+            
+            case OptionVpcId:
+                // --vpc-id=ID
+                m_options["vpc_id"] = optarg;
                 break;
 
             case '?':
