@@ -280,9 +280,6 @@ function createContainer()
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
-        cat <<EOF
-s9s container --list --long --batch "$container_name" | awk '{print \$4}'
-EOF
         exit 1
     fi
    
@@ -417,8 +414,8 @@ function deleteContainer()
 
 function createCluster()
 {
-    local node001="ft_containers_aws_01_$$"
-    local node002="ft_containers_aws_02_$$"
+    local node001="ftcontainersaws01$$"
+    local node002="ftcontainersaws02$$"
 
     #
     # Creating a Cluster.
