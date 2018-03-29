@@ -341,7 +341,7 @@ function createFail()
         --cloud="no_such_cloud" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft_containers_az"
     
     exitCode=$?
 
@@ -361,7 +361,7 @@ function createFail()
         --subnet-id="no_such_subnet" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft_containers_az"
     
     exitCode=$?
 
@@ -380,7 +380,7 @@ function createFail()
         --image="no_such_image" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft_containers_az"
     
     exitCode=$?
 
@@ -390,32 +390,10 @@ function createFail()
     fi
 }
 
-function deleteContainer()
-{
-    if [ -z "$LAST_CONTAINER_NAME" ]; then
-        return 0
-    fi
-
-    print_title "Deleting Container"
-
-    #
-    # Creating a container.
-    #
-    mys9s container \
-        --delete \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        $LOG_OPTION \
-        "$LAST_CONTAINER_NAME"
-    
-    check_exit_code $?
-
-    s9s job --list
-}
-
 function createCluster()
 {
-    local node001="ftcontainersaws01$$"
-    local node002="ftcontainersaws02$$"
+    local node001="ftcontainersaz01$$"
+    local node002="ftcontainersaz02$$"
 
     #
     # Creating a Cluster.
@@ -467,6 +445,32 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+}
+
+function deleteContainer()
+{
+    local containers
+    local container
+
+    containers="$LAST_CONTAINER_NAME"
+    containers+=" ftcontainersaz01$$"
+    containers+=" ftcontainersaz02$$"
+
+    print_title "Deleting Containers"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --delete \
+            $LOG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    s9s job --list
 }
 
 #

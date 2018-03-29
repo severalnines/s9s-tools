@@ -5984,12 +5984,16 @@ S9sVariantMap
 S9sRpcClient::composeJobData(
         bool argumentsAreContainers) const
 {
-    S9sOptions    *options = S9sOptions::instance();
+    S9sOptions    *options      = S9sOptions::instance();
     S9sString      templateName = options->templateName();
     S9sString      cloudName    = options->cloudName();
     S9sString      imageName    = options->imageName();
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
+    S9sString      osUserName   = options->osUser(false);
+    S9sString      osKeyFile    = options->osKeyFile();
+    S9sString      osPassword   = options->osPassword();
+    
     S9sVariantMap  jobData;
     S9sVariantList containers;
 
@@ -6051,7 +6055,16 @@ S9sRpcClient::composeJobData(
     }
 
     if (!containers.empty())
-        jobData["containers"] = containers;
+        jobData["containers"]   = containers;
+    
+    if (!osUserName.empty())
+        jobData["ssh_user"]     = osUserName;
+    
+    if (!osKeyFile.empty())
+        jobData["ssh_keyfile"]  = osKeyFile;
+    
+    if (!osPassword.empty())
+        jobData["ssh_password"] = osPassword;
 
     return jobData;
 }

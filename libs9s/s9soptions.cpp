@@ -1218,7 +1218,7 @@ S9sOptions::hasSshCredentials()
 }
 
 /**
- * Related command lin options are --os-user=, --os-key-file=, --os-password=.
+ * Related command line options are --os-user=, --os-key-file=, --os-password=.
  */
 S9sSshCredentials
 S9sOptions::sshCredentials(
@@ -1246,7 +1246,8 @@ S9sOptions::sshCredentials(
  * key.
  */
 S9sString
-S9sOptions::osUser() const
+S9sOptions::osUser(
+        bool defaultsToCmonUser) const
 {
     S9sString retval;
 
@@ -1260,7 +1261,7 @@ S9sOptions::osUser() const
             retval = m_systemConfig.variableValue("os_user");
     }
 
-    if (retval.empty())
+    if (retval.empty() && defaultsToCmonUser)
         retval = userName();
 
     return retval;
@@ -3905,6 +3906,9 @@ S9sOptions::printHelpContainer()
 "  --cloud=PROVIDER           The name of the cloud provider.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --image=NAME               The name of the image for the container.\n"
+"  --os-key-file=PATH         The key file to register on the container.\n"
+"  --os-password=PASSWORD     The password to set on the container.\n"
+"  --os-user=USERNAME         The username to create on the container.\n"
 "  --servers=LIST             A list of servers to work with.\n"
 "  --subnet-id=ID             The ID of the subnet.\n"
 "  --template=NAME            The name of the container template.\n"
@@ -7397,6 +7401,9 @@ S9sOptions::readOptionsContainer(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "image",            required_argument, 0, OptionImage           },
+        { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
+        { "os-password",      required_argument, 0, OptionOsPassword      },
+        { "os-user",          required_argument, 0, OptionOsUser          },
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
@@ -7586,6 +7593,21 @@ S9sOptions::readOptionsContainer(
             case OptionImage:
                 // --image=image
                 m_options["image"] = optarg;
+                break;
+            
+            case OptionOsKeyFile:
+                // --os-key-file=PATH
+                m_options["os_key_file"] = optarg;
+                break;
+            
+            case OptionOsPassword:
+                // --os-password=PASSWORD
+                m_options["os_password"] = optarg;
+                break;
+            
+            case OptionOsUser:
+                // --os-user=USERNAME
+                m_options["os_user"] = optarg;
                 break;
                 
             case OptionServers:

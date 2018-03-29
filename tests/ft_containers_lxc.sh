@@ -33,6 +33,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a new container.
+  o createAsSystem   Create a container as system user.
   o createFail       A container creation that should fail.
   o createContainers Creates several new containers with various images.
   o restartContainer Stop then start the container.
@@ -257,6 +258,93 @@ function createContainer()
 }
 
 #
+# This will create a container and check if the user can actually log in through
+# ssh.
+#
+function createAsSystem()
+{
+    local owner
+    local container_name="ft_containers_lxc_01_$$"
+    local template
+
+    print_title "Creating Container as System User"
+
+    #
+    # Creating a container.
+    #
+    mys9s container \
+        --create \
+        --cmon-user=system \
+        --password=secret \
+        --os-user="$USER" \
+        --os-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --template=ubuntu \
+        $LOG_OPTION \
+        "$container_name"
+    
+    check_exit_code $?
+    
+    mys9s container --list --long
+
+    #
+    # Checking the ip and the owner.
+    #
+    CONTAINER_IP=$(\
+        s9s server \
+            --list-containers \
+            --batch \
+            --long  \
+            "$container_name" \
+        | awk '{print $6}')
+    
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "The container was not created or got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "The container got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    owner=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $4}')
+
+    if [ "$owner" != "system" ]; then
+        failure "The owner of '$container_name' is '$owner', should be 'system'"
+        exit 1
+    fi
+   
+    #
+    # Checking if the user can actually log in through ssh.
+    #
+    print_title "Checking SSH Access"
+
+    echo "is_server_running_ssh \"$CONTAINER_IP\" \"$USER\""
+    if ! is_server_running_ssh "$CONTAINER_IP" "$USER"; then
+        failure "User $USER can not log in to $CONTAINER_IP"
+        exit 1
+    else
+        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+    fi
+
+    #
+    # Checking the template.
+    #
+    template=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $3}')
+
+    if [ "$template" != "ubuntu" ]; then
+        failure "The template is '$template', should be 'ubuntu'"
+        exit 1
+    fi
+}
+
+#
 # This will try to create some containers with values that should cause failures
 # (like duplicate names).
 #
@@ -274,7 +362,6 @@ function createFail()
     print_title "Creating Container with Duplicate Name"
     mys9s container \
         --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$LAST_CONTAINER_NAME"
     
@@ -292,9 +379,8 @@ function createFail()
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "node100"
     
     exitCode=$?
 
@@ -306,13 +392,12 @@ function createFail()
     #
     # Creating a container with invalid subnet.
     #
-    print_title "Creating Container with Invalid Provider"
+    print_title "Creating Container with Invalid Subnet"
     mys9s container \
         --create \
         --subnet-id="no_such_subnet" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "node101"
     
     exitCode=$?
 
@@ -321,16 +406,19 @@ function createFail()
         exit 1
     fi
 
+    # FIXME: well, this invalid subnet issue is only recognized after the
+    # container was created.
+    mys9s container --delete $LOG_OPTION "node101"
+
     #
     # Creating a container with invalid image.
     #
-    print_title "Creating Container with Invalid Provider"
+    print_title "Creating Container with Invalid Image"
     mys9s container \
         --create \
         --image="no_such_image" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "node102"
     
     exitCode=$?
 
@@ -475,8 +563,8 @@ function restartContainer()
 
 function createCluster()
 {
-    local node001="ft_containers_lxc_01_$$"
-    local node002="ft_containers_lxc_02_$$"
+    local node001="ft_containers_lxc_11_$$"
+    local node002="ft_containers_lxc_12_$$"
 
     #
     # Creating a Cluster.
@@ -627,16 +715,29 @@ function failOnContainers()
 #
 function deleteContainer()
 {
-    print_title "Deleting Container"
+    local containers
+    local container
 
-    mys9s container \
-        --delete \
-        $LOG_OPTION \
-        "ft_containers_lxc_00_$$"
+    containers="ft_containers_lxc_00_$$"
+    containers+=" ft_containers_lxc_01_$$"
+
+    print_title "Deleting Containers"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            "$container"
     
-    check_exit_code $?
-    
-    #mys9s container --list --long
+        check_exit_code $?
+    done
+
+    s9s job --list
 }
 
 
@@ -654,6 +755,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest createAsSystem
     runFunctionalTest createFail
     runFunctionalTest createContainers
     runFunctionalTest restartContainer

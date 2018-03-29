@@ -266,7 +266,8 @@ function _s9s()
                 cur=${cur#*=}
                 opts=$(s9s server --list-images)
             else
-                opts+="--cloud= --containers= --image= --servers= "
+                opts+="--cloud= --containers= --image= "
+                opts+="--os-key-file= --os-password= --os-user= --servers= "
                 opts+="--subnet-id= --template= --vpc-id= "
             fi
         elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
