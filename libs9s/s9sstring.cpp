@@ -168,6 +168,51 @@ S9sString::split(
     return retval;
 }
 
+/**
+ * Splits a string by a (multi-char) string delimiter
+ */
+S9sVariantList
+S9sString::split(
+        const std::string delimiter,
+        const bool allowEmptyStrings,
+        uint       resultLimit) const
+{
+    S9sVariantList     retval;
+
+    // This speeds up things a little bit.
+    if (empty() || delimiter.empty ())
+        return retval;
+
+    size_t start = 0;
+    while (true)
+    {
+        size_t pos = find (delimiter, start);
+        // this is highly unlikely:
+        if (pos < start)
+            break;
+
+        S9sString thePart;
+        if (pos != S9sString::npos)
+            thePart = substr(start, (pos - start));
+        else
+            thePart = substr(start);
+
+        if (!thePart.empty() || allowEmptyStrings)
+            retval << thePart;
+
+        if (resultLimit > 0 && retval.size () >= resultLimit)
+            break;
+
+        if (pos == S9sString::npos)
+            break;
+
+        start = pos + delimiter.size ();
+    }
+
+    return retval;
+}
+
+
 S9sString &
 S9sString::appendWord(
         const S9sString &word)

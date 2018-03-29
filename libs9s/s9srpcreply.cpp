@@ -1401,6 +1401,8 @@ S9sRpcReply::printConfigList()
 
     if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
+    else if (options->isDebug())
+        printConfigDebug();
     else if (options->isLongRequested())
         printConfigLong();
     else 
@@ -1480,6 +1482,39 @@ S9sRpcReply::printLogLong()
     }
 }
 
+void
+S9sRpcReply::printConfigDebug()
+{
+    S9sVariantList fileList = operator[]("files").toVariantList();
+
+    for (uint idx = 0u; idx < fileList.size(); ++idx)
+    {
+        S9sVariantMap  fileMap  = fileList[idx].toVariantMap();
+        S9sString      fileName = fileMap["filename"].toString();
+        S9sString      path     = fileMap["path"].toString();
+        S9sString      syntax   = fileMap["syntax"].toString();
+        S9sString      content  = fileMap["content"].toString();
+        S9sVariantList lines;
+        
+        content.replace("\\r\\n", "\n");
+        content.replace("\\r", "\n");
+        content.replace("\\n", "\n");
+
+        lines = content.split("\n", true);
+
+        ::printf("filename : %s\n", STR(fileName));
+        ::printf("    path : %s\n", STR(path));
+        ::printf("  syntax : %s\n", STR(syntax));
+
+        for (uint idx1 = 0u; idx1 < lines.size(); ++idx1)
+        {
+            S9sString  line = lines[idx1].toString();
+
+            //line.replace("\\r", "");
+            ::printf("[%04u] %s\n", idx1, STR(line));
+        }
+    }
+}
 
 void
 S9sRpcReply::printConfigLong()

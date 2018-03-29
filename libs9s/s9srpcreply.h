@@ -233,8 +233,8 @@ class S9sRpcReply : public S9sVariantMap
                 S9sFormat      &valueFormat,
                 int            depth); 
 
+        void printConfigDebug();
         void printConfigLong();
-
 
         void printClusterListBrief();
         void printClusterListLong();

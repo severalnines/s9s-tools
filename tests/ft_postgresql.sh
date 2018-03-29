@@ -41,12 +41,19 @@ Usage:
  --reset-config      Remove and re-generate the ~/.s9s directory.
  --provider-version=STRING The SQL server provider version.
 
-EXAMPLES
-  Just quickly create a PostgreSQL cluster and add two slave nodes to it
-  together with the first node that is going to be the master:
-
-  ./ft_postgresql.sh --log --print-commands testCreateCluster testAddNode testAddNode
-
+SUPPORTED TESTS:
+  o testCreateCluster
+  o testAddNode
+  o testStopStartNode
+  o testConfig
+  o testCreateAccount
+  o testCreateDatabase
+  o testCreateBackup
+  o testRestoreBackup
+  o testRemoveBackup
+  o testRunScript
+  o testRollingRestart
+  o testDrop
 
 EOF
     exit 1

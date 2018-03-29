@@ -65,6 +65,13 @@ class S9sString : public std::string
         void aprintf(const char *formatString, ...);
 
         S9sVariantList split(const char *ifs = ";, ") const;
+
+        S9sVariantList split(
+                const std::string delimiter,
+                const bool allowEmptyStrings,
+                uint       resultLimit = 0u) const;
+
+
         S9sString &appendWord(const S9sString &word);
 
         int toInt(const int defaultVal = 0) const;
