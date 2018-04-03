@@ -42,10 +42,11 @@ Usage:
  --provider-version=STRING The SQL server provider version.
 
 SUPPORTED TESTS:
-  o testCreateCluster
+  o testCreateCluster    Creating a PostgreSql cluster.
   o testAddNode
   o testStopStartNode
-  o testConfig
+  o testConfig           Reading and changing the configuration.
+  o testConfigFail       Testing configuration changes that should fail.
   o testCreateAccount
   o testCreateDatabase
   o testCreateBackup
@@ -285,7 +286,6 @@ function testConfig()
         --opt-value="'%m'"
     
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
@@ -328,6 +328,25 @@ function testConfig()
     mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE 
+}
+
+function testConfigFail()
+{
+    local exitCode
+    local value
+
+    print_title "Checking Configuration with Failed Settings"
+
+    mys9s node \
+        --change-config \
+        --nodes=$FIRST_ADDED_NODE \
+        --opt-name=max_connections \
+        --opt-value="notaninteger"
+    
+    exitCode=$?
+    if [ "$exitCode" -eq 0 ]; then
+        failure "Changing 'max_connections' to non-integer should fail"
+    fi
 }
 
 #
@@ -612,6 +631,7 @@ else
     runFunctionalTest testStopStartNode
 
     runFunctionalTest testConfig
+    runFunctionalTest testConfigFail
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase

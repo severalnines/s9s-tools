@@ -282,6 +282,7 @@ class S9sRpcClient
         bool createSuccessJob();
 
     protected:
+        virtual S9sVariantMap composeRequest();
         virtual S9sVariantMap composeJob() const;
         virtual S9sVariantMap composeJobData(
                 bool argumentsAreContainers = false) const;

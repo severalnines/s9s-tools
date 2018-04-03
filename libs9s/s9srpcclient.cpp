@@ -3663,14 +3663,12 @@ S9sRpcClient::removeNode()
 bool
 S9sRpcClient::stopCluster()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sString      title;
-    S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request     = composeRequest();
+    S9sVariantMap  job         = composeJob();
+    S9sVariantMap  jobData     = composeJobData();
     S9sVariantMap  jobSpec;
-    S9sString      uri = "/v2/jobs/";
+    S9sString      title;
+    S9sString      uri         = "/v2/jobs/";
     bool           retval;
     
     title = "Stopping Cluster";
@@ -3692,7 +3690,6 @@ S9sRpcClient::stopCluster()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -5959,6 +5956,24 @@ S9sRpcClient::getMaintenance()
     return retval;
 }
 
+
+S9sVariantMap 
+S9sRpcClient::composeRequest() 
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    int            clusterId   = options->clusterId();
+    S9sString      clusterName = options->clusterName();
+    S9sVariantMap  request;
+ 
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+        request["cluster_id"] = clusterId;
+
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
+
+    return request;
+}
+
 /**
  * This will compose the skeleton job specification map that holds generic
  * information every job specification can hold.
@@ -6140,7 +6155,8 @@ S9sRpcClient::executeRequest(
 /**
  * \param uri the file path part of the URL where we send the request
  * \param payload the JSON request string
- * \returns true if everything is ok, false on error.
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
  */
 bool
 S9sRpcClient::doExecuteRequest(

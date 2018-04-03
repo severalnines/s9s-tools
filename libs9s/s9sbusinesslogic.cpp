@@ -1190,11 +1190,9 @@ S9sBusinessLogic::executeSetConfig(
     }
 
     success = client.setConfig(hosts);
-    if (success)
-    {
-        reply = client.reply();
-        reply.printMessages("OK");
-    }
+
+    client.printMessages("OK.", success);
+    client.setExitStatus();            
 }
 
 /**
