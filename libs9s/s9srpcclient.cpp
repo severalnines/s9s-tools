@@ -3703,9 +3703,8 @@ bool
 S9sRpcClient::startCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sString      title;
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
@@ -3727,7 +3726,6 @@ S9sRpcClient::startCluster()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -3743,9 +3741,9 @@ S9sRpcClient::startNode()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
-    S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sNode        node;
@@ -3777,7 +3775,6 @@ S9sRpcClient::startNode()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -3793,7 +3790,7 @@ S9sRpcClient::stopNode()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
@@ -3830,7 +3827,6 @@ S9sRpcClient::stopNode()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -3847,7 +3843,7 @@ S9sRpcClient::restartNode()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
@@ -3884,7 +3880,6 @@ S9sRpcClient::restartNode()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -3893,7 +3888,6 @@ S9sRpcClient::restartNode()
 
 
 /**
- * \param clusterId The ID of the cluster.
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).
  *
@@ -3906,7 +3900,7 @@ S9sRpcClient::dropCluster()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sString      title;
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
@@ -3929,7 +3923,6 @@ S9sRpcClient::dropCluster()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = 0;
 
     retval = executeRequest(uri, request);
 
@@ -3939,11 +3932,10 @@ S9sRpcClient::dropCluster()
 bool
 S9sRpcClient::checkHosts()
 {
-    //getSshCredentials();
-    S9sString      uri = "/v2/discovery/";
-    S9sVariantMap  request;
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList hosts     = options->nodes();
+    S9sString      uri         = "/v2/discovery/";
+    S9sVariantMap  request     = composeRequest();
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList hosts       = options->nodes();
     S9sString      clusterType = options->clusterType();
 
     if (hosts.empty())
@@ -3973,7 +3965,7 @@ S9sRpcClient::checkHosts()
         request["job"]            = job;
     }
 
-#if 0
+    #if 0
     S9sVariantMap credentials;
 
     credentials["class_name"]      = "CmonSshCredentials";
@@ -3984,15 +3976,8 @@ S9sRpcClient::checkHosts()
     //credentials["timeout"]         = ;
     //credentials["tty_for_sudo"]    = ;
     request["ssh_credentials"]     = credentials;
-#endif
+    #endif
 
-#if 1 
-    if (options->hasClusterIdOption())
-        request["cluster_id"]   = options->clusterId();
-
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
-#endif
     return executeRequest(uri, request);
 }
 
@@ -4420,8 +4405,8 @@ S9sRpcClient::unregisterServers()
 bool
 S9sRpcClient::unregisterHost()
 {
-    S9sString      uri = "/v2/host/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/host/";
+    S9sVariantMap  request   = composeRequest();
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
     S9sVariantList hosts;
@@ -4453,12 +4438,6 @@ S9sRpcClient::unregisterHost()
     request["host"]           = hosts[0];
     //request["dry_run"]        = true;
 
-    if (options->hasClusterIdOption())
-        request["cluster_id"]   = options->clusterId();
-
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
-    
     return executeRequest(uri, request);
 }
 
@@ -4783,8 +4762,8 @@ S9sRpcClient::checkClusterName()
 bool
 S9sRpcClient::getSshCredentials()
 {
-    S9sString      uri = "/v2/discovery/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/discovery/";
+    S9sVariantMap  request   = composeRequest();
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts     = options->nodes();
    
@@ -4792,12 +4771,6 @@ S9sRpcClient::getSshCredentials()
         return true;
 
     request["operation"]      = "getSshCredentials";
-    
-    if (options->hasClusterIdOption())
-        request["cluster_id"]   = options->clusterId();
-
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
     
     return executeRequest(uri, request);
 }
@@ -4812,16 +4785,15 @@ bool
 S9sRpcClient::createBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
-    int             clusterId    = options->clusterId();
     S9sString       clusterName  = options->clusterName();
     S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
     S9sString       schedule     = options->schedule();
     S9sString       databases    = options->databases();
+    S9sVariantMap   request      = composeRequest();
     S9sNode         backupHost;
     S9sString       title;
-    S9sVariantMap   request;
     S9sVariantMap   job = composeJob();
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
@@ -4927,11 +4899,6 @@ S9sRpcClient::createBackup()
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
 
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = clusterId;
-    else if (options->hasClusterNameOption())
-        request["cluster_name"] = clusterName;
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -4941,11 +4908,10 @@ bool
 S9sRpcClient::verifyBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
-    int             clusterId    = options->clusterId();
     S9sString       clusterName  = options->clusterName();
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       title;
     S9sString       uri = "/v2/jobs/";
@@ -4983,11 +4949,6 @@ S9sRpcClient::verifyBackup()
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
     
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = clusterId;
-    else if (options->hasClusterNameOption())
-        request["cluster_name"] = clusterName;
-
     retval = executeRequest(uri, request);
 
     return retval;
