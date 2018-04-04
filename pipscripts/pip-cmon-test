@@ -927,7 +927,6 @@ function elapsedTimeString()
 #
 function generate_test_result_info()
 {
-    local git_commit_date=$(git show -s --format=%ci $GIT_HASH)
     local git_has_local_changes="no"
     local elapsed_time
     local is_unit_test="true"
@@ -953,7 +952,6 @@ function generate_test_result_info()
 
     test_name="$1"
     test_state="$2"
-    git_commit_date=$(git show -s --format=%ci $GIT_HASH)
     git_has_local_changes="no"
 
     if ! git diff-index --quiet HEAD --; then 
@@ -967,7 +965,7 @@ function generate_test_result_info()
 test_server="$(hostname)"
 testname="$test_name"
 githash="$GIT_HASH"
-gitcommitdate="$git_commit_date"
+gitcommitdate="$GIT_COMMIT_DATE"
 githaslocalchanges="$git_has_local_changes"
 state="$test_state"
 report_file="$(report_file_name $test_name)"
@@ -1096,12 +1094,14 @@ function run_test()
                 fi
 
                 pip-host-control --log "Saving backtrace"
-                echo "The backtrave of the ft_full program as it was created" \
-                    >>ft_full.log
-
-                echo "by the pip-cmon-test script:" \
-                    >>ft_full.log 
+                
                 pushd "$(find_clustercontrol_source_directory)/tests"
+                echo "<h2>Backtrace</h2>" >>ft_full.log
+                echo "<hr>" >>ft_full.log
+
+                echo "The controller did not crash, however failed, so here " \
+                    "is the current trace." \
+                    >>ft_full.log
 
                 sudo gdb -p $backend_pid -batch \
                     -ex "thread apply all back" \
@@ -1255,6 +1255,7 @@ function main()
 
     prepare_source
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
     

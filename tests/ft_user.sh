@@ -169,8 +169,9 @@ function testUser()
     #
     # Checking that we can see the keys.
     #
-    if ! s9s user --list-keys | grep -q "Total: 1"; then
+    if ! s9s user --list-keys | grep -q "Total: 2"; then
         failure "Could not read keys for '$userName'"
+        mys9s user --list-keys
     fi
 }
 
@@ -776,7 +777,7 @@ function testPrivateKey()
         --add-key \
         --public-key-file=$publicKey \
         --public-key-name="mykeyfile" \
-        $userName \ >/dev/null 2>/dev/null 
+        $userName 
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -794,7 +795,11 @@ function testPrivateKey()
             --cmon-user=$userName \
             --private-key-file=$privateKey)
     if [ "$myself" != "$userName" ]; then
-        failure "Failed to log in with public key ($myself)"
+        failure "Failed to log in with public key"
+        mys9s user \
+            --whoami \
+            --cmon-user=$userName \
+            --private-key-file=$privateKey
     else
         printVerbose "   myself : '$myself'"
     fi
