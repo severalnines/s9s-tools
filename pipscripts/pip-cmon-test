@@ -976,11 +976,11 @@ test_start_epoch="$START_EPOCH_TIME"
 is_unit_test="$is_unit_test"
 EOF
 
-  if [ "$S9S_OPTION" ]; then
-      echo "project=\"s9s-tools\""
-  else
-      echo "project=\"clustercontrol-enterprise\""
-  fi
+    if [ "$S9S_OPTION" ]; then
+        echo "project=\"s9s-tools\""
+    else
+        echo "project=\"clustercontrol-enterprise\""
+    fi
 }
 
 #
@@ -1262,7 +1262,12 @@ function main()
     popd >/dev/null 2>/dev/null
 
     echo "----8<----8<----8<----8<----8<----8<----"
-    generate_test_result_info "$OPTION_TEST_NAME" "RUNNING"
+    result_file=$(result_file_name "$OPTION_TEST_NAME")
+    tmp_file="/var/tmp/$result_file"
+
+    printVerbose "Preliminary test result file: $result_file"
+    generate_test_result_info "$OPTION_TEST_NAME" "COMPILING" >$tmp_file
+    scp "$tmp_file" "$TEST_REPORT_URL"
     echo "----8<----8<----8<----8<----8<----8<----"
 
     compile_source

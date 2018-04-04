@@ -190,8 +190,7 @@ if true; then
             --list-containers \
             --long container_001 \
             --batch \
-        | awk '{print $7}')
-
+        | awk '{print $6}')
 else
     CONTAINER_IP=$(\
         pip-container-create --server="$CONTAINER_SERVER" container_001)
