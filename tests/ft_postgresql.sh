@@ -355,7 +355,10 @@ function testConfigFail()
 #
 function testCreateAccount()
 {
-    print_title "Testing account creation."
+    print_title "Testing Account Creation."
+
+    echo "#FIXME: we have a sleep here..."
+    sleep 10
 
     #
     # This command will create a new account on the cluster.
@@ -363,13 +366,13 @@ function testCreateAccount()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="joe:password" \
-        --batch 
+        --account="joe:password" 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account."
+        failure "Exit code is not 0 while creating an account"
+        mys9s node --stat
     fi
     
     #
@@ -379,12 +382,11 @@ function testCreateAccount()
     mys9s account \
         --delete \
         --cluster-id=$CLUSTER_ID \
-        --account="joe" \
-        --batch
+        --account="joe" 
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not $exitCode while deleting an account."
+        failure "Exit code is not $exitCode while deleting an account"
     fi
 
     mys9s account --list --long
@@ -488,6 +490,7 @@ function testCreateBackup()
 function testRestoreBackup()
 {
     local backupId
+    local exitCode
 
     print_title "Restoring a Backup"
 
@@ -505,7 +508,12 @@ function testRestoreBackup()
         --backup-id=$backupId \
         $LOG_OPTION
 
-    check_exit_code $?    
+    exitCode=$?
+    check_exit_code $exitCode
+
+    if [ "$exitCode" -ne 0 ]; then
+        exit 1
+    fi
 }
 
 #

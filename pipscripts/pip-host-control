@@ -15,7 +15,8 @@ HOST_STATUS="IDLE"
 CSV_OUTPUT=""
 
 # This should come from config.
-TEST_REPORT_URL="www:/var/www/html/ft_install/"
+TEST_REPORT_URL="www:/var/lib/test-ui/servers"
+#TEST_REPORT_URL="www:/var/www/html/ft_install/"
 #TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
 
 

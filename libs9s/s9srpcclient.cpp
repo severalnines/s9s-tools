@@ -577,9 +577,9 @@ bool
 S9sRpcClient::setConfig(
         const S9sVariantList &hosts)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/config/";
-    S9sVariantMap  request;
+    S9sOptions    *options    = S9sOptions::instance();
+    S9sString      uri        = "/v2/config/";
+    S9sVariantMap  request    = composeRequest();
     S9sVariantList optionList;
     S9sVariantMap  optionMap;
     bool           retval;
@@ -598,9 +598,6 @@ S9sRpcClient::setConfig(
         return false;
     }
 
-    if (options->clusterId() > 0)
-        request["cluster_id"] = options->clusterId();
-    
     // 
     // The configuration value: here it is implemented for one value.
     //
@@ -1054,20 +1051,12 @@ S9sRpcClient::getMemoryStats(
 bool 
 S9sRpcClient::getRunningProcesses()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sString      uri = "/v2/process";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/process";
+    S9sVariantMap  request   = composeRequest();
     bool           retval;
 
     request["operation"]  = "getRunningProcesses";
     
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (options->hasClusterNameOption())
-        request["cluster_name"] = options->clusterName();
-
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -1302,8 +1291,8 @@ S9sRpcClient::getLog()
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
-    S9sString      uri = "/v2/log/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/log/";
+    S9sVariantMap  request   = composeRequest();
     bool           retval;
 
     // Building the request.
@@ -1322,14 +1311,6 @@ S9sRpcClient::getLog()
 
     if (offset > 0)
         request["offset"] = offset;
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    }
 
     retval = executeRequest(uri, request);
 
@@ -4964,15 +4945,14 @@ S9sRpcClient::verifyBackup()
 bool
 S9sRpcClient::restoreBackup()
 {
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId = options->clusterId();
-    int             backupId  = options->backupId();
+    S9sOptions     *options      = S9sOptions::instance();
+    int             backupId     = options->backupId();
     S9sString       backupMethod = options->backupMethod();
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
+    S9sString       uri          = "/v2/jobs/";
     bool            retval;
 
     // The job_data describing how the backup will be created.
@@ -5006,7 +4986,6 @@ S9sRpcClient::restoreBackup()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
     
     retval = executeRequest(uri, request);
     
@@ -5082,8 +5061,8 @@ bool
 S9sRpcClient::createAccount()
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
     S9sAccount     account;
     bool           retval;
 
@@ -5094,12 +5073,6 @@ S9sRpcClient::createAccount()
     request["operation"]  = "createAccount";
     request["account"]    = account;
 
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -5109,8 +5082,8 @@ bool
 S9sRpcClient::getAccounts()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/clusters/";
+    S9sVariantMap  request   = composeRequest();
 
     // Building the request.
     request["operation"]  = "getAccounts";
@@ -5120,14 +5093,6 @@ S9sRpcClient::getAccounts()
 
     if (options->offset() >= 0)
         request["offset"] = options->offset();
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    }
 
     return executeRequest(uri, request);
 }
@@ -5144,20 +5109,11 @@ S9sRpcClient::getRepositories()
     }
     #endif
 
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sString      uri = "/v2/repositories/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/repositories/";
+    S9sVariantMap  request   = composeRequest();
 
     // Building the request.
     request["operation"]  = "getRepositories";
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    }
 
     return executeRequest(uri, request);
 }
@@ -5191,20 +5147,13 @@ S9sRpcClient::grantPrivileges(
         const S9sAccount &account,
         const S9sString  &privileges)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
     bool           retval;
 
     request["operation"]  = "grantPrivileges";
     request["account"]    = account;
     request["privileges"] = privileges;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     retval = executeRequest(uri, request);
 
@@ -5221,8 +5170,8 @@ bool
 S9sRpcClient::deleteAccount()
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
     S9sAccount     account;
     bool           retval;
 
@@ -5233,12 +5182,6 @@ S9sRpcClient::deleteAccount()
 
     request["operation"]  = "deleteAccount";
     request["account"]    = account;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     retval = executeRequest(uri, request);
 
@@ -5254,8 +5197,8 @@ bool
 S9sRpcClient::createDatabase()
 {
     S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
     S9sVariantMap  database;
     bool           retval;
 
@@ -5264,12 +5207,6 @@ S9sRpcClient::createDatabase()
 
     request["operation"]      = "createDatabase";
     request["database"]       = database;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     retval = executeRequest(uri, request);
 
@@ -5281,19 +5218,12 @@ S9sRpcClient::saveScript(
         S9sString remoteFileName,
         S9sString content)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/imperative/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/imperative/";
+    S9sVariantMap  request = composeRequest();
 
     request["operation"]      = "saveScript";
     request["filename"]       = remoteFileName;
     request["content"]        = content;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
 }
@@ -5304,20 +5234,13 @@ S9sRpcClient::executeExternalScript(
         S9sString content,
         S9sString arguments)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/imperative/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/imperative/";
+    S9sVariantMap  request = composeRequest();
 
     request["operation"]      = "executeExternalScript";
     request["filename"]       = localFileName;
     request["content"]        = content;
     request["arguments"]      = arguments;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
 }
@@ -5328,19 +5251,12 @@ S9sRpcClient::executeScript(
         S9sString remoteFileName,
         S9sString arguments)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/imperative/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/imperative/";
+    S9sVariantMap  request = composeRequest();
 
     request["operation"]      = "executeScript";
     request["filename"]       = remoteFileName;
     request["arguments"]      = arguments;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
 }
@@ -5349,18 +5265,11 @@ bool
 S9sRpcClient::removeScript(
         S9sString remoteFileName)
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/imperative/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/imperative/";
+    S9sVariantMap  request = composeRequest();
 
     request["operation"]      = "removeScript";
     request["filename"]       = remoteFileName;
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
 }
@@ -5368,17 +5277,10 @@ S9sRpcClient::removeScript(
 bool
 S9sRpcClient::treeScripts()
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri = "/v2/imperative/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/imperative/";
+    S9sVariantMap  request = composeRequest();
 
     request["operation"]      = "dirTree";
-
-    if (options->hasClusterIdOption())
-        request["cluster_id"] = options->clusterId();
-
-    if (!options->clusterName().empty())
-        request["cluster_name"] = options->clusterName();
 
     return executeRequest(uri, request);
 }
