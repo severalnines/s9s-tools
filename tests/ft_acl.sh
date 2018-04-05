@@ -149,14 +149,14 @@ function testCreateUsers()
 function checkTree01()
 {
     local expected
-    local lines=$(s9s tree --cmon-user=admin --list)
+    local lines=$(s9s tree --cmon-user=admin --list --long)
 
     print_title "Checking Tree"
     mys9s tree --cmon-user=admin --tree
     mys9s tree --cmon-user=admin --tree /groups
 
     print_title "Checking Tree List"
-    mys9s tree --cmon-user=admin --list
+    mys9s tree --cmon-user=admin --list --long
 
     # The root directory owned by the system user.
     expected="^frwxrwxrwx  system admins /$"
