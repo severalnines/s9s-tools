@@ -1,15 +1,77 @@
 #! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.4"
+VERBOSE=""
+LOGFILE=""
+SERVER=""
 
-#clusterssh host01 host02 host03 host04 host05 host06 host07 host08
-clusterssh \
-    blade01 \
-    blade02 \
-    blade03 \
-    blade04 \
-    blade05 \
-    blade06 \
-    blade07 \
-    blade08 \
-    blade09 \
-    blade10
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,server:,blades" \
+        -- "$@")
 
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --server)
+            shift
+            SERVER=$(echo "$1" | tr ',' ' ')
+            shift
+            ;;
+
+        --blades)
+            shift
+            if [ -f "$HOME/.pip/blades" ]; then
+                SERVER=$(cat "$HOME/.pip/blades" | tr ',' ' ')
+            else
+                SERVER="blade01 blade02 blade03 blade04 blade05 "
+                SERVER+="blade06 blade07 blade08 blade09 blade10"
+                echo "$SERVER" >"$HOME/.pip/blades"
+            fi
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+command_line="clusterssh"
+for server in $(echo $SERVER | tr ',' ' '); do
+    command_line+=" $server"
+done
+
+$command_line

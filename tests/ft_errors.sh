@@ -190,7 +190,7 @@ function testBackupOperations()
     local expected
 
     print_title "Testing backup operations"
-    expected="One of the --list, --create, --restore and --delete options is mandatory."
+    expected="One of the main options is mandatory."
     output=$($S9S backup 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."
@@ -199,7 +199,7 @@ function testBackupOperations()
         return 1
     fi
     
-    expected="The --list, --create, --restore and --delete options are mutually exclusive."
+    expected="The main options are mutually exclusive."
     output=$($S9S backup --list --delete 2>&1)
     if [ "$output" != "$expected" ]; then
         failure "Error message not as expected when operation is missing."

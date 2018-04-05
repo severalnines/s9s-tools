@@ -154,10 +154,19 @@ for server in $SERVER; do
 
     $SSH $server -- mkdir install_sh_tmp
     scp pip-* utilityfunctions.sh "${server}:install_sh_tmp/"
+    
+    scp cloud_credentials.json "${server}:install_sh_tmp/"
+    scp pip-* utilityfunctions.sh "${server}:install_sh_tmp/"
 
     $SSH $server -- \
-        sudo cp -vf install_sh_tmp/* /usr/bin
+        sudo cp -vf install_sh_tmp/pip-* /usr/bin
     
+    $SSH $server -- \
+        sudo mkdir -p /var/lib/cmon
+
+    $SSH $server -- \
+        sudo cp install_sh_tmp/cloud_credentials.json /var/lib/cmon
+
     $SSH $server -- \
         rm -rvf install_sh_tmp
 done
