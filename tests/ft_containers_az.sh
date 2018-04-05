@@ -489,8 +489,8 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createFail
-    runFunctionalTest deleteContainer
     runFunctionalTest createCluster
+    runFunctionalTest deleteContainer
 fi
 
 endTests
