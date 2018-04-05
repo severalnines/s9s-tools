@@ -187,7 +187,7 @@ function createContainer()
             --list-containers \
             --batch \
             --long  "ft_containers_$$" \
-        | awk '{print $7}')
+        | awk '{print $6}')
     
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
