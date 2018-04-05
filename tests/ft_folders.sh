@@ -120,27 +120,22 @@ function testMkdir1()
     mys9s tree --list
 
     lines=$(s9s tree --list)
-    expected="/home$"
+    expected="home$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
 
+    lines=$(s9s tree --list --recursive --full-path --all)
     expected="/home/pipas$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
     
-    expected=".config$"
+    expected="./home/pipas/.config$"
     if echo "$lines" | grep --quiet "$expected"; then
         failure "Hidden entries should not be seen ('$expected')"
-        exit 1
-    fi
-    
-    lines=$(s9s tree --list --all)
-    if ! echo "$lines" | grep --quiet "$expected"; then
-        failure "Hidden entries should shown with --all ('$expected')"
         exit 1
     fi
 }
@@ -157,7 +152,7 @@ function testMkdir2()
     mys9s tree --mkdir /testMkdir2
     check_exit_code_no_job $?
     
-    lines=$(s9s tree --list | grep testMkdir2)
+    lines=$(s9s tree --list --long | grep testMkdir2)
     owner=$(echo "$lines" | awk '{print $3}')
     group=$(echo "$lines" | awk '{print $4}')
     name=$(echo "$lines" | awk '{print $5}')
@@ -172,8 +167,8 @@ function testMkdir2()
         exit 1
     fi
     
-    if [ "$name" != "/testMkdir2" ]; then
-        failure "Name is '$name', should be '/testMkdir2'"
+    if [ "$name" != "testMkdir2" ]; then
+        failure "Name is '$name', should be 'testMkdir2'"
         exit 1
     fi
     
