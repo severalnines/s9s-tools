@@ -168,9 +168,9 @@ function testRootFolder()
     print_title "Testing the 'groups' Folder"
 
     #mys9s tree --tree --all 
-    mys9s tree --list --directory /
+    mys9s tree --list --directory --long /
 
-    lines=$(s9s tree --list --batch --directory /)
+    lines=$(s9s tree --list --batch --directory --long /)
 
     #
     # Testing various properties of the root folder printed by s9s tree --list
@@ -221,9 +221,9 @@ function testGroupsFolder()
 
     print_title "Testing the Root Folder" 
     
-    mys9s tree --list --directory /groups
+    mys9s tree --list --directory --long /groups
 
-    lines=$(s9s tree --list --directory --batch /groups)
+    lines=$(s9s tree --list --directory --batch --long /groups)
 
     #
     # Testing various properties of the root folder printed by s9s tree --list

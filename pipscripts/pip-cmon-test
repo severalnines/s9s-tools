@@ -154,12 +154,22 @@ while true; do
 
         --unit-tests)
             shift
-            OPTION_UNIT_TESTS="yes"
+            if [ -z "$OPTION_FUNCTIONAL_TESTS" ]; then
+                OPTION_UNIT_TESTS="yes"
+            else
+                printError "The --test and --functional-tests are exclusive."
+                exit 6
+            fi
             ;;
         
         --functional-tests)
             shift
-            OPTION_FUNCTIONAL_TESTS="yes"
+            if [ -z "$OPTION_TEST_NAME" ]; then
+                OPTION_FUNCTIONAL_TESTS="yes"
+            else
+                printError "The --test and --functional-tests are exclusive."
+                exit 6
+            fi
             ;;
 
         --os)
