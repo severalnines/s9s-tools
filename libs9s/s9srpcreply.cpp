@@ -4720,60 +4720,7 @@ S9sRpcReply::printObjectListBrief(
         name = fullPath;
     else
         name = node.name();
-
-    /*
-     * The type and then the acl string.
-     */
-    if (type == "Folder")
-        printf("d");
-    if (type == "File")
-        printf("-");
-    else if (type == "Cluster")
-        printf("c");
-    else if (type == "Node")
-        printf("n");
-    else if (type == "Server")
-        printf("s");
-    else if (type == "User")
-        printf("u");
-    else if (type == "Group")
-        printf("g");
-    else if (type == "Container")
-        printf("c");
-    else if (type == "Database")
-        printf("b");
-   
-    //::printf("%s", STR(aclStringToUiString(acl)));
-    //::printf(" ");
-
-    if (entry.contains("major_device_number") && 
-            entry.contains("minor_devide_number"))
-    {
-        int major = entry["major_device_number"].toInt();
-        int minor = entry["minor_devide_number"].toInt();
-
-        sizeString.sprintf("%d, %d", major, minor);
-    } else if (entry.contains("size")) 
-    {
-        ulonglong size = entry["size"].toULongLong();
-        sizeString.sprintf("%'llu", size);
-    } else {
-        sizeString = "-";
-    }
-
-    //m_sizeFormat.printf(sizeString);
-
-    /*
-     * The owner and the group owner.
-     */
-    //::printf("%s", userColorBegin());
-    //m_ownerFormat.printf(owner);
-    //::printf("%s", userColorEnd());
-
-    //::printf("%s", groupColorBegin(group));
-    //m_groupFormat.printf(group);
-    //::printf("%s", groupColorEnd());
-
+ 
     /*
      * The name.
      */
@@ -4841,7 +4788,6 @@ S9sRpcReply::printObjectListBrief(
     printf("\n");
 
 recursive_print:
-
     {
         for (uint idx = 0; idx < entries.size(); ++idx)
         {
@@ -4962,7 +4908,6 @@ void
 S9sRpcReply::printObjectListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
-
     S9sVariantMap   entry   =  operator[]("cdt").toVariantMap();
 
     if (options->isJsonRequested())
@@ -4971,34 +4916,10 @@ S9sRpcReply::printObjectListBrief()
         return;
     }
 
-    m_sizeFormat = S9sFormat();
-    m_sizeFormat.setRightJustify();
-
-    m_ownerFormat = S9sFormat();
-    m_groupFormat = S9sFormat();
     m_numberOfObjects = 0;
     m_numberOfFolders = 0;
 
     walkObjectTree(entry);
-
-    /*
-     * Printing the header.
-     */
-    if (!options->isNoHeaderRequested())
-    {
-        m_sizeFormat.widen("SIZE");
-        m_ownerFormat.widen("OWNER");
-        m_groupFormat.widen("GROUP");
-
-        printf("%s", headerColorBegin());
-        printf("MODE        ");
-        m_sizeFormat.printf("SIZE");
-        m_ownerFormat.printf("OWNER");
-        m_groupFormat.printf("GROUP");
-        printf("NAME");
-        printf("%s\n", headerColorEnd());
-
-    }
 
     printObjectListBrief(entry, 0, "", false);
 }
