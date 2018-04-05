@@ -3943,7 +3943,7 @@ S9sRpcReply::printContainers()
     S9sOptions *options = S9sOptions::instance();
 
     if (!isOk())
-        PRINT_ERROR("--> %s", STR(errorString()));
+        PRINT_ERROR("%s", STR(errorString()));
     else if (options->isJsonRequested())
         printf("%s\n", STR(toString()));
     else if (options->isStatRequested())
@@ -4230,8 +4230,9 @@ S9sRpcReply::printObjectTree()
         PRINT_ERROR("%s", STR(errorString()));
     } else if (options->isLongRequested())
     {
-        printObjectTreeLong();
+        printObjectTreeBrief();
     } else {
+        // This is the same with or without --long.
         printObjectTreeBrief();
     }
 }
@@ -4462,9 +4463,20 @@ S9sRpcReply::walkObjectTree(
 /**
  * \param recursionLevel Shows how deep we are in the printing (not in the tree,
  *   this might be a subtree).
+ *
+ * \code{.js}
+ * $ s9s tree --list --long
+ * MODE        SIZE OWNER  GROUP     NAME
+ * drwxrwxr--  1, 0 system admins    groups
+ * drwxrwxrwx     - pipas  testgroup home
+ * urwxr--r--     - nobody admins    nobody
+ * urwxr--r--     - pipas  admins    pipas
+ * urwxr--r--     - system admins    system
+ * Total: 7 object(s) in 4 folder(s).
+ * \endcode
  */
 void 
-S9sRpcReply::printObjectTreeLong(
+S9sRpcReply::printObjectListLong(
         S9sVariantMap        entry,
         int                  recursionLevel,
         S9sString            indentString,
@@ -4538,8 +4550,8 @@ S9sRpcReply::printObjectTreeLong(
     else if (type == "Database")
         printf("b");
    
-    printf("%s", STR(aclStringToUiString(acl)));
-    printf(" ");
+    ::printf("%s", STR(aclStringToUiString(acl)));
+    ::printf(" ");
 
     if (entry.contains("major_device_number") && 
             entry.contains("minor_devide_number"))
@@ -4561,13 +4573,13 @@ S9sRpcReply::printObjectTreeLong(
     /*
      * The owner and the group owner.
      */
-    printf("%s", userColorBegin());
+    ::printf("%s", userColorBegin());
     m_ownerFormat.printf(owner);
-    printf("%s", userColorEnd());
+    ::printf("%s", userColorEnd());
 
-    printf("%s", groupColorBegin(group));
+    ::printf("%s", groupColorBegin(group));
     m_groupFormat.printf(group);
-    printf("%s", groupColorEnd());
+    ::printf("%s", groupColorEnd());
 
     /*
      * The name.
@@ -4649,7 +4661,200 @@ recursive_print:
                 continue;
             }
 
-            printObjectTreeLong(
+            printObjectListLong(
+                    child, recursionLevel + 1, 
+                    "", last);
+        }
+    }
+}
+
+void 
+S9sRpcReply::printObjectListBrief(
+        S9sVariantMap        entry,
+        int                  recursionLevel,
+        S9sString            indentString,
+        bool                 isLast)
+{
+    S9sTreeNode     node      = entry;
+    S9sOptions     *options   = S9sOptions::instance();
+    bool            recursive = options->isRecursiveRequested();
+    bool            directory = options->isDirectoryRequested();
+    S9sString       path      = entry["item_path"].toString();
+    S9sString       spec      = entry["item_spec"].toString();
+    S9sString       type      = entry["item_type"].toString();
+    S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    S9sString       owner     = entry["owner_user_name"].toString();
+    S9sString       group     = entry["owner_group_name"].toString();
+    S9sString       acl       = entry["item_acl"].toString();
+    S9sString       linkTarget = entry["link_target"].toString();
+    S9sString       fullPath;
+    S9sString       name;
+    S9sString       sizeString;
+
+    // If the first level is the directory, we skip it if we are not requested
+    // to print the directory itself.
+    if (recursionLevel == 0 && node.isFolder() && !directory)
+        goto recursive_print;
+    
+    if (!recursive && !directory && recursionLevel > 1)
+        return;
+    
+    if (!recursive && directory && recursionLevel > 0)
+        return;
+
+    //printf("%3d ", recursionLevel);
+
+    if (owner.empty())
+        owner.sprintf("%d", entry["owner_user_id"].toInt());
+    
+    if (group.empty())
+        group.sprintf("%d", entry["owner_group_id"].toInt());
+
+    fullPath = path;
+    if (!fullPath.endsWith("/"))
+        fullPath += "/";
+
+    fullPath += node.name();
+
+    if (options->fullPathRequested())
+        name = fullPath;
+    else
+        name = node.name();
+
+    /*
+     * The type and then the acl string.
+     */
+    if (type == "Folder")
+        printf("d");
+    if (type == "File")
+        printf("-");
+    else if (type == "Cluster")
+        printf("c");
+    else if (type == "Node")
+        printf("n");
+    else if (type == "Server")
+        printf("s");
+    else if (type == "User")
+        printf("u");
+    else if (type == "Group")
+        printf("g");
+    else if (type == "Container")
+        printf("c");
+    else if (type == "Database")
+        printf("b");
+   
+    //::printf("%s", STR(aclStringToUiString(acl)));
+    //::printf(" ");
+
+    if (entry.contains("major_device_number") && 
+            entry.contains("minor_devide_number"))
+    {
+        int major = entry["major_device_number"].toInt();
+        int minor = entry["minor_devide_number"].toInt();
+
+        sizeString.sprintf("%d, %d", major, minor);
+    } else if (entry.contains("size")) 
+    {
+        ulonglong size = entry["size"].toULongLong();
+        sizeString.sprintf("%'llu", size);
+    } else {
+        sizeString = "-";
+    }
+
+    //m_sizeFormat.printf(sizeString);
+
+    /*
+     * The owner and the group owner.
+     */
+    //::printf("%s", userColorBegin());
+    //m_ownerFormat.printf(owner);
+    //::printf("%s", userColorEnd());
+
+    //::printf("%s", groupColorBegin(group));
+    //m_groupFormat.printf(group);
+    //::printf("%s", groupColorEnd());
+
+    /*
+     * The name.
+     */
+    if (type == "Folder")
+    {
+        printf("%s%s%s", 
+                folderColorBegin(), 
+                STR(name), 
+                folderColorEnd());
+    } else if (type == "File")
+    {
+        printf("%s%s%s", 
+                fileColorBegin(name), 
+                STR(node.name()), 
+                folderColorEnd());
+    } else if (type == "Cluster")
+    {
+        printf("%s%s%s", 
+                clusterColorBegin(), 
+                STR(name), 
+                clusterColorEnd());
+    } else if (type == "Node")
+    {
+        printf("%s%s%s", 
+                ipColorBegin(), 
+                STR(name), 
+                ipColorEnd());
+    } else if (type == "Server")
+    {
+        printf("%s%s%s", 
+                serverColorBegin(), 
+                STR(name), 
+                serverColorEnd());
+    } else if (type == "User")
+    {
+        printf("%s%s%s", 
+                userColorBegin(), 
+                STR(name), 
+                userColorEnd());
+    } else if (type == "Group")
+    {
+        printf("%s%s%s", 
+                groupColorBegin(), 
+                STR(name), 
+                groupColorEnd());
+    } else if (type == "Container")
+    {
+        printf("%s%s%s", 
+                containerColorBegin(), 
+                STR(name), 
+                containerColorEnd());
+    } else if (type == "Database")
+    {
+        printf("%s%s%s", 
+                databaseColorBegin(),
+                STR(name), 
+                databaseColorEnd());
+    } else {
+        printf("%s", STR(name));
+    }
+
+    if (!linkTarget.empty())
+        printf(" -> %s", STR(linkTarget));
+
+    printf("\n");
+
+recursive_print:
+
+    {
+        for (uint idx = 0; idx < entries.size(); ++idx)
+        {
+            S9sVariantMap child = entries[idx].toVariantMap();
+            bool          last = idx + 1 >= entries.size();
+       
+            if (child["item_name"].toString().startsWith(".") && 
+                    !options->isAllRequested())
+            {
+                continue;
+            }
+
+            printObjectListBrief(
                     child, recursionLevel + 1, 
                     "", last);
         }
@@ -4670,7 +4875,7 @@ S9sRpcReply::printObjectTreeBrief()
  * Prints the CDT as a list.
  */
 void
-S9sRpcReply::printObjectTreeList()
+S9sRpcReply::printObjectList()
 {
     S9sOptions *options = S9sOptions::instance();
 
@@ -4680,16 +4885,29 @@ S9sRpcReply::printObjectTreeList()
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested())
+    {
+        printObjectListLong();
     } else {
-        printObjectTreeLong();
+        printObjectListBrief(); 
     }
 }
 
 /**
  * Prints the CDT as a list.
+ *
+ * \code{.js}
+ * MODE        SIZE OWNER  GROUP     NAME
+ * drwxrwxr--  1, 0 system admins    groups
+ * drwxrwxrwx     - pipas  testgroup home
+ * urwxr--r--     - nobody admins    nobody
+ * urwxr--r--     - pipas  admins    pipas
+ * urwxr--r--     - system admins    system
+ * Total: 7 object(s) in 4 folder(s).
+ * \endcode
  */
 void
-S9sRpcReply::printObjectTreeLong()
+S9sRpcReply::printObjectListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
 
@@ -4730,7 +4948,7 @@ S9sRpcReply::printObjectTreeLong()
 
     }
 
-    printObjectTreeLong(entry, 0, "", false);
+    printObjectListLong(entry, 0, "", false);
         
     if (!options->isBatchRequested())
     {
@@ -4738,6 +4956,51 @@ S9sRpcReply::printObjectTreeLong()
                 m_numberOfObjects,
                 m_numberOfFolders);
     }
+}
+
+void
+S9sRpcReply::printObjectListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+
+    S9sVariantMap   entry   =  operator[]("cdt").toVariantMap();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+
+    m_sizeFormat = S9sFormat();
+    m_sizeFormat.setRightJustify();
+
+    m_ownerFormat = S9sFormat();
+    m_groupFormat = S9sFormat();
+    m_numberOfObjects = 0;
+    m_numberOfFolders = 0;
+
+    walkObjectTree(entry);
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        m_sizeFormat.widen("SIZE");
+        m_ownerFormat.widen("OWNER");
+        m_groupFormat.widen("GROUP");
+
+        printf("%s", headerColorBegin());
+        printf("MODE        ");
+        m_sizeFormat.printf("SIZE");
+        m_ownerFormat.printf("OWNER");
+        m_groupFormat.printf("GROUP");
+        printf("NAME");
+        printf("%s\n", headerColorEnd());
+
+    }
+
+    printObjectListBrief(entry, 0, "", false);
 }
 
 void

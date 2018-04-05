@@ -221,7 +221,7 @@ S9sBusinessLogic::execute()
             
             client.getTree();
             reply = client.reply();
-            reply.printObjectTreeList();
+            reply.printObjectList();
         } else if (options->isTreeRequested())
         {
             S9sRpcReply reply;

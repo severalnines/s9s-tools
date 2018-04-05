@@ -136,9 +136,11 @@ class S9sRpcReply : public S9sVariantMap
         void printScriptTreeBrief();
         
         void printObjectTree();
-        void printObjectTreeList();
+
+        void printObjectList();
         void printObjectTreeBrief();
-        void printObjectTreeLong();
+        void printObjectListLong();
+        void printObjectListBrief();
         
         void saveConfig(S9sString outputDir);
 
@@ -155,7 +157,13 @@ class S9sRpcReply : public S9sVariantMap
                 S9sString            indentString,
                 bool                 isLast);
         
-        void printObjectTreeLong(
+        void printObjectListLong(
+                S9sVariantMap        entry,
+                int                  recursionLevel,
+                S9sString            indentString,
+                bool                 isLast);
+        
+        void printObjectListBrief(
                 S9sVariantMap        entry,
                 int                  recursionLevel,
                 S9sString            indentString,
