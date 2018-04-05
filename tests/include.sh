@@ -331,6 +331,37 @@ function checkCoreFile
     done
 }
 
+function find_line()
+{
+    local text="$1"
+    local line="$2"
+    local tmp
+
+    while true; do
+        tmp=$(echo "$text" | sed -e 's/  / /g')
+        if [ "$tmp" == "$text" ]; then
+            break
+        fi
+
+        text="$tmp"
+    done
+
+    while true; do
+        tmp=$(echo "$line" | sed -e 's/  / /g')
+        if [ "$tmp" == "$line" ]; then
+            break
+        fi
+
+        line="$tmp"
+    done
+
+    printVerbose "text: $text"
+    printVerbose "line: $line"
+
+    echo "$text" | grep --quiet "$line"
+    return $?
+}
+
 #
 # $1: the file in which the output messages are stored.
 # $2: the message to find.

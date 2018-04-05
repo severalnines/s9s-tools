@@ -149,39 +149,47 @@ function testCreateUsers()
 function checkTree01()
 {
     local expected
-    local lines=$(s9s tree --cmon-user=admin --list --long)
-
-    print_title "Checking Tree"
-    mys9s tree --cmon-user=admin --tree
-    mys9s tree --cmon-user=admin --tree /groups
+    local lines
 
     print_title "Checking Tree List"
-    mys9s tree --cmon-user=admin --list --long
+    mys9s tree --cmon-user=admin --list --long --directory /
 
     # The root directory owned by the system user.
-    expected="^frwxrwxrwx  system admins /$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    lines=$(s9s tree --cmon-user=admin --list --long --directory /)
+    mys9s tree --cmon-user=admin --list --long --directory /
+
+    expected="^drwxrwxrwx     - system admins /$"
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
 
     # The admin user has a link that the admin will see
-    expected="^urwxr--r--  admin  admins /admin -> /admin$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    lines=$(s9s tree --cmon-user=admin --list --long groups/admins)
+    mys9s tree --cmon-user=admin --list --long groups/admins
+
+    expected="^urwxr--r--     - admin  admins admin -> /admin$"
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
 
     # The non-admin user has a link too.
-    expected="^urwxr--r--  pipas  admins /pipas -> /pipas$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    lines=$(s9s tree --cmon-user=admin --list --long groups/users)
+    mys9s tree --cmon-user=admin --list --long groups/users
+
+    expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
     
     # The user owns itself.
-    expected="^urwxr--r--  pipas  admins /pipas$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    lines=$(s9s tree --cmon-user=admin --list --long)
+    mys9s tree --cmon-user=admin --list --long
+
+    expected="^urwxr--r--     - pipas  admins pipas$"
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
@@ -229,11 +237,11 @@ function testMkdir()
     fi
 
     # Checking the new folder.
-    mys9s tree --cmon-user=admin --list
-    lines=$(s9s tree --cmon-user=admin --list)
+    mys9s tree --cmon-user=admin --list --long
+    lines=$(s9s tree --cmon-user=admin --list --long)
     
-    expected="^frwxrwxrwx  pipas  users  /home$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    expected="^drwxrwxrwx     - pipas  users  home$"
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
@@ -257,21 +265,21 @@ function testAcl()
     
     lines=$(s9s tree --get-acl /home)
     expected="^user::rwx$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
         exit 1
     fi
     
     expected="^group::rwx$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
         exit 1
     fi
     
     expected="^other::rwx$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
         exit 1
@@ -291,7 +299,7 @@ function testAcl()
     mys9s tree --get-acl /home
     lines=$(s9s tree --get-acl /home)
     expected="^user:nobody:r-x$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
@@ -310,7 +318,7 @@ function testAcl()
     mys9s tree --get-acl /home
     lines=$(s9s tree --get-acl /home)
     expected="^other::---$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
+    if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
@@ -327,7 +335,6 @@ function testRmdir()
 
     print_title "Removing the Folder"
 
-    # Creating a folder.
     mys9s tree --rmdir /home
 
     exitCode=$?
