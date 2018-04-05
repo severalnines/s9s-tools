@@ -366,9 +366,9 @@ if [ "$exitCode" -ne 0 ]; then
     exit 1
 fi
 
-mys9s tree --list --directory /tmp
-OWNER=$(s9s tree --list --directory /tmp --batch | awk '{print $3}')
-GROUP=$(s9s tree --list --directory /tmp --batch | awk '{print $4}')
+mys9s tree --list --directory --long /tmp
+OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
+GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
 if [ "$OWNER" != 'admin' ]; then
     failure "The owner should be 'admin' not '$OWNER'."
     exit 1
