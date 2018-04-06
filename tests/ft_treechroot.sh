@@ -168,8 +168,8 @@ mys9s server \
 
 check_exit_code $?
 
-OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch | head -n1 | awk '{print $3}')
-GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch | head -n1 | awk '{print $4}')
+OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
+GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
 if [ "$OWNER" != 'pipas' ]; then
     s9s tree --list /$CONTAINER_SERVER 
     failure "The owner should be 'pipas'."
@@ -198,7 +198,7 @@ CONTAINER_IP=$(\
         --list-containers \
         --long container_002 \
         --batch \
-    | awk '{print $7}')
+    | awk '{print $6}')
 
 if [ -z "$CONTAINER_IP" ]; then
     failure "Container IP could not be found."
@@ -229,8 +229,8 @@ mys9s cluster \
 
 check_exit_code $?
 
-OWNER=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $3}')
-GROUP=$(s9s tree --list /galera_002 --batch | head -n1 | awk '{print $4}')
+OWNER=$(s9s tree --list /galera_002 --batch --long | head -n1 | awk '{print $3}')
+GROUP=$(s9s tree --list /galera_002 --batch --long | head -n1 | awk '{print $4}')
 if [ "$OWNER" != 'pipas' ]; then
     mys9s tree --list /galera_002
     failure "The owner of '/galera_002' should be 'pipas'."
