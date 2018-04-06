@@ -637,7 +637,7 @@ function create_node()
     local ip
     local retval
     local verbose_option=""
-
+    
     if [ "$VERBOSE" ]; then
         verbose_option="--verbose"
     fi
@@ -649,6 +649,12 @@ function create_node()
 
     printVerbose "Creating container..."
     ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER $1)
+    retval=$?
+    if [ "$retval" -ne 0 ]; then
+        printError "pip-container-create returned ${retval}."
+        tail $HOME/pip-container-create.log >&2
+    fi
+
     printVerbose "Created '$ip'."
    
     #

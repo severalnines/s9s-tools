@@ -347,6 +347,8 @@ function testCreateBackup01()
         --backup-id=1 \
         --test-server="$node" \
         $LOG_OPTION
+
+    check_exit_code $?
 }
 
 #
