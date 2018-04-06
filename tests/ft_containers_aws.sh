@@ -383,28 +383,6 @@ function createFail()
     fi
 }
 
-function deleteContainer()
-{
-    if [ -z "$LAST_CONTAINER_NAME" ]; then
-        return 0
-    fi
-
-    print_title "Deleting Container"
-
-    #
-    # Creating a container.
-    #
-    mys9s container \
-        --delete \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        $LOG_OPTION \
-        "$LAST_CONTAINER_NAME"
-    
-    check_exit_code $?
-
-    s9s job --list
-}
-
 function createCluster()
 {
     local node001="ft_containers_aws_01_$$"
@@ -460,6 +438,37 @@ function createCluster()
 }
 
 #
+# This will delete the containers we created before.
+#
+function deleteContainer()
+{
+    local containers
+    local container
+
+    containers="$LAST_CONTAINER_NAME"
+    containers+=" ft_containers_aws_01_$$"
+    containers+=" ft_containers_aws_02_$$"
+
+    print_title "Deleting Containers"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    s9s job --list
+}
+
+#
 # Running the requested tests.
 #
 startTests
@@ -475,8 +484,8 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createFail
-    runFunctionalTest deleteContainer
     runFunctionalTest createCluster
+    runFunctionalTest deleteContainer
 fi
 
 endTests
