@@ -3881,7 +3881,7 @@ S9sRpcClient::dropCluster()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sString      title;
-    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
