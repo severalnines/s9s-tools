@@ -291,6 +291,7 @@ function testCreateAccount()
 
         echo "This seems to be the master."
         mys9s node --stat $master_hostname
+        break
     done
 
     if [ -z "$master_hostname" ]; then
