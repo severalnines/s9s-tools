@@ -270,12 +270,33 @@ function testStopStartNode()
 #
 function testCreateAccount()
 {
+    local master_hostname
+
     print_title "Creating account"
 
+
     for waiting in $(seq 1 10); do
-        mys9s node --list --long --color=always | cat
-        sleep 10
+        master_hostname=$( \
+            s9s node --list --long | \
+            grep ^soM | \
+            awk '{print $5}')
+
+        if [ -z "$master_hostname" ]; then
+            echo "There seem to be no master host."
+            echo "Waiting 10 seconds..."
+
+            sleep 10
+            continue
+        fi
+
+        echo "This seems to be the master."
+        mys9s node --stat $master_hostname
     done
+
+    if [ -z "$master_hostname" ]; then
+        echo "There seems to be no master, will continue anyway."
+    fi
+
     #
     # This command will create a new account on the cluster.
     #
@@ -288,9 +309,10 @@ function testCreateAccount()
     exitCode=$?
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account"
+        failure "Exit code is not $exitCode while creating an account"
         mys9s node --list --long 
         mys9s node --stat
+        exit 1
     fi
 }
 

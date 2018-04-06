@@ -711,7 +711,7 @@ function failOnContainers()
 }
 
 #
-# This will delete the container we created before.
+# This will delete the containers we created before.
 #
 function deleteContainer()
 {
