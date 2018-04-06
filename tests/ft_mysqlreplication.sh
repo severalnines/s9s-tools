@@ -278,7 +278,7 @@ function testCreateAccount()
     for waiting in $(seq 1 10); do
         master_hostname=$( \
             s9s node --list --long | \
-            grep ^soM | \
+            grep ^..M | \
             awk '{print $5}')
 
         if [ -z "$master_hostname" ]; then
