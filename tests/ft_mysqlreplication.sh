@@ -282,7 +282,7 @@ function testCreateAccount()
             echo "There seem to be no master host."
             echo "Waiting 10 seconds..."
 
-            sleep 10
+            sleep 20
             continue
         fi
 
@@ -485,8 +485,8 @@ else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
 
-    runFunctionalTest testRestartNode
-    runFunctionalTest testStopStartNode
+    #runFunctionalTest testRestartNode
+    #runFunctionalTest testStopStartNode
 
     runFunctionalTest testCreateAccount
     runFunctionalTest testAddNode
