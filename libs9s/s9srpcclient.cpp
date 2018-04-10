@@ -257,9 +257,12 @@ S9sRpcClient::printMessages(
         rpcReply.printMessages(defaultMessage);
     } else {
         if (options->isJsonRequested())
+        {
             printf("%s\n", STR(rpcReply.toString()));
-        else
-            PRINT_ERROR("%s", STR(errorString()));
+        } else {
+            rpcReply.printMessages(errorString());
+            //PRINT_ERROR("%s", STR(errorString()));
+        }
     }
 }
 
