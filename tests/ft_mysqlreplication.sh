@@ -218,7 +218,9 @@ function testStopStartNode()
 {
     local exitCode
 
-    print_title "Stopping&starting node"
+    print_title "Stopping&starting non-master node"
+
+    mys9s node --list --long 
 
     #
     # First stop.
