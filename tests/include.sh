@@ -679,7 +679,7 @@ function emit_s9s_configuration_file()
 controller = https://localhost:9556
 
 [log]
-brief_job_log_format = "%26B:%-5L: %-7S %M\n"
+brief_job_log_format = "%36B:%-5L: %-7S %M\n"
 brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
 EOF
 }

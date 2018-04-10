@@ -116,7 +116,7 @@ fi
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging Controller"
 
     #
     # Pinging. 
@@ -140,7 +140,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create My SQL replication cluster is starting now."
+    print_title "Creating MySQL Replication Cluster"
     nodeName=$(create_node)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -168,12 +168,7 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster"
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $exitCode
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -412,6 +407,7 @@ function testRollingRestart()
     local exitCode
     
     print_title "Rolling restart"
+    mys9s node --list --long
 
     #
     # Calling for a rolling restart.
@@ -420,12 +416,8 @@ function testRollingRestart()
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code $?
 }
 
 #
