@@ -226,9 +226,8 @@ function testStopStartNode()
     #
     mys9s node \
         --stop \
-        --force \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
+        --nodes=$SECOND_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -243,7 +242,7 @@ function testStopStartNode()
     mys9s node \
         --start \
         --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
+        --nodes=$SECOND_ADDED_NODE \
         $LOG_OPTION
     
     exitCode=$?
@@ -268,7 +267,8 @@ function testCreateAccount()
     local master_hostname
 
     print_title "Creating account"
-
+    #echo "FIXME: There is a sleep here."
+    #sleep 30
 
     for waiting in $(seq 1 10); do
         master_hostname=$( \
@@ -300,7 +300,7 @@ function testCreateAccount()
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="john_doe:password@1.2.3.4" \
-        --with-database
+        --with-database 
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
