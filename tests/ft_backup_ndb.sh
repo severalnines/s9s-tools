@@ -293,11 +293,10 @@ function testCreateBackup01()
     check_exit_code $?
 
     print_title "Checking the Properties of the Backup"
-    mys9s backup --list --long
-    mys9s backup --list-databases --long
-    mys9s backup --list-files --long
-    mys9s backup --list --print-json
-
+    #mys9s backup --list --long
+    #mys9s backup --list-databases --long
+    #mys9s backup --list-files --long
+    #mys9s backup --list --print-json
 
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
@@ -326,19 +325,10 @@ function testCreateBackup01()
     # Checking the path.
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/BACKUP-1/mysql/' | \
+        grep '^/tmp/BACKUP-1/' | \
         wc -l)
     if [ "$value" != 3 ]; then
-        failure "Three files should be listed in '/tmp/BACKUP-1/mysql/'"
-        mys9s backup --list-files --full-path --backup-id=1
-    fi
-
-    value=$(\
-        s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/BACKUP-1/testCreateDatabase/' | \
-        wc -l)
-    if [ "$value" != 3 ]; then
-        failure "Three files should be listed in '/tmp/BACKUP-1/testCreateDatabase/'"
+        failure "Three files should be listed in '/tmp/BACKUP-1/'"
         mys9s backup --list-files --full-path --backup-id=1
     fi
 
