@@ -279,53 +279,22 @@ function testStopMaster()
 
     while true; do
         if [ "$timeLoop" -gt 60 ]; then
-            failure "No master is elected after $timeLoop seconds."
-            mys9s node --list --long
+            failure "No failover job finished."
+            mys9s job --list
             return 1
         fi
 
-        if s9s node --list --long | \
-            grep -v "$FIRST_ADDED_NODE" | \
-            grep --quiet ^poM; 
+        if s9s job --list | \
+            grep "FINISHED" | \
+            grep --quiet "Failover to a New Master"; 
         then
-            mys9s node --list --long
+            mys9s job --list
             break
         fi
+
+        sleep 5
+        let timeLoop+=1
     done
-
-    # Well, we better wait until the other slaves are restarted.
-    sleep 30
-
-    #
-    # Manually restarting the the postgresql on the node.
-    #
-    print_title "Starting postgresql Directly on $FIRST_ADDED_NODE"
-    $SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql start
-
-    if wait_for_node_online "$FIRST_ADDED_NODE"; then
-        printVerbose "Started postgresql on $FIRST_ADDED_NODE"
-    else
-        failure "Host $FIRST_ADDED_NODE did not come on-line."
-    fi
-
-    if wait_for_node_become_slave $FIRST_ADDED_NODE; then
-        printVerbose "Node $FIRST_ADDED_NODE reslaved."
-        mys9s node --list --long
-    else
-        failure "Host $FIRST_ADDED_NODE is still not a slave"
-        mys9s node --list --long
-        #mys9s node --stat
-        mys9s job --list 
-        jobId=$(\
-            s9s job --list --batch | \
-            grep FAIL | \
-            tail -n1 | \
-            awk '{print $1}')
-
-        if [ "$jobId" ]; then
-            mys9s job --log --job-id="$jobId"
-        fi
-    fi
 
     return 0
 }
