@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CLUSTER_NAME="${MYBASENAME}_$$"
+CLUSTER_NAME="ft_$$"
 CLUSTER_ID=""
 ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -278,9 +278,16 @@ function testCreateAccount()
             grep ^..M | \
             awk '{print $5}')
 
+        if [ "$master_hostname" ]; then
+            if s9s node --stat "$master_hostname" | grep --quiet "read-only"
+            then
+                master_hostname=""
+            fi
+        fi
+
         if [ -z "$master_hostname" ]; then
             echo "There seem to be no master host."
-            echo "Waiting 10 seconds..."
+            echo "Waiting 20 seconds..."
 
             sleep 20
             continue
