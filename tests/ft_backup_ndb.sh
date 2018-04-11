@@ -296,6 +296,7 @@ function testCreateBackup01()
     mys9s backup --list --long
     mys9s backup --list-databases --long
     mys9s backup --list-files --long
+    mys9s backup --list --print-json
 
 
     value=$(s9s backup --list --backup-id=1 | wc -l)
