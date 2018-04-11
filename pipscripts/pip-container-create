@@ -393,7 +393,7 @@ function install_package_in_container()
         retval=$?
 
         if [ "$retval" -ne "0" ]; then
-            printError "Installing failed, check '$LOGFILE' for details."
+            printVerbose "Installing $package_name failed..."
             echo "/etc/resolv.conf:" \
                 >>"$LOGFILE" 2>>"$LOGFILE"
 

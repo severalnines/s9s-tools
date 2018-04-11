@@ -122,7 +122,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    print_title "Creating PostgreSQL Cluster"
     nodeName=$(create_node)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
@@ -161,7 +161,7 @@ function testAddNode()
 {
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    print_title "Adding Node"
     printVerbose "Creating node..."
 
     LAST_ADDED_NODE=$(create_node)
@@ -190,6 +190,7 @@ function testStopSlave()
     local exitCode
     local timeLoop="0"
 
+    print_title "Stopping Slave"
     #
     # Stopping the first added node. 
     #
@@ -225,6 +226,8 @@ function testStartSlave()
 {
     local exitCode
     local timeLoop="0"
+
+    print_title "Starting Node"
 
     #
     # Starting the first added node. 
