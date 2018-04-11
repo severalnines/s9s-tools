@@ -136,23 +136,23 @@ function testCreateCluster()
     echo "Creating node #0"
     nodeName=$(create_node)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    #ALL_CREATED_IPS+=" $nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     FIRST_ADDED_NODE="$nodeName"
 
     echo "Creating node #1"
     nodeName=$(create_node)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    #ALL_CREATED_IPS+=" $nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #2"
     nodeName=$(create_node)
     nodes+="ndbd://$nodeName;"
-    #ALL_CREATED_IPS+=" $nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #3"
     nodeName=$(create_node)
     nodes+="ndbd://$nodeName"
-    #ALL_CREATED_IPS+=" $nodeName"
+    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Creating an NDB cluster.
