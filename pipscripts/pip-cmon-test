@@ -896,7 +896,7 @@ EOF
 #
 function run_test()
 {
-    local test_name="$1"
+    local test_name="$(basename "$1")"
     local os="$2"
     local version="$3"
     local vendor="$(vendor_to_test)"
@@ -929,6 +929,7 @@ function run_test()
     #
     # Running the actual test.
     #
+    pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
             cd tests
@@ -1103,6 +1104,10 @@ function run_test()
                     --unit-test \
                     "$test_name" "FAILURE" $logfile
             fi
+            ;;
+
+        *)
+            pip-host-control --error "Unhandled test name '${test_name}'."
     esac
    
     #

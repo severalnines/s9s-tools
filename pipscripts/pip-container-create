@@ -55,7 +55,7 @@ function printVerbose()
     fi
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE" 2>/dev/null
     fi
 }
 
