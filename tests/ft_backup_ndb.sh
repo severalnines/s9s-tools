@@ -353,6 +353,7 @@ function testCreateBackup01()
 # Running the requested tests.
 #
 startTests
+rm -rvf /tmp/BACKUP-1
 
 reset_config
 grant_user
