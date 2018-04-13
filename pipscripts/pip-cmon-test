@@ -1085,6 +1085,7 @@ function run_test()
             #
             # This is under development.
             #
+            cd tests
             upload_result_file \
                 --unit-test \
                 "$test_name" "RUNNING" $logfile
@@ -1096,9 +1097,16 @@ function run_test()
             printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
             if [ ! -f "$test_name/$test_name" ]; then
+                echo "File $test_name/$test_name not found in ${PWD}." \
+                    >>$logfile 2>>$logfile
+
                 pip-host-control \
-                    --error "Program $test_name was not found." \
+                    --error "$test_name/$test_name was not found in $PWD." \
                     --status "Program $test_name was not found."
+                
+                upload_result_file \
+                    --unit-test \
+                    "$test_name" "FAILURE" $logfile
                 
                 return 1
             fi

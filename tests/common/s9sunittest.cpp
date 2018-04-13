@@ -18,12 +18,13 @@
 #endif
 
 #define TERM_CLEAR_RIGHT "\033[0K"
-#define g_option_syntax_highlight true
+bool g_option_syntax_highlight = true;
 
 static struct option long_options[] =
 {
     { "help",             no_argument,       0, 'h' },
     { "verbose",          no_argument,       0, 'v' },
+    { "color",            no_argument,       0, 'c' },
     { 0, 0, 0, 0 }
 };
 
@@ -202,7 +203,11 @@ S9sUnitTest::execute (
             case 'n':
                 m_noHalt = true;
                 break;
-           
+
+            case 'c':
+                g_option_syntax_highlight = true;
+                break;
+
             case 't':
                 m_testCase = optarg;
                 break;
