@@ -1402,49 +1402,17 @@ if [ "$OPTION_UNIT_TESTS" ]; then
         OPTION_TEST_NAME+="ut_s9scluster ut_s9sdatetime ut_s9snode "
         OPTION_TEST_NAME+="ut_s9sregexp ut_s9sstring ut_s9svariant "
     else
-        OPTION_TEST_NAME+="ut_cmonaccount ut_cmonacl ut_cmonbackup "
-        OPTION_TEST_NAME+="ut_cmonbackupdb ut_cmonbackupretention "
-        OPTION_TEST_NAME+="ut_cmonbinaryrecord ut_cmoncell "
-        OPTION_TEST_NAME+="ut_cmonclusterconfig ut_cmoncommandhandler "
-        OPTION_TEST_NAME+="ut_cmonconfigfile ut_cmonconfigproperties "
-        OPTION_TEST_NAME+="ut_cmonconfiguration ut_cmoncpustatcollector "
-        OPTION_TEST_NAME+="ut_cmoncpustats ut_cmoncron "
-        OPTION_TEST_NAME+="ut_cmondatabasestats ut_cmondb "
-        OPTION_TEST_NAME+="ut_cmondiskstats ut_cmondocument "
-        OPTION_TEST_NAME+="ut_cmonencryption ut_cmoneventloop "
-        OPTION_TEST_NAME+="ut_cmonfile ut_cmonhost "
-        OPTION_TEST_NAME+="ut_cmonimperative ut_cmonjob "
-        OPTION_TEST_NAME+="ut_cmonjsonmessage ut_cmonlocalprocess "
-        OPTION_TEST_NAME+="ut_cmonlogger ut_cmonlogmessage "
-        OPTION_TEST_NAME+="ut_cmonmail ut_cmonmailqueue "
-        OPTION_TEST_NAME+="ut_cmonmemorystatcollector ut_cmonmemorystats "
-        OPTION_TEST_NAME+="ut_cmonmetatype ut_cmonmongocluster "
-        OPTION_TEST_NAME+="ut_cmonmysqlcollector ut_cmonmysqlslowlogparser "
-        OPTION_TEST_NAME+="ut_cmonnetworkstatcollector ut_cmonnetworkstats "
-        OPTION_TEST_NAME+="ut_cmonobject ut_cmonpkgversion "
-        OPTION_TEST_NAME+="ut_cmonpluginexecutor ut_cmonprocesscollector "
-        OPTION_TEST_NAME+="ut_cmonprocessmanager "
-        OPTION_TEST_NAME+="ut_cmonprocessstatcollector "
-        OPTION_TEST_NAME+="ut_cmonregexp ut_cmonrpcservice "
-        OPTION_TEST_NAME+="ut_cmonscriptmanager ut_cmonscripts "
-        OPTION_TEST_NAME+="ut_cmonsheet ut_cmonspreadsheetmanager "
-        OPTION_TEST_NAME+="ut_cmonsqlstats ut_cmonsslca "
-        OPTION_TEST_NAME+="ut_cmonstatistics ut_cmonstring "
-        OPTION_TEST_NAME+="ut_cmonthread ut_cmontimer "
-        OPTION_TEST_NAME+="ut_cmonuser ut_cmonvariant "
-        OPTION_TEST_NAME+="ut_cmonwatchdog ut_communication "
-        OPTION_TEST_NAME+="ut_communicationstubbed ut_connect "
-        OPTION_TEST_NAME+="ut_galera ut_galerastubbed "
-        OPTION_TEST_NAME+="ut_haproxy ut_helpers ut_joblogger "
-        OPTION_TEST_NAME+="ut_memcache ut_mongostats "
-        OPTION_TEST_NAME+="ut_mysqladvisor ut_mysqlsinglecluster "
-        OPTION_TEST_NAME+="ut_osversion ut_postgresqlsinglecluster "
-        OPTION_TEST_NAME+="ut_postinst ut_proxysql "
-        OPTION_TEST_NAME+="ut_replication ut_repositorymanager "
-        OPTION_TEST_NAME+="ut_resourcestatcollector ut_s9scluster "
-        OPTION_TEST_NAME+="ut_simplealarm ut_ssh "
-        OPTION_TEST_NAME+="ut_tcpstatcollector ut_tcpstats "
-        OPTION_TEST_NAME+="ut_workflow "
+        directory=$(find_clustercontrol_source_directory)
+        if [ -d "$directory/tests" ]; then
+            pushd "$directory/tests"
+            OPTION_TEST_NAME="$(ls -d ut_*)"
+            popd
+        fi
+        
+        if [ -z "$OPTION_TEST_NAME" ]; then
+            printError "Could not find clustercontrol unit tests."
+            exit 6
+        fi
     fi
 fi
 
@@ -1452,16 +1420,15 @@ if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
     if [ "$S9S_OPTION" ]; then
         directory=$(find_s9s_source_directory)
         printVerbose "  directory: $directory" 
-        ls -lha "$directory/tests/ft_*.sh" 
 
         if [ -d "$directory/tests" ]; then
-            pushd "$directory/tests"
+            pushd "$directory/tests" >/dev/null 2>/dev/null
             OPTION_TEST_NAME="$(ls ft_*.sh)"
-            popd
+            popd >/dev/null 2>/dev/null
         fi
 
         if [ -z "$OPTION_TEST_NAME" ]; then
-            printError "Could not finc s9s functional tests."
+            printError "Could not find s9s functional tests."
             exit 6
         fi
     fi
