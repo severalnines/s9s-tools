@@ -417,7 +417,6 @@ function createFail()
         "node101"
     
     exitCode=$?
-
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid subnet should have failed."
         exit 1
@@ -425,7 +424,7 @@ function createFail()
 
     # FIXME: well, this invalid subnet issue is only recognized after the
     # container was created.
-    mys9s container --delete $LOG_OPTION "node101"
+    #mys9s container --delete $LOG_OPTION "node101"
 
     #
     # Creating a container with invalid image.

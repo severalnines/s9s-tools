@@ -31,6 +31,8 @@ S9S_OPTION=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
+declare -A REMOTE_SERVER_STATE
+
 # This should come from config.
 TEST_REPORT_URL="www:/var/lib/test-ui/test-results"
 #TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
@@ -51,8 +53,11 @@ Usage:
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
+  
   --server=SERVER         The server or the servers where the tests will run.
   --blades                Set the servers to my blades.
+  --all-servers           Try to use all servers we have.
+
   --pid                   Print the PID of the test script if it is running.
   
   --no-git-pull           Do not execute 'git pull' before the test.
@@ -84,7 +89,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,server:,blades,pid,\
+        -l "help,verbose,version,log-file:,server:,all-servers,blades,pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,shut-down-after" \
         -- "$@")
@@ -133,6 +138,13 @@ while true; do
                 SERVER+="blade06 blade07 blade08 blade09 blade10"
                 echo "$SERVER" >"$HOME/.pip/blades"
             fi
+            ;;
+
+        --all-servers)
+            shift
+            SERVER="host01 host02 host03 host04 host05 host06 host07 "
+            SERVER+="blade01 blade02 blade03 blade04 blade05 blade06 "
+            SERVER+="blade07 blade08 blade09 blade10"
             ;;
 
         --pid)
@@ -1222,7 +1234,7 @@ function is_server_running_ssh()
     local serverName="$1"
     local isOK
 
-    isOk=$(ssh -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    isOk=$(ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
     if [ "$isOk" == "OK" ]; then
         return 0
     fi
@@ -1230,11 +1242,36 @@ function is_server_running_ssh()
     return 1
 }
 
-LAST_USED_SERVER=""
+function print_main_screen()
+{
+    local server
+    local host_state
+    local mycolumns=0
 
+    for server in $SERVER; do
+        host_state="${REMOTE_SERVER_STATE[$server]}"
+        if [ -z "$host_state" ]; then
+            host_state="-"
+        fi
+
+        printf "%8s:%-10s " "$server" "$host_state" >&2
+        let mycolumns+=1
+        if [ $mycolumns -gt 3 ]; then
+            echo "" >&2
+            mycolumns=0
+        fi
+    done
+
+    echo "" >&2
+}
+
+LAST_USED_SERVER=""
 function find_idle_server()
 {
     local server
+    local host_state
+   
+    printVerbose "find_idle_server()"
 
     for server in $SERVER; do
         lock_file=$(lockFile)
@@ -1247,10 +1284,14 @@ function find_idle_server()
             continue
         fi
 
+        #print_main_screen
+
         if ! is_server_running_ssh "$server"; then
             printVerbose "Server '$server' is off-line."
+            REMOTE_SERVER_STATE[$server]="OFF-LINE"
             continue
         fi
+
 
         other_pid=$( \
             ssh -o UserKnownHostsFile=/dev/null \
@@ -1258,10 +1299,13 @@ function find_idle_server()
                 -o LogLevel=quiet \
                 "$server" -- pip-cmon-test --pid)
 
+        #print_main_screen
+
         printVerbose "server     : '$server'"
         printVerbose "lock_file  : '$lock_file'"
         printVerbose "other_pid  : '$other_pid'"
         if [ "$other_pid" ]; then
+            REMOTE_SERVER_STATE[$server]="TESTING "
             continue
         fi
 
@@ -1277,6 +1321,7 @@ function wait_for_idle_server()
 {
     local idle_server
 
+    printVerbose "Trying to find an idle server"
     while true; do
         idle_server=$(find_idle_server)
   
@@ -1416,6 +1461,9 @@ fi
 
 
 if [ "$OPTION_PID" ]; then
+    #
+    # Printing the PID of the running test script and exiting.
+    #
     lock_file=$(lockFile)
     if [ -f "$lock_file" ]; then
         pid=$(cat "$lock_file")
@@ -1429,18 +1477,16 @@ if [ "$OPTION_PID" ]; then
     fi
 
     exit 1
-fi
-
-#
-#
-#
-if [ "$SERVER" ]; then
+elif [ "$SERVER" ]; then
+    #
+    # Running the tests on multiple remote servers.
+    #
     pip-host-control --testing --log="--------------------------------------"
     pip-host-control --testing --log="Running tests..."
     pip-host-control --status "Testing..."
 
     run_tests_remote
-    waitForProcessesToEnd 
+    #waitForProcessesToEnd 
     pip-host-control --idle --status="Idle"
 else
     checkOtherInstances
