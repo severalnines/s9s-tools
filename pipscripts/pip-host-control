@@ -222,6 +222,20 @@ function get_disk_size()
     echo $number
 }
 
+function get_number_of_containers()
+{
+    local name
+    local retval=0
+
+    if [ "$(which lxc-ls)" ]; then
+        for name in $(sudo lxc-ls); do
+            let retval+=1
+        done
+    fi
+
+    echo "$retval"
+}
+
 #
 # Collects the information about this host and prints it into the standard
 # output. 
@@ -233,6 +247,7 @@ HOSTNAME="$(hostname)"
 NUMBER_OF_CORES=$(nproc)
 MEMORY_GIGABYTES=$(get_memory_size)
 DISK_GIGABYTES=$(get_disk_size)
+NUMBER_OF_CONTAINERS=$(get_number_of_containers)
 HOST_STATUS="$HOST_STATUS"
 STATUS_TEXT="$STATUS_TEXT"
 EOF

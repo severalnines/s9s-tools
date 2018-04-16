@@ -808,7 +808,8 @@ function upload_result_file()
 
         scp "$tmp_file" "$TEST_REPORT_URL"
 
-        if [ -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
+        if [ -z "$unit_test_option" -a \
+            -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
             scp \
                 "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
                 "$TEST_REPORT_URL/$daemon_log_file"
@@ -916,6 +917,7 @@ function run_test()
     local return_code
     local tmp_file
     local logfile
+
 
     logfile=$(log_file_name "$test_name")
     if [ "$S9S_OPTION" ]; then
@@ -1160,6 +1162,10 @@ function main()
         --testing \
         --log "Preparing test ($MYNAME ver. $VERSION)."
 
+    if [ -z "$(psql --version)" ]; then
+        sudo apt-get install postgres-xc
+    fi
+
     #
     # Finding the source root.
     #
@@ -1168,6 +1174,9 @@ function main()
         printError "Directory '$source_root' does not exist."
         exit 6
     fi
+    
+    rm -f "$source_root/*.log"
+    rm -f "$source_root/tests/*.log"
 
     #
     # If the user removes this file we cancel the shutdown request, otherwise we
@@ -1192,14 +1201,12 @@ function main()
     
     popd >/dev/null 2>/dev/null
 
-    echo "----8<----8<----8<----8<----8<----8<----"
     result_file=$(result_file_name "$OPTION_TEST_NAME")
     tmp_file="/var/tmp/$result_file"
 
     printVerbose "Preliminary test result file: $result_file"
     generate_test_result_info "$OPTION_TEST_NAME" "PREPARING" >$tmp_file
     scp "$tmp_file" "$TEST_REPORT_URL"
-    echo "----8<----8<----8<----8<----8<----8<----"
 
     compile_source
 
