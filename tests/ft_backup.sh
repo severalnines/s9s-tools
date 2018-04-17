@@ -351,6 +351,18 @@ function testCreateBackup01()
         --backup-id=1 \
         --test-server="$node" \
         $LOG_OPTION
+
+    #
+    #
+    #
+    mys9s backup --list
+    mys9s backup --list --long
+
+    mys9s backup --list-files
+    mys9s backup --list-files --long
+
+    mys9s backup --list-databases
+    mys9s backup --list-databases --long
 }
 
 function testCreateBackup02()

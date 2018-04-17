@@ -25,7 +25,7 @@ OPTION_TEST_NAME=""
 OPTION_VENDOR=""
 OPTION_VERSION=""
 OPTION_PID=""
-
+OPTION_USER="$USER"
 S9S_OPTION=""
 
 SERVER=""
@@ -53,7 +53,8 @@ Usage:
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
-  
+ 
+  --user=USERNAME         The name of the user requested the test.
   --server=SERVER         The server or the servers where the tests will run.
   --blades                Set the servers to my blades.
   --all-servers           Try to use all servers we have.
@@ -89,7 +90,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,server:,all-servers,blades,pid,\
+        -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
+pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,shut-down-after" \
         -- "$@")
@@ -119,6 +121,12 @@ while true; do
         --log-file)
             shift
             LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --user)
+            shift
+            OPTION_USER="$1"
             shift
             ;;
 
@@ -698,7 +706,7 @@ function compile_source()
 function report_file_name()
 {
     local test_name=$1
-    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.html"
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.html"
 }
 
 #
@@ -707,13 +715,13 @@ function report_file_name()
 function result_file_name()
 {
     local test_name=$1
-    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
 }
 
 function log_file_name()
 {
     local test_name=$1
-    echo "${USER}-$(hostname)-${test_name}-${GIT_HASH}.log"
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.log"
 }
 
 #
@@ -888,7 +896,7 @@ gitcommitdate="$GIT_COMMIT_DATE"
 githaslocalchanges="$git_has_local_changes"
 state="$test_state"
 report_file="$(report_file_name $test_name)"
-user="$USER"
+user="$OPTION_USER"
 elapsed_time="$elapsed_time"
 elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
 test_start_epoch="$START_EPOCH_TIME"
@@ -1163,7 +1171,7 @@ function main()
         --log "Preparing test ($MYNAME ver. $VERSION)."
 
     if [ -z "$(psql --version)" ]; then
-        sudo apt-get install postgres-xc
+        sudo apt-get -y --force-yes install postgresql
     fi
 
     #
