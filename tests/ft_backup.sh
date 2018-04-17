@@ -325,8 +325,8 @@ function testCreateBackup01()
         s9s backup --list-files --full-path --backup-id=1 | \
         grep '^/tmp/backup-001-0001/mysql/' | \
         wc -l)
-    if [ "$value" != 3 ]; then
-        failure "Three files should be in '/tmp/backup-001-0001/mysql/'"
+    if [ "$value" != 1 ]; then
+        failure "A file should be in '/tmp/backup-001-0001/mysql/'"
         mys9s backup --list-files --full-path --backup-id=1
     fi
 
@@ -334,8 +334,8 @@ function testCreateBackup01()
         s9s backup --list-files --full-path --backup-id=1 | \
         grep '^/tmp/backup-001-0001/testCreateDatabase/' | \
         wc -l)
-    if [ "$value" != 3 ]; then
-        failure "Three files should be in '/tmp/backup-001-0001/testCreateDatabase/'"
+    if [ "$value" != 1 ]; then
+        failure "A file should be in '/tmp/backup-001-0001/testCreateDatabase/'"
         mys9s backup --list-files --full-path --backup-id=1
     fi
 
@@ -355,6 +355,7 @@ function testCreateBackup01()
     #
     #
     #
+    print_title "Printing some info"
     mys9s backup --list
     mys9s backup --list --long
 
