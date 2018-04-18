@@ -11,7 +11,9 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+
 PROVIDER_VERSION="5.7"
+OPTION_VENDOR="percona"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -38,6 +40,7 @@ Usage:
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --vendor=STRING  Use the given Galera vendor.
  --provider-version=STRING The SQL server provider version.
  --leave-nodes    Do not destroy the nodes at exit.
 
@@ -52,7 +55,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,leave-nodes" \
+provider-version:,vendor:,leave-nodes" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -102,6 +105,12 @@ while true; do
         --provider-version)
             shift
             PROVIDER_VERSION="$1"
+            shift
+            ;;
+        
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
             shift
             ;;
 
@@ -186,7 +195,7 @@ function testCreateCluster()
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \
-        --vendor=percona \
+        --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
