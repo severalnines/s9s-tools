@@ -556,7 +556,7 @@ S9sRpcReply::printMessages(
             }
         } else {
             // Well, no message, everything is ok.
-            PRINT_ERROR("Error: Unknown error.");
+            PRINT_ERROR("Error: Unknown error: %s", STR(toString()));
         }
     }
 }
