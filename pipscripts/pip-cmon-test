@@ -619,6 +619,7 @@ function compile_source()
 function ft_test_ended()
 {
     local exit_code="$1"
+    local backend_pid="$2"
 
     echo "The test ended."
     echo "exit_code: $exit_code"
@@ -970,7 +971,10 @@ function run_test()
             wait "$watcher_pid"
 
             pushd "$(find_clustercontrol_source_directory)/tests"
-            ft_test_ended "$return_code" >>ft_full.log 2>>ft_full.log
+            ft_test_ended \
+                "$return_code" \
+                "$backend_pid" \
+                >>ft_full.log 2>>ft_full.log
             popd
             
             #
