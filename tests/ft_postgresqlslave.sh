@@ -12,6 +12,7 @@ ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
+PROVIDER_VERSION="9.3"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -38,6 +39,7 @@ Usage:
  --print-commands Do not print unit test info, print the executed commands.
  --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
+ --provider-version=STRING The SQL server provider version.
 
 EOF
     exit 1
@@ -46,7 +48,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install,reset-config" \
+        -l "help,verbose,log,server:,print-commands,install,reset-config,\
+provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -91,6 +94,12 @@ while true; do
         --reset-config)
             shift
             OPTION_RESET_CONFIG="true"
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
             ;;
 
         --)
@@ -138,7 +147,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     exitCode=$?
