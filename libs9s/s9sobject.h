@@ -55,6 +55,7 @@ class S9sObject
         
         S9sString ownerName() const;
         S9sString groupOwnerName() const;
+
     protected:
         S9sVariantMap    m_properties;
 };

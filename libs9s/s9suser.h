@@ -19,12 +19,12 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "S9sObject"
 
 /**
  * A class that represents a user on the controller. 
  */
-class S9sUser
+class S9sUser : public S9sObject
 {
     public:
         S9sUser();
@@ -35,14 +35,8 @@ class S9sUser
 
         S9sUser &operator=(const S9sVariantMap &rhs);
 
-        bool hasProperty(const S9sString &key) const;
-        S9sVariant property(const S9sString &name) const;
-        void setProperty(const S9sString &name, const S9sString &value);
-
-        const S9sVariantMap &toVariantMap() const;
+        virtual const S9sVariantMap &toVariantMap() const;
         S9sString toString() const;
-
-        void setProperties(const S9sVariantMap &properties);
 
         S9sString userName() const;
         S9sString emailAddress(const S9sString &defaultValue = "") const;
@@ -61,8 +55,6 @@ class S9sUser
                 const S9sString &key);
 
         S9sString fullName() const;
-        S9sString ownerName() const;
-        S9sString groupOwnerName() const;
         S9sString lastLoginString(const S9sString &defaultValue = "") const;
         S9sString createdString(const S9sString &defaultValue = "") const;
         S9sString failedLoginString(const S9sString &defaultValue = "") const;
@@ -70,11 +62,7 @@ class S9sUser
         bool isSuspended() const;
         int nFailedLogins() const;
 
-
         S9sString toString(
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;
-
-    private:
-        S9sVariantMap    m_properties;
 };

@@ -223,7 +223,17 @@ S9sObject::cdtPath() const
 S9sString 
 S9sObject::ownerName() const
 {
-    return property("owner_user_name").toString();
+    S9sString retval;
+
+    if (m_properties.contains("owner_user_name"))
+    {
+        retval = m_properties.at("owner_user_name").toString();
+    } else if (m_properties.contains("owner_user_id"))
+    {
+        retval.sprintf("%d", m_properties.at("owner_user_id").toInt());
+    }
+
+    return retval;
 }
 
 /**
@@ -232,5 +242,15 @@ S9sObject::ownerName() const
 S9sString 
 S9sObject::groupOwnerName() const
 {
-    return property("owner_group_name").toString();
+    S9sString retval;
+
+    if (m_properties.contains("owner_group_name"))
+    {
+        retval = m_properties.at("owner_group_name").toString();
+    } else if (m_properties.contains("owner_group_id"))
+    {
+        retval.sprintf("%d", m_properties.at("owner_group_id").toInt());
+    }
+
+    return retval;
 }
