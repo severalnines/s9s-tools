@@ -11,6 +11,7 @@ STATUS_TEXT=""
 SHUTDOWN=""
 HOST_INFO_FILE="$HOME/.piphostinfo"
 HOST_LOG_FILE="$HOME/.piphostinfo.log"
+HOST_CONTAINERS_FILE="$HOME/.pip-host-control.containers"
 HOST_STATUS="IDLE"
 CSV_OUTPUT=""
 
@@ -351,8 +352,11 @@ if [ "$VERBOSE" ]; then
     cat "$HOST_INFO_FILE"
 fi
 
+sudo lxc-ls -f >"$HOST_CONTAINERS_FILE"
+
 upload_file "$HOST_INFO_FILE" "$TEST_REPORT_URL/$(hostname).hostinfo"
 upload_file "$HOST_LOG_FILE"  "$TEST_REPORT_URL/$(hostname).hostlog"
+upload_file "$HOST_CONTAINERS_FILE"  "$TEST_REPORT_URL/$(hostname).containers"
 
 if [ "$CSV_OUTPUT" ]; then
     upload_file "$CSV_OUTPUT" "$TEST_REPORT_URL/test_matrix.csv" ""
