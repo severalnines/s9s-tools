@@ -29,6 +29,7 @@ class UtS9sUser : public S9sUnitTest
     
     protected:
         bool testConstruct();
+        bool testProperties();
 };
 
 

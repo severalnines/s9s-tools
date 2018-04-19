@@ -41,6 +41,7 @@ UtS9sUser::runTest(const char *testName)
     bool retval = true;
 
     PERFORM_TEST(testConstruct,   retval);
+    PERFORM_TEST(testProperties,  retval);
 
     return retval;
 }
@@ -90,6 +91,82 @@ UtS9sUser::testConstruct()
     S9S_COMPARE(user.failedLoginString(), "");
     S9S_COMPARE(user.isDisabled(),        false);
     S9S_COMPARE(user.isSuspended(),       false);
+
+    return true;
+}
+
+bool
+UtS9sUser::testProperties()
+{
+    S9sVariantMap theMap;
+    S9sUser       user;
+    const S9sString jsonString = 
+    "{\n"
+    "    'cdt_path': '/',\n"
+    "    'class_name': 'CmonUser',\n"
+    "    'created': '2018-04-19T12:29:05.776Z',\n"
+    "    'disabled': false,\n"
+    "    'email_address': 'laszlo@severalnines.com',\n"
+    "    'first_name': 'Laszlo',\n"
+    "    'groups': [ \n"
+    "    {\n"
+    "        'cdt_path': '/groups',\n"
+    "        'class_name': 'CmonGroup',\n"
+    "        'group_id': 4,\n"
+    "        'group_name': 'testgroup',\n"
+    "        'owner_group_id': 1,\n"
+    "        'owner_group_name': 'admins',\n"
+    "        'owner_user_id': 1,\n"
+    "        'owner_user_name': 'system'\n"
+    "    } ],\n"
+    "    'last_failed_login': '',\n"
+    "    'last_login': '2018-04-19T12:29:26.995Z',\n"
+    "    'last_name': 'Pere',\n"
+    "    'n_failed_logins': 0,\n"
+    "    'owner_group_id': 1,\n"
+    "    'owner_group_name': 'admins',\n"
+    "    'owner_user_id': 3,\n"
+    "    'owner_user_name': 'pipas',\n"
+    "    'suspended': false,\n"
+    "    'user_id': 3,\n"
+    "    'user_name': 'pipas'\n"
+    "}\n";
+    // Creating a map and setting up the user accordingly.
+    S9S_VERIFY(theMap.parse(STR(jsonString)));
+    user = theMap;
+
+    S9S_VERIFY(user.hasProperty("user_name"));
+    S9S_VERIFY(user.hasProperty("user_id"));
+    S9S_VERIFY(user.hasProperty("suspended"));
+    S9S_VERIFY(user.hasProperty("n_failed_logins"));
+    S9S_VERIFY(user.hasProperty("last_failed_login"));
+    
+    S9S_COMPARE(user.userName(),          "pipas");
+    S9S_COMPARE(user.emailAddress(),      "laszlo@severalnines.com");
+    S9S_COMPARE(user.userId(),            3);
+    S9S_COMPARE(user.firstName(),         "Laszlo");
+    S9S_COMPARE(user.lastName(),          "Pere");
+    S9S_COMPARE(user.title(),             "");
+    S9S_COMPARE(user.fullName(),          "Laszlo Pere");
+    S9S_COMPARE(user.ownerName(),         "pipas");
+    S9S_COMPARE(user.groupOwnerName(),    "admins");
+    S9S_COMPARE(user.lastLoginString(),   "2018-04-19T12:29:26.995Z");
+    S9S_COMPARE(user.createdString(),     "2018-04-19T12:29:05.776Z");
+    S9S_COMPARE(user.failedLoginString(), "");
+    S9S_COMPARE(user.isDisabled(),        false);
+    S9S_COMPARE(user.isSuspended(),       false);
+    S9S_COMPARE(user.nFailedLogins(),     0);
+
+    S9S_COMPARE(user.toString(false, "%F"),      "Laszlo Pere");
+    S9S_COMPARE(user.toString(false, "%f"),      "Laszlo");
+    S9S_COMPARE(user.toString(false, "%G"),      "testgroup");
+    S9S_COMPARE(user.toString(false, "%I"),      "3");
+    S9S_COMPARE(user.toString(false, "%j"),      "");
+    S9S_COMPARE(user.toString(false, "%l"),      "Pere");
+    S9S_COMPARE(user.toString(false, "%M"),      "laszlo@severalnines.com");
+    S9S_COMPARE(user.toString(false, "%m"),      "");
+    S9S_COMPARE(user.toString(false, "%N"),      "pipas");
+    S9S_COMPARE(user.toString(false, "%t"),      "");
 
     return true;
 }

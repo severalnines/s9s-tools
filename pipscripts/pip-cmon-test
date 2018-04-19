@@ -40,6 +40,8 @@ TEST_REPORT_URL="www:/var/lib/test-ui/test-results"
 
 source $MYDIR/utilityfunctions.sh
 
+pip-host-control --testing --log "--------------------------------------"
+
 function printHelpAndExit()
 {
 cat <<EOF
@@ -297,21 +299,6 @@ function version_to_test()
         return 0
     fi
 
-    #
-    # Depends on hostname.
-    #
-    case $host_name in
-        host08)
-            echo "5.5"
-            return 0
-            ;;
-
-        *)
-            echo "5.6"
-            return 0
-            ;;
-    esac
-    
     echo "5.6"
 }
 
@@ -329,6 +316,8 @@ function vendor_to_test()
         echo "$OPTION_VENDOR" | tr ',' ' ' | tr ';' ' '
         return 0
     fi
+
+    echo "codership"
 }
 
 #
@@ -343,8 +332,10 @@ function os_to_test()
     #
     if [ "$OPTION_OS" ]; then
         echo $OPTION_OS | tr ',' ' '
-        return 1;
+        return 0;
     fi
+
+    echo "ubuntu"
 }
 
 #
@@ -1098,7 +1089,6 @@ function main()
     local version="$3"
     local source_root
 
-    pip-host-control --testing --log "--------------------------------------"
 
     pip-host-control \
         --testing \
