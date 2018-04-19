@@ -11,6 +11,9 @@ ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
+
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
@@ -36,6 +39,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --print-commands Do not print unit test info, print the executed commands.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
+ --provider-version=STRING The SQL server provider version.
 
 EOF
     exit 1
@@ -43,7 +47,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
+provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -87,6 +92,12 @@ while true; do
         --server)
             shift
             CONTAINER_SERVER="$1"
+            shift
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
             shift
             ;;
 
@@ -164,7 +175,7 @@ function testCreateCluster()
         --nodes="$nodes" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     exitCode=$?
