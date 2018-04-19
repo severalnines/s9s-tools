@@ -23,7 +23,7 @@
 #include <cstdio>
 #include <cstring>
 
-#define DEBUG
+//#define DEBUG
 #include "s9sdebug.h"
 
 UtS9sUser::UtS9sUser()
