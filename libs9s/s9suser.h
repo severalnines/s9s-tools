@@ -54,7 +54,7 @@ class S9sUser : public S9sObject
                 const S9sString &name,
                 const S9sString &key);
 
-        S9sString fullName() const;
+        S9sString fullName(const S9sString &defaultValue = "") const;
         S9sString lastLoginString(const S9sString &defaultValue = "") const;
         S9sString createdString(const S9sString &defaultValue = "") const;
         S9sString failedLoginString(const S9sString &defaultValue = "") const;
@@ -62,6 +62,9 @@ class S9sUser : public S9sObject
         bool isSuspended() const;
         int nFailedLogins() const;
 
+        virtual S9sString name() const;
+        virtual S9sString id(const S9sString &defaultValue) const;
+        
         S9sString toString(
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;

@@ -8056,13 +8056,13 @@ S9sRpcReply::printUserListStat()
         if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
             continue;
 
-        printUserListStat(user);
+        printUserStat(user);
     }
 }
 
 void 
-S9sRpcReply::printUserListStat(
-        const S9sUser &user)
+S9sRpcReply::printUserStat(
+        S9sUser &user)
 {
     S9sOptions *options = S9sOptions::instance();
     int         terminalWidth = options->terminalWidth();
@@ -8085,10 +8085,13 @@ S9sRpcReply::printUserListStat(
     for (int n = title.length(); n < terminalWidth; ++n)
         printf(" ");
     printf("%s", TERM_NORMAL);
+   
+    printObjectStat(user);
     
     //
     // "    Name: galera_001                          Owner: pipas/users"
     //
+#if 0
     printf("%s    Name:%s ", greyBegin, greyEnd);
     printf("%s", userColorBegin());
     printf("%-25s ", STR(user.userName()));
@@ -8112,16 +8115,29 @@ S9sRpcReply::printUserListStat(
     printf("                    %sDisabled:%s ", greyBegin, greyEnd);
     printf("%s", user.isDisabled() ? "yes" : "no");
     printf("\n");
+#endif
     
     //
     // "Fullname: László Pere                  Email: laszlo@severalnines.com"
     //
     printf("%sFullname:%s ", greyBegin, greyEnd);
-    printf("%-28s ", STR(user.fullName()));
-    
-    printf("%sEmail:%s ", greyBegin, greyEnd);
+    printf("%-28s ", STR(user.fullName("-")));
+    printf("\n");
+   
+    //
+    //
+    //
+    printf("%s   Email:%s ", greyBegin, greyEnd);
     printf("%s ", STR(user.emailAddress("-")));
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sDisabled:%s ", greyBegin, greyEnd);
+    printf("%s", user.isDisabled() ? "yes" : "no");
+    printf("\n");
+
     
     //
     // " Suspend: no                   Failed logins: 0"
@@ -8129,7 +8145,7 @@ S9sRpcReply::printUserListStat(
     printf("%s Suspend:%s ", greyBegin, greyEnd);
     printf("%-19s ", user.isSuspended() ? "yes" : "no");
     
-    printf("%s Failed logins:%s ", greyBegin, greyEnd);
+    printf("%s         Failed logins:%s ", greyBegin, greyEnd);
     printf("%d", user.nFailedLogins());
     printf("\n");
     

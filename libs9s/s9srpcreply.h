@@ -82,7 +82,7 @@ class S9sRpcReply : public S9sVariantMap
         // Methods handling users.
         void printUserList();
         void printUserListStat();
-        void printUserListStat(const S9sUser &user);
+        void printUserStat(S9sUser &user);
 
         S9sUser getUser(const S9sString &userName);
 

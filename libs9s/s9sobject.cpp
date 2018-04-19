@@ -54,6 +54,9 @@ S9sObject::operator=(
 S9sString 
 S9sObject::className() const 
 {
+    if (hasProperty("class_name"))
+        return property("class_name").toString();
+
     return "S9sObject"; 
 }
 

@@ -84,6 +84,24 @@ S9sUser::toString() const
     return m_properties.toString();
 }
 
+S9sString 
+S9sUser::name() const
+{
+    return property("user_name").toString();
+}
+
+S9sString 
+S9sUser::id(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("user_id").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 /**
  * \returns The username of the user.
  */
@@ -185,7 +203,8 @@ S9sUser::jobTitle() const
  * \returns The full name of the user in one string.
  */
 S9sString
-S9sUser::fullName() const
+S9sUser::fullName(
+        const S9sString &defaultValue) const
 {
     S9sString retval;
 
@@ -212,6 +231,9 @@ S9sUser::fullName() const
 
         retval += lastName();
     }
+
+    if (retval.empty())
+        retval = defaultValue;
 
     return retval;
 }
