@@ -158,7 +158,12 @@ function testUser()
     local userName="$USER"
     local myself
 
+    #
+    # 
+    #
     print_title "Testing --whoami"
+
+    mys9s user --whoami
     myself=$(s9s user --whoami)
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with public key ($myself)"
@@ -172,6 +177,46 @@ function testUser()
     if ! s9s user --list-keys | grep -q "Total: 2"; then
         failure "Could not read keys for '$userName'"
         mys9s user --list-keys
+        return 1
+    fi
+}
+
+function testStat()
+{
+    local userName="$USER"
+    local lines
+
+    #
+    #
+    #
+    print_title "Testing the --stat option"
+    lines=$(s9s user --stat "$userName")
+
+    mys9s user --stat "$userName"
+
+    if ! echo "$lines" | grep -q "Name: $userName"; then
+        failure "Username was not found in --stat."
+        return 1
+    fi
+    
+    if ! echo "$lines" | grep -q "Class: CmonUser"; then
+        failure "Class is not right in --stat."
+        return 1
+    fi
+    
+    if ! echo "$lines" | grep -q "ACL: rwxr--r--"; then
+        failure "ACL is not right in --stat."
+        return 1
+    fi
+    
+    if ! echo "$lines" | grep -q "CDT path: / "; then
+        failure "CDT path is not right in --stat."
+        return 1
+    fi
+    
+    if ! echo "$lines" | grep -q "Owner: pipas/admins"; then
+        failure "Owner is not right in --stat."
+        return 1
     fi
 }
 
@@ -278,6 +323,7 @@ function testFailWrongPassword()
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
         failure "The exit code is ${exitCode} using a wrong username"
+        return 1
     fi
 
     #if [ "$output" != "Wrong username or password." ]; then
@@ -347,6 +393,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -365,6 +412,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -383,6 +431,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -402,6 +451,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -421,6 +471,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -440,6 +491,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     mys9s user \
@@ -459,6 +511,7 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user"
+        return 1
     fi
 
     #s9s user --list --long
@@ -469,6 +522,7 @@ function testCreateUsers()
     myself=$(s9s user --whoami)
     if [ "$myself" != "$USER" ]; then
         failure "The logged in user should be '$USER' instead of '$myself'."
+        return 1
     fi
 
     return 0
@@ -498,11 +552,13 @@ function testSetUser()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while changing user"
+        return 1
     fi
 
     emailAddress=$(s9s user --list --user-format="%M" system)
     if [ "$emailAddress" != "system@mydomain.com" ]; then
         failure "The email address is ${emailAddress} instead of 'system@mydomain.com'."
+        return 1
     fi
 
     #
@@ -518,11 +574,13 @@ function testSetUser()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while changing user"
+        return 1
     fi
 
     emailAddress=$(s9s user --list --user-format="%M" system)
     if [ "$emailAddress" != "system@mynewdomain.com" ]; then
         failure "The email address is ${emailAddress} instead of 'system@mynewdomain.com'."
+        return 1
     fi
 
     return 0
@@ -554,11 +612,13 @@ function testSetOtherUser()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while changing user"
+        return 1
     fi
 
     emailAddress=$(s9s user --list --user-format="%M" $userName)
     if [ "$emailAddress" != "nobody@mydomain.com" ]; then
         failure "The email is ${emailAddress} instead of 'nobody@mydomain.com'."
+        return 1
     fi
 
     #
@@ -575,11 +635,13 @@ function testSetOtherUser()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while changing user"
+        return 1
     fi
 
     emailAddress=$(s9s user --list --user-format="%M" $userName)
     if [ "$emailAddress" != "nobody@mynewdomain.com" ]; then
         failure "The email is ${emailAddress} and not 'nobody@mynewdomain.com'."
+        return 1
     fi
 
     return 0
@@ -618,6 +680,7 @@ function testCreateThroughRpc()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
+        return 1
     fi
 
     #
@@ -628,6 +691,7 @@ function testCreateThroughRpc()
         printVerbose "  user_id : $userId"
     else
         failure "The user ID is invalid while creating user through RPC"
+        return 1
     fi
     
     group=$(s9s user --list --user-format="%G" $newUserName)
@@ -635,6 +699,7 @@ function testCreateThroughRpc()
         printVerbose "    group : '$group'"
     else
         failure "The group is '$group' while creating user through RPC"
+        return 1
     fi
     
     email=$(s9s user --list --user-format="%M" $newUserName)
@@ -642,6 +707,7 @@ function testCreateThroughRpc()
         printVerbose "    email : '$email'"
     else
         failure "The email is '$email' while creating user through RPC"
+        return 1
     fi
 
     #
@@ -650,6 +716,7 @@ function testCreateThroughRpc()
     myself=$(s9s user --whoami --cmon-user=rpc_user --password=p)
     if [ "$myself" != "rpc_user" ]; then
         failure "Failed to log in with password ($myself)"
+        return 1
     else
         printVerbose "   myself : '$myself'"
     fi
@@ -662,16 +729,19 @@ function testCreateThroughRpc()
     file="$HOME/.s9s/rpc_user.key"
     if [ ! -f "$file" ]; then
         failure "File '$file' was not created"
+        return 1
     fi
     
     file="$HOME/.s9s/rpc_user.pub"
     if [ ! -f "$file" ]; then
         failure "File '$file' was not created"
+        return 1
     fi
     
     myself=$(s9s user --whoami --cmon-user=rpc_user)
     if [ "$myself" != "rpc_user" ]; then
         failure "Failed to log in with password ($myself)"
+        return 1
     else
         printVerbose "   myself : '$myself'"
     fi
@@ -681,6 +751,7 @@ function testCreateThroughRpc()
     #
     if ! s9s user --list-keys --cmon-user=rpc_user | grep -q "Total: 1"; then
         failure "Could not read keys for 'rpc_user'"
+        return 1
     fi
 }
 
@@ -710,11 +781,13 @@ function testChangePassword()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
+        return 1
     fi
 
     myself=$(s9s user --whoami --cmon-user=$userName --password=p)
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with password ($myself)"
+        return 1
     else
         printVerbose "   myself : '$myself'"
     fi
@@ -732,11 +805,13 @@ function testChangePassword()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
+        return 1
     fi
 
     myself=$(s9s user --whoami --cmon-user=$userName --password=pp)
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with password ($myself)"
+        return 1
     else
         printVerbose "   myself : '$myself'"
     fi
@@ -760,12 +835,12 @@ function testPrivateKey()
     #
     if [ ! -f $publicKey ]; then
         failure "File '$publicKey' not found."
-        return
+        return 1
     fi
 
     if [ ! -f $privateKey ]; then
         failure "File '$rivateKey' not found."
-        return
+        return 1
     fi
 
     #
@@ -782,6 +857,7 @@ function testPrivateKey()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while adding key."
+        return 1
     else
         printVerbose "Key file '$publicKey' registered."
     fi
@@ -800,6 +876,7 @@ function testPrivateKey()
             --whoami \
             --cmon-user=$userName \
             --private-key-file=$privateKey
+        return 1
     else
         printVerbose "   myself : '$myself'"
     fi
@@ -820,8 +897,8 @@ if [ "$1" ]; then
     
     mys9s user --list --long
 else
-    #runFunctionalTest testPing
     runFunctionalTest testUser
+    runFunctionalTest testStat
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers
