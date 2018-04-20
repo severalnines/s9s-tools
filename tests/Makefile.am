@@ -8,6 +8,7 @@ SUBDIRS =     	     \
 	ut_s9sdatetime   \
 	ut_s9surl        \
 	ut_s9snode       \
+	ut_s9sserver     \
 	ut_s9scluster    \
 	ut_s9sbackup     \
 	ut_s9saccount    \

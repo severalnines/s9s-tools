@@ -45,6 +45,7 @@ stamp-h1
 *.swo
 *.swp
 tags
+tests/ut_s9sserver/ut_s9sserver
 tests/ut_library/ut_library
 tests/ut_s9sstring/ut_s9sstring
 tests/ut_s9svariant/ut_s9svariant
