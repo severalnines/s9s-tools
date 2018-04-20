@@ -3493,8 +3493,12 @@ S9sOptions::executeInfoRequest()
 
         printf("%s Version %s (Laniakea)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
-        
-        printf("Build (%s-%s) %s\n",
+
+        /*
+         * Older installer scripts (install-s9s-tools.sh) are grepping
+         * for uppercase 'BUILD', so lets keep it like that for a while
+         */
+        printf("BUILD (%s-%s) %s\n",
             PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
 
         printf("Copyright (C) 2016-2018 Severalnines AB\n");
