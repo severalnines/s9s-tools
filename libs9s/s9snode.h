@@ -19,6 +19,7 @@
  */
 #pragma once
 
+#include "S9sObject"
 #include "S9sVariantMap"
 #include "S9sUrl"
 #include "S9sCluster"
@@ -28,7 +29,7 @@ class S9sSshCredentials;
 /**
  * A class that represents a node/host/server. 
  */
-class S9sNode
+class S9sNode : public S9sObject
 {
     public:
         S9sNode();
@@ -39,13 +40,7 @@ class S9sNode
 
         S9sNode &operator=(const S9sVariantMap &rhs);
 
-        bool hasProperty(const S9sString &key) const;
-        S9sVariant property(const S9sString &name) const;
-
-        void setProperty(const S9sString &name, const S9sString &value);
-
-        const S9sVariantMap &toVariantMap() const;
-        void setProperties(const S9sVariantMap &properties);
+        virtual const S9sVariantMap &toVariantMap() const;
 
         void setSshCredentials(const S9sSshCredentials &credentials);
 
@@ -60,9 +55,9 @@ class S9sNode
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;
 
-        int id() const;
+        virtual int id() const;
         int clusterId() const;
-        S9sString name() const;
+        virtual S9sString name() const;
         S9sString hostName() const;
         S9sString ipAddress() const;
         S9sString alias() const;
@@ -148,7 +143,6 @@ class S9sNode
         S9sString backendServerComment(uint index) const;
 
     private:
-        S9sVariantMap    m_properties;
         S9sUrl           m_url;
         S9sCluster       m_cluster;
 };
