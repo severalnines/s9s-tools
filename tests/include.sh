@@ -230,7 +230,7 @@ function printVerbose
 function failure
 {
     if [ "$TEST_SUITE_NAME" -a "$TEST_NAME" ]; then
-        echo "$TEST_SUITE_NAME::$TEST_NAME(): $1."
+        echo "$TEST_SUITE_NAME::$TEST_NAME(): ${XTERM_COLOR_RED}$1${TERM_NORMAL}."
     else
         echo "FAILURE: $1"
     fi
@@ -248,7 +248,7 @@ function check_exit_code()
     local jobId
 
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}."
+        failure "The exit code is ${exitCode}"
 
         jobId=$(\
             s9s job --list --batch | \
