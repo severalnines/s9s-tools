@@ -30,6 +30,7 @@ class UtS9sNode : public S9sUnitTest
         bool testCreate();
         bool testSetProperties();
         bool testAssign();
+        bool testToString();
         bool testVariant01();
         bool testVariant02();
         bool testParse();

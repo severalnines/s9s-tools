@@ -110,6 +110,7 @@ UtS9sNode::runTest(const char *testName)
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
+    PERFORM_TEST(testToString,        retval);
     PERFORM_TEST(testVariant01,       retval);
     PERFORM_TEST(testVariant02,       retval);
     PERFORM_TEST(testParse,           retval);
@@ -229,6 +230,43 @@ UtS9sNode::testAssign()
 
     return true;
 }
+
+bool
+UtS9sNode::testToString()
+{
+    S9sVariantMap theMap;
+    S9sNode       theNode;
+
+    S9S_VERIFY(theMap.parse(hostJson1));
+    theNode = theMap;
+
+    S9S_COMPARE(theNode.toString(false, "%A"), "192.168.1.189");
+    S9S_COMPARE(theNode.toString(false, "%a"), "M");
+    S9S_COMPARE(theNode.toString(false, "%C"), "/etc/mysql/my.cnf");
+    S9S_COMPARE(theNode.toString(false, "%D"), "/var/lib/mysql/");
+    S9S_COMPARE(theNode.toString(false, "%d"), "/var/lib/mysql/mysql.pid");
+    S9S_COMPARE(theNode.toString(false, "%E"), "synced");
+    S9S_COMPARE(theNode.toString(false, "%g"), "/var/log/mysql/mysqld.log");
+    S9S_COMPARE(theNode.toString(false, "%I"), "3");
+    S9S_COMPARE(theNode.toString(false, "%N"), "192.168.1.189");
+    S9S_COMPARE(theNode.toString(false, "%M"), "Up and running.");
+    S9S_COMPARE(theNode.toString(false, "%O"), "");
+    S9S_COMPARE(theNode.toString(false, "%o"), "ubuntu 16.04 xenial");
+    S9S_COMPARE(theNode.toString(false, "%L"), "");
+    S9S_COMPARE(theNode.toString(false, "%l"), "");
+    S9S_COMPARE(theNode.toString(false, "%P"), "3306");
+    S9S_COMPARE(theNode.toString(false, "%p"), "8272");
+    S9S_COMPARE(theNode.toString(false, "%R"), "none");
+    S9S_COMPARE(theNode.toString(false, "%r"), "read-write");
+    S9S_COMPARE(theNode.toString(false, "%S"), "CmonHostOnline");
+    S9S_COMPARE(theNode.toString(false, "%s"), "");
+    S9S_COMPARE(theNode.toString(false, "%T"), "galera");
+    S9S_COMPARE(theNode.toString(false, "%V"), "5.6.30-76.3-56");
+    S9S_COMPARE(theNode.toString(false, "%z"), "CmonGaleraHost");
+
+    return true;
+}
+
 
 /**
  * Here we put the node into a variant map, then we convert the variant map to a

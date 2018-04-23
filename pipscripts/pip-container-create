@@ -692,6 +692,7 @@ if [ -z "$SERVER" ]; then
             create_container \
                 "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
         done
+
     fi
 else
     #
@@ -718,7 +719,9 @@ else
 
         printVerbose "Executed on server '$chosen_server'."
         wait_for_server_ssh "$container_ip" "$OWNER"
+
         echo "$container_ip"
+        $SSH $chosen_server -- pip-host-control
     else
         printError "No server found."
     fi
