@@ -136,20 +136,7 @@ function registerServer()
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonLxcServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
+    mys9s tree --tree --all
 }
 
 function checkState()
@@ -172,7 +159,7 @@ function unregisterServer()
 
     check_exit_code_no_job $?    
 
-    mys9s tree --tree
+    mys9s tree --tree --all
 }
 
 #
@@ -190,7 +177,11 @@ elif [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest checkState
+
     runFunctionalTest unregisterServer
+
+    runFunctionalTest registerServer
+    runFunctionalTest checkState
 fi
 
 endTests
