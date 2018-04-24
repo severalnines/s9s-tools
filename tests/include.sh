@@ -148,7 +148,10 @@ function endTests ()
             echo "SUCCESS: $(basename $0 .sh)"
         else
             print_title "Report"
-            echo " Test $(basename $0) is successful."
+            echo -en "${XTERM_COLOR_GREEN}"
+            echo -n  "Test $(basename $0) is successful."
+            echo -en "${TERM_NORMAL}"
+            echo ""
         fi
           
         exit 0
@@ -156,7 +159,11 @@ function endTests ()
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "FAILURE: $(basename $0 .sh)"
         else
-            echo "Test $(basename $0) has failed."
+            print_title "Report"
+            echo -en "${XTERM_COLOR_RED}"
+            echo -n  "Test $(basename $0) has failed."
+            echo -en "${TERM_NORMAL}"
+            echo ""
         fi
     
         exit 1
