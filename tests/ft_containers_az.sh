@@ -38,6 +38,8 @@ SUPPORTED TESTS:
   o createContainer  Creates a new container.
   o createFail       A container creation that should fail.
   o createCluster    Creates a cluster on VMs created on the fly.
+  o dropCluster      Drops the previously created cluster.
+  o deleteContainer  Deleting the containers created by the test.
 
 EOF
     exit 1
@@ -447,6 +449,30 @@ function createCluster()
     check_exit_code $?
 }
 
+#
+# Dropping the cluster from the controller.
+#
+function dropCluster()
+{
+    local exitCode
+
+    print_title "Dropping the Cluster"
+
+    #
+    # Starting the cluster.
+    #
+    mys9s cluster \
+        --drop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode}"
+    fi
+}
+
 function deleteContainer()
 {
     local containers
@@ -490,6 +516,7 @@ else
     runFunctionalTest createContainer
     runFunctionalTest createFail
     runFunctionalTest createCluster
+    runFunctionalTest dropCluster
     runFunctionalTest deleteContainer
 fi
 

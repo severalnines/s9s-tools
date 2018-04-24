@@ -327,7 +327,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the Cluster"
 
     #
     # Starting the cluster.
