@@ -223,7 +223,27 @@ function checkServer()
     #
     #
     print_title "Check templates"
-    s9s server --list-templates --long
+    mys9s server --list-templates --long
+    
+    IFS=$'\n'
+    for line in $(s9s server --list-templates --long --batch); do
+        cloud=$(echo "$line" | awk '{print $1}')
+        region=$(echo "$line" | awk '{print $2}')
+        hostname=$(echo "$line" | awk '{print $3}')
+
+        if [ "$cloud" != "lxc" ]; then
+            failure "The cloud is '$cloud' instead of 'lxc'"
+        fi
+
+        if [ "$region" != "region1" ]; then
+            failure "The region is '$region' instead of 'region1'"
+        fi
+        
+        if [ "$hostname" != "$myhostname" ]; then
+            failure "The hostname is '$hostname' instead of '$myhostname'."
+        fi
+    done
+    IFS="$old_ifs"
 }
 
 #
