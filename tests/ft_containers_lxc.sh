@@ -191,7 +191,7 @@ function checkServer()
         hostname=$(echo "$line" | awk '{print $3}')
         cidr=$(echo "$line" | awk '{print $4}')
         vpc=$(echo "$line" | awk '{print $5}')
-        id=$(echo "$line" | awk '{print $5}')
+        id=$(echo "$line" | awk '{print $6}')
 
         if [ "$cloud" != "lxc" ]; then
             failure "The cloud is '$cloud' instead of 'lxc'"
