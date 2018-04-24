@@ -230,7 +230,7 @@ function printVerbose
 function failure
 {
     if [ "$TEST_SUITE_NAME" -a "$TEST_NAME" ]; then
-        echo "$TEST_SUITE_NAME::$TEST_NAME(): ${XTERM_COLOR_RED}$1${TERM_NORMAL}."
+        echo -e "$TEST_SUITE_NAME::$TEST_NAME(): ${XTERM_COLOR_RED}$1${TERM_NORMAL}."
     else
         echo "FAILURE: $1"
     fi

@@ -33,7 +33,8 @@ S9sUser::S9sUser(
         const S9sVariantMap &properties) :
     S9sObject(properties)
 {
-    m_properties["class_name"] = "CmonUser";
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonUser";
 }
 
 S9sUser::~S9sUser()
