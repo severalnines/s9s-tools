@@ -617,6 +617,14 @@ function createServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_IP/.runtime/state
+
+    #
+    # Unregistering.
+    #
+    print_title "Unregistering Server"
+    mys9s server --unregister --servers="lxc://$CONTAINER_IP"
+
+    check_exit_code_no_job $?
 }
 
 #
