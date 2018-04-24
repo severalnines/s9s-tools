@@ -168,23 +168,34 @@ function registerServer()
 
 function checkServer()
 {
-    print_title "Checking Subnets"
+    local old_ifs="$IFS"
+    local line
+    local cloud
+    local region
+    local server
+    local cidr
+    local vpc 
+    local id
 
-    s9s server --list-subnets --long | \
-    while IFS= read line; do
+    #
+    #
+    #
+    print_title "Checking Subnets"
+    mys9s server --list-subnets --long
+
+    IFS=$'\n'
+    for line in $(s9s server --list-subnets --long --batch); do
+        cloud=$(echo "$line" | awk '{print $1}')
+
+        # Filtering the header.
+        #if [ "$cloud" == "CLD" ]; then
+        #    continue
+        #fi
+
         echo "line: $line"
     done
+    IFS="$old_ifs"
 }
-
-function registerServerCmonCloud()
-{
-    print_title "Registering Container Server"
-
-    mys9s server \
-        --register \
-        --servers="cmon-cloud://10.10.1.1"
-}
-
 
 #
 # This will create a container and check if the user can actually log in through
