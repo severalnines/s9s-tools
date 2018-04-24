@@ -141,12 +141,28 @@ function registerServer()
 
 function checkState()
 {
+    local lines
+
     print_title "Checking Device Files"
-    
+   
+    mys9s tree \
+        --cmon-user=system \
+        --password=secret \
+        --cat /.runtime/server_manager
+
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state 
+
+    lines=$(s9s tree --cat /$CONTAINER_SERVER/.runtime/state)
+    if ! echo "$lines" | grep --quiet "CmonLxcServer"; then
+        failure "The device file seems to be missing class name"
+    fi
+    
+    if ! echo "$lines" | grep --quiet "host_name"; then
+        failure "The device file seems to be missing host name"
+    fi
 }
 
 #
