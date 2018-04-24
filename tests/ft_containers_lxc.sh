@@ -577,60 +577,6 @@ function restartContainer()
     fi
 }
 
-function createCluster()
-{
-    local node001="ft_containers_lxc_11_$$"
-    local node002="ft_containers_lxc_12_$$"
-
-    #
-    # Creating a Cluster.
-    #
-    print_title "Creating a Cluster"
-    mys9s cluster \
-        --create \
-        --cluster-name="$CLUSTER_NAME" \
-        --cluster-type=galera \
-        --provider-version="5.6" \
-        --vendor=percona \
-        --nodes="$node001" \
-        --containers="$node001" \
-        $LOG_OPTION
-
-    check_exit_code $?
-
-    while true; do 
-        CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-        
-        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
-            break;
-        fi
-
-        echo "Cluster '$CLUSTER_NAME' not found."
-        s9s cluster --list --long
-        sleep 5
-    done
-
-    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
-    else
-        failure "Cluster ID '$CLUSTER_ID' is invalid"
-    fi
-
-    #
-    # Adding a proxysql node.
-    #
-    print_title "Adding a ProxySql Node"
-
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="proxysql://$node002" \
-        --containers="$node002" \
-        $LOG_OPTION
-
-    check_exit_code $?
-}
-
 #
 # This test will attempt to create a new server (install software and
 # everything). For practical reasons we try to do this on the container we just
@@ -726,6 +672,60 @@ function failOnContainers()
     fi
 }
 
+function createCluster()
+{
+    local node001="ft_containers_lxc_11_$$"
+    local node002="ft_containers_lxc_12_$$"
+
+    #
+    # Creating a Cluster.
+    #
+    print_title "Creating a Cluster"
+    mys9s cluster \
+        --create \
+        --cluster-name="$CLUSTER_NAME" \
+        --cluster-type=galera \
+        --provider-version="5.6" \
+        --vendor=percona \
+        --nodes="$node001" \
+        --containers="$node001" \
+        $LOG_OPTION
+
+    check_exit_code $?
+
+    while true; do 
+        CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+        
+        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
+            break;
+        fi
+
+        echo "Cluster '$CLUSTER_NAME' not found."
+        s9s cluster --list --long
+        sleep 5
+    done
+
+    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    #
+    # Adding a proxysql node.
+    #
+    print_title "Adding a ProxySql Node"
+
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="proxysql://$node002" \
+        --containers="$node002" \
+        $LOG_OPTION
+
+    check_exit_code $?
+}
+
 #
 # This will delete the containers we created before.
 #
@@ -736,6 +736,8 @@ function deleteContainer()
 
     containers="ft_containers_lxc_00_$$"
     containers+=" ft_containers_lxc_01_$$"
+    containers+=" ft_containers_lxc_11_$$"
+    containers+=" ft_containers_lxc_12_$$"
 
     print_title "Deleting Containers"
 
@@ -753,7 +755,7 @@ function deleteContainer()
         check_exit_code $?
     done
 
-    s9s job --list
+    #mys9s job --list
 }
 
 
@@ -780,8 +782,8 @@ else
     runFunctionalTest restartContainer
     runFunctionalTest createServer
     runFunctionalTest failOnContainers
-    runFunctionalTest deleteContainer
     runFunctionalTest createCluster
+    runFunctionalTest deleteContainer
 fi
 
 endTests
