@@ -20,10 +20,12 @@
 #pragma once
 
 #include <S9sVariantMap>
+#include <S9sObject>
+
 #define S9S_INVALID_CLUSTER_ID -1
 #define S9S_CLUSTER_ID_IS_VALID(_id) (_id > 0)
 
-class S9sCluster
+class S9sCluster : public S9sObject
 {
     public:
         S9sCluster();
@@ -33,13 +35,16 @@ class S9sCluster
 
         S9sCluster &operator=(const S9sVariantMap &rhs);
 
-        const S9sVariantMap &toVariantMap() const;
         S9sString toString() const;
 
-        S9sString className() const;
-        S9sString name() const;
-        S9sString ownerName() const;
-        S9sString groupOwnerName() const;
+        virtual S9sString className() const;
+        virtual S9sString name() const;
+        
+        virtual S9sString id(const S9sString &defaultValue) const;
+
+        virtual S9sString ownerName() const;
+        virtual S9sString groupOwnerName() const;
+
         int clusterId() const;
         S9sString clusterType() const;
         S9sString state() const;
@@ -115,7 +120,4 @@ class S9sCluster
     private:
         S9sVariantMap jobStatistics() const;
         S9sVariant sheetInfo(const S9sString &key) const;
-        
-    private:
-        S9sVariantMap    m_properties;
 };

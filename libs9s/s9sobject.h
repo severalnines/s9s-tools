@@ -53,8 +53,8 @@ class S9sObject
         S9sString aclString() const;
         S9sString aclShortString() const;
         
-        S9sString ownerName() const;
-        S9sString groupOwnerName() const;
+        virtual S9sString ownerName() const;
+        virtual S9sString groupOwnerName() const;
 
     protected:
         S9sVariantMap    m_properties;

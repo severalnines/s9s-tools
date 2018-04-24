@@ -24,14 +24,18 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-S9sCluster::S9sCluster()
+S9sCluster::S9sCluster() :
+    S9sObject()
 {
+    m_properties["class_name"] = "CmonCluster";
 }
 
 S9sCluster::S9sCluster(
         const S9sVariantMap &properties) :
-    m_properties(properties)
+    S9sObject(properties)
 {
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonCluster";
 }
 
 S9sCluster::~S9sCluster()
@@ -42,19 +46,9 @@ S9sCluster &
 S9sCluster::operator=(
         const S9sVariantMap &rhs)
 {
-    m_properties = rhs;
-    
-    return *this;
-}
+    setProperties(rhs);
 
-/**
- * \returns A variant map holding all the properties of the cluster.
- * Converts the cluster to a variant map.
- */
-const S9sVariantMap &
-S9sCluster::toVariantMap() const
-{
-    return m_properties;
+    return *this;
 }
 
 /**
@@ -147,6 +141,18 @@ S9sCluster::clusterId() const
         return m_properties.at("cluster_id").toInt();
 
     return 0;
+}
+
+S9sString 
+S9sCluster::id(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("cluster_id").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 /**
