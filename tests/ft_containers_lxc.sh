@@ -169,6 +169,7 @@ function registerServer()
 function checkServer()
 {
     local old_ifs="$IFS"
+    local myhostname=$(hostname)
     local line
     local cloud
     local region
@@ -186,15 +187,43 @@ function checkServer()
     IFS=$'\n'
     for line in $(s9s server --list-subnets --long --batch); do
         cloud=$(echo "$line" | awk '{print $1}')
+        region=$(echo "$line" | awk '{print $2}')
+        hostname=$(echo "$line" | awk '{print $3}')
+        cidr=$(echo "$line" | awk '{print $4}')
+        vpc=$(echo "$line" | awk '{print $5}')
+        id=$(echo "$line" | awk '{print $5}')
 
-        # Filtering the header.
-        #if [ "$cloud" == "CLD" ]; then
-        #    continue
-        #fi
+        if [ "$cloud" != "lxc" ]; then
+            failure "The cloud is '$cloud' instead of 'lxc'"
+        fi
+        
+        if [ "$region" != "region1" ]; then
+            failure "The region is '$region' instead of 'region1'"
+        fi
 
-        echo "line: $line"
+        if [ "$hostname" != "$myhostname" ]; then
+            failure "The hostname is '$hostname' instead of '$myhostname'."
+        fi
+
+        if [ "$vpc" == "vpc-region1" ]; then
+            if [ "$id" != "${hostname}-br0" ]; then
+                failure "Public id is '$id' instead of '${hostname}-br0'"
+            fi
+        else
+            if [ "$id" != "${hostname}-lxcbr0" ]; then
+                failure "Private id is '$id' instead of '${hostname}-lxcbr0'"
+            fi
+        fi
+
+        #echo "line: $line"
     done
     IFS="$old_ifs"
+
+    #
+    #
+    #
+    print_title "Check templates"
+    s9s server --list-templates --long
 }
 
 #
