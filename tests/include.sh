@@ -644,7 +644,22 @@ function create_node()
     local ip
     local retval
     local verbose_option=""
-    
+    local option_autodestroy=""
+
+    while [ "$1" ]; do
+        case "$1" in 
+            --autodestroy)
+                shift
+                option_autodestroy="true"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+
     if [ "$VERBOSE" ]; then
         verbose_option="--verbose"
     fi
@@ -671,6 +686,14 @@ function create_node()
     retval=$?
     if [ "$retval" -ne 0 ]; then
         echo "Could not reach created server at ip '$ip'." >&2
+    fi
+
+    if [ "$option_autodestroy" ]; then
+        if [ "$ALL_CREATED_IPS" ]; then
+            ALL_CREATED_IPS+=" "
+        fi
+
+        ALL_CREATED_IPS+="$ip"
     fi
 
     echo $ip

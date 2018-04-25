@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -173,20 +172,17 @@ function testCreateCluster()
     print_title "Testing the creation of a Galera cluster"
 
     echo "Creating node #0"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
-    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #1"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #2"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a Galera cluster.
@@ -632,9 +628,8 @@ function testAddNode()
     print_title "Adding a node"
 
     printVerbose "Creating node..."
-    LAST_ADDED_NODE=$(create_node)
+    LAST_ADDED_NODE=$(create_node --autodestroy)
     nodes+="$LAST_ADDED_NODE"
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
     # Adding a node to the cluster.
@@ -658,9 +653,8 @@ function testAddProxySql()
 
     print_title "Adding a ProxySQL Node"
 
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="proxySql://$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Adding a node to the cluster.
@@ -737,9 +731,8 @@ function testAddHaProxy()
     
     print_title "Adding a HaProxy Node"
 
-    node=$(create_node)
+    node=$(create_node --autodestroy)
     nodes+="haProxy://$node"
-    ALL_CREATED_IPS+=" $node"
 
     #
     # Adding haproxy to the cluster.

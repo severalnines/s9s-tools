@@ -131,6 +131,7 @@ function createServer()
     
     echo "Creating node #0"
     nodeName=$(create_node)
+    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Creating a container.
