@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 CONTAINER_SERVER=""
 
 # The IP of the node we added first and last. Empty if we did not.
@@ -151,10 +150,9 @@ function testCreateCluster()
 
     print_title "Creating a cluster"
 
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a PostgreSQL cluster.

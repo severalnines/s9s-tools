@@ -8,7 +8,6 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -121,21 +120,17 @@ function testCreateCluster()
     local exitCode
 
     pip-say "The test to create NDB cluster is starting now."
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     NODES+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
 
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     NODES+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     NODES+="ndbd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     NODES+="ndbd://$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Creating an NDB cluster.

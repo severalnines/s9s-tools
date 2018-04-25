@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -168,7 +167,7 @@ function testCreateCluster()
 
     while true; do
         echo "Creating node #$n_nodes_added"
-        nodeName=$(create_node)
+        nodeName=$(create_node  --autodestroy)
         
         if [ "$nodes" ]; then
             nodes+=";"
@@ -179,8 +178,6 @@ function testCreateCluster()
         if [ -z "$FIRST_ADDED_NODE" ]; then
             FIRST_ADDED_NODE="$nodeName"
         fi
-
-        ALL_CREATED_IPS+=" $nodeName"
 
         #
         #
@@ -285,10 +282,9 @@ function testAddProxySql()
 
     print_title "Adding a ProxySQL Node"
 
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     PROXY_SERVER="$nodeName"
     nodes+="proxySql://$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Adding a node to the cluster.
@@ -448,9 +444,8 @@ function testAddHaProxy()
     
     print_title "Adding a HaProxy Node"
 
-    node=$(create_node)
+    node=$(create_node --autodestroy)
     nodes+="haProxy://$node"
-    ALL_CREATED_IPS+=" $node"
 
     #
     # Adding haproxy to the cluster.

@@ -8,7 +8,6 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -156,10 +155,9 @@ function testCreateCluster()
     #
     # Creating containers.
     #
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
-    ALL_CREATED_IPS+=" $nodeName"
    
     #
     # Creating a PostgreSQL cluster.
@@ -192,8 +190,7 @@ function testAddNode()
 {
     print_title "Adding a New Node"
 
-    LAST_ADDED_NODE=$(create_node)
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
+    LAST_ADDED_NODE=$(create_node --autodestroy)
 
     #
     # Adding a node to the cluster.

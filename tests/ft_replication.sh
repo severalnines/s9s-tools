@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
@@ -137,34 +136,28 @@ function testCreateCluster()
 
     print_title "Creating MySql replication cluster."
     pip-say "The test to create My SQL replication cluster is starting now."
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName?master;"
     FIRST_ADDED_NODE=$nodeName
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName?master;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
-    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a MySQL replication cluster.

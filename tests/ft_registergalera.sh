@@ -8,7 +8,6 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -129,20 +128,17 @@ function testCreateCluster()
     print_title "Creating a Cluster"
 
     echo "Creating node #0"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
-    ALL_CREATED_IPS+=" $nodeName"
     
     #echo "Creating node #1"
-    #nodeName=$(create_node)
+    #nodeName=$(create_node --autodestroy)
     #NODES+="$nodeName;"
-    #ALL_CREATED_IPS+=" $nodeName"
     
     #echo "Creating node #2"
-    #nodeName=$(create_node)
+    #nodeName=$(create_node --autodestroy)
     #NODES+="$nodeName"
-    #ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a Galera cluster.

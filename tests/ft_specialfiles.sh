@@ -136,7 +136,7 @@ function testCreateCluster()
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
-        nodeName=$(create_node)
+        nodeName=$(create_node --autodestroy)
         nodes+="$nodeName;"
     
         if [ "$n" == "0" ]; then

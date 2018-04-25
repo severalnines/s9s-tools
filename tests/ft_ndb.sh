@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 
 # This is the name of the server that will hold the linux containers.
 CONTAINER_SERVER=""
@@ -143,21 +142,17 @@ function testCreateCluster()
     local exitCode
 
     pip-say "The test to create NDB cluster is starting now."
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
 
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="ndbd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="ndbd://$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Creating an NDB cluster.
@@ -195,8 +190,7 @@ function testAddNode()
 
     pip-say "The test to add node is starting now."
     printVerbose "Creating Node..."
-    nodeName=$(create_node)
-    ALL_CREATED_IPS+=" $nodeName"
+    nodeName=$(create_node --autodestroy)
     LAST_ADDED_NODE=$nodeName
     nodes+="$nodeName"
 

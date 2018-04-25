@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="ft_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
@@ -152,19 +151,16 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
     
     #
     # Creating a MySQL replication cluster.
@@ -342,9 +338,8 @@ function testAddNode()
 
     print_title "Adding a new node"
     
-    LAST_ADDED_NODE=$(create_node)
+    LAST_ADDED_NODE=$(create_node --autodestroy)
     nodes+="$LAST_ADDED_NODE"
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
 
     #
     # Adding a node to the cluster.
@@ -373,8 +368,7 @@ function testAddMaster()
 
     print_title "Adding a master node"
 
-    LAST_ADDED_NODE=$(create_node)
-    ALL_CREATED_IPS+=" $LAST_ADDED_NODE"
+    LAST_ADDED_NODE=$(create_node --autodestroy)
 
     #
     # Adding a node to the cluster.
