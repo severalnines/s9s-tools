@@ -137,8 +137,7 @@ function createServer()
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node)
-    ALL_CREATED_IPS+=" $nodeName"
+    nodeName=$(create_node --autodestroy)
 
     #
     # Creating a container.

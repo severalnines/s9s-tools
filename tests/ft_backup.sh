@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -136,14 +135,12 @@ function testCreateCluster()
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
-        nodeName=$(create_node)
+        nodeName=$(create_node --autodestroy)
         nodes+="$nodeName;"
     
         if [ "$n" == "0" ]; then
             FIRST_ADDED_NODE=$nodeName
         fi
-
-        #ALL_CREATED_IPS+=" $nodeName"
     done
        
     #
@@ -343,7 +340,7 @@ function testCreateBackup01()
     #
     #
     print_title "Verifying Backup 1"
-    node=$(create_node)
+    node=$(create_node --autodestroy)
 
     mys9s backup \
         --verify \
@@ -389,7 +386,7 @@ function testCreateBackup02()
     #
     #
     print_title "Verifying Backup 2"
-    node=$(create_node)
+    node=$(create_node --autodestroy)
 
     mys9s backup \
         --verify \
@@ -441,7 +438,7 @@ function testCreateBackupVerify()
     local node
 
     print_title "Creating and Verifying a Backup"
-    node=$(create_node)
+    node=$(create_node --autodestroy)
 
     #
     # Creating another backup.

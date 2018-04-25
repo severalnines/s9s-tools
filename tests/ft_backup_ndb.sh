@@ -7,7 +7,6 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-ALL_CREATED_IPS=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
@@ -134,25 +133,21 @@ function testCreateCluster()
     print_title "Creating an NDB Cluster"
 
     echo "Creating node #0"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     FIRST_ADDED_NODE="$nodeName"
 
     echo "Creating node #1"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #2"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="ndbd://$nodeName;"
-    ALL_CREATED_IPS+=" $nodeName"
     
     echo "Creating node #3"
-    nodeName=$(create_node)
+    nodeName=$(create_node --autodestroy)
     nodes+="ndbd://$nodeName"
-    ALL_CREATED_IPS+=" $nodeName"
 
     #
     # Creating an NDB cluster.
@@ -337,7 +332,7 @@ function testCreateBackup01()
     #   MySQLCluster::restoreBackup()
     #
 #    print_title "Verifying Backup 1"
-#    node=$(create_node)
+#    node=$(create_node --autodestroy)
 #
 #    mys9s backup \
 #        --verify \
