@@ -33,6 +33,8 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
+  o checkServerTree  Checks how the server looks like in the tree.
+  o checkState       Checks the server state device.
 
 EOF
     exit 1
@@ -135,8 +137,28 @@ function registerServer()
         --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
+}
 
-    mys9s tree --tree --all
+function checkServerTree()
+{
+    local lines
+
+    print_title "Checking Server in Tree"
+
+    mys9s tree --tree --all "/$CONTAINER_SERVER"
+    lines=$(s9s tree --tree --all "/$CONTAINER_SERVER")
+
+    if ! echo "$lines" | grep --quiet "/$CONTAINER_SERVER"; then
+        failure "8742 Tree check failed"
+    fi
+
+    if ! echo "$lines" | grep --quiet ".runtime"; then
+        failure "8743 Tree check failed"
+    fi
+    
+    if ! echo "$lines" | grep --quiet "containers"; then
+        failure "8744 Tree check failed"
+    fi
 }
 
 function checkState()
@@ -160,8 +182,12 @@ function checkState()
         failure "The device file seems to be missing class name"
     fi
     
-    if ! echo "$lines" | grep --quiet "host_name"; then
+    if ! echo "$lines" | grep --quiet "server_name"; then
         failure "The device file seems to be missing host name"
+    fi
+    
+    if ! echo "$lines" | grep --quiet "number_of_processors"; then
+        failure "The device file seems to be missing the number of CPUs"
     fi
 }
 
@@ -192,6 +218,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest registerServer
+    runFunctionalTest checkServerTree
     runFunctionalTest checkState
 
     runFunctionalTest unregisterServer
