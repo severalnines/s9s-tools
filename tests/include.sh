@@ -5,8 +5,6 @@ TEST_SUITE_NAME=""
 TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
-ALL_CREATED_IPS=""
-
 
 TERM_NORMAL="\033[0;39m"
 TERM_BOLD="\033[1m"
@@ -647,6 +645,7 @@ function create_node()
     local retval
     local verbose_option=""
     local option_autodestroy=""
+    local container_list_file="/tmp/${MYNAME}.containers"
 
     while [ "$1" ]; do
         case "$1" in 
@@ -691,14 +690,18 @@ function create_node()
     fi
 
     if [ "$option_autodestroy" ]; then
-        if [ "$ALL_CREATED_IPS" ]; then
-            ALL_CREATED_IPS+=" "
-        fi
-
-        ALL_CREATED_IPS+="$ip"
+        echo "$ip" >>$container_list_file
     fi
 
     echo $ip
+}
+
+function node_created()
+{
+    local container_ip="$1"
+    local container_list_file="/tmp/${MYNAME}.containers"
+    
+    echo "$container_ip" >>"$container_list_file"
 }
 
 function emit_s9s_configuration_file()
@@ -830,17 +833,36 @@ function print_title()
 }
 
 
+
 #
 # This will destroy the containers we created.
 #
 function destroyNodes()
 {
+    local all_created_ip=""
+    local container_list_file="/tmp/${MYNAME}.containers"
+    local container
+
+    if [ -f "$container_list_file" ]; then
+        for container in $(cat $container_list_file); do
+            if [ -z "$container" ]; then
+                continue
+            fi
+
+            if [ "$all_created_ip" ]; then
+                all_created_ip+=" "
+            fi
+
+            all_created_ip+="$container"
+        done
+    fi
+
     if [ "$OPTION_LEAVE_NODES" ]; then
         print_title "Leaving the containers"
         echo "The --leave-nodes option was provided, not destroying the "
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
-        echo " containers : $ALL_CREATED_IPS"
+        echo " containers : $all_created_ip"
         return 0
     fi
 
@@ -849,23 +871,25 @@ function destroyNodes()
         echo "The --install option was provided, not destroying the "
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
-        echo " containers : $ALL_CREATED_IPS"
+        echo " containers : $all_created_ip"
         return 0
     fi
 
-    if [ "$ALL_CREATED_IPS" ]; then
+    if [ "$all_created_ip" ]; then
         print_title "Destroying the containers"
         echo "     server : $CONTAINER_SERVER"
-        echo " containers : $ALL_CREATED_IPS"
+        echo " containers : $all_created_ip"
 
         pip-container-destroy \
             --server=$CONTAINER_SERVER \
-            "$ALL_CREATED_IPS" \
+            "$all_created_ip" \
             >/dev/null 2>/dev/null
         
         echo "    retcode : $?"
 
-        ALL_CREATED_IPS=""
+        if [ -f "$container_list_file" ]; then
+            rm -f "$container_list_file"
+        fi
     fi
 
     return 0

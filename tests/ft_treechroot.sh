@@ -189,14 +189,14 @@ print_title "Creating a Container."
 mys9s container \
     --create \
     --template=ubuntu \
-    --wait container_002
+    --wait ft_treechroot_$$
 
 check_exit_code $?
 
 CONTAINER_IP=$(\
     s9s server \
         --list-containers \
-        --long container_002 \
+        --long ft_treechroot_$$ \
         --batch \
     | awk '{print $6}')
 
@@ -207,12 +207,10 @@ fi
 
 if [ "$CONTAINER_IP" == "-" ]; then
     failure "Container IP is invalid."
-    # Not an IP, but it should also work in destroyNodes()
-    ALL_CREATED_IPS+=" container_002"
     exit 1
-else
-    ALL_CREATED_IPS+="$CONTAINER_IP"
 fi
+
+node_created "$CONTAINER_IP"
 
 #####
 # Creating a Galera cluster.
@@ -245,5 +243,4 @@ fi
 
 mys9s tree --tree
 mys9s tree --list 
-
 endTests

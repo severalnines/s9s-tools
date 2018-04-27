@@ -175,7 +175,6 @@ print_title "Creating a Container"
 pip-container-destroy --server="$CONTAINER_SERVER" container_001
 pip-container-destroy --server="$CONTAINER_SERVER" container_002
 
-if true; then
     mys9s container \
         --create \
         --template=ubuntu \
@@ -184,19 +183,13 @@ if true; then
 
     check_exit_code $?
 
-    ALL_CREATED_IPS="container_001"
+    container_created "container_001"
     CONTAINER_IP=$(\
         s9s server \
             --list-containers \
             --long container_001 \
             --batch \
         | awk '{print $6}')
-else
-    CONTAINER_IP=$(\
-        pip-container-create --server="$CONTAINER_SERVER" container_001)
-
-    ALL_CREATED_IPS="$CONTAINER_IP"
-fi
 
 
 
@@ -210,7 +203,7 @@ if [ "$CONTAINER_IP" == "-" ]; then
     exit 1
 fi
 
-ALL_CREATED_IPS="$CONTAINER_IP"
+container_created "$CONTAINER_IP"
 
 #####
 # Creating a Galera cluster.
@@ -385,4 +378,5 @@ fi
 print_title "Printing tree and ending test"
 
 mys9s tree --list --color=always
+
 endTests
