@@ -3583,13 +3583,12 @@ bool
 S9sRpcClient::removeNode()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
-    S9sVariantList hosts = options->nodes();
+    S9sVariantList hosts     = options->nodes();
     S9sNode        host;
     S9sString      hostName, title;
-    S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -3631,7 +3630,6 @@ S9sRpcClient::removeNode()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
     
     retval = executeRequest(uri, request);
 
