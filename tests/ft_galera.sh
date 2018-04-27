@@ -758,11 +758,12 @@ function testRemoveNode()
     print_title "The test to remove node is starting now."
     
     #
-    # Removing the last added node.
+    # Removing the last added node. We do this by cluster name for that is the
+    # more complicated one.
     #
     mys9s cluster \
         --remove-node \
-        --cluster-id=$CLUSTER_ID \
+        --cluster-name="$CLUSTER_NAME" \
         --nodes="$LAST_ADDED_NODE" \
         $LOG_OPTION
     
