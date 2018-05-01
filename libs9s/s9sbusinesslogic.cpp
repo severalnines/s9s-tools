@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2016-2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 //#define DEBUG
 //#define WARNING
@@ -1992,6 +1993,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
         bool          oneSucceed = false;
         int           exitCode = 0;
         S9sString     sshCommand;
+        S9sString     sudoCommand = "sudo ";
         S9sStringList fifos;
 
         S9sString controller = options->controllerHostName();
@@ -2069,11 +2071,25 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
 
             if (controller == "localhost" || controller == "127.0.0.1")
             {
+                if (geteuid() == 0)
+                {
+                    // The effective user is root, no need to use sudo
+                    sudoCommand = "";
+                }
+
                 sshCommand.sprintf(
                     "echo \"%s\" "
-                    "| sudo tee %s >/dev/null",
-                    STR(escapedJson), STR(path));
+                    "| %s tee %s >/dev/null",
+                    STR(escapedJson),
+                    STR(sudoCommand),
+                    STR(path));
             } else {
+                if (S9sString(getenv("USER")) == "root")
+                {
+                    // The username for SSH is root, sudo not needed
+                    sudoCommand = "";
+                }
+
                 sshCommand.sprintf(
                     "ssh -tt "
                     "-oUserKnownHostsFile=/dev/null "
@@ -2083,9 +2099,10 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
                     "-oConnectTimeout=30 "
                     " '%s' "
                     "'echo \"%s\" "
-                    "| sudo tee %s >/dev/null'",
+                    "| %s tee %s >/dev/null'",
                     STR(controller),
                     STR(escapedJson),
+                    STR(sudoCommand),
                     STR(path));
             }
 
