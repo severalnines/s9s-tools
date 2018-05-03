@@ -56,7 +56,14 @@ SUPPORTED TESTS:
   o testAddNode          Adds a new database node.
   o testAddProxySql      Adds a ProxySql node to the cluster.
   o testAddRemoveHaProxy Adds, then removes a HaProxy node.
-  o 
+  o testAddHaProxy       Adds a HaProxy server to the cluster.
+  o testRemoveNode       Removes a data node from the cluster.
+  o testRollingRestart   Executes a rolling restart on the cluster.
+  o testCreateBackup     Creates a backup.
+  o testRestoreBackup    Restores the previously created backup.
+  o testRemoveBackup     Removes the backup previously created.
+  o testStop             Stops the cluster.
+  o testStart            Starts the cluster.
 
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
