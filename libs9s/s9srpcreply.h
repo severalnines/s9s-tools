@@ -180,7 +180,7 @@ class S9sRpcReply : public S9sVariantMap
         static const char *clusterStateColorBegin(S9sString state);
         static const char *clusterStateColorEnd();
         
-        static const char *containerColorBegin();
+        static const char *containerColorBegin(int stateAsChar = '\0');
         static const char *containerColorEnd();
         
         static const char *ipColorBegin(const S9sString &ip = "1.1.1.1");

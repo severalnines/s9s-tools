@@ -4130,7 +4130,7 @@ S9sRpcReply::printContainersLong()
         printf("%s", serverColorEnd());
 
         ::printf("%s%s%s", 
-                containerColorBegin(), 
+                containerColorBegin(container.stateAsChar()), 
                 STR(alias),
                 containerColorEnd());
 
@@ -9007,10 +9007,22 @@ S9sRpcReply::folderColorEnd() const
 }
 
 const char *
-S9sRpcReply::containerColorBegin()
+S9sRpcReply::containerColorBegin(
+        int stateAsChar)
 {
     if (useSyntaxHighLight())
+    {
+        if (stateAsChar == 't')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == 's')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == '?')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == 'q')
+            return XTERM_COLOR_YELLOW;
+
         return XTERM_COLOR_NODE;
+    }
 
     return "";
 }
