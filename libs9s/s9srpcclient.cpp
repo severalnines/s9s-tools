@@ -318,7 +318,10 @@ S9sRpcClient::authenticateWithPassword()
     retval = executeRequest(uri, request);
     if (!retval)
         return false;
-    
+   
+    if (!reply().isOk())
+        options->setExitStatus(S9sOptions::AccessDenied);
+
     return reply().isOk();
 }
 
@@ -344,6 +347,8 @@ S9sRpcClient::authenticateWithKey()
 
         m_priv->m_errorString =
                 "Private key not specified, authentication is not possible.";
+        
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
 
@@ -356,6 +361,8 @@ S9sRpcClient::authenticateWithKey()
         m_priv->m_errorString.sprintf (
                 "Could not load user private key: %s",
                 STR(privKeyPath));
+
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
 
@@ -410,6 +417,10 @@ S9sRpcClient::authenticateWithKey()
      * If reply doesn't contain an error and we are ok, auth succeed
      */
     m_priv->m_errorString = reply().errorString ();
+    
+    if (!reply().isOk())
+        options->setExitStatus(S9sOptions::AccessDenied);
+
     return reply().isOk();
 }
 
@@ -6021,6 +6032,9 @@ S9sRpcClient::executeRequest(
  * \param payload the JSON request string
  * \returns true if the request sent and the reply received (even if the reply
  *   suggests an error happened in the controller).
+ *
+ * This function will set the exit status if the communication with the server
+ * fails for some reason.
  */
 bool
 S9sRpcClient::doExecuteRequest(
@@ -6043,6 +6057,7 @@ S9sRpcClient::doExecuteRequest(
     if (!m_priv->connect())
     {
         PRINT_VERBOSE ("Connection failed: %s", STR(m_priv->m_errorString));
+        options->setExitStatus(S9sOptions::ConnectionError);
         return false;
     }
         
@@ -6136,6 +6151,7 @@ S9sRpcClient::doExecuteRequest(
         m_priv->m_errorString.sprintf("Error writing socket: %m");
         m_priv->close();
 
+        options->setExitStatus(S9sOptions::ConnectionError);
         return false;
     }
             
@@ -6171,6 +6187,7 @@ S9sRpcClient::doExecuteRequest(
                     STR(m_priv->m_hostName), m_priv->m_port,
                     m_priv->m_useTls ? "yes" : "no");
 
+            options->setExitStatus(S9sOptions::ConnectionError);
             return false;
         }
 
@@ -6216,6 +6233,7 @@ S9sRpcClient::doExecuteRequest(
                 STR(m_priv->m_hostName), m_priv->m_port,
                 m_priv->m_useTls ? "yes" : "no");
 
+        options->setExitStatus(S9sOptions::ConnectionError);
         return false;
     }
 
@@ -6223,6 +6241,8 @@ S9sRpcClient::doExecuteRequest(
     {
         PRINT_ERROR("Error parsing JSON reply.");
         m_priv->m_errorString.sprintf("Error parsing JSON reply.");
+        options->setExitStatus(S9sOptions::ConnectionError);
+
         return false;
     } else {
         m_priv->m_reply["reply_received"] = 

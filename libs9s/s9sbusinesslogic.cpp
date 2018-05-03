@@ -720,7 +720,8 @@ S9sBusinessLogic::authenticate(
             }
 
             // continuing, server replies a nice error
-            options->setExitStatus(S9sOptions::AccessDenied);
+            // The lower levels set a more spcific error code.
+            // options->setExitStatus(S9sOptions::AccessDenied);
         }
 
         S9sString controllerVersion = client.serverVersion();
@@ -753,7 +754,7 @@ S9sBusinessLogic::authenticate(
     if (needAuthenticate)
     {
         PRINT_ERROR("%s", STR(errorString));
-        options->setExitStatus(S9sOptions::AccessDenied);
+        options->setExitStatus(S9sOptions::BadOptions);
 
         return false;
     }

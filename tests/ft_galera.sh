@@ -43,6 +43,21 @@ Usage:
  --provider-version=STRING The SQL server provider version.
  --leave-nodes    Do not destroy the nodes at exit.
 
+SUPPORTED TESTS:
+  o testPing             Pings the controller.
+  o testCreateCluster    Creates a Galera cluster.
+  o testSetConfig01      Changes some configuration values for the cluster.
+  o testSetConfig02      More configuration checks.
+  o testRestartNode      Restarts one node of the cluster.
+  o testStopStartNode    Stops, then starts a node.
+  o testCreateAccount    Creates an account on the cluster.
+  o testCreateDatabase   Creates a database on the cluster.
+  o testUploadData       If test data is found uploads data to the cluster.
+  o testAddNode          Adds a new database node.
+  o testAddProxySql      Adds a ProxySql node to the cluster.
+  o testAddRemoveHaProxy Adds, then removes a HaProxy node.
+  o 
+
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
 
@@ -154,9 +169,6 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        #pip-say "The controller is off line. Further testing is not possible."
-    #else
-        #pip-say "The controller is on line."
     fi
 }
 
@@ -927,7 +939,7 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddRemoveHaProxy
-    runFunctionalTest testAddHaProxy
+    #runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testCreateBackup

@@ -67,12 +67,16 @@ class S9sOptions
 
         enum ExitCodes
         {
-            ExitOk       = 0,
-            JobFailed    = 1,
-            Failed       = 2,
-            AccessDenied = 3,
-            NotFound     = 4,
-            BadOptions   = 6,
+            ExitOk          = 0,
+            JobFailed       = 1,
+            Failed          = 2,
+            // Authentication failed.
+            AccessDenied    = 3,
+            NotFound        = 4,
+            // Error communicating with the server.
+            ConnectionError = 5,
+            // Bad command line options or config file values.
+            BadOptions      = 6,
         };
 
         bool readOptions(int *argc, char *argv[]);
