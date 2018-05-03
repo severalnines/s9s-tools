@@ -1,7 +1,7 @@
 #!/bin/bash
-
 #
 # This is the s9s-tools install script. It installs the s9s CLI.
+# Copyright 2017-2018 severalnines.com
 #
 
 dist="Unknown"
@@ -119,35 +119,43 @@ install_s9s_commandline() {
 create_local_s9s_user() {
     # this is for s9s_error_reporter, make sure we have a user created
     # NOTE: this will run only if we have root credentials
-    if (( EUID == 0 )); then
-        log_msg "=> Ensuring s9s has an initial user."
+    log_msg "=> Ensuring s9s has an initial user."
 
-		unset cmon_user
-		if [ -r ~/.s9s/s9s.conf ]; then
-			source ~/.s9s/s9s.conf &>/dev/null
-		fi
-
-		# check if s9s.conf doesn't have a user configured, then create one
-		if [ -z "$cmon_user" ]; then
-			if [ -z "$SUDO_USER" ]; then
-				cmon_user='root'
-			else
-				cmon_user=$SUDO_USER
-			fi
-
-			# new s9s CLI requires the username defined alone without --cmon-user
-			# only the new one has build info in --version:
-			if s9s --version | grep -i build >/dev/null; then
-				s9s user --create --generate-key --group=admins --controller="https://localhost:9501" $cmon_user
-			else
-				s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
-			fi
-
-			chown -R $cmon_user ~/.s9s
-		fi
-
-		log_msg "=> s9s-tools user has been created."
+    unset cmon_user
+    if [ -r ~/.s9s/s9s.conf ]; then
+        source ~/.s9s/s9s.conf &>/dev/null
     fi
+
+    # verify if the specified user works
+    if [ -n "$cmon_user" ]; then
+        s9s user --whoami
+        if (( $? == 3 )); then
+            # access denied, backup the ~/.s9s directory and create a new user
+            mv ~/.s9s ~/.s9s_bak_`date +%F_%H%M`
+            cmon_user=""
+        fi
+    fi
+
+    # check if s9s.conf doesn't have a user configured, then create one
+    if [ -z "$cmon_user" ]; then
+        if [ -z "$SUDO_USER" ]; then
+            cmon_user='root'
+        else
+            cmon_user=$SUDO_USER
+        fi
+
+        # new s9s CLI requires the username defined alone without --cmon-user
+        # only the new one has build info in --version:
+        if s9s --version | grep -i build >/dev/null; then
+            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" $cmon_user
+        else
+            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
+        fi
+
+        chown -R $cmon_user ~/.s9s
+    fi
+
+    log_msg "=> s9s-tools user has been created."
 }
 
 if [[ "$dist" == "debian" ]]; then
