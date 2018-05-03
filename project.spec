@@ -40,6 +40,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Thu May  3 2018 David Kedves <kedazo@severalnines.com> 1.6.20180503
+- New patch release
 * Tue May  1 2018 David Kedves <kedazo@severalnines.com> 1.6.20180501
 - New patch release
 * Fri Apr 20 2018 David Kedves <kedazo@severalnines.com> 1.6.20180420
