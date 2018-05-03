@@ -3882,17 +3882,17 @@ S9sOptions::printHelpCluster()
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
-"  --donor=ADDRESS            The address of the donor node when starting.\n"
-"    groupreplication (or group_replication), ndb (or ndbcluster) and\n"
+"  --donor=ADDRESS            The address of the donor node when starting."
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
 "  --opt-value=VALUE          The value for the configuration item.\n"
+"  --os-key-file=PATH         The key file to register on the container.\n"
+"  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
+"  --os-user=USERNAME         The username to create on the container.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
-"    postgresql.\n"
-"  --provider-version=VER     The version of the software.\n"
-"    the following types are supported: galera, mysqlreplication,\n"
+"  --provider-version=VER     The version of the software.\n" 
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --with-database            Create a database for the user too.\n"
 "\n");
@@ -6952,6 +6952,9 @@ S9sOptions::readOptionsCluster(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "image",            required_argument, 0, OptionImage           },
+        { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
+        { "os-password",      required_argument, 0, OptionOsPassword      },
+        { "os-user",          required_argument, 0, OptionOsUser          },
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
@@ -7202,11 +7205,6 @@ S9sOptions::readOptionsCluster(
                 m_options["provider_version"] = optarg;
                 break;
 
-            case OptionOsUser:
-                // --os-user=USERNAME
-                m_options["os_user"] = optarg;
-                break;
-
             case OptionOsSudoPassword:
                 // --os-sudo-password
                 m_options["os_sudo_password"] = optarg;
@@ -7305,6 +7303,21 @@ S9sOptions::readOptionsCluster(
             case OptionImage:
                 // --image=image
                 m_options["image"] = optarg;
+                break;
+
+            case OptionOsKeyFile:
+                // --os-key-file=PATH
+                m_options["os_key_file"] = optarg;
+                break;
+            
+            case OptionOsPassword:
+                // --os-password=PASSWORD
+                m_options["os_password"] = optarg;
+                break;
+            
+            case OptionOsUser:
+                // --os-user=USERNAME
+                m_options["os_user"] = optarg;
                 break;
                 
             case OptionServers:
