@@ -195,12 +195,12 @@ function createServer()
     mys9s server --list --long
     check_exit_code_no_job $?
  
+    CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$nodeName/.runtime/state
-
-    CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
 }
 
 #
@@ -277,7 +277,7 @@ function createContainer()
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$nodeName/.runtime/state
+    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
 }
 
 function createCluster()
@@ -344,7 +344,7 @@ function createCluster()
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$nodeName/.runtime/state
+    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
 }
 
 #
