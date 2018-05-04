@@ -270,7 +270,9 @@ function createContainer()
     # Deleting the container we just created.
     #
     print_title "Deleting Container"
+
     mys9s container --delete $LOG_OPTION "$container_name"
+    check_exit_code $?
 }
 
 function createCluster()
@@ -297,6 +299,37 @@ function createCluster()
         --os-key-file="$config_dir/sisko.key" \
         --log
 
+    check_exit_code $?
+
+    #
+    #
+    #
+    print_title "Waiting and Printing Lists"
+    sleep 60
+    mys9s cluster   --list --long
+    mys9s node      --list --long
+    mys9s container --list --long
+
+    #
+    # Dropping and deleting.
+    #
+    print_title "Dropping Cluster"
+    mys9s cluster \
+        --drop \
+        --cluster-name="$CLUSTER_NAME" \
+        --log
+    
+    check_exit_code $?
+
+    #
+    # Deleting containers.
+    #
+    print_title "Deleting Containers"
+    
+    mys9s container --delete $LOG_OPTION "$container_name1"
+    check_exit_code $?
+    
+    mys9s container --delete $LOG_OPTION "$container_name2"
     check_exit_code $?
 }
 
