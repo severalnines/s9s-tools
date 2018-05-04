@@ -263,14 +263,7 @@ function createContainer()
     #
     # Checking the ip and the owner.
     #
-    CONTAINER_IP=$(\
-        s9s server \
-            --list-containers \
-            --batch \
-            --long  \
-            "$container_name" \
-        | awk '{print $7}')
-    
+    CONTAINER_IP=$(get_container_ip "$container_name")
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
