@@ -273,6 +273,11 @@ function createContainer()
 
     mys9s container --delete $LOG_OPTION "$container_name"
     check_exit_code $?
+    
+    #
+    # Checking the state... TBD
+    #
+    mys9s tree --cat /$nodeName/.runtime/state
 }
 
 function createCluster()
@@ -335,6 +340,11 @@ function createCluster()
     check_exit_code $?
 
     mys9s container --list --long
+    
+    #
+    # Checking the state... TBD
+    #
+    mys9s tree --cat /$nodeName/.runtime/state
 }
 
 #
