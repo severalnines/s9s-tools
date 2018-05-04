@@ -275,6 +275,7 @@ function createContainer()
 
 function createCluster()
 {
+    local config_dir="$HOME/.s9s"
     local container_name1="${MYBASENAME}_11_$$"
     local container_name2="${MYBASENAME}_12_$$"
 
