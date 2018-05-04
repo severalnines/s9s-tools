@@ -221,7 +221,7 @@ function createContainer()
         --cloud=lxc \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        --log \
+        $LOG_OPTION \
         "$container_name"
     
     check_exit_code $?
@@ -294,7 +294,7 @@ function createCluster()
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        --log
+        $LOG_OPTION 
 
     check_exit_code $?
 
@@ -316,7 +316,7 @@ function createCluster()
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
-        --log
+        $LOG_OPTION
     
     #check_exit_code $?
 
