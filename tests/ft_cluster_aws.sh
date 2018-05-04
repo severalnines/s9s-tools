@@ -314,9 +314,11 @@ function createCluster()
     # Dropping and deleting.
     #
     print_title "Dropping Cluster"
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+
     mys9s cluster \
         --drop \
-        --cluster-name="$CLUSTER_NAME" \
+        --cluster-id="$CLUSTER_ID" \
         --log
     
     #check_exit_code $?
