@@ -162,49 +162,46 @@ function createUser()
 }
 
 #
-# This will install a new cmon-cloud server. 
+# This will register the container server. 
 #
-function createServer()
+function registerServer()
 {
-    local containerName="${MYBASENAME}_00_$$"
     local class
-    local nodeName
 
-    print_title "Creating Container Server"
-    
-    echo "Creating node #0"
-    #nodeName=$(create_node --autodestroy $containerName)
-    nodeName=$(create_node --autodestroy $containerName)
+    print_title "Registering Container Server"
 
     #
     # Creating a container.
     #
     mys9s server \
-        --create \
-        --servers="cmon-cloud://$nodeName" \
-        --log
+        --register \
+        --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
-
-    while s9s server --list --long | grep refused; do
-        echo "Server is refusing connections."
-        mys9s server --list --long
-        sleep 10
-    done
 
     mys9s server --list --long
     check_exit_code_no_job $?
- 
+
+    #
+    # Checking the class is very important.
+    #
+    class=$(\
+        s9s server --stat "$CONTAINER_SERVER" \
+        | grep "Class:" | awk '{print $2}')
+
+    if [ "$class" != "CmonLxcServer" ]; then
+        failure "Created server has a '$class' class and not 'CmonLxcServer'."
+        exit 1
+    fi
+    
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$nodeName/.runtime/state
-
-    CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
 #
-# Creates then destroys a cluster on AWS.
+# Creates then destroys a cluster on lxc.
 #
 function createContainer()
 {
@@ -221,7 +218,7 @@ function createContainer()
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --cloud=aws \
+        --cloud=lxc \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
         --log \
@@ -284,7 +281,7 @@ function createCluster()
     #
     # Creating a Cluster.
     #
-    print_title "Creating a Clusteron AWS"
+    print_title "Creating a Cluster on LXC"
 
     mys9s cluster \
         --create \
@@ -292,7 +289,7 @@ function createCluster()
         --cluster-type=galera \
         --provider-version="5.6" \
         --vendor=percona \
-        --cloud=aws \
+        --cloud=lxc \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
@@ -346,7 +343,7 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest createUser
-    runFunctionalTest createServer
+    runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
 fi

@@ -3890,21 +3890,16 @@ S9sRpcClient::restartNode()
 bool
 S9sRpcClient::dropCluster()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sString      title;
-    S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
     title = "Remove Cluster";
 
-    // The job_data describing the cluster that will be deleted.
-    jobData["clusterid"]  = clusterId;
-    
     // The jobspec describing the command.
     jobSpec["command"]    = "remove_cluster";
     jobSpec["job_data"]   = jobData;
