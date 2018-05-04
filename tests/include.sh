@@ -730,8 +730,8 @@ function reset_config()
     
     print_title "Overwriting s9s Configuration"
 
-    if [ -d "$config_file" ]; then
-        rm -rf "$config_file"
+    if [ -d "$config_dir" ]; then
+        rm -rf "$config_dir"
     fi
 
     if [ ! -d "$config_dir" ]; then
