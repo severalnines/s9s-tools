@@ -333,6 +333,8 @@ function createCluster()
     
     mys9s container --delete $LOG_OPTION "$container_name2"
     check_exit_code $?
+
+    mys9s container --list --long
 }
 
 #
