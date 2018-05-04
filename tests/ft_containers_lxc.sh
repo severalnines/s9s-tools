@@ -276,14 +276,7 @@ function createContainer()
     #
     # Checking the ip and the owner.
     #
-    CONTAINER_IP=$(\
-        s9s server \
-            --list-containers \
-            --batch \
-            --long  \
-            "$container_name" \
-        | awk '{print $6}')
-    
+    CONTAINER_IP=$(get_container_ip "$container_name")
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
@@ -309,7 +302,6 @@ function createContainer()
     # Checking if the user can actually log in through ssh.
     #
     print_title "Checking SSH Access"
-
     if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
         failure "User $owner can not log in to $CONTAINER_IP"
         exit 1
@@ -367,14 +359,7 @@ function createAsSystem()
     #
     # Checking the ip and the owner.
     #
-    CONTAINER_IP=$(\
-        s9s server \
-            --list-containers \
-            --batch \
-            --long  \
-            "$container_name" \
-        | awk '{print $6}')
-    
+    CONTAINER_IP=$(get_container_ip "$container_name")
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
@@ -400,8 +385,6 @@ function createAsSystem()
     # Checking if the user can actually log in through ssh.
     #
     print_title "Checking SSH Access"
-
-    echo "is_server_running_ssh \"$CONTAINER_IP\" \"$USER\""
     if ! is_server_running_ssh "$CONTAINER_IP" "$USER"; then
         failure "User $USER can not log in to $CONTAINER_IP"
         exit 1
