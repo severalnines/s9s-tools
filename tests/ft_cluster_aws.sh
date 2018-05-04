@@ -174,7 +174,7 @@ function createServer()
     
     echo "Creating node #0"
     #nodeName=$(create_node --autodestroy $containerName)
-    nodeName=$(create_node $containerName)
+    nodeName=$(create_node --autodestroy $containerName)
 
     #
     # Creating a container.
