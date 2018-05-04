@@ -10,7 +10,6 @@ CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
-LAST_CONTAINER_NAME=""
 
 cd $MYDIR
 source include.sh
@@ -117,7 +116,11 @@ fi
 function createUser()
 {
     local config_dir="$HOME/.s9s"
+    local myself
 
+    #
+    #
+    #
     print_title "Creating a User"
 
     mys9s user \
@@ -142,10 +145,19 @@ function createUser()
         failure "Secret key file 'sisko.key' was not found."
         exit 0
     fi
-    
+
+    # Need to change the mode, otherwise ssh would not use it.
+    echo "FIXME: Changing mode for '$config_dir/sisko.key'."
+    chmod 600 "$config_dir/sisko.key"
+
     if [ ! -f "$config_dir/sisko.pub" ]; then
         failure "Public key file 'sisko.pub' was not found."
         exit 0
+    fi
+
+    myself=$(s9s user --whoami)
+    if [ "$myself" != "$USER" ]; then
+        failure "Whoami returns $myself instead of $USER."
     fi
 }
 
@@ -154,14 +166,15 @@ function createUser()
 #
 function createServer()
 {
-    local containerName="MYBASENAME_00_$$"
+    local containerName="${MYBASENAME}_00_$$"
     local class
     local nodeName
 
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy $containerName)
+    #nodeName=$(create_node --autodestroy $containerName)
+    nodeName=$(create_node $containerName)
 
     #
     # Creating a container.
@@ -190,6 +203,9 @@ function createServer()
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
 
+#
+# Creates then destroys a cluster on AWS.
+#
 function createContainer()
 {
     local config_dir="$HOME/.s9s"
@@ -205,8 +221,9 @@ function createContainer()
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        --cloud=aws \
         --os-user=sisko \
-        --os-key-file="$config_dir/sisko.key"
+        --os-key-file="$config_dir/sisko.key" \
         --log \
         "$container_name"
     
@@ -217,13 +234,7 @@ function createContainer()
     #
     # Checking the ip and the owner.
     #
-    CONTAINER_IP=$(\
-        s9s server \
-            --list-containers \
-            --batch \
-            --long  \
-            "$container_name" \
-        | awk '{print $7}')
+    CONTAINER_IP=$(get_container_ip "$container_name")
     
     if [ -z "$CONTAINER_IP" -o "$CONTAINER_IP" == "-" ]; then
         failure "The container was not created or got no IP."
@@ -231,20 +242,61 @@ function createContainer()
     fi
  
     #
-    # Checking if the user can actually log in through ssh.
+    # Checking if the owner can actually log in through ssh.
     #
-#    print_title "Checking SSH Access"
-#    if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
-#        failure "User $owner can not log in to $CONTAINER_IP"
-#        exit 1
-#    else
-#        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
-#    fi
+    print_title "Checking SSH Access for '$USER'"
+    is_server_running_ssh "$CONTAINER_IP" "$USER"
+
+    if [ $? -ne 0 ]; then
+        failure "User $USER can not log in to $CONTAINER_IP"
+    else
+        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+    fi
+    
+    #
+    # Checking that sisko can log in.
+    #
+    print_title "Checking SSH Access for 'sisko'"
+    is_server_running_ssh \
+        --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
+
+    if [ $? -ne 0 ]; then
+        failure "User 'sisko' can not log in to $CONTAINER_IP"
+    else
+        echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
+    fi
 
     #
-    # We will manipulate this container in other tests.
+    # Deleting the container we just created.
     #
-    LAST_CONTAINER_NAME=$container_name
+    print_title "Deleting Container"
+    mys9s container --delete $LOG_OPTION "$container_name"
+}
+
+function createCluster()
+{
+    local container_name1="${MYBASENAME}_11_$$"
+    local container_name2="${MYBASENAME}_12_$$"
+
+    #
+    # Creating a Cluster.
+    #
+    print_title "Creating a Clusteron AWS"
+
+    mys9s cluster \
+        --create \
+        --cluster-name="$CLUSTER_NAME" \
+        --cluster-type=galera \
+        --provider-version="5.6" \
+        --vendor=percona \
+        --cloud=aws \
+        --nodes="$container_name1;$container_name2" \
+        --containers="$container_name1;$container_name2" \
+        --os-user=sisko \
+        --os-key-file="$config_dir/sisko.key" \
+        --log
+
+    check_exit_code $?
 }
 
 #
@@ -262,6 +314,7 @@ else
     runFunctionalTest createUser
     runFunctionalTest createServer
     runFunctionalTest createContainer
+    runFunctionalTest createCluster
 fi
 
 endTests

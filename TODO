@@ -1,3 +1,34 @@
+s9s cluster --create --cloud=aws --cluster-name="JOHAN_AWS_MDB102" --cluster-type=galera --provider-version="10.2" --vendor=mariadb --nodes="johan_aws_007" --container="johan_aws_007" --os-user=vagrant --os-key-file=/home/johan/Documents/Vagrant/ssh/vagrant   --log
+
+{
+  "command": "create_cluster",
+  "job_data": {
+    "cluster_name": "JOHAN_AWS_MDB102",
+    "cluster_type": "galera",
+    "containers": [
+      {
+        "alias": "johan_aws_007",
+        "class_name": "CmonContainer",
+        "provider": "aws"
+      }
+    ],
+    "enable_uninstall": true,
+    "mysql_password": "",
+    "nodes": [
+      {
+        "class_name": "CmonHost",
+        "hostname": "johan_aws_007"
+      }
+    ],
+    "ssh_keyfile": "/home/johan/Documents/Vagrant/ssh/vagrant",
+    "ssh_user": "vagrant",
+    "vendor": "mariadb",
+    "version": "10.2"
+  }
+}
+
+
+
 o The rpc client returns false, sets the error string, but then returns a reply
 that is an empty json message and so calls like 
  # s9s container --list #--print-json

@@ -576,17 +576,72 @@ function wait_for_cluster_started()
     return $?
 }
 
+function get_container_ip()
+{
+    local container_name="$1"
+
+    s9s container \
+        --list \
+        --long \
+        --batch \
+        "$container_name" \
+    | \
+        awk '{print $6}'
+}
 
 #
 # $1: the server name
+# $2: The username
 #
 function is_server_running_ssh()
 {
-    local serverName="$1"
-    local owner="$2"
+    local serverName
+    local owner
+    local keyfile
+    local keyOption
     local isOK
+    local option_current_user
 
-    isOk=$(sudo -u $owner -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
+    while true; do
+        case "$1" in 
+            --current-user)
+                shift
+                option_current_user="true"
+                ;;
+
+            *)
+                break
+        esac
+    done
+
+    serverName="$1"
+    owner="$2"
+    keyfile="$3"
+
+    if [ "$keyfile" ]; then
+        keyOption="-i $keyfile"
+    fi
+
+    if [ "$option_current_user" ]; then
+        isOk=$(\
+            ssh -o ConnectTimeout=1 \
+                -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=quiet \
+                $keyOption \
+                "$owner@$serverName" \
+                2>/dev/null -- echo OK)
+    else
+        isOk=$(sudo -u $owner -- \
+            ssh -o ConnectTimeout=1 \
+                -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=quiet \
+                $keyOption \
+                "$serverName" \
+                2>/dev/null -- echo OK)
+    fi
+
     if [ "$isOk" == "OK" ]; then
         return 0
     fi
