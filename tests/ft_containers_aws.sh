@@ -173,6 +173,7 @@ function createServer()
 function registerServer()
 {
     local class
+    local lines
 
     #
     # Unregistering the server.
@@ -207,6 +208,11 @@ function registerServer()
 
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
     check_exit_code_no_job $?
+
+    lines=$(s9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state)
+    if ! echo "$lines" | grep --quiet "server_name"; then
+        failure "Server state file is not ok"
+    fi
 
     #
     # Checking the class is very important.
