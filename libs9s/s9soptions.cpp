@@ -1321,8 +1321,16 @@ S9sOptions::dbAdminUserName(
     S9sString retval;
 
     if (m_options.contains("db_admin_user_name"))
+    {
         retval = m_options.at("db_admin_user_name").toString();
-    else
+    } else {
+        retval = m_userConfig.variableValue("db_admin_user_name");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("db_admin_user_name");
+    }
+
+    if (retval.empty())
         retval = defaultValue;
 
     return retval;
@@ -1335,7 +1343,19 @@ S9sOptions::dbAdminUserName(
 S9sString 
 S9sOptions::dbAdminPassword()
 {
-    return getString("db_admin_password");
+    S9sString retval;
+
+    if (m_options.contains("db_admin_password"))
+    {
+        retval = m_options.at("db_admin_password").toString();
+    } else {
+        retval = m_userConfig.variableValue("db_admin_password");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("db_admin_password");
+    }
+    
+    return retval;
 }
 
 /**
