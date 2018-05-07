@@ -188,7 +188,7 @@ function registerServer()
 
 
     #
-    # Unregistering the server.
+    # Registering the server.
     #
     print_title "Registering Container Server"
 
@@ -200,12 +200,13 @@ function registerServer()
     check_exit_code_no_job $?
 
     #
-    # Checking the state... TBD
+    # Checking the state... 
     #
+    print_title "Checking the Re-registered Server "
     mys9s server --list --long
 
-    # FIXME: this will fail, the host id is changed.
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    check_exit_code_no_job $?
 
     #
     # Checking the class is very important.
