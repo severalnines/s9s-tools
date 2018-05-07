@@ -1,38 +1,6 @@
-s9s cluster --create --cloud=aws --cluster-name="JOHAN_AWS_MDB102" --cluster-type=galera --provider-version="10.2" --vendor=mariadb --nodes="johan_aws_007" --container="johan_aws_007" --os-user=vagrant --os-key-file=/home/johan/Documents/Vagrant/ssh/vagrant   --log
+o Adding command line options to create audit logging.
 
-{
-  "command": "create_cluster",
-  "job_data": {
-    "cluster_name": "JOHAN_AWS_MDB102",
-    "cluster_type": "galera",
-    "containers": [
-      {
-        "alias": "johan_aws_007",
-        "class_name": "CmonContainer",
-        "provider": "aws"
-      }
-    ],
-    "enable_uninstall": true,
-    "mysql_password": "",
-    "nodes": [
-      {
-        "class_name": "CmonHost",
-        "hostname": "johan_aws_007"
-      }
-    ],
-    "ssh_keyfile": "/home/johan/Documents/Vagrant/ssh/vagrant",
-    "ssh_user": "vagrant",
-    "vendor": "mariadb",
-    "version": "10.2"
-  }
-}
-
-
-
-o The rpc client returns false, sets the error string, but then returns a reply
-that is an empty json message and so calls like 
- # s9s container --list #--print-json
-print an empty json message.
+  http://52.58.107.236/cmon-docs/current/cmonjobs.html#audit_logging
 
 o Setting/adding groups fo users is not implemented.
 
@@ -47,12 +15,6 @@ Fullname:                              Email:
  Created: -                              
    Login: 2017-11-08T08:48:14.398Z       
  Failure: -                        
-
-
-o When no controller runs:
-s9s user --list --print-json
-{
-}
 
 o 
 hmm...
@@ -81,12 +43,6 @@ Krzysztof Książek
 and as this breaks the scenario of adding the slave for my webinar, if you could find some time to look into that, it'd be great
 
 
-
-
-
-o s9s user --set --properties="hostgrouppath=/pécs" pipas
-  s9s: unrecognized option '--properties=hostgrouppath=/pécs'
-
 o [vagrant@n1 ~]$ s9s user --create --generate-key --controller=”https://localhost:9501” --cmon-user=dba
 Grant user 'dba' succeeded.
 
@@ -102,50 +58,6 @@ Can we do something about the “Authentication failed: Controller host name is 
 o 
   curl -XPOST -d '{ "token":"0CrxAHFdq8yKzv2h","operation": "createJob", "job": {"command":"error_report", "job_data": {"report_dir":"/tmp/"} }}' http://localhost:9500/2/j
 
-o DONE
-  Make screenshots about CLI.
-
-o DONE
-  Change config with rewriting the value
-  SET GLOBAL variable_name=value;
-
-  set global port =2222;
-  ERROR 1238 (HY000): Variable 'port' is a read only variable
-
-o DONE
-  Get config file(s).
-  
-o Upload config file.
-
-o DONE
-  Node stop start restart.
-
-o DONE
-  Filtering with job-id
-  s9s job --list --job-id=6
-
-o DONE
-  s9s job --log --job-id=6 --long
-  This should not have JOB_SUCCESS, JOB_WARNING, JOB_FAILED, but 
-  MESSAGE, WARNING, ERROR
-  Not Status but severity.
-
-o DONE
-  Filtering the cluster list with --cluster-name and --cluster-id
-
-o This should tell what are the possible command line options.
-  s9s job --job-id=5 
-  Unknown job operation.
-
-o NOPE, this is already used, the --cmon-user actually will be used in the
-  authenticating.
-  Should be able to filter like this:
-  s9s user --list --cmon-user=pipas
-
-o DONE
-  send password when creating a cluster (root user password).
- /job_data/postgre_password
-
 o 
   Jobs don't have "host" part when created from the command line tool.
 
@@ -160,10 +72,6 @@ Started   : 2017-02-06 11:07:18    User : pipas      Host   :
 Ended     : 2017-02-06 11:11:59
 --------------------------------------------------------------------------------
 
-
-o 
-  remove job
-
 o DONE
   s9s node --stat
 
@@ -176,16 +84,6 @@ s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd �
 but also
 
 s9s cluster --create-account --cluster-id=1  --username=pip --password=passwd —compact-priv-format=“*.*: REPLICATION CLIENT”
-
-o DONE
-  Make sure we have a meaningful error string if we try to use 
-  http:// communication.
-
-  Authentication failed: Invalid clusterId path: 'v2'
-
-o DONE
-  s9s cluster —add-node
-  with --cluster-name
 
 o 
   Implement s9s cluster —delete-account

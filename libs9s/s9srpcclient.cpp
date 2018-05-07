@@ -6058,6 +6058,8 @@ S9sRpcClient::doExecuteRequest(
     {
         PRINT_VERBOSE ("Connection failed: %s", STR(m_priv->m_errorString));
         options->setExitStatus(S9sOptions::ConnectionError);
+
+        setError(m_priv->m_errorString);
         return false;
     }
         
@@ -6152,6 +6154,7 @@ S9sRpcClient::doExecuteRequest(
         m_priv->close();
 
         options->setExitStatus(S9sOptions::ConnectionError);
+        setError(m_priv->m_errorString);
         return false;
     }
             
@@ -6188,6 +6191,7 @@ S9sRpcClient::doExecuteRequest(
                     m_priv->m_useTls ? "yes" : "no");
 
             options->setExitStatus(S9sOptions::ConnectionError);
+            setError(m_priv->m_errorString);
             return false;
         }
 
@@ -6234,6 +6238,7 @@ S9sRpcClient::doExecuteRequest(
                 m_priv->m_useTls ? "yes" : "no");
 
         options->setExitStatus(S9sOptions::ConnectionError);
+        setError(m_priv->m_errorString);
         return false;
     }
 
@@ -6242,6 +6247,7 @@ S9sRpcClient::doExecuteRequest(
         PRINT_ERROR("Error parsing JSON reply.");
         m_priv->m_errorString.sprintf("Error parsing JSON reply.");
         options->setExitStatus(S9sOptions::ConnectionError);
+        setError(m_priv->m_errorString);
 
         return false;
     } else {
@@ -6251,6 +6257,29 @@ S9sRpcClient::doExecuteRequest(
 
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
     return true;
+}
+
+/**
+ * \code{.js}
+ * {
+ *     "error_string": "User 'pipas' is not found.",
+ *     "reply_received": "2018-05-07T12:32:23.400Z",
+ *     "request_created": "2018-05-07T12:32:23.395Z",
+ *     "request_id": 2,
+ *     "request_processed": "2018-05-07T12:32:23.405Z",
+ *     "request_status": "AccessDenied"
+ * }
+ * \endcode
+ */
+void
+S9sRpcClient::setError(
+        const S9sString &errorString,
+        const S9sString &errorCode)
+{
+    m_priv->m_reply.clear();
+
+    m_priv->m_reply["error_string"]   = errorString;
+    m_priv->m_reply["request_status"] = errorCode;
 }
 
 S9sVariant

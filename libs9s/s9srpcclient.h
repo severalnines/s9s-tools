@@ -298,7 +298,11 @@ class S9sRpcClient
                 const S9sString &uri,
                 const S9sString &payload);
 
+        void setError(
+                const S9sString &errorString,
+                const S9sString &errorCode = "ConnectError");
     private:
+        
         // Low level methods that create/register new clusters.
         bool createMySqlSingleCluster(
                 const S9sVariantList &hosts,

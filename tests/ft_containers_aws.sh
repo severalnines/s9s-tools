@@ -29,6 +29,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
+ --install        Just install the server and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
@@ -45,7 +46,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
+server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -80,6 +82,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -475,7 +482,9 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest createServer
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
