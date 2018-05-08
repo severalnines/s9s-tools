@@ -267,8 +267,8 @@ function destroyContainers()
     #
     print_title "Destroying Containers"
 
-    mys9s container --delete "$CONTAINER_NAME1"
-    mys9s container --delete "$CONTAINER_NAME9"
+    mys9s container --delete --wait "$CONTAINER_NAME1"
+    mys9s container --delete --wait "$CONTAINER_NAME9"
 }
 
 #
