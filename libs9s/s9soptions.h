@@ -323,6 +323,7 @@ class S9sOptions
         bool isRestoreRequested() const;
         bool isVerifyRequested() const;
         bool isRollingRestartRequested() const;
+        bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;

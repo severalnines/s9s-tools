@@ -209,6 +209,7 @@ enum S9sOptionType
     OptionListImages,
     OptionListSubnets,
     OptionListTemplates,
+    OptionSetupAudit,
 };
 
 /**
@@ -2798,6 +2799,15 @@ S9sOptions::isRollingRestartRequested() const
 }
 
 /**
+ * \returns true if the --setup-audit-logging command line option provided.
+ */
+bool
+S9sOptions::isSetupAuditLoggingRequested() const
+{
+    return getBool("setup_audit_logging");
+}
+
+/**
  * \returns true if the --create-report command line option was provided when
  *   the program was started.
  */
@@ -3889,6 +3899,7 @@ S9sOptions::printHelpCluster()
 "  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
+"  --setup-audit-logging      Set up the audit logging on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
@@ -5246,6 +5257,9 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
 
     if (isRollingRestartRequested())
+        countOptions++;
+    
+    if (isSetupAuditLoggingRequested())
         countOptions++;
     
     if (isCreateReportRequested())
@@ -6919,6 +6933,7 @@ S9sOptions::readOptionsCluster(
         { "create",           no_argument,       0, OptionCreate          },
         { "register",         no_argument,       0, OptionRegister        },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
+        { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
@@ -7059,6 +7074,11 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
+                break;
+            
+            case OptionSetupAudit:
+                // --setup-audit-logging
+                m_options["setup_audit_logging"] = true;
                 break;
             
             case OptionCreateReport:

@@ -236,6 +236,8 @@ class S9sRpcClient
         bool deleteReport(const int reportId);
         bool getReports();
         bool rollingRestart(const int clusterId);
+        bool setupAuditLogging(const int clusterId);
+
         bool createReport(const int clusterId);
 
         bool createLocalRepository(

@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2017  Severalnines AB
+ * Copyright (C) 2018  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -1741,6 +1741,34 @@ S9sRpcClient::rollingRestart(
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::setupAuditLogging(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobSpec["command"]    = "setup_audit_logging";
+    if (!hosts.empty())
+        jobSpec["nodes"] = nodesField(hosts);
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Setup Audit Logging";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    return executeRequest(uri, request);
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the

@@ -105,6 +105,10 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isSetupAuditLoggingRequested())
+        {
+            success = client.setupAuditLogging(clusterId);
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateReportRequested())
         {
             success = client.createReport(clusterId);
