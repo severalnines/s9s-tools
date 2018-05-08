@@ -6605,6 +6605,7 @@ S9sRpcReply::printJobListLong()
         S9sString      ended      = theMap["ended"].toString();
         S9sString      started    = theMap["started"].toString();
         S9sString      scheduled  = theMap["scheduled"].toString();
+        int            clusterId  = theMap["cluster_id"].toInt();
         S9sString      bar;
         double         percent;
         S9sString      timeStamp;
@@ -6618,6 +6619,10 @@ S9sRpcReply::printJobListLong()
         // The title.
         if (title.empty())
             title = "Untitled Job";
+
+        // The host.
+        if (hostName.empty())
+            hostName = "-";
 
         // Status text
         statusTextMonochrome = S9sString::html2text(statusText);
@@ -6770,6 +6775,10 @@ S9sRpcReply::printJobListLong()
         printf("%sGroup:%s %s%-10s%s ", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 groupColorBegin(group), STR(group), groupColorEnd());
+        
+        printf("%sCluster:%s %d ", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                clusterId);
         
         printf("\n");
         
