@@ -47,6 +47,7 @@ Usage:
 SUPPORTED TESTS:
   o testPing             Pings the controller.
   o testCreateCluster    Creates a Galera cluster.
+  o testSetupAudit       Sets up audit logging.
   o testSetConfig01      Changes some configuration values for the cluster.
   o testSetConfig02      More configuration checks.
   o testRestartNode      Restarts one node of the cluster.
@@ -232,6 +233,17 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+}
+
+function testSetupAudit()
+{
+    print_title "Setting up Audit Logging"
+    mys9s cluster \
+        --setup-audit-logging \
+        --cluster-id=1 \
+        $LOG_OPTION
+
+    check_exit_code $?
 }
 
 #
@@ -934,6 +946,7 @@ else
     runFunctionalTest testPing
 
     runFunctionalTest testCreateCluster
+    runFunctionalTest testSetupAudit
 
     runFunctionalTest testSetConfig01
     runFunctionalTest testSetConfig02
