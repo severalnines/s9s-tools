@@ -44,10 +44,6 @@ if [ $? -ne 0 ]; then
     exit 6
 fi
 
-if [ $? -ne 0 ]; then
-    exit 6
-fi
-
 eval set -- "$ARGS"
 while true; do
     case "$1" in

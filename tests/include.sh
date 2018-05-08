@@ -426,8 +426,6 @@ function node_state()
     s9s node --list --batch --long --node-format="%S" "$nodeName"
 }
 
-
-
 #
 # This function will wait for a node to pick up a state and stay in that state
 # for a while.
@@ -475,6 +473,13 @@ function wait_for_node_state()
     done
 
     return 2
+}
+
+function haproxy_node_name()
+{
+    s9s node --list --long --batch |\
+        grep '^h' | \
+        awk '{print $5 }'
 }
 
 #
