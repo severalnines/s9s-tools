@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2017 Severalnines AB
+ * Copyright (C) 2017-2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -513,50 +513,40 @@ S9sRpcReply::printMessages(
     if (options->isBatchRequested())
         return;
 
-    if (isOk())
+    // Print out the messages first (or the default message)
+    if (contains("messages"))
     {
-        if (contains("errorString"))
+        // RPC 2.0 might hold multiple messages.
+        S9sVariantList list = at("messages").toVariantList();
+
+        for (uint idx = 0u; idx < list.size(); ++idx)
         {
-            // Reply message in RPC 1.0.
-            printf("%s\n", STR(at("errorString").toString()));
-        } else if (contains("error_string"))
+            printf("%s\n", STR(list[idx].toString()));
+        }
+    }
+    else if (errorString().empty())
+    {
+        // no messages, and no error string, print out the default
+        if (isOk())
         {
-            // Reply message in RPC 2.0
-            printf("%s\n", STR(at("error_string").toString()));
-        } else if (contains("messages"))
-        {
-            // ROC 2.0 might hold multiple messages.
-            S9sVariantList list = at("messages").toVariantList();
-    
-            for (uint idx = 0u; idx < list.size(); ++idx)
-            {
-                printf("%s\n", STR(list[idx].toString()));
-            }
-        } else {
-            // Well, no message, everything is ok.
             printf("%s\n", STR(defaultMessage));
         }
-    } else {
-        if (contains("errorString"))
+        else
         {
-            // Reply message in RPC 1.0.
-            PRINT_ERROR("%s", STR(at("errorString").toString()));
-        } else if (contains("error_string"))
+            PRINT_ERROR("Error: Unknown error: %s\n", STR(toString()));
+        }
+    }
+
+    // And if error string is set, pint out it as well
+    if (!errorString().empty())
+    {
+        if (isOk())
         {
-            // Reply message in RPC 2.0
-            PRINT_ERROR("%s", STR(at("error_string").toString()));
-        } else if (contains("messages"))
+            printf("%s\n", STR(errorString()));
+        }
+        else
         {
-            // ROC 2.0 might hold multiple messages.
-            S9sVariantList list = at("messages").toVariantList();
-    
-            for (uint idx = 0u; idx < list.size(); ++idx)
-            {
-                PRINT_ERROR("%s", STR(list[idx].toString()));
-            }
-        } else {
-            // Well, no message, everything is ok.
-            PRINT_ERROR("Error: Unknown error: %s", STR(toString()));
+            PRINT_ERROR("%s\n", STR(errorString()));
         }
     }
 }
