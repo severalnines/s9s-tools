@@ -489,6 +489,13 @@ function maxscale_node_name()
         awk '{print $5 }'
 }
 
+function proxysql_node_name()
+{
+    s9s node --list --long --batch |\
+        grep '^y' | \
+        awk '{print $5 }'
+}
+
 #
 # This function waits until the host goes into CmonHostShutDown state and then
 # waits if it remains in that state for a while. A timeout is implemented and 
