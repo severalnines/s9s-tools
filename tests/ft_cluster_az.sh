@@ -290,6 +290,13 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on Azure"
+cat <<EOF
+<p>
+This test seems to have a lot of issues on Azure. In fact Azure seems to have 
+a lot of issues. I am trying to make the controller and s9s more robust using
+Azure issues tests.
+</p>
+EOF
 
     mys9s cluster \
         --create \
@@ -302,7 +309,7 @@ function createCluster()
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        $LOG_OPTION
+        --log
 
     if ! check_exit_code --do-not-exit $?; then
         mys9s container --delete --wait "$container_name1"
