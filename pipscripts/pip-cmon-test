@@ -339,7 +339,7 @@ function os_to_test()
 }
 
 #
-# Prints the directory name where the source can be found.
+# Prints the directory name where the clustercontrol source can be found.
 #
 function find_clustercontrol_source_directory()
 {
@@ -754,7 +754,8 @@ function upload_result_file()
         generate_test_result_info \
             $unit_test_option \
             $functional_test_option \
-            "$test_name" "$test_state" \
+            --test-name  "$test_name" \
+            --test-state "$test_state" \
             >$tmp_file
 
         #pip-host-control --log "Uploading '$tmp_file'."
@@ -817,13 +818,23 @@ function generate_test_result_info()
                 is_unit_test="false"
                 ;;
 
+            --test-name)
+                shift
+                test_name="$1"
+                shift
+                ;;
+
+            --test-state)
+                shift
+                test_state="$1"
+                shift
+                ;;
+
             *)
                 break
         esac
     done
 
-    test_name="$1"
-    test_state="$2"
     git_has_local_changes="no"
 
     if ! git diff-index --quiet HEAD --; then 
@@ -1137,7 +1148,11 @@ function main()
     tmp_file="/var/tmp/$result_file"
 
     printVerbose "Preliminary test result file: $result_file"
-    generate_test_result_info "$OPTION_TEST_NAME" "PREPARING" >$tmp_file
+    generate_test_result_info \
+        --test-name  "$OPTION_TEST_NAME" \
+        --test-state "PREPARING" \
+        >$tmp_file
+
     scp "$tmp_file" "$TEST_REPORT_URL"
 
     compile_source

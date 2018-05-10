@@ -289,7 +289,7 @@ function createCluster()
     #
     # Creating a Cluster.
     #
-    print_title "Creating a Clusteron Azure"
+    print_title "Creating a Cluster on Azure"
 
     mys9s cluster \
         --create \
@@ -304,7 +304,11 @@ function createCluster()
         --os-key-file="$config_dir/sisko.key" \
         $LOG_OPTION
 
-    check_exit_code $?
+    if ! check_exit_code --do-not-exit $?; then
+        mys9s container --delete --wait "$container_name1"
+        mys9s container --delete --wait "$container_name2"
+        exit 1
+    fi
 
     #
     #

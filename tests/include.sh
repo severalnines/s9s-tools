@@ -251,9 +251,31 @@ function failure
 #
 function check_exit_code()
 {
-    local exitCode="$1"
+    local do_not_exit
+    local exitCode
     local jobId
 
+    #
+    # Command line options.
+    #
+    while true; do
+        case "$1" in 
+            --do-not-exit)
+                shift
+                do_not_exit="true"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    exitCode="$1"
+
+    #
+    # Checking...
+    #
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
 
@@ -267,8 +289,14 @@ function check_exit_code()
             mys9s job --log --debug --job-id="$jobId"
         fi
 
-        exit $exitCode
+        if [ "$do_not_exit" ]; then
+            return 1
+        else
+            exit $exitCode
+        fi
     fi
+
+    return 0
 }
 
 function check_exit_code_no_job()
