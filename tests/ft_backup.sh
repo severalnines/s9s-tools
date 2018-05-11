@@ -424,19 +424,24 @@ function testCreateBackup03()
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
         --subdir="testCreateBackup03" \
-        $LOG_OPTION
+        --log
 
     retcode=$?
     if [ "$retcode" -eq 0 ]; then
         failure "Overwriting of backup directory should not be possible"
         exit 1
+    else
+        echo "Yes, this should have failed, we tried to overwrite the backup."
     fi
 }
 
+#
+# This test creates a backup and immediately tests it on a test server.
+#
 function testCreateBackupVerify()
 {
     local node
-    local file
+    local retcode
 
     print_title "Creating and Verifying a Backup"
     node=$(create_node --autodestroy)
@@ -448,14 +453,23 @@ function testCreateBackupVerify()
     #
     mys9s backup \
         --create \
-        --title="Another backup" \
+        --title="Backup with Verification" \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --test-server="$node" \
         --backup-dir=/tmp \
         --log
     
-    check_exit_code $?
+    retcode=$?
+
+    if [ $retcode -ne 0 ]; then
+        failure "Creating and verifying backup failed"
+        mys9s job --list 
+        mys9s backup --list --long 
+        exit 1
+    fi
+
+    #check_exit_code $retcode
 
     mys9s backup --list --long
 }
