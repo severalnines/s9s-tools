@@ -440,6 +440,8 @@ function testCreateBackupVerify()
     print_title "Creating and Verifying a Backup"
     node=$(create_node --autodestroy)
 
+    rm -rvf /tmp/testCreateBackup* 2>/dev/null
+
     #
     # Creating another backup.
     #

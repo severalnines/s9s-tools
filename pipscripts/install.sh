@@ -162,6 +162,9 @@ for server in $SERVER; do
         sudo cp -vf install_sh_tmp/pip-* /usr/bin
     
     $SSH $server -- \
+        sudo cp -vf install_sh_tmp/utilityfunctions.sh /usr/bin
+    
+    $SSH $server -- \
         sudo mkdir -p /var/lib/cmon
 
     $SSH $server -- \
