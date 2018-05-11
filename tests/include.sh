@@ -844,6 +844,9 @@ function reset_config()
 
     # This goes to the standard output.
     emit_s9s_configuration_file
+
+    # FIXME: This should not be here:
+    sudo rm -f $HOME/pip-container-create.log 2>/dev/null
 }
 
 #

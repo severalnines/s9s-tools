@@ -436,11 +436,12 @@ function testCreateBackup03()
 function testCreateBackupVerify()
 {
     local node
+    local file
 
     print_title "Creating and Verifying a Backup"
     node=$(create_node --autodestroy)
 
-    rm -rvf /tmp/testCreateBackup* 2>/dev/null
+    mys9s backup --list-files --full-path
 
     #
     # Creating another backup.
@@ -452,17 +453,11 @@ function testCreateBackupVerify()
         --nodes=$FIRST_ADDED_NODE \
         --test-server="$node" \
         --backup-dir=/tmp \
-        $LOG_OPTION
+        --log
     
     check_exit_code $?
 
     mys9s backup --list --long
-    return 0
-
-    while true; do
-        mys9s job --list 
-        sleep 10
-    done
 }
 
 function testCreateBackupMySqlPump()
