@@ -285,7 +285,7 @@ function testCreateBackup01()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        --subdir="backup-%03i-%04I" \
+        --subdirectory="backup-%03i-%04I" \
         --use-pigz \
         --parallellism=5 \
         --encrypt-backup \
@@ -412,7 +412,7 @@ function testCreateBackup03()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        --subdir="testCreateBackup03" \
+        --subdirectory="testCreateBackup03" \
         $LOG_OPTION
     
     check_exit_code $?
@@ -423,7 +423,7 @@ function testCreateBackup03()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        --subdir="testCreateBackup03" \
+        --subdirectory="testCreateBackup03" \
         --log
 
     retcode=$?
@@ -458,6 +458,7 @@ function testCreateBackupVerify()
         --nodes=$FIRST_ADDED_NODE \
         --test-server="$node" \
         --backup-dir=/tmp \
+        --subdirectory="backup-%03i-%04I" \
         --log
     
     retcode=$?
