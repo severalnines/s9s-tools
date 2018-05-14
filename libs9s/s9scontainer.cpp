@@ -298,6 +298,7 @@ S9sContainer::ipv4Addresses(
 
         if (retval.empty())
             retval = defaultValue;
+#if 0
     } else {
         // This is the old way around.
         S9sVariantList theList =  property("ipv4_addresses").toVariantList();
@@ -312,7 +313,7 @@ S9sContainer::ipv4Addresses(
 
         if (retval.empty())
             retval = defaultValue;
-
+#endif
     }
         
     return retval;
