@@ -2,11 +2,14 @@
 MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
+MYHOSTNAME="$(hostname)"
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-CONTAINER_SERVER=""
+
+CONTAINER_SERVER="$MYHOSTNAME"
 CONTAINER_IP=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 
@@ -33,6 +36,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
 SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
+  o checkServer      Checking the previously registered server.
   o createContainer  Creates a new container.
   o createAsSystem   Create a container as system user.
   o createFail       A container creation that should fail.
@@ -166,10 +170,13 @@ function registerServer()
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
+#
+# Checking the previously registered container server.
+#
 function checkServer()
 {
     local old_ifs="$IFS"
-    local myhostname=$(hostname)
+    local myhostname="$CONTAINER_SERVER"
     local line
     local cloud
     local region
@@ -817,8 +824,11 @@ function deleteContainer()
 startTests
 reset_config
 grant_user
+
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
+    runFunctionalTest checkServer
+    runFunctionalTest createCluster
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
