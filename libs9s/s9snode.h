@@ -84,6 +84,7 @@ class S9sNode : public S9sObject
         S9sString nodeType() const;
         char nodeTypeFlag() const;
         S9sString version() const;
+        S9sString containerId(const S9sString &defaultValue) const;
         S9sString message() const;
         S9sString osVersionString() const;
         bool isMaintenanceActive() const;

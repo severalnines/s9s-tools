@@ -5573,8 +5573,13 @@ S9sRpcReply::printNodeStat(
     printf("%s", node.readOnly() ? "read-only" : "read-write");
 
     printf("\n");
+    
+    //
+    printf("%s   VM ID:%s ", greyBegin, greyEnd);
+    printf("%s", STR(node.containerId("-")));
+    printf("\n");
 
-    // A line for the version.
+    //  Version: 1.4.7
     printf("%s Version:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.version()));
     printf("\n");
@@ -5612,7 +5617,7 @@ S9sRpcReply::printNodeStat(
     //
     // A line of switches.
     //
-    printf("%sConnected:%s %c ", 
+    printf("%s Connect:%s %c ", 
             greyBegin, greyEnd, 
             BoolToHuman(node.readOnly()));
 

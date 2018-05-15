@@ -952,6 +952,21 @@ S9sNode::version() const
     return S9sString();
 }
 
+S9sString 
+S9sNode::containerId(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    if (m_properties.contains("container_id"))
+        retval = m_properties.at("container_id").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 /**
  * \returns A human readable message about the current status of the node.
  */
