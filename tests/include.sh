@@ -526,6 +526,8 @@ function proxysql_node_name()
         awk '{print $5 }'
 }
 
+# $1: Name of the node.
+# Returns the "container_id" property for the given node.
 function node_container_id()
 {
     local node_name="$1"

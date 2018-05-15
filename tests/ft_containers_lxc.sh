@@ -30,7 +30,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the server and exit.
+ --install        Just install the server and the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
@@ -789,7 +789,7 @@ function createCluster()
     #
     # Checking the proxysql node.
     #
-    print_title "Adding a ProxySql Node"
+    print_title "Checking the ProxySql Node"
 
     proxysql_node_ip=$(proxysql_node_name)
     proxysql_container_id=$(node_container_id "$proxysql_node_ip")
