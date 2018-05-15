@@ -37,6 +37,7 @@ SUPPORTED TESTS:
   o registerServer   Registers a new container server. No software installed.
   o createContainer  Creates a container.
   o createCluster    Creates a cluster.
+  o removeCluster    Drops the cluster, removes containers.
 
 EOF
     exit 1
@@ -315,7 +316,10 @@ function createCluster()
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
+}
 
+function removeCluster()
+{
     #
     # Dropping and deleting.
     #
@@ -361,6 +365,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
+    runFunctionalTest removeCluster
 fi
 
 endTests

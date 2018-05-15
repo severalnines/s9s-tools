@@ -632,19 +632,17 @@ S9sNode::clusterId() const
 
 
 /**
- * \returns The name of the node that shall be used to represent it in user
- *   output.
+ * \returns The hostname.
  *
- * The return value might be the alias, the host name or even the IP address.
- * Currently this function is not fully implemented and it does not consider any
- * settings.
+ * This method will not return the alias, only the hostname, but that's usually
+ * the IP address in our tests.
  */
 S9sString
 S9sNode::name() const
 {
     S9sString retval;
 
-    retval = alias();
+    //retval = alias();
     if (retval.empty())
         retval = hostName();
 
@@ -682,12 +680,18 @@ S9sNode::ipAddress() const
  *   the empty string if not.
  */
 S9sString
-S9sNode::alias() const
+S9sNode::alias(
+        const S9sString defaultValue) const
 {
-    if (m_properties.contains("alias"))
-        return m_properties.at("alias").toString();
+    S9sString retval;
 
-    return S9sString();
+    if (m_properties.contains("alias"))
+        retval = m_properties.at("alias").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 /**

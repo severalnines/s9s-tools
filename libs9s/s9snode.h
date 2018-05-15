@@ -60,7 +60,7 @@ class S9sNode : public S9sObject
         virtual S9sString name() const;
         S9sString hostName() const;
         S9sString ipAddress() const;
-        S9sString alias() const;
+        S9sString alias(const S9sString defaultValue = "") const;
         S9sString role() const;
         bool isMaster() const;
         bool isSlave() const;

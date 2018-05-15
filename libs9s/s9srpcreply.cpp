@@ -5533,10 +5533,10 @@ S9sRpcReply::printNodeStat(
     // Line 
     //
     printf("%s   Alias:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR("'" + node.alias() + "'"));
+    printf("%-25s", STR(node.alias("-")));
     //printf("\n");
     
-    printf("%s         Owner:%s ", greyBegin, greyEnd);
+    printf("%s Owner:%s ", greyBegin, greyEnd);
     printf("%s%s%s/%s%s%s ", 
             userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
             groupColorBegin(cluster.groupOwnerName()), 
@@ -5605,10 +5605,10 @@ S9sRpcReply::printNodeStat(
      * Last seen time and SSH fail count.
      */
     printf("%sLastSeen:%s ", greyBegin, greyEnd);
-    printf("%20s", STR(S9sString::pastTime(node.lastSeen())));
+    printf("%-27s", STR(S9sString::pastTime(node.lastSeen())));
     //printf("\n");
     
-    printf("%s        SSH:%s ", greyBegin, greyEnd);
+    printf("%s SSH:%s ", greyBegin, greyEnd);
     printf("%d ", node.sshFailCount());
     printf("%sfail(s)%s ", greyBegin, greyEnd);
 
