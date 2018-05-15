@@ -320,6 +320,9 @@ function createCluster()
 
 function removeCluster()
 {
+    local container_name1="${MYBASENAME}_11_$$"
+    local container_name2="${MYBASENAME}_12_$$"
+
     #
     # Dropping and deleting.
     #
