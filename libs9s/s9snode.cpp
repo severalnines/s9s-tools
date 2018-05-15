@@ -518,6 +518,13 @@ S9sNode::toString(
                     tmp.sprintf(STR(partFormat), STR(version()));
                     retval += tmp;
                     break;
+                
+                case 'v':
+                    // The container/vm ID.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(containerId("-")));
+                    retval += tmp;
+                    break;
 
                 case 'U':
                     // The number of CPUs.

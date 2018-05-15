@@ -526,6 +526,13 @@ function proxysql_node_name()
         awk '{print $5 }'
 }
 
+function node_container_id()
+{
+    local node_name="$1"
+
+    s9s node --list --node-format "%v\n" "$node_name"
+}
+
 #
 # This function waits until the host goes into CmonHostShutDown state and then
 # waits if it remains in that state for a while. A timeout is implemented and 
