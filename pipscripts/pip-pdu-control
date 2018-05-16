@@ -69,6 +69,8 @@ Usage:
   --on                 Turn the socket on.
   --off                Turn the socket off.
   --state              Check the state of the socket.
+  --power              Read the current power consumption in watts.
+  --temperature        Read the temperature.
 
 EOF
     exit 0
@@ -77,7 +79,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,on,off,state" \
+        -l "help,verbose,version,log-file:,on,off,state,power,temperature" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -114,6 +116,11 @@ while true; do
             PDU_OPERATION="on"
             ;;
 
+        --power)
+            shift
+            PDU_OPERATION="power"
+            ;;
+
         --off)
             shift
             PDU_OPERATION="off"
@@ -122,6 +129,11 @@ while true; do
         --state)
             shift
             PDU_OPERATION="state"
+            ;;
+        
+        --temperature)
+            shift
+            PDU_OPERATION="temperature"
             ;;
 
         --)
@@ -242,6 +254,8 @@ function switch_orvibo()
 # pipas@t7500:~$ curl http://192.168.2.5/cm?cmnd=Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
 # 24.4
 #
+# curl http://192.168.2.9/cm?cmnd=Status%208 | grep -o '"Power":[^,]\+' | awk -F: '{print $2}'
+#
 function switch_tasmota()
 {
     local output
@@ -298,6 +312,13 @@ function switch_tasmota()
             fi
             ;;
 
+        power)
+            curl ${url}Status%208 2>/dev/null | grep -o '"Power":[^,]\+' | awk -F: '{print $2}'
+            ;;
+
+        temperature)
+            curl ${url}Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
+            ;;
     esac
 }
 
