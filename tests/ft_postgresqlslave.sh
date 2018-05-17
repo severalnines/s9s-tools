@@ -182,10 +182,7 @@ function testAddNode()
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?   
 }
 
 #
