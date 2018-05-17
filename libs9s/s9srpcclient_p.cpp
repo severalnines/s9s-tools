@@ -120,7 +120,7 @@ S9sRpcClientPrivate::connect()
      * Setting up a read and write timeout values
      * (otherwise it hangs on interrupted connection)
      */
-    timeout.tv_sec  = 60;
+    timeout.tv_sec  = 240;
     timeout.tv_usec = 0;
     setsockopt(
             m_socketFd, SOL_SOCKET, SO_RCVTIMEO,

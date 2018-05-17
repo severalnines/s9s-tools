@@ -352,10 +352,7 @@ function testConfigFail()
 #
 function testCreateAccount()
 {
-    print_title "Testing Account Creation."
-
-    echo "#FIXME: we have a sleep here..."
-    sleep 10
+    print_title "Creating an Account"
 
     #
     # This command will create a new account on the cluster.
