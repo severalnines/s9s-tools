@@ -261,6 +261,8 @@ function testConfig()
     #
     # Listing the configuration values. The exit code should be 0.
     #
+    mys9s node --stat "$FIRST_ADDED_NODE"
+
     mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
@@ -317,7 +319,7 @@ function testConfig()
         --batch
 
     if [ ! -f "tmp/postgresql.conf" ]; then
-        failure "The config file 'tmp/postgresql.conf' was not created."
+        failure "Failed to pull the configuration."
     fi
 
     rm -rf tmp

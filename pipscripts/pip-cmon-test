@@ -611,11 +611,24 @@ function ft_test_ended()
 {
     local exit_code="$1"
     local backend_pid="$2"
+    local core_file
 
     echo "The test ended."
-    echo "exit_code: $exit_code"
-    echo "core files:"    
-    ls -lha *core* */*core*
+    echo "  exit_code: $exit_code"
+    echo "         wd: '$PWD'"
+    for core_file in \
+        *core* \
+        */*core* \
+        $HOME/clustercontrol-enterprise/*core* \
+        $HOME/clustercontrol-enterprise/tests/*core*; 
+    do
+        if [ ! -f "$core_file" ]; then
+            continue
+        fi
+
+        ls -lha $core_file
+    done
+
 
     if [ $exit_code -eq 0 ]; then
         return 0
