@@ -7,12 +7,20 @@ s9s-container \- Command line client for the Severalnines Clustercontrol server.
 .RI [OPTION]... 
 .RI [CONTAINER]...
 .SH DESCRIPTION
-\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
-deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+This document describes how the \fBs9s\fP program supports virtualization.
+Multiple technologies (multiple virtualization backends) are supported (e.g.
+Linux LXC and AWS) providing various levels of virtualization. Throughout this
+documentation (and in fact in the command line options) \fBs9s\fP uses the word
+"\fBcontainer\fP" to identify virtualized servers. The actual virtualization
+backend might use the term "virtual machine" or "Linux container" but s9s
+provides a high level generic interface to interact with them, so the generic
+"container" term is used. So please note, the term "container" does not
+necesarily mean "Linux container", it means "a server that is running in some
+kind of virtualized environment".
 
-In order to utilize the s9s command line tool and the Cmon Controller to create
-virtual machines or containers one needs to register a container server first.
-The installation of such a container server is documented in s9s-server(1). 
+In order to utilize the s9s command line tool and the Cmon Controller to manage
+virtualization a container server has to be installed first.  The installation
+of such a container server is documented in the s9s-server(1) page. 
 
 .SH OPTIONS
 .SS "Main Option"

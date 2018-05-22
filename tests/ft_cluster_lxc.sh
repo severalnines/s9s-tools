@@ -316,6 +316,7 @@ function createCluster()
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
+    mys9s node      --stat
 }
 
 function removeCluster()
