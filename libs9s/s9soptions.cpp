@@ -3786,9 +3786,9 @@ S9sOptions::printHelpMaintenance()
 
     printf(
 "Options for the \"maintenance\" command:\n"
-"  --list                     List the maintenance period.\n"
 "  --create                   Create a new maintenance period.\n"
 "  --delete                   Delete a maintenance period.\n"
+"  --list                     List the maintenance periods.\n"
 "\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
 "  --end=DATE&TIME            The end of the maintenance period.\n"
