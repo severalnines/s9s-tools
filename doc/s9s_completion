@@ -53,8 +53,9 @@ function _s9s_has_options()
 #
 function _s9s_no_command()
 {
-    if ! _s9s_has_options "account" "backup" "cluster" "job" "maint" "node" \
-        "process" "user" "script" "metatype" "log" "server" "container" "tree"; 
+    if ! _s9s_has_options "account" "backup" "cluster" "job" "maintenance" \
+        "node" "process" "user" "script" "metatype" "log" "server" \
+        "container" "tree"; 
     then
         return 0
     fi
@@ -82,7 +83,7 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="account backup cluster job maint node process user script "
+        opts+="account backup cluster job maintenance node process user script "
         opts+="metatype log server container tree"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
@@ -271,9 +272,9 @@ function _s9s()
                 opts+="--os-key-file= --os-password= --os-user= --servers= "
                 opts+="--subnet-id= --template= --vpc-id= "
             fi
-        elif [[ ${COMP_WORDS[i]} == "maint" ]]; then
+        elif [[ ${COMP_WORDS[i]} == "maintenance" ]]; then
             main_opt="--help "
-            main_opt="--list --create --delete "
+            main_opt+="--list --create --delete "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
