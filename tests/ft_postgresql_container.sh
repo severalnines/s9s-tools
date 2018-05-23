@@ -10,6 +10,7 @@ CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
+PROVIDER_VERSION="9.3"
 
 cd $MYDIR
 source include.sh
@@ -35,7 +36,6 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o createUser       Creates a user to work with.
   o registerServer   Registers a new container server. No software installed.
-  o createContainer  Creates a container.
   o createCluster    Creates a cluster.
   o removeCluster    Drops the cluster, removes containers.
 
@@ -210,77 +210,6 @@ function registerServer()
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
-#
-# Creates then destroys a cluster on lxc.
-#
-function createContainer()
-{
-    local config_dir="$HOME/.s9s"
-    local container_name="${MYBASENAME}_01_$$"
-    local template
-    local owner
-
-    print_title "Creating Container"
-
-    #
-    # Creating a container.
-    #
-    mys9s container \
-        --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --cloud=lxc \
-        --os-user=sisko \
-        --os-key-file="$config_dir/sisko.key" \
-        $LOG_OPTION \
-        "$container_name"
-    
-    check_exit_code $?
-    
-    mys9s container --list --long
-
-    #
-    # Checking the ip and the owner.
-    #
-    CONTAINER_IP=$(get_container_ip "$container_name")
-    
-    if [ -z "$CONTAINER_IP" -o "$CONTAINER_IP" == "-" ]; then
-        failure "The container was not created or got no IP."
-        s9s container --list --long
-    fi
- 
-    #
-    # Checking if the owner can actually log in through ssh.
-    #
-    print_title "Checking SSH Access for '$USER'"
-    is_server_running_ssh "$CONTAINER_IP" "$USER"
-
-    if [ $? -ne 0 ]; then
-        failure "User $USER can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
-    fi
-    
-    #
-    # Checking that sisko can log in.
-    #
-    print_title "Checking SSH Access for 'sisko'"
-    is_server_running_ssh \
-        --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
-
-    if [ $? -ne 0 ]; then
-        failure "User 'sisko' can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
-    fi
-
-    #
-    # Deleting the container we just created.
-    #
-    print_title "Deleting Container"
-
-    mys9s container --delete $LOG_OPTION "$container_name"
-    check_exit_code $?
-}
 
 function createCluster()
 {
@@ -296,9 +225,10 @@ function createCluster()
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
-        --cluster-type=galera \
-        --provider-version="5.6" \
-        --vendor=percona \
+        --cluster-type=postgresql \
+        --db-admin="postmaster" \
+        --db-admin-passwd="passwd12" \
+        --provider-version=$PROVIDER_VERSION \
         --cloud=lxc \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
@@ -307,13 +237,13 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
-    check_node_ids
+    #check_node_ids
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
-    sleep 10
+    sleep 60
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
@@ -368,7 +298,6 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createUser
     runFunctionalTest registerServer
-    runFunctionalTest createContainer
     runFunctionalTest createCluster
     runFunctionalTest removeCluster
 fi
