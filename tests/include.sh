@@ -24,6 +24,8 @@ XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
 XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
 XTERM_COLOR_WHITE="\033[1;37m"
 
+TERM_COLOR_TITLE="\033[1m\033[37m"
+
 if [ -x ../s9s/s9s ]; then
     S9S="../s9s/s9s"
 fi
@@ -1001,7 +1003,7 @@ function grant_user()
 function print_title()
 {
     echo ""
-    echo -e "\033[1m$*\033[0;39m"
+    echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
     echo -e "\033[1m\
 -------------------------------------------------------------------------------\
 -\033[0;39m"
