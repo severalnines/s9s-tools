@@ -957,10 +957,15 @@ S9sNode::nodeTypeFlag() const
 S9sString
 S9sNode::version() const
 {
-    if (m_properties.contains("version"))
-        return m_properties.at("version").toString();
+    S9sString retval;
 
-    return S9sString();
+    if (m_properties.contains("version"))
+        retval = m_properties.at("version").toString();
+
+    if (retval.contains(" "))
+        retval = retval.substr(0, retval.find(' '));
+
+    return retval;
 }
 
 S9sString 

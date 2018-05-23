@@ -6178,7 +6178,7 @@ S9sRpcReply::printNodeListLong()
             S9sVariantMap hostMap   = hosts[idx2].toVariantMap();
             S9sNode       node      = hostMap;
             S9sString     hostName  = node.name();
-            S9sString     version   = hostMap["version"].toString();
+            S9sString     version   = node.version();
             int           port      = hostMap["port"].toInt(-1);
             int           clusterId = hostMap["clusterid"].toInt();
 
@@ -6241,7 +6241,7 @@ S9sRpcReply::printNodeListLong()
         S9sString     className = hostMap["class_name"].toString();
         //S9sString     nodeType  = hostMap["nodetype"].toString();
         S9sString     message   = hostMap["message"].toString();
-        S9sString     version   = hostMap["version"].toString();
+        S9sString     version   = node.version();
         S9sString     clusterName = hostMap["cluster_name"].toString();
         bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
         int           port      = hostMap["port"].toInt(-1);
