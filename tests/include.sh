@@ -536,18 +536,43 @@ function node_container_id()
 }
 
 #
+# Checks the container IDs of the specified nodes.
 #
-#
-function check_node_ids()
+function check_container_ids()
 {
     local node_ip
+    local node_ips
     local container_id
+    local filter=""
+
+    while [ "$1" ]; do
+        case "$1" in 
+            --galera-nodes)
+                shift
+                filter="^g"
+                ;;
+
+            --postgresql-nodes)
+                shift
+                filter="^p"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    if [ -z "$filter" ]; then
+        failure "check_container_ids(): Missing command line option."
+        return 1
+    fi
 
     #
     # Checking the container ids.
     #
-    for node_ip in $(s9s node --list --long | grep '^g' | awk '{ print $5 }')
-    do
+    node_ips=$(s9s node --list --long | grep "$filter" | awk '{ print $5 }')
+    for node_ip in $node_ips; do
         print_title "Checking Node $node_ipe"
 
         container_id=$(node_container_id "$node_ip")

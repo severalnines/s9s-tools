@@ -307,7 +307,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
-    check_node_ids
+    check_container_ids --galera-nodes
 
     #
     #

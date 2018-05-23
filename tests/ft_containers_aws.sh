@@ -429,7 +429,7 @@ function createCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    check_node_ids
+    check_container_ids --galera-nodes
 
     #
     # Adding a proxysql node.

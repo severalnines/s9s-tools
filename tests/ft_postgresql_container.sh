@@ -210,7 +210,9 @@ function registerServer()
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
-
+#
+# Creates a postgresql cluster on two newly created containers.
+#
 function createCluster()
 {
     local config_dir="$HOME/.s9s"
@@ -237,13 +239,13 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
-    #check_node_ids
+    check_container_ids --postgresql-nodes
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
-    sleep 60
+    sleep 10
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
