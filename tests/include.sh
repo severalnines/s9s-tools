@@ -578,7 +578,7 @@ function check_container_ids()
     #
     node_ips=$(s9s node --list --long | grep "$filter" | awk '{ print $5 }')
     for node_ip in $node_ips; do
-        print_title "Checking Node $node_ipe"
+        print_title "Checking Node $node_ip"
 
         container_id=$(node_container_id "$node_ip")
         echo "      node_ip: $node_ip"
