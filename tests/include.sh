@@ -1002,11 +1002,18 @@ function grant_user()
 
 function print_title()
 {
-    echo ""
-    echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
-    echo -e "\033[1m\
+    if [ -t 1 ]; then
+        echo ""
+        echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
+        echo -e "\033[1m\
 -------------------------------------------------------------------------------\
 -\033[0;39m"
+    else
+        echo "</pre>"
+        echo ""
+        echo "<h2>$*</h4>"
+        echo "<pre>"
+    fi
 }
 
 
