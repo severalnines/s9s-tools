@@ -169,7 +169,7 @@ function testCreateCluster()
         --create \
         --cluster-type=mysqlreplication \
         --nodes="$nodes" \
-        --vendor=percona \
+        --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
