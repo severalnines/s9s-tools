@@ -1011,7 +1011,7 @@ function print_title()
     else
         echo "</pre>"
         echo ""
-        echo "<h2>$*</h4>"
+        echo "<h5>$*</h5>"
         echo "<pre>"
     fi
 }
