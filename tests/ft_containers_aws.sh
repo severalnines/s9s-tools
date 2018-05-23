@@ -429,6 +429,8 @@ function createCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
+    check_node_ids
+
     #
     # Adding a proxysql node.
     #

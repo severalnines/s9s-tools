@@ -735,8 +735,8 @@ function createCluster()
 {
     local node001="ft_containers_lxc_11_$$"
     local node002="ft_containers_lxc_12_$$"
-    local proxysql_node_ip
-    local proxysql_container_id
+    local node_ip
+    local container_id
 
     #
     # Creating a Cluster.
@@ -772,6 +772,8 @@ function createCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
+    check_node_ids
+
     #
     # Adding a proxysql node.
     #
@@ -791,24 +793,24 @@ function createCluster()
     #
     print_title "Checking the ProxySql Node"
 
-    proxysql_node_ip=$(proxysql_node_name)
-    proxysql_container_id=$(node_container_id "$proxysql_node_ip")
+    node_ip=$(proxysql_node_name)
+    container_id=$(node_container_id "$node_ip")
 
-    echo "       proxysql_node_ip: $proxysql_node_ip"
-    echo "  proxysql_container_id: $proxysql_container_id"
-    if [ -z "$proxysql_node_ip" ]; then
+    echo "       node_ip: $node_ip"
+    echo "  container_id: $container_id"
+    if [ -z "$node_ip" ]; then
         failure "The ProxySql node name was not found."
     fi
 
-    if [ -z "$proxysql_container_id" ]; then
+    if [ -z "$container_id" ]; then
         failure "The ProxySql container ID was not found."
     fi
 
-    if [ "$proxysql_container_id" == "-" ]; then
+    if [ "$container_id" == "-" ]; then
         failure "The ProxySql container ID is '-'."
     fi
 
-    if ! is_server_running_ssh "$proxysql_node_ip" "$USER"; then
+    if ! is_server_running_ssh "$node_ip" "$USER"; then
         failure "Could not SSH into the ProxySql node."
     fi
 

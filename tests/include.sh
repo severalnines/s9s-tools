@@ -536,6 +536,35 @@ function node_container_id()
 }
 
 #
+#
+#
+function check_node_ids()
+{
+    local node_ip
+    local container_id
+
+    #
+    # Checking the container ids.
+    #
+    for node_ip in $(s9s node --list --long | grep '^g' | awk '{ print $5 }')
+    do
+        print_title "Checking Node $node_ipe"
+
+        container_id=$(node_container_id "$node_ip")
+        echo "      node_ip: $node_ip"
+        echo " container_id: $container_id"
+            
+        if [ -z "$container_id" ]; then
+            failure "The container ID was not found."
+        fi
+
+        if [ "$container_id" == "-" ]; then
+            failure "The container ID is '-'."
+        fi
+    done
+}
+
+#
 # This function waits until the host goes into CmonHostShutDown state and then
 # waits if it remains in that state for a while. A timeout is implemented and 
 # the return value shows if the node is indeed in the CmonHostShutDown state.

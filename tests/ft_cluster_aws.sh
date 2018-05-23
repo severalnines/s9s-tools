@@ -285,6 +285,8 @@ function createCluster()
     local config_dir="$HOME/.s9s"
     local container_name1="${MYBASENAME}_11_$$"
     local container_name2="${MYBASENAME}_12_$$"
+    local node_ip
+    local container_id
 
     #
     # Creating a Cluster.
@@ -305,6 +307,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    check_node_ids
 
     #
     #

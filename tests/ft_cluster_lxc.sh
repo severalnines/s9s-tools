@@ -287,8 +287,6 @@ function createCluster()
     local config_dir="$HOME/.s9s"
     local container_name1="${MYBASENAME}_11_$$"
     local container_name2="${MYBASENAME}_12_$$"
-    local container_id
-    local hostname
 
     #
     # Creating a Cluster.
@@ -309,26 +307,7 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
-
-    #
-    # Checking the container ids.
-    #
-    for hostname in $(s9s node --list --long | grep '^g' | awk '{ print $5 }')
-    do
-        print_title "Checking Node $hostname"
-
-        container_id=$(node_container_id "$hostname")
-        echo "     hostname: $hostname"
-        echo " container_id: $container_id"
-            
-        if [ -z "$container_id" ]; then
-            failure "The container ID was not found."
-        fi
-
-        if [ "$container_id" == "-" ]; then
-            failure "The ProxySql container ID is '-'."
-        fi
-    done
+    check_node_ids
 
     #
     #
