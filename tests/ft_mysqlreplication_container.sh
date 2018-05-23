@@ -240,7 +240,7 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
-    #check_container_ids --postgresql-nodes
+    check_container_ids --replication-nodes
 
     #
     #

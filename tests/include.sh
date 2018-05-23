@@ -557,6 +557,11 @@ function check_container_ids()
                 filter="^p"
                 ;;
 
+            --replication-nodes)
+                shift
+                filter="^s"
+                ;;
+
             *)
                 break
                 ;;
