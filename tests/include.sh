@@ -122,6 +122,22 @@ function mys9s()
     fi
 }
 
+function print_title()
+{
+    if [ -t 1 ]; then
+        echo ""
+        echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
+        echo -e "\033[1m\
+-------------------------------------------------------------------------------\
+-\033[0;39m"
+    else
+        echo "</pre>"
+        echo ""
+        echo "<h3>$*</h3>"
+        echo "<pre>"
+    fi
+}
+
 #
 # This function should be called before the functional tests are executed.
 # Currently this only prints a message for the user, but this might change.
@@ -998,25 +1014,6 @@ function grant_user()
 
     #mys9s user --list-keys
 }
-
-
-function print_title()
-{
-    if [ -t 1 ]; then
-        echo ""
-        echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
-        echo -e "\033[1m\
--------------------------------------------------------------------------------\
--\033[0;39m"
-    else
-        echo "</pre>"
-        echo ""
-        echo "<h5>$*</h5>"
-        echo "<pre>"
-    fi
-}
-
-
 
 #
 # This will destroy the containers we created.

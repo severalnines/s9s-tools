@@ -35,12 +35,13 @@ Usage:
  --log            Print the logs while waiting for the job to be ended.
  --server=SERVER  The name of the server that will hold the containers.
  --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
+ --install        Create a cluster, some backups and leave them when exiting.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --provider-version=STRING The SQL server provider version.
 
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
+
 EOF
     exit 1
 }
@@ -570,6 +571,10 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateAccount
+    runFunctionalTest testCreateDatabase
+    runFunctionalTest testCreateBackup01
+    runFunctionalTest testCreateBackupVerify
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
