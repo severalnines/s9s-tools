@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2016-2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -93,9 +93,10 @@ S9sRsaKeyPrivate::loadFromFile(
 
 /**
  * Generates a new 2048 bit strong RSA keypair.
- * Please note: it must be enough cryptographic enthropy
- * on the system (VM's might need tools like 'haveged')
- * otherwise this method may hangs for a longer period.
+ *
+ * Please note: it must be enough cryptographic enthropy on the system (VM's
+ * might need tools like 'haveged') otherwise this method may hang for a longer
+ * period.
  */
 bool
 S9sRsaKeyPrivate::generateKeyPair()
@@ -103,7 +104,7 @@ S9sRsaKeyPrivate::generateKeyPair()
     release();
 
     int      keySize = 2048;
-    BIGNUM   *bigNum = BN_new ();
+    BIGNUM   *bigNum = BN_new();
 
     m_rsa = RSA_new ();
 
@@ -115,12 +116,13 @@ S9sRsaKeyPrivate::generateKeyPair()
 
         release();
         BN_free(bigNum);
+
         // key generation have failed
         return false;
     }   
 
     // this can be freed now
-    BN_free (bigNum);
+    BN_free(bigNum);
 
     return true;
 }

@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2017  Severalnines AB
+ * Copyright (C) 2016-2018 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -36,6 +36,7 @@ class S9sFile
         S9sFile &operator=(const S9sFile &rhs);
 
         S9sString path() const;
+        bool chmod(int mode);
 
         static bool fileExists(const S9sString &path);
         bool exists() const;
@@ -65,6 +66,7 @@ class S9sFile
                 bool               recursive   = false,
                 bool               includeDirs = false);
 
+        
     private:
         ssize_t safeRead(
                 int     fileDescriptor, 

@@ -136,6 +136,13 @@ S9sFile::path() const
 }
 
 bool
+S9sFile::chmod(
+        int mode)
+{
+    return ::chmod(STR(path()), (mode_t) mode);
+}
+
+bool
 S9sFile::fileExists(
         const S9sString &path)
 {
