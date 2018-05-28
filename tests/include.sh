@@ -977,7 +977,7 @@ function grant_user()
     local first
     local last
 
-    print_title "Creating first user"
+    print_title "Creating the First User"
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 

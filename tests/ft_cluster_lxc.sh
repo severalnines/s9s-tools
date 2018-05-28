@@ -129,9 +129,9 @@ function createUser()
     local myself
 
     #
+    # Adding an extra user that we will use for testing.
     #
-    #
-    print_title "Creating a User"
+    print_title "Creating a New User"
 
     mys9s user \
         --create \
@@ -149,7 +149,7 @@ function createUser()
     
     check_exit_code_no_job $?
 
-    #ls -lha "$config_dir"
+    ls -lha $HOME/.s9s/sisko*
 
     if [ ! -f "$config_dir/sisko.key" ]; then
         failure "Secret key file 'sisko.key' was not found."
