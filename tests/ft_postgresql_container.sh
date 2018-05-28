@@ -156,10 +156,6 @@ function createUser()
         exit 0
     fi
 
-    # Need to change the mode, otherwise ssh would not use it.
-    echo "FIXME: Changing mode for '$config_dir/sisko.key'."
-    chmod 600 "$config_dir/sisko.key"
-
     if [ ! -f "$config_dir/sisko.pub" ]; then
         failure "Public key file 'sisko.pub' was not found."
         exit 0
