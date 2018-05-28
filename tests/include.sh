@@ -146,12 +146,12 @@ function startTests ()
 {
     TEST_SUITE_NAME=$(basename $0 .sh)
 
-    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
+#    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
         echo ""
         echo "***********************"
         echo "* $TEST_SUITE_NAME"
         echo "***********************"
-    fi
+#    fi
 }
 
 #
