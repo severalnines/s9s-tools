@@ -215,7 +215,7 @@ function testGraphs()
 
     print_title "Waiting for a while"
     echo "So that we have some data collected..."
-    sleep 60
+    sleep 300
 
     print_title "Testing Graphs"
     graphs+="cpuuser diskfree diskreadspeed diskreadwritespeed diskwritespeed "
@@ -229,6 +229,12 @@ function testGraphs()
                --stat \
                --cluster-id=1 \
                --graph=$graph    
+        
+        mys9s node \
+               --stat \
+               --cluster-id=1 \
+               --density \
+               --graph=$graph 
 
         check_exit_code_no_job $?
         sleep 10
