@@ -220,7 +220,7 @@ function testGraphs()
     graphs+="sqlcommands sqlcommits sqlconnections sqlopentables sqlqueries "
     graphs+="sqlreplicationlag sqlslowqueries swapfree"
 
-    for graph in graphs; do
+    for graph in $graphs; do
         mys9s node \
                --stat \
                --cluster-id=1 \
