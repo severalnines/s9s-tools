@@ -395,7 +395,10 @@ S9sOptions::loadConfigFiles()
 
         if (!userConfig.exists())
         {
-            PRINT_ERROR("The file '%s' does not exists.", STR(configFile()));
+            PRINT_ERROR(
+                    "The file '%s' does not exists.", 
+                    STR(userConfig.path()));
+
             return false;
         }
 

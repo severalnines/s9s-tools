@@ -181,6 +181,9 @@ function testUser()
     fi
 }
 
+#
+# Using the --stat option on a user.
+#
 function testStat()
 {
     local userName="$USER"
