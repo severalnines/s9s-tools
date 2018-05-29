@@ -229,6 +229,12 @@ function testGraphs()
                --stat \
                --cluster-id=1 \
                --graph=$graph    
+        
+        mys9s node \
+               --stat \
+               --cluster-id=1 \
+               --density \
+               --graph=$graph 
 
         check_exit_code_no_job $?
         sleep 10
