@@ -213,6 +213,9 @@ function testGraphs()
     local graphs
     local graph
 
+    print_title "Waiting for a while"
+    sleep 60
+
     print_title "Testing Graphs"
     graphs+="cpuuser diskfree diskreadspeed diskreadwritespeed diskwritespeed "
     graphs+="diskutilization memfree memutil neterrors netreceivedspeed "
@@ -227,6 +230,7 @@ function testGraphs()
                --graph=$graph    
 
         check_exit_code_no_job $?
+        sleep 10
     done
 }
 
