@@ -33,10 +33,10 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "ERROR $*" >&2
+    echo -e "ERROR $(hostname) $*" >&2
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+        echo -e "$datestring ERROR $(hostname) $MYNAME $*" >>"$LOGFILE"
     fi
 }
 
@@ -50,11 +50,11 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" ]; then
-        echo -e "DEBUG $*" >&2
+        echo -e "DEBUG $(hostname) $*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+        echo -e "$datestring DEBUG $(hostname) $MYNAME $*" >>"$LOGFILE"
     fi
 }
 
@@ -194,6 +194,24 @@ if [ -z "$SERVER" ]; then
     fi
 fi
 
+function archive_file_name()
+{
+    local container="$1"
+    local tar_file_name="${container}-container-archive.tar"
+
+    if [ "$GZIP_OPTION" ]; then
+        tar_file_name+=".gz"
+    fi
+
+    if [ "$OUTPUT_DIR" ]; then
+        tar_file_name="$OUTPUT_DIR/$tar_file_name"
+    else
+        tar_file_name="/var/lib/lxc/$tar_file_name"
+    fi
+
+    echo "$tar_file_name"
+}
+
 function get_container_names()
 {
     local pattern="$1"
@@ -241,15 +259,8 @@ function archive_one_container()
     cd /var/lib/lxc
 
     printVerbose "Archiving container '$container'."
-    tar_file_name="${container}-container-archive.tar"
+    tar_file_name="$(archive_file_name "$container")"
 
-    if [ "$GZIP_OPTION" ]; then
-        tar_file_name+=".gz"
-    fi
-
-    if [ "$OUTPUT_DIR" ]; then
-        tar_file_name="$OUTPUT_DIR/$tar_file_name"
-    fi
 
     old_tar_file_name="${tar_file_name}.BAK"
 
@@ -275,6 +286,7 @@ function archive_one_container()
     fi
 
     if [ "$STORAGE_URL" ]; then
+        # If we have a storage URL we upload the archive file there.
         if [ "$OWNER" ]; then
             sudo -S -u $OWNER -i \
                 /bin/bash -l -c \
@@ -368,5 +380,14 @@ else
             $STOP_OPTION $OUTPUT_DIR_OPTION \
             $OWNER_OPTION $STORAGE_OPTION \
             "$EXTRA_OPTIONS"
+
+    if [ "$SERVER" ]; then
+        for container in $EXTRA_OPTIONS; do
+            tar_file_name="$(archive_file_name "$container")"
+            scp \
+                "$SERVER:$tar_file_name" \
+                .
+        done
+    fi
 fi
 
