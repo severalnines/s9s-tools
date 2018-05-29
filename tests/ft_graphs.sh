@@ -214,6 +214,7 @@ function testGraphs()
     local graph
 
     print_title "Waiting for a while"
+    echo "So that we have some data collected..."
     sleep 60
 
     print_title "Testing Graphs"
