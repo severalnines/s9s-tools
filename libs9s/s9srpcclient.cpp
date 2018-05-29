@@ -3415,9 +3415,9 @@ S9sRpcClient::addProxySql(
     //printf("WARNING: admin/admin\n");
     //printf("WARNING: proxy-monitor/proxy-monitor\n");
 
-    jobData["admin_user"]       = "admin2";
-    jobData["admin_password"]   = "admin",
-    jobData["monitor_user"]     = "proxy-monitor";
+    jobData["admin_user"]       = "proxysql-admin";
+    jobData["admin_password"]   = "proxysql-admin";
+    jobData["monitor_user"]     = "proxysql-monitor";
     jobData["monitor_password"] = "proxysql-monitor";
     jobData["import_accounts"]  = true;
 
