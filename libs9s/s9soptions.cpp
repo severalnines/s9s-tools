@@ -5185,7 +5185,6 @@ S9sOptions::checkOptionsJob()
     /*
      * Checking if multiple operations are requested.
      */
-
     if (isListRequested())
         countOptions++;
     

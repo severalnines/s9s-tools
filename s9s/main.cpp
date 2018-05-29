@@ -83,66 +83,17 @@ main(int argc, char **argv)
 
         goto finalize;
     }
-    
-    options->createConfigFiles();
-    options->loadConfigFiles();
+   
+    if (getenv("S9S_IGNORE_CONFIG") == NULL)
+    {
+        options->createConfigFiles();
+        options->loadConfigFiles();
+    }
     
     if (options->useSyntaxHighlight())
         atexit(enable_cursor);
 
     PRINT_VERBOSE("Command line options processed.");
-    #if 0
-    if (options->isVerbose())
-    {
-        printf("%sXTERM_COLOR_RED%s\n", 
-                XTERM_COLOR_RED, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_GREEN%s\n", 
-                XTERM_COLOR_GREEN, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_ORANGE%s\n", 
-                XTERM_COLOR_ORANGE, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_BLUE%s\n",
-                XTERM_COLOR_BLUE, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_PURPLE%s\n",
-                XTERM_COLOR_PURPLE, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_CYAN%s\n",
-                XTERM_COLOR_CYAN, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_GRAY%s\n",
-                XTERM_COLOR_LIGHT_GRAY, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_DARK_GRAY%s\n",
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_RED%s\n",
-                XTERM_COLOR_LIGHT_RED, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_GREEN%s\n",
-                XTERM_COLOR_LIGHT_GREEN, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_YELLOW%s\n",
-                XTERM_COLOR_YELLOW, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_BLUE%s\n",
-                XTERM_COLOR_LIGHT_BLUE, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_PURPLE%s\n",
-                XTERM_COLOR_LIGHT_PURPLE, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_LIGHT_CYAN%s\n",
-                XTERM_COLOR_LIGHT_CYAN, TERM_NORMAL);
-
-        printf("%sXTERM_COLOR_WHITE%s\n",
-                XTERM_COLOR_WHITE, TERM_NORMAL);
-
-        printf("*** terminal width  : %d\n", options->terminalWidth());
-        printf("*** terminal height : %d\n", options->terminalHeight());
-    }
-    #endif
 
     finished = options->executeInfoRequest();
     if (finished)
