@@ -238,10 +238,7 @@ function deleteContainer()
     local containers
     local container
 
-    containers="ft_containers_lxc_00_$$"
-    containers+=" ft_containers_lxc_01_$$"
-    containers+=" ft_containers_lxc_11_$$"
-    containers+=" ft_containers_lxc_12_$$"
+    containers="ft_containers_lxc_11_$$"
 
     print_title "Deleting Containers"
 
