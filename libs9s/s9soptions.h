@@ -245,6 +245,7 @@ class S9sOptions
 
         bool isNodeOperation() const;
         bool isLogOperation() const;
+        bool isEventOperation() const;
         bool isScriptOperation() const;
         bool isServerOperation() const;
         bool isTreeOperation() const;

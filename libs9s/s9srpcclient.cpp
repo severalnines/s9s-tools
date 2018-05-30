@@ -5200,6 +5200,13 @@ S9sRpcClient::grantPrivileges(
     return retval;
 }
 
+bool
+S9sRpcClient::subscribeEvents()
+{
+    ::printf("TBD\n");
+    return true;
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

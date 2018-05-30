@@ -167,6 +167,14 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isEventOperation())
+    {
+        if (options->isListRequested())
+        {
+            client.subscribeEvents();
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isNodeOperation())
     {
         if (options->isStatRequested() && !options->graph().empty())

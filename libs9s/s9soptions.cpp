@@ -2175,10 +2175,22 @@ S9sOptions::isNodeOperation() const
     return m_operationMode == Node;
 }
 
+/**
+ * \returns true if the main operation is "log".
+ */
 bool
 S9sOptions::isLogOperation() const
 {
     return m_operationMode == Log;
+}
+
+/**
+ * \returns true if the main operation is "event".
+ */
+bool
+S9sOptions::isEventOperation() const
+{
+    return m_operationMode == Event;
 }
 
 /**

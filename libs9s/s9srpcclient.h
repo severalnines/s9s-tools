@@ -165,6 +165,8 @@ class S9sRpcClient
                 const S9sAccount &account,
                 const S9sString  &privileges);
 
+        bool subscribeEvents();
+
         bool deleteAccount();
         bool createDatabase();
 
