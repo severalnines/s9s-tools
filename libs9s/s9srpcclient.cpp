@@ -5201,10 +5201,23 @@ S9sRpcClient::grantPrivileges(
 }
 
 bool
-S9sRpcClient::subscribeEvents()
+S9sRpcClient::subscribeEvents(
+    S9sJSonHandler  callbackFunction,
+    void           *userData)
 {
-    ::printf("TBD\n");
-    return true;
+    m_priv->m_callbackFunction = callbackFunction;
+    m_priv->m_callbackUserData = userData;
+
+    S9sString      uri     = "/v2/subscribe_events";
+    S9sVariantMap  request = composeRequest();
+
+    // FIXME: add filters or any other arguments
+    request["operation"]  = "subscribe";
+
+    // NOTE: this wont return (unless error happens or callback is NULL) as 
+    // the JSon stream will be stopped only if the client (so S9S CLI)
+    // closes the connection.
+    return executeRequest(uri, request);
 }
 
 /**
@@ -6084,6 +6097,7 @@ S9sRpcClient::doExecuteRequest(
     S9sString    dataToSend; 
     size_t       dataSize;
     size_t       payloadSize = 0;
+    bool         isJSonStream = false;
 
     S9S_DEBUG("------------------------");
     m_priv->m_jsonReply.clear();
@@ -6217,8 +6231,7 @@ S9sRpcClient::doExecuteRequest(
 
         if (readLength > 0)
             m_priv->m_dataSize += readLength;
-
-        if (readLength < 0)
+        else if (readLength < 0)
         {
             m_priv->m_errorString.sprintf(
                     "Error while reading from controller (%s:%d TLS: %s): %m",
@@ -6230,10 +6243,56 @@ S9sRpcClient::doExecuteRequest(
             return false;
         }
 
-        if (readLength == 0)
-            break;
+        /*
+         * JSon stream records always starts by <RS> (\036) and ending by \n
+         */
+        if (m_priv->m_buffer[0] == '\036')
+            isJSonStream = true;
 
-        if (readLength < 0)
+        if (isJSonStream &&
+            readLength > 0 &&
+            m_priv->m_buffer[m_priv->m_dataSize-1] == '\n')
+        {
+            // found a record, lets parse and notify back using the callback
+            S9sVariantMap jsonRecord;
+
+            m_priv->m_buffer[m_priv->m_dataSize-1] = '\0';
+            m_priv->m_jsonReply = m_priv->m_buffer+1;
+
+            if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
+            {
+                PRINT_ERROR("Error parsing JSON reply.");
+                m_priv->m_errorString.sprintf("Error parsing JSON reply.");
+                options->setExitStatus(S9sOptions::ConnectionError);
+                setError(m_priv->m_errorString);
+
+                m_priv->close();
+                return false;
+            }
+            else if (m_priv->m_callbackFunction == 0)
+            {
+                m_priv->m_errorString.sprintf(
+                        "Got JSon stream when expecting JSon object:\n%s.",
+                        STR(m_priv->m_jsonReply));
+                PRINT_ERROR("%s", STR(m_priv->m_errorString));
+
+                options->setExitStatus(S9sOptions::ConnectionError);
+                setError(m_priv->m_errorString);
+
+                return false;
+            }
+            else
+            {
+                // notify back using the callback
+                (*m_priv->m_callbackFunction)(jsonRecord, m_priv->m_callbackUserData);
+            }
+
+            // and prepare for next JSon record in the stream
+            m_priv->clearBuffer();
+            continue;
+        }
+
+        if (readLength == 0)
             break;
     };
 
@@ -6483,3 +6542,4 @@ S9sRpcClient::timeStampString()
 
     return dt.toString();
 }
+

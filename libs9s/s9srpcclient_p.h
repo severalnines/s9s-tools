@@ -9,6 +9,7 @@
 #include "S9sString"
 #include "S9sRpcReply"
 #include "S9sVariantMap"
+#include "s9srpcclient.h"
 
 class S9sRpcClientPrivate
 {
@@ -49,6 +50,9 @@ class S9sRpcClientPrivate
         SSL            *m_ssl;
         S9sVariantMap   m_cookies;
         S9sString       m_serverHeader;
+
+        S9sJSonHandler  m_callbackFunction;
+        void           *m_callbackUserData;
 
         friend class S9sRpcClient;
 };

@@ -25,6 +25,8 @@
 class S9sRpcClientPrivate;
 class S9sUser;
 
+typedef void (*S9sJSonHandler)(const S9sVariantMap &jsonMessage, void *userData);
+
 class S9sRpcClient
 {
     public:
@@ -165,7 +167,9 @@ class S9sRpcClient
                 const S9sAccount &account,
                 const S9sString  &privileges);
 
-        bool subscribeEvents();
+        bool subscribeEvents(
+                S9sJSonHandler  callbackFunction,
+                void           *userData);
 
         bool deleteAccount();
         bool createDatabase();

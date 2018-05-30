@@ -41,6 +41,19 @@
 #include "s9sdebug.h"
 
 /**
+ * This is an example callback method to process the events live
+ * from the JSon stream coming from the controller.
+ */
+void
+s9sEventHandler(const S9sVariantMap &jsonMessage, void *userData)
+{
+    S9sBusinessLogic *businessLogic = (S9sBusinessLogic*) userData;
+    (void) businessLogic; // unused for now
+
+    printf("* Incoming event (JSon):\n%s\n", STR(jsonMessage.toString()));
+}
+
+/**
  * This method will execute whatever is requested by the user in the command
  * line.
  */
@@ -171,7 +184,7 @@ S9sBusinessLogic::execute()
     {
         if (options->isListRequested())
         {
-            client.subscribeEvents();
+            client.subscribeEvents(s9sEventHandler, this);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

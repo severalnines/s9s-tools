@@ -28,7 +28,9 @@ S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_bufferSize(0),
     m_dataSize(0),
     m_sslContext(0),
-    m_ssl(0)
+    m_ssl(0),
+    m_callbackFunction(0),
+    m_callbackUserData(0)
 {
 }
 
