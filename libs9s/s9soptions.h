@@ -62,6 +62,7 @@ class S9sOptions
             Server,
             Tree,
             User,
+            Event,
             //Alarm
         };
 
@@ -400,6 +401,7 @@ class S9sOptions
         void printHelpAccount();
         void printHelpJob();
         void printHelpLog();
+        void printHelpEvent();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -451,6 +453,9 @@ class S9sOptions
         
         bool readOptionsLog(int argc, char *argv[]);
         bool checkOptionsLog();
+        
+        bool readOptionsEvent(int argc, char *argv[]);
+        bool checkOptionsEvent();
 
         bool setMode(const S9sString &modeName);
 
