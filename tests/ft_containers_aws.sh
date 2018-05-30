@@ -300,6 +300,8 @@ function createContainer()
         echo "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
 
+    mys9s container --list --print-json
+
     #
     # We will manipulate this container in other tests.
     #
@@ -453,6 +455,8 @@ function deleteContainer()
 {
     local containers
     local container
+
+    mys9s container --list --print-json
 
     containers="$LAST_CONTAINER_NAME"
     containers+=" ft_containers_aws_01_$$"
