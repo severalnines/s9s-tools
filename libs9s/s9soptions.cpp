@@ -2026,9 +2026,12 @@ S9sOptions::appendVolumes(
             return false;
         }
 
+        if (size.toInt() <= 0)
+            return false;
+
         volume["name"] = name;
         volume["type"] = type;
-        volume["size"] = size;
+        volume["size"] = size.toInt();
 
         volumesToSet << volume;
     }
@@ -7725,7 +7728,11 @@ S9sOptions::readOptionsCluster(
            
             case OptionVolumes:
                 // --volumes=STRING
-                appendVolumes(optarg);
+                if (!appendVolumes(optarg))
+                {
+                    PRINT_ERROR("Invalid argument for --volumes.");
+                    return false;
+                }
                 break;
 
             case OptionVpcId:
@@ -8043,7 +8050,11 @@ S9sOptions::readOptionsContainer(
             
             case OptionVolumes:
                 // --volumes=STRING
-                appendVolumes(optarg);
+                if (!appendVolumes(optarg))
+                {
+                    PRINT_ERROR("Invalid argument for --volumes.");
+                    return false;
+                }
                 break;
             
             case OptionVpcId:

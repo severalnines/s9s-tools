@@ -216,11 +216,51 @@ r- architecture    -    The processor architecture.
 .fi
 
 .TP
-.B --servers= LIST
+.BI \-\^\-image= NAME
+The name of the image from which the new container will be created. This option
+is not mandatory, when a new container is created the controller can choose an
+image if it is needed. 
+
+To find out what images are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-images\fP command.
+
+.TP
+.BI \-\^\-os\-key\-file= PATH
+The path of the SSH key to install on a new container to allow the user to log
+in. This command line option can be passed when a new container is created, the
+argument of the option should be the path of the \fBprivate\fP key stored on the
+controller. Although the path of the private key file is passed only the public
+key will be uploaded to the new container.
+
+.TP
+.BI \-\^\-os\-password= PASSWORD
+This command line option can be passed when creating new containers to set the 
+password for the user that will be created on the container. Please note that
+some virtualization backend might not support passwords, only keys.
+
+.TP
+.BI \-\^\-os\-user= USERNAME
+This option may be used when creating new containers to pass the name of the
+user that will be created on the new container. Please note that this optin is
+not mandatory, because the controller will create an account whose name is the
+same as the name of the cmon user creating the container. The public key of the
+cmon user will also be registered (if the user has an associated public key) so
+the user can actually log in.
+
+.TP
+.BI \-\^\-servers= LIST
 A list of servers to work with. 
 
 .TP
-.B --template= NAME 
+.BI \-\^\-subnet\-id= ID
+This option can be used when new containers are created to set the subnet ID
+for the container.
+
+To find out what subnets are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-subnets\fP command.
+
+.TP
+.BI \-\^\-template= NAME 
 The name of the container template. Defining a template is an easy way to set a
 number of complex propeties without actually enumerating them in the command
 line one by one. 
