@@ -281,6 +281,29 @@ Please note that the \fB\-\-template\fP command line option is not mandatory, if
 emitted suitable default values will be chosen, but if the template is provided
 and the template is not found the creation of the new container will fail.
 
+.TP
+.BI \-\^\-volumes= LIST
+When a new container is created this command line option can be used to pass a
+list of volumes that will be created for the container. 
+
+The list can contain one or more volumes separated by the ';' character. Every
+volume consists three properties separated by the ':' character, a volume name,
+the volume size in gigabytes and a volume type that is either "hdd" or "ssd".
+The string \fB"vol1:5:hdd;vol2:10:hdd"\fP for example defines two hard-disk
+columes, one 5GByte and one 10GByte.
+
+For convenience the volume name and the type can be omitted, so that
+automatically generated volume names are used.
+
+.TP
+.BI \-\^\-vpc\-id= ID
+This option can be used when new containers are created to set the vpc ID
+for the container.
+
+To find out what VPCs are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-subnets --long\fP command.
+
+
 .\"
 .\" The description of the node list.
 .\"

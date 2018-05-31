@@ -4054,6 +4054,7 @@ S9sOptions::printHelpContainer()
 "  --servers=LIST             A list of servers to work with.\n"
 "  --subnet-id=ID             The ID of the subnet.\n"
 "  --template=NAME            The name of the container template.\n"
+"  --volumes=LIST             List the volumes for the new container.\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "\n");
 }
