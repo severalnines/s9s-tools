@@ -583,6 +583,19 @@ S9sContainer::rootFsPath() const
     return property("root_fs_path").toString();
 }
 
+S9sVariantList 
+S9sContainer::volumes() const
+{
+    return property("volumes").toVariantList();
+}
+
+void
+S9sContainer::setVolumes(
+        const S9sVariantList &volumes)
+{
+    setProperty("volumes", volumes);
+}
+
 uint
 S9sContainer::nVolumes() const
 {

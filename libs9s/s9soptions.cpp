@@ -201,6 +201,7 @@ enum S9sOptionType
     OptionTemplate,
     OptionSubnetId,
     OptionVpcId,
+    OptionVolumes,
     OptionCloud,
     OptionImage,
     OptionIndividualFiles,
@@ -1966,6 +1967,75 @@ S9sString
 S9sOptions::imageName() const
 {
     return getString("image");
+}
+
+/**
+ *
+ * \code{.js}
+ * "volumes": [ 
+ * {
+ *     "name": "volume-1",
+ *     "size": 10,
+ *     "type": "hdd"
+ * } ],
+ * \endcode
+ */
+S9sVariantList
+S9sOptions::volumes() const
+{
+    S9sVariantList retval;
+
+    if (m_options.contains("volumes"))
+        retval =  m_options.at("volumes").toVariantList();
+
+    return retval;
+}
+
+bool
+S9sOptions::appendVolumes(
+        const S9sString &stringRep)
+{
+    S9sVariantList volumeStrings = stringRep.split(";");
+    S9sVariantList volumesToSet  = volumes();
+
+    for (uint idx = 0u; idx < volumeStrings.size(); ++idx)
+    {
+        S9sString volumeString = volumeStrings[idx].toString();
+        S9sVariantList parts = volumeString.split(":");
+        S9sVariantMap  volume;
+        S9sString      name;
+        S9sString      size;
+        S9sString      type;
+
+        if (parts.size() == 1)
+        {
+            name.sprintf("volume-%u", volumesToSet.size());
+            type = "hdd";
+            size = parts[0].toString();
+        } else if (parts.size() == 2)
+        {
+            name.sprintf("volume-%u", volumesToSet.size());
+            type = parts[1].toString();
+            size = parts[0].toString();
+        } else if (parts.size() == 3)
+        {
+            name = parts[0].toString();
+            type = parts[2].toString();
+            size = parts[1].toString();
+        } else {
+            return false;
+        }
+
+        volume["name"] = name;
+        volume["type"] = type;
+        volume["size"] = size;
+
+        volumesToSet << volume;
+    }
+
+    m_options["volumes"] = volumesToSet;
+
+    return true;
 }
 
 /**
@@ -7268,6 +7338,7 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
+        { "volumes",          required_argument, 0, OptionVolumes         },
         { "vpc-id",           required_argument, 0, OptionVpcId           },
         { 0, 0, 0, 0 }
     };
@@ -7651,7 +7722,12 @@ S9sOptions::readOptionsCluster(
                 // --template=NAME
                 m_options["template"] = optarg;
                 break;
-            
+           
+            case OptionVolumes:
+                // --volumes=STRING
+                appendVolumes(optarg);
+                break;
+
             case OptionVpcId:
                 // --vpc-id=ID
                 m_options["vpc_id"] = optarg;
@@ -7744,6 +7820,7 @@ S9sOptions::readOptionsContainer(
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
+        { "volumes",          required_argument, 0, OptionVolumes         },
         { "vpc-id",           required_argument, 0, OptionVpcId           },
         
         { 0, 0, 0, 0 }
@@ -7962,6 +8039,11 @@ S9sOptions::readOptionsContainer(
             case OptionTemplate:
                 // --template=NAME
                 m_options["template"] = optarg;
+                break;
+            
+            case OptionVolumes:
+                // --volumes=STRING
+                appendVolumes(optarg);
                 break;
             
             case OptionVpcId:

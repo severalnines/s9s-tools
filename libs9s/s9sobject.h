@@ -38,6 +38,7 @@ class S9sObject
         void setProperty(const S9sString &name, const bool value);
         void setProperty(const S9sString &name, const int value);
         void setProperty(const S9sString &name, const S9sVariantMap &value);
+        void setProperty(const S9sString &name, const S9sVariantList &value);
         void setProperties(const S9sVariantMap &properties);
 
         virtual const S9sVariantMap &toVariantMap() const;

@@ -4551,6 +4551,7 @@ S9sRpcClient::createContainerWithJob()
     S9sVariantList servers      = options->servers();
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
+    S9sVariantList volumes      = options->volumes();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData(true);
@@ -4575,6 +4576,9 @@ S9sRpcClient::createContainerWithJob()
 
     if (!subnetId.empty())
         container.setSubnetId(subnetId);
+            
+    if (!volumes.empty())
+        container.setVolumes(volumes);
 
     if (servers.size() > 1)
     {
@@ -5928,10 +5932,11 @@ S9sRpcClient::composeJobData(
     S9sString      imageName    = options->imageName();
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
+    S9sVariantList volumes      = options->volumes();
     S9sString      osUserName   = options->osUser(false);
     S9sString      osKeyFile    = options->osKeyFile();
     S9sString      osPassword   = options->osPassword();
-    
+
     S9sVariantMap  jobData;
     S9sVariantList containers;
 
@@ -5960,6 +5965,9 @@ S9sRpcClient::composeJobData(
             if (!vpcId.empty())
                 container.setSubnetVpcId(vpcId);
 
+            if (!volumes.empty())
+                container.setVolumes(volumes);
+
             containers << container.toVariantMap();
         }
     }
@@ -5987,6 +5995,9 @@ S9sRpcClient::composeJobData(
 
             if (!vpcId.empty())
                 container.setSubnetVpcId(vpcId);
+            
+            if (!volumes.empty())
+                container.setVolumes(volumes);
 
             containers << container.toVariantMap();
         }

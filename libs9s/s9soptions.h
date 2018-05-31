@@ -223,9 +223,11 @@ class S9sOptions
         S9sString subnetId() const;
         S9sString vpcId() const;
         S9sString imageName() const;
+        S9sVariantList volumes() const;
+        bool appendVolumes(const S9sString &stringRep);
 
         bool force() const;
-
+        
         S9sString subDirectory() const;
         S9sString backupDir() const;
         S9sString backupMethod() const;

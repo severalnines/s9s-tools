@@ -95,6 +95,9 @@ class S9sContainer : public S9sObject
         S9sString configFile() const;
         S9sString rootFsPath() const;
 
+        S9sVariantList volumes() const;
+        void setVolumes(const S9sVariantList &volumes);
+        
         uint nVolumes() const;
         int volumeGigaBytes(uint idx) const;
         S9sString volumeType(uint idx) const;
