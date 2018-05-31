@@ -256,6 +256,7 @@ function createContainer()
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        --volumes="vol1:5:hdd;vol2:10:hdd" \
         $LOG_OPTION \
         "$container_name"
     
