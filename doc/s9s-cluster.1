@@ -251,7 +251,27 @@ While waiting a progress bar will be shown unless the silent mode is set.
 .\"
 .\"
 .\"
-.SS Cluster Related Options
+.SS Other Options
+
+.TP \-\^\-account= NAME[:PASSWD][@HOST]
+An SQL account with optional password and hostname. This command line argument
+is used when a new account is created.
+
+.TP
+.BI \-\^\-cloud= PROVIDER
+This option can be used when new container(s) created. The name of the cloud
+provider where the new container will be created. 
+
+This command line option can also be used to filter the list of the containers
+when used together with one of the \fB\-\-list\fP or \fB\-\-stat\fP options.
+
+.TP
+.BI \-\^\-containers= LIST
+A list of containers to be created and used by the created job. This command
+line option can be used to create container (virtual machines) and then install
+clusters on them or just add them to an existing cluster as nodes. Please check 
+s9s-container(1) for further details.
+
 
 .TP
 .BI \-i " INTEGER" "\fR,\fP \-\^\-cluster-id=" INTEGER
@@ -266,15 +286,20 @@ name of the new cluster. (Usage of this option for selecting an existing cluster
 is not yet implemented.)
 
 .TP
+.BI \-\^\-image= NAME
+The name of the image from which the new container will be created. This option
+is not mandatory, when a new container is created the controller can choose an
+image if it is needed. 
+
+To find out what images are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-images\fP command.
+
+.TP
 .BI \-\^\-nodes= NODELIST
 The list of nodes or hosts enumerated in a special string using a semicolon as
 field separator (e.g. "192.168.1.1;192.168.1.2"). 
 The strings in the node list are urls that can have the following protocols:
 
-.\" 
-.\" Here is how we make a 7 character deep left indent from the .RS to the .RE
-.\" formatters. This is by the way the list of the supported protocols.
-.\" 
 .RS 7
 .TP
 .B mysql:// 
@@ -306,6 +331,81 @@ The protocol to install and handle mongo data servers.
 .RE
 
 .TP
+.BI \-\^\-os\-key\-file= PATH
+The path of the SSH key to install on a new container to allow the user to log
+in. This command line option can be passed when a new container is created, the
+argument of the option should be the path of the \fBprivate\fP key stored on the
+controller. Although the path of the private key file is passed only the public
+key will be uploaded to the new container.
+
+.TP
+.BI \-\^\-os\-password= PASSWORD
+This command line option can be passed when creating new containers to set the 
+password for the user that will be created on the container. Please note that
+some virtualization backend might not support passwords, only keys.
+
+.TP
+.BI \-\^\-os\-user= USERNAME
+This option may be used when creating new containers to pass the name of the
+user that will be created on the new container. Please note that this optin is
+not mandatory, because the controller will create an account whose name is the
+same as the name of the cmon user creating the container. The public key of the
+cmon user will also be registered (if the user has an associated public key) so
+the user can actually log in.
+
+.TP
+.BI \-\^\-subnet\-id= ID
+This option can be used when new containers are created to set the subnet ID
+for the container.
+
+To find out what subnets are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-subnets\fP command.
+
+.TP
+.BI \-\^\-template= NAME 
+The name of the container template. Defining a template is an easy way to set a
+number of complex propeties without actually enumerating them in the command
+line one by one. 
+
+The actual interpretation of the template name is up to the virtualization
+backend that is the protocol of the container server. The \fBlxc\fP backend for
+example considers the template to be an already created container, it simply
+creates the new container by copying the template container so the new container
+inherits everything.
+
+The template name can also be provided as a property name for the container, so
+the command \fBs9s container \-\-create 
+\-\-containers="node02?template=ubuntu;node03" \-\-log\fP for example will
+create two containers, one using a template, the other using the default
+settings.
+
+Please note that the \fB\-\-template\fP command line option is not mandatory, if
+emitted suitable default values will be chosen, but if the template is provided
+and the template is not found the creation of the new container will fail.
+
+.TP
+.BI \-\^\-volumes= LIST
+When a new container is created this command line option can be used to pass a
+list of volumes that will be created for the container. 
+
+The list can contain one or more volumes separated by the ';' character. Every
+volume consists three properties separated by the ':' character, a volume name,
+the volume size in gigabytes and a volume type that is either "hdd" or "ssd".
+The string \fB"vol1:5:hdd;vol2:10:hdd"\fP for example defines two hard-disk
+columes, one 5GByte and one 10GByte.
+
+For convenience the volume name and the type can be omitted, so that
+automatically generated volume names are used.
+
+.TP
+.BI \-\^\-vpc\-id= ID
+This option can be used when new containers are created to set the vpc ID
+for the container.
+
+To find out what VPCs are supported by the registered container severs please
+issue the \fBs9s server \-\^\-list\-subnets --long\fP command.
+
+.TP
 .BI \-\^\-vendor= VENDOR
 The name of the vendor to be installed.
 
@@ -324,13 +424,6 @@ on the remote hosts too.
 The name of the cluster type to be installed. Currently the following types are
 supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or 
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
-
-.TP
-.BI \-\^\-containers= LIST
-A list of containers to be created and used by the created job. This command
-line option can be used to create container (virtual machines) and then install
-clusters on them or just add them to an existing cluster as nodes. Please check 
-s9s-container(1) for further details.
 
 .TP
 .BI \-\^\-donor= ADDRESS

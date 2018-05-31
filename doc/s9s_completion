@@ -180,6 +180,11 @@ function _s9s()
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "
                 opts+="--output-dir= "
+                
+                # These are for when we also create containers.
+                opts+="--cloud= --containers= --image= "
+                opts+="--os-key-file= --os-password= --os-user= --servers= "
+                opts+="--subnet-id= --template= --volumes= --vpc-id= "
             fi 
         elif [[ ${COMP_WORDS[i]} == "job" ]]; then
             main_opt+="--help "
@@ -270,7 +275,7 @@ function _s9s()
             else
                 opts+="--cloud= --containers= --image= "
                 opts+="--os-key-file= --os-password= --os-user= --servers= "
-                opts+="--subnet-id= --template= --vpc-id= "
+                opts+="--subnet-id= --template= --volumes= --vpc-id= "
             fi
         elif [[ ${COMP_WORDS[i]} == "maintenance" ]]; then
             main_opt="--help "
