@@ -98,6 +98,8 @@ libs9s_public_h_headers =     \
 	s9sconfigfile_p.h         \
 	S9sContainer              \
 	s9scontainer.h            \
+	S9sEvent                  \
+	s9sevent.h                \
 	S9sDateTime               \
 	s9sdatetime.h             \
 	s9sdebug.h                \
@@ -184,6 +186,7 @@ libs9s_a_SOURCES =            \
 	s9surl.cpp                \
 	s9snode.cpp               \
 	s9scontainer.cpp          \
+	s9sevent.cpp              \
 	s9scluster.cpp            \
 	s9sbackup.cpp             \
 	s9streenode.cpp           \

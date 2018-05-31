@@ -17,6 +17,7 @@
 #include "s9sdebug.h"
 
 static const char dblQuot = '"';
+const S9sVariant S9sVariantMap::sm_invalid;
 
 S9sVector<S9sString> 
 S9sVariantMap::keys() const
@@ -29,6 +30,38 @@ S9sVariantMap::keys() const
     }
 
     return retval;
+}
+
+const S9sVariant &
+S9sVariantMap::valueByPath(
+        const S9sString &path) const
+{
+    return valueByPath(path.split("/"));
+}
+
+const S9sVariant &
+S9sVariantMap::valueByPath(
+        S9sVariantList path) const
+{
+    // empy path or not exist
+    if (path.empty () || !contains(path[0].toString()))
+        return S9sVariantMap::sm_invalid;
+
+    if (path.size() == 1 && contains(path[0].toString()))
+        return at(path[0].toString());
+    else if (!contains(path[0].toString()))
+        return S9sVariantMap::sm_invalid;
+
+    const S9sVariant &firstVariant = at(path[0].toString());
+    if (firstVariant.isVariantMap())
+    {
+        const S9sVariantMap &variantMap = firstVariant.toVariantMap();
+        path.erase(path.begin(), path.begin() + 1);
+
+        return variantMap.valueByPath(path);
+    }
+
+    return S9sVariantMap::sm_invalid;
 }
 
 /**

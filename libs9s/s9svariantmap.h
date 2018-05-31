@@ -19,10 +19,16 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
 
         S9sVector<S9sString> keys() const;
 
+        const S9sVariant &valueByPath(const S9sString &path) const;
+        const S9sVariant &valueByPath(S9sVariantList path) const;
+
         bool parse(const char *source);
         S9sString toString() const;
         bool parseAssignments(const S9sString &input);
         bool isSubSet(const S9sVariantMap &superSet) const;
+
+    protected:
+        static const S9sVariant sm_invalid;
 
     private:
         S9sString toString(

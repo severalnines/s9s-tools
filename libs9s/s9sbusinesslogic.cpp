@@ -31,6 +31,7 @@
 #include "S9sRsaKey"
 #include "S9sDir"
 #include "S9sCmonGraph"
+#include "S9sEvent"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,12 +46,24 @@
  * from the JSon stream coming from the controller.
  */
 void
-s9sEventHandler(const S9sVariantMap &jsonMessage, void *userData)
+s9sEventHandler(
+        const S9sVariantMap &jsonMessage, 
+        void *userData)
 {
     S9sBusinessLogic *businessLogic = (S9sBusinessLogic*) userData;
+    S9sOptions       *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        ::printf("%s\n", STR(jsonMessage.toString()));
+    } else {
+        S9sEvent          event(jsonMessage);
+        ::printf("%s\n", STR(event.toOneLiner()));
+    }
+
     (void) businessLogic; // unused for now
 
-    printf("* Incoming event (JSon):\n%s\n", STR(jsonMessage.toString()));
+
 }
 
 /**
