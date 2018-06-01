@@ -54,12 +54,38 @@ class S9sEvent : public S9sObject
             EventLog,
         };
 
+        enum EventSubClass
+        {
+            /** For simple events. */
+            NoSubClass,
+            /** Something is created. */
+            Created,
+            /** Something is destroyed. */
+            Destroyed,
+            /** Something is changed. */
+            Changed, 
+            /** Something is started. */
+            Started,
+            /** Something is closed or ended. */
+            Ended,
+            /** State is changed. */
+            StateChanged,
+            /** The user got a new message or warning. */
+            UserMessage,
+            /** A new log entry was created. */
+            LogMessage,
+            /** The measurements that are coming from data collectors.*/
+            Measurements,
+        };
+
         S9sEvent();
         S9sEvent(const S9sVariantMap &properties);
 
         virtual ~S9sEvent();
 
         S9sEvent::EventType eventType() const;
+        S9sEvent::EventSubClass eventSubClass() const;
+
         S9sString senderFile() const;
         int senderLine() const;
 
@@ -69,8 +95,13 @@ class S9sEvent : public S9sObject
             stringToEventType(
                     const S9sString &eventTypeString);
 
+        static S9sEvent::EventSubClass
+            stringToEventSubClass(
+                    const S9sString &subClassString);
+
     protected:
         S9sString eventLogToOneLiner() const;
         S9sString eventHostToOneLiner() const;
+        S9sString eventJobToOneLiner() const;
 };
 

@@ -78,7 +78,7 @@ S9sEvent::toOneLiner() const
             break;
 
         case EventJob:
-            retval += "eventJobToOneLiner()";
+            retval += eventJobToOneLiner();
             break;
         
         case EventDebug:
@@ -115,6 +115,12 @@ S9sEvent::eventType() const
     return stringToEventType(property("event_class").toString());
 }
 
+S9sEvent::EventSubClass
+S9sEvent::eventSubClass() const
+{
+    return stringToEventSubClass(property("event_name").toString());
+}
+
 S9sEvent::EventType
 S9sEvent::stringToEventType(
         const S9sString &eventTypeString)
@@ -145,10 +151,61 @@ S9sEvent::stringToEventType(
     return NoEvent;
 }
 
+S9sEvent::EventSubClass
+S9sEvent::stringToEventSubClass(
+        const S9sString &subClassString)
+{
+    if (subClassString == "NoSubClass")
+        return NoSubClass;
+    else if (subClassString == "Created")
+        return Created;
+    else if (subClassString == "Destroyed")
+        return Destroyed;
+    else if (subClassString == "Changed")
+        return Changed;
+    else if (subClassString == "Started")
+        return Started;
+    else if (subClassString == "Ended")
+        return Ended;
+    else if (subClassString == "StateChanged")
+        return StateChanged;
+    else if (subClassString == "UserMessage")
+        return UserMessage;
+    else if (subClassString == "LogMessage")
+        return LogMessage;
+    else if (subClassString == "Measurements")
+        return Measurements;
+        
+    return NoSubClass;
+}
+
+
 S9sString
 S9sEvent::eventHostToOneLiner() const
 {
 #if 0
+    S9sString retval;
+
+    retval = m_properties.toString();
+    return retval;
+#else
+    S9sString eventName;
+    S9sString hostName;
+    S9sString retval;
+
+    eventName = m_properties.valueByPath("event_name").toString();
+    hostName = m_properties.valueByPath(
+            "event_specifics/host/hostname").toString();
+
+    retval.sprintf("Host %s %s", STR(hostName), STR(eventName));
+    return retval;
+#endif
+}
+
+S9sString
+S9sEvent::eventJobToOneLiner() const
+{
+#if 1
     S9sString retval;
 
     retval = m_properties.toString();
