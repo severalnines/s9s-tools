@@ -55,9 +55,10 @@ S9sEvent::toOneLiner() const
     }
     #endif
 
-    retval.sprintf("%s%28s%s:%-5d ",
+    retval.sprintf("%s%28s%s:%-5d %s%12s%s ",
             XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
-            senderLine());
+            senderLine(),
+            XTERM_COLOR_CLASS, STR(property("event_class").toString()), TERM_NORMAL);
 
     switch (eventType())
     {
@@ -74,7 +75,7 @@ S9sEvent::toOneLiner() const
             break;
 
         case EventAlarm:
-            retval += "eventAlarmToOneLiner()";
+            retval += eventAlarmToOneLiner();
             break;
 
         case EventJob:
@@ -286,6 +287,34 @@ S9sEvent::eventLogToOneLiner() const
 
     return retval;
     #endif
+}
+
+S9sString
+S9sEvent::eventAlarmToOneLiner() const
+{
+    S9sString retval;
+
+#if 0
+    retval = m_properties.toString();
+#else
+    EventSubClass subClass = eventSubClass();
+    S9sString message;
+
+    message = m_properties.valueByPath(
+            "event_specifics/alarm/message").toString();
+
+    switch (subClass)
+    {
+        case Changed:
+            retval.sprintf("Alarm update: %s", STR(message));
+            break;
+
+        default:
+            retval = m_properties.toString();
+    }
+
+#endif
+    return retval;
 }
 
 S9sString 

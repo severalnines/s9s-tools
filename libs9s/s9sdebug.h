@@ -160,6 +160,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_BDEV         "\033[38;5;11m"
 #define XTERM_COLOR_NUMBER       "\033[1m"
 #define XTERM_COLOR_DATABASE     "\033[38;5;202m"
+#define XTERM_COLOR_CLASS        "\033[96m"
 
 void 
 s9s_print_message (

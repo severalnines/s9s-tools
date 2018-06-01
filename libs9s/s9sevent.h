@@ -103,6 +103,7 @@ class S9sEvent : public S9sObject
         S9sString eventLogToOneLiner() const;
         S9sString eventHostToOneLiner() const;
         S9sString eventJobToOneLiner() const;
+        S9sString eventAlarmToOneLiner() const;
 
         S9sString measurementToOneLiner(S9sVariantMap specifics) const;
 };
