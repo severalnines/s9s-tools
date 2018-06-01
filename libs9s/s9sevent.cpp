@@ -102,7 +102,7 @@ S9sEvent::toOneLiner() const
             break;
         
         case EventCluster:
-            retval += "eventClusterToOneLiner()";
+            retval += eventClusterToOneLiner();
             break;
 
         case EventLog:
@@ -207,15 +207,14 @@ S9sEvent::eventHostToOneLiner() const
     S9sString     retval;
     S9sVariantMap tmpMap;
 
-    hostName = m_properties.valueByPath(
-            "event_specifics/host/hostname").toString();
+    hostName = getString("event_specifics/host/hostname");
 
     switch (subClass)
     {
         case Created:
             retval.sprintf(
-                    "Host %s created.", 
-                    STR(hostName));
+                    "Host %s%s%s created.", 
+                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL);
             break;
 
         case StateChanged:
@@ -223,26 +222,26 @@ S9sEvent::eventHostToOneLiner() const
             statusName = getString("event_specifics/hoststatus");
             reason     = getString("event_specifics/reason");
             retval.sprintf(
-                    "%s state: %s reason: %s", 
-                    STR(hostName), STR(statusName), STR(reason));
+                    "Host %s%s%s state: %s reason: %s", 
+                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL,
+                    STR(statusName), STR(reason));
             break;
 
         case Changed:
             retval.sprintf(
-                    "Host %s changed.", 
-                    STR(hostName));
+                    "Host %s%s%s updated.", 
+                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL);
             break;
 
         case Measurements:
             #if 1
-            hostName = m_properties.valueByPath(
-                    "event_specifics/host_name").toString();
-            tmpMap = m_properties.valueByPath(
+            hostName = getString("event_specifics/host_name");
+            tmpMap   = m_properties.valueByPath(
                     "event_specifics").toVariantMap();
 
             retval.sprintf(
-                    "Host %s %s", 
-                    STR(hostName),
+                    "Host %s%s%s %s", 
+                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL,
                     STR(measurementToOneLiner(tmpMap)));
             #else
             retval = m_properties.toString();
@@ -286,35 +285,50 @@ S9sEvent::eventHostToOneLiner() const
 S9sString
 S9sEvent::eventJobToOneLiner() const
 {
+    EventSubClass subClass = eventSubClass();
+    S9sString     message;
+    S9sString     eventName;
+    S9sString     hostName;
+    S9sString     title;
+    S9sString     retval;
+    int           jobId;
 
-#if 0
-    S9sString retval;
+    message  = getString("event_specifics/message/message_text");
+    message  = S9sString::html2ansi(message);
 
-    retval = m_properties.toString();
-    return retval;
-#else
-    S9sString message;
-    S9sString eventName;
-    S9sString hostName;
-    S9sString retval;
+    hostName = getString("event_specifics/host/hostname");
+    title    = getString("event_specifics/job/title");
+    jobId    = getInt("event_specifics/job/job_id");
 
-    message = m_properties.valueByPath(
-            "event_specifics/message/message_text").toString();
-
-    message = S9sString::html2ansi(message);
-
-    hostName = m_properties.valueByPath(
-            "event_specifics/host/hostname").toString();
-
-    if (hostName.empty())
+    switch (subClass)
     {
-        retval.sprintf("%s", STR(message));
-    } else {
-        retval.sprintf("Host %s %s", STR(hostName), STR(message));
+        case Created:
+            retval.sprintf("%4d %s", jobId, STR(title));
+            //retval = m_properties.toString();
+            break;
+
+        case Changed:
+            //retval = m_properties.toString();
+            retval.sprintf("%4d %s", jobId, STR(title));
+            break;
+
+        case UserMessage:
+            jobId = getInt("event_specifics/message/job_id");
+            if (hostName.empty())
+            {
+                retval.sprintf("%4d %s", jobId, STR(message));
+            } else {
+                retval.sprintf("%4d Host %s %s", 
+                        jobId,
+                        STR(hostName), STR(message));
+            }
+            break;
+    
+        default:
+            retval = "";
     }
 
     return retval;
-#endif
 }
 
 S9sString
@@ -359,8 +373,7 @@ S9sEvent::eventAlarmToOneLiner() const
     EventSubClass subClass = eventSubClass();
     S9sString message;
 
-    message = m_properties.valueByPath(
-            "event_specifics/alarm/message").toString();
+    message = getString("event_specifics/alarm/message");
 
     switch (subClass)
     {
@@ -377,6 +390,42 @@ S9sEvent::eventAlarmToOneLiner() const
 
 #endif
     return retval;
+}
+
+S9sString
+S9sEvent::eventClusterToOneLiner() const
+{
+#if 0
+    S9sString retval;
+
+    retval = m_properties.toString();
+    return retval;
+#else
+    EventSubClass subClass = eventSubClass();
+    int           clusterId;
+    S9sString     stateName;
+    S9sString     reason;
+    S9sString     retval;
+
+    clusterId = getInt("event_specifics/cluster_id");
+    stateName = getString("event_specifics/cluster_state");
+    reason    = getString("event_specifics/reason");
+
+    switch (subClass)
+    {
+        case StateChanged:
+            retval.sprintf(
+                    "Cluster %d state %s: %s",
+                    clusterId, STR(stateName), STR(reason));
+            break;
+
+        default:
+            retval = m_properties.toString();
+            break;
+    }
+
+    return retval;
+#endif
 }
 
 S9sString 
@@ -418,7 +467,7 @@ S9sEvent::measurementToOneLiner(
         double    utilization =  measurements["memoryutilization"].toDouble();
 
         retval.sprintf(
-                "Memory %lluGB free, %.2f%% used",
+                "Memory %lluGB free, %.2f%% used.",
                 ramfree / (1024ull * 1024ull * 1024ull), 
                 utilization * 100.0);
     } else {
@@ -432,7 +481,7 @@ S9sEvent::measurementToOneLiner(
 S9sString
 S9sEvent::senderFile() const
 {
-    return m_properties.valueByPath("event_origins/sender_file").toString();
+    return getString("event_origins/sender_file");
 }
 
 int
@@ -448,3 +497,11 @@ S9sEvent::getString(
 {
     return m_properties.valueByPath(path).toString();
 }
+
+int
+S9sEvent::getInt(
+        const S9sString &path) const
+{
+    return m_properties.valueByPath(path).toInt();
+}
+

@@ -211,7 +211,15 @@ enum S9sOptionType
     OptionListSubnets,
     OptionListTemplates,
     OptionSetupAudit,
+
+    OptionEventCluster,
+    OptionEventJob,
     OptionEventHost,
+    OptionEventMaintenance,
+    OptionEventAlarm,
+    OptionEventFile,
+    OptionEventDebug,
+    OptionEventLog,
 };
 
 /**
@@ -4226,6 +4234,15 @@ S9sOptions::printHelpEvent()
 "Options for the \"event\" command:\n"
 "  --list                     List the events as they are detected.\n"
 "\n"
+"  --with-event-cluster \n"
+"  --with-event-job \n"
+"  --with-event-host \n"
+"  --with-event-maintenance \n"
+"  --with-event-alarm \n"
+"  --with-event-file \n"
+"  --with-event-debug \n"
+"  --with-event-log \n"
+"\n"
     );
 }
 
@@ -5333,7 +5350,15 @@ S9sOptions::readOptionsEvent(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+
+        { "with-event-cluster",  no_argument,    0, OptionEventCluster     },
+        { "with-event-job",   no_argument,       0, OptionEventJob         },
         { "with-event-host",  no_argument,       0, OptionEventHost        },
+        { "with-event-maintenance",  no_argument,0, OptionEventMaintenance },
+        { "with-event-alarm", no_argument,       0, OptionEventAlarm       },
+        { "with-event-file",  no_argument,       0, OptionEventFile        },
+        { "with-event-debug", no_argument,       0, OptionEventDebug       },
+        { "with-event-log",   no_argument,       0, OptionEventLog         },
 
         { 0, 0, 0, 0 }
     };
@@ -5454,10 +5479,45 @@ S9sOptions::readOptionsEvent(
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
+            
+            case OptionEventCluster:
+                // --with-event-cluster
+                enableEventType("EventCluster");
+                break;
+            
+            case OptionEventJob:
+                // --with-event-job
+                enableEventType("EventJob");
+                break;
 
             case OptionEventHost:
                 // --with-event-host
                 enableEventType("EventHost");
+                break;
+            
+            case OptionEventMaintenance:
+                // --with-event-maintenance
+                enableEventType("EventMaintenance");
+                break;
+            
+            case OptionEventAlarm:
+                // --with-event-alarm
+                enableEventType("EventAlarm");
+                break;
+            
+            case OptionEventFile:
+                // --with-event-file
+                enableEventType("EventFile");
+                break;
+            
+            case OptionEventDebug:
+                // --with-event-debug
+                enableEventType("EventDebug");
+                break;
+            
+            case OptionEventLog:
+                // --with-event-log
+                enableEventType("EventLog");
                 break;
 
             case '?':
