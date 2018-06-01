@@ -43,6 +43,8 @@ S9sString
 S9sEvent::toOneLiner() const
 {
     S9sString retval;
+    S9sString eventClass;
+    S9sString eventName;
 
     if (className() == "S9sObject")
         return retval;
@@ -55,10 +57,15 @@ S9sEvent::toOneLiner() const
     }
     #endif
 
-    retval.sprintf("%s%28s%s:%-5d %s%12s%s ",
+    eventClass = property("event_class").toString();
+    eventName  = property("event_name").toString();
+
+    retval.sprintf("%s%28s%s:%-5d %s%12s%s %s%-12s%s ",
             XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
             senderLine(),
-            XTERM_COLOR_CLASS, STR(property("event_class").toString()), TERM_NORMAL);
+            XTERM_COLOR_CLASS, STR(eventClass), TERM_NORMAL,
+            XTERM_COLOR_SUBCLASS, STR(eventName), TERM_NORMAL
+            );
 
     switch (eventType())
     {
@@ -235,25 +242,63 @@ S9sEvent::eventHostToOneLiner() const
     //retval.sprintf("Host %s", STR(hostName));
     return retval;
 }
-
+/*
+    "class_name": "CmonEvent",
+    "event_class": "EventJob",
+    "event_name": "UserMessage",
+    "event_origins": 
+    {
+        "sender_file": "Communication.cpp",
+        "sender_line": 5208,
+        "tv_nsec": 891800276,
+        "tv_sec": 1527842479
+    },
+    "event_specifics": 
+    {
+        "message": 
+        {
+            "class_name": "CmonJobMessage",
+            "created": "2018-06-01T08:41:19.000Z",
+            "file_name": "Communication.cpp",
+            "job_id": 1,
+            "line_number": 5208,
+            "message_id": 120,
+            "message_status": "JOB_SUCCESS",
+            "message_text": "<em style='color: #c0392b;'>192.168.0.140</em>: Installing <strong style='color: #110679;'>augeas-tools</strong>."
+        }
+    }
+}
+*/
 S9sString
 S9sEvent::eventJobToOneLiner() const
 {
-#if 1
+
+#if 0
     S9sString retval;
 
     retval = m_properties.toString();
     return retval;
 #else
+    S9sString message;
     S9sString eventName;
     S9sString hostName;
     S9sString retval;
 
-    eventName = m_properties.valueByPath("event_name").toString();
+    message = m_properties.valueByPath(
+            "event_specifics/message/message_text").toString();
+
+    message = S9sString::html2ansi(message);
+
     hostName = m_properties.valueByPath(
             "event_specifics/host/hostname").toString();
 
-    retval.sprintf("Host %s %s", STR(hostName), STR(eventName));
+    if (hostName.empty())
+    {
+        retval.sprintf("%s", STR(message));
+    } else {
+        retval.sprintf("Host %s %s", STR(hostName), STR(message));
+    }
+
     return retval;
 #endif
 }
@@ -306,7 +351,10 @@ S9sEvent::eventAlarmToOneLiner() const
     switch (subClass)
     {
         case Changed:
-            retval.sprintf("Alarm update: %s", STR(message));
+        case Ended:
+        case Started:
+        case Created:
+            retval.sprintf("%s", STR(message));
             break;
 
         default:

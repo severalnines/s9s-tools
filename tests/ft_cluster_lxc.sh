@@ -353,6 +353,9 @@ startTests
 reset_config
 grant_user
 
+s9s event --list &
+EVENT_HANDLER_PID=$!
+
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createUser
     runFunctionalTest registerServer
@@ -369,4 +372,5 @@ else
     runFunctionalTest removeCluster
 fi
 
+kill $EVENT_HANDLER_PID
 endTests
