@@ -19,6 +19,10 @@
  */
 #include "s9sevent.h"
 
+//#define DEBUG
+#define WARNING
+#include "s9sdebug.h"
+
 S9sEvent::S9sEvent() :
     S9sObject()
 {
@@ -51,8 +55,9 @@ S9sEvent::toOneLiner() const
     }
     #endif
 
-    retval.sprintf("%28s:%5d ",
-            STR(senderFile()), senderLine());
+    retval.sprintf("%s%28s%s:%-5d ",
+            XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
+            senderLine());
 
     switch (eventType())
     {
@@ -143,10 +148,23 @@ S9sEvent::stringToEventType(
 S9sString
 S9sEvent::eventHostToOneLiner() const
 {
+#if 0
     S9sString retval;
 
     retval = m_properties.toString();
     return retval;
+#else
+    S9sString eventName;
+    S9sString hostName;
+    S9sString retval;
+
+    eventName = m_properties.valueByPath("event_name").toString();
+    hostName = m_properties.valueByPath(
+            "event_specifics/host/hostname").toString();
+
+    retval.sprintf("Host %s %s", STR(hostName), STR(eventName));
+    return retval;
+#endif
 }
 
 S9sString
