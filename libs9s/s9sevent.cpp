@@ -186,6 +186,7 @@ S9sEvent::eventHostToOneLiner() const
     EventSubClass subClass = eventSubClass();
     S9sString     hostName;
     S9sString     retval;
+    S9sVariantMap tmpMap;
 
     hostName = m_properties.valueByPath(
             "event_specifics/host/hostname").toString();
@@ -214,10 +215,13 @@ S9sEvent::eventHostToOneLiner() const
             #if 1
             hostName = m_properties.valueByPath(
                     "event_specifics/host_name").toString();
+            tmpMap = m_properties.valueByPath(
+                    "event_specifics").toVariantMap();
 
             retval.sprintf(
-                    "Host %s measurement.", 
-                    STR(hostName));
+                    "Host %s %s", 
+                    STR(hostName),
+                    STR(measurementToOneLiner(tmpMap)));
             #else
             retval = m_properties.toString();
             #endif
@@ -283,6 +287,56 @@ S9sEvent::eventLogToOneLiner() const
     return retval;
     #endif
 }
+
+S9sString 
+S9sEvent::measurementToOneLiner(
+        S9sVariantMap specifics) const
+{
+    S9sVariantMap measurements;
+    S9sString     className;
+    S9sString     retval;
+
+    if (specifics["measurements"].isVariantList())
+    {
+        S9sVariantList sampleList = specifics["measurements"].toVariantList();
+        int            nDisks     = 0;
+
+        for (uint idx = 0; idx < sampleList.size(); ++idx)
+        {
+            S9sVariantMap sample = sampleList[idx].toVariantMap();
+
+            if (sample["class_name"].toString() == "CmonDiskInfo")
+            {
+                nDisks += 1;
+            } else {
+                retval += sample.toString();
+                return retval;
+            }
+        }
+
+        retval.sprintf("%d disk(s)", nDisks);
+        return retval;
+    } else {
+        measurements = specifics["measurements"].toVariantMap();
+        className    = measurements["class_name"].toString();
+    }
+
+    if (className == "CmonMemoryStats")
+    {
+        ulonglong ramfree = measurements["ramfree"].toULongLong();
+        double    utilization =  measurements["memoryutilization"].toDouble();
+
+        retval.sprintf(
+                "Memory %lluGB free, %.2f%% used",
+                ramfree / (1024ull * 1024ull * 1024ull), 
+                utilization * 100.0);
+    } else {
+        retval = specifics.toString();
+    }
+
+    return retval;
+}
+
 
 S9sString
 S9sEvent::senderFile() const
