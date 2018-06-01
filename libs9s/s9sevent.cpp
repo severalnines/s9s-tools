@@ -183,23 +183,52 @@ S9sEvent::stringToEventSubClass(
 S9sString
 S9sEvent::eventHostToOneLiner() const
 {
-#if 0
-    S9sString retval;
+    EventSubClass subClass = eventSubClass();
+    S9sString     hostName;
+    S9sString     retval;
 
-    retval = m_properties.toString();
-    return retval;
-#else
-    S9sString eventName;
-    S9sString hostName;
-    S9sString retval;
-
-    eventName = m_properties.valueByPath("event_name").toString();
     hostName = m_properties.valueByPath(
             "event_specifics/host/hostname").toString();
 
-    retval.sprintf("Host %s %s", STR(hostName), STR(eventName));
+    switch (subClass)
+    {
+        case Created:
+            retval.sprintf(
+                    "Host %s created.", 
+                    STR(hostName));
+            break;
+
+        case StateChanged:
+            retval.sprintf(
+                    "Host %s state changed.", 
+                    STR(hostName));
+            break;
+
+        case Changed:
+            retval.sprintf(
+                    "Host %s changed.", 
+                    STR(hostName));
+            break;
+
+        case Measurements:
+            #if 1
+            hostName = m_properties.valueByPath(
+                    "event_specifics/host_name").toString();
+
+            retval.sprintf(
+                    "Host %s measurement.", 
+                    STR(hostName));
+            #else
+            retval = m_properties.toString();
+            #endif
+            break;
+
+        default:
+            retval = "Unknown host event";
+    }
+
+    //retval.sprintf("Host %s", STR(hostName));
     return retval;
-#endif
 }
 
 S9sString
