@@ -211,6 +211,7 @@ enum S9sOptionType
     OptionListSubnets,
     OptionListTemplates,
     OptionSetupAudit,
+    OptionEventHost,
 };
 
 /**
@@ -675,6 +676,30 @@ S9sOptions::onlyAscii() const
     }
 
     return retval.toBoolean();
+}
+
+void
+S9sOptions::enableEventType(
+        const S9sString &eventTypeName)
+{
+    S9sVariantMap theMap = getVariantMap("enabled_event_types");
+
+    theMap[eventTypeName] = true;
+    m_options["enabled_event_types"] = theMap;
+}
+
+bool
+S9sOptions::eventTypeEnabled(
+        const S9sString &eventTypeName)
+{
+    S9sVariantMap theMap = getVariantMap("enabled_event_types");
+
+    if (!theMap.empty())
+    {
+        return theMap[eventTypeName].toBoolean();
+    }
+
+    return true;
 }
 
 /**
@@ -5308,6 +5333,7 @@ S9sOptions::readOptionsEvent(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "with-event-host",  no_argument,       0, OptionEventHost        },
 
         { 0, 0, 0, 0 }
     };
@@ -5427,6 +5453,11 @@ S9sOptions::readOptionsEvent(
             case 'n':
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
+                break;
+
+            case OptionEventHost:
+                // --with-event-host
+                enableEventType("EventHost");
                 break;
 
             case '?':
@@ -9594,6 +9625,18 @@ S9sOptions::getString(
 
     if (m_options.contains(key))
         retval = m_options.at(key).toString();
+
+    return retval;
+}
+
+S9sVariantMap
+S9sOptions::getVariantMap(
+        const char *key) const
+{
+    S9sVariantMap retval;
+        
+    if (m_options.contains(key))
+        retval = m_options.at(key).toVariantMap();
 
     return retval;
 }

@@ -95,6 +95,10 @@ class S9sOptions
 
         S9sString configFile() const;
        
+        
+        void enableEventType(const S9sString &eventTypeName);
+        bool eventTypeEnabled(const S9sString &eventTypeName);
+
         bool onlyAscii() const;
         bool density() const;
         bool setPropertiesOption(const S9sString &assignments);
@@ -463,7 +467,8 @@ class S9sOptions
         bool setMode(const S9sString &modeName);
 
         bool getBool(const char *key) const;
-        S9sString getString(const char *key) const;
+        S9sString getString(const char *key) const;        
+        S9sVariantMap getVariantMap(const char *key) const;
 
         S9sOptions();
         ~S9sOptions();

@@ -353,7 +353,7 @@ startTests
 reset_config
 grant_user
 
-s9s event --list &
+s9s event --list --with-event-host &
 EVENT_HANDLER_PID=$!
 
 if [ "$OPTION_INSTALL" ]; then

@@ -52,18 +52,19 @@ s9sEventHandler(
 {
     S9sBusinessLogic *businessLogic = (S9sBusinessLogic*) userData;
     S9sOptions       *options = S9sOptions::instance();
+    S9sEvent          event(jsonMessage);
+
+    if (!options->eventTypeEnabled(event.eventTypeString()))
+        return;
 
     if (options->isJsonRequested())
     {
         ::printf("%s\n", STR(jsonMessage.toString()));
     } else {
-        S9sEvent          event(jsonMessage);
         ::printf("%s\n", STR(event.toOneLiner()));
     }
 
     (void) businessLogic; // unused for now
-
-
 }
 
 /**

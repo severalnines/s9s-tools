@@ -60,7 +60,7 @@ S9sEvent::toOneLiner() const
     eventClass = property("event_class").toString();
     eventName  = property("event_name").toString();
 
-    retval.sprintf("%s%28s%s:%-5d %s%12s%s %s%-12s%s ",
+    retval.sprintf("%s%28s%s:%-5d %s%12s%s %s%-13s%s ",
             XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
             senderLine(),
             XTERM_COLOR_CLASS, STR(eventClass), TERM_NORMAL,
@@ -115,6 +115,17 @@ S9sEvent::toOneLiner() const
     }
 
     return retval;
+}
+
+/**
+ * \returns One of the NoEvent, EventExit, EventStart, EventCluster, EventJob,
+ *   EventHost, EventMaintenance, EventAlarm, EventFile, EventDebug, EventLog
+ *   strings.
+ */
+S9sString
+S9sEvent::eventTypeString() const
+{
+    return property("event_class").toString();
 }
 
 S9sEvent::EventType 
@@ -192,7 +203,7 @@ S9sString
 S9sEvent::eventHostToOneLiner() const
 {
     EventSubClass subClass = eventSubClass();
-    S9sString     hostName;
+    S9sString     hostName, statusName, reason;
     S9sString     retval;
     S9sVariantMap tmpMap;
 
@@ -208,9 +219,12 @@ S9sEvent::eventHostToOneLiner() const
             break;
 
         case StateChanged:
+            hostName   = getString("event_specifics/host_name");
+            statusName = getString("event_specifics/hoststatus");
+            reason     = getString("event_specifics/reason");
             retval.sprintf(
-                    "Host %s state changed.", 
-                    STR(hostName));
+                    "%s state: %s reason: %s", 
+                    STR(hostName), STR(statusName), STR(reason));
             break;
 
         case Changed:
@@ -427,3 +441,10 @@ S9sEvent::senderLine() const
     return m_properties.valueByPath("event_origins/sender_line").toInt();
 }
 
+
+S9sString 
+S9sEvent::getString(
+        const S9sString &path) const
+{
+    return m_properties.valueByPath(path).toString();
+}

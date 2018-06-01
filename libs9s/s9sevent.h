@@ -83,6 +83,7 @@ class S9sEvent : public S9sObject
 
         virtual ~S9sEvent();
 
+        S9sString eventTypeString() const;
         S9sEvent::EventType eventType() const;
         S9sEvent::EventSubClass eventSubClass() const;
 
@@ -106,5 +107,7 @@ class S9sEvent : public S9sObject
         S9sString eventAlarmToOneLiner() const;
 
         S9sString measurementToOneLiner(S9sVariantMap specifics) const;
+        
+        S9sString getString(const S9sString &path) const;
 };
 
