@@ -301,7 +301,7 @@ function createContainer()
         echo "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
 
-    mys9s container --list --print-json
+    #mys9s container --list --print-json
 
     #
     # We will manipulate this container in other tests.
