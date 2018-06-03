@@ -38,7 +38,7 @@
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
-#define SEND_NODES
+//#define SEND_NODES
 
 /**
  * Default constructor.

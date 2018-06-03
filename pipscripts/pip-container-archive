@@ -79,6 +79,8 @@ Usage:
 
 EXAMPLES:
   pip-container-archive --gzip --verbose --stop --server=core1 --output-dir=/home/pipas --owner=pipas --storage="storage01:" dns1
+  
+  pip-container-archive --verbose --stop --owner=pipas --server=core1 dns1
 
 EOF
     exit 0
@@ -260,7 +262,7 @@ function archive_one_container()
 
     printVerbose "Archiving container '$container'."
     tar_file_name="$(archive_file_name "$container")"
-
+    tar_basename="$(basename $tar_file_name)"
 
     old_tar_file_name="${tar_file_name}.BAK"
 
@@ -282,7 +284,10 @@ function archive_one_container()
     fi
 
     if [ "$OWNER" ]; then
-        chown "$OWNER:$OWNER" "$tar_file_name"
+        target_dir="/home/$OWNER"
+        printVerbose "Moving file to '$target_dir/$tar_basename'."
+        mv "$tar_file_name" "$target_dir"
+        chown "$OWNER:$OWNER" "$target_dir/$tar_basename"
     fi
 
     if [ "$STORAGE_URL" ]; then
@@ -384,8 +389,9 @@ else
     if [ "$SERVER" ]; then
         for container in $EXTRA_OPTIONS; do
             tar_file_name="$(archive_file_name "$container")"
+            tar_basename="$(basename "$tar_file_name")"
             scp \
-                "$SERVER:$tar_file_name" \
+                "$SERVER:$tar_basename" \
                 .
         done
     fi
