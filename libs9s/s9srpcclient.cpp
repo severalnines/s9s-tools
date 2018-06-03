@@ -38,6 +38,7 @@
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
+#define SEND_NODES
 
 /**
  * Default constructor.
@@ -3143,12 +3144,16 @@ S9sRpcClient::addNode(
     }
     
     // The job_data describing the cluster.
+#ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+#else
     if (hosts[0].isNode())
     {
         jobData["hostname"] = hosts[0].toNode().hostName();
     } else {
         jobData["hostname"] = hosts[0].toString();
     }
+#endif
 
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
@@ -3403,8 +3408,11 @@ S9sRpcClient::addProxySql(
 
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
+    #ifdef SEND_NODES
+    jobData["nodes"] = nodesField(proxyNodes);
+    #else
     jobData["hostname"] = proxyNodes[0].toNode().hostName();
-    
+    #endif  
     /*
      * Some information:
         "db_database": "*.*",
@@ -3496,10 +3504,15 @@ S9sRpcClient::addMaxScale(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
-    // FIXME: Onc it is this, then that.
+    
+    #ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+    #else
+    // FIXME: Once it is this, then that.
     //jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
     jobData["server_address"] = maxScaleNodes[0].toNode().hostName();
-    
+    #endif
+
     // The jobspec describing the command.
     jobSpec["command"]    = "maxscale";
     jobSpec["job_data"]   = jobData;
@@ -3552,10 +3565,14 @@ S9sRpcClient::addMongoNode(
     S9sString protocol = node.protocol().toLower();
 
     // The job_data describing the cluster.
+    #ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+    #else
     if (hosts[0].isNode())
         jobData["hostname"] = hosts[0].toNode().hostName();
     else
         jobData["hostname"] = hosts[0].toString();
+    #endif
 
     if (node.hasProperty("rs"))
         jobData["replicaset"] = node.property("rs").toString();
@@ -3780,7 +3797,11 @@ S9sRpcClient::startNode()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
+#ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+#else
     jobData["hostname"]   = node.hostName();
+#endif
     
     if (node.hasPort())
         jobData["port"]   = node.port();
@@ -3829,7 +3850,11 @@ S9sRpcClient::stopNode()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
+#ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+#else
     jobData["hostname"]   = node.hostName();
+#endif
     
     if (node.hasPort())
         jobData["port"]   = node.port();
@@ -3882,7 +3907,11 @@ S9sRpcClient::restartNode()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
+#ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+#else
     jobData["hostname"]   = node.hostName();
+#endif
     
     if (node.hasPort())
         jobData["port"]   = node.port();
@@ -4848,7 +4877,11 @@ S9sRpcClient::createBackup()
 
 
     // The job_data describing how the backup will be created.
+#ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+#else
     jobData["hostname"]          = backupHost.hostName();
+#endif
     jobData["description"]       = "Backup created by s9s-tools.";
 
     if (backupHost.hasPort())
@@ -5855,8 +5888,6 @@ S9sRpcClient::deleteMaintenance(
     request["operation"] = "removeMaintenance";
     request["UUID"]      = uuid;
 
-    //request["hostname"]  = hosts[0].toNode().hostName();
-
     retval = executeRequest(uri, request);
 
     return retval;
@@ -6448,8 +6479,19 @@ S9sRpcClient::topologyField(
 
 S9sVariant
 S9sRpcClient::nodesField(
-        const S9sVariantList &nodes)
+        const S9sVariantList &nodes) 
 {
+    S9sVariant     retval;
+
+    retval = nodes;
+    return retval;
+}
+
+S9sVariant
+S9sRpcClient::nodesField() 
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList nodes       = options->nodes();
     S9sVariant     retval;
 
     retval = nodes;

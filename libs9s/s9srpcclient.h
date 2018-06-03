@@ -416,8 +416,11 @@ class S9sRpcClient
                 const S9sVariantList &nodes);
 
         static S9sVariant
+            nodesField() ;
+
+        static S9sVariant
             nodesField(
-                const S9sVariantList &nodes);
+                const S9sVariantList &nodes) ;
         
         static S9sVariant
             serversField(
