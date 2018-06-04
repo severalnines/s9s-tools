@@ -3910,11 +3910,11 @@ S9sRpcClient::restartNode()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
-#ifdef SEND_NODES
-    jobData["nodes"] = nodesField(hosts);
-#else
+    #if 1
+    jobData["node"] = hosts[0].toVariantMap();
+    #else
     jobData["hostname"]   = node.hostName();
-#endif
+    #endif
     
     if (node.hasPort())
         jobData["port"]   = node.port();
