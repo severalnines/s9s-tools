@@ -3408,7 +3408,7 @@ S9sRpcClient::addProxySql(
 
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
-    #if 1
+    #if 0
     // FIXME: This certainly works on the current version of the controller, but
     // not necessarily compatible with the older versions. So this should be
     // turned on later, after a few releases passed.
