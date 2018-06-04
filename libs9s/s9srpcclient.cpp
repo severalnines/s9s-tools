@@ -3144,16 +3144,16 @@ S9sRpcClient::addNode(
     }
     
     // The job_data describing the cluster.
-#ifdef SEND_NODES
-    jobData["nodes"] = nodesField(hosts);
-#else
+    #if 1
+    jobData["node"] = hosts[0].toVariantMap();
+    #else
     if (hosts[0].isNode())
     {
         jobData["hostname"] = hosts[0].toNode().hostName();
     } else {
         jobData["hostname"] = hosts[0].toString();
     }
-#endif
+    #endif
 
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
@@ -3508,8 +3508,10 @@ S9sRpcClient::addMaxScale(
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
     
-    #ifdef SEND_NODES
-    jobData["nodes"] = nodesField(hosts);
+    #if 0
+    // FIXME: I am not sure older version of the controller support sending a
+    // node here.
+    jobData["node"] = hosts[0].toVariantMap();
     #else
     // FIXME: Once it is this, then that.
     //jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
@@ -4880,11 +4882,11 @@ S9sRpcClient::createBackup()
 
 
     // The job_data describing how the backup will be created.
-#ifdef SEND_NODES
+    #if 0
     jobData["nodes"] = nodesField(hosts);
-#else
+    #else
     jobData["hostname"]          = backupHost.hostName();
-#endif
+    #endif
     jobData["description"]       = "Backup created by s9s-tools.";
 
     if (backupHost.hasPort())
