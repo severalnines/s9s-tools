@@ -3408,8 +3408,11 @@ S9sRpcClient::addProxySql(
 
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
-    #ifdef SEND_NODES
-    jobData["nodes"] = nodesField(proxyNodes);
+    #if 1
+    // FIXME: This certainly works on the current version of the controller, but
+    // not necessarily compatible with the older versions. So this should be
+    // turned on later, after a few releases passed.
+    jobData["node"]     = proxyNodes[0].toVariantMap();
     #else
     jobData["hostname"] = proxyNodes[0].toNode().hostName();
     #endif  

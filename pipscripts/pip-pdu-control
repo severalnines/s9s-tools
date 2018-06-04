@@ -7,6 +7,7 @@ VERSION="0.0.1"
 VERBOSE=""
 LOGFILE="$HOME/.pip/${MYNAME}.log"
 OPTION_DEVICE=""
+OPTION_PRINT_FILES=""
 PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
@@ -41,6 +42,10 @@ HOST_COLOR="\033[1m\033[38;5;184m"
 INC_COLOR="\033[1m\033[36m"
 QUERY_COLOR="\033[1m\033[36m"
 COMMENT_COLOR="\033[1m\033[38;5;12m"
+IP_COLOR="\033[2m\033[38;5;201m"
+FILE_COLOR="\033[38;5;119m"
+GROUP_COLOR="\033[2m\033[38;5;7m"
+DEVICE_COLOR="\033[1m\033[38;5;203m"
 
 OK_COLOR="$XTERM_COLOR_GREEN"
 WARN_COLOR="$XTERM_COLOR_YELLOW"
@@ -111,6 +116,7 @@ Usage:
   --state              Check the state of the socket.
   --power              Read the current power consumption in watts.
   --temperature        Read the temperature.
+  --print-files        Print file names instead of names.
 
 EOF
     exit 0
@@ -120,7 +126,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,list,on,off,state,\
-power,temperature" \
+power,temperature,print-files" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -180,6 +186,11 @@ while true; do
         --temperature)
             shift
             PDU_OPERATION="temperature"
+            ;;
+
+        --print-files)
+            shift
+            OPTION_PRINT_FILES="true"
             ;;
 
         --)
@@ -364,8 +375,27 @@ function switch_tasmota()
     esac
 }
 
+function print_header()
+{
+    echo -en $TERM_BOLD
+
+    cat <<EOF
+DEVICE           STANDARD GROUP         SERVER        NAME
+--------------------------------------------------------------------------------
+EOF
+
+    echo -en $TERM_NORMAL
+
+
+}
+
 function print_device_list()
 {
+    local category
+    local name
+
+    print_header
+
     for config_file in $HOME/.pip/*.pdu; do
         if [ ! -f "$config_file" ]; then
             continue
@@ -380,15 +410,24 @@ function print_device_list()
         CONF_PDU_STANDARD=""
         CONF_PDU_CATEGORY=""
         source "$config_file"
-        
-        #pdu_status=$(pip-pdu-control --state $device_name)
+    
+        category="$CONF_PDU_CATEGORY"
+        if [ -z "$category" ]; then
+            category="-"
+        fi
 
-        printf "$PROJECT_COLOR%-16s$TERM_NORMAL " "$device_name"
-        #printf "%-4s " "$pdu_status"
-        printf "%-8s " "$CONF_PDU_STANDARD"
-        printf "$OWNER_COLOR%-16s$TERM_NORMAL " "$CONF_PDU_CATEGORY"
 
-        printf "$COMMENT_COLOR%s$TERM_NORMAL"    "$CONF_PDU_NAME"
+        printf "$DEVICE_COLOR%-16s$TERM_NORMAL " "$device_name"
+        printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
+        printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$category"
+        printf "$IP_COLOR%-13s$TERM_NORMAL "    "$CONF_PDU_SERVER"
+
+        if [ -z "$OPTION_PRINT_FILES" ]; then
+            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$CONF_PDU_NAME"
+        else
+            printf "$FILE_COLOR%s$TERM_NORMAL"     "$config_file"
+        fi
+
         printf "\n"
     done
 }
