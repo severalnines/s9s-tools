@@ -23,13 +23,21 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Leaves the container server when finished.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+
+SUPPORTED TESTS
+  o createUser       Creates a cmon user for the tests.
+  o createServer     Creates a cmon-cloud server.
+  o createContainer  Creates a container on cmon-cloud.
+  o createCluster    Creates a cluster on some new containers.
+  o deleteContainers Drops the cluster and the containers.
 
 EOF
     exit 1
@@ -37,7 +45,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
+server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -76,6 +85,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -314,6 +328,14 @@ function createCluster()
     mys9s node      --list --long
     mys9s container --list --long
 
+    return 0
+}
+
+function deleteContainers()
+{
+    local container_name1="${MYBASENAME}_11_$$"
+    local container_name2="${MYBASENAME}_12_$$"
+
     #
     # Dropping and deleting.
     #
@@ -362,6 +384,10 @@ else
     runFunctionalTest createServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
+
+    if [ -z "$OPTION_INSTALL" ]; then
+        runFunctionalTest deleteContainers
+    fi
 fi
 
 endTests

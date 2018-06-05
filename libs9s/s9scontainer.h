@@ -95,6 +95,9 @@ class S9sContainer : public S9sObject
         S9sString configFile() const;
         S9sString rootFsPath() const;
 
+        S9sVariantList firewalls() const;
+        S9sString firewalls(const S9sString &defaultValue) const;
+
         S9sVariantList volumes() const;
         void setVolumes(const S9sVariantList &volumes);
         

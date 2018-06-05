@@ -33,16 +33,16 @@ Usage:
  
   $MYNAME - Test script for s9s to check Galera clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --vendor=STRING  Use the given Galera vendor.
- --provider-version=STRING The SQL server provider version.
- --leave-nodes    Do not destroy the nodes at exit.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=STRING The SQL server provider version.
+  --leave-nodes    Do not destroy the nodes at exit.
 
 SUPPORTED TESTS:
   o testPing             Pings the controller.

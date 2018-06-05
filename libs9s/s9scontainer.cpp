@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2018  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -582,6 +582,40 @@ S9sContainer::rootFsPath() const
 {
     return property("root_fs_path").toString();
 }
+
+
+S9sVariantList
+S9sContainer::firewalls() const
+{
+    return property("firewalls").toVariantList();
+}
+
+S9sString
+S9sContainer::firewalls(
+        const S9sString &defaultValue) const
+{
+    S9sString       retval;
+    S9sVariantList  list = firewalls();
+
+    for (uint idx = 0u; idx < list.size(); ++idx)
+    {
+        S9sString firewall = list[idx].toString();
+
+        if (firewall.empty())
+            continue;
+
+        if (!retval.empty() && !retval.endsWith(", "))
+            retval += ", ";
+
+        retval += firewall;
+    }
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 
 S9sVariantList 
 S9sContainer::volumes() const

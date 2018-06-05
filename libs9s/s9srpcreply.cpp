@@ -5945,6 +5945,14 @@ S9sRpcReply::printContainerStat(
     printf("%-34s", STR(container.subnetVpcId("-")));
 
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sFirewall:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.firewalls("-")));
+
+    printf("\n");
 
     //
     //
