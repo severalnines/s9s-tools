@@ -2231,6 +2231,9 @@ S9sRpcClient::registerGaleraCluster(
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
+    
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
 
     // 
     // The jobspec describing the command.
