@@ -89,7 +89,7 @@ S9sNode::S9sNode(
         else if (m_url.protocol() == "cmon-cloud")
             m_properties["class_name"] = "CmonCloudServer";
 
-        //m_properties["protocol"] = m_url.protocol();
+        m_properties["protocol"] = m_url.protocol();
     }
 
     if (!m_properties.contains("class_name"))
