@@ -301,7 +301,7 @@ function createCluster()
     #
     # Creating a Cluster.
     #
-    print_title "Creating a Clusteron AWS"
+    print_title "Creating a Cluster on AWS"
 
     mys9s cluster \
         --create \

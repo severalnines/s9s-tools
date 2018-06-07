@@ -4932,7 +4932,7 @@ S9sRpcClient::createBackup()
         jobData["encrypt_backup"] = true;
 
     // 0: prefer global setting, -1: never delete, >0 delete after N days
-    if (options->backupRetention() != 0)
+    if (options->hasBackupRetention())
         jobData["backup_retention"] = options->backupRetention();
 
     if (!options->title().empty())
@@ -5130,6 +5130,52 @@ S9sRpcClient::deleteBackupRecord()
     request["operation"]     = "deleteBackupRecord";
     request["backup_record"] = backupMap;
 
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::deleteOldBackups()
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       title;
+    S9sString       uri = "/v2/jobs/";
+    bool            retval;
+
+    if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
+    {
+        PRINT_ERROR("The cluster ID or the cluster name must be specified.");
+        return false;
+    }
+
+    title.sprintf("Delete Old Backups");
+    
+    if (options->hasBackupRetention())
+        jobData["backup_retention"] = options->backupRetention();
+    
+    if (options->hasCloudRetention())
+        jobData["cloud_retention"] = options->cloudRetention();
+    
+    if (options->hasSafetyCopies())
+        jobData["safety_copies"] = options->safetyCopies();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "delete_old_backups";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
     retval = executeRequest(uri, request);
 
     return retval;

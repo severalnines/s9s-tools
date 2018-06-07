@@ -90,11 +90,11 @@ enum S9sOptionType
     OptionWait,
     OptionRestore,
     OptionVerify,
+    OptionDeleteOld,
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
     OptionSubDirectory,
-    OptionBackupRetention,
     OptionBackupEncryption,
     OptionBackupUser,
     OptionBackupPassword,
@@ -125,6 +125,10 @@ enum S9sOptionType
     OptionOnController,
     OptionDatabases,
     OptionParallellism,
+    OptionBackupRetention,
+    OptionCloudRetention,
+    OptionSafetyCopies,
+    OptionKeep,
     OptionFullPath,
     OptionStat,
     OptionCreateAccount,
@@ -1551,20 +1555,6 @@ S9sOptions::hasClusterIdOption() const
 }
 
 /**
- * Returns the --backup-retention value.
- */
-int
-S9sOptions::backupRetention() const
-{
-    int retval = 0;
-
-    if (m_options.contains("backup_retention"))
-        retval = m_options.at("backup_retention").toInt();
-
-    return retval;
-}
-
-/**
  * \returns True if the --backup-id command line option was provided.
  */
 bool
@@ -2214,7 +2204,6 @@ S9sOptions::setParallellism(
                 STR(value));
 
         m_exitStatus = BadOptions;
-
         return false;        
     }
 
@@ -2242,6 +2231,97 @@ S9sOptions::parallellism() const
 
     return retval;
 }
+
+bool
+S9sOptions::setBackupRetention(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for retention.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["backup_retention"] = value.toInt();
+    return true;
+}
+
+bool
+S9sOptions::hasBackupRetention() const
+{
+    return m_options.contains("backup_retention");
+}
+
+int
+S9sOptions::backupRetention() const
+{
+    return getInt("backup_retention");
+}
+
+bool
+S9sOptions::setCloudRetention(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for cloud retention.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["cloud_retention"] = value.toInt();
+    return true;
+}
+
+bool
+S9sOptions::hasCloudRetention() const
+{
+    return m_options.contains("cloud_retention");
+}
+
+int
+S9sOptions::cloudRetention() const
+{
+    return getInt("cloud_retention");
+}
+
+bool
+S9sOptions::setSafetyCopies(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for safety copies.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["safety_copies"] = value.toInt();
+    return true;
+}
+
+bool
+S9sOptions::hasSafetyCopies() const
+{
+    return m_options.contains("safety_copies");
+}
+
+int
+S9sOptions::safetyCopies() const
+{
+    return getInt("safety_copies");
+}
+
 
 /**
  * \returns true if the --full-path command line option was provided.
@@ -2909,6 +2989,16 @@ bool
 S9sOptions::isVerifyRequested() const
 {
     return getBool("verify");
+}
+
+/**
+ * \returns true if the --delete-old command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isDeleteOldRequested() const
+{
+    return getBool("delete_old");
 }
 
 /**
@@ -3881,6 +3971,7 @@ S9sOptions::printHelpBackup()
 "Options for the \"backup\" command:\n"
 "  --create                   Create a new backup.\n"
 "  --delete                   Delete a previously created backup.\n"
+"  --delete-old               Delete old backups.\n"
 "  --list-databases           List the backups in database format.\n"
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
@@ -3897,6 +3988,8 @@ S9sOptions::printHelpBackup()
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
+"  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
+"  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
@@ -4636,6 +4729,7 @@ S9sOptions::readOptionsBackup(
         // Main Option
         { "create",           no_argument,       0,  OptionCreate         },
         { "delete",           no_argument,       0,  OptionDelete         },
+        { "delete-old",       no_argument,       0,  OptionDeleteOld      },
         { "list-databases",   no_argument,       0,  OptionListDatabases  },
         { "list-files",       no_argument,       0,  OptionListFiles      },
         { "list",             no_argument,       0, 'L'                   },
@@ -4664,6 +4758,8 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-password",  required_argument, 0, OptionBackupPassword  },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
+        { "cloud-retention",  required_argument, 0, OptionCloudRetention  },
+        { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "backup-user",      required_argument, 0, OptionBackupUser      },
         { "databases",        required_argument, 0, OptionDatabases       },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
@@ -4798,6 +4894,11 @@ S9sOptions::readOptionsBackup(
                 // --delete
                 m_options["delete"] = true;
                 break;
+            
+            case OptionDeleteOld:
+                // --delete-old
+                m_options["delete_old"] = true;
+                break;
 
             case OptionConfigFile:
                 // --config-file=FILE
@@ -4890,7 +4991,17 @@ S9sOptions::readOptionsBackup(
 
             case OptionBackupRetention:
                 // --backup-retention=DAYS
-                m_options["backup_retention"] = atoi(optarg);
+                setBackupRetention(optarg);
+                break;
+
+            case OptionCloudRetention:
+                // --cloud-retention=DAYS
+                setCloudRetention(optarg);
+                break;
+
+            case OptionSafetyCopies:
+                // --safety-copies=N
+                setSafetyCopies(optarg);
                 break;
 
             case OptionBackupUser:
@@ -5577,6 +5688,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isVerifyRequested())
+        countOptions++;
+    
+    if (isDeleteOldRequested())
         countOptions++;
     
     if (isDeleteRequested())
@@ -9685,6 +9799,18 @@ S9sOptions::getString(
 
     if (m_options.contains(key))
         retval = m_options.at(key).toString();
+
+    return retval;
+}
+
+int
+S9sOptions::getInt(
+        const char *key) const
+{
+    int retval = 0;
+
+    if (m_options.contains(key))
+        retval = m_options.at(key).toInt();
 
     return retval;
 }

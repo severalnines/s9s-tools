@@ -39,6 +39,7 @@ SUPPORTED TESTS:
   o createContainer  Creates a new container.
   o createFail       A container creation that should fail.
   o createCluster    Creates a cluster on VMs created on the fly.
+  o deleteContainer  Deletes all the containers that were created.
 
 EOF
     exit 1
@@ -457,7 +458,7 @@ function deleteContainer()
     local containers
     local container
 
-    mys9s container --list --print-json
+    #mys9s container --list --print-json
 
     containers="$LAST_CONTAINER_NAME"
     containers+=" ft_containers_aws_01_$$"

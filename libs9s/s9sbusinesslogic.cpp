@@ -600,6 +600,10 @@ S9sBusinessLogic::execute()
         {
             success = client.verifyBackup();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDeleteOldRequested())
+        {
+            success = client.deleteOldBackups();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isRestoreRequested())
         {
             success = client.restoreBackup();

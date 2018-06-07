@@ -127,6 +127,7 @@ fi
 #
 function testCreateCluster()
 {
+    local container_name
     local nodes
     local nodeName
     local exitCode
@@ -136,7 +137,8 @@ function testCreateCluster()
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
-        nodeName=$(create_node --autodestroy)
+        container_name="$(printf "ft_backup_%08d_node%02d" "$$" "$n")"
+        nodeName=$(create_node --autodestroy $container_name)
         nodes+="$nodeName;"
     
         if [ "$n" == "0" ]; then
@@ -545,13 +547,21 @@ function testDelete()
     
     print_title "Deleting Existing Backup"
 
+    #
+    # Getting the backup ID of the first backup
+    #
     id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
+
     if [ "$id" != "1" ]; then
         failure "Backup with id 1 was not found"
         mys9s backup --list --long
     fi
 
+    #
+    # Deleting the backup that we found.
+    #
     mys9s backup --delete --backup-id=1
+
     id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
     if [ "$id" == "1" ]; then
         failure "Backup with id 1 still exists"

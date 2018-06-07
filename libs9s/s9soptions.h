@@ -167,7 +167,18 @@ class S9sOptions
         S9sString backupUser() const;
         S9sString backupPassword() const;
 
+        bool setBackupRetention(const S9sString &value);
+        bool hasBackupRetention() const;
         int backupRetention() const;
+
+        bool setCloudRetention(const S9sString &value);
+        bool hasCloudRetention() const;
+        int cloudRetention() const;
+
+        bool setSafetyCopies(const S9sString &value);
+        bool hasSafetyCopies() const;
+        int safetyCopies() const;
+
         bool encryptBackup() const;
         int updateFreq() const;
         S9sString type() const;
@@ -240,9 +251,15 @@ class S9sOptions
         bool onNode() const;
         bool onController() const;
         S9sString databases() const;
+        
         bool setParallellism(const S9sString &value);
         bool hasParallellism() const;
         int parallellism() const;
+
+        bool setRetention(const S9sString &value);
+        bool hasRetention() const;
+        int retention() const;
+
         bool fullPathRequested() const;
         bool toIndividualFiles() const;
         bool backupDatadir() const;
@@ -330,6 +347,7 @@ class S9sOptions
         bool isPingRequested() const;
         bool isRestoreRequested() const;
         bool isVerifyRequested() const;
+        bool isDeleteOldRequested() const;
         bool isRollingRestartRequested() const;
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
@@ -468,6 +486,7 @@ class S9sOptions
 
         bool getBool(const char *key) const;
         S9sString getString(const char *key) const;        
+        int getInt(const char *key) const;        
         S9sVariantMap getVariantMap(const char *key) const;
 
         S9sOptions();
