@@ -273,6 +273,7 @@ function testCreateDatabase()
 #
 function testCreateBackup01()
 {
+    local container_name
     local node
     local value
 
@@ -343,7 +344,8 @@ function testCreateBackup01()
     #
     #
     print_title "Verifying Backup 1"
-    node=$(create_node --autodestroy)
+    container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "2")"
+    node=$(create_node --autodestroy "$container_name")
 
     mys9s backup \
         --verify \
@@ -368,6 +370,7 @@ function testCreateBackup01()
 
 function testCreateBackup02()
 {
+    local container_name
     local node
     print_title "Creating Another Backup"
 
@@ -386,10 +389,11 @@ function testCreateBackup02()
     check_exit_code $?
 
     #
-    #
+    # Verifying the backup.
     #
     print_title "Verifying Backup 2"
-    node=$(create_node --autodestroy)
+    container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "2")"
+    node=$(create_node --autodestroy "$container_name")
 
     mys9s backup \
         --verify \
@@ -443,17 +447,20 @@ function testCreateBackup03()
 #
 function testCreateBackupVerify()
 {
+    local container_name
     local node
     local retcode
 
     print_title "Creating and Verifying a Backup"
-    node=$(create_node --autodestroy)
+    container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "1")"
+    node=$(create_node --autodestroy "$container_name")
 
     mys9s backup --list-files --full-path
 
     #
     # Creating another backup.
     #
+    
     mys9s backup \
         --create \
         --title="Backup with Verification" \
@@ -584,6 +591,8 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateAccount
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup01
+    runFunctionalTest testCreateBackup02
+    runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackupVerify
 elif [ "$1" ]; then
     for testName in $*; do

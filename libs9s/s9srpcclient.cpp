@@ -4951,6 +4951,7 @@ S9sRpcClient::createBackup()
         tmpMap["server_address"]   = options->testServer();
         
         jobData["verify_backup"]   = tmpMap;
+        jobData["terminate_db_server"] = true;
     }
 
     // The jobspec describing the command.
@@ -5002,6 +5003,7 @@ S9sRpcClient::verifyBackup()
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"] = true;
     jobData["install_software"] = true;
+    jobData["terminate_db_server"] = true;
     
     // The jobspec describing the command.
     jobSpec["command"]    = "verify_backup";
@@ -5163,6 +5165,8 @@ S9sRpcClient::deleteOldBackups()
     
     if (options->hasSafetyCopies())
         jobData["safety_copies"] = options->safetyCopies();
+
+    jobData["dry_run"] = true;
 
     // The jobspec describing the command.
     jobSpec["command"]    = "delete_old_backups";
