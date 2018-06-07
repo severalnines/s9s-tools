@@ -392,7 +392,7 @@ function testCreateBackup02()
     # Verifying the backup.
     #
     print_title "Verifying Backup 2"
-    container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "2")"
+    container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "3")"
     node=$(create_node --autodestroy "$container_name")
 
     mys9s backup \
