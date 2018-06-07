@@ -1,3 +1,9 @@
+s9s-tools (1.6.20180605-release1) UNRELEASED; urgency=medium
+
+  * New update
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 05 Jun 2018 21:28:28 +0200
+
 s9s-tools (1.6.20180503-release1) UNRELEASED; urgency=medium
 
   * Fixes around initial RPC user creation
