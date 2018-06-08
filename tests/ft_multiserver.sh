@@ -159,12 +159,7 @@ function testCreateCluster()
         $LOG_OPTION
 
     exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -187,7 +182,7 @@ function createServer()
     mys9s server \
         --create \
         --servers="cmon-cloud://$nodeName" \
-        --log
+        $LOG_OPTION
 
     check_exit_code_no_job $?
 
@@ -219,6 +214,110 @@ function createServer()
 }
 
 #
+# This will create a container and check if the user can actually log in through
+# ssh.
+#
+function createContainer()
+{
+    local owner
+    local container_name="ft_multiserver_00_$$"
+    local template
+
+    print_title "Creating Container"
+
+    #
+    # Creating a container.
+    #
+    mys9s container \
+        --create \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        --volumes="vol1:5:hdd" \
+        $LOG_OPTION \
+        "$container_name"
+    
+    check_exit_code $?
+    
+    mys9s container --list --long
+
+    #
+    # Checking the ip and the owner.
+    #
+    CONTAINER_IP=$(get_container_ip "$container_name")
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "The container was not created or got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "The container got no IP."
+        s9s container --list --long
+        exit 1
+    fi
+
+    owner=$(\
+        s9s container --list --long --batch "$container_name" | \
+        awk '{print $4}')
+
+    if [ "$owner" != "$USER" ]; then
+        failure "The owner of '$container_name' is '$owner', should be '$USER'"
+        exit 1
+    fi
+   
+    #
+    # Checking if the user can actually log in through ssh.
+    #
+    print_title "Checking SSH Access"
+
+    if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
+        failure "User $owner can not log in to $CONTAINER_IP"
+        exit 1
+    else
+        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+    fi
+
+    #mys9s container --list --print-json
+
+    #
+    # We will manipulate this container in other tests.
+    #
+    LAST_CONTAINER_NAME=$container_name
+}
+
+#
+# This will delete the containers we created before.
+#
+function deleteContainer()
+{
+    local containers
+    local container
+
+    containers="$LAST_CONTAINER_NAME"
+
+    print_title "Deleting Containers"
+
+    mys9s container --list --long
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    mys9s job --list
+    mys9s container --list --long
+}
+
+
+#
 # Running the requested tests.
 #
 startTests
@@ -236,6 +335,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest createServer
+    runFunctionalTest createContainer
+    runFunctionalTest deleteContainer
 fi
 
 endTests
