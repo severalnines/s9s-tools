@@ -30,14 +30,25 @@ Usage:
  
   $MYNAME - Test script for s9s to check Galera clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Create a cluster, some backups and leave them when exiting.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --provider-version=STRING The SQL server provider version.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Create a cluster, some backups and leave them when exiting.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --provider-version=STRING The SQL server provider version.
+
+SUPPORTED TESTS
+  o testCreateCluster  Creates a cluster that is needed for the tests.
+  o testCreateAccount  Creates an SQL account for the tests.
+  o testCreateDatabase Creates a database for the tests.
+  o testCreateBackup01 Creates a backup, then verifies it.
+  o testCreateBackup02 Creates a backup with gzip this time, verifies it.
+  o testCreateBackup03 Creates a backup, then tries to rewrite it.
+  o testCreateBackup04 Creates a backup with immediate verification.
+  o testCreateBackup05 Creates xtrabackup full, then inc backup.
+  o testDeleteBackup   Will delete the backup ID 1.
 
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
@@ -403,6 +414,9 @@ function testCreateBackup02()
         $LOG_OPTION
 }
 
+#
+# Creates a backup, then tries to rewrite it.
+#
 function testCreateBackup03()
 {
     local node
@@ -445,7 +459,7 @@ function testCreateBackup03()
 #
 # This test creates a backup and immediately tests it on a test server.
 #
-function testCreateBackupVerify()
+function testCreateBackup04()
 {
     local container_name
     local node
@@ -485,30 +499,8 @@ function testCreateBackupVerify()
     mys9s backup --list --long
 }
 
-function testCreateBackupMySqlPump()
+function testCreateBackup05()
 {
-    local node
-    print_title "Creating mysqlpump Backup"
-
-    #
-    # Creating the backup.
-    # Using mysqlpump thid time.
-    #
-    mys9s backup \
-        --create \
-        --title="ft_backup.sh mysqlpump backup" \
-        --backup-method=mysqlpump \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION
-    
-    check_exit_code $?
-}
-
-function testCreateBackupXtrabackup()
-{
-    local node
     print_title "Creating xtrabackupfull Backup"
 
     #
@@ -525,11 +517,7 @@ function testCreateBackupXtrabackup()
         $LOG_OPTION
     
     check_exit_code $?
-}
-
-function testCreateBackupXtrabackupIncr()
-{
-    local node
+    
     print_title "Creating xtrabackupincr Backup"
 
     #
@@ -548,7 +536,7 @@ function testCreateBackupXtrabackupIncr()
     check_exit_code $?
 }
 
-function testDelete()
+function testDeleteBackup()
 {
     local id
     
@@ -593,7 +581,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateBackup01
     runFunctionalTest testCreateBackup02
     runFunctionalTest testCreateBackup03
-    runFunctionalTest testCreateBackupVerify
+    runFunctionalTest testCreateBackup04
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -605,12 +593,9 @@ else
     runFunctionalTest testCreateBackup01
     runFunctionalTest testCreateBackup02
     runFunctionalTest testCreateBackup03
-    runFunctionalTest testCreateBackupVerify
-    runFunctionalTest testCreateBackupXtrabackup
-    # The mysqlpump utility is not even installed.
-    #runFunctionalTest testCreateBackupMySqlPump
-    runFunctionalTest testCreateBackupXtrabackupIncr
-    runFunctionalTest testDelete 
+    runFunctionalTest testCreateBackup04
+    runFunctionalTest testCreateBackup05
+    runFunctionalTest testDeleteBackup
 fi
 
 endTests
