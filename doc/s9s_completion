@@ -175,7 +175,7 @@ function _s9s()
                 opts+="--only-ascii "
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
-                opts+="--properties= "
+                opts+="--properties= --use-internal-repos "
                 opts+="--vendor= --provider-version= --os-user= "
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "

@@ -242,6 +242,9 @@ class S9sOptions
         bool appendVolumes(const S9sString &stringRep);
 
         bool force() const;
+        bool dry() const;
+
+        bool useInternalRepos() const;
         
         S9sString subDirectory() const;
         S9sString backupDir() const;

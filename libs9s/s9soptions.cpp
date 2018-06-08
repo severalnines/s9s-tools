@@ -157,6 +157,7 @@ enum S9sOptionType
     OptionFrom,
     OptionUntil,
     OptionForce,
+    OptionDry,
     OptionDebug,
     OptionClusterFormat,
     OptionNodeFormat,
@@ -224,6 +225,7 @@ enum S9sOptionType
     OptionEventFile,
     OptionEventDebug,
     OptionEventLog,
+    OptionUseInternalRepos,
 };
 
 /**
@@ -2073,6 +2075,33 @@ S9sOptions::force() const
     return getBool("force");
 }
 
+bool
+S9sOptions::dry() const
+{
+    return getBool("dry");
+}
+
+bool
+S9sOptions::useInternalRepos() const
+{
+    bool retval = false;
+
+    if (m_options.contains("use_internal_repos"))
+    {
+        retval = m_options.at("use_internal_repos").toBoolean();
+    } else {
+        retval = m_userConfig.variableValue("use_internal_repos").toBoolean();
+        if (!retval)
+        {
+            retval = m_systemConfig.variableValue(
+                    "use_internal_repos").toBoolean();
+        }
+    }
+
+    return retval;
+}
+
+
 /**
  * \returns true if the --with-database command line option was provided.
  */
@@ -2156,6 +2185,7 @@ S9sOptions::onController() const
 {
     return getBool("on_controller");
 }
+
 
 /**
  * \returns the value provided with --backup-method or the backup_method
@@ -4155,6 +4185,7 @@ S9sOptions::printHelpCluster()
 "  --provider-version=VER     The version of the software.\n" 
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
+"  --use-internal-repos       Use local repos when installing software.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
@@ -4708,23 +4739,24 @@ S9sOptions::readOptionsBackup(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp            },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "date-format",      required_argument, 0, OptionDateFormat      },
         { "debug",            no_argument,       0, OptionDebug           },
+        { "dry",              no_argument,       0, OptionDry             },
+        { "help",             no_argument,       0, OptionHelp            },
+        { "human-readable",   no_argument,       0, 'h'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "time-style",       required_argument, 0, OptionTimeStyle       },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
-        { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "password",         required_argument, 0, 'p'                   }, 
-        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
-        { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "long",             no_argument,       0, 'l'                   },
-        { "print-json",       no_argument,       0, OptionPrintJson       },
-        { "color",            optional_argument, 0, OptionColor           },
-        { "human-readable",   no_argument,       0, 'h'                   },
-        { "time-style",       required_argument, 0, OptionTimeStyle       },
-        { "config-file",      required_argument, 0, OptionConfigFile      },
-        { "date-format",      required_argument, 0, OptionDateFormat      },
 
         // Main Option
         { "create",           no_argument,       0,  OptionCreate         },
@@ -4798,6 +4830,11 @@ S9sOptions::readOptionsBackup(
             case OptionDebug:
                 // --debug
                 m_options["debug"] = true;
+                break;
+            
+            case OptionDry:
+                // --dry
+                m_options["dry"] = true;
                 break;
 
             case 'v':
@@ -7552,6 +7589,7 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
+        { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
         { "volumes",          required_argument, 0, OptionVolumes         },
         { "vpc-id",           required_argument, 0, OptionVpcId           },
         { 0, 0, 0, 0 }
@@ -7936,7 +7974,12 @@ S9sOptions::readOptionsCluster(
                 // --template=NAME
                 m_options["template"] = optarg;
                 break;
-           
+          
+            case OptionUseInternalRepos:
+                // --use-internal-repos
+                m_options["use_internal_repos"] = true;
+                break;
+
             case OptionVolumes:
                 // --volumes=STRING
                 if (!appendVolumes(optarg))

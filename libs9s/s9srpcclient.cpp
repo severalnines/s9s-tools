@@ -3134,8 +3134,8 @@ S9sRpcClient::addNode(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -5166,8 +5166,6 @@ S9sRpcClient::deleteOldBackups()
     if (options->hasSafetyCopies())
         jobData["safety_copies"] = options->safetyCopies();
 
-    jobData["dry_run"] = true;
-
     // The jobspec describing the command.
     jobSpec["command"]    = "delete_old_backups";
     jobSpec["job_data"]   = jobData;
@@ -6103,6 +6101,12 @@ S9sRpcClient::composeJobData(
     
     if (!osPassword.empty())
         jobData["ssh_password"] = osPassword;
+
+    if (options->dry())
+        jobData["dry_run"] = true;
+
+    if (options->useInternalRepos())
+        jobData["use_internal_repos"] = true;
 
     return jobData;
 }

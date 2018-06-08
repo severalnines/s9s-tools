@@ -582,6 +582,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateBackup02
     runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackup04
+    runFunctionalTest testCreateBackup05
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
