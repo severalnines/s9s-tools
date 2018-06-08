@@ -68,7 +68,7 @@ SUPPORTED TESTS:
   o testStart            Starts the cluster.
 
 EXAMPLE
- ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
+ ./$MYNAME --print-commands --server=storage01 --reset-config --install
 
 EOF
     exit 1

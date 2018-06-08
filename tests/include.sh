@@ -303,7 +303,7 @@ function check_exit_code()
             tail -n1 | \
             awk '{print $1}')
 
-        if [ "$jobId" ]; then
+        if [ "$jobId" -a "$LOG_OPTION" != "--log" ]; then
             echo "A job is failed. The test script will now try to list the"
             echo "job messages of the failed job. Here it is:"
             mys9s job --log --debug --job-id="$jobId"
