@@ -93,21 +93,7 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
-    exit 7
-fi
-
-
 reset_config
-
-#CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}' 2>/dev/null)
-
-if [ -z "$PIP_CONTAINER_CREATE" ]; then
-    printError "The 'pip-container-create' program is not found."
-    printError "Don't know how to create nodes, giving up."
-    exit 1
-fi
 
 #
 # This test will allocate a few nodes and install a new cluster.

@@ -12,12 +12,12 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+# The IP of the node we added first and last. Empty if we did not.
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
-
-# The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
+TESTED_CONTAINER_SERVER=""
 
 cd $MYDIR
 source include.sh
@@ -119,17 +119,6 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
-    exit 7
-fi
-
-if [ -z $(which pip-container-create) ]; then
-    printError "The 'pip-container-create' program is not found."
-    printError "Don't know how to create nodes, giving up."
-    exit 1
-fi
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -142,7 +131,7 @@ function testCreateCluster()
     print_title "Testing the creation of a Galera cluster"
 
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "ft_multiserver_$$_node001")
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
  
@@ -174,21 +163,21 @@ function createServer()
     local class
     local nodeName="$FIRST_ADDED_NODE"
 
-    print_title "Creating Container Server"
+    print_title "Creating a Container Server"
 
     #
-    # Creating a container.
+    # Creating a server.
     #
     mys9s server \
         --create \
         --servers="cmon-cloud://$nodeName" \
         $LOG_OPTION
 
-    check_exit_code_no_job $?
+    check_exit_code $?
 
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
+    #while s9s server --list --long | grep refused; do
+    #    sleep 10
+    #done
 
     mys9s server --list --long
     check_exit_code_no_job $?
@@ -210,7 +199,7 @@ function createServer()
     #
     mys9s tree --cat /$nodeName/.runtime/state
 
-    CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    TESTED_CONTAINER_SERVER="$nodeName"
 }
 
 #
@@ -223,14 +212,14 @@ function createContainer()
     local container_name="ft_multiserver_00_$$"
     local template
 
-    print_title "Creating Container"
+    print_title "Creating a Container"
 
     #
     # Creating a container.
     #
     mys9s container \
         --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        --servers=$TESTED_CONTAINER_SERVER \
         --volumes="vol1:5:hdd" \
         $LOG_OPTION \
         "$container_name"
@@ -255,12 +244,14 @@ function createContainer()
         exit 1
     fi
 
+
     owner=$(\
         s9s container --list --long --batch "$container_name" | \
         awk '{print $4}')
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
+        mys9s container --list --long --batch "$container_name"
         exit 1
     fi
    
@@ -282,6 +273,35 @@ function createContainer()
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME=$container_name
+}
+
+function recreateServer()
+{
+    local serverName
+
+    #
+    # First we unregister the server that will leave the cmon-cloud software
+    # installed.
+    #
+    print_title "Unregistering Server"
+    serverName="$FIRST_ADDED_NODE"
+
+    mys9s server \
+        --unregister \
+        --servers="cmon-cloud://$serverName"
+    
+    check_exit_code_no_job $?
+
+    #
+    # Then creating the server again.
+    #
+    mys9s server \
+        --create \
+        --servers="cmon-cloud://$serverName" \
+        --log
+    
+    mys9s server --list --long
+    
 }
 
 #
@@ -328,6 +348,8 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
     runFunctionalTest createServer
+    runFunctionalTest createContainer
+    runFunctionalTest recreateServer
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -336,6 +358,7 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest createServer
     runFunctionalTest createContainer
+    runFunctionalTest recreateServer
     runFunctionalTest deleteContainer
 fi
 

@@ -92,11 +92,6 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    printError "The s9s program is not installed."
-    exit 7
-fi
-
 #
 # This function is used to cut one cell (of a given row and column) from a table
 # formatted text.

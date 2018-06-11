@@ -90,16 +90,13 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    printError "The s9s program is not installed."
-    exit 7
-fi
-
 if [ -z "$OPTION_RESET_CONFIG" ]; then
     printError "This script must remove the s9s config files."
     printError "Make a copy of ~/.s9s and pass the --reset-config option."
     exit 6
 fi
+
+startTests
 
 #####
 # Creating a user to be a normal user. 

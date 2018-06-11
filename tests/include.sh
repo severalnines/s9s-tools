@@ -146,6 +146,24 @@ function startTests ()
 {
     TEST_SUITE_NAME=$(basename $0 .sh)
 
+    echo "Starting test $TEST_SUITE_NAME"
+
+    echo -n "Checking if s9s is installed..."
+    if [ -z "$S9S" ]; then
+        echo " [FAILED]"
+        exit 7
+    else 
+        echo " [OK]"
+    fi
+
+    echo -n "Searching for pip-container-create..."
+    if [ -z $(which pip-container-create) ]; then
+        echo " [FAILED]"
+        exit 7
+    else 
+        echo " [OK]"
+    fi
+
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
         echo ""
         echo "***********************"

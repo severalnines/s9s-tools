@@ -94,11 +94,6 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
-    exit 7
-fi
-
 CLUSTER_ID=$($S9S cluster --list --long --batch | awk '{print $1}')
 
 #if [ ! -d data -a -d tests/data ]; then

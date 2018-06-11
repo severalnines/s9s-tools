@@ -122,17 +122,6 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    echo "The s9s program is not installed."
-    exit 7
-fi
-
-if [ -z $(which pip-container-create) ]; then
-    printError "The 'pip-container-create' program is not found."
-    printError "Don't know how to create nodes, giving up."
-    exit 1
-fi
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #

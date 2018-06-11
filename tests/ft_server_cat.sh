@@ -103,11 +103,6 @@ while true; do
     esac
 done
 
-if [ -z "$S9S" ]; then
-    printError "The s9s program is not installed."
-    exit 7
-fi
-
 if [ -z "$OPTION_RESET_CONFIG" ]; then
     printError "This script must remove the s9s config files."
     printError "Make a copy of ~/.s9s and pass the --reset-config option."
@@ -210,6 +205,7 @@ function unregisterServer()
 startTests
 reset_config
 grant_user
+
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
 elif [ "$1" ]; then
