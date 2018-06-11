@@ -3938,8 +3938,10 @@ S9sRpcReply::printContainers()
         printf("%s\n", STR(toString()));
     else if (options->isStatRequested())
         printContainerStat();
-    else 
+    else if (options->isLongRequested())
         printContainersLong();
+    else
+        printContainersBrief();
 }
 
 /**
@@ -4133,6 +4135,46 @@ S9sRpcReply::printContainersLong()
                 numberColorBegin(), total, numberColorEnd(),
                 numberColorBegin(), totalRunning, numberColorEnd());
     }
+}
+
+void 
+S9sRpcReply::printContainersBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sString       subnetId  = options->subnetId();
+    S9sString       vpcId     = options->vpcId();
+    S9sVariantList  theList = operator[]("containers").toVariantList();
+    S9sString       cloudName = options->cloudName();
+    
+    /*
+     * Printing the list.
+     */    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sContainer   container(theMap);
+        S9sString      alias  = container.name();
+
+        if (!options->isStringMatchExtraArguments(alias))
+            continue;
+        
+        if (!subnetId.empty() && container.subnetId() != subnetId)
+            continue;
+        
+        if (!vpcId.empty() && vpcId != container.subnetVpcId())
+            continue;
+
+        if (!cloudName.empty() && container.provider() != cloudName)
+            continue;
+
+        ::printf("%s%s%s ", 
+                containerColorBegin(container.stateAsChar()), 
+                STR(alias),
+                containerColorEnd());
+
+    }
+    
+    printf("\n");
 }
 
 void

@@ -116,6 +116,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printContainers();
         void printContainersLong();
+        void printContainersBrief();
         void printContainersCompact(const S9sVariantList &containers);
         void printContainerStat();
 
