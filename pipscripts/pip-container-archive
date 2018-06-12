@@ -243,6 +243,9 @@ function archive_one_container()
     local state
     local stopped
 
+    #
+    # If the container is running and we are allowed to stop it we stop it.
+    #
     state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
@@ -256,7 +259,8 @@ function archive_one_container()
     fi
         
     #
-    # Archiving.
+    # Archiving into the $OUTPUT_DIR or into /var/lib/lxc if the output dir is
+    # not set.
     #
     cd /var/lib/lxc
 
@@ -283,12 +287,15 @@ function archive_one_container()
         tar --numeric-owner -cf "$tar_file_name" "$container"
     fi
 
-    if [ "$OWNER" ]; then
-        target_dir="/home/$OWNER"
-        printVerbose "Moving file to '$target_dir/$tar_basename'."
-        mv "$tar_file_name" "$target_dir"
-        chown "$OWNER:$OWNER" "$target_dir/$tar_basename"
-    fi
+    #
+    #
+    #
+#    if [ "$OWNER" ]; then
+#        target_dir="/home/$OWNER"
+#        printVerbose "Moving file to '$target_dir/$tar_basename'."
+#        mv "$tar_file_name" "$target_dir"
+#        chown "$OWNER:$OWNER" "$target_dir/$tar_basename"
+#    fi
 
     if [ "$STORAGE_URL" ]; then
         # If we have a storage URL we upload the archive file there.
@@ -310,6 +317,7 @@ function archive_one_container()
         lxc-start -n "$container"
     fi
 
+    printVerbose "Done archiving '$container'..."
     return 0
 }
 
@@ -390,10 +398,21 @@ else
         for container in $EXTRA_OPTIONS; do
             tar_file_name="$(archive_file_name "$container")"
             tar_basename="$(basename "$tar_file_name")"
-            scp \
-                "$SERVER:$tar_basename" \
-                .
+            printVerbose "Downloading $tar_file_name"
+            printVerbose "  to $tar_basename"
+            $SSH $SERVER -- \
+                "sudo cat $tar_file_name" >$tar_basename
         done
     fi
+
+#    if [ "$SERVER" ]; then
+#        for container in $EXTRA_OPTIONS; do
+#            tar_file_name="$(archive_file_name "$container")"
+#            tar_basename="$(basename "$tar_file_name")"
+#            scp \
+#                "$SERVER:$tar_basename" \
+#                .
+#        done
+#    fi
 fi
 

@@ -232,7 +232,8 @@ S9sObject::cdtPath() const
  * \returns The user name of the user that owns this object.
  */
 S9sString 
-S9sObject::ownerName() const
+S9sObject::ownerName(
+        const S9sString defaultValue) const
 {
     S9sString retval;
 
@@ -242,6 +243,8 @@ S9sObject::ownerName() const
     } else if (m_properties.contains("owner_user_id"))
     {
         retval.sprintf("%d", m_properties.at("owner_user_id").toInt());
+    } else {
+        retval = defaultValue;
     }
 
     return retval;
@@ -251,7 +254,8 @@ S9sObject::ownerName() const
  * \returns The group name of the group that owns the object.
  */
 S9sString 
-S9sObject::groupOwnerName() const
+S9sObject::groupOwnerName(
+        const S9sString defaultValue) const
 {
     S9sString retval;
 
@@ -261,6 +265,8 @@ S9sObject::groupOwnerName() const
     } else if (m_properties.contains("owner_group_id"))
     {
         retval.sprintf("%d", m_properties.at("owner_group_id").toInt());
+    } else {
+        retval = defaultValue;
     }
 
     return retval;
