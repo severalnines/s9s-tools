@@ -343,7 +343,10 @@ function check_exit_code_no_job()
 
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}."
+        return 1
     fi
+
+    return 0
 }
 
 function check_container()
@@ -1028,7 +1031,7 @@ function grant_user()
     mys9s user \
         --add-key \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The SSH key"
+        --public-key-name="The_SSH_key"
 
     #mys9s user --list-keys
 }

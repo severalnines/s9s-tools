@@ -89,12 +89,6 @@ while true; do
     esac
 done
 
-if [ -z "$OPTION_RESET_CONFIG" ]; then
-    printError "This script must remove the s9s config files."
-    printError "Make a copy of ~/.s9s and pass the --reset-config option."
-    exit 6
-fi
-
 function testCreateUsers()
 {
     print_title "Creating a User"

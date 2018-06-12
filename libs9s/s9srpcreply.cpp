@@ -3593,10 +3593,24 @@ S9sRpcReply::printServerStat(
     // "      IP: 192.168.1.4"
     //
     printf("%s      IP:%s ", greyBegin, greyEnd);
-    printf("%-33s ", STR(server.ipAddress()));
+    printf("%s%-33s%s ", 
+            ipColorBegin(server.ipAddress()),
+            STR(server.ipAddress()),
+            ipColorEnd());
 
     printf("%sProtocol:%s ", greyBegin, greyEnd);
     printf("%-25s ", STR(server.protocol()));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s%-24s%s ", 
+            hostStateColorBegin(server.hostStatus()),
+            STR(server.hostStatus()),
+            hostStateColorEnd());
 
     printf("\n");
     
@@ -5598,7 +5612,10 @@ S9sRpcReply::printNodeStat(
     printf("%s  Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.nodeType()));
     printf("\n");
-    
+   
+    //
+    //
+    //
     printf("%s  Status:%s ", greyBegin, greyEnd);
     printf("%-24s", STR(node.hostStatus()));
     //printf("\n");

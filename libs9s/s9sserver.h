@@ -45,6 +45,7 @@ class S9sServer : public S9sObject
         S9sString ipAddress() const;
         S9sString protocol() const;
         S9sString status() const;
+        S9sString hostStatus() const;
 
         S9sVariantList subnets() const;
         int nSubnets() const;

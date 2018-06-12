@@ -4698,9 +4698,6 @@ S9sOptions::readOptionsNode(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -4983,8 +4980,7 @@ S9sOptions::readOptionsBackup(
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
-
-            
+ 
             case OptionNodes:
                 // --nodes=LIST
                 if (!setNodes(optarg))
@@ -5119,9 +5115,6 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -5428,9 +5421,6 @@ S9sOptions::readOptionsLog(
                 break;
             
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -5669,9 +5659,6 @@ S9sOptions::readOptionsEvent(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -6434,9 +6421,6 @@ S9sOptions::readOptionsProcess(
                 break;
             
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -6732,9 +6716,6 @@ S9sOptions::readOptionsUser(
                 break;
             
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -7032,9 +7013,6 @@ S9sOptions::readOptionsAccount(
                 break;
             
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -7254,9 +7232,6 @@ S9sOptions::readOptionsMaintenance(
                 break;
             
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -7424,9 +7399,6 @@ S9sOptions::readOptionsMetaType(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -7995,9 +7967,6 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case '?':
-                // 
-                return false;
-                
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -8317,9 +8286,6 @@ S9sOptions::readOptionsContainer(
                 break;
 
             case '?':
-                // 
-                return false;
-                
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -8565,9 +8531,6 @@ S9sOptions::readOptionsJob(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -8731,9 +8694,6 @@ S9sOptions::readOptionsScript(
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -9100,13 +9060,9 @@ S9sOptions::readOptionsServer(
                 // --servers=LIST
                 if (!setServers(optarg))
                     return false;
-
                 break;
 
             case '?':
-                // 
-                return false;
-
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -9402,11 +9358,8 @@ S9sOptions::readOptionsTree(
                 // --full-path
                 m_options["full_path"] = true;
                 break;
-            
-            case '?':
-                // 
-                return false;
 
+            case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
@@ -9695,6 +9648,7 @@ S9sOptions::readOptionsNoMode(
                 m_options["print-version"] = true;
                 break;
 
+            case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {

@@ -121,6 +121,18 @@ S9sServer::status() const
     return property("hoststatus").toString();
 }
 
+/**
+ * \returns The same as status(). 
+ */
+S9sString
+S9sServer::hostStatus() const
+{
+    if (m_properties.contains("hoststatus"))
+        return m_properties.at("hoststatus").toString();
+
+    return S9sString();
+}
+
 S9sVariantList 
 S9sServer::subnets() const
 {

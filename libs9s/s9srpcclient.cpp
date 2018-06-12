@@ -4057,16 +4057,21 @@ S9sRpcClient::registerServers()
     return executeRequest(uri, request);
 }
 
+/**
+ * This function will install the cmon-cloud software on a computer and create a
+ * new server of it. 
+ */
 bool
 S9sRpcClient::createServer()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
     S9sVariantMap  serverMap;
-    S9sString      uri = "/v2/jobs/";
+    S9sString      uri       = "/v2/jobs/";
     S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData, jobSpec;
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
     
     if (servers.size() != 1u)
     {
