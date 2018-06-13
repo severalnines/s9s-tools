@@ -150,6 +150,9 @@ function testCreateCluster()
     local exitCode
     local n_nodes_added=0
 
+    #
+    # 
+    #
     print_title "Creating a Cluster"
 
     while true; do

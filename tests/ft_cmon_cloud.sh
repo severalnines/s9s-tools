@@ -253,9 +253,9 @@ function testInstall()
         echo "$line" >>"$tmp_file"
         let counter+=1
 
-        if [ "$counter" -gt 10 ]; then
-            break
-        fi
+        #if [ "$counter" -gt 10 ]; then
+        #    break
+        #fi
     done
 
     echo ""

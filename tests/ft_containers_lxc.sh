@@ -714,6 +714,10 @@ function failOnContainers()
     fi
 }
 
+#
+# This will create a cluster on containers and add a node in the next job
+# creating a new container.
+#
 function createCluster()
 {
     local node001="ft_containers_lxc_21_$$"

@@ -2860,9 +2860,7 @@ S9sRpcClient::createMongoCluster(
         {
             if (node.hasProperty("rs"))
                 replsetName = node.property("rs").toString();
-        }
-        else
-        {
+        } else {
             PRINT_ERROR("Protocol name '%s' is invalid.", STR(protocol));
             return false;
         }
@@ -3035,17 +3033,35 @@ S9sRpcClient::createNode()
         S9sString protocol = hosts[idx].toNode().protocol().toLower();
 
         if (protocol == "haproxy")
+        {
             hasHaproxy = true;
-        else if (protocol == "proxysql")
+        } else if (protocol == "proxysql")
+        {
             hasProxySql = true;
-        else if (protocol == "maxscale")
+        } else if (protocol == "maxscale")
+        {
             hasMaxScale = true;
-        else if (protocol == "mongodb")
+        } else if (protocol == "mongodb")
+        {
             hasMongo = true;
-        else if (protocol == "mongocfg")
+        } else if (protocol == "mongocfg")
+        {
             hasMongo = true;
-        else if (protocol == "mongos")
+        } else if (protocol == "mongos")
+        {
             hasMongo = true;
+        } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
+        {
+        } else if (protocol == "mysql")
+        {
+        } else if (protocol.empty())
+        {
+        } else {
+            PRINT_ERROR(
+                    "The protocol '%s' is not supported.", 
+                    STR(protocol));
+            return false;
+        }
     }
 
     /*
@@ -3147,17 +3163,7 @@ S9sRpcClient::addNode(
     }
     
     // The job_data describing the cluster.
-    #if 1
     jobData["node"] = hosts[0].toVariantMap();
-    #else
-    if (hosts[0].isNode())
-    {
-        jobData["hostname"] = hosts[0].toNode().hostName();
-    } else {
-        jobData["hostname"] = hosts[0].toString();
-    }
-    #endif
-
     jobData["install_software"] = true;
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
