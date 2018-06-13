@@ -221,9 +221,11 @@ function installCmonCloud()
     check_exit_code $?
 
     if [ "$this_failed" ]; then
+        echo "Installing cmon-cloud on $image failed."
         return 1
     fi
 
+    echo "Installing cmon-cloud on $image worked."
     return 0
 }
 
@@ -235,13 +237,12 @@ function testInstall()
     local counter=0
     local images="ubuntu_artful ubuntu_bionic ubuntu_trusty ubuntu_xenial \
       debian_buster debian_sid debian_stretch \
-      debian_wheezy \
+      debian_wheezy debian_jessie \
       centos_6 centos_7 fedora_25 fedora_26 fedora_27 opensuse_42.2 \
       opensuse_42.3 oracle_6 oracle_7 plamo_5.x plamo_6.x archlinux_current \
       gentoo_current"
 
-    # This has serious issues, it blocks the controller indefinitely.
-    #debian_jessie
+    #local images="debian_jessie"
 
     for image in $images; do
         installCmonCloud --image "$image"
