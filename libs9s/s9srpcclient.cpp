@@ -1930,6 +1930,8 @@ S9sRpcClient::createCluster()
                 PRINT_ERROR(
                         "The protocol '%s' is not supported.", 
                         STR(protocol));
+            
+                options->setExitStatus(S9sOptions::BadOptions);
                 return false;
             }
         }
@@ -2006,6 +2008,8 @@ S9sRpcClient::registerCluster()
                 PRINT_ERROR(
                         "The protocol '%s' is not supported.", 
                         STR(protocol));
+            
+                options->setExitStatus(S9sOptions::BadOptions);
                 return false;
             }
         }
@@ -2862,6 +2866,7 @@ S9sRpcClient::createMongoCluster(
                 replsetName = node.property("rs").toString();
         } else {
             PRINT_ERROR("Protocol name '%s' is invalid.", STR(protocol));
+            options->setExitStatus(S9sOptions::BadOptions);
             return false;
         }
 
@@ -3060,6 +3065,8 @@ S9sRpcClient::createNode()
             PRINT_ERROR(
                     "The protocol '%s' is not supported.", 
                     STR(protocol));
+        
+            options->setExitStatus(S9sOptions::BadOptions);
             return false;
         }
     }

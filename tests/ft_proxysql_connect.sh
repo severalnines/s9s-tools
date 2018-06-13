@@ -19,7 +19,7 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source ./include.sh
+source "./include.sh"
 
 #
 # Prints usage information and exits.
@@ -30,7 +30,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check Galera clusters.
+  $MYNAME - Checks if a created ProxySql server can be connected.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -43,7 +43,7 @@ Usage:
  --leave-nodes    Do not destroy the nodes at exit.
 
 EXAMPLE
- ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
+ ./$MYNAME --print-commands --server=storage01 --reset-config --install
 
 EOF
     exit 1
@@ -147,11 +147,10 @@ function testCreateCluster()
 {
     local nodes
     local nodeName
-    local exitCode
     local n_nodes_added=0
 
     #
-    # 
+    # Creating a galera cluster.
     #
     print_title "Creating a Cluster"
 
@@ -190,13 +189,7 @@ function testCreateCluster()
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then

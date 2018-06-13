@@ -391,7 +391,8 @@ function check_container()
         failure "User $owner can not log in to $container_ip"
         exit 1
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        echo "check_container(): " \
+            "SSH access granted for user '$USER' on $container_ip."
     fi
 }
 
@@ -882,7 +883,7 @@ function create_node()
         return 1
     fi
 
-    printVerbose "Creating container..."
+    echo -n "Creating container..." >&2
     ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER $1)
     retval=$?
     if [ "$retval" -ne 0 ]; then
@@ -898,7 +899,10 @@ function create_node()
     wait_for_server_ssh "$ip" "$USER"
     retval=$?
     if [ "$retval" -ne 0 ]; then
+        echo "[FAILED]" >&2
         echo "Could not reach created server at ip '$ip'." >&2
+    else
+        echo "[OK]" >&2
     fi
 
     if [ "$option_autodestroy" ]; then
