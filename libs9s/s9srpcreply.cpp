@@ -3761,6 +3761,7 @@ S9sRpcReply::printServersLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     int             total   = operator[]("total").toInt();
+    int             nLines = 0;
     S9sFormat       protocolFormat;
     S9sFormat       versionFormat;
     S9sFormat       nContainersFormat;
@@ -3797,12 +3798,13 @@ S9sRpcReply::printServersLong()
         ownerFormat.widen(owner);
         groupFormat.widen(group);
         ipFormat.widen(ip);
+        ++nLines;
     }
 
     /*
      * Printing the header.
      */
-    if (!options->isNoHeaderRequested())
+    if (!options->isNoHeaderRequested() && nLines > 0)
     {
         protocolFormat.widen("PRV");
         versionFormat.widen("VERSION");
@@ -3834,9 +3836,9 @@ S9sRpcReply::printServersLong()
         S9sString      status   = server.status();
         S9sString      owner    = theMap["owner_user_name"].toString();
         S9sString      group    = theMap["owner_group_name"].toString();
-        S9sString      message  = theMap["message"].toString();
+        S9sString      message  = server.message("-");
         int            nContainers = theMap["containers"].size();
-        S9sString      ip       = theMap["ip"].toString();
+        S9sString      ip       = server.ipAddress("-");
 
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
@@ -3989,6 +3991,7 @@ S9sRpcReply::printContainersLong()
     S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     int             total   = operator[]("total").toInt();
+    int             nLines = 0;
     int             totalRunning = 0;
     
     S9sFormat       typeFormat;
@@ -4034,12 +4037,13 @@ S9sRpcReply::printContainersLong()
         parentFormat.widen(parent);
         typeFormat.widen(type);
         templateFormat.widen(templateName);
+        ++nLines;
     }
 
     /*
      * Printing the header.
      */
-    if (!options->isNoHeaderRequested())
+    if (!options->isNoHeaderRequested() && nLines > 0)
     {
         typeFormat.widen("CLD");
         templateFormat.widen("TEMPLATE");

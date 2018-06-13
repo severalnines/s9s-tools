@@ -41,8 +41,9 @@ class S9sServer : public S9sObject
         virtual S9sString id(const S9sString &defaultValue = "") const;
         S9sString hostName() const;
         S9sString alias(const S9sString &defaultValue = "") const;
+        S9sString message(const S9sString &defaultValue = "") const;
         S9sString version() const;
-        S9sString ipAddress() const;
+        S9sString ipAddress(const S9sString &defaultValue = "") const;
         S9sString protocol() const;
         S9sString status() const;
         S9sString hostStatus() const;

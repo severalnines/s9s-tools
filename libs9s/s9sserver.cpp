@@ -98,15 +98,39 @@ S9sServer::alias(
 }
 
 S9sString
+S9sServer::message(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    if (hasProperty("message"))
+        retval = property("message").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString
 S9sServer::version() const
 {
     return property("version").toString();
 }
 
 S9sString
-S9sServer::ipAddress() const
+S9sServer::ipAddress(
+        const S9sString &defaultValue) const
 {
-    return property("ip").toString();
+    S9sString retval;
+
+    if (hasProperty("ip"))
+        retval = property("ip").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 S9sString
