@@ -234,11 +234,14 @@ function testInstall()
     local image
     local counter=0
     local images="ubuntu_artful ubuntu_bionic ubuntu_trusty ubuntu_xenial \
-      debian_buster debian_jessie debian_sid debian_stretch \
+      debian_buster debian_sid debian_stretch \
       debian_wheezy \
       centos_6 centos_7 fedora_25 fedora_26 fedora_27 opensuse_42.2 \
       opensuse_42.3 oracle_6 oracle_7 plamo_5.x plamo_6.x archlinux_current \
       gentoo_current"
+
+    # This has serious issues, it blocks the controller indefinitely.
+    #debian_jessie
 
     for image in $images; do
         installCmonCloud --image "$image"
