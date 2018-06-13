@@ -272,7 +272,7 @@ function createContainer()
         "$container_name"
     
     check_exit_code $?
-    
+    remember_cmon_container "$container_name"
     mys9s container --list --long
 
     #
@@ -355,7 +355,7 @@ function createAsSystem()
         "$container_name"
     
     check_exit_code $?
-    
+    remember_cmon_container "$container_name"
     mys9s container --list --long
 
     #
@@ -515,6 +515,7 @@ function createContainers()
         "$container_name1"
     
     check_exit_code $?
+    remember_cmon_container "$container_name1"
     check_container "$container_name1"
 
     #
@@ -529,24 +530,26 @@ function createContainers()
         "$container_name2"
     
     check_exit_code $?
+    remember_cmon_container "$container_name2"
     check_container "$container_name2"
     
     #
     # Creating a container Debian Wheezy.
     #
-    print_title "Creating Debian Wheezy Container"
-    mys9s container \
-        --create \
-        --image=debian_wheezy \
-        --servers=$CONTAINER_SERVER \
-        $LOG_OPTION \
-        "$container_name3"
-    
-    check_exit_code $?
-    check_container "$container_name3"
+#    print_title "Creating Debian Wheezy Container"
+#    mys9s container \
+#        --create \
+#        --image=debian_wheezy \
+#        --servers=$CONTAINER_SERVER \
+#        $LOG_OPTION \
+#        "$container_name3"
+#    
+#    check_exit_code $?
+#    remember_cmon_container "$container_name3"
+#    check_container "$container_name3"
     
     #
-    # Creating a container Debian Wheezy.
+    # Creating a container Debian Stretch.
     #
     print_title "Creating Debian Stretch Container"
     mys9s container \
@@ -557,23 +560,8 @@ function createContainers()
         "$container_name4"
     
     check_exit_code $?
+    remember_cmon_container "$container_name4"
     check_container "$container_name4"
-
-    #
-    # Deleting the containers we just created.
-    #
-    print_title "Deleting Containers"
-    mys9s container --delete --wait "$container_name1"
-    check_exit_code $?
-    
-    mys9s container --delete --wait "$container_name2"
-    check_exit_code $?
-    
-    mys9s container --delete --wait "$container_name3"
-    check_exit_code $?
-    
-    mys9s container --delete --wait "$container_name4"
-    check_exit_code $?
 }
 
 #
@@ -728,8 +716,8 @@ function failOnContainers()
 
 function createCluster()
 {
-    local node001="ft_containers_lxc_11_$$"
-    local node002="ft_containers_lxc_12_$$"
+    local node001="ft_containers_lxc_21_$$"
+    local node002="ft_containers_lxc_22_$$"
     local node_ip
     local container_id
 
@@ -748,6 +736,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    remember_cmon_container "$node001"
 
     while true; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -782,6 +771,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    remember_cmon_container "$node002"
     
     #
     # Checking the proxysql node.
@@ -817,13 +807,8 @@ function createCluster()
 #
 function deleteContainer()
 {
-    local containers
+    local containers=$(cmon_container_list)
     local container
-
-    containers="ft_containers_lxc_00_$$"
-    containers+=" ft_containers_lxc_01_$$"
-    containers+=" ft_containers_lxc_11_$$"
-    containers+=" ft_containers_lxc_12_$$"
 
     print_title "Deleting Containers"
 

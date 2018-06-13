@@ -25,6 +25,7 @@ XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
 XTERM_COLOR_WHITE="\033[1;37m"
 
 TERM_COLOR_TITLE="\033[1m\033[37m"
+CMON_CONTAINER_NAMES=""
 
 if [ -x ../s9s/s9s ]; then
     S9S="../s9s/s9s"
@@ -1095,6 +1096,26 @@ function destroyNodes()
     fi
 
     return 0
+}
+
+function remember_cmon_container()
+{
+    local container_name="$1"
+
+    if [ -z "$container_name" ]; then
+        return 1
+    fi
+
+    if [ -n "$CMON_CONTAINER_NAMES" ]; then
+        CMON_CONTAINER_NAMES+=" "
+    fi
+
+    CMON_CONTAINER_NAMES+="$container_name"
+}
+
+function cmon_container_list()
+{
+    echo $CMON_CONTAINER_NAMES
 }
 
 trap destroyNodes EXIT
