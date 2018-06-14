@@ -10,6 +10,9 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
+
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
@@ -27,12 +30,14 @@ Usage:
  
   $MYNAME - Test script for mysql replication.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=STRING The SQL server provider version.
 
 EOF
     exit 1
@@ -41,7 +46,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,reset-config" \
+        -l "help,verbose,log,server:,print-commands,reset-config,\
+provider-version:,vendor:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -81,6 +87,18 @@ while true; do
         --reset-config)
             shift
             OPTION_RESET_CONFIG="true"
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+        
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
             ;;
 
         --)
@@ -161,9 +179,9 @@ function testCreateCluster()
         --create \
         --cluster-type=mysqlreplication \
         --nodes="$nodes" \
-        --vendor=percona \
+        --vendor="$PROVIDER_VERSION" \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     check_exit_code $?
