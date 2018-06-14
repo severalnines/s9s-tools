@@ -179,7 +179,7 @@ function testCreateCluster()
         --create \
         --cluster-type=mysqlreplication \
         --nodes="$nodes" \
-        --vendor="$PROVIDER_VERSION" \
+        --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
