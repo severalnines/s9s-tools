@@ -156,6 +156,7 @@ function registerServer()
 
     if [ "$class" != "CmonLxcServer" ]; then
         failure "Created server has a '$class' class and not 'CmonLxcServer'."
+        s9s server --stat "$CONTAINER_SERVER"
         exit 1
     fi
     
