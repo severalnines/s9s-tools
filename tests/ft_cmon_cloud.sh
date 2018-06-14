@@ -199,6 +199,8 @@ function installCmonCloud()
     if s9s server --stat "$container_ip" | grep --quiet "CmonHostOffLine"; then
         failure "The server is off-line."
         this_failed="true"
+    else
+        echo "The server on $image is on-line."
     fi
 
     #
