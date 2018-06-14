@@ -240,20 +240,21 @@ function testInstall()
     local images="ubuntu_artful ubuntu_bionic ubuntu_trusty ubuntu_xenial \
       debian_buster debian_sid debian_stretch \
       debian_wheezy debian_jessie \
-      centos_6 centos_7 fedora_25 fedora_26 fedora_27 opensuse_42.2 \
-      opensuse_42.3 oracle_6 oracle_7 gentoo_current"
+      centos_6 centos_7 \
+      oracle_6 oracle_7 gentoo_current"
 
-    #local images="debian_jessie"
+    # these has issues with /etc/sudoers: fedora_26 fedora_27
+    # these has issues with ssh: opensuse_42.3 gentoo_current
 
     for image in $images; do
         installCmonCloud --image "$image"
         if [ $? -ne 0 ]; then
-            line=$(printf "%03d %-20s [FAILURE]\n" "$counter" "$image")
+            stat="$XTERM_COLOR_RED[FAILURE]$TERM_NORMAL"
         else
-            line=$(printf "%03d %-20s [SUCCESS]\n" "$counter" "$image")
+            stat="$XTERM_COLOR_GREEN[SUCCESS]$TERM_NORMAL"
         fi
-
-        #echo "$line"
+            
+        line=$(printf "%03d %-20s $stat\n" "$counter" "$image")
 
         echo "$line" >>"$tmp_file"
         let counter+=1
@@ -263,8 +264,7 @@ function testInstall()
         #fi
     done
 
-    echo ""
-    echo "Summary of Tests"
+    print_title "Summary of Tests"
     cat "$tmp_file"
     rm -f "$tmp_file"
 }
