@@ -239,17 +239,16 @@ function testInstall()
       debian_buster debian_sid debian_stretch \
       debian_wheezy debian_jessie \
       centos_6 centos_7 fedora_25 fedora_26 fedora_27 opensuse_42.2 \
-      opensuse_42.3 oracle_6 oracle_7 plamo_5.x plamo_6.x archlinux_current \
-      gentoo_current"
+      opensuse_42.3 oracle_6 oracle_7 gentoo_current"
 
     #local images="debian_jessie"
 
     for image in $images; do
         installCmonCloud --image "$image"
         if [ $? -ne 0 ]; then
-            line=$(printf "%03d %-20s [FAIL]\n" "$counter" "$image")
+            line=$(printf "%03d %-20s [FAILURE]\n" "$counter" "$image")
         else
-            line=$(printf "%03d %-20s [OK]\n" "$counter" "$image")
+            line=$(printf "%03d %-20s [SUCCESS]\n" "$counter" "$image")
         fi
 
         #echo "$line"
@@ -257,9 +256,9 @@ function testInstall()
         echo "$line" >>"$tmp_file"
         let counter+=1
 
-        if [ "$counter" -gt 10 ]; then
-            break
-        fi
+        #if [ "$counter" -gt 10 ]; then
+        #    break
+        #fi
     done
 
     echo ""

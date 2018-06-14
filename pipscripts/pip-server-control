@@ -220,7 +220,7 @@ function print_report()
     printf "\n"
     printf "Report\n"
     printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
-    printf "     Sum cores: %'6d\n" "$SUM_CORES" 
+    printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
     printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
     printf "\n"
 }
