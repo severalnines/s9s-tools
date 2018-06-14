@@ -265,6 +265,7 @@ class S9sRpcClient
         bool startNode();
         bool stopNode();
         bool restartNode();
+        bool promoteSlave();
 
         bool createMaintenance();
 

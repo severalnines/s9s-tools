@@ -39,6 +39,18 @@ Create a new cluster. When this command line option is provided the program
 will contact the controller and register a new job that will eventually create
 a new cluster. 
 
+.B EXAMPLE:
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=mysqlreplication \\
+    --nodes="192.168.0.84?master;192.168.0.151?slave" \\
+    --vendor=percona \\
+    --cluster-name=ft_replication_11130 \\
+    --provider-version=5.6 \\
+    --wait
+.fi
+
 .TP
 .B \-\-create-database
 Create a new database on the cluster.
@@ -73,6 +85,21 @@ List the clusters managed by the controller.
 .TP
 .B \-\-ping
 Check the connection to the controller.
+
+.TP
+.B \-\-promote\-slave
+Promote a slave node to become a master. This main option will of course work
+only on clusters where it is meaningful, where there are slaves and masters are
+possible.
+
+.B EXAMPLE:
+.nf
+pipas@t7500:tests$ s9s cluster \\
+    --promote-slave \\
+    --nodes=192.168.0.151 \\
+    --cluster-id=1 \\
+    --log
+.fi
 
 .TP 
 .B \-\-register

@@ -3871,14 +3871,7 @@ S9sRpcClient::stopNode()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
-    #if 1
     jobData["node"]       = hosts[0].toVariantMap();
-    #else
-    jobData["hostname"]   = node.hostName();
-    #endif
-    
-    if (node.hasPort())
-        jobData["port"]   = node.port();
      
     if (options->force())
         jobData["force_stop"] = true;
@@ -3957,6 +3950,54 @@ S9sRpcClient::restartNode()
     return retval;
 }
 
+/**
+ * This function will create and send a job to stop a node of a cluster.
+ */
+bool
+S9sRpcClient::promoteSlave()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To promote a slave exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"]       = hosts[0].toVariantMap();
+     
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "promote_replication_slave";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Promoting Slave";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 /**
  * \returns true if the request was sent and the reply was received (even if the

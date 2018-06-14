@@ -899,10 +899,10 @@ function create_node()
     wait_for_server_ssh "$ip" "$USER"
     retval=$?
     if [ "$retval" -ne 0 ]; then
-        echo "[FAILED]" >&2
+        echo -e " $XTERM_COLOR_RED[FAILURE]$TERM_NORMAL" >&2
         echo "Could not reach created server at ip '$ip'." >&2
     else
-        echo "[OK]" >&2
+        echo -e " $XTERM_COLOR_GREEN[SUCCESS]$TERM_NORMAL" >&2
     fi
 
     if [ "$option_autodestroy" ]; then

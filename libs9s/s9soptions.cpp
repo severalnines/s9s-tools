@@ -85,6 +85,7 @@ enum S9sOptionType
     OptionDbAdminPassword,
     OptionClusterType,
     OptionStop,
+    OptionPromoteSlave,
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
@@ -2995,11 +2996,24 @@ S9sOptions::isDisableRequested() const
     return getBool("disable");
 }
 
+/**
+ * \returns True if the --ping main option was used.
+ */
 bool
 S9sOptions::isPingRequested() const
 {
     return getBool("ping");
 }
+
+/**
+ * \returns True if the --promote-slave main option was used.
+ */
+bool
+S9sOptions::isPromoteSlaveRequested() const
+{
+    return getBool("promote_slave");
+}
+
 
 /**
  * \returns true if the --restore command line option was provided when the
@@ -4154,6 +4168,7 @@ S9sOptions::printHelpCluster()
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
+"  --promote-slave            Promote a slave to become a master.\n"
 "  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
@@ -5838,6 +5853,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isPingRequested())
         countOptions++;
+    
+    if (isPromoteSlaveRequested())
+        countOptions++;
 
     if (isRollingRestartRequested())
         countOptions++;
@@ -5937,9 +5955,6 @@ S9sOptions::checkOptionsContainer()
         countOptions++;
 
     if (isCreateRequested())
-        countOptions++;
-
-    if (isPingRequested())
         countOptions++;
 
     if (isDeleteRequested())
@@ -7495,25 +7510,26 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, OptionConfigFile      },
 
         // Main Option
-        { "ping",             no_argument,       0, OptionPing            },
-        { "list",             no_argument,       0, 'L'                   },
-        { "stat",             no_argument,       0, OptionStat            },
+        { "add-node",         no_argument,       0, OptionAddNode         },
+        { "check-hosts",      no_argument,       0, OptionCheckHosts      },
+        { "create-account",   no_argument,       0, OptionCreateAccount   },
+        { "create-database",  no_argument,       0, OptionCreateDatabase  },
         { "create",           no_argument,       0, OptionCreate          },
+        { "create-report",    no_argument,       0, OptionCreateReport    },
+        { "delete-account",   no_argument,       0, OptionDeleteAccount   },
+        { "drop",             no_argument,       0, OptionDrop            },
+        { "grant",            no_argument,       0, OptionGrant           },
+        { "list-databases",   no_argument,       0, OptionListDatabases   },
+        { "list",             no_argument,       0, 'L'                   },
+        { "ping",             no_argument,       0, OptionPing            },
+        { "promote-slave",    no_argument,       0, OptionPromoteSlave    },
         { "register",         no_argument,       0, OptionRegister        },
+        { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
-        { "create-report",    no_argument,       0, OptionCreateReport    },
-        { "add-node",         no_argument,       0, OptionAddNode         },
-        { "remove-node",      no_argument,       0, OptionRemoveNode      },
-        { "drop",             no_argument,       0, OptionDrop            },
-        { "stop",             no_argument,       0, OptionStop            },
         { "start",            no_argument,       0, OptionStart           },
-        { "create-account",   no_argument,       0, OptionCreateAccount   },
-        { "delete-account",   no_argument,       0, OptionDeleteAccount   },
-        { "create-database",  no_argument,       0, OptionCreateDatabase  },
-        { "list-databases",   no_argument,       0, OptionListDatabases   },
-        { "grant",            no_argument,       0, OptionGrant           },
-        { "check-hosts",      no_argument,       0, OptionCheckHosts      },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "stop",             no_argument,       0, OptionStop            },
 
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -7779,6 +7795,11 @@ S9sOptions::readOptionsCluster(
                 m_options["ping"] = true;
                 break;
             
+            case OptionPromoteSlave:
+                // --promote-slave
+                m_options["promote_slave"] = true;
+                break;
+            
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
@@ -8025,7 +8046,6 @@ S9sOptions::readOptionsContainer(
         { "create",           no_argument,       0, OptionCreate          },
         { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
-        //{ "ping",             no_argument,       0, OptionPing            },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },

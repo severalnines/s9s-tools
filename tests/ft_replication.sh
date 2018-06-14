@@ -114,9 +114,9 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
-    else
-        pip-say "The controller is on line."
+        #pip-say "The controller is off line. Further testing is not possible."
+    #else
+        #pip-say "The controller is on line."
     fi
 }
 
@@ -129,29 +129,29 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    print_title "Creating MySql replication cluster."
-    pip-say "The test to create My SQL replication cluster is starting now."
-    nodeName=$(create_node --autodestroy)
+    #
+    #
+    #
+    print_title "Creating MySql Replication Cluster."
+
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_00_$$")
     nodes+="$nodeName?master;"
     FIRST_ADDED_NODE=$nodeName
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_01_$$")
     SECOND_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
     
-    nodeName=$(create_node --autodestroy)
-    SECOND_ADDED_NODE=$nodeName
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_02_$$")
     nodes+="$nodeName?slave;"
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_03_$$")
     nodes+="$nodeName?master;"
     
-    nodeName=$(create_node --autodestroy)
-    SECOND_ADDED_NODE=$nodeName
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_04_$$")
     nodes+="$nodeName?slave;"
     
-    nodeName=$(create_node --autodestroy)
-    SECOND_ADDED_NODE=$nodeName
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_05_$$")
     nodes+="$nodeName?slave;"
     
     #
@@ -166,11 +166,7 @@ function testCreateCluster()
         --provider-version=5.6 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -178,6 +174,22 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    mys9s cluster --stat 
+    sleep 30
+    mys9s cluster --stat
+
+    #
+    #
+    #
+    print_title "Promoting Slave $SECOND_ADDED_NODE"
+    mys9s cluster \
+        --promote-slave \
+        --nodes="$SECOND_ADDED_NODE" \
+        --cluster-id="$CLUSTER_ID" \
+        $LOG_OPTION
+
+    check_exit_code $?
 }
 
 #
@@ -188,7 +200,6 @@ function testStop()
     local exitCode
 
     print_title "Stopping cluster"
-    pip-say "The test to stop cluster is starting now."
 
     #
     # Stopping the cluster.

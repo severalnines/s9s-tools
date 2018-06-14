@@ -152,6 +152,10 @@ S9sBusinessLogic::execute()
         {
             success = client.stopCluster();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isPromoteSlaveRequested())
+        {
+            success = client.promoteSlave();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isStartRequested())
         {
             success = client.startCluster();
