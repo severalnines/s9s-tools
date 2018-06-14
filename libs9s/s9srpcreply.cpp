@@ -9227,7 +9227,7 @@ S9sRpcReply::clusterStateColorBegin(
     {
         if (state == "DEGRADED")
             return XTERM_COLOR_YELLOW;
-        else if (state == "FAILURE")
+        else if (state == "FAILURE" || state == "UNKNOWN")
             return XTERM_COLOR_RED;
         else if (state == "STARTED")
             return XTERM_COLOR_GREEN;
