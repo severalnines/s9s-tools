@@ -84,7 +84,7 @@ UtS9sUser::testConstruct()
     S9S_COMPARE(user.jobTitle(),          "");
     S9S_COMPARE(user.groupNames(),        "ds9");
     S9S_COMPARE(user.fullName(),          "Lt. Worf");
-    S9S_COMPARE(user.ownerName(),         "");
+    S9S_COMPARE(user.ownerName(""),       "");
     S9S_COMPARE(user.groupOwnerName(),    "");
     S9S_COMPARE(user.lastLoginString(),   "");
     S9S_COMPARE(user.createdString(),     "");

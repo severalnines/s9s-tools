@@ -344,6 +344,8 @@ function print_device_list()
 
         if [ "$HOST_STATUS" == "IDLE" ]; then
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "TESTING" ]; then
+            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         else
