@@ -53,8 +53,6 @@ ERR_COLOR="$XTERM_COLOR_RED"
 NORM_COLOR="$XTERM_COLOR_BLUE"
 DATE_COLOR="\033[1m\033[38;5;215m"
 
-
-
 #
 # Prints the software version and exits.
 #

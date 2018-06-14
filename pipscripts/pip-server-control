@@ -1,0 +1,371 @@
+#! /bin/bash
+
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.1"
+VERBOSE=""
+LOGFILE="$HOME/.pip/${MYNAME}.log"
+OPTION_DEVICE=""
+OPTION_PRINT_FILES=""
+
+SUM_SERVERS=0
+SUM_CORES=0
+SUM_MEMORY=0
+
+
+TERM_ERASE_EOL="\033[K"
+TERM_HOME="\033[0;0H"
+TERM_NORMAL="\033[0;39m"
+TERM_BOLD="\033[1m"
+TERM_INVERSE="\033[7m"
+XTERM_COLOR_RED="\033[0;31m"
+XTERM_COLOR_GREEN="\033[0;32m"
+XTERM_COLOR_ORANGE="\033[0;33m"
+XTERM_COLOR_BLUE="\033[0;34m"
+XTERM_COLOR_PURPLE="\033[0;35m"
+XTERM_COLOR_CYAN="\033[0;36m"
+XTERM_COLOR_LIGHT_GRAY="\033[0;37m"
+XTERM_COLOR_DARK_GRAY="\033[1;30m"
+XTERM_COLOR_LIGHT_RED="\033[1;31m"
+XTERM_COLOR_LIGHT_GREEN="\033[1;32m"
+XTERM_COLOR_YELLOW="\033[1;33m"
+XTERM_COLOR_LIGHT_BLUE="\033[1;34m"
+XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
+XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
+XTERM_COLOR_WHITE="\033[1;37m"
+
+OWNER_COLOR="$XTERM_COLOR_ORANGE"
+USER_COLOR="\033[1m\033[38;5;212m"
+EMAIL_COLOR="$XTERM_COLOR_PURPLE"
+PROJECT_COLOR="\033[1m\033[38;5;210m"
+TEST_COLOR="\033[2m\033[38;5;190m"
+HOST_COLOR="\033[1m\033[38;5;184m"
+INC_COLOR="\033[1m\033[36m"
+QUERY_COLOR="\033[1m\033[36m"
+COMMENT_COLOR="\033[1m\033[38;5;12m"
+IP_COLOR="\033[2m\033[38;5;201m"
+FILE_COLOR="\033[38;5;119m"
+GROUP_COLOR="\033[2m\033[38;5;7m"
+DEVICE_COLOR="\033[1m\033[38;5;203m"
+
+OK_COLOR="$XTERM_COLOR_GREEN"
+WARN_COLOR="$XTERM_COLOR_YELLOW"
+ERR_COLOR="$XTERM_COLOR_RED"
+NORM_COLOR="$XTERM_COLOR_BLUE"
+DATE_COLOR="\033[1m\033[38;5;215m"
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# $*: the error message
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "ERROR $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "DEBUG $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... DEVICE 
+
+  $MYNAME - Turns on and off pdu outlets.
+
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+  --list               List the power distribution units.
+  --on                 Turn the socket on.
+  --off                Turn the socket off.
+  --state              Check the state of the socket.
+  --power              Read the current power consumption in watts.
+  --temperature        Read the temperature.
+  --print-files        Print file names instead of names.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,list,on,off,state,\
+power,temperature,print-files" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --list)
+            shift
+            LIST_OPTION="true"
+            ;;
+
+        --on)
+            shift
+            PDU_OPERATION="on"
+            ;;
+
+        --power)
+            shift
+            PDU_OPERATION="power"
+            ;;
+
+        --off)
+            shift
+            PDU_OPERATION="off"
+            ;;
+
+        --state)
+            shift
+            PDU_OPERATION="state"
+            ;;
+        
+        --temperature)
+            shift
+            PDU_OPERATION="temperature"
+            ;;
+
+        --print-files)
+            shift
+            OPTION_PRINT_FILES="true"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+function print_header()
+{
+    echo -en $TERM_BOLD
+
+    cat <<EOF
+--------------------------------------------------------------------------------
+EOF
+
+    echo -en $TERM_NORMAL
+}
+
+function print_report()
+{
+    printf "\n"
+    printf "Report\n"
+    printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
+    printf "     Sum cores: %'6d\n" "$SUM_CORES" 
+    printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
+    printf "\n"
+}
+
+SERVER_STAT_ROOT="$HOME/.pip-servers"
+SERVER_STAT_URL="www:/var/lib/test-ui/servers"
+function download_current_data()
+{
+    local root_dir=$SERVER_STAT_ROOT
+
+    if [ ! -d "$root_dir" ]; then
+        mkdir -p "$root_dir"
+        if [ ! -d "$root_dir" ]; then
+            printError "Unable to create '$root_dir'."
+            return 1
+        fi
+    fi
+
+    pushd $root_dir >/dev/null 2>/dev/null
+    if [ $? -ne 0 ]; then
+        printError "Unable to jump into '$root_dir'."
+        return 1
+    fi
+
+    scp -p $SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
+
+    popd >/dev/null 2>/dev/null
+}
+
+#
+# Prints the age of the file in seconds, e.g. 1 means the file was modified 1
+# second ago.
+#
+# $1: the file name
+#
+function fileAgeInSeconds()
+{
+    echo $((`date +%s` - `stat -L --format %Y $1` ))
+}
+
+function print_device_list()
+{
+    local config_file
+    local info_file
+    local category
+    local name
+
+    print_header
+
+    for config_file in $HOME/.pip/*.host; do
+        if [ ! -f "$config_file" ]; then
+            continue
+        fi
+
+        device_name=$(basename "$config_file" .host)
+        info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
+
+        if [ "$device_name" == "www" ]; then
+            continue;
+        fi
+
+        CONF_HOST_NAME=""
+        CONF_HOST_URL=""
+        CONF_HOST_CATEGORY=""
+        CONF_HOST_STANDARD=""
+        CONF_HOST_MAC=""
+        CONF_HOST_PROTECTED=""
+
+        HOSTNAME=""
+        NUMBER_OF_CORES=""
+        MEMORY_GIGABYTES=""
+        DISK_GIGABYTES=""
+        NUMBER_OF_CONTAINERS=""
+        AVERAGE_LOAD=""
+        HOST_STATUS=""
+        STATUS_TEXT=""
+
+        source "$config_file"
+        if [ -f "$info_file" ]; then
+            source "$info_file"
+        fi
+    
+        let SUM_SERVERS+=1
+
+        category="$CONF_HOST_CATEGORY"
+        if [ -z "$category" ]; then
+            category="-"
+        fi
+    
+        [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
+        if [ -f "$info_file" ]; then
+            fileAge="$(fileAgeInSeconds "$info_file")"
+            let fileAge/=60
+            if [ "$fileAge" -gt 5 ]; then
+                if [ "$HOST_STATUS" != "DISABLED" ]; then
+                    HOST_STATUS="OFF-LINE"
+                    STATUS_TEXT="-"
+                fi
+            fi
+        else
+            if [ "$HOST_STATUS" != "DISABLED" ]; then
+                HOST_STATUS="OFF-LINE"
+                STATUS_TEXT="-"
+            fi
+        fi
+        
+        let SUM_CORES+=NUMBER_OF_CORES
+        let SUM_MEMORY+=MEMORY_GIGABYTES
+
+        [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
+        
+        printf "$DEVICE_COLOR%-10s$TERM_NORMAL "  "$device_name"
+        printf "$OWNER_COLOR%-10s$TERM_NORMAL "   "$category"
+        #printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_HOST_URL"
+        
+        printf "%2dc " "$NUMBER_OF_CORES"
+        printf "%3dG " "$MEMORY_GIGABYTES"
+        printf "%'6dG " "$DISK_GIGABYTES"
+        printf "%2d " "$NUMBER_OF_CONTAINERS"
+        printf "%-4s " "$AVERAGE_LOAD"
+
+        if [ "$HOST_STATUS" == "IDLE" ]; then
+            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        else
+            printf "%-9s " "$HOST_STATUS"
+        fi
+
+
+        if [ -z "$OPTION_PRINT_FILES" ]; then
+            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
+        else
+            printf "$FILE_COLOR%s$TERM_NORMAL"     "$config_file"
+        fi
+
+        printf "\n"
+    done
+}
+
+if [ "$LIST_OPTION" ]; then
+    download_current_data
+    print_device_list
+    print_report
+    exit 0
+fi
+
+
