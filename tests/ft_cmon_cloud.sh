@@ -237,14 +237,13 @@ function testInstall()
     local line
     local image
     local counter=0
-    local images="ubuntu_artful ubuntu_bionic ubuntu_trusty ubuntu_xenial \
-      debian_buster debian_sid debian_stretch \
-      debian_wheezy debian_jessie \
-      centos_6 centos_7 \
-      oracle_6 oracle_7"
+    local images="ubuntu_artful ubuntu_bionic ubuntu_xenial \
+      debian_buster debian_sid debian_stretch debian_jessie \
+      centos_7 oracle_7"
 
     # these has issues with /etc/sudoers: fedora_26 fedora_27
     # these has issues with ssh: opensuse_42.3 gentoo_current
+    # these has other issues: ubuntu_trusty debian_wheezy centos_6 oracle_6
 
     for image in $images; do
         installCmonCloud --image "$image"
