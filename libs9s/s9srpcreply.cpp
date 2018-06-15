@@ -1990,6 +1990,7 @@ S9sRpcReply::printClusterListLong()
     int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
     S9sString       formatString  = options->longClusterFormat();
+    int             nLines = 0;
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
@@ -2086,12 +2087,14 @@ S9sRpcReply::printClusterListLong()
         ownerFormat.widen(ownerName);
         groupFormat.widen(groupName);
         nameFormat.widen(clusterName);
+
+        ++nLines;
     }
 
     /*
      * Printing the header.
      */
-    if (!options->isNoHeaderRequested())
+    if (!options->isNoHeaderRequested() && nLines > 0)
     {
         idFormat.widen("ID");
         stateFormat.widen("STATE");

@@ -133,9 +133,25 @@ lot of databases this option might not show some of them. Sampling a huge number
 of databases would generate high load and so the controller has an upper limit
 built into it.
 
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list-database \\
+    --long \\
+    --cluster-id=1 
+.fi
+
 .TP
 .B \-L, \-\-list
 List the clusters managed by the controller.
+
+.B
+.nf
+s9s cluster \\
+    --list \\
+    --long \\
+    ft_*
+.fi
 
 .TP
 .B \-\-ping
@@ -160,7 +176,19 @@ pipas@t7500:tests$ s9s cluster \\
 .B \-\-register
 Registers an existing cluster in the controller. This option is very similar to
 the \fB\-\^\-create\fR option, but it of course will not install a new cluster,
-it just registers one.
+it just registers one in the controller. Use this to start managing
+pre-installed clusters with the Cmon Controller.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --register \\
+    --cluster-type=galera \\
+    --nodes=192.168.0.196 \\
+    --vendor=percona \\
+    --cluster-name=my_cluster_32265 \\
+    --wait
+.fi
 
 .TP
 .B \-\-remove\-node 
