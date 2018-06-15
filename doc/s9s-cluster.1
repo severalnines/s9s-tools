@@ -50,7 +50,7 @@ s9s cluster \\
 .B \-\-create\-account
 Create a new account to be used on the cluster to access the database(s).
 Creating accounts is also possible using the \fBaccount\fP mode, check
-s9s-account(1) for firther details.
+s9s-account(1) for further details.
 
 .B EXAMPLE
 .nf
@@ -90,6 +90,8 @@ mys9s cluster \\
     --cluster-id=1 \\
     --db-name="testDatabase" \\
     --batch
+.fi
+
 .TP
 
 .B \-\-create-report
@@ -100,12 +102,29 @@ report will be created in the given directory on the controller host.
 
 .TP
 .B \-\-delete-account
-Delete an existing account from the cluster.
+Delete an existing account from the cluster. Deleting accounts is also 
+possible using the \fBaccount\fP mode, check s9s-account(1) for further details.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --delete-account \\
+    --cluster-id=1 \\
+    --account=tmpaccount@192.168.0.127
+.fi
 
 .TP
 .B \-\-drop
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --drop \\
+    --cluster-id=1 \\
+    --wait 
+.fi
 
 .TP
 .B \-\^\-list\-databases

@@ -261,10 +261,11 @@ function testCreateAccount()
 {
     local master_hostname
 
-    print_title "Creating account"
-    #echo "FIXME: There is a sleep here."
-    #sleep 30
+    print_title "Creating Account"
 
+    #
+    #
+    #
     for waiting in $(seq 1 10); do
         master_hostname=$( \
             s9s node --list --long | \
@@ -311,6 +312,34 @@ function testCreateAccount()
         mys9s node --list --long 
         mys9s node --stat
         exit 1
+    fi
+}
+
+#
+# This test will create an account then immediately delete it.
+#
+function createDeleteAccount()
+{
+    print_title "Creating then Deleting Account"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="tmpaccount:tmppasswd@192.168.0.127"
+
+    check_exit_code_no_job $?
+    mys9s account --list --long
+
+    mys9s cluster \
+        --delete-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="tmpaccount@192.168.0.127"
+
+    check_exit_code_no_job $?
+    mys9s account --list --long
+
+    if mys9s account --list --long | grep --quiet "tmpaccount"; then
+        failure "The 'tmpaccount' account is still there."
     fi
 }
 
@@ -487,6 +516,7 @@ else
     #runFunctionalTest testStopStartNode
 
     runFunctionalTest testCreateAccount
+    runFunctionalTest createDeleteAccount
     runFunctionalTest testAddNode
     #runFunctionalTest testAddMaster
     runFunctionalTest testRemoveNode
