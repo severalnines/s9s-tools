@@ -25,13 +25,41 @@ job that will eventually add a new node to the cluster. The name (or IP
 address) of the node should be specified using the \fB\-\-nodes\fR command 
 line option.
 
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-node \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.202 \\
+    --wait
+.fi 
+
 .TP
 .B \-\^\-check\-hosts 
 This option can be used to check the hosts before creating a new cluster.
 
+.B
+.nf
+s9s cluster \\
+    --check-hosts \\
+    --nodes=192.168.0.102 \\
+    --print-json
+.fi
+
 .TP
 .B \-\-create\-account
 Create a new account to be used on the cluster to access the database(s).
+Creating accounts is also possible using the \fBaccount\fP mode, check
+s9s-account(1) for firther details.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create-account \\
+    --cluster-id=1 \\
+    --account=john_doe:password@192.168.0.127 \\
+    --with-database 
+.fi
 
 .TP
 .B \-\-create
@@ -39,7 +67,7 @@ Create a new cluster. When this command line option is provided the program
 will contact the controller and register a new job that will eventually create
 a new cluster. 
 
-.B EXAMPLE:
+.B EXAMPLE
 .nf
 s9s cluster \\
     --create \\
@@ -55,7 +83,15 @@ s9s cluster \\
 .B \-\-create-database
 Create a new database on the cluster.
 
+.B EXAMPLE
+.nf
+mys9s cluster \\
+    --create-database \\
+    --cluster-id=1 \\
+    --db-name="testDatabase" \\
+    --batch
 .TP
+
 .B \-\-create-report
 When this command line option is provided a new job will be started that will
 create a report. After the job is executed the report will be available on the 

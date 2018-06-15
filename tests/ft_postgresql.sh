@@ -147,7 +147,23 @@ function testCreateCluster()
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
-   
+  
+    #
+    #
+    #
+    mys9s cluster \
+        --check-hosts \
+        --nodes="$nodes" 
+
+    check_exit_code_no_job $?
+    
+    mys9s cluster \
+        --check-hosts \
+        --nodes="$nodes" \
+        --print-json
+    
+    check_exit_code_no_job $?
+
     #
     # Creating a PostgreSQL cluster.
     #
