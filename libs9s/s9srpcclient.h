@@ -102,12 +102,10 @@ class S9sRpcClient
         bool unregisterHost();
         bool getContainers();
         bool getServers();
-        //bool createContainer();
         bool createContainerWithJob();
         bool deleteContainerWithJob();
         bool startContainerWithJob();
         bool stopContainerWithJob();
-        //bool deleteContainer();
 
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig(const S9sVariantList &hosts);

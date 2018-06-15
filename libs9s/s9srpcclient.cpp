@@ -4597,41 +4597,6 @@ S9sRpcClient::getServers()
 }
 
 /**
- * Sends a request to create a container.
- */
-#if 0
-bool
-S9sRpcClient::createContainer()
-{
-    S9sString      uri = "/v2/host/";
-    S9sOptions    *options    = S9sOptions::instance();
-    S9sVariantList servers    = options->servers();
-    S9sVariantMap  request;
-   
-    if (options->nExtraArguments() == 1)
-    {
-        S9sVariantMap  container;
-
-        container["class_name"]   = "CmonContainer";
-        container["alias"]        = options->extraArgument(0);
-    
-        request["container"]      = container;
-    } else if (options->nExtraArguments() == 2)
-    {
-        PRINT_ERROR("Currently only one container can be created at a time.");
-        return false;
-    }
-
-    request["operation"]      = "createContainer";
-
-    if (!servers.empty())
-        request["servers"] = serversField(servers);
-    
-    return executeRequest(uri, request);
-}
-#endif
-
-/**
  * Creates a container by initiating a job. Like this:
  * \code
    #s9s container --create --log --debug
@@ -4830,30 +4795,6 @@ S9sRpcClient::stopContainerWithJob()
     
     return executeRequest(uri, request);
 }
-
-#if 0
-// This one does not create a job, it is deprecated.
-bool
-S9sRpcClient::deleteContainer()
-{
-    S9sString      uri = "/v2/host/";
-    S9sVariantMap  request;
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList servers   = options->servers();
-    S9sVariantMap  container;
-
-    container["class_name"]  = "CmonContainer";
-    container["alias"]       = options->extraArgument(0);
-
-    request["operation"]     = "deleteContainer";
-    request["container"]     = container;
-
-    if (!servers.empty())
-        request["servers"] = serversField(servers);
-    
-    return executeRequest(uri, request);
-}
-#endif
 
 bool
 S9sRpcClient::getSupportedClusterTypes()
