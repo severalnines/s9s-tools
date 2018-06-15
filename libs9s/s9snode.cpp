@@ -1456,7 +1456,13 @@ S9sNode::backendServerName(
     S9sString      retval;
 
     if (index >= 0 && index < theList.size())
+    {
         retval = theList[index]["hostname"].toString();
+
+        // Haproxy seems to have "name" instead of "hostname".
+        if (retval.empty())
+            retval = theList[index]["name"].toString();
+    }
 
     return retval;
 }
@@ -1489,13 +1495,17 @@ S9sNode::backendServerStatus(
 
 S9sString
 S9sNode::backendServerComment(
-        uint index) const
+        uint             index,
+        const S9sString &defaultValue) const
 {
     S9sVariantList theList = backendServers();
     S9sString      retval;
 
     if (index >= 0 && index < theList.size())
         retval = theList[index]["comment"].toString();
+
+    if (retval.empty())
+        retval = defaultValue;
 
     return retval;
 }

@@ -141,7 +141,11 @@ class S9sNode : public S9sObject
         S9sString backendServerName(uint index) const;
         int backendServerPort(uint index) const;
         S9sString backendServerStatus(uint index) const;
-        S9sString backendServerComment(uint index) const;
+
+        S9sString 
+            backendServerComment(
+                uint             index,
+                const S9sString &defaultValue = "-") const;
 
     private:
         S9sUrl           m_url;

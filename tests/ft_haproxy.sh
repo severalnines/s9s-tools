@@ -10,6 +10,7 @@ CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
+OPTION_INSTALL=""
 HAPROXY_IP=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
@@ -26,16 +27,19 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
+  
+  $MYNAME - Test script for s9s to check various error conditions.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help          Print this help and exit.
+  --verbose           Print more messages.
+  --print-json        Print the JSON messages sent and received.
+  --log               Print the logs while waiting for the job to be ended.
+  --print-commands    Do not print unit test info, print the executed commands.
+  --install           Just install the cluster and haproxy, then exit.
+  --reset-config      Remove and re-generate the ~/.s9s directory.
+  --server=SERVER     Use the given server to create containers.
 
 EOF
     exit 1
@@ -43,7 +47,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
+server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -78,6 +83,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -273,7 +283,11 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest registerServer
+    runFunctionalTest createCluster
+    runFunctionalTest testAddHaProxy
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done

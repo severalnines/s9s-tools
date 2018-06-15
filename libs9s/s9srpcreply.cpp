@@ -5778,7 +5778,7 @@ S9sRpcReply::printBackendServersSubList(
         /*
          *
          */
-        hostNameFormat.widen("HOSTNAME");
+        hostNameFormat.widen("NAME");
         portFormat.widen("PORT");
         statusFormat.widen("STATUS");
         commentFormat.widen("COMMENT");
@@ -5807,7 +5807,7 @@ S9sRpcReply::printBackendServersSubList(
         
         printf("%s", headerColorBegin());
         printf("%s", STR(indent));
-        hostNameFormat.printf("HOSTNAME", false);
+        hostNameFormat.printf("NAME", false);
         portFormat.printf("PORT", false);
         statusFormat.printf("STATUS", false);
         commentFormat.printf("COMMENT", false);
@@ -5829,6 +5829,8 @@ S9sRpcReply::printBackendServersSubList(
 
             printf("\n");
         }
+            
+        printf("\n");
     }
 }
 
