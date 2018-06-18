@@ -10,6 +10,9 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
+
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
@@ -23,15 +26,18 @@ function printHelpAndExit()
 {
 cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+ 
+  $MYNAME - Test script to register existing MySql replication clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=STRING The SQL server provider version.
 
 EOF
     exit 1
@@ -86,6 +92,18 @@ while true; do
             shift
             ;;
 
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+        
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -93,7 +111,6 @@ while true; do
     esac
 done
 
-reset_config
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -103,7 +120,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create My SQL replication cluster is starting now."
+    print_title "Creating MySQL Replication Cluster"
     nodeName=$(create_node --autodestroy)
     NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -122,9 +139,9 @@ function testCreateCluster()
         --create \
         --cluster-type=mysqlreplication \
         --nodes="$NODES" \
-        --vendor=percona \
+        --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     exitCode=$?
@@ -196,6 +213,8 @@ function testRegister()
 # Running the requested tests.
 #
 startTests
+
+reset_config
 grant_user
 
 if [ "$1" ]; then
