@@ -196,22 +196,62 @@ Removes a node from the cluster (creates a new job that will remove the node
 from the cluster). The name (or IP address) of the node should be specified 
 using the \fB\-\-nodes\fR command line option.
 
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --remove-node \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.245:9600 \\
+    --wait
+.fi
+
 .TP
 .B \-\-rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
 line option will create a job that will restart all the nodes.
 
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --rolling-restart \\
+    --cluster-id=1 \\
+    --wait 
+.fi
+
 .TP
 .B \-\-start
 Creates a new job to start the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --start \\
+    --cluster-id=1 \\
+    --wait 
+.fi
 
 .TP
 .B \-\-stat
 Print the details of one or more clusters.
 
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --stat \\
+    cluster_*
+.fi
+
 .TP
 .B \-\-stop
 Creates and registers and a new job that will stop the cluster when executed.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --stop \\
+    --cluster-id=1 \\
+    --wait 
+.fi
 
 .\"
 .\" Generic options
