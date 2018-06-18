@@ -45,7 +45,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
+vendor:,provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
