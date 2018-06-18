@@ -711,15 +711,13 @@ S9sRpcReply::printProcessList()
     {
         printf("\n%s\n", STR(toString()));
         return;
-    }
-
-    if (!isOk())
+    } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
         return;
     }
 
-    // FIXME: No detailed list format available for processes.
+    // FIXME: no brief version...
     printProcessListBrief();
 }
 

@@ -1336,7 +1336,7 @@ S9sBusinessLogic::executeProcessList(
     if (success)
     {
         reply = client.reply();
-        reply.printProcessListBrief();
+        reply.printProcessList();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

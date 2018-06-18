@@ -7,6 +7,7 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
+OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
@@ -34,6 +35,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-json     Print the JSON messages sent and received.
   --log            Print the logs while waiting for the job to be ended.
   --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
   --vendor=STRING  Use the given Galera vendor.
@@ -45,8 +47,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
-vendor:,provider-version:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
+server:,vendor:,provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -80,6 +82,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -166,7 +173,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the Cluster"
 
     #
     # Starting the cluster.
@@ -187,7 +194,7 @@ function testRegister()
 {
     local exitCode 
 
-    pip-say "The test to register a cluster is starting."
+    print_title "Registering the Cluster"
 
     #
     # Registering the cluester that we just created and dropped.
@@ -206,8 +213,9 @@ function testRegister()
         failure "The exit code is ${exitCode}"
     fi
 
-    s9s cluster --list --long
-    s9s node --list --long
+    mys9s cluster --stat
+    mys9s cluster --list --long
+    mys9s node --list --long
 }
 
 #
@@ -218,7 +226,9 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateCluster
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
