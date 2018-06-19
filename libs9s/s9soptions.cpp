@@ -6488,7 +6488,6 @@ S9sOptions::readOptionsUser(
         { "create",           no_argument,       0, OptionCreate          },
         { "disable",          no_argument,       0, OptionDisable         },
         { "enable",           no_argument,       0, OptionEnable          },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
         { "list-groups",      no_argument,       0, OptionListGroups      },
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "list",             no_argument,       0, 'L'                   },
@@ -6498,17 +6497,18 @@ S9sOptions::readOptionsUser(
         { "whoami",           no_argument,       0, OptionWhoAmI          },
        
         // Options about the user.
-        { "group",            required_argument, 0, OptionGroup           },
         { "create-group",     no_argument,       0, OptionCreateGroup     },
-        { "first-name",       required_argument, 0, OptionFirstName       },
-        { "last-name",        required_argument, 0, OptionLastName        },
-        { "title",            required_argument, 0, OptionTitle           },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
-        { "user-format",      required_argument, 0, OptionUserFormat      }, 
-        { "old-password",     required_argument, 0, OptionOldPassword     }, 
+        { "first-name",       required_argument, 0, OptionFirstName       },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "group",            required_argument, 0, OptionGroup           },
+        { "last-name",        required_argument, 0, OptionLastName        },
         { "new-password",     required_argument, 0, OptionNewPassword     }, 
+        { "old-password",     required_argument, 0, OptionOldPassword     }, 
         { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
         { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
+        { "title",            required_argument, 0, OptionTitle           },
+        { "user-format",      required_argument, 0, OptionUserFormat      }, 
 
         { 0, 0, 0, 0 }
     };
@@ -6787,13 +6787,8 @@ S9sOptions::readOptionsAccount(
         { "cmon-user",        required_argument, 0, 'u'                   }, 
 
         // Main Option
-        //{ "change-password",  no_argument,       0, OptionChangePassword  },
         { "create",           no_argument,       0, OptionCreate          },
-        //{ "generate-key",     no_argument,       0, 'g'                   }, 
-        //{ "list-keys",        no_argument,       0, OptionListKeys        },
-        //{ "add-key",          no_argument,       0, OptionAddKey          },
         { "list",             no_argument,       0, 'L'                   },
-        //{ "set",              no_argument,       0, OptionSet             },
         { "delete",           no_argument,       0, OptionDelete          },
         { "grant",            no_argument,       0, OptionGrant           },
         
@@ -6923,11 +6918,6 @@ S9sOptions::readOptionsAccount(
             case 'n':
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
-                break;
-
-            case 'g':
-                // --generate-key
-                m_options["generate_key"] = true;
                 break;
 
             case OptionCreate:
@@ -7570,6 +7560,7 @@ S9sOptions::readOptionsCluster(
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
@@ -7930,6 +7921,11 @@ S9sOptions::readOptionsCluster(
                 // --containers=LIST
                 setContainers(optarg);
                 break;
+
+            case 'g':
+                // --generate-key
+                m_options["generate_key"] = true;
+                break;
             
             case OptionImage:
                 // --image=image
@@ -8063,6 +8059,7 @@ S9sOptions::readOptionsContainer(
         // Other options.
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
+        { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
@@ -8252,6 +8249,11 @@ S9sOptions::readOptionsContainer(
             case OptionContainers:
                 // --containers=LIST
                 setContainers(optarg);
+                break;
+
+            case 'g':
+                // --generate-key
+                m_options["generate_key"] = true;
                 break;
 
             case OptionImage:
@@ -9725,6 +9727,9 @@ S9sOptions::publicKeyName() const
     return getString("public_key_name");
 }
 
+/**
+ * \returns True if the --generate-key command line option was used.
+ */
 bool
 S9sOptions::isGenerateKeyRequested() const
 {

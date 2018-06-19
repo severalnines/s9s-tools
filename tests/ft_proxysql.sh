@@ -11,6 +11,7 @@ CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 PROXYSQL_IP=""
+OPTION_INSTALL=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
@@ -27,15 +28,17 @@ function printHelpAndExit()
 {
 cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+ 
+  $MYNAME - Test script for s9s to check the ProxySQL support. 
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+  --install        Just install the cluster and exit.
 
 EOF
     exit 1
@@ -43,7 +46,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
+install" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -89,6 +93,11 @@ while true; do
             shift
             CONTAINER_SERVER="$1"
             shift
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --)
@@ -273,7 +282,11 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest registerServer
+    runFunctionalTest createCluster
+    runFunctionalTest testAddProxySql
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done

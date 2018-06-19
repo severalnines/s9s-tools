@@ -4605,7 +4605,7 @@ S9sRpcClient::getServers()
 bool
 S9sRpcClient::createContainerWithJob()
 {
-    S9sOptions    *options  = S9sOptions::instance();
+    S9sOptions    *options      = S9sOptions::instance();
     S9sString      templateName = options->templateName();
     S9sString      imageName    = options->imageName();
     S9sString      cloudName    = options->cloudName();
@@ -6005,7 +6005,7 @@ S9sRpcClient::composeJob() const
     
     if (!options->recurrence().empty())
         job["recurrence"]  = options->recurrence(); 
-  
+ 
     return job;
 }
 
@@ -6108,6 +6108,9 @@ S9sRpcClient::composeJobData(
     if (options->useInternalRepos())
         jobData["use_internal_repos"] = true;
 
+    if (options->isGenerateKeyRequested())
+        jobData["ssh_generate_key"] = true;
+
     return jobData;
 }
 
@@ -6156,6 +6159,9 @@ S9sRpcClient::composeJobDataOneContainer() const
     
     if (!servers.empty())
         jobData["servers"] = serversField(servers);
+    
+    if (options->isGenerateKeyRequested())
+        jobData["ssh_generate_key"] = true;
 
     return jobData;
 }
