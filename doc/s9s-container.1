@@ -6,6 +6,7 @@ s9s-container \- Command line client for the Severalnines Clustercontrol server.
 .B s9s-container
 .RI [OPTION]... 
 .RI [CONTAINER]...
+
 .SH DESCRIPTION
 This document describes how the \fBs9s\fP program supports virtualization.
 Multiple technologies (multiple virtualization backends) are supported (e.g.
@@ -35,13 +36,38 @@ the controller will create a new job that creates a container. By default the
 container will also be started, an account will be created, passwordless sudo
 granted and the controller will wait the controller to obtain an IP address.
 
+.B EXAMPLE
+.nf
+s9s container \\
+    --create \\
+    --cloud=lxc \\
+    --log \\
+    node_042
+.fi
+
 .TP
 .B \-\-delete
-Stop and delete the container or virtual machine.
+Stop and delete the container or virtual machine. This command line option will
+initiate a job that will ultimately delete the given container permanently.
+
+.B EXAMPLE
+.nf
+s9s container \\
+    --delete \\
+    node_042
+.fi
 
 .TP
 .B \-L, \-\^\-list
-List the containers.
+List the containers. Container name(s) can be added to filter containers.
+File name pattern characters are also supported in the container names.
+
+.B EXAMPLE
+.nf
+s9s container \\
+    --list \\
+    node*
+.fi
 
 .TP
 .B \-\-start

@@ -847,7 +847,8 @@ do_again:
     s.replace("<em style='color: #75599b;'>",     XTERM_COLOR_3);
     s.replace("<strong style='color: #110679;'>", XTERM_COLOR_16);
     s.replace("<strong style='color: #59a449;'>", XTERM_COLOR_9);
-    s.replace("<em style='color: #007e18;'>",     XTERM_COLOR_4);
+    // This is the file name color for normal files.
+    s.replace("<em style='color: #007e18;'>",     XTERM_COLOR_17);
     s.replace("<em style='color: #7415f6;'>",     XTERM_COLOR_5);
     s.replace("<em style='color: #1abc9c;'>",     XTERM_COLOR_6);
     s.replace("<em style='color: #d35400;'>",     XTERM_COLOR_7);
