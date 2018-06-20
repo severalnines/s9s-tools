@@ -2066,7 +2066,9 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
             user.setProperty("last_name",     options->lastName());
             user.setProperty("email_address", options->emailAddress());
             user.setGroup(options->group());
-            user.setPublicKey("No Name", pubKeyStr);
+
+            if (!pubKeyStr.empty())
+                user.setPublicKey("No Name", pubKeyStr);
 
             request = S9sRpcClient::createUserRequest(
                     user, 

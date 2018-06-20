@@ -23,16 +23,16 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check cluster creation on containers.
+  $MYNAME - Test script for s9s to check the autogeneration of ssh keys.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the server and the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the server and the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
   o createUser       Creates a user to work with.
@@ -138,29 +138,17 @@ function createUser()
         --first-name="Benjamin" \
         --last-name="Sisko"   \
         --email-address="sisko@ds9.com" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
+        --new-password="siskopassword" \
+        --group=admins \
         --batch \
         "sisko"
     
     check_exit_code_no_job $?
 
-    ls -lha $HOME/.s9s/sisko*
-
-    if [ ! -f "$config_dir/sisko.key" ]; then
-        failure "Secret key file 'sisko.key' was not found."
-        exit 0
-    fi
-
-    if [ ! -f "$config_dir/sisko.pub" ]; then
-        failure "Public key file 'sisko.pub' was not found."
-        exit 0
-    fi
-
-    myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "Whoami returns $myself instead of $USER."
+    myself=$(s9s user --whoami --password="siskopassword")
+    if [ "$myself" != "sisko" ]; then
+        mys9s user --whoami --password="siskopassword"
+        failure "Whoami returns $myself instead of sisko."
     fi
 }
 
@@ -178,18 +166,19 @@ function registerServer()
     #
     mys9s server \
         --register \
+        --password="siskopassword" \
         --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
+    mys9s server --list --long --password="siskopassword"
     check_exit_code_no_job $?
 
     #
     # Checking the class is very important.
     #
     class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
+        s9s server --stat "$CONTAINER_SERVER" --password="siskopassword" \
         | grep "Class:" | awk '{print $2}')
 
     if [ "$class" != "CmonLxcServer" ]; then
@@ -200,79 +189,10 @@ function registerServer()
     #
     # Checking the state... TBD
     #
-    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
-}
-
-#
-# Creates then destroys a cluster on lxc.
-#
-function createContainer()
-{
-    local config_dir="$HOME/.s9s"
-    local container_name="${MYBASENAME}_01_$$"
-    local template
-    local owner
-
-    print_title "Creating Container"
-
-    #
-    # Creating a container.
-    #
-    mys9s container \
-        --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --cloud=lxc \
-        --os-user=sisko \
-        --os-key-file="$config_dir/sisko.key" \
-        $LOG_OPTION \
-        "$container_name"
-    
-    check_exit_code $?
-    
-    mys9s container --list --long
-
-    #
-    # Checking the ip and the owner.
-    #
-    CONTAINER_IP=$(get_container_ip "$container_name")
-    
-    if [ -z "$CONTAINER_IP" -o "$CONTAINER_IP" == "-" ]; then
-        failure "The container was not created or got no IP."
-        s9s container --list --long
-    fi
- 
-    #
-    # Checking if the owner can actually log in through ssh.
-    #
-    print_title "Checking SSH Access for '$USER'"
-    is_server_running_ssh "$CONTAINER_IP" "$USER"
-
-    if [ $? -ne 0 ]; then
-        failure "User $USER can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
-    fi
-    
-    #
-    # Checking that sisko can log in.
-    #
-    print_title "Checking SSH Access for 'sisko'"
-    is_server_running_ssh \
-        --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
-
-    if [ $? -ne 0 ]; then
-        failure "User 'sisko' can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
-    fi
-
-    #
-    # Deleting the container we just created.
-    #
-    print_title "Deleting Container"
-
-    mys9s container --delete $LOG_OPTION "$container_name"
-    check_exit_code $?
+    mys9s tree \
+        --cat \
+        --password="siskopassword" \
+        /$CONTAINER_SERVER/.runtime/state
 }
 
 function createCluster()
@@ -286,8 +206,12 @@ function createCluster()
     #
     print_title "Creating a Cluster on LXC"
 
+    # FIXME: If we set the username everything is ok until the Workflow
+    # reports an error because we have this in the test:
+    #   CmonConfiguration::setOverride(PropOsUser, CmonString(getenv("USER")));
     mys9s cluster \
         --create \
+        --password="siskopassword" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
         --provider-version="5.6" \
@@ -295,22 +219,23 @@ function createCluster()
         --cloud=lxc \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
-        --os-user=sisko \
-        --os-key-file="$config_dir/sisko.key" \
+        --generate-key \
+        --os-user=pipas \
         $LOG_OPTION 
 
-    check_exit_code $?
-    check_container_ids --galera-nodes
+    # FIXME: check_exit_code do not support user password.
+    check_exit_code_no_job $?
+    #check_container_ids --galera-nodes
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
     sleep 10
-    mys9s cluster   --list --long
-    mys9s node      --list --long
-    mys9s container --list --long
-    mys9s node      --stat
+    mys9s cluster   --list --long --password="siskopassword"
+    mys9s node      --list --long --password="siskopassword"
+    mys9s container --list --long --password="siskopassword"
+    mys9s node      --stat --password="siskopassword"
 }
 
 function removeCluster()
@@ -327,6 +252,7 @@ function removeCluster()
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
+        --password="siskopassword" \
         $LOG_OPTION
     
     #check_exit_code $?
@@ -336,19 +262,29 @@ function removeCluster()
     #
     print_title "Deleting Containers"
     
-    mys9s container --delete $LOG_OPTION "$container_name1"
+    mys9s container \
+        --delete \
+        --password="siskopassword" \
+        $LOG_OPTION \
+        "$container_name1"
+
     check_exit_code $?
     
-    mys9s container --delete $LOG_OPTION "$container_name2"
+    mys9s container \
+        --delete \
+        $LOG_OPTION \
+        --password="siskopassword" \
+        "$container_name2"
     check_exit_code $?
 }
 
 #
-# Running the requested tests.
+# Running the requested tests. We are not granting the first user the usual
+# ways, this test creates a user without a key.
 #
 startTests
 reset_config
-grant_user
+#grant_user
 
 #s9s event --list --with-event-job &
 #EVENT_HANDLER_PID=$!
