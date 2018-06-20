@@ -272,13 +272,13 @@ function removeCluster()
 
     check_exit_code $?
     
-    mys9s container \
-        --delete \
-        $LOG_OPTION \
-        --password="$CMON_USER_PASSWORD" \
-        "$container_name2"
-
-    check_exit_code $?
+#    mys9s container \
+#        --delete \
+#        $LOG_OPTION \
+#        --password="$CMON_USER_PASSWORD" \
+#        "$container_name2"
+#
+#    check_exit_code $?
 }
 
 #
