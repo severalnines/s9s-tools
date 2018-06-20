@@ -247,7 +247,7 @@ function removeCluster()
     #
     # Dropping and deleting.
     #
-    print_title "Dropping Cluster"
+    print_title "Dropping the Cluster"
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     echo "  CLUSTER_ID: '$CLUSTER_ID'"
