@@ -250,6 +250,7 @@ function removeCluster()
     print_title "Dropping Cluster"
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
+    echo "  CLUSTER_ID: '$CLUSTER_ID'"
     if [ "$CLUSTER_ID" == "NOT-FOUND" ]; then
         failure "Cluster not found."
     else
