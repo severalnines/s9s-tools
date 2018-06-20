@@ -248,20 +248,14 @@ function removeCluster()
     # Dropping and deleting.
     #
     print_title "Dropping the Cluster"
-    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-
-    echo "  CLUSTER_ID: '$CLUSTER_ID'"
-    if [ "$CLUSTER_ID" == "NOT-FOUND" ]; then
-        failure "Cluster not found."
-    else
         mys9s cluster \
             --drop \
             --cluster-id="$CLUSTER_ID" \
             --password="$CMON_USER_PASSWORD" \
+            --cluster-name="$CLUSTER_NAME" \
             $LOG_OPTION
         
         check_exit_code $?
-    fi
 
     #
     # Deleting containers.

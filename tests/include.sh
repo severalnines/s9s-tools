@@ -986,7 +986,7 @@ function find_cluster_id()
         password_option="--password='$CMON_USER_PASSWORD'"
     fi
 
-    echo "Password option will be user: $password_option" >&2
+    echo "Password option will be user: $password_option"
 
     while true; do
         retval=$($S9S cluster \
