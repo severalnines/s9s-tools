@@ -200,7 +200,7 @@ function createCluster()
 {
     local config_dir="$HOME/.s9s"
     local container_name1="${MYBASENAME}_11_$$"
-    local container_name2="${MYBASENAME}_12_$$"
+    #local container_name2="${MYBASENAME}_12_$$"
 
     #
     # Creating a Cluster.
@@ -242,7 +242,7 @@ function createCluster()
 function removeCluster()
 {
     local container_name1="${MYBASENAME}_11_$$"
-    local container_name2="${MYBASENAME}_12_$$"
+    #local container_name2="${MYBASENAME}_12_$$"
 
     #
     # Dropping and deleting.
