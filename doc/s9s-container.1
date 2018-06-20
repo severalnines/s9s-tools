@@ -242,6 +242,18 @@ r- architecture    -    The processor architecture.
  . . .
 .fi
 
+.TP 
+.BI \-\-generate\-key
+Create a new SSH keypair when creating new containers. If this command line
+option was provided a new SSH keypair will be created and registered for a new
+user account to provide SSH access to the new container(s). If the command
+creates more than one containers the same one keypair will be registered for
+all.
+
+This command line option is actually useful for the cases when a new cluster is
+created together with the new containers, please check out the documentation in
+the s9s-cluster(1).
+
 .TP
 .BI \-\^\-image= NAME
 The name of the image from which the new container will be created. This option

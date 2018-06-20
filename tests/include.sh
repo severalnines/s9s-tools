@@ -291,6 +291,11 @@ function check_exit_code()
     local do_not_exit
     local exitCode
     local jobId
+    local password_option=""
+
+    if [ -n "$CMON_USER_PASSWORD" ]; then
+        password_option="--password='$CMON_USER_PASSWORD'"
+    fi
 
     #
     # Command line options.
@@ -317,7 +322,7 @@ function check_exit_code()
         failure "The exit code is ${exitCode}"
 
         jobId=$(\
-            s9s job --list --batch | \
+            s9s job --list --batch $password_option | \
             grep FAIL | \
             tail -n1 | \
             awk '{print $1}')
@@ -325,7 +330,11 @@ function check_exit_code()
         if [ "$jobId" -a "$LOG_OPTION" != "--log" ]; then
             echo "A job is failed. The test script will now try to list the"
             echo "job messages of the failed job. Here it is:"
-            mys9s job --log --debug --job-id="$jobId"
+            mys9s job \
+                --log \
+                $password_option \
+                --debug \
+                --job-id="$jobId"
         fi
 
         if [ "$do_not_exit" ]; then
@@ -971,9 +980,15 @@ function find_cluster_id()
     local name="$1"
     local retval
     local nTry=0
+    local password_option=""
+    
+    if [ -n "$CMON_USER_PASSWORD" ]; then
+        password_option="--password='$CMON_USER_PASSWORD'"
+    fi
 
     while true; do
-        retval=$($S9S cluster --list --long --batch --cluster-name="$name")
+        retval=$($S9S cluster --list --long --batch $password_option \
+            --cluster-name="$name")
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then

@@ -592,6 +592,23 @@ Currently this option is used when starting a cluster. It can be used to control
 which node will be started first and used for the others as donor.
 
 .TP
+.BI \-\-generate\-key 
+Create a new SSH keypair when creating new containers. If this command line
+option was provided a new SSH keypair will be created and registered for a new
+user account to provide SSH access to the new container(s). If the command
+creates more than one containers the same one keypair will be registered for
+all.
+
+The username will be the username of the authenticated cmon-user. This can be
+overruled by the \fB\-\-os\-user\fP command line option.
+
+When the job creates a new cluster the generated keypair will be registered for
+the cluster and the file path will be saved into the cluster's Cmon
+configuration file. When adding a node to such a cluster this
+\fB\-\-generate\-key\fP option should not be passed, the controller will
+automatically re-use the previously created keypair.
+
+.TP
 .BR \-\^\-cluster\-format [ =\fIFORMATSTRING\fP "]
 The string that controls the format of the printed information about clusters.
 When this command line option is used the specified information will be printed

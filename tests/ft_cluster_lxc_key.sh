@@ -6,6 +6,7 @@ VERBOSE=""
 VERSION="0.0.1"
 LOG_OPTION="--wait"
 
+CMON_USER_PASSWORD="siskopassword"
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
@@ -138,16 +139,16 @@ function createUser()
         --first-name="Benjamin" \
         --last-name="Sisko"   \
         --email-address="sisko@ds9.com" \
-        --new-password="siskopassword" \
+        --new-password="$CMON_USER_PASSWORD" \
         --group=admins \
         --batch \
         "sisko"
     
     check_exit_code_no_job $?
 
-    myself=$(s9s user --whoami --password="siskopassword")
+    myself=$(s9s user --whoami --password="$CMON_USER_PASSWORD")
     if [ "$myself" != "sisko" ]; then
-        mys9s user --whoami --password="siskopassword"
+        mys9s user --whoami --password="$CMON_USER_PASSWORD"
         failure "Whoami returns $myself instead of sisko."
     fi
 }
@@ -166,19 +167,19 @@ function registerServer()
     #
     mys9s server \
         --register \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long --password="siskopassword"
+    mys9s server --list --long --password="$CMON_USER_PASSWORD"
     check_exit_code_no_job $?
 
     #
     # Checking the class is very important.
     #
     class=$(\
-        s9s server --stat "$CONTAINER_SERVER" --password="siskopassword" \
+        s9s server --stat "$CONTAINER_SERVER" --password="$CMON_USER_PASSWORD" \
         | grep "Class:" | awk '{print $2}')
 
     if [ "$class" != "CmonLxcServer" ]; then
@@ -191,7 +192,7 @@ function registerServer()
     #
     mys9s tree \
         --cat \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         /$CONTAINER_SERVER/.runtime/state
 }
 
@@ -211,7 +212,7 @@ function createCluster()
     #   CmonConfiguration::setOverride(PropOsUser, CmonString(getenv("USER")));
     mys9s cluster \
         --create \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
         --provider-version="5.6" \
@@ -232,10 +233,10 @@ function createCluster()
     #
     print_title "Waiting and Printing Lists"
     sleep 10
-    mys9s cluster   --list --long --password="siskopassword"
-    mys9s node      --list --long --password="siskopassword"
-    mys9s container --list --long --password="siskopassword"
-    mys9s node      --stat --password="siskopassword"
+    mys9s cluster   --list --long --password="$CMON_USER_PASSWORD"
+    mys9s node      --list --long --password="$CMON_USER_PASSWORD"
+    mys9s container --list --long --password="$CMON_USER_PASSWORD"
+    mys9s node      --stat --password="$CMON_USER_PASSWORD"
 }
 
 function removeCluster()
@@ -252,10 +253,10 @@ function removeCluster()
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         $LOG_OPTION
     
-    #check_exit_code $?
+    check_exit_code $?
 
     #
     # Deleting containers.
@@ -264,7 +265,7 @@ function removeCluster()
     
     mys9s container \
         --delete \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         $LOG_OPTION \
         "$container_name1"
 
@@ -273,8 +274,9 @@ function removeCluster()
     mys9s container \
         --delete \
         $LOG_OPTION \
-        --password="siskopassword" \
+        --password="$CMON_USER_PASSWORD" \
         "$container_name2"
+
     check_exit_code $?
 }
 
