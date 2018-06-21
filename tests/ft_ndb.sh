@@ -128,7 +128,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create NDB cluster is starting now."
+    print_title "Creating an NDB Cluster."
     nodeName=$(create_node --autodestroy)
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
 
@@ -153,11 +153,7 @@ function testCreateCluster()
         --provider-version=5.6 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -175,7 +171,7 @@ function testAddNode()
     local nodes
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    print_title "The test to add node is starting now."
     printVerbose "Creating Node..."
     nodeName=$(create_node --autodestroy)
     LAST_ADDED_NODE=$nodeName
