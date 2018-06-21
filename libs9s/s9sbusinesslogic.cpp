@@ -77,9 +77,10 @@ S9sBusinessLogic::execute()
     S9sOptions  *options    = S9sOptions::instance();
     S9sString    controller = options->controllerHostName();
     int          port       = options->controllerPort();
+    S9sString    path       = options->controllerPath();
     int          clusterId  = options->clusterId();
     bool         useTls     = options->useTls();
-    S9sRpcClient client(controller, port, useTls);
+    S9sRpcClient client(controller, port, path, useTls);
     bool         success;
 
     /*

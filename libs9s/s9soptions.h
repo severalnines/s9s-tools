@@ -90,6 +90,8 @@ class S9sOptions
         S9sString controllerHostName();
         int controllerPort();
         S9sString controllerProtocol();
+        S9sString controllerPath();
+
         S9sString controllerUrl();
 
 

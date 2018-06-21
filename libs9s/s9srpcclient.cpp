@@ -34,7 +34,7 @@
 #include <cstdio>
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
@@ -58,11 +58,13 @@ S9sRpcClient::S9sRpcClient() :
 S9sRpcClient::S9sRpcClient(
         const S9sString &hostName,
         const int        port,
+        const S9sString &path,
         const bool       useTls) :
     m_priv(new S9sRpcClientPrivate)
 {
     m_priv->m_hostName = hostName;
     m_priv->m_port     = port;
+    m_priv->m_path     = path;
     m_priv->m_useTls   = useTls;
 }
 
@@ -298,6 +300,8 @@ S9sRpcClient::authenticate()
     S9sOptions    *options = S9sOptions::instance();
 
     if (options->hasPassword())
+        return authenticateWithPassword();
+    else if (!options->password().empty())
         return authenticateWithPassword();
 
     return authenticateWithKey();
@@ -6202,6 +6206,7 @@ S9sRpcClient::doExecuteRequest(
     S9sOptions  *options = S9sOptions::instance();    
     S9sDateTime  replyReceived;
     S9sString    header;
+    S9sString    myUri = uri;
     ssize_t      readLength;
     ssize_t      writtenLength;
     S9sString    dataToSend; 
@@ -6209,7 +6214,13 @@ S9sRpcClient::doExecuteRequest(
     size_t       payloadSize = 0;
     bool         isJSonStream = false;
 
-    S9S_DEBUG("------------------------");
+    PRINT_VERBOSE("Preparing to send rquest.");
+
+    if (!m_priv->m_path.empty())
+        myUri = m_priv->m_path + uri;
+
+    PRINT_VERBOSE("URI is '%s'", STR(myUri));
+
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
@@ -6228,7 +6239,7 @@ S9sRpcClient::doExecuteRequest(
     if (options->isJsonRequested() && options->isVerbose())
     {
         printf("Preparing to send request on %s: \n%s\n", 
-                STR(uri), STR(payload));
+                STR(myUri), STR(payload));
     }
 
     if (!payload.empty())
@@ -6245,7 +6256,7 @@ S9sRpcClient::doExecuteRequest(
         "Content-Type: application/json\r\n"
         "Content-Length: %zd\r\n"
         "\r\n",
-        STR(uri),
+        STR(myUri),
         STR(m_priv->m_hostName),
         m_priv->m_port,
         STR(m_priv->cookieHeaders()),
@@ -6296,7 +6307,10 @@ S9sRpcClient::doExecuteRequest(
 #else
     dataToSend = header + payload;
     dataSize   = strlen(STR(dataToSend));
+    
+    PRINT_VERBOSE("Sending: \n%s\n", STR(dataToSend));
     writtenLength = m_priv->write(STR(dataToSend), dataSize);
+
 
     S9S_DEBUG("%s: Size: %zd, written: %zd", 
             STR(timeStampString()), dataSize, writtenLength);
@@ -6371,7 +6385,6 @@ S9sRpcClient::doExecuteRequest(
 
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
-                PRINT_ERROR("Error parsing JSON reply.");
                 m_priv->m_errorString.sprintf("Error parsing JSON reply.");
                 options->setExitStatus(S9sOptions::ConnectionError);
                 setError(m_priv->m_errorString);
@@ -6448,7 +6461,8 @@ S9sRpcClient::doExecuteRequest(
 
     if (!m_priv->m_reply.parse(STR(m_priv->m_jsonReply)))
     {
-        PRINT_ERROR("Error parsing JSON reply.");
+        PRINT_VERBOSE("Error in reply: \n%s\n", STR(m_priv->m_jsonReply));
+
         m_priv->m_errorString.sprintf("Error parsing JSON reply.");
         options->setExitStatus(S9sOptions::ConnectionError);
         setError(m_priv->m_errorString);

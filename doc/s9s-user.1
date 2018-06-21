@@ -109,7 +109,17 @@ following:
 
 .TP 
 .B \-\^\-add\-key
-Register a new public key for an existing user.
+Register a new public key for an existing user. After the command the user will
+be able to authenticate with the private part of the registered public key, no
+password will be necessary.
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --add-key \\
+    --public-key-file=/home/pipas/.ssh/id_rsa.pub \\
+    --public-key-name=The_SSH_key 
+.fi
 
 .TP 
 .B \-\^\-change\-password
@@ -154,10 +164,10 @@ disabled are not able to log in.
 
 .B EXAMPLE
 .nf
-s9s user \
-    --cmon-user=system \
-    --password=secret \
-    --disable \
+s9s user \\
+    --cmon-user=system \\
+    --password=secret \\
+    --disable \\
     nobody
 .fi
 

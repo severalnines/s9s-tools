@@ -509,26 +509,41 @@ S9sOptions::setController(
     S9sString myUrl = url;
     S9sRegExp regexp;
 
-    S9S_DEBUG("*** myUrl  : '%s'", STR(myUrl));
+    S9S_DEBUG("              myUrl  : '%s'", STR(myUrl));
     regexp = "([a-zA-Z]+):\\/\\/(.+)";
     if (regexp == myUrl)
     {
-        S9S_DEBUG("MATCH1 '%s', '%s'", 
+        /*
+        S9S_DEBUG("    MATCH1 '%s', '%s'", 
                 STR(regexp[1]), 
                 STR(regexp[2]));
+                */
 
         m_options["controller_protocol"] = regexp[1];
         myUrl = regexp[2];
     }
  
-    regexp = "(.+):([0-9]+)";
+    regexp = "(.+):([0-9]+)(\\/.*)?";
     if (regexp == myUrl)
     {
         m_options["controller"]      = regexp[1];
         m_options["controller_port"] = regexp[2].toInt();
+        m_options["controller_path"] = regexp[3];
     } else {
         m_options["controller"] = myUrl;
     }
+    
+    S9S_DEBUG("  controller_protocol : '%s'", 
+            STR(m_options["controller_protocol"].toString()));
+
+    S9S_DEBUG("           controller : '%s'", 
+            STR(m_options["controller"].toString()));
+
+    S9S_DEBUG("      controller_port : '%s'", 
+            STR(m_options["controller_port"].toString()));
+    
+    S9S_DEBUG("      controller_path : '%s'", 
+            STR(m_options["controller_path"].toString()));
 }
 
 void
@@ -612,6 +627,12 @@ S9sOptions::controllerPort()
     }
 
     return retval;
+}
+
+S9sString
+S9sOptions::controllerPath()
+{
+    return getString("controller_path");
 }
 
 S9sString
@@ -1811,7 +1832,19 @@ S9sOptions::userName(
 S9sString
 S9sOptions::password() const
 {
-    return getString("password");
+    S9sString retval;
+
+    if (m_options.contains("password"))
+    {
+        retval = m_options.at("password").toString();
+    } else {
+        retval = m_userConfig.variableValue("cmon_password");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("cmon_password");
+    }
+
+    return retval;
 }
 
 /**
