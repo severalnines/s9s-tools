@@ -932,10 +932,10 @@ function run_test()
                 >/dev/null 2>/dev/null
             
             # Cleaning up before.
-            killall ft_full
-            sleep 3
-            killall -9 ft_full
-            rm -rvf /tmp/cmon_*
+            #killall ft_full
+            #sleep 3
+            #killall -9 ft_full
+            rm -rvf /tmp/cmon*
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running 'ft_full'..."
@@ -995,10 +995,10 @@ function run_test()
             #
             # Cleaning up after.
             #
-            killall ft_full
+            kill $backend_pid
             sleep 3
-            killall -9 ft_full
-            rm -rvf /tmp/cmon_*
+            kill -9 $backend_pid
+            rm -rvf /tmp/cmon*
             
             if [ $return_code -eq 0 ]; then
                 upload_result_file \

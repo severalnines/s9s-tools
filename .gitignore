@@ -63,3 +63,10 @@ tests/ut_s9sbackup/ut_s9sbackup
 tests/ut_s9sdatetime/ut_s9sdatetime
 tests/ut_s9suser/ut_s9suser
 y.tab.c
+debian/files
+debian/libs9s0.substvars
+debian/libs9s0/
+debian/s9s-tools.substvars
+debian/s9s-tools/
+debian/tmp/
+
