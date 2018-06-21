@@ -113,19 +113,53 @@ Register a new public key for an existing user.
 
 .TP 
 .B \-\^\-change\-password
-Change the password of an existing user.
+Change the password of an existing user. The password is not a simple property,
+so it can not be change using the \fB\-\^\-set\fP option, this special command
+line option has to be used.
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --change-password \\
+    --new-password=p \\
+    pipas
+.fi
 
 .TP
 .B \-\^\-create
 Register a new user (create a new user account) on the controller and grant
 access to the ClusterControl system. The user name of the new account should be
-the command line argument. Please check the EXAMPLES section of this
-documentation for some examples.
+the command line argument. 
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --create \\
+    --group=testgroup \\
+    --create-group \\
+    --generate-key \\
+    --controller=https://localhost:9556 \\
+    --new-password=p \\
+    --email-address=laszlo@somewhere.com \\
+    --first-name=Laszlo \\
+    --last-name=Pere \\
+    --batch \\
+    pipas
+.fi
 
 .TP
 .B \-\^\-disable
 Disable the user (turn on the "disabled" flag of the user). The users that are 
 disabled are not able to log in.
+
+.B EXAMPLE
+.nf
+s9s user \
+    --cmon-user=system \
+    --password=secret \
+    --disable \
+    nobody
+.fi
 
 .TP
 .B \-\^\-enable
@@ -135,15 +169,35 @@ the failed login counter set to 0 and the date&time of the last failed login
 gets deleted, so users who are suspended for failed login attempts will also be
 able to log in.
 
+.B EXAMPLE
+.nf
+s9s user \\
+    --cmon-user=system \\
+    --password=secret \\
+    --enable \\
+    nobody
+.fi
+
 .TP
 .B \-\-list\-groups
 List the user groups maintained by the ClusterControl controller.
 
+.B EXAMPLE
+.nf
+s9s user --list-groups
+.fi
+
 .TP
 .B \-\^\-list\-keys
 Lists the public keys registered in the controller for the specified user.
-Please note that viewing the public keys require special privileges, normal
+Please note that viewing the public keys require special privileges, ordinary
 users can not view the public keys of other users.
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --list-keys
+.fi
 
 .TP
 .B \-L, \-\^\-list
@@ -152,6 +206,17 @@ List the users registered for the ClusterControl controller.
 .TP
 .B \-\^\-set
 Changes the specified properties of the user.
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --set \\
+    --cmon-user=system \\
+    --password=secret \\
+    --batch \\
+    --email-address=nobody@mydomain.com \\
+    nobody 
+.fi
 
 .TP
 .B \-\^\-set\-group
@@ -164,10 +229,20 @@ option.
 .B \-\^\-stat
 Prints detailed information about the specified user(s).
 
+.B EXAMPLE
+.nf
+s9s user --stat pipas
+.fi
+
 .TP
 .B \-\^\-whoami
 Same as \fB\-\-list\fR, but only lists the current user, the user that
 authenticated on the controller.
+
+.B EXAMPLE
+.nf
+s9s user --whoami
+.fi
 
 .\"
 .\" The generic options that are supported by all the modes.

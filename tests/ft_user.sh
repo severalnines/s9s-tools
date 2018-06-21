@@ -773,8 +773,7 @@ function testChangePassword()
         --cmon-user="system" \
         --password="secret" \
         --new-password="p" \
-        "$userName" \
-        >/dev/null 
+        "$userName" 
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
