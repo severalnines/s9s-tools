@@ -948,25 +948,44 @@ function reset_config()
 {
     local config_dir="$HOME/.s9s"
     local config_file="$config_dir/s9s.conf"
+    local do_not_create
 
+    while [ "$1" ]; do
+        case "$1" in 
+            --do-not-create)
+                shift
+                do_not_create="true"
+                ;;
+
+            *)
+                break
+        esac
+    done
+            
     if [ -z "$OPTION_RESET_CONFIG" ]; then
         return 0
     fi
-    
-    print_title "Overwriting s9s Configuration"
+   
+    if [ -z "$do_not_create" ]; then
+        print_title "Overwriting s9s Configuration"
+    else
+        print_title "Deleting s9s Configuration"
+    fi
 
     if [ -d "$config_dir" ]; then
         rm -rf "$config_dir"
     fi
 
-    if [ ! -d "$config_dir" ]; then
-        mkdir "$config_dir"
+    if [ -z "$do_not_create" ]; then
+        if [ ! -d "$config_dir" ]; then
+            mkdir "$config_dir"
+        fi
+
+        emit_s9s_configuration_file >$config_file
+
+        # This goes to the standard output.
+        emit_s9s_configuration_file
     fi
-
-    emit_s9s_configuration_file >$config_file
-
-    # This goes to the standard output.
-    emit_s9s_configuration_file
 
     # FIXME: This should not be here:
     sudo rm -f $HOME/pip-container-create.log 2>/dev/null
