@@ -1078,6 +1078,8 @@ function grant_user()
         --public-key-name="The_SSH_key"
 
     #mys9s user --list-keys
+    #mys9s server --list --long
+    #mys9s server --unregister --servers=cmon-cloud://localhost
 }
 
 #

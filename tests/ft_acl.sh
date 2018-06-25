@@ -157,7 +157,7 @@ function checkTree01()
     lines=$(s9s tree --cmon-user=supervisor --list --long groups/admins)
     mys9s tree --cmon-user=supervisor --list --long groups/admins
 
-    expected="^urwxr--r--     - supervisor admins admin -> /admin$"
+    expected="^urwxr--r--     - supervisor admins supervisor -> /supervisor$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
