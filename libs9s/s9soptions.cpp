@@ -473,23 +473,19 @@ S9sOptions::loadConfigFiles()
 
         S9S_DEBUG("3: Parsing '%s'.", STR(systemConfig.path()));
         success = systemConfig.readTxtFile(content);
-        if (!success)
+        if (success)
         {
-            PRINT_ERROR(
-                    "Error reading system configuration file: %s",
-                    STR(systemConfig.errorString()));
+            // If we don't have the rights to read the configuration file we
+            // simply ignore it. If we have parse error(s) we complain.
+            success = m_systemConfig.parse(STR(content));
+            if (!success)
+            {
+                PRINT_ERROR(
+                        "Error parsing system configuration file: %s",
+                        STR(m_systemConfig.errorString()));
 
-            return false;
-        }
-
-        success = m_systemConfig.parse(STR(content));
-        if (!success)
-        {
-            PRINT_ERROR(
-                    "Error parsing system configuration file: %s",
-                    STR(m_systemConfig.errorString()));
-
-            return false;
+                return false;
+            }
         }
     }
 
