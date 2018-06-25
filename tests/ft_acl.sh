@@ -122,8 +122,8 @@ function testCreateUsers()
         --first-name="Cmon" \
         --last-name="Administrator"   \
         --generate-key \
-        --new-password="admin" \
-        "admin"
+        --new-password="supervisor" \
+        "supervisor"
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -141,11 +141,11 @@ function checkTree01()
     local lines
 
     print_title "Checking Tree List"
-    mys9s tree --cmon-user=admin --list --long --directory /
+    mys9s tree --cmon-user=supervisor --list --long --directory /
 
     # The root directory owned by the system user.
-    lines=$(s9s tree --cmon-user=admin --list --long --directory /)
-    mys9s tree --cmon-user=admin --list --long --directory /
+    lines=$(s9s tree --cmon-user=supervisor --list --long --directory /)
+    mys9s tree --cmon-user=supervisor --list --long --directory /
 
     expected="^drwxrwxrwx     - system admins /$"
     if ! find_line "$lines" "$expected"; then
@@ -154,18 +154,18 @@ function checkTree01()
     fi
 
     # The admin user has a link that the admin will see
-    lines=$(s9s tree --cmon-user=admin --list --long groups/admins)
-    mys9s tree --cmon-user=admin --list --long groups/admins
+    lines=$(s9s tree --cmon-user=supervisor --list --long groups/admins)
+    mys9s tree --cmon-user=supervisor --list --long groups/admins
 
-    expected="^urwxr--r--     - admin  admins admin -> /admin$"
+    expected="^urwxr--r--     - supervisor admins admin -> /admin$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
 
     # The non-admin user has a link too.
-    lines=$(s9s tree --cmon-user=admin --list --long groups/users)
-    mys9s tree --cmon-user=admin --list --long groups/users
+    lines=$(s9s tree --cmon-user=supervisor --list --long groups/users)
+    mys9s tree --cmon-user=supervisor --list --long groups/users
 
     expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
     if ! find_line "$lines" "$expected"; then
@@ -174,8 +174,8 @@ function checkTree01()
     fi
     
     # The user owns itself.
-    lines=$(s9s tree --cmon-user=admin --list --long)
-    mys9s tree --cmon-user=admin --list --long
+    lines=$(s9s tree --cmon-user=supervisor --list --long)
+    mys9s tree --cmon-user=supervisor --list --long
 
     expected="^urwxr--r--     - pipas  admins pipas$"
     if ! find_line "$lines" "$expected"; then
@@ -190,9 +190,9 @@ function checkTree02()
 {
     print_title "Checking Access Rights"
 
-    mys9s tree --access --privileges="rwx" --cmon-user="admin" /
+    mys9s tree --access --privileges="rwx" --cmon-user="supervisor" /
     if [ $? -ne 0 ]; then
-        failure "User 'admin' ha no access to '/'"
+        failure "User 'supervisor' ha no access to '/'"
         exit 1
     fi
 
@@ -226,8 +226,8 @@ function testMkdir()
     fi
 
     # Checking the new folder.
-    mys9s tree --cmon-user=admin --list --long
-    lines=$(s9s tree --cmon-user=admin --list --long)
+    mys9s tree --cmon-user=supervisor --list --long
+    lines=$(s9s tree --cmon-user=supervisor --list --long)
     
     expected="^drwxrwxrwx     - pipas  users  home$"
     if ! find_line "$lines" "$expected"; then
