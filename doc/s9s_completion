@@ -208,7 +208,8 @@ function _s9s()
                 opts+="--cmon-user= --password= "
            
                 opts+="--date-format= "
-                opts+="--job-id= --from= --until= --limit= --offset= "
+                opts+="--job-id= --job-tags= --from= --until= --limit= "
+                opts+="--offset= "
             fi
         elif [[ ${COMP_WORDS[i]} == "tree" ]]; then
             main_opt+="--help --access --add-acl --cat --chown --delete "

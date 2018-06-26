@@ -6654,6 +6654,7 @@ S9sRpcReply::printJobListLong()
     int             terminalWidth   = options->terminalWidth();
     S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  requiredTags    = options->jobTags();
     int             total           = operator[]("total").toInt();
     unsigned int    userNameLength  = 0;
     S9sString       userNameFormat;
@@ -6667,13 +6668,17 @@ S9sRpcReply::printJobListLong()
     //
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap  theMap = theList[idx].toVariantMap();
-        int            jobId  = theMap["job_id"].toInt();
-        S9sString      user   = theMap["user_name"].toString();
-        S9sString      status = theMap["status"].toString();
+        S9sVariantMap  theMap     = theList[idx].toVariantMap();
+        S9sJob         job        = theList[idx].toVariantMap();
+        int            jobId      = theMap["job_id"].toInt();
+        S9sString      user       = theMap["user_name"].toString();
+        S9sString      status     = theMap["status"].toString();
         
         // Filtering.
         if (options->hasJobId() && options->jobId() != jobId)
+            continue;
+
+        if (!job.hasTags(requiredTags))
             continue;
 
         if (user.length() > userNameLength)
@@ -6711,6 +6716,9 @@ S9sRpcReply::printJobListLong()
 
         // Filtering.
         if (options->hasJobId() && options->jobId() != jobId)
+            continue;
+
+        if (!job.hasTags(requiredTags))
             continue;
 
         // The title.
@@ -6888,7 +6896,7 @@ S9sRpcReply::printJobListLong()
 
         printf("%sTags      :%s %s\n", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
-                STR(job.tags("-")));
+                STR(job.tags(syntaxHighlight, "-")));
 
         S9S_UNUSED(jobId);
         S9S_UNUSED(stateColorEnd);

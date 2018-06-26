@@ -4248,6 +4248,7 @@ S9sOptions::printHelpCluster()
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
+"  --job-tags=LIST            Tags for the job if a job is created.\n"
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
@@ -4495,13 +4496,14 @@ S9sOptions::readOptionsNode(
         { "nodes",            required_argument, 0, OptionNodes           },
         
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait            },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
-        { "schedule",         required_argument, 0, OptionSchedule        },
-        { "recurrence",       required_argument, 0, OptionRecurrence      },
-        { "timeout",          required_argument, 0, OptionTimeout         },
         { "force",            no_argument,       0, OptionForce           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
 
         // Node options. 
         { "properties",       required_argument, 0, OptionProperties      },
@@ -4683,6 +4685,11 @@ S9sOptions::readOptionsNode(
                 m_options["recurrence"] = optarg;
                 break;
             
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+
             case OptionTimeout:
                 // --timeout=SECONDS
                 m_options["timeout"] = optarg;
@@ -4845,6 +4852,7 @@ S9sOptions::readOptionsBackup(
         { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -4967,6 +4975,11 @@ S9sOptions::readOptionsBackup(
             case OptionWait:
                 // --wait
                 m_options["wait"] = true;
+                break;
+
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
                 break;
 
             case 'G':
@@ -7582,14 +7595,15 @@ S9sOptions::readOptionsCluster(
         { "stop",             no_argument,       0, OptionStop            },
 
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait            },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
         { "no-header",        no_argument,       0, OptionNoHeader        },
-        { "schedule",         required_argument, 0, OptionSchedule        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
-        { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
 
 
         // Cluster information.
@@ -7814,6 +7828,11 @@ S9sOptions::readOptionsCluster(
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
+                break;
+            
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
                 break;
             
             case OptionNoHeader:
@@ -8107,14 +8126,15 @@ S9sOptions::readOptionsContainer(
         { "stop",             no_argument,       0, OptionStop            },
 
         // Job Related Options
-        { "wait",             no_argument,       0, OptionWait            },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
         { "no-header",        no_argument,       0, OptionNoHeader        },
-        { "schedule",         required_argument, 0, OptionSchedule        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
-        { "timeout",          required_argument, 0, OptionTimeout         },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
 
         // Other options.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -8230,6 +8250,11 @@ S9sOptions::readOptionsContainer(
                 m_options["log"] = true;
                 break;
             
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+
             case OptionBatch:
                 // --batch
                 m_options["batch"] = true;
@@ -8840,6 +8865,7 @@ S9sOptions::readOptionsServer(
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
@@ -9096,6 +9122,11 @@ S9sOptions::readOptionsServer(
                 m_options["wait"] = true;
                 break;
             
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+
             case 'G':
                 // -G, --log
                 m_options["log"] = true;

@@ -6009,7 +6009,10 @@ S9sRpcClient::composeJob() const
     
     if (!options->recurrence().empty())
         job["recurrence"]  = options->recurrence(); 
- 
+
+    if (options->hasJobTags())
+        job["tags"] = options->jobTags();
+
     return job;
 }
 

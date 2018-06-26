@@ -139,6 +139,7 @@ S9sJob::tags() const
 
 S9sString 
 S9sJob::tags(
+        bool            useSyntaxHightlight,
         const S9sString defaultValue) const
 {
     S9sString      retval;
@@ -150,6 +151,9 @@ S9sJob::tags(
 
         if (tag.empty())
             continue;
+
+        if (useSyntaxHightlight)
+            tag = XTERM_COLOR_TAG + tag + TERM_NORMAL;
 
         tag = "#" + tag;
         if (!retval.empty())
