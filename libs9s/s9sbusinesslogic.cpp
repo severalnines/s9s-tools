@@ -1452,7 +1452,11 @@ S9sBusinessLogic::executeJobList(
     S9sRpcReply  reply;
     bool         success;
 
-    success = client.getJobInstances(clusterName, clusterId);
+    if (options->hasJobId())
+        success = client.getJobInstance(options->jobId());
+    else
+        success = client.getJobInstances(clusterName, clusterId);
+
     if (success)
     {
         reply = client.reply();

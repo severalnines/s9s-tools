@@ -51,7 +51,7 @@ class S9sRpcReply : public S9sVariantMap
         S9sString errorString() const;
         S9sString uuid() const;
 
-
+        S9sVariantList jobs();
         int jobId() const;
         S9sString jobTitle() const;
         bool isJobFailed() const;

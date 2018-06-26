@@ -157,6 +157,25 @@ S9sRpcReply::uuid() const
     return S9sString();
 }
 
+/**
+ * \returns The variant list that contains variant maps with the jobs in the
+ *   reply.
+ *
+ * It is either one job coming from the "job" field of the reply or zero to many
+ * maps coming from the "jobs" field. This depends on the request we sent.
+ */
+S9sVariantList 
+S9sRpcReply::jobs()
+{
+    S9sVariantList retval;
+
+    if (contains("job"))
+        retval << operator[]("job").toVariantMap();
+    else if (contains("jobs"))
+        retval = operator[]("jobs").toVariantList();
+
+    return retval;
+}
 
 /**
  * \returns the job ID from the reply if the reply contains a job ID, returns -1
@@ -6406,7 +6425,7 @@ void
 S9sRpcReply::printJobListBrief()
 {
     S9sOptions     *options         = S9sOptions::instance();
-    S9sVariantList  theList         = operator[]("jobs").toVariantList();
+    S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             total           = operator[]("total").toInt();
     S9sFormat       idFormat;
@@ -6625,7 +6644,7 @@ S9sRpcReply::printJobListLong()
 {
     S9sOptions     *options         = S9sOptions::instance();
     int             terminalWidth   = options->terminalWidth();
-    S9sVariantList  theList         = operator[]("jobs").toVariantList();
+    S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     int             total           = operator[]("total").toInt();
     unsigned int    userNameLength  = 0;
