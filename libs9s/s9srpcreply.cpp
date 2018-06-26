@@ -37,6 +37,7 @@
 #include "S9sGroup"
 #include "S9sReport"
 #include "S9sServer"
+#include "S9sJob"
 #include "S9sContainer"
 #include "S9sStringList"
 

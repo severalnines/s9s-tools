@@ -127,6 +127,9 @@ libs9s_public_h_headers =     \
 	S9sServer                 \
 	s9sserver.h               \
 	s9sserver.cpp             \
+	S9sJob                    \
+	s9sjob.h                  \
+	s9sjob.cpp                \
 	S9sOptions                \
 	s9soptions.h              \
 	S9sParseContext           \
