@@ -6682,9 +6682,10 @@ S9sRpcReply::printJobListLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap     = theList[idx].toVariantMap();
-        int            jobId      = theMap["job_id"].toInt();
-        S9sString      status     = theMap["status"].toString();
-        S9sString      title      = theMap["title"].toString();
+        S9sJob         job        = theList[idx].toVariantMap();
+        int            jobId      = job.id();
+        S9sString      status     = job.status();
+        S9sString      title      = job.title();
         S9sString      statusText = theMap["status_text"].toString();
         S9sString      statusTextMonochrome;
         S9sString      user       = theMap["user_name"].toString();
@@ -6878,6 +6879,9 @@ S9sRpcReply::printJobListLong()
                     XTERM_COLOR_LIGHT_GRAY, STR(scheduled), TERM_NORMAL);
         }
 
+        printf("%sTags      :%s %s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                STR(job.tags("-")));
 
         S9S_UNUSED(jobId);
         S9S_UNUSED(stateColorEnd);

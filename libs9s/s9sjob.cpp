@@ -126,3 +126,30 @@ S9sJob::progressPercent() const
 {
     return property("progress_percent").toDouble();
 }
+
+S9sString 
+S9sJob::tags(
+        const S9sString defaultValue) const
+{
+    S9sString      retval;
+    S9sVariantList theList = property("tags").toVariantList();
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        S9sString tag = theList[idx].toString();
+
+        if (tag.empty())
+            continue;
+
+        tag = "#" + tag;
+        if (!retval.empty())
+            retval += ", ";
+
+        retval += tag;
+    }
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
