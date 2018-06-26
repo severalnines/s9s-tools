@@ -6445,11 +6445,12 @@ S9sRpcReply::printJobListBrief()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
-        int            jobId  = theMap["job_id"].toInt();
-        int            cid    = theMap["cluster_id"].toInt();
-        S9sString      user   = theMap["user_name"].toString();
-        S9sString      group  = theMap["group_name"].toString();
-        S9sString      status = theMap["status"].toString();
+        S9sJob         job    = theList[idx].toVariantMap();
+        int            jobId  = job.id();
+        int            cid    = job.clusterId();
+        S9sString      user   = job.userName();
+        S9sString      group  = job.groupName();
+        S9sString      status = job.status();
         S9sDateTime    timeStamp;
         S9sString      timeStampString;
         
@@ -6462,7 +6463,7 @@ S9sRpcReply::printJobListBrief()
 
         // The timestamp. Now we use 'created' later we can make this
         // configurable.
-        timeStamp.parse(theMap["created"].toString());
+        timeStamp.parse(job.createdString());
         timeStampString = options->formatDateTime(timeStamp);
         
         idFormat.widen(jobId);
@@ -6507,12 +6508,13 @@ S9sRpcReply::printJobListBrief()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
-        int            jobId  = theMap["job_id"].toInt();
-        int            cid    = theMap["cluster_id"].toInt();
-        S9sString      status = theMap["status"].toString();
-        S9sString      title  = theMap["title"].toString();
-        S9sString      user   = theMap["user_name"].toString();
-        S9sString      group  = theMap["group_name"].toString();
+        S9sJob         job    = theList[idx].toVariantMap();
+        int            jobId  = job.id();
+        int            cid    = job.clusterId();
+        S9sString      status = job.status();
+        S9sString      title  = job.title();
+        S9sString      user   = job.userName();
+        S9sString      group  = job.groupName();
         S9sString      percent;
         S9sDateTime    created;
         S9sString      timeStamp;
@@ -6535,11 +6537,9 @@ S9sRpcReply::printJobListBrief()
             group = "-";
 
         // The progress.
-        if (theMap.contains("progress_percent"))
+        if (job.hasProgressPercent())
         {
-            double value = theMap["progress_percent"].toDouble();
-
-            percent.sprintf("%3.0f%%", value);
+            percent.sprintf("%3.0f%%", job.progressPercent());
         } else if (status == "FINISHED") 
         {
             percent = "100%";
