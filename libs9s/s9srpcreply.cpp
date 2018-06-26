@@ -6428,6 +6428,7 @@ S9sRpcReply::printJobListBrief()
     S9sOptions     *options         = S9sOptions::instance();
     S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  requiredTags    = options->jobTags();
     int             total           = operator[]("total").toInt();
     S9sFormat       idFormat;
     S9sFormat       cidFormat;
@@ -6460,6 +6461,9 @@ S9sRpcReply::printJobListBrief()
 
         if (group.empty())
             group = "-";
+
+        if (!job.hasTags(requiredTags))
+            continue;
 
         // The timestamp. Now we use 'created' later we can make this
         // configurable.
@@ -6535,6 +6539,9 @@ S9sRpcReply::printJobListBrief()
         
         if (group.empty())
             group = "-";
+        
+        if (!job.hasTags(requiredTags))
+            continue;
 
         // The progress.
         if (job.hasProgressPercent())

@@ -49,7 +49,12 @@ class S9sJob : public S9sObject
         S9sString scheduledString() const;
         bool hasProgressPercent() const;
         double progressPercent() const;
+
+        S9sVariantList tags() const;
         S9sString tags(const S9sString defaultValue) const;
+
+        bool hasTags(const S9sVariantList &requiredTags);
+
 };
 
 

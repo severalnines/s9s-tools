@@ -227,6 +227,7 @@ enum S9sOptionType
     OptionEventDebug,
     OptionEventLog,
     OptionUseInternalRepos,
+    OptionJobTags,
 };
 
 /**
@@ -2271,6 +2272,33 @@ S9sOptions::setParallellism(
     return true;
 }
 
+bool 
+S9sOptions::hasJobTags() const
+{
+    return m_options.contains("job_tags");
+}
+
+S9sVariantList
+S9sOptions::jobTags() const
+{
+    S9sVariantList retval;
+
+    if (m_options.contains("job_tags"))
+        retval = m_options.at("job_tags").toVariantList();
+
+    return retval;
+}
+
+bool
+S9sOptions::setJobTags(
+        const S9sString &value)
+{
+    S9sVariantList tags = value.split(";,");
+
+    m_options["job_tags"] = tags;
+    return true;
+}
+
 bool
 S9sOptions::hasParallellism() const
 {
@@ -4004,9 +4032,10 @@ S9sOptions::printHelpJob()
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --cluster-name=NAME        Name of the cluster.\n"
-"  --job-id=ID                The ID of the job.\n"
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
+"  --job-id=ID                The ID of the job.\n"
+"  --job-tags=LIST            List of job tags to filter jobs.\n"
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
 "  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
@@ -8406,11 +8435,12 @@ S9sOptions::readOptionsJob(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "job-id",           required_argument, 0, OptionJobId           },
-        { "log-format",       required_argument, 0, OptionLogFormat       },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
         { "limit",            required_argument, 0, OptionLimit           },
+        { "log-format",       required_argument, 0, OptionLogFormat       },
         { "offset",           required_argument, 0, OptionOffset          },
-        { "schedule",         required_argument, 0, OptionSchedule        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
 
         { 0, 0, 0, 0 }
     };
@@ -8536,6 +8566,11 @@ S9sOptions::readOptionsJob(
             case OptionJobId:
                 // --job-id=ID
                 m_options["job_id"] = atoi(optarg);
+                break;
+
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
                 break;
 
             case 5:

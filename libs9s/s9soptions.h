@@ -256,7 +256,11 @@ class S9sOptions
         bool onNode() const;
         bool onController() const;
         S9sString databases() const;
-        
+       
+        bool hasJobTags() const;
+        S9sVariantList jobTags() const;
+        bool setJobTags(const S9sString &value);
+
         bool setParallellism(const S9sString &value);
         bool hasParallellism() const;
         int parallellism() const;

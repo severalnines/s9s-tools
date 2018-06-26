@@ -19,6 +19,10 @@
  */
 #include "s9sjob.h"
 
+//#define DEBUG
+//#define WARNING
+#include "s9sdebug.h"
+
 S9sJob::S9sJob() :
     S9sObject()
 {
@@ -127,6 +131,12 @@ S9sJob::progressPercent() const
     return property("progress_percent").toDouble();
 }
 
+S9sVariantList
+S9sJob::tags() const
+{
+    return property("tags").toVariantList();
+}
+
 S9sString 
 S9sJob::tags(
         const S9sString defaultValue) const
@@ -152,4 +162,38 @@ S9sJob::tags(
         retval = defaultValue;
 
     return retval;
+}
+
+bool
+S9sJob::hasTags(
+        const S9sVariantList &requiredTags)
+{
+    S9sVariantList myTags = tags();
+
+    S9S_DEBUG(" requiredTags : %s", STR(S9sVariant(requiredTags).toString()));
+    S9S_DEBUG("       myTags : %s", STR(S9sVariant(myTags).toString()));
+    for (uint idx1 = 0u; idx1 < requiredTags.size(); ++idx1)
+    {
+        S9sString requiredTag = requiredTags[idx1].toString();
+        bool      found = false;
+
+        if (requiredTag.empty())
+            continue;
+
+        for (uint idx2 = 0u; idx2 < myTags.size(); ++idx2)
+        {
+            S9sString myTag = myTags[idx2].toString();
+
+            if (requiredTag.toLower() == myTag.toLower())
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return false;
+    }
+
+    return true;
 }
