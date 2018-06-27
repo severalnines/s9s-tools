@@ -295,7 +295,7 @@ function createContainer()
     #
     # We will manipulate this container in other tests.
     #
-    LAST_CONTAINER_NAME=$container_name
+    LAST_CONTAINER_NAME="$container_name"
 }
 
 #
@@ -393,6 +393,12 @@ function createFail()
     print_title "Deleting Container"
 
     mys9s container --delete $LOG_OPTION "$LAST_CONTAINER_NAME"
+    exitCode=$?
+
+    if [ "$exitCode" -ne 0 ]; then
+        mys9s container --list --long
+    fi
+
     check_exit_code $?
 
     LAST_CONTAINER_NAME=""
