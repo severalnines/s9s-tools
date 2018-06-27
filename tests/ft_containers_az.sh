@@ -385,6 +385,17 @@ function createFail()
         failure "Creating container with invalid image should have failed."
         exit 1
     fi
+
+    #
+    # Deleting the container we already created because we have very limited
+    # resources.
+    #
+    print_title "Deleting Container"
+
+    mys9s container --delete $LOG_OPTION "$LAST_CONTAINER_NAME"
+    check_exit_code $?
+
+    LAST_CONTAINER_NAME=""
 }
 
 function createCluster()
