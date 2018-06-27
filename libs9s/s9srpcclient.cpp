@@ -1132,6 +1132,9 @@ S9sRpcClient::getJobInstances(
     if (options->getBool("show_scheduled"))
         request["show_scheduled"] = true;
 
+    if (options->hasJobTags())
+        request["tags"] = options->jobTags();
+
     retval = executeRequest(uri, request);
     return retval;
 }
