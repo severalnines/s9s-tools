@@ -421,6 +421,12 @@ class S9sOptions
         static void printError(const char *formatString, ...);
 
         void printHelp();
+        
+        bool getBool(const char *key) const;
+        S9sString getString(const char *key) const;        
+        int getInt(const char *key) const;        
+        S9sVariantMap getVariantMap(const char *key) const;
+
 
     protected:
         S9sString defaultUserConfigFileName() const;
@@ -493,11 +499,6 @@ class S9sOptions
         bool checkOptionsEvent();
 
         bool setMode(const S9sString &modeName);
-
-        bool getBool(const char *key) const;
-        S9sString getString(const char *key) const;        
-        int getInt(const char *key) const;        
-        S9sVariantMap getVariantMap(const char *key) const;
 
         S9sOptions();
         ~S9sOptions();

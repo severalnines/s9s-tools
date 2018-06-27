@@ -188,7 +188,7 @@ function _s9s()
             fi 
         elif [[ ${COMP_WORDS[i]} == "job" ]]; then
             main_opt+="--help "
-            main_opt+="--wait --log --list --delete"
+            main_opt+="--delete --fail --list --log --success --wait "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
@@ -210,6 +210,8 @@ function _s9s()
                 opts+="--date-format= "
                 opts+="--job-id= --job-tags= --from= --until= --limit= "
                 opts+="--offset= "
+                opts+="--show-aborted --show-defined --show-failed "
+                opts+="--show-finished --show-running --show-scheduled "
             fi
         elif [[ ${COMP_WORDS[i]} == "tree" ]]; then
             main_opt+="--help --access --add-acl --cat --chown --delete "

@@ -228,6 +228,13 @@ enum S9sOptionType
     OptionEventLog,
     OptionUseInternalRepos,
     OptionJobTags,
+
+    OptionShowDefined,
+    OptionShowRunning,
+    OptionShowScheduled,
+    OptionShowAborted,
+    OptionShowFinished,
+    OptionShowFailed,
 };
 
 /**
@@ -4039,6 +4046,13 @@ S9sOptions::printHelpJob()
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
 "  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
+"\n"
+"  --show-aborted             Show aborted jobs while printing job list.\n"
+"  --show-defined             Show defined jobs while printing job list.\n"
+"  --show-failed              Show failed jobs while printing job list.\n"
+"  --show-finished            Show finished jobs while printing job list.\n"
+"  --show-running             Show running jobs while printing job list.\n"
+"  --show-scheduled           Show scheduled jobs while printing job list.\n"
 "\n"
     );
 }
@@ -8466,6 +8480,13 @@ S9sOptions::readOptionsJob(
         { "offset",           required_argument, 0, OptionOffset          },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "schedule",         required_argument, 0, OptionSchedule        },
+        
+        { "show-aborted",     no_argument,       0, OptionShowAborted     },
+        { "show-defined",     no_argument,       0, OptionShowDefined     },
+        { "show-failed",      no_argument,       0, OptionShowFailed      },
+        { "show-finished",    no_argument,       0, OptionShowFinished    },
+        { "show-running",     no_argument,       0, OptionShowRunning     },
+        { "show-scheduled",   no_argument,       0, OptionShowScheduled   },
 
         { 0, 0, 0, 0 }
     };
@@ -8641,6 +8662,36 @@ S9sOptions::readOptionsJob(
             case OptionRecurrence:
                 // --recurrence=CRONTABSTRING
                 m_options["recurrence"] = optarg;
+                break;
+
+            case OptionShowDefined:
+                // --show-defined
+                m_options["show_defined"] = true;
+                break;
+            
+            case OptionShowRunning:
+                // --show-running
+                m_options["show_running"] = true;
+                break;
+            
+            case OptionShowScheduled:
+                // --show-scheduled
+                m_options["show_scheduled"] = true;
+                break;
+            
+            case OptionShowAborted:
+                // --show-aborted
+                m_options["show_aborted"] = true;
+                break;
+            
+            case OptionShowFinished:
+                // --show-finished
+                m_options["show_finished"] = true;
+                break;
+            
+            case OptionShowFailed:
+                // --show-failed
+                m_options["show_failed"] = true;
                 break;
 
             case '?':

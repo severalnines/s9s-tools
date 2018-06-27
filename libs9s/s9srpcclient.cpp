@@ -1114,8 +1114,25 @@ S9sRpcClient::getJobInstances(
     if (!clusterName.empty())
         request["cluster_name"] = clusterName;
 
-    retval = executeRequest(uri, request);
+    if (options->getBool("show_aborted"))
+        request["show_aborted"] = true;
+    
+    if (options->getBool("show_defined"))
+        request["show_defined"] = true;
+    
+    if (options->getBool("show_failed"))
+        request["show_failed"] = true;
+    
+    if (options->getBool("show_finished"))
+        request["show_finished"] = true;
+    
+    if (options->getBool("show_running"))
+        request["show_running"] = true;
+    
+    if (options->getBool("show_scheduled"))
+        request["show_scheduled"] = true;
 
+    retval = executeRequest(uri, request);
     return retval;
 }
 
