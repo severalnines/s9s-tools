@@ -139,6 +139,11 @@ function testSimpleJobs()
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be 1 jobs with the tag 'success'."
     fi
+    
+    n_lines=$(s9s job --list --batch | wc -l)
+    if [ "$n_lines" -ne 2 ]; then
+        failure "There should be 2 jobs altogether."
+    fi
 
     return 0
 }
