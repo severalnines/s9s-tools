@@ -4003,6 +4003,7 @@ void
 S9sRpcReply::printContainersLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       subnetId  = options->subnetId();
     S9sString       vpcId     = options->vpcId();
     S9s::AddressType addressType = options->addressType();
@@ -4011,16 +4012,47 @@ S9sRpcReply::printContainersLong()
     bool            truncate = options->truncate();
     S9sString       cloudName = options->cloudName();
     S9sVariantList  theList = operator[]("containers").toVariantList();
+    S9sString       formatString = options->containerFormat();
     int             total   = operator[]("total").toInt();
     int             nLines = 0;
     int             totalRunning = 0;
-    
     S9sFormat       typeFormat;
     S9sFormat       templateFormat;
     S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
     S9sFormat       userFormat(userColorBegin(), userColorEnd());
     S9sFormat       groupFormat;
     S9sFormat       parentFormat;
+
+    if (options->hasContainerFormat())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap      = theList[idx].toVariantMap();
+            S9sContainer   container(theMap);
+
+            total += 1;
+   
+            if (!options->isStringMatchExtraArguments(container.name()))
+                continue;
+
+            if (!cloudName.empty() && container.provider() != cloudName)
+                continue;
+        
+            if (!subnetId.empty() && container.subnetId() != subnetId)
+                continue;
+        
+            if (!vpcId.empty() && vpcId != container.subnetVpcId())
+                continue;
+
+            printf("%s", 
+                    STR(container.toString(syntaxHighlight, formatString)));
+        }
+    
+        if (!options->isBatchRequested())
+            printf("Total: %d\n", total); 
+
+        return;
+    }
 
     /*
      * First run-through: collecting some information.
@@ -4037,7 +4069,7 @@ S9sRpcReply::printContainersLong()
         S9sString      type   = container.provider("-");
         S9sString      templateName = container.templateName("-", true);
 
-        if (!options->isStringMatchExtraArguments(alias))
+        if (!options->isStringMatchExtraArguments(container.name()))
             continue;
 
         if (!cloudName.empty() && container.provider() != cloudName)
@@ -4180,11 +4212,39 @@ void
 S9sRpcReply::printContainersBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       subnetId  = options->subnetId();
     S9sString       vpcId     = options->vpcId();
     S9sVariantList  theList = operator[]("containers").toVariantList();
     S9sString       cloudName = options->cloudName();
+    S9sString       formatString = options->containerFormat();
     
+    if (options->hasContainerFormat())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap  theMap      = theList[idx].toVariantMap();
+            S9sContainer   container(theMap);
+
+            if (!options->isStringMatchExtraArguments(container.name()))
+                continue;
+
+            if (!cloudName.empty() && container.provider() != cloudName)
+                continue;
+        
+            if (!subnetId.empty() && container.subnetId() != subnetId)
+                continue;
+        
+            if (!vpcId.empty() && vpcId != container.subnetVpcId())
+                continue;
+
+            printf("%s", 
+                    STR(container.toString(syntaxHighlight, formatString)));
+        }
+
+        return;
+    }
+
     /*
      * Printing the list.
      */    

@@ -22,6 +22,7 @@
 #include <S9sUrl>
 #include <S9sVariantMap>
 #include <S9sRpcReply>
+#include <S9sOptions>
 
 //#define DEBUG
 //#define WARNING
@@ -182,6 +183,228 @@ S9sString
 S9sContainer::className() const
 {
     return property("class_name").toString();
+}
+
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the container to a string using a special format string that may
+ * contain field names of node properties.
+ */
+S9sString
+S9sContainer::toString(
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sString      retval;
+    S9sString      tmp;
+    char           c;
+    S9sString      partFormat;
+    bool           percent      = false;
+    bool           escaped      = false;
+    S9sOptions    *options = S9sOptions::instance();
+    //bool         modifierFree = false;
+
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+       
+        if (c == '%' && !percent)
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+        } else if (percent && c == 'f')
+        {
+            //modifierFree = true;
+            continue;
+        } else if (c == '\\')
+        {
+            escaped = true;
+            continue;
+        }
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'A':
+                    // The ip address of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), 
+                            STR(ipAddress(options->addressType())));
+                    retval += tmp;
+                    break;
+
+                case 'C':
+                    // The configuration file. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(configFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(configFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+
+                case 'F':
+                    // The first firewall.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(firewall()));
+                    retval += tmp;
+                    break;
+
+                case 'I':
+                    // The ID of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(id("-")));
+
+                    retval += tmp;
+                    break;
+
+                case 'N':
+                    // The name of the container.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(alias()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
+
+                case 'O':
+                    // The name of the owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(ownerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorEnd();
+
+                    break;
+
+                case 'S':
+                    // The state of the container.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(state()));
+
+                    if (syntaxHighlight)
+                    {
+                        retval += 
+                            S9sRpcReply::clusterStateColorBegin(state());
+                    }
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::clusterStateColorEnd();
+
+                    break;
+                    
+                case 'T':
+                    // The type of the container.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(type()));
+                    retval += tmp;
+                    break;
+
+                case 'z':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+                    
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+                    
+                    break;
+
+                case '%':
+                    retval += '%';
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                case '\'':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent      = false;
+        escaped      = false;
+        //modifierFree = false;
+    }
+
+    return retval;
 }
 
 S9sString 
@@ -583,6 +806,21 @@ S9sContainer::rootFsPath() const
     return property("root_fs_path").toString();
 }
 
+S9sString 
+S9sContainer::firewall(
+        const S9sString &defaultValue) const
+{
+    S9sString      retval;
+    S9sVariantList allFirewalls = firewalls();
+
+    if (!allFirewalls.empty())
+        retval = allFirewalls[0].toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
 
 S9sVariantList
 S9sContainer::firewalls() const

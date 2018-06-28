@@ -164,6 +164,7 @@ enum S9sOptionType
     OptionNodeFormat,
     OptionBackupFormat,
     OptionUserFormat,
+    OptionContainerFormat,
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
@@ -1767,6 +1768,25 @@ S9sString
 S9sOptions::backupFormat() const
 {
     return getString("backup_format");
+}
+
+/**
+ * \returns True if the --container-format command line option was provided.
+ */
+bool
+S9sOptions::hasContainerFormat() const
+{
+    return m_options.contains("container_format");
+}
+
+/**
+ * \returns The command line option argument for the --container-format option
+ *   or the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::containerFormat() const
+{
+    return getString("container_format");
 }
 
 /**
@@ -8152,6 +8172,7 @@ S9sOptions::readOptionsContainer(
 
         // Other options.
         { "cloud",            required_argument, 0, OptionCloud           },
+        { "container-format", required_argument, 0, OptionContainerFormat }, 
         { "containers",       required_argument, 0, OptionContainers      },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
@@ -8163,6 +8184,7 @@ S9sOptions::readOptionsContainer(
         { "template",         required_argument, 0, OptionTemplate        },
         { "volumes",          required_argument, 0, OptionVolumes         },
         { "vpc-id",           required_argument, 0, OptionVpcId           },
+        
         
         { 0, 0, 0, 0 }
     };
@@ -8343,6 +8365,11 @@ S9sOptions::readOptionsContainer(
             case OptionCloud:
                 // --cloud=NAME
                 m_options["cloud"] = optarg;
+                break;
+
+            case OptionContainerFormat:
+                // --container-format=FORMAT
+                m_options["container_format"] = optarg;
                 break;
 
             case OptionContainers:

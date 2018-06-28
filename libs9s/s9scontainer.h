@@ -49,10 +49,15 @@ class S9sContainer : public S9sObject
 
         virtual S9sString className() const;
 
+        S9sString 
+            toString(
+                    const bool       syntaxHighlight,
+                    const S9sString &formatString) const;
+
         S9sString hostname() const;
 
         S9sString ipAddress(
-                const S9s::AddressType    addressType,
+                const S9s::AddressType    addressType = S9s::AnyIpv4Address,
                 const S9sString          &defaultValue = "") const;
 
         S9sString ipv4Addresses(
@@ -95,6 +100,7 @@ class S9sContainer : public S9sObject
         S9sString configFile() const;
         S9sString rootFsPath() const;
 
+        S9sString firewall(const S9sString &defaultValue = "-") const;
         S9sVariantList firewalls() const;
         S9sString firewalls(const S9sString &defaultValue) const;
 
