@@ -4317,6 +4317,7 @@ S9sOptions::printHelpContainer()
 "  --stop                     Stop the container.\n"
 "\n"
 "  --cloud=PROVIDER           The name of the cloud provider.\n"
+"  --container-format=FORMAT  Format string to print containers.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"

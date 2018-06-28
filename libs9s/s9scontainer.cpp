@@ -288,6 +288,13 @@ S9sContainer::toString(
                         retval += S9sRpcReply::fileColorEnd();
 
                     break;
+                
+                case 'c':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(provider()));
+                    retval += tmp;
+                    break;
 
                 case 'F':
                     // The first firewall.
@@ -300,7 +307,13 @@ S9sContainer::toString(
                     // The ID of the node.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(id("-")));
-
+                    retval += tmp;
+                    break;
+                
+                case 'i':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(image("-")));
                     retval += tmp;
                     break;
 
@@ -333,6 +346,20 @@ S9sContainer::toString(
                         retval += S9sRpcReply::userColorEnd();
 
                     break;
+                
+                case 'P':
+                    // The name of the parent server.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(parentServerName()));
+                    retval += tmp;
+                    break;
+                
+                case 'R':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(region("-")));
+                    retval += tmp;
+                    break;
 
                 case 'S':
                     // The state of the container.
@@ -356,6 +383,27 @@ S9sContainer::toString(
                     // The type of the container.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(type()));
+                    retval += tmp;
+                    break;
+                
+                case 't':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(templateName("-")));
+                    retval += tmp;
+                    break;
+                
+                case 'U':
+                    // The type of the container.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(subnetId()));
+                    retval += tmp;
+                    break;
+                
+                case 'V':
+                    // The type of the container.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(subnetVpcId()));
                     retval += tmp;
                     break;
 

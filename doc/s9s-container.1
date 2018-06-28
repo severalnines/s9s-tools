@@ -216,6 +216,104 @@ This command line option can also be used to filter the list of the containers
 when used together with one of the \fB\-\-list\fP or \fB\-\-stat\fP options.
 
 .TP
+.BR \-\^\-container\-format =\fIFORMATSTRING\fP 
+The string that controls the format of the printed information about the
+containers.  When this command line option is used the specified information
+will be printed instead of the default columns. The format string uses the '%'
+character to mark variable fields and flag characters as they are specified in
+the standard printf() C library functions. The '%' specifiers are ended by field
+name letters to refer to various properties of the containers.
+
+The "%+12i" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the container are encoded by letters. The in the "%16D" for
+example the letter "D" encodes the "data directory" field, so the full path of
+the data directory on the container will be substituted. 
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+The s9s-tools support the following fields:
+
+.RS 7
+.TP
+.B A
+The IP address of the container.
+
+.TP 
+.B C
+The full path of the configuration file that stores the container settings if
+such a configuration file exists.
+
+.TP
+.B c
+The cloud (sometimes mentioned as 'provider') of the container, for example
+"aws" or "az" as it is set in the credentials file 
+\fB/var/lib/cmon/cloud_credentials.json\fP.
+
+.TP
+.B F
+The name of the first firewall (security group) if the container has such a
+property set, the string "-" otherwise.
+
+.TP
+.B I
+The ID of the container.
+
+.TP
+.B i
+The name of the image that was used to create the container.
+
+.TP
+.B N
+The name (alias) of the container.
+
+.TP
+.B O
+The username of the owner of the container.
+
+.TP
+.B S
+The state of the container as a string.
+
+.TP
+.B P
+The name of the parent server, the container server that manages the container.
+
+.TP
+.B R
+The name of the region in which the container is hosted.
+
+.TP
+.B T
+The type of the container (e.g. "cmon-cloud" or "lxc"). 
+
+.TP
+.B t
+The name of the template that was used to create a container or the "-" string
+if no such a template was used.
+
+.TP
+.B U
+The ID of the subnet of the container.
+
+.TP
+.B V
+The ID of the VPC for the container.
+
+.TP
+.B z
+The class name of the container object.
+
+.TP
+.B %
+The '%' character itself.
+
+.RE
+
+.TP
 .BI \-\^\-containers= LIST
 A list of containers to be created or managed. The containers can be passed as
 command line options (suitable for simple commands) or as an option argument for
