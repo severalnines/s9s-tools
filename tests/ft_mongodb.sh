@@ -187,6 +187,8 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
+
+    mys9s cluster --stat
 }
 
 function destroyContainers()
