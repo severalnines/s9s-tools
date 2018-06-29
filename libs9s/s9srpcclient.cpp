@@ -4665,6 +4665,9 @@ S9sRpcClient::createContainerWithJob()
     if (!volumes.empty())
         container.setVolumes(volumes);
 
+    if (options->hasFirewalls())
+        container.setFirewalls(options->firewalls());
+
     if (servers.size() > 1)
     {
         PRINT_ERROR("Currently only one server can be defined for containers.");
@@ -6075,6 +6078,9 @@ S9sRpcClient::composeJobData(
 
             if (!subnetId.empty())
                 container.setSubnetId(subnetId);
+    
+            if (options->hasFirewalls())
+                container.setFirewalls(options->firewalls());
 
             if (!vpcId.empty())
                 container.setSubnetVpcId(vpcId);
@@ -6106,6 +6112,9 @@ S9sRpcClient::composeJobData(
             
             if (!subnetId.empty())
                 container.setSubnetId(subnetId);
+    
+            if (options->hasFirewalls())
+                container.setFirewalls(options->firewalls());
 
             if (!vpcId.empty())
                 container.setSubnetVpcId(vpcId);

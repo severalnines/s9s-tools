@@ -103,6 +103,7 @@ class S9sContainer : public S9sObject
         S9sString firewall(const S9sString &defaultValue = "-") const;
         S9sVariantList firewalls() const;
         S9sString firewalls(const S9sString &defaultValue) const;
+        void setFirewalls(const S9sString &value);
 
         S9sVariantList volumes() const;
         void setVolumes(const S9sVariantList &volumes);

@@ -902,6 +902,12 @@ S9sContainer::firewalls(
     return retval;
 }
 
+void
+S9sContainer::setFirewalls(
+        const S9sString &value)
+{
+    setProperty("firewalls", value.split(";,"));
+}
 
 S9sVariantList 
 S9sContainer::volumes() const

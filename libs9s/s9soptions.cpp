@@ -236,6 +236,7 @@ enum S9sOptionType
     OptionShowAborted,
     OptionShowFinished,
     OptionShowFailed,
+    OptionFirewalls,
 };
 
 /**
@@ -2299,6 +2300,18 @@ S9sOptions::setParallellism(
     return true;
 }
 
+bool
+S9sOptions::hasFirewalls() const
+{
+    return m_options.contains("firewalls");
+}
+
+S9sString
+S9sOptions::firewalls() const
+{
+    return getString("firewalls");
+}
+
 bool 
 S9sOptions::hasJobTags() const
 {
@@ -4280,6 +4293,7 @@ S9sOptions::printHelpCluster()
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
+"  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
 "  --job-tags=LIST            Tags for the job if a job is created.\n"
@@ -4319,6 +4333,7 @@ S9sOptions::printHelpContainer()
 "  --cloud=PROVIDER           The name of the cloud provider.\n"
 "  --container-format=FORMAT  Format string to print containers.\n"
 "  --containers=LIST          List of containers to be created.\n"
+"  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
 "  --os-key-file=PATH         The key file to register on the container.\n"
@@ -7669,6 +7684,7 @@ S9sOptions::readOptionsCluster(
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
+        { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
@@ -8036,6 +8052,11 @@ S9sOptions::readOptionsCluster(
                 setContainers(optarg);
                 break;
 
+            case OptionFirewalls:
+                // --firewalls=LIST
+                m_options["firewalls"] = optarg;
+                break;
+
             case 'g':
                 // --generate-key
                 m_options["generate_key"] = true;
@@ -8175,6 +8196,7 @@ S9sOptions::readOptionsContainer(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "container-format", required_argument, 0, OptionContainerFormat }, 
         { "containers",       required_argument, 0, OptionContainers      },
+        { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
@@ -8376,6 +8398,11 @@ S9sOptions::readOptionsContainer(
             case OptionContainers:
                 // --containers=LIST
                 setContainers(optarg);
+                break;
+
+            case OptionFirewalls:
+                // --firewalls=LIST
+                m_options["firewalls"] = optarg;
                 break;
 
             case 'g':

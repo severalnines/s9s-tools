@@ -259,7 +259,10 @@ class S9sOptions
         bool onNode() const;
         bool onController() const;
         S9sString databases() const;
-       
+      
+        bool hasFirewalls() const;
+        S9sString firewalls() const;
+
         bool hasJobTags() const;
         S9sVariantList jobTags() const;
         bool setJobTags(const S9sString &value);

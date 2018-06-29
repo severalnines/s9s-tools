@@ -139,7 +139,7 @@ function createServer()
     mys9s server \
         --create \
         --servers="cmon-cloud://$nodeName" \
-        --log
+        $LOG_OPTION
 
     check_exit_code_no_job $?
 
@@ -185,8 +185,7 @@ function registerServer()
 
     mys9s server \
         --unregister \
-        --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" \
-        --log
+        --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
 
     check_exit_code_no_job $?
 
@@ -198,8 +197,7 @@ function registerServer()
 
     mys9s server \
         --register \
-        --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" \
-        --log
+        --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
 
@@ -385,6 +383,24 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
+        exit 1
+    fi
+    
+    #
+    # Creating a container with invalid firewall.
+    #
+    print_title "Creating Container with Invalid Firewall"
+    mys9s container \
+        --create \
+        --firewalls="nosuchfirewall" \
+        --servers=$CMON_CLOUD_CONTAINER_SERVER \
+        $LOG_OPTION \
+        "ft_containers_aws"
+    
+    exitCode=$?
+
+    if [ "$exitCode" == "0" ]; then
+        failure "Creating container with invalid firewall should have failed."
         exit 1
     fi
 }
