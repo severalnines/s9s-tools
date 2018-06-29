@@ -235,12 +235,26 @@ the data directory on the container will be substituted.
 Standard '\\' notation is also available, \\n for example encodes a new-line 
 character.
 
+.B EXAMPLE
+.nf
+s9s container \\
+    --list \\
+    --long \\
+    --container-format="%-15A %-15a %-15r %N\\n"
+.fi
+
 The s9s-tools support the following fields:
 
 .RS 7
 .TP
 .B A
-The IP address of the container.
+The IP address of the container. This is by default the public IPv4 address of
+the container. Containers being deleted/created might not have any IP addresses,
+then the "-" string is substituted.
+
+.TP
+.B a
+The private IP address of the container if there is any or the "-" string.
 
 .TP 
 .B C
@@ -285,6 +299,11 @@ The name of the parent server, the container server that manages the container.
 .TP
 .B R
 The name of the region in which the container is hosted.
+
+.TP
+.B r
+The address range of the subnet the container belongs to in CIDR notation (e.g. 
+"10.0.0.0/24").
 
 .TP
 .B T

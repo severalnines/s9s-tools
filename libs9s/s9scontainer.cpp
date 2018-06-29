@@ -372,6 +372,13 @@ S9sContainer::toString(
                     tmp.sprintf(STR(partFormat), STR(region("-")));
                     retval += tmp;
                     break;
+                
+                case 'r':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(subnetCidr("-")));
+                    retval += tmp;
+                    break;
 
                 case 'S':
                     // The state of the container.
@@ -537,6 +544,8 @@ S9sContainer::ipAddress(
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  *
  * \code{.js}
  * "network": 
@@ -687,6 +696,10 @@ S9sContainer::subNet() const
     return property("subnet").toVariantMap();
 }
 
+/**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
+ */
 S9sString 
 S9sContainer::subnetId(
         const S9sString &defaultValue) const
@@ -711,6 +724,12 @@ S9sContainer::setSubnetId(
     setProperty("subnet", subnetMap);
 }
 
+/**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
+ * \returns The address range of the used subnet in CIDR format (e.g. 
+ *   "172.31.0.0/20".
+ */
 S9sString 
 S9sContainer::subnetCidr(
         const S9sString &defaultValue) const
@@ -725,6 +744,10 @@ S9sContainer::subnetCidr(
     return retval;
 }
 
+/**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
+ */
 S9sString 
 S9sContainer::subnetVpcId(
         const S9sString &defaultValue) const
@@ -751,6 +774,8 @@ S9sContainer::setSubnetVpcId(
 
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \param truncate If this is true the template name will be truncated at the
  *   first space.
  * \returns The template name that was used to create the container.
@@ -791,6 +816,8 @@ S9sContainer::setTemplate(
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns The provider (AKA the cloud) of the container where it can be 
  *   found.
  */
@@ -813,6 +840,10 @@ S9sContainer::setProvider(
     setProperty("provider", providerName);
 }
 
+/**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
+ */
 S9sString 
 S9sContainer::image(
         const S9sString &defaultValue) const
@@ -833,6 +864,8 @@ S9sContainer::setImage(
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns The name of the region the container can be found or the default
  *   value if the region is unknown.
  */
@@ -900,6 +933,8 @@ S9sContainer::rootFsPath() const
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns The ID of the first firewall or the default value if the container
  *   has no forewalls.
  */
@@ -929,6 +964,8 @@ S9sContainer::firewalls() const
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns The list of firewall names fit to be printed for the user (uses not
  *   ',' and ' ' for separator.
  */
@@ -1037,6 +1074,8 @@ S9sContainer::volumeType(
 
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns The processor architecture (e.g. "x86_64").
  */
 S9sString 
@@ -1054,6 +1093,8 @@ S9sContainer::architecture(
 }
 
 /**
+ * \param defaultValue The string to return if the requested property is not
+ *   set.
  * \returns A string encodes the operating system name and version.
  */
 S9sString
