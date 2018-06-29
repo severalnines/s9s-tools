@@ -199,7 +199,7 @@ S9sContainer::toString(
         const S9sString &formatString) const
 {
     S9sString      retval;
-    S9sString      tmp;
+    S9sString      tmp, value;
     char           c;
     S9sString      partFormat;
     bool           percent      = false;
@@ -269,9 +269,25 @@ S9sContainer::toString(
                 case 'A':
                     // The ip address of the node.
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), 
-                            STR(ipAddress(options->addressType())));
+                    value = ipAddress(options->addressType(), "-");
+
+                    tmp.sprintf(STR(partFormat), STR(value));
+
+                    retval += S9sRpcReply::ipColorBegin(value);
                     retval += tmp;
+                    retval += S9sRpcReply::ipColorEnd();
+                    break;
+                
+                case 'a':
+                    // The private ip address of the node.
+                    partFormat += 's';
+                    value = ipAddress(S9s::PrivateIpv4Address, "-");
+
+                    tmp.sprintf(STR(partFormat), STR(value));
+
+                    retval += S9sRpcReply::ipColorBegin(value);
+                    retval += tmp;
+                    retval += S9sRpcReply::ipColorEnd();
                     break;
 
                 case 'C':
@@ -322,14 +338,10 @@ S9sContainer::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(alias()));
 
-                    if (syntaxHighlight)
-                        retval += XTERM_COLOR_BLUE;
-
+                    retval += S9sRpcReply::containerColorBegin(stateAsChar());
                     retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += TERM_NORMAL;
-
+                    retval += S9sRpcReply::containerColorEnd();
+                    
                     break;
 
                 case 'O':
@@ -462,13 +474,20 @@ S9sContainer::hostname() const
 }
 
 /**
+ * \param addressType Controls which address is printed.
+ * \param defaultValue The value that is returned if the address of the given
+ *   type does not exist.
+ * \returns The IP address of the node.
  *
-        "network": 
-        {
-            "private_ip": [ "172.31.12.5", "ip-1.compute.internal" ],
-            "public_ip": [ "54.93.99.244", "ec2.com" ]
-        },
-*/
+ * Here is how the IP addresses look like in the property map.
+ * \code{.js}
+ * "network": 
+ * {
+ *     "private_ip": [ "172.31.12.5", "ip-1.compute.internal" ],
+ *     "public_ip": [ "54.93.99.244", "ec2.com" ]
+ * },
+ * \endcode
+ */
 S9sString 
 S9sContainer::ipAddress(
         const S9s::AddressType    addressType,
@@ -615,6 +634,10 @@ S9sContainer::state() const
     return property("status").toString();
 }
 
+/**
+ * \returns The state of the container as one character that can be printed for
+ *   the user.
+ */
 int
 S9sContainer::stateAsChar() const
 {
