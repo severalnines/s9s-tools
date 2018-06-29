@@ -41,6 +41,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --vendor=STRING  Use the given MongoDb vendor.
+  --provider-version=STRING The database server provider version.
   --server=SERVER  Use the given server to create containers.
   --install        Just install the cluster and exit.
 
@@ -51,7 +52,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
-install,vendor:" \
+install,provider-version:,vendor:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -107,6 +108,12 @@ while true; do
         --vendor)
             shift
             OPTION_VENDOR="$1"
+            shift
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
             shift
             ;;
 
@@ -180,8 +187,8 @@ function createCluster()
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=mongodb \
         --provider-version="$PROVIDER_VERSION" \
-        --cloud=lxc \
         --vendor="$OPTION_VENDOR" \
+        --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
         $LOG_OPTION 
