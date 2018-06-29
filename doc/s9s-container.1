@@ -340,6 +340,21 @@ r- architecture    -    The processor architecture.
  . . .
 .fi
 
+.TP
+.BI \-\^\-firewalls= LIST
+List of firewall (AKA security groups) IDs separated by ',' or ';' to be used
+for newly created containers.
+
+This is not a mandatory option, if the virtualization server needs a firewall to
+be set one such a firewall will be automatically created. Containers created in
+the same job (for example in a create cluster operation) the containers will
+share the same firewall, so they will be able to communicate.
+
+If the container is created so that it will be added to an existing cluster
+(e.g. in an add node job) the controller will try to find the firewall of the
+existing nodes and if it exists will re-use the same ID, so that the nodes can
+reach each other.
+
 .TP 
 .BI \-\-generate\-key
 Create a new SSH keypair when creating new containers. If this command line
