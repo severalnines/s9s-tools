@@ -767,6 +767,10 @@ S9sContainer::setTemplate(
     setProperty("template", templateName);
 }
 
+/**
+ * \returns The provider (AKA the cloud) of the container where it can be 
+ *   found.
+ */
 S9sString 
 S9sContainer::provider(
         const S9sString &defaultValue) const
@@ -805,6 +809,10 @@ S9sContainer::setImage(
     setProperty("image", image);
 }
 
+/**
+ * \returns The name of the region the container can be found or the default
+ *   value if the region is unknown.
+ */
 S9sString 
 S9sContainer::region(
         const S9sString &defaultValue) const
@@ -818,13 +826,19 @@ S9sContainer::region(
 
 }
 
+/**
+ * \param value The name of the region the new container should be created.
+ */
 void
 S9sContainer::setRegion(
-        const S9sString &image)
+        const S9sString &value)
 {
-    setProperty("region", image);
+    setProperty("region", value);
 }
 
+/**
+ * \returns The type of the container (e.g. "lxc" or "cmon-cloud").
+ */
 S9sString 
 S9sContainer::type() const
 {
@@ -842,18 +856,30 @@ S9sContainer::memoryLimitGBytes() const
     return (double) retval;
 }
 
+/**
+ * \returns The full path of the configuration file storing the container
+ *   settings if such a file exists.
+ */
 S9sString 
 S9sContainer::configFile() const
 {
     return property("configfile").toString();
 }
 
+/**
+ * \returns The full path of the root filesystem of the container if this
+ *   information is available.
+ */
 S9sString 
 S9sContainer::rootFsPath() const
 {
     return property("root_fs_path").toString();
 }
 
+/**
+ * \returns The ID of the first firewall or the default value if the container
+ *   has no forewalls.
+ */
 S9sString 
 S9sContainer::firewall(
         const S9sString &defaultValue) const
@@ -870,12 +896,19 @@ S9sContainer::firewall(
     return retval;
 }
 
+/**
+ * \returns The list of firewalls as a string list.
+ */
 S9sVariantList
 S9sContainer::firewalls() const
 {
     return property("firewalls").toVariantList();
 }
 
+/**
+ * \returns The list of firewall names fit to be printed for the user (uses not
+ *   ',' and ' ' for separator.
+ */
 S9sString
 S9sContainer::firewalls(
         const S9sString &defaultValue) const
@@ -902,6 +935,12 @@ S9sContainer::firewalls(
     return retval;
 }
 
+/**
+ * \param value The list of firewall IDs separated by ',' or ';' to be set.
+ *
+ * We use this method when the user wants to create a firewall with a specified
+ * firewall (AKA security group).
+ */
 void
 S9sContainer::setFirewalls(
         const S9sString &value)
@@ -909,6 +948,22 @@ S9sContainer::setFirewalls(
     setProperty("firewalls", value.split(";,"));
 }
 
+/**
+ *
+ * The volumes look like this:
+ * \code{.js}
+ * "volumes": [ 
+ * {
+ *     "name": "volume-1",
+ *     "size": 10,
+ *     "type": "hdd"
+ * } ]
+ * \endcode
+ *
+ * Note: when the controller creates a container it remembers the volumes it
+ * creates for the container. Pre-existing containers may not have this
+ * information.
+ */
 S9sVariantList 
 S9sContainer::volumes() const
 {
@@ -922,6 +977,9 @@ S9sContainer::setVolumes(
     setProperty("volumes", volumes);
 }
 
+/**
+ *
+ */
 uint
 S9sContainer::nVolumes() const
 {
