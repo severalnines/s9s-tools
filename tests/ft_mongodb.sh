@@ -13,6 +13,9 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 PROXYSQL_IP=""
 OPTION_INSTALL=""
 
+OPTION_VENDOR="10gen"
+PROVIDER_VERSION="3.2"
+
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
@@ -37,6 +40,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --log            Print the logs while waiting for the job to be ended.
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
+  --vendor=STRING  Use the given MongoDb vendor.
   --server=SERVER  Use the given server to create containers.
   --install        Just install the cluster and exit.
 
@@ -47,7 +51,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
-install" \
+install,vendor:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -98,6 +102,12 @@ while true; do
         --install)
             shift
             OPTION_INSTALL="--install"
+            ;;
+
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
             ;;
 
         --)
@@ -169,9 +179,9 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=mongodb \
-        --provider-version="5.6" \
+        --provider-version="$PROVIDER_VERSION" \
         --cloud=lxc \
-        --vendor=10gen \
+        --vendor="$OPTION_VENDOR" \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
         $LOG_OPTION 
