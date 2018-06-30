@@ -164,28 +164,80 @@ logger "Log file is: '$LOGFILE'."
 [ ! -d "$LOGDIR" ] && mkdir -p "$LOGDIR"
 touch "$LOGFILE"
 
+function outlet_requested()
+{
+    local outlet="$1"
+    local outlets="$2"
+
+    if [ -z "$outlets" -o "$outlets" == "all" ]; then
+        return 0;
+    fi
+
+    for this_outlet in $(echo $outlets | tr ',' ' '); do
+        if [ "$this_outlet" == "$outlet" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 function switch_apc()
 {
     printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
     printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
     printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
 
-    if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
-        for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
-            pip-pdu-expect \
-                "$CONF_PDU_SERVER" "$PDU_OPERATION" "$c" \
-                >/dev/null 2>/dev/null
+    case "$PDU_OPERATION" in
+        on|off)
+            if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
+                for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
+                    pip-pdu-expect \
+                        "$CONF_PDU_SERVER" "$PDU_OPERATION" "$c" \
+                        >/dev/null 2>/dev/null
 
-            sleep "$CONF_PDU_DELAY"
-        done
-    else
-        for outlet in $(echo $PDU_OUTLETS | tr ',' ' '); do
-            printVerbose "Switching outlet $outlet $PDU_OPERATION"
-            pip-pdu-expect \
-                "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
-                    >/dev/null 2>/dev/null
-        done
-    fi
+                    sleep "$CONF_PDU_DELAY"
+                done
+            else
+                for outlet in $(echo $PDU_OUTLETS | tr ',' ' '); do
+                    printVerbose "Switching outlet $outlet $PDU_OPERATION"
+                    pip-pdu-expect \
+                        "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
+                            >/dev/null 2>/dev/null
+                done
+            fi
+            ;;
+
+        state)
+                has_off=""
+                has_on=""
+
+                # Command 'status' is not needed, the status is printed out
+                # anyway.
+                OIFS=$IFS; IFS=$'\n'
+                lines=($(pip-pdu-expect "$CONF_PDU_SERVER" "" "" \
+                    | grep -o '^\ *[0-9]\+:\ *\(\(OFF\)\|\(ON\)\)' \
+                    | tr -d ' '))
+                IFS=$OIFS
+               
+                for line in "${lines[@]}"; do
+                    outlet="${line%:*}"
+                    status="${line#*:}"
+
+                    printVerbose "'$outlet' is '$status'"
+                    if ! outlet_requested "$outlet" "$PDU_OUTLETS"; then
+                        printVerbose "Not requested '$outlet' '$PDU_OUTLETS'"
+                        continue
+                    fi
+
+                    [ "$status" == "ON" ]  && has_on="true"
+                    [ "$status" == "OFF" ] && has_off="true"
+                done
+
+                [ -n "$has_on" -a -z "$has_off" ] && echo "on"
+                [ -z "$has_on" -a -n "$has_off" ] && echo "off"
+            ;;
+    esac
 }
 
 function switch_orvibo()
