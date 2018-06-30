@@ -3,7 +3,7 @@ MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.4"
-VERBOSE=""
+VERBOSE="$HOME/.pip.log/${MYNAME}.log"
 LOGFILE=""
 
 #

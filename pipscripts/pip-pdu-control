@@ -5,53 +5,15 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
 VERBOSE=""
-LOGFILE="$HOME/.pip/${MYNAME}.log"
+LOGDIR="$HOME/.pip.log"
+LOGFILE="$LOGDIR/${MYNAME}.log"
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
 PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
 
-TERM_ERASE_EOL="\033[K"
-TERM_HOME="\033[0;0H"
-TERM_NORMAL="\033[0;39m"
-TERM_BOLD="\033[1m"
-TERM_INVERSE="\033[7m"
-XTERM_COLOR_RED="\033[0;31m"
-XTERM_COLOR_GREEN="\033[0;32m"
-XTERM_COLOR_ORANGE="\033[0;33m"
-XTERM_COLOR_BLUE="\033[0;34m"
-XTERM_COLOR_PURPLE="\033[0;35m"
-XTERM_COLOR_CYAN="\033[0;36m"
-XTERM_COLOR_LIGHT_GRAY="\033[0;37m"
-XTERM_COLOR_DARK_GRAY="\033[1;30m"
-XTERM_COLOR_LIGHT_RED="\033[1;31m"
-XTERM_COLOR_LIGHT_GREEN="\033[1;32m"
-XTERM_COLOR_YELLOW="\033[1;33m"
-XTERM_COLOR_LIGHT_BLUE="\033[1;34m"
-XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
-XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
-XTERM_COLOR_WHITE="\033[1;37m"
-
-OWNER_COLOR="$XTERM_COLOR_ORANGE"
-USER_COLOR="\033[1m\033[38;5;212m"
-EMAIL_COLOR="$XTERM_COLOR_PURPLE"
-PROJECT_COLOR="\033[1m\033[38;5;210m"
-TEST_COLOR="\033[2m\033[38;5;190m"
-HOST_COLOR="\033[1m\033[38;5;184m"
-INC_COLOR="\033[1m\033[36m"
-QUERY_COLOR="\033[1m\033[36m"
-COMMENT_COLOR="\033[1m\033[38;5;12m"
-IP_COLOR="\033[2m\033[38;5;201m"
-FILE_COLOR="\033[38;5;119m"
-GROUP_COLOR="\033[2m\033[38;5;7m"
-DEVICE_COLOR="\033[1m\033[38;5;203m"
-
-OK_COLOR="$XTERM_COLOR_GREEN"
-WARN_COLOR="$XTERM_COLOR_YELLOW"
-ERR_COLOR="$XTERM_COLOR_RED"
-NORM_COLOR="$XTERM_COLOR_BLUE"
-DATE_COLOR="\033[1m\033[38;5;215m"
+source "$MYDIR/utilityfunctions.sh"
 
 #
 # Prints the software version and exits.
@@ -59,41 +21,6 @@ DATE_COLOR="\033[1m\033[38;5;215m"
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -112,9 +39,17 @@ Usage:
   --on                 Turn the socket on.
   --off                Turn the socket off.
   --state              Check the state of the socket.
+  
   --power              Read the current power consumption in watts.
   --temperature        Read the temperature.
+
   --print-files        Print file names instead of names.
+  --long               Print the long, detailed list.
+
+  --group=GROUP        Only PDUs in the given group.
+  --all                All the PDUs.
+
+EXAMPLES
 
 EOF
     exit 0
@@ -124,7 +59,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,list,on,off,state,\
-power,temperature,print-files" \
+power,temperature,print-files,long,group:,all" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -191,6 +126,22 @@ while true; do
             OPTION_PRINT_FILES="true"
             ;;
 
+        --long)
+            shift
+            OPTION_LONG="true"
+            ;;
+
+        --group)
+            shift
+            OPTION_GROUP="$1"
+            shift
+            ;;
+
+        --all)
+            shift
+            OPTION_ALL="true"
+            ;;
+
         --)
             shift
             break
@@ -204,44 +155,20 @@ done
 
 OPTION_DEVICES="$@"
 
+#
+# Preparing the lo file.
+#
+#LOGFILE="$HOME/.pip.log/${OPTION_DEVICES}.log"
+rm -f $HOME/.pip/*.log
 logger "Log file is: '$LOGFILE'."
+[ ! -d "$LOGDIR" ] && mkdir -p "$LOGDIR"
 touch "$LOGFILE"
-
-
-LOGFILE="$HOME/.pip/${OPTION_DEVICES}.log"
-
-#
-# $1: PDU server name
-#
-function create_pdu_config_file()
-{
-    local device="$1"
-    local config_file="$HOME/.pip/$device"
-
-    if [ -z "$device" ]; then
-        printError "No server name while creating config file."
-    fi
-
-    if [ -f "$config_file" ]; then
-        return 0
-    fi
-
-    cat >"$config_file" <<EOF
-#
-# PDU configuration file created by $MYNAME $VERSION
-#
-CONF_PDU_SERVER="$server"
-CONF_PDU_MAC=""
-CONF_PDU_STANDARD="apc"
-CONF_PDU_FIRST_OUTLET="1"
-CONF_PDU_LAST_OUTLET="24"
-CONF_PDU_DELAY="0.1"
-EOF
-}
 
 function switch_apc()
 {
-    #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
+    printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
+    printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
+    printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
 
     if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
         for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
@@ -252,11 +179,12 @@ function switch_apc()
             sleep "$CONF_PDU_DELAY"
         done
     else
-#        echo "pip-pdu-expect $CONF_PDU_SERVER $PDU_OPERATION $PDU_OUTLETS"
-
-        pip-pdu-expect \
-            "$CONF_PDU_SERVER" "$PDU_OPERATION" "$PDU_OUTLETS" \
-            >/dev/null 2>/dev/null
+        for outlet in $(echo $PDU_OUTLETS | tr ',' ' '); do
+            printVerbose "Switching outlet $outlet $PDU_OPERATION"
+            pip-pdu-expect \
+                "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
+                    >/dev/null 2>/dev/null
+        done
     fi
 }
 
@@ -378,7 +306,7 @@ function print_header()
     echo -en $TERM_BOLD
 
     cat <<EOF
-DEVICE           STANDARD GROUP         SERVER        NAME
+DEVICE           GROUP         SERVER        NAME
 --------------------------------------------------------------------------------
 EOF
 
@@ -387,9 +315,9 @@ EOF
 
 }
 
-function print_device_list()
+function print_device_list_long()
 {
-    local category
+    local group
     local name
 
     print_header
@@ -409,16 +337,19 @@ function print_device_list()
         CONF_PDU_CATEGORY=""
         source "$config_file"
     
-        category="$CONF_PDU_CATEGORY"
-        if [ -z "$category" ]; then
-            category="-"
+        group="$CONF_PDU_CATEGORY"
+        if [ -z "$group" ]; then
+            group="-"
         fi
 
+        if [ -n "$OPTION_GROUP" -a "$OPTION_GROUP" != "$group" ]; then
+            continue
+        fi
 
-        printf "$DEVICE_COLOR%-16s$TERM_NORMAL " "$device_name"
-        printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
-        printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$category"
-        printf "$IP_COLOR%-13s$TERM_NORMAL "    "$CONF_PDU_SERVER"
+        printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
+        #printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
+        printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$group"
+        printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_PDU_SERVER"
 
         if [ -z "$OPTION_PRINT_FILES" ]; then
             printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$CONF_PDU_NAME"
@@ -430,9 +361,54 @@ function print_device_list()
     done
 }
 
+function print_device_list_brief()
+{
+    local group
+    local name
+
+    for config_file in $HOME/.pip/*.pdu; do
+        if [ ! -f "$config_file" ]; then
+            continue
+        fi
+
+        device_name=$(basename "$config_file" .pdu)
+        
+        CONF_PDU_NAME=""
+        CONF_PDU_SERVER=""
+        CONF_PDU_URL=""
+        CONF_PDU_MEASURES_TEMPERATURE=""
+        CONF_PDU_STANDARD=""
+        CONF_PDU_CATEGORY=""
+        source "$config_file"
+    
+        group="$CONF_PDU_CATEGORY"
+        if [ -z "$group" ]; then
+            group="-"
+        fi
+
+        if [ -n "$OPTION_GROUP" -a "$OPTION_GROUP" != "$group" ]; then
+            continue
+        fi
+
+        printf "%s "  "$device_name"
+        printf "\n"
+    done
+}
+
 if [ "$LIST_OPTION" ]; then
-    print_device_list
+    if [ "$OPTION_LONG" ]; then
+        print_device_list_long
+    else
+        print_device_list_brief | column -s' '
+    fi
+
     exit 0
+fi
+
+if [ -z "$OPTION_DEVICES" ]; then
+    if [ -n "$OPTION_GROUP" -o -n "$OPTION_ALL" ]; then
+        OPTION_DEVICES=$(print_device_list_brief)
+    fi
 fi
 
 if [ -z "$OPTION_DEVICES" ]; then
@@ -443,7 +419,6 @@ fi
 for OPTION_DEVICE in $OPTION_DEVICES; do
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
 
-    #create_pdu_config_file "$OPTION_DEVICE"
     if [ ! -f "$CONFIG_FILE_PATH" ]; then
         printError "Config file '$CONFIG_FILE_PATH' does not exist."
         continue
@@ -486,7 +461,7 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
             printError "The CONF_PDU_STANDARD is invalid in '$CONFIG_FILE_PATH'"
     esac
 
-    sleep 0.5
+    #sleep 0.5
 done
 
 

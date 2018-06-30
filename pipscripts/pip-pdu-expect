@@ -3,7 +3,7 @@
 set timeout 3
 
 if {[llength $argv] == 0} {
-  send_user "Usage: pdu-expect [on|off] [1-25]\n"
+  send_user "Usage: pdu-expect host [on|off] [1-25]\n"
   exit 1
 }
 
