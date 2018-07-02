@@ -23,12 +23,19 @@
 //#define WARNING
 #include "s9sdebug.h"
 
+/**
+ * The default constructor.
+ */
 S9sJob::S9sJob() :
     S9sObject()
 {
     m_properties["class_name"] = "CmonJobInstance";
 }
- 
+
+/**
+ * Handy constructor that will create a job object from a variant map that holds
+ * the properties.
+ */
 S9sJob::S9sJob(
         const S9sVariantMap &properties) :
     S9sObject(properties)
@@ -37,10 +44,17 @@ S9sJob::S9sJob(
         m_properties["class_name"] = "CmonJobInstance";
 }
 
+/**
+ * Yep, destructor.
+ */
 S9sJob::~S9sJob()
 {
 }
 
+/**
+ * Handy operator to put a set of properties and initialize a job object. This
+ * function will drop all the existing properties in the object.
+ */
 S9sJob &
 S9sJob::operator=(
         const S9sVariantMap &rhs)
@@ -59,84 +73,136 @@ S9sJob::id() const
     return property("job_id").toInt();
 }
 
+/**
+ * \returns The ID of the cluster that the job belongs to.
+ */
 int
 S9sJob::clusterId() const
 {
     return property("job_id").toInt();
 }
 
+/**
+ * \returns The title UI string for the job.
+ */
 S9sString
 S9sJob::title() const
 {
     return property("title").toString();
 }
 
+/**
+ * \returns The user name of the owner of the job.
+ */
 S9sString
 S9sJob::userName() const
 {
     return property("user_name").toString();
 }
 
+/**
+ * \returns The user ID of the owner of the job.
+ */
 int
 S9sJob::userId() const
 {
     return property("user_id").toInt();
 }
 
+/**
+ * \returns The name of the group that owns the job.
+ */
 S9sString
 S9sJob::groupName() const
 {
     return property("group_name").toString();
 }
 
+/**
+ * \returns The status of the job. 
+ *
+ * The status is one of the following: 'DEFINED', 'DEQUEUED', 'RUNNING',
+ * 'RUNNING2', 'RUNNING3', 'RUNNING_EXT', 'SCHEDULED', 'ABORTED', 'FINISHED',
+ * 'FAILED'.
+ */
 S9sString
 S9sJob::status() const
 {
     return property("status").toString();
 }
 
+/**
+ * \returns The creation date&time as a string.
+ */
 S9sString
 S9sJob::createdString() const
 {
     return property("created").toString();
 }
 
+/**
+ * \returns The end date&time of the job if it is already ended or the empty
+ *   string if not.
+ */
 S9sString
 S9sJob::endedString() const
 {
     return property("ended").toString();
 }
 
+/**
+ * \returns The start date&time of the job if the job is already started or the
+ *   empty string if not.
+ */
 S9sString
 S9sJob::startedString() const
 {
     return property("started").toString();
 }
 
+/**
+ * \returns The schedule date&time of the job if it is scheduled or the empty
+ *   string if not.
+ */
 S9sString
 S9sJob::scheduledString() const
 {
     return property("scheduled").toString();
 }
 
+/**
+ * \returns True if the job has information about the progress.
+ */
 bool
 S9sJob::hasProgressPercent() const
 {
     return m_properties.contains("progress_percent");
 }
 
+/**
+ * \returns How many percent of the job is done.
+ */
 double
 S9sJob::progressPercent() const
 {
     return property("progress_percent").toDouble();
 }
 
+/**
+ * \returns A list with all the tags associated with the job. 
+ */
 S9sVariantList
 S9sJob::tags() const
 {
     return property("tags").toVariantList();
 }
 
+/**
+ * \param useSyntaxHightlight True to produce colored output.
+ * \param defaultValue The string to return if there are no tags.
+ * \returns The list of tags formatted into a string as it can be printed for
+ *   the user. 
+ */
 S9sString 
 S9sJob::tags(
         bool            useSyntaxHightlight,
@@ -168,6 +234,10 @@ S9sJob::tags(
     return retval;
 }
 
+/**
+ * \param requiredTags Tags to be checked.
+ * \returns True if the job has all the required tags.
+ */
 bool
 S9sJob::hasTags(
         const S9sVariantList &requiredTags)

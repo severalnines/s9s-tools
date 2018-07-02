@@ -175,12 +175,15 @@ function registerServer()
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
+#
+# This is where we create a MongoDb cluster.
+#
 function createCluster()
 {
     #
     # Creating a Cluster.
     #
-    print_title "Creating a Cluster on LXC"
+    print_title "Creating a MongoDB Cluster on LXC"
 
     mys9s cluster \
         --create \
@@ -189,24 +192,54 @@ function createCluster()
         --provider-version="$PROVIDER_VERSION" \
         --vendor="$OPTION_VENDOR" \
         --cloud=lxc \
-        --nodes="$CONTAINER_NAME1" \
-        --containers="$CONTAINER_NAME1" \
+        --nodes="$CONTAINER_NAME1;$CONTAINER_NAME2" \
+        --containers="$CONTAINER_NAME1;$CONTAINER_NAME2" \
         $LOG_OPTION 
 
     check_exit_code $?
 
     mys9s cluster --stat
+
+    #
+    # Checking if the cluster is started.
+    #
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
 }
 
+#
+# This will perform a rolling restart on the cluster
+#
+function testRollingRestart()
+{
+    print_title "Performing Rolling Restart"
+
+    #
+    # Calling for a rolling restart.
+    #
+    mys9s cluster \
+        --rolling-restart \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
+#
+# Destroying all the this test created.
+#
 function destroyContainers()
 {
-    #
-    #
-    #
     print_title "Destroying Containers"
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
-    #mys9s container --delete --wait "$CONTAINER_NAME9"
+    mys9s container --delete --wait "$CONTAINER_NAME2"
 }
 
 #
@@ -226,6 +259,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest testRollingRestart
 fi
 
 endTests
