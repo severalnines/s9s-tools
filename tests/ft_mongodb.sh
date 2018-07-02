@@ -226,9 +226,41 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
+        --nodes="proxySql://$CONTAINER_NAME9" \
+        --containers="$CONTAINER_NAME9" \
         $LOG_OPTION
     
     check_exit_code $?
+
+    mys9s node --list --long
+}
+
+#
+# This test will add a proxy sql node.
+#
+function testAddProxySql()
+{
+    local node
+    local nodes
+
+    print_title "Adding a ProxySQL Node"
+
+    nodes+="proxySql://$nodeName"
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    mys9s node \
+        --list-config \
+        --nodes=$nodeName 
 }
 
 #
@@ -240,6 +272,7 @@ function destroyContainers()
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
     mys9s container --delete --wait "$CONTAINER_NAME2"
+    mys9s container --delete --wait "$CONTAINER_NAME9"
 }
 
 #
@@ -260,6 +293,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testRollingRestart
+    runFunctionalTest testAddProxySql
 fi
 
 endTests

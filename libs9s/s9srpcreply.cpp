@@ -5303,11 +5303,14 @@ S9sRpcReply::printClusterStat(
     //
     title.sprintf(" %s ", STR(cluster.name()));
 
-    printf("%s", TERM_INVERSE);
-    printf("%s", STR(title));
+    ::printf("%s", TERM_INVERSE);
+    ::printf("%s", STR(title));
+    
     for (int n = title.length(); n < terminalWidth; ++n)
-        printf(" ");
-    printf("%s", TERM_NORMAL);
+        ::printf(" ");
+
+    ::printf("\n");
+    ::printf("%s", TERM_NORMAL);
     
     //
     // "    Name: galera_001                          Owner: pipas/users"
