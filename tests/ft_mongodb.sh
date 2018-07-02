@@ -18,6 +18,7 @@ PROVIDER_VERSION="3.2"
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
+CONTAINER_NAME3="${MYBASENAME}_13_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
 
@@ -214,6 +215,28 @@ function createCluster()
 }
 
 #
+# This test will add one new node to the cluster.
+#
+function testAddNode()
+{
+    local nodes
+
+    print_title "Adding a node"
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$CONTAINER_NAME2" \
+        --containers="$CONTAINER_NAME2" \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
+#
 # This will perform a rolling restart on the cluster
 #
 function testRollingRestart()
@@ -231,6 +254,7 @@ function testRollingRestart()
     check_exit_code $?
 
     mys9s node --list --long
+    mys9s node --list --print-json
 }
 
 #
@@ -242,6 +266,7 @@ function destroyContainers()
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
     mys9s container --delete --wait "$CONTAINER_NAME2"
+    mys9s container --delete --wait "$CONTAINER_NAME3"
 }
 
 #
@@ -262,6 +287,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testRollingRestart
+    runFunctionalTest testAddNode
     runFunctionalTest destroyContainers
 fi
 
