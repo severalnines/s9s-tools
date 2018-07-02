@@ -184,9 +184,20 @@ function outlet_requested()
 
 function switch_apc()
 {
+    local lock_file="/tmp/${CONF_PDU_SERVER}.lock"
     printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
     printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
     printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
+
+    for n in 1 2 3 4 5 6 7 8; do
+        if [ ! -f "$lock_file" ]; then
+            break
+        fi
+
+        sleep 1
+    done
+
+    touch "$lock_file"
 
     case "$PDU_OPERATION" in
         on|off)
@@ -237,7 +248,20 @@ function switch_apc()
                 [ -n "$has_on" -a -z "$has_off" ] && echo "on"
                 [ -z "$has_on" -a -n "$has_off" ] && echo "off"
             ;;
+
+        current)
+            pip-pdu-expect "$CONF_PDU_SERVER" "current" "" | \
+                grep "Total" | awk -F: '{ print $2 }' | tr -d ' '
+            ;;
+
+        power)
+            pip-pdu-expect "$CONF_PDU_SERVER" "power" "" | \
+                grep "Watts" | awk '{ print $1 }' | tr -d ' '
+            ;;
+
     esac
+
+    rm -f "$lock_file"
 }
 
 function switch_orvibo()
