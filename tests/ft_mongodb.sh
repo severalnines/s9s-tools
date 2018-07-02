@@ -256,6 +256,9 @@ function testRollingRestart()
         $LOG_OPTION
     
     check_exit_code $?
+    
+    wait_for_cluster_started "$CLUSTER_NAME"
+    mys9s cluster --stat
 
     mys9s node --list --long
     mys9s node --stat 
