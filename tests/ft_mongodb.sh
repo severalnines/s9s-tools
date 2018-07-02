@@ -212,6 +212,10 @@ function createCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    
+    mys9s node --list --long
+    mys9s node --stat 
+    #mys9s node --list --print-json
 }
 
 #
@@ -229,8 +233,8 @@ function testAddNode()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$CONTAINER_NAME2" \
-        --containers="$CONTAINER_NAME2" \
+        --nodes="$CONTAINER_NAME3" \
+        --containers="$CONTAINER_NAME3" \
         $LOG_OPTION
     
     check_exit_code $?
@@ -254,7 +258,8 @@ function testRollingRestart()
     check_exit_code $?
 
     mys9s node --list --long
-    mys9s node --list --print-json
+    mys9s node --stat 
+    #mys9s node --list --print-json
 }
 
 #
@@ -266,7 +271,7 @@ function destroyContainers()
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
     mys9s container --delete --wait "$CONTAINER_NAME2"
-    mys9s container --delete --wait "$CONTAINER_NAME3"
+    #mys9s container --delete --wait "$CONTAINER_NAME3"
 }
 
 #
@@ -287,7 +292,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testRollingRestart
-    runFunctionalTest testAddNode
+    #runFunctionalTest testAddNode
     runFunctionalTest destroyContainers
 fi
 
