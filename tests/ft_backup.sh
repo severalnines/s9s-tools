@@ -553,6 +553,27 @@ function testDeleteBackup()
     return 0
 }
 
+function testDeleteOld()
+{
+    print_title "Deleting Old Backups"
+
+    mys9s backup \
+        --delete-old \
+        --cluster-id=1 \
+        --job-tags=pip \
+        --dry \
+        --log
+
+    mys9s backup \
+        --delete-old \
+        --cluster-id=1 \
+        --backup-retention=0 \
+        --safety-copies=10 \
+        --dry \
+        --log 
+
+}
+
 #
 # Running the requested tests.
 #
@@ -584,6 +605,7 @@ else
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
     runFunctionalTest testDeleteBackup
+    runFunctionalTest testDeleteOld
 fi
 
 endTests

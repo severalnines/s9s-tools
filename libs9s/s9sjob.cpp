@@ -79,7 +79,7 @@ S9sJob::id() const
 int
 S9sJob::clusterId() const
 {
-    return property("job_id").toInt();
+    return property("cluster_id").toInt();
 }
 
 /**
