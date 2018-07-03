@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--wait"
+LOG_OPTION="--log"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -555,23 +555,66 @@ function testDeleteBackup()
 
 function testDeleteOld()
 {
-    print_title "Deleting Old Backups"
+   
+    # 
+    # Here no backup will be deleted because the backup retention is 31 days and
+    # we just created these backups.
+    #
+    print_title "Deleting Old Backups (No Old Backups)"
+    mys9s backup --delete-old --cluster-id=1 --job-tags=no_old_found --dry --log
+    job_id=$(\
+        s9s job --list --batch --job-tags=no_old_found | \
+        tail -n 1 | \
+        awk '{ print $1 }')
 
-    mys9s backup \
-        --delete-old \
-        --cluster-id=1 \
-        --job-tags=pip \
-        --dry \
-        --log
+    if ! s9s job --log --job-id=$job_id | grep -q "No old backup records found";
+    then
+        failure "Job $job_id log does not say what it should say (87235)."
+    fi
 
-    mys9s backup \
-        --delete-old \
-        --cluster-id=1 \
-        --backup-retention=0 \
-        --safety-copies=10 \
-        --dry \
-        --log 
+    #
+    # Here no backups will be deleted, because the number of safety copies is
+    # much higher than the number of actual backups we have.
+    #
+    print_title "Deleting Old Backups (Has to Keep All)"
+    mys9s backup --delete-old --cluster-id=1 --job-tags=not_enough_sc --backup-retention=0 --safety-copies=10 --dry --log 
+    job_id=$(\
+        s9s job --list --batch --job-tags=not_enough_sc | \
+        tail -n 1 | \
+        awk '{ print $1 }')
 
+    if ! s9s job --log --job-id=$job_id | grep -q "no backup can be deleted";
+    then
+        failure "Job $job_id log does not say what it should say (23387)."
+    fi
+
+    #
+    # Here some of the existing backups can be deleted, but we are in dry mode
+    # anyway.
+    #
+    print_title "Deleting Old Backups (Has to Keep Some)"
+    mys9s backup --delete-old --cluster-id=1 --job-tags=some_deleted --backup-retention=0 --safety-copies=3 --dry --log 
+    job_id=$(\
+        s9s job --list --batch --job-tags=some_deleted | \
+        tail -n 1 | \
+        awk '{ print $1 }')
+
+    if ! s9s job --log --job-id=$job_id | grep -q "not considering other expired";
+    then
+        failure "Job $job_id log does not say what it should say (28737)."
+    fi
+
+    #
+    #
+    #
+    print_title "Deleting Old Backups (No Dry)"
+    mys9s backup --delete-old --cluster-id=1 --backup-retention=0 --safety-copies=3 --log 
+    
+    #
+    #
+    #
+    print_title "Deleting Old Backups (Again)"
+    mys9s backup --delete-old --cluster-id=1 --backup-retention=0 --safety-copies=3 --log 
 }
 
 #
