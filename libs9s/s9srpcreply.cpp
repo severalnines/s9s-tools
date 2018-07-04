@@ -738,12 +738,125 @@ S9sRpcReply::printProcessList()
     }
 
     // FIXME: no brief version...
-    printProcessListBrief();
+    printProcessListLong();
 }
 
 
 void
-S9sRpcReply::printProcessListBrief(
+S9sRpcReply::printProcessListLong(
+        const int maxLines)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    int             terminalWidth = options->terminalWidth();
+    int             columns;
+    S9sVariantList  hostList = operator[]("data").toVariantList();
+    S9sVariantList  processList;
+    S9sFormat       hostFormat;
+    S9sFormat       userFormat;
+    S9sFormat       pidFormat;
+    S9sFormat       priorityFormat;
+
+    /*
+     * Go through the data and collect information.
+     */
+    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    {
+        S9sString hostName = hostList[idx]["hostname"].toString();
+        S9sVariantList processes = hostList[idx]["processes"].toVariantList();
+    
+        for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
+        {
+            S9sVariantMap process = processes[idx1].toVariantMap();
+
+            process["hostname"] = hostName;
+            processList << process;
+        }
+    }
+    
+    sort(processList.begin(), processList.end(), compareProcessByCpuUsage);
+
+    /*
+     * Again, now collecting format information.
+     */
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     user       = process["user"].toString();
+        S9sString     hostName   = process["hostname"].toString();
+        int           priority   = process["priority"].toInt();
+
+        if (maxLines > 0 && (int) idx >= maxLines)
+            break;
+
+        pidFormat.widen(pid);
+        userFormat.widen(user);
+        hostFormat.widen(hostName);
+        priorityFormat.widen(priority);
+    }
+
+    /*
+     * The header.
+     */
+    columns  = terminalWidth;
+    columns -= pidFormat.realWidth();
+    columns -= userFormat.realWidth();
+    columns -= hostFormat.realWidth();
+    columns -= priorityFormat.realWidth();
+    columns -= 45;
+
+    if (!options->isNoHeaderRequested())
+    {    
+        printf("%s", headerColorBegin());
+        pidFormat.printf("PID");
+        userFormat.printf("USER");
+        hostFormat.printf("HOST");
+        priorityFormat.printf("PR");
+        printf("%s", " VIRT      RES    S   %CPU   %MEM COMMAND    ");
+        printf("%s", TERM_NORMAL);
+
+        printf("\n");
+    }
+
+    // rss          resident set size
+    // vsz          virtual memory size
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     hostName   = process["hostname"].toString();
+        S9sString     user       = process["user"].toString();
+        S9sString     executable = process["executable"].toString();
+        double        cpuUsage   = process["cpu_usage"].toDouble();
+        double        memUsage   = process["mem_usage"].toDouble();
+        S9sString     state      = process["state"].toString();
+        ulonglong     rss        = process["res_mem"].toULongLong();
+        ulonglong     virtMem    = process["virt_mem"].toULongLong();
+        int           priority   = process["priority"].toInt();
+        
+        rss     /= 1024;
+        virtMem /= 1024;
+
+        pidFormat.printf(pid);
+        userFormat.printf(user);
+        hostFormat.printf(hostName);
+        priorityFormat.printf(priority);
+
+        printf("%8llu ", virtMem);
+        printf("%8llu ", rss);
+        printf("%1s ", STR(state));
+        printf("%6.2f ", cpuUsage);
+        printf("%6.2f ", memUsage); 
+        printf("%s", STR(executable));
+        printf("\n");
+
+        if (maxLines > 0 && (int) idx + 1 >= maxLines)
+            break;
+    }
+}
+
+void
+S9sRpcReply::printProcessListTop(
         const int maxLines)
 {
     S9sOptions     *options = S9sOptions::instance();

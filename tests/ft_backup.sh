@@ -525,12 +525,53 @@ function testCreateBackup05()
 
 function testRestore()
 {
-    print_title "Restoring Backup"
+    print_title "Restoring Backup 1"
+
+    mys9s backup --list --long 
     mys9s backup \
         --restore \
         --backup-id=1 \
         --cluster-id=1 \
-        $LOG_OPTION
+        --log
+
+    check_exit_code $?
+    
+    #
+    #
+    #
+    print_title "Restoring Backup 7"
+
+    mys9s backup \
+        --restore \
+        --backup-id=7 \
+        --cluster-id=1 \
+        --log
+
+    check_exit_code $?
+    
+    #
+    #
+    #
+    print_title "Restoring Backup 2"
+
+    mys9s backup \
+        --restore \
+        --backup-id=2 \
+        --cluster-id=1 \
+        --log
+
+    check_exit_code $?
+    
+    #
+    #
+    #
+    print_title "Restoring Backup 6"
+
+    mys9s backup \
+        --restore \
+        --backup-id=6 \
+        --cluster-id=1 \
+        --log
 
     check_exit_code $?
 }

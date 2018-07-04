@@ -6431,6 +6431,8 @@ S9sOptions::readOptionsProcess(
         { "print-json",       no_argument,       0,  OptionPrintJson      },
         { "color",            optional_argument, 0,  OptionColor          },
         { "config-file",      required_argument, 0,  OptionConfigFile     },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -6556,6 +6558,16 @@ S9sOptions::readOptionsProcess(
                     m_exitStatus = BadOptions;
                     return false;
                 }
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
                 break;
             
             case '?':

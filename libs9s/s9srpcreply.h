@@ -123,7 +123,8 @@ class S9sRpcReply : public S9sVariantMap
         void printContainerStat(S9sContainer &container);
 
         void printProcessList();
-        void printProcessListBrief(const int maxLines = -1);
+        void printProcessListLong(const int maxLines = -1);
+        void printProcessListTop(const int maxLines = -1);
         void printCpuStat();
         void printCpuStatLine1();
         void printMemoryStatLine1();
