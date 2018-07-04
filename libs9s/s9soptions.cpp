@@ -3416,6 +3416,9 @@ S9sOptions::useSyntaxHighlight()
 {
     S9sString configValue;
 
+    if (isBatchRequested())
+        return false;
+
     if (m_options.contains("color"))
     {
         configValue = m_options.at("color").toString();
@@ -6433,6 +6436,7 @@ S9sOptions::readOptionsProcess(
         { "config-file",      required_argument, 0,  OptionConfigFile     },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "limit",            required_argument, 0, OptionLimit           },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -6569,7 +6573,12 @@ S9sOptions::readOptionsProcess(
                 // --no-header
                 m_options["no_header"] = true;
                 break;
-            
+
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -6583,6 +6592,15 @@ S9sOptions::readOptionsProcess(
                 m_exitStatus = BadOptions;
                 return false;
         }
+    }
+    
+    // 
+    // The first extra argument is 'process', so we leave that out.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        //S9S_WARNING("argv[%3d] = %s", idx, argv[idx]);
+        m_extraArguments << argv[idx];
     }
 
     return true;

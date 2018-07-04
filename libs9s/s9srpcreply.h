@@ -190,6 +190,9 @@ class S9sRpcReply : public S9sVariantMap
         
         static const char *userColorBegin();
         static const char *userColorEnd();
+
+        const char *executableColorBegin(const S9sString &executable = "");
+        const char *executableColorEnd();
         
         static const char *serverColorBegin();
         static const char *serverColorEnd();

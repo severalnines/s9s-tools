@@ -747,6 +747,7 @@ S9sRpcReply::printProcessListLong(
         const int maxLines)
 {
     S9sOptions     *options = S9sOptions::instance();
+    int             nItemsLimit = options->limit();
     int             terminalWidth = options->terminalWidth();
     int             columns;
     S9sVariantList  hostList = operator[]("data").toVariantList();
@@ -755,6 +756,9 @@ S9sRpcReply::printProcessListLong(
     S9sFormat       userFormat;
     S9sFormat       pidFormat;
     S9sFormat       priorityFormat;
+    S9sFormat       virtFormat;
+    S9sFormat       resFormat;
+    int             nItems=0;
 
     /*
      * Go through the data and collect information.
@@ -785,14 +789,26 @@ S9sRpcReply::printProcessListLong(
         S9sString     user       = process["user"].toString();
         S9sString     hostName   = process["hostname"].toString();
         int           priority   = process["priority"].toInt();
+        ulonglong     rss        = process["res_mem"].toULongLong();
+        ulonglong     virtMem    = process["virt_mem"].toULongLong();
+        S9sString     executable = process["executable"].toString();
 
         if (maxLines > 0 && (int) idx >= maxLines)
             break;
+        
+        if (!options->isStringMatchExtraArguments(executable))
+            continue;
 
         pidFormat.widen(pid);
         userFormat.widen(user);
         hostFormat.widen(hostName);
         priorityFormat.widen(priority);
+        virtFormat.widen(virtMem);
+        resFormat.widen(rss);
+
+        ++nItems;;
+        if (nItemsLimit > 0 && nItems >= nItemsLimit)
+            break;
     }
 
     /*
@@ -805,21 +821,35 @@ S9sRpcReply::printProcessListLong(
     columns -= priorityFormat.realWidth();
     columns -= 45;
 
+    virtFormat.setRightJustify();
+    resFormat.setRightJustify();
+
     if (!options->isNoHeaderRequested())
     {    
+        pidFormat.widen("PID");
+        userFormat.widen("USER");
+        hostFormat.widen("HOST");
+        priorityFormat.widen("PR");
+        virtFormat.widen("VIRT");
+        resFormat.widen("RES");
+
         printf("%s", headerColorBegin());
+
         pidFormat.printf("PID");
         userFormat.printf("USER");
         hostFormat.printf("HOST");
         priorityFormat.printf("PR");
-        printf("%s", " VIRT      RES    S   %CPU   %MEM COMMAND    ");
-        printf("%s", TERM_NORMAL);
+        virtFormat.printf("VIRT");
+        resFormat.printf("RES");
 
-        printf("\n");
+        ::printf("%s", "S   %CPU   %MEM COMMAND    ");
+        ::printf("%s", TERM_NORMAL);
+        ::printf("\n");
     }
 
     // rss          resident set size
     // vsz          virtual memory size
+    nItems = 0;
     for (uint idx = 0u; idx < processList.size(); ++idx)
     {
         S9sVariantMap process    = processList[idx].toVariantMap();
@@ -837,20 +867,40 @@ S9sRpcReply::printProcessListLong(
         rss     /= 1024;
         virtMem /= 1024;
 
+        if (!options->isStringMatchExtraArguments(executable))
+            continue;
+
         pidFormat.printf(pid);
+
+        printf("%s", userColorBegin());        
         userFormat.printf(user);
+        printf("%s", userColorEnd());
+        
+        printf("%s", serverColorBegin());
         hostFormat.printf(hostName);
+        printf("%s", serverColorEnd()); 
+
         priorityFormat.printf(priority);
 
-        printf("%8llu ", virtMem);
-        printf("%8llu ", rss);
-        printf("%1s ", STR(state));
+        virtFormat.printf(virtMem);
+        resFormat.printf(rss);
+
+        if (state.length() == 1u)
+            ::printf("%1s ", STR(state));
+        else 
+            ::printf("? ");
+
         printf("%6.2f ", cpuUsage);
         printf("%6.2f ", memUsage); 
-        printf("%s", STR(executable));
+        
+        ::printf("%s", executableColorBegin(executable));
+        ::printf("%s", STR(executable));
+        ::printf("%s", executableColorEnd()); 
+
         printf("\n");
 
-        if (maxLines > 0 && (int) idx + 1 >= maxLines)
+        ++nItems;;
+        if (nItemsLimit > 0 && nItems >= nItemsLimit)
             break;
     }
 }
@@ -9213,6 +9263,34 @@ S9sRpcReply::userColorBegin()
 
 const char *
 S9sRpcReply::userColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::executableColorBegin(
+        const S9sString &executable) 
+{
+    if (useSyntaxHighLight())
+    {
+        if (executable.contains("mysql") || 
+                executable.contains("cmon") || 
+                executable == "postgres")
+        {
+            return "\033[38;5;46m";
+        }
+
+        return "\033[38;5;34m";
+    }
+
+    return "";
+}
+
+const char *
+S9sRpcReply::executableColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
