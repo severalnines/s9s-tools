@@ -21,29 +21,93 @@ following:
 
 .TP
 .B \-\^\-create
-Create a new backup.
+Creates a new backup. This command line option will initiate a new job that will
+create a new backup.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.209 \\
+    --backup-dir=/tmp \\
+    --wait
+.fi
 
 .TP
 .B \-\^\-delete
 Delete an existing backup.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete \\
+    --backup-id=1
+.fi
+
+.TP
+.B \-\^\-delete\-old
+Delete old backups (AKA backup-retention). This command line option will
+initiate a job that checks for expired backups and removes them from the system.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete-old \\
+    --cluster-id=1 \\
+    --backup-retention=7 \\
+    --safety-copies=3 \\
+    --log
+.fi
 
 .TP
 .B \-\^\-list\-databases
 List the backups in database view format. This format is designed to show the
 archived databases in the backups.
 
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-databases \\
+    --long \\
+    -h
+.fi
+
 .TP
 .B \-\^\-list\-files
 List the backups in file view format. This format is designed to show the
 archive files of the backups.
 
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-files \\
+    --long 
+.fi
+
 .TP
 .B \-L, \-\^\-list
 List the backups known for the controller.
 
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list \\
+    --long
+.fi
+
 .TP
 .B \-\^\-restore
 Restore a backup.
+
+.B
+.nf
+s9s backup \\
+    --restore \\
+    --cluster-id=1 \\
+    --backup-id=10 \\
+    --log
+.fi
 
 .TP
 .B \-\^\-verify
@@ -51,6 +115,16 @@ Creates a job to verify a backup. When this main option is used the
 \fB\-\^\-backup\-id\fP option has to be used to identify a backup and the 
 \fB\-\^\-test\-server\fP is also necessary to provide a server where the backup
 will be tested.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --verify \\
+    --cluster-id=1 \\
+    --backup-id=2 \\
+    --test-server=192.168.0.65 \\
+    --wait 
+.fi
 
 .\"
 .\"
@@ -374,6 +448,12 @@ setting will be used. Specifying a positive number value here can control
 how long (in days) the taken backups will be preserved, -1 has a very special
 meaning, it means the backup will be kept forever, while value 0 is the default,
 means prefer the global setting (configurable on UI).
+
+.TP
+.BI \-\^\-safety\-copies= N
+Controls how many safety backups should be kept while deleting old backups. This
+command line option can be used together with the \fB\-\^\-delete\-old\fP
+option.
 
 .TP
 .BI \-\^\-backup\-user= USERNAME

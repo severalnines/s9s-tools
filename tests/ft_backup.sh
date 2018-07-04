@@ -523,6 +523,18 @@ function testCreateBackup05()
     check_exit_code $?
 }
 
+function testRestore()
+{
+    print_title "Restoring Backup"
+    mys9s backup \
+        --restore \
+        --backup-id=1 \
+        --cluster-id=1 \
+        $LOG_OPTION
+
+    check_exit_code $?
+}
+
 function testDeleteBackup()
 {
     local id
@@ -647,7 +659,9 @@ else
     runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
+    runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup
+    runFunctionalTest testDelete
     runFunctionalTest testDeleteOld
 fi
 
