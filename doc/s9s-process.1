@@ -5,6 +5,7 @@ s9s-node \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
 .B s9s-cluster
 .RI [OPTION]...
+.RI [EXECUTABLE]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
 deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
@@ -17,12 +18,32 @@ following:
 
 .TP
 .B \-L, \-\-list
-List the nodes managed by the controller.
+List the processes found on the nodes of a cluster.
+
+.B EXAMPLE
+.nf
+s9s process \\
+    --list \\
+    --cluster-id=1 \\
+    --limit=5 \\
+    --color=always \\
+    --human-readable \\
+    --sort-by-memory \\
+    'postgre*'
+.fi
 
 .TP
 .B \-\-top
 Continue showing the processes that use the most CPU resources in any given
 cluster.
+
+.B EXAMPLE
+.nf
+s9s process \\
+    --top \\
+    --cluster-id=1 \\
+    --color=always
+.fi
 
 .SS Generic Options
 
@@ -113,7 +134,15 @@ is not yet implemented.)
 .\"
 .\"
 .\"
-.SS Process List Related Options
+.SS Other Options
+
+.TP
+.BI \-\-limit= N
+Limit the number of processes shown in the list.
+
+.TP
+.BI \-\-sort-by-memory 
+Sort the processes by resident memory size instead of cpu usage.
 
 .TP
 .BI \-\-update-freq= INTEGER

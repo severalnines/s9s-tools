@@ -746,6 +746,17 @@ compareProcessByCpuUsage(
     return aMap["cpu_usage"].toDouble() > bMap["cpu_usage"].toDouble();
 }
 
+bool 
+compareProcessByMemoryUsage(
+        const S9sVariant &a,
+        const S9sVariant &b)
+{
+    S9sVariantMap aMap = a.toVariantMap();
+    S9sVariantMap bMap = b.toVariantMap();
+
+    return aMap["res_mem"].toULongLong() > bMap["res_mem"].toULongLong();
+}
+
 void
 S9sRpcReply::printProcessList()
 {
@@ -801,7 +812,15 @@ S9sRpcReply::printProcessListLong(
         }
     }
     
-    sort(processList.begin(), processList.end(), compareProcessByCpuUsage);
+    if (options->getBool("sort_by_memory"))
+    {
+        sort(processList.begin(), processList.end(), 
+                compareProcessByMemoryUsage);
+
+    } else {
+        sort(processList.begin(), processList.end(), 
+                compareProcessByCpuUsage);
+    }
 
     /*
      * Again, now collecting format information.

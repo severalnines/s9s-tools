@@ -237,6 +237,7 @@ enum S9sOptionType
     OptionShowFinished,
     OptionShowFailed,
     OptionFirewalls,
+    OptionSortByMemory,
 };
 
 /**
@@ -4104,7 +4105,9 @@ S9sOptions::printHelpProcess()
 "  --top                      Continuosly print top processes.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
-"  --update-freq=SECS         The screen update frequency.\n"
+"  --limit=N                  Limit the number of processes shown.\n"
+"  --sort-by-memory           Sort by resident size instead of CPU usage.\n"
+"  --update-freq=SECS         The screen update frequency for top.\n"
 "\n"
     );
 }
@@ -6438,6 +6441,7 @@ S9sOptions::readOptionsProcess(
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "limit",            required_argument, 0, OptionLimit           },
         { "human-readable",   no_argument,       0, 'h'                   },
+        { "sort-by-memory",   no_argument,       0, OptionSortByMemory    },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -6522,6 +6526,11 @@ S9sOptions::readOptionsProcess(
             case 'h':
                 // -h, --human-readable
                 m_options["human_readable"] = true;
+                break;
+
+            case OptionSortByMemory:
+                // --sort-by-memory
+                m_options["sort_by_memory"] = true;
                 break;
 
             case OptionConfigFile:
