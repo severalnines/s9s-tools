@@ -71,6 +71,30 @@ bytesToHuman(
     return retval;
 }
 
+S9sString 
+kiloBytesToHuman(
+        ulonglong kBytes)
+{
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   retval;
+    S9sVariant  bytes = kBytes * (1024ull);
+
+    if (!options->humanReadable())
+    {
+        retval.sprintf("%'llu", kBytes);
+    } else if (bytes.toTBytes() > 1.0)
+    {
+        retval.sprintf("%.1fTB", bytes.toTBytes());
+    } else if (bytes.toGBytes() >= 1.0) 
+    {
+        retval.sprintf("%.1fGB", bytes.toGBytes());
+    } else {
+        retval.sprintf("%.1fMB", bytes.toMBytes());
+    }
+
+    return retval;
+}
+
 S9sRpcReply::ErrorCode
 S9sRpcReply::requestStatus() const
 {
@@ -882,8 +906,8 @@ S9sRpcReply::printProcessListLong(
 
         priorityFormat.printf(priority);
 
-        virtFormat.printf(virtMem);
-        resFormat.printf(rss);
+        virtFormat.printf(kiloBytesToHuman(virtMem));
+        resFormat.printf(kiloBytesToHuman(rss));
 
         if (state.length() == 1u)
             ::printf("%1s ", STR(state));

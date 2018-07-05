@@ -6437,6 +6437,7 @@ S9sOptions::readOptionsProcess(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "limit",            required_argument, 0, OptionLimit           },
+        { "human-readable",   no_argument,       0, 'h'                   },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -6516,6 +6517,11 @@ S9sOptions::readOptionsProcess(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
                 break;
 
             case OptionConfigFile:
