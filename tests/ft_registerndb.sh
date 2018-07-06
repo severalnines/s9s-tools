@@ -147,7 +147,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "Dropping the Cluster"
 
     #
     # Starting the cluster.
@@ -168,7 +168,7 @@ function testRegister()
 {
     local exitCode 
 
-    pip-say "The test to register a cluster is starting."
+    print_title "Registering the Cluster"
 
     #
     # Registering the cluester that we just created and dropped.
@@ -208,12 +208,6 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testDrop
     runFunctionalTest testRegister
-fi
-
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
-else
-    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests
