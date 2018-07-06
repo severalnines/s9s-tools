@@ -776,7 +776,9 @@ S9sRpcReply::printProcessList()
     printProcessListLong();
 }
 
-
+/**
+ * Prints the process list in its long and detailed format.
+ */
 void
 S9sRpcReply::printProcessListLong(
         const int maxLines)
@@ -793,7 +795,10 @@ S9sRpcReply::printProcessListLong(
     S9sFormat       priorityFormat;
     S9sFormat       virtFormat;
     S9sFormat       resFormat;
-    int             nItems=0;
+    int             nItems   = 0;
+    int             nTotal   = 0;
+    int             nRunning = 0;
+    int             nHosts   = 0;
 
     /*
      * Go through the data and collect information.
@@ -806,12 +811,22 @@ S9sRpcReply::printProcessListLong(
         for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
         {
             S9sVariantMap process = processes[idx1].toVariantMap();
-
+            
             process["hostname"] = hostName;
+            
+            ++nTotal;
+            if (process["state"].toString() == "R")
+                nRunning++;
+
             processList << process;
         }
+
+        nHosts++;
     }
     
+    /**
+     * Sorting...
+     */
     if (options->getBool("sort_by_memory"))
     {
         sort(processList.begin(), processList.end(), 
@@ -945,6 +960,15 @@ S9sRpcReply::printProcessListLong(
         ++nItems;;
         if (nItemsLimit > 0 && nItems >= nItemsLimit)
             break;
+    }
+        
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total: %s%'d%s processes on %s%d%s host(s),"
+                " %s%d%s running.\n", 
+                numberColorBegin(), nTotal, numberColorEnd(),
+                numberColorBegin(), nHosts, numberColorEnd(),
+                numberColorBegin(), nRunning, numberColorEnd());
     }
 }
 
@@ -1289,7 +1313,7 @@ S9sRpcReply::printKeys()
         }
     
         if (!options->isBatchRequested())
-            printf("Total: %d\n", operator[]("total").toInt());
+            ::printf("Total: %d\n", operator[]("total").toInt());
     }
 }
 
