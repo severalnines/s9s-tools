@@ -235,6 +235,16 @@ group the user belongs to. This option will remove the user from this primary
 group and add it to the group specified by the \fB\-\^\-group\fP command line
 option.
 
+.B EXAMPLE
+.nf
+s9s user \\
+    --set-group \\
+    --group=admins \\
+    --cmon-user=system \\
+    --password=secret \\
+    pipas
+.fi
+
 .TP
 .B \-\^\-stat
 Prints detailed information about the specified user(s).

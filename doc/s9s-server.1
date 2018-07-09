@@ -59,7 +59,8 @@ following:
 
 .TP
 .B \-\-add-acl
-Adds a new ACL entry to the server or modifies an existing ACL entry.
+Adds a new ACL entry to the server or modifies an existing ACL entry. This is
+deprecated, please use \fBs9s tree \-\^\-add\-acl\fP instead.
 
 .TP
 .B \-\-create
@@ -67,48 +68,104 @@ Creates a new server. If this option is provided the controller will use ssh to
 discover the server and install the necessary software packages, modify the
 configuration if needed so that the server can host containers.
 
+.B EXAMPLE
+.nf
+s9s server \\
+    --create \\
+    --servers=cmon-cloud://192.168.0.106 \\
+    --log 
+.fi
+
 .TP
 .B \-\-get\-acl
-List the ACL of a server.
+List the ACL of a server. This is deprecated, please use 
+\fBs9s tree \-\^\-get\-acl\fP instead.
 
 .TP
 .B \-\-list\-disks
 List disks found in one or more servers.
+
+.B EXAMPLE
+.nf
+s9s server --list-disks
+.fi
 
 .TP
 .B \-\-list\-images
 List the images available on one or more servers. With the \fB\-\^\-long\fP
 command line option a more detailed list is available.
 
+.B EXAMPLE
+.nf
+s9s server --list-images
+.fi
+
 .TP
 .B \-\-list
 List the registered servers.
+
+.B EXAMPLE
+.nf
+s9s server --list --long
+.fi
 
 .TP
 .B \-\-list\-memory
 List memory modules from one or more servers.
 
+.B EXAMPLE
+.nf
+s9s server --list-memory
+.fi
+
 .TP
 .B \-\-list\-nics
 List network controllers from one or more servers.
+
+.B EXAMPLE
+.nf
+s9s server --list-nics
+.fi
 
 .TP
 .B \-\-list\-partitions
 List partitions from multiple servers.
 
+.B EXAMPLE
+.nf
+s9s server --list-partitions
+.fi
+
 .TP
 .B \-\^\-list\-processors
 List processors from one or more servers.
 
+.B EXAMPLE
+.nf
+s9s server --list-processors
+.fi
+
 .TP
 .B \-\^\-list\-subnets
 List all the subnets exists on one or more servers.
+
+.B EXAMPLE
+.nf
+s9s server --list-subnets
+.fi
 
 .TP
 .B \-\-register
 Register an existint container server. If this command line option is provided
 the controller will register the server to be used as container server later. No
 software packages are installed or configuration changed.
+
+.B EXAMPLE
+.nf
+s9s server \\
+    --register \\
+    --servers=lxc://host03
+.fi
 
 .TP
 .B \-\-start
@@ -128,6 +185,12 @@ controller will run the shutdown(8) program on the server.
 .B \-\-unregister
 Unregister a container server, simply removes it from the controller.
 
+.B EXAMPLE
+.nf
+s9s server \\
+    --unregister \\
+    --servers="lxc://192.168.2.34"
+.fi
 
 .\"
 .\" The generic options that we have in all the modes.
