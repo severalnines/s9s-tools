@@ -1,0 +1,51 @@
+#! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+MYHOSTNAME=$(hostname)
+VERSION="0.0.17"
+VERBOSE=""
+LOGFILE=""
+
+source $MYDIR/utilityfunctions.sh
+
+pattern="$1"
+if [ -z "$pattern" ]; then
+    printError "The first argument should be the file name pattern."
+fi
+
+prefix="$2"
+if [ -z "$prefix" ]; then
+    prefix="file"
+fi
+
+OIFS="$IFS"
+IFS=$'\n'
+for file in $(find ./ -type f -name "$pattern"); do
+    if [ ! -f "$file" ]; then
+        printError "The '$file' is not a regular file."
+        error="true"
+    fi
+done
+IFS="$OIFS"
+
+if [ "$error" ]; then
+    exit 5
+fi
+
+n=0
+
+OIFS="$IFS"
+IFS=$'\n'
+for file in $(find ./ -type f -name "$pattern"); do
+    extension="${file##*.}"
+    newfilename=$(printf "%s_%03d.%s" "$prefix" "$n" "$extension")
+
+    mv "$file" "$newfilename"
+    if [ $? -ne 0 ]; then
+        break
+    fi
+
+    let n+=1
+done
+IFS="$OIFS"
