@@ -71,17 +71,40 @@ s9s container \\
 
 .TP
 .B \-\-start
-Start an existing container.
+Starts an existing container. Not all the virtualization backend supports
+stopping and starting containers, in these cases the job will simply fail.
+
+.B EXAMPLE
+.nf
+s9s container \\
+    --start \\
+    --wait \\
+    my_container_6376 
+.fi
 
 .TP
 .B \-\-stat
 Print the details of a container.
+
+.B EXAMPLE
+.nf
+s9s container \\
+    --stat 
+.fi
 
 .TP
 .B \-\-stop
 Stop the container. This will not remove the container by default, but it will
 stop it. If the container is set to be deleted on stop (temporary) it will be
 deleted.
+
+.B EXAMPLE
+.nf
+s9s container \\
+    --stop \\
+    --log \\
+    my_container_6376 
+.fi
 
 .\"
 .\" The generic options that we have in all the modes.
