@@ -9,6 +9,145 @@ LOGFILE=""
 
 source $MYDIR/utilityfunctions.sh
 
+#
+# Prints the help text and exits.
+#
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - Controls test server and uploads server status file. 
+
+  -h, --help         Print this help and exit.
+  -v, --version      Print version information and exit.
+  --verbose          Print more messages.
+  --log-file=FILE    Store all the messages in the given file too.
+
+  --tf               Use tensorflow to create categories.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hv \
+        -l "help,version,verbose,log-file:,\
+tf" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+        
+        --tf)
+            shift
+            OPTION_TF="true"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+function process_tf_file()
+{
+    local tf_dir="$1"
+    local tf_graph="$2"
+    local input_file="$3"
+    local input_dir="$(dirname "$input_file")"
+    local result
+
+    pushd $tf_dir >/dev/null 2>/dev/null
+    result=$(python \
+        -m "scripts.label_image" \
+        --graph "$tf_graph" \
+        --image "$input_file" 2>/dev/null \
+        | grep -v "^$" | grep -v "Evaluation time.*" \
+        | head -n 1)
+            
+    name="$(echo "$result" | sed -e 's/ (/(/g' | awk -F\( '{print $1}' | tr ' ' '_')"
+
+    echo " input_file: $input_file"
+    echo "     result: '$result'"
+    echo "       name: '$name'"
+
+    if [ -n "$name" ]; then
+        name="$input_dir/$name"
+
+        if [ ! -d "$name" ]; then
+            mkdir "$name"
+        fi
+
+        mv "$input_file" "$name"
+    fi
+
+    popd >/dev/null 2>/dev/null
+}
+
+function process_tf()
+{
+    local tf_dir="$HOME/tensorflow-for-poets-2"
+    local tf_graph="server_graph.pb"
+
+    if [ ! -d "$tf_dir" ]; then
+        printError "The '$tf_dir' does not exist."
+        return 1
+    fi
+
+    if [ ! -f "$tf_dir/$tf_graph" ]; then
+        printError "The file '$tf_dir/$tf_graph' does not exist."
+        return 1
+    fi
+
+    for file in *.jpg; do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        process_tf_file "$tf_dir" "$tf_graph" "$PWD/$file"
+        #break
+    done
+}
+
+
+if [ "$OPTION_TF" ]; then
+    process_tf 
+    exit $?
+fi
+
+
 pattern="$1"
 if [ -z "$pattern" ]; then
     printError "The first argument should be the file name pattern."

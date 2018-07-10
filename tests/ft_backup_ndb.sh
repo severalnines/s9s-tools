@@ -115,7 +115,6 @@ function testCreateCluster()
 {
     local nodes
     local nodeName
-    local exitCode
 
     print_title "Creating an NDB Cluster"
 
@@ -148,11 +147,7 @@ function testCreateCluster()
         --provider-version=5.6 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
