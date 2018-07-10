@@ -452,8 +452,13 @@ function testRollingRestart()
 {
     local exitCode
     
-    print_title "Rolling restart"
+    print_title "Rolling Restart"
     mys9s node --list --long
+    
+    if [ "$OPTION_VENDOR" == "mariadb" ]; then
+        echo "Rolling restart is not tested on MariaDb."
+        return 0
+    fi
 
     #
     # Calling for a rolling restart.
