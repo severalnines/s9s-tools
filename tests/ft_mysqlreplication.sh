@@ -369,7 +369,7 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        $LOG_OPTION
+        --log
    
     check_exit_code $?
 }
