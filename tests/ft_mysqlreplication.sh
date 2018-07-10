@@ -356,9 +356,8 @@ function createDeleteAccount()
 function testAddNode()
 {
     local nodes
-    local exitCode
 
-    print_title "Adding a new node"
+    print_title "Adding a New Node"
     
     LAST_ADDED_NODE=$(create_node --autodestroy)
     nodes+="$LAST_ADDED_NODE"
@@ -371,14 +370,8 @@ function testAddNode()
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        mys9s job --log --job-id=6
-        exit 1
-    fi
+   
+    check_exit_code $?
 }
 
 #
