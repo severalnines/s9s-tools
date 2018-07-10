@@ -177,7 +177,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    print_title "Testing the creation of a Galera cluster"
+    print_title "Creating a Galera Cluster"
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy)
