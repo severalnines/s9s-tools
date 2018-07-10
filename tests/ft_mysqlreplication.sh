@@ -7,6 +7,7 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CLUSTER_NAME="ft_$$"
 CLUSTER_ID=""
+OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
@@ -36,10 +37,21 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-json     Print the JSON messages sent and received.
   --log            Print the logs while waiting for the job to be ended.
   --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
   --vendor=STRING  Use the given Galera vendor.
   --provider-version=STRING The SQL server provider version.
+
+SUPPORTED TESTS:
+  o testPing
+  o testCreateCluster
+  o createDeleteAccount
+  o testAddNode
+  o testRemoveNode
+  o testRollingRestart
+  o testStop
+  o testDrop
 
 EOF
     exit 1
@@ -47,8 +59,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
-vendor:,provider-version:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,
+server:,vendor:,provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -82,6 +94,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -144,16 +161,16 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYNAME}_01_$$")
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     
-    nodeName=$(create_node --autodestroy)
-    SECOND_ADDED_NODE=$nodeName
-    nodes+="$nodeName;"
+    #nodeName=$(create_node --autodestroy "${MYNAME}_02_$$")
+    #SECOND_ADDED_NODE=$nodeName
+    #nodes+="$nodeName;"
     
-    nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName"
+    #nodeName=$(create_node --autodestroy "${MYNAME}_03_$$")
+    #nodes+="$nodeName"
     
     #
     # Creating a MySQL replication cluster.
@@ -359,7 +376,7 @@ function testAddNode()
 
     print_title "Adding a New Node"
     
-    LAST_ADDED_NODE=$(create_node --autodestroy)
+    LAST_ADDED_NODE=$(create_node --autodestroy "${MYNAME}_11_$$")
     nodes+="$LAST_ADDED_NODE"
 
     #
@@ -504,7 +521,16 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    if [ -n "$*" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+        runFunctionalTest testAddNode
+    fi
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done

@@ -1111,19 +1111,13 @@ function destroyNodes()
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
-        return 0
-    fi
-
-    if [ "$OPTION_INSTALL" ]; then
+    elif [ "$OPTION_INSTALL" ]; then
         print_title "Leaving the containers"
         echo "The --install option was provided, not destroying the "
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
-        return 0
-    fi
-
-    if [ "$all_created_ip" ]; then
+    elif [ "$all_created_ip" ]; then
         print_title "Destroying the containers"
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
@@ -1134,10 +1128,10 @@ function destroyNodes()
             >/dev/null 2>/dev/null
         
         echo "    retcode : $?"
+    fi
 
-        if [ -f "$container_list_file" ]; then
-            rm -f "$container_list_file"
-        fi
+    if [ -f "$container_list_file" ]; then
+        rm -f "$container_list_file"
     fi
 
     return 0
