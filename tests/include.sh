@@ -145,6 +145,8 @@ function print_title()
 #
 function startTests ()
 {
+    local container_list_file="/tmp/${MYNAME}.containers"
+
     TEST_SUITE_NAME=$(basename $0 .sh)
 
     echo "Starting test $TEST_SUITE_NAME"
@@ -163,6 +165,11 @@ function startTests ()
         exit 7
     else 
         echo " [OK]"
+    fi
+
+    if [ -f "$container_list_file" ]; then
+        echo "Removing '$container_list_file'."
+        rm -f "$container_list_file"
     fi
 
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
