@@ -389,6 +389,9 @@ function testAddNode()
         --log
    
     check_exit_code $?
+
+    mys9s node --list --long
+    mys9s cluster --stat
 }
 
 #
