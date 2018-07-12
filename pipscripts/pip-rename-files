@@ -7,6 +7,8 @@ VERSION="0.0.17"
 VERBOSE=""
 LOGFILE=""
 
+STAT_N_FILES_PROCESSED=0
+
 source $MYDIR/utilityfunctions.sh
 
 #
@@ -88,32 +90,66 @@ function process_tf_file()
     local input_file="$3"
     local input_dir="$(dirname "$input_file")"
     local result
+    local tmpfile=$(mktemp)
 
     pushd $tf_dir >/dev/null 2>/dev/null
+    cat <<eof
+    python -m "scripts.label_image" --graph "$tf_graph" --input_layer=Mul --image "$input_file"
+eof
+    # input_layer, input_height, input_width
+    # https://stackoverflow.com/questions/46325799/tensorflow-for-poets-the-name-import-input-refers-to-an-operation-not-in-the
     result=$(python \
         -m "scripts.label_image" \
-        --graph "$tf_graph" \
-        --image "$input_file" 2>/dev/null \
+        --graph "tf_files/retrained_graph.pb" \
+        --input_layer=Mul \
+        --input_height=299 \
+        --input_width=299 \
+        --image "$input_file" 2>$tmpfile \
         | grep -v "^$" | grep -v "Evaluation time.*" \
         | head -n 1)
             
     name="$(echo "$result" | sed -e 's/ (/(/g' | awk -F\( '{print $1}' | tr ' ' '_')"
+    value="$(echo "$result" | awk -F\( '{print $2}' | awk -F= '{print $2}')"
+    value="$(echo "$value" | tr -d ')')"
 
     echo " input_file: $input_file"
     echo "     result: '$result'"
     echo "       name: '$name'"
+    echo "      value: '$value'"
+    echo "  processed: $STAT_N_FILES_PROCESSED file(s)"
+
+    if (( $(echo "$value < 0.65" | bc -l) )); then
+        name="unrecognized"
+    fi
+    
+    echo "       name: '$name'"
+
+    if [ -z "$name" ]; then
+        printError "Failed."
+        cat $tmpfile
+        rm $tmpfile
+        return 1
+    else
+        rm $tmpfile
+    fi
 
     if [ -n "$name" ]; then
         name="$input_dir/$name"
 
         if [ ! -d "$name" ]; then
             mkdir "$name"
+            chown pipas.pipas "$name"
+            if [ ! -d "$name" ]; then
+                printError "Could not create '$name'."
+            fi
         fi
 
         mv "$input_file" "$name"
     fi
 
     popd >/dev/null 2>/dev/null
+
+    let STAT_N_FILES_PROCESSED+=1
 }
 
 function process_tf()

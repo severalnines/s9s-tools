@@ -953,6 +953,15 @@ S9sNode::nodeTypeFlag() const
 
 /**
  * \returns The software version of the node.
+ *
+ * This method will return the version string of the most important software on
+ * the node. It is in most cases the version number of the Cmon or the version
+ * number of the SQL server.
+ *
+ * This method also truncates the version string. Sometimes we get insanely
+ * long version number with the provider, build and everything. This takes up
+ * half of the screen width, so we truncate to get some meaningful, but short
+ * strings.
  */
 S9sString
 S9sNode::version() const
@@ -964,6 +973,9 @@ S9sNode::version() const
 
     if (retval.contains(" "))
         retval = retval.substr(0, retval.find(' '));
+    
+    if (retval.contains("-"))
+        retval = retval.substr(0, retval.find('-'));
 
     return retval;
 }
