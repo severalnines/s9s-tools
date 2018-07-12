@@ -448,6 +448,7 @@ S9sRpcClient::getCluster(
 
     request["operation"]       = "getClusterInfo";
     request["with_hosts"]      = true;
+    request["with_containers"] = true;
     request["with_sheet_info"] = true;
 
     if (S9S_CLUSTER_ID_IS_VALID(clusterId))
@@ -485,6 +486,7 @@ S9sRpcClient::getClusters()
 
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
+    request["with_containers"] = true;
     request["with_sheet_info"] = true;
 
     retval = executeRequest(uri, request);
