@@ -110,8 +110,8 @@ function install_packages()
     install_package flex
     install_package bison
 
-    install_package vagrant
-    install_package virtualbox
+    #install_package vagrant
+    #install_package virtualbox
 
     #
     # Installing mysql-server with a root password.

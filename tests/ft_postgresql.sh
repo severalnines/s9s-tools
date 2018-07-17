@@ -46,7 +46,8 @@ SUPPORTED TESTS:
   o testStopStartNode
   o testConfig           Reading and changing the configuration.
   o testConfigFail       Testing configuration changes that should fail.
-  o testCreateAccount
+  o testCreateAccount01  Create an account on the cluster.
+  o testCreateAccount02  Create more accounts on the cluster.
   o testCreateDatabase
   o testCreateBackup
   o testRestoreBackup
@@ -357,7 +358,7 @@ function testConfigFail()
 # Creating a new account on the cluster.
 #
 #
-function testCreateAccount()
+function testCreateAccount01()
 {
     print_title "Creating an Account"
 
@@ -389,6 +390,20 @@ function testCreateAccount()
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not $exitCode while deleting an account"
     fi
+
+    mys9s account --list --long
+}
+
+function testCreateAccount02()
+{
+    print_title "Create Accounts"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account='jake:jake@192.168.0.0/24' \
+        --print-json \
+        --verbose 
 
     mys9s account --list --long
 }
@@ -629,7 +644,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    if [ "$*" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -642,7 +663,8 @@ else
     runFunctionalTest testConfig
     runFunctionalTest testConfigFail
 
-    runFunctionalTest testCreateAccount
+    runFunctionalTest testCreateAccount01
+    runFunctionalTest testCreateAccount02
     runFunctionalTest testCreateDatabase
 
     runFunctionalTest testCreateBackup

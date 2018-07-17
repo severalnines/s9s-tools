@@ -169,7 +169,7 @@ UtS9sNode::testSetProperties()
     S9S_COMPARE(theNode.port(),       3306);
     S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
     S9S_COMPARE(theNode.nodeType(),   "galera");
-    S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
+    S9S_COMPARE(theNode.version(),    "5.6.30");
     S9S_COMPARE(theNode.message(),    "Up and running.");
     S9S_COMPARE(theNode.osVersionString(), "ubuntu 16.04 xenial");
     S9S_COMPARE(theNode.isMaintenanceActive(), true);
@@ -215,7 +215,7 @@ UtS9sNode::testAssign()
     S9S_COMPARE(theNode.port(),       3306);
     S9S_COMPARE(theNode.hostStatus(), "CmonHostOnline");
     S9S_COMPARE(theNode.nodeType(),   "galera");
-    S9S_COMPARE(theNode.version(),    "5.6.30-76.3-56");
+    S9S_COMPARE(theNode.version(),    "5.6.30");
     S9S_COMPARE(theNode.message(),    "Up and running.");
     S9S_COMPARE(theNode.osVersionString(), "ubuntu 16.04 xenial");
     S9S_COMPARE(theNode.isMaintenanceActive(), true);
