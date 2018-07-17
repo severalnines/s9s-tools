@@ -261,7 +261,7 @@ UtS9sNode::testToString()
     S9S_COMPARE(theNode.toString(false, "%S"), "CmonHostOnline");
     S9S_COMPARE(theNode.toString(false, "%s"), "");
     S9S_COMPARE(theNode.toString(false, "%T"), "galera");
-    S9S_COMPARE(theNode.toString(false, "%V"), "5.6.30-76.3-56");
+    S9S_COMPARE(theNode.toString(false, "%V"), "5.6.30");
     S9S_COMPARE(theNode.toString(false, "%z"), "CmonGaleraHost");
 
     return true;
