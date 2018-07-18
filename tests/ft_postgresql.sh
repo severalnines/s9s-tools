@@ -482,16 +482,18 @@ function testCreateBackup()
         --backup-directory=/tmp \
         $LOG_OPTION
     
-    check_exit_code $?    
+    check_exit_code $?
     
     #
-    # Creating a backup using the cluster name.
+    # Creating a backup using the cluster name. It is a pg_basebackup this 
+    # time.
     #
     mys9s backup \
         --create \
         --cluster-name=$CLUSTER_NAME \
         --nodes=$FIRST_ADDED_NODE \
         --backup-directory=/tmp \
+        --backup-method=pg_basebackup \
         $LOG_OPTION
     
     check_exit_code $?    

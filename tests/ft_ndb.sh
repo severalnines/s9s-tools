@@ -28,13 +28,21 @@ Usage:
  
   $MYNAME - Test script for to check ndb clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+
+SUPPORTED TESTS:
+  o testCreateCluster    Creating a cluster.
+  o testCreateBackup     Creating a backup of the cluster.
+  o testAddNode          Add a node to the existing cluster.
+  o testRemoveNode       Remove a node from the cluster.
+  o testRollingRestart   Rolling restart.
+  o testDrop             Dropping the cluster from the controller.
 
 EOF
     exit 1
@@ -130,6 +138,7 @@ function testCreateCluster()
 
     print_title "Creating an NDB Cluster."
     nodeName=$(create_node --autodestroy)
+    FIRST_ADDED_NODE="$nodeName"
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
 
     nodeName=$(create_node --autodestroy)
@@ -161,6 +170,23 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+}
+
+function testCreateBackup()
+{
+    print_title "Creating Backups"
+
+    #
+    # Creating a backup using the cluster ID to reference the cluster.
+    #
+    mys9s backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$FIRST_ADDED_NODE:3306" \
+        --backup-directory=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
 }
 
 #
@@ -283,7 +309,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    if [ -n "$*" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -291,6 +323,7 @@ elif [ "$1" ]; then
 else
     #runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateBackup
     runFunctionalTest testAddNode
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart

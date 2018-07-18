@@ -45,7 +45,8 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
 SUPPORTED TESTS:
   o testPing
-  o testCreateCluster
+  o testCreateCluster    Creating a PostgreSql cluster.
+  o testCreateBackup     Creates a backup on the cluster.
   o createDeleteAccount
   o testAddNode
   o testRemoveNode
@@ -194,6 +195,24 @@ function testCreateCluster()
         failure "Cluster was not created"
     fi
 }
+
+function testCreateBackup()
+{
+    print_title "Creating Backups"
+
+    #
+    # Creating a backup using the cluster ID to reference the cluster.
+    #
+    mys9s backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-directory=/tmp \
+        $LOG_OPTION
+    
+    check_exit_code $?
+}
+
 
 #
 # This test will call a --restart on the node.
@@ -545,6 +564,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateBackup
 
     #runFunctionalTest testRestartNode
     #runFunctionalTest testStopStartNode
