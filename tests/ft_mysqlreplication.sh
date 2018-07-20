@@ -46,6 +46,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 SUPPORTED TESTS:
   o testPing
   o testCreateCluster    Creating a PostgreSql cluster.
+  o testCreateDatabase   Creating some databases.
   o testCreateBackup     Creates a backup on the cluster.
   o createDeleteAccount
   o testAddNode
@@ -193,6 +194,31 @@ function testCreateCluster()
     else
         failure "Cluster was not created"
     fi
+}
+
+#
+# Creating a new database on the cluster.
+#
+function testCreateDatabase()
+{
+    local database_name
+
+    print_title "Creating Database"
+
+    #
+    # This command will create a new database on the cluster.
+    #
+    for database_name in database01 database02 database03; do
+        mys9s cluster \
+            --create-database \
+            --cluster-id=$CLUSTER_ID \
+            --db-name="$database_name" \
+            --batch
+    
+        check_exit_code_no_job $?
+    done
+
+    s9s database --list --long
 }
 
 function testCreateBackup()
@@ -537,6 +563,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup
 
     #runFunctionalTest testRestartNode

@@ -10,6 +10,9 @@ OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
 
 SUM_SERVERS=0
+SUM_OFF_LINE_SERVERS=0
+SUM_TESTING_SERVERS=0
+SUM_IDLE_SERVERS=0
 SUM_CORES=0
 SUM_MEMORY=0
 
@@ -110,7 +113,10 @@ Usage:
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+
   --list               List the power distribution units.
+  --long               Print detailed/long list.
+
   --on                 Turn the socket on.
   --off                Turn the socket off.
   --state              Check the state of the socket.
@@ -125,7 +131,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,list,on,off,state,\
+        -l "help,verbose,version,log-file:,list,long,on,off,state,\
 power,temperature,print-files" \
         -- "$@")
 
@@ -161,6 +167,11 @@ while true; do
         --list)
             shift
             LIST_OPTION="true"
+            ;;
+
+        --long)
+            shift
+            LONG_OPTION="true"
             ;;
 
         --on)
@@ -209,17 +220,21 @@ function print_header()
     echo -en $TERM_BOLD
 
     cat <<EOF
+SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    DESCRIPTION
 --------------------------------------------------------------------------------
 EOF
 
     echo -en $TERM_NORMAL
 }
 
-function print_report()
+function print_summary()
 {
     printf "\n"
-    printf "Report\n"
+    printf "Summary:\n"
     printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
+    printf "       Testing: %'6d server(s)\n" "$SUM_TESTING_SERVERS" 
+    printf "          Idle: %'6d server(s)\n" "$SUM_IDLE_SERVERS" 
+    printf "      Off-line: %'6d server(s)\n" "$SUM_OFF_LINE_SERVERS" 
     printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
     printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
     printf "\n"
@@ -261,7 +276,7 @@ function fileAgeInSeconds()
     echo $((`date +%s` - `stat -L --format %Y $1` ))
 }
 
-function print_device_list()
+function print_host_list_long()
 {
     local config_file
     local info_file
@@ -269,6 +284,127 @@ function print_device_list()
     local name
 
     print_header
+
+    for config_file in $HOME/.pip/*.host; do
+        if [ ! -f "$config_file" ]; then
+            continue
+        fi
+
+        device_name=$(basename "$config_file" .host)
+        info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
+
+        if [ "$device_name" == "www" ]; then
+            continue;
+        fi
+
+        CONF_HOST_NAME=""
+        CONF_HOST_URL=""
+        CONF_HOST_CATEGORY=""
+        CONF_HOST_STANDARD=""
+        CONF_HOST_MAC=""
+        CONF_HOST_PROTECTED=""
+
+        HOSTNAME=""
+        NUMBER_OF_CORES=""
+        MEMORY_GIGABYTES=""
+        DISK_GIGABYTES=""
+        NUMBER_OF_CONTAINERS=""
+        AVERAGE_LOAD=""
+        HOST_STATUS=""
+        STATUS_TEXT=""
+
+        source "$config_file"
+        if [ -f "$info_file" ]; then
+            source "$info_file"
+        fi
+    
+
+        category="$CONF_HOST_CATEGORY"
+        if [ -z "$category" ]; then
+            category="-"
+        fi
+    
+        [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
+        if [ -f "$info_file" ]; then
+            fileAge="$(fileAgeInSeconds "$info_file")"
+            let fileAge/=60
+            if [ "$fileAge" -gt 5 ]; then
+                if [ "$HOST_STATUS" != "DISABLED" ]; then
+                    HOST_STATUS="OFF-LINE"
+                    STATUS_TEXT="-"
+                fi
+            fi
+        else
+            if [ "$HOST_STATUS" != "DISABLED" ]; then
+                HOST_STATUS="OFF-LINE"
+                STATUS_TEXT="-"
+            fi
+        fi
+        
+        let SUM_CORES+=NUMBER_OF_CORES
+        let SUM_MEMORY+=MEMORY_GIGABYTES
+
+        [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
+        
+        case "$HOST_STATUS" in
+            OFF-LINE)
+                let SUM_OFF_LINE_SERVERS+=1
+                let SUM_SERVERS+=1
+                ;;
+
+            TESTING)
+                let SUM_TESTING_SERVERS+=1
+                let SUM_SERVERS+=1
+                ;;
+            
+            IDLE)
+                let SUM_IDLE_SERVERS+=1
+                let SUM_SERVERS+=1
+                ;;
+
+            *)
+                let SUM_SERVERS+=1
+                ;;
+        esac
+
+
+        printf "$DEVICE_COLOR%-10s$TERM_NORMAL "  "$device_name"
+        printf "$OWNER_COLOR%-10s$TERM_NORMAL "   "$category"
+        #printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_HOST_URL"
+        
+        printf "%2dc "  "$NUMBER_OF_CORES"
+        printf "%3dG "  "$MEMORY_GIGABYTES"
+        printf "%'6dG " "$DISK_GIGABYTES"
+        printf "%2d "   "$NUMBER_OF_CONTAINERS"
+        printf "%6s "   "$AVERAGE_LOAD"
+
+        if [ "$HOST_STATUS" == "IDLE" ]; then
+            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "TESTING" ]; then
+            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        else
+            printf "%-9s " "$HOST_STATUS"
+        fi
+
+
+        if [ -z "$OPTION_PRINT_FILES" ]; then
+            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
+        else
+            printf "$FILE_COLOR%s$TERM_NORMAL"     "$config_file"
+        fi
+
+        printf "\n"
+    done
+}
+
+function print_host_list_brief()
+{
+    local config_file
+    local info_file
+    local category
+    local name
 
     for config_file in $HOME/.pip/*.host; do
         if [ ! -f "$config_file" ]; then
@@ -332,41 +468,20 @@ function print_device_list()
 
         [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
         
-        printf "$DEVICE_COLOR%-10s$TERM_NORMAL "  "$device_name"
-        printf "$OWNER_COLOR%-10s$TERM_NORMAL "   "$category"
-        #printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_HOST_URL"
-        
-        printf "%2dc " "$NUMBER_OF_CORES"
-        printf "%3dG " "$MEMORY_GIGABYTES"
-        printf "%'6dG " "$DISK_GIGABYTES"
-        printf "%2d " "$NUMBER_OF_CONTAINERS"
-        printf "%-4s " "$AVERAGE_LOAD"
-
-        if [ "$HOST_STATUS" == "IDLE" ]; then
-            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "TESTING" ]; then
-            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
-            printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        else
-            printf "%-9s " "$HOST_STATUS"
-        fi
-
-
-        if [ -z "$OPTION_PRINT_FILES" ]; then
-            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
-        else
-            printf "$FILE_COLOR%s$TERM_NORMAL"     "$config_file"
-        fi
-
-        printf "\n"
+        printf "%s\n"  "$device_name"
     done
 }
 
 if [ "$LIST_OPTION" ]; then
     download_current_data
-    print_device_list
-    print_report
+    
+    if [ -n "$LONG_OPTION" ]; then
+        print_host_list_long
+        print_summary
+    else
+        print_host_list_brief | column -s' '
+    fi
+
     exit 0
 fi
 
