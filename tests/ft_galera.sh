@@ -497,7 +497,7 @@ function testCreateDatabase()
 {
     local userName
 
-    print_title "Testing database creation."
+    print_title "Creating Database"
 
     #
     # This command will create a new database on the cluster.
