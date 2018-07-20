@@ -50,7 +50,6 @@ SUPPORTED TESTS:
   o createDeleteAccount
   o testAddNode
   o testRemoveNode
-  o testRollingRestart
   o testStop
   o testDrop
 
@@ -468,32 +467,6 @@ function testRemoveNode()
 }
 
 #
-# This will perform a rolling restart on the cluster
-#
-function testRollingRestart()
-{
-    local exitCode
-    
-    print_title "Rolling Restart"
-    mys9s node --list --long
-    
-    if [ "$OPTION_VENDOR" == "mariadb" ]; then
-        echo "Rolling restart is not tested on MariaDb."
-        return 0
-    fi
-
-    #
-    # Calling for a rolling restart.
-    #
-    mys9s cluster \
-        --rolling-restart \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-   
-    check_exit_code $?
-}
-
-#
 # Stopping the cluster.
 #
 function testStop()
@@ -574,7 +547,6 @@ else
     runFunctionalTest testAddNode
     #runFunctionalTest testAddMaster
     runFunctionalTest testRemoveNode
-    runFunctionalTest testRollingRestart
     runFunctionalTest testStop
     runFunctionalTest testDrop
 fi
