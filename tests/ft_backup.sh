@@ -327,6 +327,7 @@ function testCreateBackup01()
     if [ "$value" != 1 ]; then
         failure "A file should be in '/tmp/backup-001-0001/mysql/'"
         mys9s backup --list-files --full-path --backup-id=1
+        mys9s backup --list-files --full-path 
     fi
 
     value=$(\
@@ -336,6 +337,7 @@ function testCreateBackup01()
     if [ "$value" != 1 ]; then
         failure "A file should be in '/tmp/backup-001-0001/testCreateDatabase/'"
         mys9s backup --list-files --full-path --backup-id=1
+        mys9s backup --list-files --full-path 
     fi
 
     #
