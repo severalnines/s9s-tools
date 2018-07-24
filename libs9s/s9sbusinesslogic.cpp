@@ -157,6 +157,10 @@ S9sBusinessLogic::execute()
         {
             success = client.promoteSlave();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDemoteNodeRequested())
+        {
+            success = client.demoteNode();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isStartRequested())
         {
             success = client.startCluster();

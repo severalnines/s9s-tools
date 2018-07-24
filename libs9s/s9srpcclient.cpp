@@ -4025,6 +4025,52 @@ S9sRpcClient::promoteSlave()
     return retval;
 }
 
+bool
+S9sRpcClient::demoteNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To demote a node exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"]       = hosts[0].toVariantMap();
+     
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "demote_node";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Demoting Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 /**
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).

@@ -1110,6 +1110,12 @@ function clean_up_after_test()
         --cmon-user=system \
         --password=secret \
         /.runtime/job_manager
+    
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/host_manager
 
     # Reading the container list file.
     if [ -f "$container_list_file" ]; then

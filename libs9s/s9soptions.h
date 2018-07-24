@@ -361,6 +361,7 @@ class S9sOptions
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isPromoteSlaveRequested() const;
+        bool isDemoteNodeRequested() const;
         bool isRestoreRequested() const;
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;

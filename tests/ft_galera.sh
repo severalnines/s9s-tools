@@ -150,11 +150,11 @@ while true; do
 done
 
 #
-#
+# Pings the controller to check if it is up.
 #
 function testPing()
 {
-    print_title "Pinging controller."
+    print_title "Pinging Controller."
 
     #
     # Pinging. 

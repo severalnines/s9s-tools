@@ -86,6 +86,7 @@ enum S9sOptionType
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
+    OptionDemoteNode,
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
@@ -3112,6 +3113,15 @@ S9sOptions::isPromoteSlaveRequested() const
     return getBool("promote_slave");
 }
 
+/**
+ * \returns True if the --demote-node main option was used.
+ */
+bool
+S9sOptions::isDemoteNodeRequested() const
+{
+    return getBool("demote_node");
+}
+
 
 /**
  * \returns true if the --restore command line option was provided when the
@@ -4275,6 +4285,7 @@ S9sOptions::printHelpCluster()
 "  --create-database          Create a database on the cluster.\n"
 "  --create-report            Starts a job that will create a report.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
+"  --demote-node              Demote a node to slave.\n"
 "  --drop                     Drop cluster from the controller.\n"
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
@@ -5985,6 +5996,9 @@ S9sOptions::checkOptionsCluster()
     
     if (isPromoteSlaveRequested())
         countOptions++;
+    
+    if (isDemoteNodeRequested())
+        countOptions++;
 
     if (isRollingRestartRequested())
         countOptions++;
@@ -7681,6 +7695,7 @@ S9sOptions::readOptionsCluster(
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
         { "promote-slave",    no_argument,       0, OptionPromoteSlave    },
+        { "demote-node",      no_argument,       0, OptionDemoteNode      },
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
@@ -7964,6 +7979,11 @@ S9sOptions::readOptionsCluster(
             case OptionPromoteSlave:
                 // --promote-slave
                 m_options["promote_slave"] = true;
+                break;
+            
+            case OptionDemoteNode:
+                // --demote-node
+                m_options["demote_node"] = true;
                 break;
             
             case OptionCreate:
