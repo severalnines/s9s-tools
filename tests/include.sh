@@ -1090,14 +1090,28 @@ function grant_user()
 }
 
 #
-# This will destroy the containers we created.
+# This will destroy the containers we created. This method is automatically
+# called by this:
 #
-function destroyNodes()
+# trap clean_up_after_test EXIT
+#
+function clean_up_after_test()
 {
     local all_created_ip=""
     local container_list_file="/tmp/${MYNAME}.containers"
     local container
 
+    #
+    # Some closing logs.
+    #
+    print_title "Preparing to Exit"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/job_manager
+
+    # Reading the container list file.
     if [ -f "$container_list_file" ]; then
         for container in $(cat $container_list_file); do
             if [ -z "$container" ]; then
@@ -1112,20 +1126,21 @@ function destroyNodes()
         done
     fi
 
+    # Destroying the nodes if we have to.
     if [ "$OPTION_LEAVE_NODES" ]; then
-        print_title "Leaving the containers"
+        print_title "Leaving the Containers"
         echo "The --leave-nodes option was provided, not destroying the "
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
     elif [ "$OPTION_INSTALL" ]; then
-        print_title "Leaving the containers"
+        print_title "Leaving the Containers"
         echo "The --install option was provided, not destroying the "
         echo "containers."
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
     elif [ "$all_created_ip" ]; then
-        print_title "Destroying the containers"
+        print_title "Destroying the Containers"
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
 
@@ -1137,6 +1152,7 @@ function destroyNodes()
         echo "    retcode : $?"
     fi
 
+    # Destroying the container list file.
     if [ -f "$container_list_file" ]; then
         rm -f "$container_list_file"
     fi
@@ -1164,5 +1180,5 @@ function cmon_container_list()
     echo $CMON_CONTAINER_NAMES
 }
 
-trap destroyNodes EXIT
+trap clean_up_after_test EXIT
 
