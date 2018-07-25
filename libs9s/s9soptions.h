@@ -255,6 +255,7 @@ class S9sOptions
         S9sString backupDir() const;
         S9sString backupMethod() const;
         bool noCompression() const;
+        bool pitrCompatible() const;
         bool usePigz() const;
         bool onNode() const;
         bool onController() const;

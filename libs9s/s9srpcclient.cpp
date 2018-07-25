@@ -4988,6 +4988,9 @@ S9sRpcClient::createBackup()
     if (!databases.empty())
         jobData["include_databases"] = databases;
 
+    if (options->pitrCompatible())
+        jobData["pitr_compatible"] = true;
+
     if (options->noCompression())
         jobData["compression"]   = false;
 

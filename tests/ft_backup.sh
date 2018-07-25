@@ -525,6 +525,30 @@ function testCreateBackup05()
     check_exit_code $?
 }
 
+function testCreateBackup06()
+{
+    local container_name
+    local node
+    print_title "Creating PITR Compatible Backup"
+
+    #
+    # Creating the backup.
+    # Using gzip this time.
+    #
+    mys9s backup \
+        --create \
+        --title="PITR_Compatible_Backup" \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-dir=/tmp \
+        --pitr-compatible \
+        $LOG_OPTION
+    
+    check_exit_code $?
+
+    mys9s backup --list --long
+}
+
 function testRestore()
 {
     print_title "Restoring Backup 1"
@@ -689,6 +713,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
+    runFunctionalTest testCreateBackup06
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -702,6 +727,7 @@ else
     runFunctionalTest testCreateBackup03
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
+    runFunctionalTest testCreateBackup06
     runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup
     runFunctionalTest testDelete

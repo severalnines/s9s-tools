@@ -122,6 +122,7 @@ enum S9sOptionType
     OptionListContainers,
     OptionType,
     OptionNoCompression,
+    OptionPitrCompatible,
     OptionUsePigz,
     OptionOnNode,
     OptionOnController,
@@ -2220,6 +2221,12 @@ S9sOptions::noCompression() const
     return getBool("no_compression");
 }
 
+bool
+S9sOptions::pitrCompatible() const
+{
+    return getBool("pitr_compatible");
+}
+
 /**
  * \returns true if the --use-pigz command line option was provided.
  */
@@ -4153,9 +4160,8 @@ S9sOptions::printHelpBackup()
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
-"  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
-"  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
+"  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
@@ -4163,6 +4169,8 @@ S9sOptions::printHelpBackup()
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
+"  --pitr-compatible          Create backup compatible with PITR.\n"
+"  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
@@ -4947,6 +4955,7 @@ S9sOptions::readOptionsBackup(
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "pitr-compatible",  no_argument,       0, OptionPitrCompatible  },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
@@ -5237,6 +5246,11 @@ S9sOptions::readOptionsBackup(
                 if (!setParallellism(optarg))
                     return false;
 
+                break;
+
+            case OptionPitrCompatible:
+                // --pitr-compatible
+                m_options["pitr_compatible"] = true;
                 break;
 
             case OptionSubDirectory:
