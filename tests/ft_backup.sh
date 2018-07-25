@@ -537,7 +537,7 @@ function testCreateBackup06()
     #
     mys9s backup \
         --create \
-        --title="PITR_Compatible_Backup" \
+        --backup-title="PITR Compatible Backup" \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \

@@ -7647,7 +7647,13 @@ S9sRpcReply::printBackupListDatabasesBrief()
 
         for (int idx1 = 0; idx1 < backup.nBackups(); ++idx1)
         {
-            printf("%s\n", STR(backup.databaseNamesAsString(idx1)));
+            S9sString databaseNames;
+            
+            databaseNames = backup.databaseNamesAsString(idx1);
+            if (databaseNames.empty())
+                databaseNames = "-";
+
+            printf("%s\n", STR(databaseNames));
         }
     }
 }
@@ -7791,18 +7797,28 @@ S9sRpcReply::printBackupListDatabasesLong()
          */
         if (backups.size() == 0u)
         {
-            S9sString     path          = "-";
+            S9sString     database      = "-";
             S9sString     sizeString    = "-";
             S9sString     createdString = "-";
                 
             idFormat.printf(id);
             cidFormat.printf(clusterId);
+            
+            printf("%s", backup.statusColorBegin(syntaxHighlight));
             stateFormat.printf(status);
+            printf("%s", backup.statusColorEnd(syntaxHighlight));
+            
+            printf("%s", userColorBegin());
             ownerFormat.printf(owner);
+            printf("%s", userColorEnd());
+
+            printf("%s", ipColorBegin());
             hostNameFormat.printf(hostName);
+            printf("%s", ipColorEnd());
+
             createdFormat.printf(createdString);
             sizeFormat.printf(sizeString);
-            printf("%s", STR(path));
+            printf("%s", STR(database));
             printf("\n");
 
             continue;
@@ -7810,6 +7826,8 @@ S9sRpcReply::printBackupListDatabasesLong()
 
         for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
+            S9sString databaseNames;
+
             for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
                 ulonglong   size = backup.fileSize(backupIdx, fileIdx).toUll();
@@ -7822,6 +7840,10 @@ S9sRpcReply::printBackupListDatabasesLong()
 
             idFormat.printf(id);
             cidFormat.printf(clusterId);
+            
+            databaseNames = backup.databaseNamesAsString(backupIdx);
+            if (databaseNames.empty())
+                databaseNames = "-";
 
             printf("%s", backup.statusColorBegin(syntaxHighlight));
             stateFormat.printf(status);
@@ -7837,7 +7859,7 @@ S9sRpcReply::printBackupListDatabasesLong()
 
             createdFormat.printf(created);
             sizeFormat.printf(sizeString);
-            printf("%s", STR(backup.databaseNamesAsString(backupIdx)));
+            printf("%s", STR(databaseNames));
             printf("\n");
         }
     }
