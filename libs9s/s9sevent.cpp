@@ -533,11 +533,19 @@ S9sEvent::cmonDiskInfoToOneLiner(
     {
         S9sVariantMap partition  = partitions[idx].toVariantMap();
         S9sString     mountPoint = partition["mountpoint"].toString();
+        ulonglong     freeBytes  = partition["free"].toULongLong();
+        ulonglong     totalBytes = partition["total"].toULongLong();
+        S9sString     tmp;
 
         if (!retval.empty())
             retval += ", ";
 
-        retval+= mountPoint;
+        tmp.sprintf("%s: %s/%s", 
+                STR(mountPoint), 
+                STR(m_formatter.bytesToHuman(totalBytes - freeBytes)),
+                STR(m_formatter.bytesToHuman(totalBytes)));
+                
+        retval+= tmp;
     }
 
     return retval;

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sObject"
+#include "S9sFormatter"
 
 /**
  * A class that represents a node/host/server. 
@@ -113,5 +114,8 @@ class S9sEvent : public S9sObject
         
         S9sString getString(const S9sString &path) const;
         int getInt(const S9sString &path) const;
+
+    private:
+        S9sFormatter m_formatter;
 };
 

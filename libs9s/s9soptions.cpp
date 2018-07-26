@@ -3496,17 +3496,14 @@ S9sOptions::truncate()
     return false;
 }
 
+/**
+ * \returns true if the --human-readable or -h option was provided and so the
+ *   values should be printed with prefixes (like "1.1GB").
+ */
 bool
 S9sOptions::humanReadable() const
 {
     return getBool("human_readable");
-}
-
-
-S9sString 
-S9sOptions::timeStyle() const
-{
-    return getString("time_style");
 }
 
 void
@@ -3514,6 +3511,12 @@ S9sOptions::setHumanReadable(
         const bool value)
 {
     m_options["human_readable"] = value;
+}
+
+S9sString 
+S9sOptions::timeStyle() const
+{
+    return getString("time_style");
 }
 
 /**
@@ -5643,6 +5646,7 @@ S9sOptions::readOptionsEvent(
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "human-readable",   no_argument,       0, 'h'                   },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -5765,6 +5769,11 @@ S9sOptions::readOptionsEvent(
                     m_options["color"] = optarg;
                 else
                     m_options["color"] = "always";
+                break;
+            
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
                 break;
 
             case OptionPrintJson:

@@ -9,51 +9,40 @@
 #define WARNING
 #include "s9sdebug.h"
 
-
 S9sString 
 S9sFormatter::bytesToHuman(
-        ulonglong mBytes)
+        ulonglong bytes) const
 {
     S9sOptions *options = S9sOptions::instance();
     S9sString   retval;
-    S9sVariant  bytes = mBytes * (1024ull * 1024ull);
+    S9sVariant  variant = bytes;
 
     if (!options->humanReadable())
     {
-        retval.sprintf("%'llu", bytes.toULongLong());
-    } else if (bytes.toTBytes() > 1.0)
+        retval.sprintf("%'llu", variant.toULongLong());
+    } else if (variant.toTBytes() > 1.0)
     {
-        retval.sprintf("%.1fTB", bytes.toTBytes());
-    } else if (bytes.toGBytes() >= 1.0) 
+        retval.sprintf("%.1fTB", variant.toTBytes());
+    } else if (variant.toGBytes() >= 1.0) 
     {
-        retval.sprintf("%.1fGB", bytes.toGBytes());
+        retval.sprintf("%.1fGB", variant.toGBytes());
     } else {
-        retval.sprintf("%.1fMB", bytes.toMBytes());
+        retval.sprintf("%.1fMB", variant.toMBytes());
     }
 
     return retval;
 }
 
 S9sString 
-S9sFormatter::kiloBytesToHuman(
-        ulonglong kBytes)
+S9sFormatter::mBytesToHuman(
+        ulonglong mBytes) const
 {
-    S9sOptions *options = S9sOptions::instance();
-    S9sString   retval;
-    S9sVariant  bytes = kBytes * (1024ull);
+    return bytesToHuman(mBytes * (1024ull * 1024ull));
+}
 
-    if (!options->humanReadable())
-    {
-        retval.sprintf("%'llu", kBytes);
-    } else if (bytes.toTBytes() > 1.0)
-    {
-        retval.sprintf("%.1fTB", bytes.toTBytes());
-    } else if (bytes.toGBytes() >= 1.0) 
-    {
-        retval.sprintf("%.1fGB", bytes.toGBytes());
-    } else {
-        retval.sprintf("%.1fMB", bytes.toMBytes());
-    }
-
-    return retval;
+S9sString 
+S9sFormatter::kiloBytesToHuman(
+        ulonglong kBytes) const
+{
+    return bytesToHuman(kBytes * 1024ull);
 }

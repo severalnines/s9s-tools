@@ -8,6 +8,7 @@
 class S9sFormatter
 {
     public:
-        S9sString bytesToHuman(ulonglong mBytes);
-        S9sString kiloBytesToHuman(ulonglong kBytes);
+        S9sString bytesToHuman(ulonglong bytes) const;
+        S9sString mBytesToHuman(ulonglong mBytes) const;
+        S9sString kiloBytesToHuman(ulonglong kBytes) const;
 };

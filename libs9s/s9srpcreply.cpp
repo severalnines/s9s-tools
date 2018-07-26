@@ -2463,7 +2463,7 @@ S9sRpcReply::printDatabaseListLong()
             S9sVariantMap database = databases[idx1].toVariantMap();
             S9sString     name = database["database_name"].toString();
             ulonglong     size = database["database_size"].toULongLong();
-            S9sString     sizeStr = m_formatter.bytesToHuman(size / (1024*1024));
+            S9sString     sizeStr = m_formatter.mBytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     ownerName = database["owner_user_name"].toString();
             S9sString     groupName = database["owner_group_name"].toString();
@@ -2556,7 +2556,7 @@ S9sRpcReply::printDatabaseListLong()
             S9sVariantMap database = databases[idx1].toVariantMap();
             S9sString     name = database["database_name"].toString();
             ulonglong     size = database["database_size"].toULongLong();
-            S9sString     sizeStr = m_formatter.bytesToHuman(size / (1024*1024));
+            S9sString     sizeStr = m_formatter.mBytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     ownerName = database["owner_user_name"].toString();
             S9sString     groupName = database["owner_group_name"].toString();
@@ -2613,7 +2613,7 @@ S9sRpcReply::printDatabaseListLong()
         printf("Total: %s%d%s databases, %s%s%s, %s%'llu%s tables.\n", 
                 numberColorBegin(), nDatabases, numberColorEnd(),
                 numberColorBegin(),
-                STR(m_formatter.bytesToHuman(totalBytes / (1024*1024))),
+                STR(m_formatter.mBytesToHuman(totalBytes / (1024*1024))),
                 numberColorEnd(),
                 numberColorBegin(), totalTables, numberColorEnd());
     }
@@ -3163,10 +3163,10 @@ S9sRpcReply::printPartitions(
             S9sString     deviceName = device["device"].toString();
             S9sString     filesystem = device["filesystem"].toString();
             ulonglong     total = device["total_mb"].toULongLong();
-            S9sString     totalStr = m_formatter.bytesToHuman(total);
+            S9sString     totalStr = m_formatter.mBytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
-            S9sString     freeStr = m_formatter.bytesToHuman(free);
-            S9sString     usedStr = m_formatter.bytesToHuman(total - free);
+            S9sString     freeStr = m_formatter.mBytesToHuman(free);
+            S9sString     usedStr = m_formatter.mBytesToHuman(total - free);
             S9sString     percentStr;
 
             if (total == 0ull)
@@ -3237,10 +3237,10 @@ S9sRpcReply::printPartitions(
             S9sString     deviceName = device["device"].toString();
             S9sString     filesystem = device["filesystem"].toString();
             ulonglong     total = device["total_mb"].toULongLong();
-            S9sString     totalStr = m_formatter.bytesToHuman(total);
+            S9sString     totalStr = m_formatter.mBytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
-            S9sString     freeStr = m_formatter.bytesToHuman(free);
-            S9sString     usedStr = m_formatter.bytesToHuman(total - free);
+            S9sString     freeStr = m_formatter.mBytesToHuman(free);
+            S9sString     usedStr = m_formatter.mBytesToHuman(total - free);
             S9sString     percentStr;
             S9sString     mountPoint = device["mountpoint"].toString();
 
@@ -3284,10 +3284,10 @@ S9sRpcReply::printPartitions(
     {
         printf("Total: %s%s%s, %s%s%s free\n", 
                 numberColorBegin(), 
-                STR(m_formatter.bytesToHuman(totalTotal)),
+                STR(m_formatter.mBytesToHuman(totalTotal)),
                 numberColorEnd(),
                 numberColorBegin(), 
-                STR(m_formatter.bytesToHuman(freeTotal)), 
+                STR(m_formatter.mBytesToHuman(freeTotal)), 
                 numberColorEnd());
     } 
 }
