@@ -12,6 +12,7 @@ man_MANS =            \
 	s9s-account.1     \
 	s9s-maintenance.1 \
 	s9s-metatype.1    \
+	s9s-event.1       \
 	s9s-script.1      \
 	s9s-tree.1        \
 	s9s.conf.5

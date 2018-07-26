@@ -156,6 +156,7 @@ function testCreateCluster()
     local nodes
     local nodeName
     local container_name
+    local nNodes=2
     local n
     
     print_title "Creating a Galera Cluster"
@@ -205,6 +206,21 @@ function testCreateCluster()
     mys9s cluster --stat
 }
 
+function testDemoteNode()
+{
+    print_title "Demoting Node $LAST_ADDED_NODE"
+
+    mys9s cluster \
+        --demote-node \
+        --cluster-id=1 \
+        --nodes=$LAST_ADDED_NODE \
+        --log
+    
+    #check_exit_code $?
+
+    mys9s node --stat
+}
+
 #
 # Running the requested tests.
 #
@@ -215,6 +231,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
+    runFunctionalTest testDemoteNode
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -222,6 +239,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testDemoteNode
 fi
 
 endTests
