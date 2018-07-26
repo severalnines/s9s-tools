@@ -58,6 +58,11 @@ s9sEventHandler(
     if (!options->eventTypeEnabled(event.eventTypeString()))
         return;
 
+    // optional filtration by clusterId
+    if (options->clusterId() > S9S_INVALID_CLUSTER_ID
+        && options->clusterId() != event.clusterId())
+        return;
+
     if (options->isJsonRequested())
     {
         output = jsonMessage.toString();
