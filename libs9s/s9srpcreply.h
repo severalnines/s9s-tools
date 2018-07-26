@@ -22,6 +22,7 @@
 #include "S9sVariantMap"
 #include "S9sFormat"
 #include "S9sObject"
+#include "S9sFormatter"
 
 class S9sNode;
 class S9sCluster;
@@ -329,10 +330,11 @@ class S9sRpcReply : public S9sVariantMap
         void printBackendServersSubList(const S9sNode &node);
 
     private:
-        S9sFormat   m_ownerFormat;
-        S9sFormat   m_groupFormat;
-        S9sFormat   m_sizeFormat;
-        int         m_numberOfObjects;
-        int         m_numberOfFolders;
+        S9sFormat     m_ownerFormat;
+        S9sFormat     m_groupFormat;
+        S9sFormat     m_sizeFormat;
+        int           m_numberOfObjects;
+        int           m_numberOfFolders;
+        S9sFormatter  m_formatter;
 };
 

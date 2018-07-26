@@ -87,6 +87,8 @@ class S9sEvent : public S9sObject
         S9sEvent::EventType eventType() const;
         S9sEvent::EventSubClass eventSubClass() const;
 
+        S9sString cmonDiskInfoToOneLiner(S9sVariantMap sample) const;
+
         S9sString senderFile() const;
         int senderLine() const;
 

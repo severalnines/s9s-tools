@@ -255,6 +255,7 @@ S9sEvent::eventHostToOneLiner() const
     //retval.sprintf("Host %s", STR(hostName));
     return retval;
 }
+
 /*
     "class_name": "CmonEvent",
     "event_class": "EventJob",
@@ -448,13 +449,18 @@ S9sEvent::measurementToOneLiner(
             if (sample["class_name"].toString() == "CmonDiskInfo")
             {
                 nDisks += 1;
+                
+                if (!retval.empty())
+                    retval += "; ";
+
+                retval += cmonDiskInfoToOneLiner(sample);
             } else {
                 retval += sample.toString();
                 return retval;
             }
         }
 
-        retval.sprintf("%d disk(s)", nDisks);
+        //retval.sprintf("%d disk(s)", nDisks);
         return retval;
     } else {
         measurements = specifics["measurements"].toVariantMap();
@@ -477,6 +483,65 @@ S9sEvent::measurementToOneLiner(
     return retval;
 }
 
+/**
+ *
+       {
+            "capacity": 0,
+            "class_name": "CmonDiskInfo",
+            "device": "/dev/sdb",
+            "model": "",
+            "model-family": "",
+            "partitions": [ 
+            {
+                "blocksize": 4096,
+                "class_name": "CmonDiskStats",
+                "created": 1532589216,
+                "device": "/dev/sdb2",
+                "filesystem": "ext4",
+                "free": 306192207872,
+                "hostid": 1,
+                "interval": 0,
+                "mount_option": "rw,relatime,errors=remount-ro,data=ordered",
+                "mountpoint": "/",
+                "reads": 0,
+                "readspersec": 0,
+                "sampleends": 1532589216,
+                "samplekey": "CmonDiskStats-1-/dev/sdb2",
+                "sectorsread": 0,
+                "sectorswritten": 0,
+                "total": 572729753600,
+                "utilization": 0,
+                "writes": 0,
+                "writespersec": 0
+            } ],
+            "power-cycle-count": 0,
+            "power-on-hours": 0,
+            "reallocated-sector-counter": 0,
+            "self-health-assessment": "",
+            "serial-number": "",
+            "temperature-celsius": 0
+        }
+ */
+S9sString
+S9sEvent::cmonDiskInfoToOneLiner(
+        S9sVariantMap sample) const
+{
+    S9sVariantList partitions = sample["partitions"].toVariantList();
+    S9sString      retval;
+
+    for (uint idx = 0u; idx < partitions.size(); ++idx)
+    {
+        S9sVariantMap partition  = partitions[idx].toVariantMap();
+        S9sString     mountPoint = partition["mountpoint"].toString();
+
+        if (!retval.empty())
+            retval += ", ";
+
+        retval+= mountPoint;
+    }
+
+    return retval;
+}
 
 S9sString
 S9sEvent::senderFile() const

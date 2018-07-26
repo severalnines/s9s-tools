@@ -47,54 +47,6 @@
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
-S9sString 
-bytesToHuman(
-        ulonglong mBytes)
-{
-    S9sOptions *options = S9sOptions::instance();
-    S9sString   retval;
-    S9sVariant  bytes = mBytes * (1024ull * 1024ull);
-
-    if (!options->humanReadable())
-    {
-        retval.sprintf("%'llu", bytes.toULongLong());
-    } else if (bytes.toTBytes() > 1.0)
-    {
-        retval.sprintf("%.1fTB", bytes.toTBytes());
-    } else if (bytes.toGBytes() >= 1.0) 
-    {
-        retval.sprintf("%.1fGB", bytes.toGBytes());
-    } else {
-        retval.sprintf("%.1fMB", bytes.toMBytes());
-    }
-
-    return retval;
-}
-
-S9sString 
-kiloBytesToHuman(
-        ulonglong kBytes)
-{
-    S9sOptions *options = S9sOptions::instance();
-    S9sString   retval;
-    S9sVariant  bytes = kBytes * (1024ull);
-
-    if (!options->humanReadable())
-    {
-        retval.sprintf("%'llu", kBytes);
-    } else if (bytes.toTBytes() > 1.0)
-    {
-        retval.sprintf("%.1fTB", bytes.toTBytes());
-    } else if (bytes.toGBytes() >= 1.0) 
-    {
-        retval.sprintf("%.1fGB", bytes.toGBytes());
-    } else {
-        retval.sprintf("%.1fMB", bytes.toMBytes());
-    }
-
-    return retval;
-}
-
 S9sRpcReply::ErrorCode
 S9sRpcReply::requestStatus() const
 {
@@ -940,8 +892,8 @@ S9sRpcReply::printProcessListLong(
 
         priorityFormat.printf(priority);
 
-        virtFormat.printf(kiloBytesToHuman(virtMem));
-        resFormat.printf(kiloBytesToHuman(rss));
+        virtFormat.printf(m_formatter.kiloBytesToHuman(virtMem));
+        resFormat.printf(m_formatter.kiloBytesToHuman(rss));
 
         if (state.length() == 1u)
             ::printf("%1s ", STR(state));
@@ -2511,7 +2463,7 @@ S9sRpcReply::printDatabaseListLong()
             S9sVariantMap database = databases[idx1].toVariantMap();
             S9sString     name = database["database_name"].toString();
             ulonglong     size = database["database_size"].toULongLong();
-            S9sString     sizeStr = bytesToHuman(size / (1024*1024));
+            S9sString     sizeStr = m_formatter.bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     ownerName = database["owner_user_name"].toString();
             S9sString     groupName = database["owner_group_name"].toString();
@@ -2604,7 +2556,7 @@ S9sRpcReply::printDatabaseListLong()
             S9sVariantMap database = databases[idx1].toVariantMap();
             S9sString     name = database["database_name"].toString();
             ulonglong     size = database["database_size"].toULongLong();
-            S9sString     sizeStr = bytesToHuman(size / (1024*1024));
+            S9sString     sizeStr = m_formatter.bytesToHuman(size / (1024*1024));
             ulonglong     nTables = database["number_of_tables"].toULongLong();
             S9sString     ownerName = database["owner_user_name"].toString();
             S9sString     groupName = database["owner_group_name"].toString();
@@ -2661,7 +2613,7 @@ S9sRpcReply::printDatabaseListLong()
         printf("Total: %s%d%s databases, %s%s%s, %s%'llu%s tables.\n", 
                 numberColorBegin(), nDatabases, numberColorEnd(),
                 numberColorBegin(),
-                STR(bytesToHuman(totalBytes / (1024*1024))),
+                STR(m_formatter.bytesToHuman(totalBytes / (1024*1024))),
                 numberColorEnd(),
                 numberColorBegin(), totalTables, numberColorEnd());
     }
@@ -3211,10 +3163,10 @@ S9sRpcReply::printPartitions(
             S9sString     deviceName = device["device"].toString();
             S9sString     filesystem = device["filesystem"].toString();
             ulonglong     total = device["total_mb"].toULongLong();
-            S9sString     totalStr = bytesToHuman(total);
+            S9sString     totalStr = m_formatter.bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
-            S9sString     freeStr = bytesToHuman(free);
-            S9sString     usedStr = bytesToHuman(total - free);
+            S9sString     freeStr = m_formatter.bytesToHuman(free);
+            S9sString     usedStr = m_formatter.bytesToHuman(total - free);
             S9sString     percentStr;
 
             if (total == 0ull)
@@ -3285,10 +3237,10 @@ S9sRpcReply::printPartitions(
             S9sString     deviceName = device["device"].toString();
             S9sString     filesystem = device["filesystem"].toString();
             ulonglong     total = device["total_mb"].toULongLong();
-            S9sString     totalStr = bytesToHuman(total);
+            S9sString     totalStr = m_formatter.bytesToHuman(total);
             ulonglong     free = device["free_mb"].toULongLong();
-            S9sString     freeStr = bytesToHuman(free);
-            S9sString     usedStr = bytesToHuman(total - free);
+            S9sString     freeStr = m_formatter.bytesToHuman(free);
+            S9sString     usedStr = m_formatter.bytesToHuman(total - free);
             S9sString     percentStr;
             S9sString     mountPoint = device["mountpoint"].toString();
 
@@ -3332,10 +3284,10 @@ S9sRpcReply::printPartitions(
     {
         printf("Total: %s%s%s, %s%s%s free\n", 
                 numberColorBegin(), 
-                STR(bytesToHuman(totalTotal)),
+                STR(m_formatter.bytesToHuman(totalTotal)),
                 numberColorEnd(),
                 numberColorBegin(), 
-                STR(bytesToHuman(freeTotal)), 
+                STR(m_formatter.bytesToHuman(freeTotal)), 
                 numberColorEnd());
     } 
 }

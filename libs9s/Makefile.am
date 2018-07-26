@@ -110,6 +110,8 @@ libs9s_public_h_headers =     \
 	s9sfile_p.h               \
 	S9sFormat                 \
 	s9sformat.h               \
+	S9sFormatter              \
+	s9sformatter.h            \
 	S9sGlobal                 \
 	s9sglobal.h               \
 	S9sGraph                  \
@@ -185,6 +187,7 @@ libs9s_a_SOURCES =            \
 	s9ssshcredentials.cpp     \
 	s9sstring.cpp             \
 	s9sformat.cpp             \
+	s9sformatter.cpp          \
 	s9sdatetime.cpp           \
 	s9surl.cpp                \
 	s9snode.cpp               \
