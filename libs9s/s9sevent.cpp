@@ -102,7 +102,7 @@ S9sEvent::toOneLiner() const
             break;
 
         case EventMaintenance:
-            retval += "eventMaintenanceToOneLiner()";
+            retval += eventMaintenanceToOneLiner();
             break;
         
         case EventCluster:
@@ -400,6 +400,109 @@ S9sEvent::eventAlarmToOneLiner() const
     }
 
 #endif
+    return retval;
+}
+
+/**
+ * \code{.js}
+ * {
+ *     "class_name": "CmonEvent",
+ *     "event_class": "EventMaintenance",
+ *     "event_name": "Ended",
+ *     "event_origins": 
+ *     {
+ *         "sender_file": "cmonhostmanager.cpp",
+ *         "sender_line": 1629,
+ *         "tv_nsec": 316022057,
+ *         "tv_sec": 1532675444
+ *     },
+ *     "event_specifics": 
+ *     {
+ *         "host_name": "192.168.0.105",
+ *         "maintenance": 
+ *         {
+ *             "class_name": "CmonMaintenanceInfo",
+ *             "hostname": "192.168.0.105",
+ *             "is_active": false,
+ *             "maintenance_periods": [ 
+ *             {
+ *                 "UUID": "038d9695-6f93-4e4a-8a6a-4e8f2e573cda",
+ *                 "deadline": "2018-07-27T07:10:43.000Z",
+ *                 "groupid": 1,
+ *                 "groupname": "admins",
+ *                 "initiate": "2018-07-27T07:07:43.683Z",
+ *                 "is_active": false,
+ *                 "reason": "Rolling restart job starts.",
+ *                 "userid": 1,
+ *                 "username": "system"
+ *             } ]
+ *         }
+ *     }
+ * }
+ * \endcode
+ */
+
+S9sString
+S9sEvent::eventMaintenanceToOneLiner() const
+{
+    EventSubClass  subClass = eventSubClass();    
+    S9sString      reason;
+    S9sVariantList periods;
+    S9sString      retval;
+    bool           isCluster;
+
+    isCluster = 
+        getString("event_specifics/maintenance/cluster/class_name") == 
+        "CmonClusterInfo";
+    if (isCluster)
+    {
+        retval = 
+            "Cluster " + 
+            getString("event_specifics/maintenance/cluster/cluster_name");
+    } else {
+        retval = 
+            "Host " +
+            getString("event_specifics/maintenance/hostname");
+    }
+    
+    switch (subClass)
+    {
+        case Ended:
+            retval += " maintenance ended";
+            break;
+
+        case Started:
+            retval += " maintenance started";
+
+        case Created:
+            retval += " maintenance created";
+            break;
+
+        default:
+            break;
+    }
+
+    // Printing the reason only makes sense when the maintenance created or
+    // started, at end it looks weird to print the reson.
+    if (subClass != Ended)
+    {
+        periods = m_properties.valueByPath(
+            "event_specifics/maintenance/maintenance_periods").toVariantList();
+
+        for (uint idx = 0u; idx < periods.size(); ++idx)
+        {
+            S9sVariantMap period = periods[idx].toVariantMap();
+
+            if (reason.empty() || period["is_active"].toBoolean())
+                reason = period["reason"].toString();
+        }
+    }
+
+    if (!reason.empty())
+        retval += ": " + reason;
+    else
+        retval += ".";
+
     return retval;
 }
 
