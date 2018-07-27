@@ -55,7 +55,11 @@ s9sEventHandler(
     S9sEvent          event(jsonMessage);
     S9sString         output;
 
+    // Filtration by event class and subclass (event-name).
     if (!options->eventTypeEnabled(event.eventTypeString()))
+        return;
+    
+    if (!options->eventNameEnabled(event.eventName()))
         return;
 
     // optional filtration by clusterId

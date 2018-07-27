@@ -138,6 +138,12 @@ S9sEvent::eventType() const
     return stringToEventType(property("event_class").toString());
 }
 
+S9sString
+S9sEvent::eventName() const
+{
+    return property("event_name").toString();
+}
+
 S9sEvent::EventSubClass
 S9sEvent::eventSubClass() const
 {

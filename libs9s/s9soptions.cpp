@@ -229,6 +229,18 @@ enum S9sOptionType
     OptionEventFile,
     OptionEventDebug,
     OptionEventLog,
+
+    OptionWithNoName,
+    OptionWithCreated,
+    OptionWithDestroyed,
+    OptionWithChanged,
+    OptionWithStarted,
+    OptionWithEnded,
+    OptionWithStateChanged,
+    OptionWithUserMessage,
+    OptionWithLogMessage,
+    OptionWithMeasurements,
+
     OptionUseInternalRepos,
     OptionJobTags,
 
@@ -768,6 +780,11 @@ bool
 S9sOptions::eventNameEnabled(
         const S9sString &eventName)
 {
+    S9sVariantMap theMap = getVariantMap("enabled_event_names");
+
+    if (!theMap.empty())
+        return theMap[eventName].toBoolean();
+
     return true;
 }
 
@@ -4545,6 +4562,17 @@ S9sOptions::printHelpEvent()
 "  --with-event-log           Process log events.\n"
 "  --with-event-maintenance   Process maintenance events.\n"
 "\n"
+"  --with-no-name-events      Process event with no event name.\n"
+"  --with-created-events      Process events about creation of objects.\n"
+"  --with-destroyed-events    Process events about destructing objects.\n"
+"  --with-changed-events      Process events about changes in objects.\n"
+"  --with-started-events      Process events about things started.\n"
+"  --with-ended-events        Process events about things ended.\n"
+"  --with-state-changed-events Process events about state changes.\n"
+"  --with-user-message-events Process events about user messages.\n"
+"  --with-log-message-events  Process events about log messages.\n"
+"  --with-measurements-events Process events about measurements.\n"
+"\n"
     );
 }
 
@@ -5694,6 +5722,17 @@ S9sOptions::readOptionsEvent(
         { "with-event-file",  no_argument,       0, OptionEventFile        },
         { "with-event-debug", no_argument,       0, OptionEventDebug       },
         { "with-event-log",   no_argument,       0, OptionEventLog         },
+        
+        { "with-no-name-events", no_argument,     0, OptionWithNoName       },
+        { "with-created-events", no_argument,    0, OptionWithCreated      },
+        { "with-destroyed-events", no_argument,  0, OptionWithDestroyed    },
+        { "with-changed-events", no_argument,    0, OptionWithChanged      },
+        { "with-started-events", no_argument,    0, OptionWithStarted      },
+        { "with-ended-events", no_argument,      0, OptionWithEnded        },
+        { "with-state-changed-events", no_argument, 0, OptionWithStateChanged },
+        { "with-user-message-events", no_argument, 0, OptionWithUserMessage },
+        { "with-log-message-events", no_argument, 0, OptionWithLogMessage   },
+        { "with-measurements-events", no_argument, 0, OptionWithMeasurements },
 
         { 0, 0, 0, 0 }
     };
@@ -5858,6 +5897,56 @@ S9sOptions::readOptionsEvent(
             case OptionEventLog:
                 // --with-event-log
                 enableEventType("EventLog");
+                break;
+    
+            case OptionWithNoName:
+                // --with-no-name-events
+                enableEventName("NoSubClass");
+                break;
+
+            case OptionWithCreated:
+                // --with-created-events
+                enableEventName("Created");
+                break;
+                
+            case OptionWithDestroyed:
+                // --with-destroyed-events
+                enableEventName("Destroyed");
+                break;
+
+            case OptionWithChanged:
+                // --with-changed-events
+                enableEventName("Changed");
+                break;
+
+            case OptionWithStarted:
+                // --with-started-events
+                enableEventName("Started");
+                break;
+
+            case OptionWithEnded:
+                // --with-ended-events
+                enableEventName("Ended");
+                break;
+
+            case OptionWithStateChanged:
+                // --with-state-changed-events
+                enableEventName("StateChanged");
+                break;
+
+            case OptionWithUserMessage:
+                // --with-user-message-events
+                enableEventName("UserMessage");
+                break;
+
+            case OptionWithLogMessage:
+                // --with-log-message-events
+                enableEventName("LogMessage");
+                break;
+
+            case OptionWithMeasurements:
+                // --with-measurements-events
+                enableEventName("Measurements");
                 break;
 
             case '?':
