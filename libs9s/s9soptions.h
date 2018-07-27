@@ -101,6 +101,7 @@ class S9sOptions
         void enableEventType(const S9sString &eventTypeName);
         bool eventTypeEnabled(const S9sString &eventTypeName);
         void enableEventName(const S9sString &eventName);
+        void disableEventName(const S9sString &eventName);
         bool eventNameEnabled(const S9sString &eventName);
 
         bool onlyAscii() const;

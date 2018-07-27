@@ -20,6 +20,7 @@
 #include "s9sevent.h"
 
 #include "S9sOptions"
+#include "S9sJob"
 
 //#define DEBUG
 #define WARNING
@@ -297,40 +298,37 @@ S9sString
 S9sEvent::eventJobToOneLiner() const
 {
     EventSubClass subClass = eventSubClass();
+    S9sJob        job; 
     S9sString     message;
     S9sString     eventName;
     S9sString     hostName;
-    S9sString     title;
     S9sString     retval;
-    int           jobId;
+    int           intTmp;
 
+    job      = m_properties.valueByPath("event_specifics/job").toVariantMap();
     message  = getString("event_specifics/message/message_text");
     message  = S9sString::html2ansi(message);
 
     hostName = getString("event_specifics/host/hostname");
-    title    = getString("event_specifics/job/title");
-    jobId    = getInt("event_specifics/job/job_id");
 
     switch (subClass)
     {
         case Created:
-            retval.sprintf("%4d %s", jobId, STR(title));
-            //retval = m_properties.toString();
+            retval.sprintf("%4d %s", job.id(), STR(job.title()));
             break;
 
         case Changed:
-            //retval = m_properties.toString();
-            retval.sprintf("%4d %s", jobId, STR(title));
+            retval.sprintf("%4d %s", job.id(), STR(job.title()));
             break;
 
         case UserMessage:
-            jobId = getInt("event_specifics/message/job_id");
+            intTmp = getInt("event_specifics/message/job_id");
             if (hostName.empty())
             {
-                retval.sprintf("%4d %s", jobId, STR(message));
+                retval.sprintf("%4d %s", intTmp, STR(message));
             } else {
                 retval.sprintf("%4d Host %s %s", 
-                        jobId,
+                        intTmp,
                         STR(hostName), STR(message));
             }
             break;

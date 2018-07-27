@@ -32,6 +32,7 @@
 #include "S9sDir"
 #include "S9sCmonGraph"
 #include "S9sEvent"
+#include "S9sDisplay"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -40,45 +41,6 @@
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
-
-/**
- * This is an example callback method to process the events live
- * from the JSon stream coming from the controller.
- */
-void
-s9sEventHandler(
-        const S9sVariantMap &jsonMessage, 
-        void *userData)
-{
-    S9sBusinessLogic *businessLogic = (S9sBusinessLogic*) userData;
-    S9sOptions       *options = S9sOptions::instance();
-    S9sEvent          event(jsonMessage);
-    S9sString         output;
-
-    // Filtration by event class and subclass (event-name).
-    if (!options->eventTypeEnabled(event.eventTypeString()))
-        return;
-    
-    if (!options->eventNameEnabled(event.eventName()))
-        return;
-
-    // optional filtration by clusterId
-    if (options->clusterId() > S9S_INVALID_CLUSTER_ID
-        && options->clusterId() != event.clusterId())
-        return;
-
-    if (options->isJsonRequested())
-    {
-        output = jsonMessage.toString();
-    } else {
-        output = event.toOneLiner();
-    }
-
-    if (!output.empty())
-        ::printf("%s\n", STR(output));
-
-    (void) businessLogic; // unused for now
-}
 
 /**
  * This method will execute whatever is requested by the user in the command
@@ -220,7 +182,9 @@ S9sBusinessLogic::execute()
     {
         if (options->isListRequested())
         {
-            client.subscribeEvents(s9sEventHandler, this);
+            S9sDisplay display;
+
+            client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

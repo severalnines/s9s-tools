@@ -240,6 +240,17 @@ enum S9sOptionType
     OptionWithUserMessage,
     OptionWithLogMessage,
     OptionWithMeasurements,
+    
+    OptionNoNoName,
+    OptionNoCreated,
+    OptionNoDestroyed,
+    OptionNoChanged,
+    OptionNoStarted,
+    OptionNoEnded,
+    OptionNoStateChanged,
+    OptionNoUserMessage,
+    OptionNoLogMessage,
+    OptionNoMeasurements,
 
     OptionUseInternalRepos,
     OptionJobTags,
@@ -761,6 +772,11 @@ S9sOptions::eventTypeEnabled(
     return true;
 }
 
+/**
+ * This method can be used to set the names of the events that will be
+ * processed. See the documentation of eventNameEnabled() for further 
+ * details.
+ */
 void
 S9sOptions::enableEventName(
         const S9sString &eventName)
@@ -772,6 +788,21 @@ S9sOptions::enableEventName(
 }
 
 /**
+ * This method can be used to set the names of the events that will not be
+ * processed. See the documentation of eventNameEnabled() for further 
+ * details.
+ */
+void
+S9sOptions::disableEventName(
+        const S9sString &eventName)
+{
+    S9sVariantMap theMap = getVariantMap("disabled_event_names");
+
+    theMap[eventName] = true;
+    m_options["disabled_event_names"] = theMap;
+}
+
+/**
  * Currently the controller supports the following event names: NoSubClass, 
  * Created, Destroyed, Changed, Started, Ended, StateChanged, UserMessage,
  * LogMessage, Measurements.
@@ -780,12 +811,17 @@ bool
 S9sOptions::eventNameEnabled(
         const S9sString &eventName)
 {
-    S9sVariantMap theMap = getVariantMap("enabled_event_names");
+    S9sVariantMap enabledMap  = getVariantMap("enabled_event_names");
+    S9sVariantMap disabledMap = getVariantMap("disabled_event_names");
+    bool          retval = true;
 
-    if (!theMap.empty())
-        return theMap[eventName].toBoolean();
+    if (!enabledMap.empty())
+        retval = enabledMap[eventName].toBoolean();
 
-    return true;
+    if (disabledMap[eventName].toBoolean())
+        retval = false;
+
+    return retval;
 }
 
 /**
@@ -4573,6 +4609,17 @@ S9sOptions::printHelpEvent()
 "  --with-log-message-events  Process events about log messages.\n"
 "  --with-measurements-events Process events about measurements.\n"
 "\n"
+"  --no-no-name-events        Do not process event with no event name.\n"
+"  --no-created-events        Do not process events about object creation.\n"
+"  --no-destroyed-events      Do not process events destructing objects.\n"
+"  --no-changed-events        Do not process events about changes.\n"
+"  --no-started-events        Do not process events about things started.\n"
+"  --no-ended-events          Do not process events about things ended.\n"
+"  --no-state-changed-events  Do not process events about state changes.\n"
+"  --no-user-message-events   Do not process events about user messages.\n"
+"  --no-log-message-events    Do not process events about log messages.\n"
+"  --no-measurements-events   Do not process events about measurements.\n"
+"\n"
     );
 }
 
@@ -5733,6 +5780,17 @@ S9sOptions::readOptionsEvent(
         { "with-user-message-events", no_argument, 0, OptionWithUserMessage },
         { "with-log-message-events", no_argument, 0, OptionWithLogMessage   },
         { "with-measurements-events", no_argument, 0, OptionWithMeasurements },
+        
+        { "no-no-name-events", no_argument,      0, OptionNoNoName          },
+        { "no-created-events", no_argument,      0, OptionNoCreated         },
+        { "no-destroyed-events", no_argument,    0, OptionNoDestroyed       },
+        { "no-changed-events", no_argument,      0, OptionNoChanged         },
+        { "no-started-events", no_argument,      0, OptionNoStarted         },
+        { "no-ended-events", no_argument,        0, OptionNoEnded           },
+        { "no-state-changed-events", no_argument, 0, OptionNoStateChanged   },
+        { "no-user-message-events", no_argument, 0, OptionNoUserMessage     },
+        { "no-log-message-events", no_argument,  0, OptionNoLogMessage      },
+        { "no-measurements-events", no_argument, 0, OptionNoMeasurements    },
 
         { 0, 0, 0, 0 }
     };
@@ -5947,6 +6005,56 @@ S9sOptions::readOptionsEvent(
             case OptionWithMeasurements:
                 // --with-measurements-events
                 enableEventName("Measurements");
+                break;
+            
+            case OptionNoNoName:
+                // --no-no-name-events
+                disableEventName("NoSubClass");
+                break;
+
+            case OptionNoCreated:
+                // --no-created-events
+                disableEventName("Created");
+                break;
+                
+            case OptionNoDestroyed:
+                // --no-destroyed-events
+                disableEventName("Destroyed");
+                break;
+
+            case OptionNoChanged:
+                // --no-changed-events
+                disableEventName("Changed");
+                break;
+
+            case OptionNoStarted:
+                // --no-started-events
+                disableEventName("Started");
+                break;
+
+            case OptionNoEnded:
+                // --no-ended-events
+                disableEventName("Ended");
+                break;
+
+            case OptionNoStateChanged:
+                // --no-state-changed-events
+                disableEventName("StateChanged");
+                break;
+
+            case OptionNoUserMessage:
+                // --no-user-message-events
+                disableEventName("UserMessage");
+                break;
+
+            case OptionNoLogMessage:
+                // --no-log-message-events
+                disableEventName("LogMessage");
+                break;
+
+            case OptionNoMeasurements:
+                // --no-measurements-events
+                disableEventName("Measurements");
                 break;
 
             case '?':
