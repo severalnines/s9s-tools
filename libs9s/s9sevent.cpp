@@ -582,3 +582,9 @@ S9sEvent::getInt(
     return m_properties.valueByPath(path).toInt();
 }
 
+int
+S9sEvent::clusterId() const
+{
+    return getInt("event_specifics/cluster_id");
+}
+
