@@ -19,6 +19,8 @@
  */
 #include "s9sevent.h"
 
+#include "S9sOptions"
+
 //#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
@@ -42,30 +44,32 @@ S9sEvent::~S9sEvent()
 S9sString 
 S9sEvent::toOneLiner() const
 {
-    S9sString retval;
-    S9sString eventClass;
-    S9sString eventName;
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   retval;
+    S9sString   eventClass;
+    S9sString   eventName;
+    S9sString   tmp;
 
     if (className() == "S9sObject")
         return retval;
 
-    #if 0
-    if (senderFile().empty())
-    {
-        ::printf("\n\n%s\n", STR(m_properties.toString()));
-        exit(1);
-    }
-    #endif
-
     eventClass = property("event_class").toString();
     eventName  = property("event_name").toString();
 
-    retval.sprintf("%s%28s%s:%-5d %s%12s%s %s%-13s%s ",
-            XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
-            senderLine(),
+    // The source file and source line.
+    if (options->isDebug())
+    {
+        tmp.sprintf("%s%28s%s:%-5d ",
+                XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
+                senderLine());
+        retval += tmp;
+    }
+
+    tmp.sprintf("%s%12s%s %s%-13s%s ",
             XTERM_COLOR_CLASS, STR(eventClass), TERM_NORMAL,
             XTERM_COLOR_SUBCLASS, STR(eventName), TERM_NORMAL
             );
+    retval += tmp;
 
     switch (eventType())
     {
@@ -440,7 +444,6 @@ S9sEvent::measurementToOneLiner(
     if (specifics["measurements"].isVariantList())
     {
         S9sVariantList sampleList = specifics["measurements"].toVariantList();
-        int            nDisks     = 0;
 
         for (uint idx = 0; idx < sampleList.size(); ++idx)
         {
@@ -448,8 +451,6 @@ S9sEvent::measurementToOneLiner(
 
             if (sample["class_name"].toString() == "CmonDiskInfo")
             {
-                nDisks += 1;
-                
                 if (!retval.empty())
                     retval += "; ";
 
@@ -460,7 +461,6 @@ S9sEvent::measurementToOneLiner(
             }
         }
 
-        //retval.sprintf("%d disk(s)", nDisks);
         return retval;
     } else {
         measurements = specifics["measurements"].toVariantMap();
@@ -473,9 +473,9 @@ S9sEvent::measurementToOneLiner(
         double    utilization =  measurements["memoryutilization"].toDouble();
 
         retval.sprintf(
-                "Memory %lluGB free, %.2f%% used.",
+                "Memory %lluGB (%.2f%%) free",
                 ramfree / (1024ull * 1024ull * 1024ull), 
-                utilization * 100.0);
+                (1.0 - utilization) * 100.0);
     } else {
         retval = specifics.toString();
     }
@@ -485,42 +485,44 @@ S9sEvent::measurementToOneLiner(
 
 /**
  *
-       {
-            "capacity": 0,
-            "class_name": "CmonDiskInfo",
-            "device": "/dev/sdb",
-            "model": "",
-            "model-family": "",
-            "partitions": [ 
-            {
-                "blocksize": 4096,
-                "class_name": "CmonDiskStats",
-                "created": 1532589216,
-                "device": "/dev/sdb2",
-                "filesystem": "ext4",
-                "free": 306192207872,
-                "hostid": 1,
-                "interval": 0,
-                "mount_option": "rw,relatime,errors=remount-ro,data=ordered",
-                "mountpoint": "/",
-                "reads": 0,
-                "readspersec": 0,
-                "sampleends": 1532589216,
-                "samplekey": "CmonDiskStats-1-/dev/sdb2",
-                "sectorsread": 0,
-                "sectorswritten": 0,
-                "total": 572729753600,
-                "utilization": 0,
-                "writes": 0,
-                "writespersec": 0
-            } ],
-            "power-cycle-count": 0,
-            "power-on-hours": 0,
-            "reallocated-sector-counter": 0,
-            "self-health-assessment": "",
-            "serial-number": "",
-            "temperature-celsius": 0
-        }
+ * \code{.js}
+ * {
+ *      "capacity": 0,
+ *      "class_name": "CmonDiskInfo",
+ *      "device": "/dev/sdb",
+ *      "model": "",
+ *      "model-family": "",
+ *      "partitions": [ 
+ *      {
+ *          "blocksize": 4096,
+ *          "class_name": "CmonDiskStats",
+ *          "created": 1532589216,
+ *          "device": "/dev/sdb2",
+ *          "filesystem": "ext4",
+ *          "free": 306192207872,
+ *          "hostid": 1,
+ *          "interval": 0,
+ *          "mount_option": "rw,relatime,errors=remount-ro,data=ordered",
+ *          "mountpoint": "/",
+ *          "reads": 0,
+ *          "readspersec": 0,
+ *          "sampleends": 1532589216,
+ *          "samplekey": "CmonDiskStats-1-/dev/sdb2",
+ *          "sectorsread": 0,
+ *          "sectorswritten": 0,
+ *          "total": 572729753600,
+ *          "utilization": 0,
+ *          "writes": 0,
+ *          "writespersec": 0
+ *      } ],
+ *      "power-cycle-count": 0,
+ *      "power-on-hours": 0,
+ *      "reallocated-sector-counter": 0,
+ *      "self-health-assessment": "",
+ *      "serial-number": "",
+ *      "temperature-celsius": 0
+ * }
+ * \endcode
  */
 S9sString
 S9sEvent::cmonDiskInfoToOneLiner(
@@ -540,10 +542,12 @@ S9sEvent::cmonDiskInfoToOneLiner(
         if (!retval.empty())
             retval += ", ";
 
-        tmp.sprintf("%s: %s/%s", 
+        tmp.sprintf("%s%s%s: %s (%s) free", 
+                m_formatter.directoryColorBegin(),
                 STR(mountPoint), 
-                STR(m_formatter.bytesToHuman(totalBytes - freeBytes)),
-                STR(m_formatter.bytesToHuman(totalBytes)));
+                m_formatter.directoryColorEnd(),
+                STR(m_formatter.bytesToHuman(freeBytes)),
+                STR(m_formatter.percent(totalBytes, freeBytes)));
                 
         retval+= tmp;
     }

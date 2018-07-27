@@ -733,6 +733,10 @@ S9sOptions::enableEventType(
     m_options["enabled_event_types"] = theMap;
 }
 
+/**
+ * \returns True if the set event filter says the event type should be
+ *   processed.
+ */
 bool
 S9sOptions::eventTypeEnabled(
         const S9sString &eventTypeName)
@@ -740,10 +744,30 @@ S9sOptions::eventTypeEnabled(
     S9sVariantMap theMap = getVariantMap("enabled_event_types");
 
     if (!theMap.empty())
-    {
         return theMap[eventTypeName].toBoolean();
-    }
 
+    return true;
+}
+
+void
+S9sOptions::enableEventName(
+        const S9sString &eventName)
+{
+    S9sVariantMap theMap = getVariantMap("enabled_event_names");
+
+    theMap[eventName] = true;
+    m_options["enabled_event_names"] = theMap;
+}
+
+/**
+ * Currently the controller supports the following event names: NoSubClass, 
+ * Created, Destroyed, Changed, Started, Ended, StateChanged, UserMessage,
+ * LogMessage, Measurements.
+ */
+bool
+S9sOptions::eventNameEnabled(
+        const S9sString &eventName)
+{
     return true;
 }
 

@@ -9,6 +9,32 @@
 #define WARNING
 #include "s9sdebug.h"
 
+bool
+S9sFormatter::useSyntaxHighLight() const
+{
+    S9sOptions *options = S9sOptions::instance();
+   
+    return options->useSyntaxHighlight();
+}
+
+const char *
+S9sFormatter::directoryColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_DIR;
+
+    return "";
+}
+
+const char *
+S9sFormatter::directoryColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
 S9sString 
 S9sFormatter::bytesToHuman(
         ulonglong bytes) const
@@ -46,3 +72,16 @@ S9sFormatter::kiloBytesToHuman(
 {
     return bytesToHuman(kBytes * 1024ull);
 }
+
+S9sString
+S9sFormatter::percent(
+        const ulonglong total,
+        const ulonglong part) const
+{
+    S9sString retval;
+    double    percent = 100.0 * ((double)part / (double)total);
+
+    retval.sprintf("%.1f%%", percent);
+    return retval;
+}
+
