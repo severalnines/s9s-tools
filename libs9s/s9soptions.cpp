@@ -134,6 +134,7 @@ enum S9sOptionType
     OptionKeep,
     OptionFullPath,
     OptionStat,
+    OptionWatch,
     OptionCreateAccount,
     OptionGrant,
     OptionCheckHosts,
@@ -2918,6 +2919,12 @@ S9sOptions::isStatRequested() const
     return getBool("stat");
 }
 
+bool
+S9sOptions::isWatchRequested() const
+{
+    return getBool("watch");
+}
+
 /**
  * \returns true if the "list-config" function is requested by providing the
  *     --list command line option.
@@ -4655,17 +4662,18 @@ S9sOptions::readOptionsNode(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                   },
-        { "stat",             no_argument,       0, OptionStat            },
-        { "set",              no_argument,       0, OptionSet             },
-        { "start",            no_argument,       0, OptionStart           },
-        { "stop",             no_argument,       0, OptionStop            },
-        { "restart",          no_argument,       0, OptionRestart         },
-        { "list-config",      no_argument,       0, OptionListConfig      },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
+        { "list-config",      no_argument,       0, OptionListConfig      },
+        { "list",             no_argument,       0, 'L'                   },
         { "pull-config",      no_argument,       0, OptionPullConfig      },
         { "push-config",      no_argument,       0, OptionPushConfig      },
+        { "restart",          no_argument,       0, OptionRestart         },
+        { "set",              no_argument,       0, OptionSet             },
+        { "start",            no_argument,       0, OptionStart           },
+        { "stat",             no_argument,       0, OptionStat            },
+        { "stop",             no_argument,       0, OptionStop            },
         { "unregister",       no_argument,       0, OptionUnregister      },
+        { "watch",            no_argument,       0, OptionWatch           },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -4815,6 +4823,11 @@ S9sOptions::readOptionsNode(
             case OptionUnregister:
                 // --unregister
                 m_options["unregister"] = true;
+                break;
+
+            case OptionWatch:
+                // --watch
+                m_options["watch"] = true;
                 break;
 
             case 4:
@@ -6411,6 +6424,9 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isStatRequested())
+        countOptions++;
+    
+    if (isWatchRequested())
         countOptions++;
 
     if (isListConfigRequested())

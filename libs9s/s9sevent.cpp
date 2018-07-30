@@ -21,6 +21,7 @@
 
 #include "S9sOptions"
 #include "S9sJob"
+#include "S9sNode"
 
 //#define DEBUG
 #define WARNING
@@ -693,5 +694,20 @@ int
 S9sEvent::clusterId() const
 {
     return getInt("event_specifics/cluster_id");
+}
+
+bool
+S9sEvent::hasHost() const
+{
+    return m_properties.valueByPath("/event_specifics/host").isVariantMap();
+}
+
+S9sNode
+S9sEvent::host() const
+{
+    S9sNode host =
+        m_properties.valueByPath("/event_specifics/host").toVariantMap();
+
+    return host;
 }
 

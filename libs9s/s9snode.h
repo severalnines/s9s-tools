@@ -88,6 +88,8 @@ class S9sNode : public S9sObject
         S9sString message() const;
         S9sString osVersionString() const;
         bool isMaintenanceActive() const;
+        char maintenanceFlag() const;
+
         bool readOnly() const;
         bool superReadOnly() const;
         S9sString receivedLocation() const;

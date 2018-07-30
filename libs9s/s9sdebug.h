@@ -83,6 +83,8 @@ typedef enum S9sMessageLevel
 
 /** Clear until the end of line.*/
 #define TERM_ERASE_EOL "\033[K"
+
+#define TERM_HOME "\033[H"
 /** Clear the entire screen.*/
 #define TERM_CLEAR_SCREEN "\033[2J"
 /** Yellow terminal color sequence. */
@@ -165,6 +167,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_CLASS        "\033[96m"
 #define XTERM_COLOR_SUBCLASS     "\033[38;5;123m"
 #define XTERM_COLOR_TAG          "\033[38;5;69m"
+
 void 
 s9s_print_message (
         S9sMessageLevel  type,

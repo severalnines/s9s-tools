@@ -193,6 +193,11 @@ S9sBusinessLogic::execute()
         if (options->isStatRequested() && !options->graph().empty())
         {
             executeNodeGraph(client);
+        } else if (options->isWatchRequested())
+        {
+            S9sDisplay display(S9sDisplay::WatchNodes);
+
+            client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display); 
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);

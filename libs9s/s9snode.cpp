@@ -951,6 +951,12 @@ S9sNode::nodeTypeFlag() const
     return '?';
 }
 
+char
+S9sNode::maintenanceFlag() const
+{
+    return isMaintenanceActive() ? 'M' : '-';
+}
+
 /**
  * \returns The software version of the node.
  *
@@ -1009,6 +1015,8 @@ S9sNode::message() const
     if (retval.empty() && m_properties.contains("errormsg"))
         retval = m_properties.at("errormsg").toString();
 
+    retval.replace("\n", "\\n");
+    retval.replace("\r", "\\r");
     return retval;
 }
 

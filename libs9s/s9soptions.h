@@ -337,6 +337,7 @@ class S9sOptions
         bool isListDisksRequested() const;
         bool isListGroupsRequested() const;
         bool isStatRequested() const;
+        bool isWatchRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
         bool isPullConfigRequested() const;

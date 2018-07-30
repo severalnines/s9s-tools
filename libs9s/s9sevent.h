@@ -106,6 +106,9 @@ class S9sEvent : public S9sObject
             stringToEventSubClass(
                     const S9sString &subClassString);
 
+        bool hasHost() const;
+        S9sNode host() const;
+
     protected:
         S9sString eventLogToOneLiner() const;
         S9sString eventHostToOneLiner() const;

@@ -22,11 +22,18 @@
 #include "S9sString"
 #include "S9sVariantMap"
 #include "S9sEvent"
+#include "S9sNode"
 
 class S9sDisplay
 {
     public:
-        S9sDisplay();
+        enum DisplayMode 
+        {
+            PrintEvents,
+            WatchNodes,
+        };
+
+        S9sDisplay(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
         virtual ~S9sDisplay();
 
         void eventCallback(S9sEvent &event);
@@ -38,4 +45,16 @@ class S9sDisplay
     private:
         void processEvent(S9sEvent &event);
         void processEventList(S9sEvent &event);
+        void processEventWatchNodes(S9sEvent &event);
+
+        void printHeader();
+        void printNodes();
+
+        char rotatingCharacter() const;
+
+    private:
+        DisplayMode         m_displayMode;
+        int                 m_refreshCounter;
+        S9sVector<S9sNode>  m_nodes;
+
 };
