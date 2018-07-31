@@ -23,6 +23,7 @@
 #include "S9sCluster"
 #include "S9sRpcReply"
 #include "S9sMutexLocker"
+#include "S9sDateTime"
 
 #define DEBUG
 //#define WARNING
@@ -38,6 +39,8 @@ struct termios orig_termios1;
 void reset_terminal_mode()
 {
     tcsetattr(0, TCSANOW, &orig_termios1);
+    ::printf("%s", TERM_CURSOR_ON);
+    ::printf("%s", TERM_AUTOWRAP_ON);
 }
 
 void set_conio_terminal_mode()
@@ -52,14 +55,19 @@ void set_conio_terminal_mode()
     atexit(reset_terminal_mode);
     cfmakeraw(&new_termios);
     tcsetattr(0, TCSANOW, &new_termios);
+    
+    ::printf("%s", TERM_CURSOR_OFF);
+    ::printf("%s", TERM_AUTOWRAP_OFF);
 }
 
 int kbhit()
 {
     struct timeval tv = { 0L, 0L };
     fd_set fds;
+
     FD_ZERO(&fds);
     FD_SET(0, &fds);
+
     return select(1, &fds, NULL, NULL, &tv);
 }
 
@@ -67,7 +75,8 @@ int kbhit()
 S9sDisplay::S9sDisplay(
         S9sDisplay::DisplayMode mode) :
     m_displayMode(mode),
-    m_refreshCounter(0)
+    m_refreshCounter(0),
+    m_lastKey1(0)
 {
     set_conio_terminal_mode();
 }
@@ -77,22 +86,65 @@ S9sDisplay::~S9sDisplay()
     reset_terminal_mode();
 }
 
+int 
+S9sDisplay::exec()
+{
+    do {
+        usleep(100000);
+    
+        if (kbhit())
+        {
+            m_lastKey1 = getchar();
+#if 0
+            #if 0
+            usleep(50000);
+
+            while (kbhit())
+            {
+                m_lastKey1 *= 256;
+                m_lastKey1 += getchar();
+                usleep(50000);
+            }
+            #else
+            if (m_lastKey1 == 27 && kbhit())
+            {
+                m_lastKey1 *= 256;
+                m_lastKey1 += getchar();
+                m_lastKey1 *= 256;
+                m_lastKey1 += getchar();
+            }
+            #endif
+#endif
+            if (m_lastKey1 == 'q' || m_lastKey1 == 'Q')
+                exit(0);
+            
+            if (m_lastKey1 == 0x1b || m_lastKey1 == 3)
+                exit(0);
+        }
+
+        m_mutex.lock();
+        refreshScreen();
+        m_mutex.unlock();
+    } while (!shouldStop());
+
+    return 0;
+}
+
+void
+S9sDisplay::refreshScreen()
+{
+    if (m_displayMode == WatchNodes)
+    {
+        printNodes();
+    }
+}
+
 void 
 S9sDisplay::eventCallback(
         S9sEvent &event)
 {
     S9sMutexLocker    locker(m_mutex);
     S9sOptions       *options = S9sOptions::instance();
-
-    //S9S_WARNING("%d", kbhit());
-    if (kbhit())
-    {
-        int c = getchar();
-        S9S_WARNING("%d/%c", c, c);
-        exit(0);
-    }
-
-    //return;
 
     switch (m_displayMode)
     {
@@ -125,6 +177,8 @@ void
 S9sDisplay::processEvent(
         S9sEvent &event)
 {
+    ++m_refreshCounter;
+
     if (event.hasCluster())
     {
         S9sCluster cluster = event.cluster();
@@ -158,6 +212,7 @@ S9sDisplay::processEventList(
         output = event.toOneLiner();
     }
 
+    output.replace("\n", "\n\r");
     if (!output.empty())
         ::printf("%s\n\r", STR(output));
 }
@@ -212,9 +267,16 @@ S9sDisplay::rotatingCharacter() const
 void
 S9sDisplay::printHeader()
 {
+    S9sDateTime dt = S9sDateTime::currentDateTime();
+
     ::printf("%c ", rotatingCharacter());
+    ::printf("s9s ");
+    ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     ::printf("%3lu node(s) ", m_nodes.size());
     ::printf("%3lu cluster(s) ", m_clusters.size());
+    ::printf("%08x ", m_lastKey1);
+
+    ::printf("%s", TERM_ERASE_EOL);
     ::printf("\n\r");
 }
 
@@ -310,7 +372,6 @@ S9sDisplay::printNodes()
     }
 
     ::printf("%s", TERM_ERASE_EOL);
-    ++m_refreshCounter;
 }
 
 void

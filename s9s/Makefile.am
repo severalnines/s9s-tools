@@ -9,7 +9,7 @@ AM_CPPFLAGS += -I../libs9s/
 AM_CPPFLAGS += -I../libs9s/include/
 AM_CPPFLAGS += -pipe
 
-LDADD = -L../libs9s -ls9s -lrt
+LDADD = -L../libs9s -ls9s -lrt -lpthread
 
 #add '../libs9s' to the lib search path
 AM_LDFLAGS = -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,./libs9s

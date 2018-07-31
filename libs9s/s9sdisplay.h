@@ -26,8 +26,9 @@
 #include "S9sNode"
 #include "S9sCluster"
 #include "S9sMutex"
+#include "S9sThread"
 
-class S9sDisplay
+class S9sDisplay : public S9sThread
 {
     public:
         enum DisplayMode 
@@ -45,14 +46,18 @@ class S9sDisplay
                 const S9sVariantMap &jsonMessage,
                 void                *userData);
 
+    protected:
+        virtual int exec();
+        
     private:
         void processEvent(S9sEvent &event);
         void processEventList(S9sEvent &event);
         void processEventWatchNodes(S9sEvent &event);
 
-        void printHeader();
+        void refreshScreen();
         void printNodes();
 
+        void printHeader();
         char rotatingCharacter() const;
 
     private:
@@ -62,4 +67,6 @@ class S9sDisplay
         int                     m_refreshCounter;
         S9sVector<S9sNode>      m_nodes;
         S9sMap<int, S9sCluster> m_clusters;
+        int                     m_lastKey1;
+        int                     m_lastKey2;
 };

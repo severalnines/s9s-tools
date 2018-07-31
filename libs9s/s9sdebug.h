@@ -84,6 +84,12 @@ typedef enum S9sMessageLevel
 /** Clear until the end of line.*/
 #define TERM_ERASE_EOL "\033[K"
 
+#define TERM_CURSOR_OFF "\033[?25l"
+#define TERM_CURSOR_ON  "\033[?25h"
+
+#define TERM_AUTOWRAP_OFF "\033[?7l"
+#define TERM_AUTOWRAP_ON  "\033[?7h"
+
 #define TERM_HOME "\033[H"
 /** Clear the entire screen.*/
 #define TERM_CLEAR_SCREEN "\033[2J"

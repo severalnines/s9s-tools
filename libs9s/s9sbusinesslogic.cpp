@@ -183,7 +183,8 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             S9sDisplay display;
-
+            
+            display.start();
             client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display);
         } else {
             PRINT_ERROR("Operation is not specified.");
@@ -197,6 +198,7 @@ S9sBusinessLogic::execute()
         {
             S9sDisplay display(S9sDisplay::WatchNodes);
 
+            display.start();
             client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display); 
         } else if (options->isListRequested() || options->isStatRequested())
         {

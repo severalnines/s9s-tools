@@ -21,7 +21,7 @@ if !DARWIN
 else
 	@echo "  CXXLD    $@"
 	@$(CXX) $(AM_CPPFLAGS) -shared \
-			-Wl,-all_load libs9s.a  -L/usr/local/opt/openssl/lib/  -lcrypto -lssl -o $@
+			-Wl,-all_load libs9s.a  -L/usr/local/opt/openssl/lib/ -lcrypto -lssl -o $@
 endif
 
 all-local: libs9s.so
@@ -83,6 +83,8 @@ libs9s_public_h_headers =     \
 	s9smutex.h                \
 	S9sMutexLocker            \
 	s9smutexlocker.h          \
+	S9sThread                 \
+	s9sthread.h               \
 	S9sObject                 \
 	s9sobject.h               \
 	S9sSshCredentials         \
@@ -189,6 +191,7 @@ libs9s_a_SOURCES =            \
     $(libs9s_public_h_headers) \
 	s9smutex.cpp               \
 	s9smutexlocker.cpp         \
+	s9sthread.cpp              \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sobject.cpp             \
