@@ -90,7 +90,7 @@ int
 S9sDisplay::exec()
 {
     do {
-        usleep(100000);
+        usleep(500000);
     
         if (kbhit())
         {
@@ -115,11 +115,9 @@ S9sDisplay::exec()
             }
             #endif
 #endif
-            if (m_lastKey1 == 'q' || m_lastKey1 == 'Q')
-                exit(0);
-            
-            if (m_lastKey1 == 0x1b || m_lastKey1 == 3)
-                exit(0);
+            m_mutex.lock();
+            processKey(m_lastKey1);
+            m_mutex.unlock();
         }
 
         m_mutex.lock();
@@ -131,11 +129,49 @@ S9sDisplay::exec()
 }
 
 void
+S9sDisplay::processKey(
+        int key)
+{
+    switch (key)
+    {
+        case 'q':
+        case 'Q':
+        case 0x1b:
+        case 3:
+            exit(0);
+
+        case 'c':
+        case 'C':
+            m_displayMode = WatchClusters;
+            ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+        
+        case 'n':
+        case 'N':
+            m_displayMode = WatchNodes;
+            ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+    }
+}
+
+/**
+ * The mutex is locked when this private method is called.
+ */
+void
 S9sDisplay::refreshScreen()
 {
-    if (m_displayMode == WatchNodes)
+    switch (m_displayMode)
     {
-        printNodes();
+        case WatchNodes:
+            printNodes();
+            break;
+
+        case WatchClusters:
+            printClusters();
+            break;
+            
+        case PrintEvents:
+            break;
     }
 }
 
@@ -159,6 +195,7 @@ S9sDisplay::eventCallback(
             break;
 
         case WatchNodes:
+        case WatchClusters:
             //if (event.eventTypeString() != "EventHost")
             //    return;
             break;
@@ -167,7 +204,9 @@ S9sDisplay::eventCallback(
     // optional filtration by clusterId
     if (options->clusterId() > S9S_INVALID_CLUSTER_ID
         && options->clusterId() != event.clusterId())
+    {
         return;
+    }
 
     processEvent(event);
 }
@@ -185,6 +224,32 @@ S9sDisplay::processEvent(
         // FIXME: what about cluster delete events?
         m_clusters[cluster.clusterId()] = cluster;
     }
+    
+    if (event.hasHost())
+    {
+        S9sNode  node;
+        bool     found = false;
+
+        node = event.host();
+        for (uint idx = 0u; idx < m_nodes.size(); ++idx)
+        {
+            if (m_nodes[idx].hostName() != node.hostName())
+                continue;
+        
+            if (m_nodes[idx].port() != node.port())
+                continue;
+
+            if (m_nodes[idx].id() != node.id())
+                continue;
+
+            m_nodes[idx] = node;
+            found = true;
+            break;
+        }
+
+        if (!found)
+            m_nodes << node;
+    }
 
     switch (m_displayMode)
     {
@@ -193,7 +258,13 @@ S9sDisplay::processEvent(
             break;
 
         case WatchNodes:
-            processEventWatchNodes(event);
+            printNodes();
+            ++m_refreshCounter;
+            break;
+
+        case WatchClusters:
+            printClusters();
+            ++m_refreshCounter;
             break;
     }
 }
@@ -217,45 +288,6 @@ S9sDisplay::processEventList(
         ::printf("%s\n\r", STR(output));
 }
 
-void
-S9sDisplay::processEventWatchNodes(
-        S9sEvent &event)
-{
-    S9sNode  node;
-    bool     found = false;
-
-    if (!event.hasHost())
-    {
-        //S9S_DEBUG("%s", STR(event.toVariantMap().toString()));
-        printNodes();
-        return;
-    }
-
-    node = event.host();
-    for (uint idx = 0u; idx < m_nodes.size(); ++idx)
-    {
-        if (m_nodes[idx].hostName() != node.hostName())
-            continue;
-        
-        if (m_nodes[idx].port() != node.port())
-            continue;
-
-        if (m_nodes[idx].id() != node.id())
-            continue;
-
-        m_nodes[idx] = node;
-        found = true;
-        break;
-    }
-
-    if (!found)
-        m_nodes << node;
-
-    printNodes();
-    //S9S_DEBUG("size: %u", m_nodes.size());
-    //S9S_DEBUG("%s", STR(event.toVariantMap().toString()));
-}
-
 char
 S9sDisplay::rotatingCharacter() const
 {
@@ -268,9 +300,22 @@ void
 S9sDisplay::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
+    
+    switch (m_displayMode)
+    {
+        case WatchNodes:
+            ::printf("S9S NODE VIEW ");
+            break;
+
+        case WatchClusters:
+            ::printf("S9S CLUSTER VIEW ");
+            break;
+
+        default:
+            break;
+    }
 
     ::printf("%c ", rotatingCharacter());
-    ::printf("s9s ");
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     ::printf("%3lu node(s) ", m_nodes.size());
     ::printf("%3lu cluster(s) ", m_clusters.size());
@@ -278,6 +323,20 @@ S9sDisplay::printHeader()
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("\n\r");
+}
+
+void
+S9sDisplay::printClusters()
+{
+    if (m_refreshCounter == 0)
+    {
+        ::printf("%s", TERM_CLEAR_SCREEN);
+        ::printf("%s", TERM_HOME);
+    } else {
+        ::printf("%s", TERM_HOME);
+    }
+
+    printHeader();
 }
 
 void
