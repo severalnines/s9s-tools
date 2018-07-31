@@ -22,6 +22,7 @@
 #include "S9sOptions"
 #include "S9sJob"
 #include "S9sNode"
+#include "S9sCluster"
 
 //#define DEBUG
 #define WARNING
@@ -219,14 +220,14 @@ S9sEvent::eventHostToOneLiner() const
     S9sString     retval;
     S9sVariantMap tmpMap;
 
-    hostName = getString("event_specifics/host/hostname");
-
     switch (subClass)
     {
         case Created:
             retval.sprintf(
                     "Host %s%s%s created.", 
-                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL);
+                    XTERM_COLOR_NODE, 
+                    STR(host().hostName()), 
+                    TERM_NORMAL);
             break;
 
         case StateChanged:
@@ -241,8 +242,11 @@ S9sEvent::eventHostToOneLiner() const
 
         case Changed:
             retval.sprintf(
-                    "Host %s%s%s updated.", 
-                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL);
+                    "Host %s%s%s updated: %s", 
+                    XTERM_COLOR_NODE, 
+                    STR(host().hostName()), 
+                    TERM_NORMAL,
+                    STR(host().message()));
             break;
 
         case Measurements:
@@ -709,5 +713,20 @@ S9sEvent::host() const
         m_properties.valueByPath("/event_specifics/host").toVariantMap();
 
     return host;
+}
+
+bool
+S9sEvent::hasCluster() const
+{
+    return m_properties.valueByPath("/event_specifics/cluster").isVariantMap();
+}
+
+S9sCluster
+S9sEvent::cluster() const
+{
+    S9sCluster cluster =
+        m_properties.valueByPath("/event_specifics/cluster").toVariantMap();
+
+    return cluster;
 }
 

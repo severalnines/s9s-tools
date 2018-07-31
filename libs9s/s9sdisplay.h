@@ -20,9 +20,12 @@
 #pragma once
 
 #include "S9sString"
+#include "S9sFormatter"
 #include "S9sVariantMap"
 #include "S9sEvent"
 #include "S9sNode"
+#include "S9sCluster"
+#include "S9sMutex"
 
 class S9sDisplay
 {
@@ -53,8 +56,10 @@ class S9sDisplay
         char rotatingCharacter() const;
 
     private:
-        DisplayMode         m_displayMode;
-        int                 m_refreshCounter;
-        S9sVector<S9sNode>  m_nodes;
-
+        S9sMutex                m_mutex;
+        S9sFormatter            m_formatter;
+        DisplayMode             m_displayMode;
+        int                     m_refreshCounter;
+        S9sVector<S9sNode>      m_nodes;
+        S9sMap<int, S9sCluster> m_clusters;
 };

@@ -79,6 +79,10 @@ libs9s_public_h_headers =     \
 	json_lexer.h              \
 	json_parser.h             \
 	library.h                 \
+	S9sMutex                  \
+	s9smutex.h                \
+	S9sMutexLocker            \
+	s9smutexlocker.h          \
 	S9sObject                 \
 	s9sobject.h               \
 	S9sSshCredentials         \
@@ -183,6 +187,8 @@ libs9s_public_h_headers =     \
 libs9s_a_SOURCES =            \
 	$(BUILT_SOURCES)          \
     $(libs9s_public_h_headers) \
+	s9smutex.cpp               \
+	s9smutexlocker.cpp         \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sobject.cpp             \

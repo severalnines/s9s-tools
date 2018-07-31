@@ -18,6 +18,24 @@ S9sFormatter::useSyntaxHighLight() const
 }
 
 const char *
+S9sFormatter::headerColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return TERM_BOLD;
+
+    return "";
+}
+
+const char *
+S9sFormatter::headerColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::directoryColorBegin() const
 {
     if (useSyntaxHighLight())
@@ -28,6 +46,24 @@ S9sFormatter::directoryColorBegin() const
 
 const char *
 S9sFormatter::directoryColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sFormatter::clusterColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_BLUE;
+
+    return "";
+}
+
+const char *
+S9sFormatter::clusterColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

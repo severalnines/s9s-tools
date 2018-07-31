@@ -22,27 +22,77 @@
 #include "S9sOptions"
 #include "S9sCluster"
 #include "S9sRpcReply"
+#include "S9sMutexLocker"
 
 #define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
+
+#include <unistd.h>
+#include <sys/select.h>
+#include <termios.h>
+#include <string.h>
+
+struct termios orig_termios1;
+
+void reset_terminal_mode()
+{
+    tcsetattr(0, TCSANOW, &orig_termios1);
+}
+
+void set_conio_terminal_mode()
+{
+    struct termios new_termios;
+
+    /* take two copies - one for now, one for later */
+    tcgetattr(0, &orig_termios1);
+    memcpy(&new_termios, &orig_termios1, sizeof(new_termios));
+
+    /* register cleanup handler, and set the new terminal mode */
+    atexit(reset_terminal_mode);
+    cfmakeraw(&new_termios);
+    tcsetattr(0, TCSANOW, &new_termios);
+}
+
+int kbhit()
+{
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
+}
+
 
 S9sDisplay::S9sDisplay(
         S9sDisplay::DisplayMode mode) :
     m_displayMode(mode),
     m_refreshCounter(0)
 {
+    set_conio_terminal_mode();
 }
 
 S9sDisplay::~S9sDisplay()
 {
+    reset_terminal_mode();
 }
 
 void 
 S9sDisplay::eventCallback(
         S9sEvent &event)
 {
+    S9sMutexLocker    locker(m_mutex);
     S9sOptions       *options = S9sOptions::instance();
+
+    //S9S_WARNING("%d", kbhit());
+    if (kbhit())
+    {
+        int c = getchar();
+        S9S_WARNING("%d/%c", c, c);
+        exit(0);
+    }
+
+    //return;
 
     switch (m_displayMode)
     {
@@ -75,6 +125,13 @@ void
 S9sDisplay::processEvent(
         S9sEvent &event)
 {
+    if (event.hasCluster())
+    {
+        S9sCluster cluster = event.cluster();
+        // FIXME: what about cluster delete events?
+        m_clusters[cluster.clusterId()] = cluster;
+    }
+
     switch (m_displayMode)
     {
         case PrintEvents:
@@ -102,7 +159,7 @@ S9sDisplay::processEventList(
     }
 
     if (!output.empty())
-        ::printf("%s\n", STR(output));
+        ::printf("%s\n\r", STR(output));
 }
 
 void
@@ -157,13 +214,15 @@ S9sDisplay::printHeader()
 {
     ::printf("%c ", rotatingCharacter());
     ::printf("%3lu node(s) ", m_nodes.size());
-    ::printf("\n");
+    ::printf("%3lu cluster(s) ", m_clusters.size());
+    ::printf("\n\r");
 }
 
 void
 S9sDisplay::printNodes()
 {
     S9sFormat   versionFormat;
+    S9sFormat   clusterNameFormat;
     S9sFormat   clusterIdFormat;
     S9sFormat   hostNameFormat;
     S9sFormat   portFormat;
@@ -179,19 +238,53 @@ S9sDisplay::printNodes()
 
     printHeader();
 
+    /*
+     * Collecting information for formatting.
+     */
     for (uint idx = 0u; idx < m_nodes.size(); ++idx)
     {
         const S9sNode &node = m_nodes[idx];
-        
+        S9sString      clusterName = "-";
+
+        if (m_clusters.contains(node.clusterId()))
+            clusterName = m_clusters[node.clusterId()].name();
+
         versionFormat.widen(node.version());
         clusterIdFormat.widen(node.clusterId());
+        clusterNameFormat.widen(clusterName);
         hostNameFormat.widen(node.hostName());
         portFormat.widen(node.port());
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (/*!options->isNoHeaderRequested()*/true)
+    {
+        versionFormat.widen("VERSION");
+        clusterIdFormat.widen("CID");
+        clusterNameFormat.widen("CLUSTER");
+        hostNameFormat.widen("HOST");
+        portFormat.widen("PORT");
+
+        printf("%s", m_formatter.headerColorBegin());
+        printf("STAT ");
+        versionFormat.printf("VERSION");
+        clusterIdFormat.printf("CID");
+        clusterNameFormat.printf("CLUSTER");
+        hostNameFormat.printf("HOST");
+        portFormat.printf("PORT");
+        printf("COMMENT");
+        printf("%s\n\r", m_formatter.headerColorEnd());
     }
 
     for (uint idx = 0u; idx < m_nodes.size(); ++idx)
     {
         const S9sNode &node = m_nodes[idx];
+        S9sString      clusterName = "-";
+
+        if (m_clusters.contains(node.clusterId()))
+            clusterName = m_clusters[node.clusterId()].name();
 
         beginColor = S9sRpcReply::hostStateColorBegin(node.hostStatus());
         endColor   = S9sRpcReply::hostStateColorEnd();
@@ -203,12 +296,17 @@ S9sDisplay::printNodes()
         ::printf("%c ", node.maintenanceFlag());
         versionFormat.printf(node.version());
         clusterIdFormat.printf(node.clusterId());
+
+        printf("%s", m_formatter.clusterColorBegin());
+        clusterNameFormat.printf(clusterName);
+        printf("%s", m_formatter.clusterColorEnd());
+
         hostNameFormat.printf(node.hostName());
         portFormat.printf(node.port());
 
         ::printf("%s ", STR(node.message()));
         ::printf("%s", TERM_ERASE_EOL);
-        ::printf("\n");
+        ::printf("\n\r");
     }
 
     ::printf("%s", TERM_ERASE_EOL);

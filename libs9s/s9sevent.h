@@ -22,6 +22,9 @@
 #include "S9sObject"
 #include "S9sFormatter"
 
+class S9sNode;
+class S9sCluster;
+
 /**
  * A class that represents a node/host/server. 
  */
@@ -108,6 +111,9 @@ class S9sEvent : public S9sObject
 
         bool hasHost() const;
         S9sNode host() const;
+
+        bool hasCluster() const;
+        S9sCluster cluster() const;
 
     protected:
         S9sString eventLogToOneLiner() const;
