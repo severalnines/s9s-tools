@@ -24,6 +24,7 @@
 
 class S9sNode;
 class S9sCluster;
+class S9sJob;
 
 /**
  * A class that represents a node/host/server. 
@@ -114,6 +115,9 @@ class S9sEvent : public S9sObject
 
         bool hasCluster() const;
         S9sCluster cluster() const;
+
+        bool hasJob() const;
+        S9sJob job() const;
 
     protected:
         S9sString eventLogToOneLiner() const;

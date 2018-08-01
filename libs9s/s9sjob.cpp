@@ -131,6 +131,17 @@ S9sJob::status() const
     return property("status").toString();
 }
 
+S9sString
+S9sJob::statusText() const
+{
+    S9sString retval = property("status_text").toString();
+
+    if (!retval.empty() && !retval.endsWith("."))
+        retval += ".";
+
+    return retval;
+}
+
 /**
  * \returns The creation date&time as a string.
  */

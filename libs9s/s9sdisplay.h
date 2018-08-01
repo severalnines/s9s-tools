@@ -25,6 +25,7 @@
 #include "S9sEvent"
 #include "S9sNode"
 #include "S9sCluster"
+#include "S9sJob"
 #include "S9sMutex"
 #include "S9sThread"
 
@@ -36,6 +37,7 @@ class S9sDisplay : public S9sThread
             PrintEvents,
             WatchNodes,
             WatchClusters,
+            WatchJobs,
         };
 
         S9sDisplay(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
@@ -58,9 +60,11 @@ class S9sDisplay : public S9sThread
         void refreshScreen();
         void printNodes();
         void printClusters();
+        void printJobs();
 
         void startScreen();
         void printHeader();
+        void printFooter();
         char rotatingCharacter() const;
 
     private:
@@ -70,6 +74,7 @@ class S9sDisplay : public S9sThread
         int                     m_refreshCounter;
         S9sVector<S9sNode>      m_nodes;
         S9sMap<int, S9sCluster> m_clusters;
+        S9sMap<int, S9sJob>     m_jobs;
         int                     m_lastKey1;
         int                     m_columns;
         int                     m_rows;

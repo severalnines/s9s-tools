@@ -80,6 +80,36 @@ S9sFormatter::clusterStateColorEnd() const
 }
 
 const char *
+S9sFormatter::jobStateColorBegin(
+        const S9sString &state)
+{
+    if (useSyntaxHighLight())
+    {
+        if (state.startsWith("RUNNING"))
+        {
+            return XTERM_COLOR_GREEN;
+        } else if (state == "FINISHED")
+        {
+            return XTERM_COLOR_GREEN;
+        } else if (state == "FAILED")
+        {
+            return XTERM_COLOR_RED;
+        }
+    }
+
+    return "";
+}
+
+const char *
+S9sFormatter::jobStateColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::clusterColorBegin() const
 {
     if (useSyntaxHighLight())

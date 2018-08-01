@@ -142,6 +142,7 @@ S9sDisplay::processKey(
         case 'Q':
         case 0x1b:
         case 3:
+            ::printf("%s", TERM_CLEAR_SCREEN);
             exit(0);
 
         case 'c':
@@ -153,6 +154,12 @@ S9sDisplay::processKey(
         case 'n':
         case 'N':
             m_displayMode = WatchNodes;
+            ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+        
+        case 'j':
+        case 'J':
+            m_displayMode = WatchJobs;
             ::printf("%s", TERM_CLEAR_SCREEN);
             break;
     }
@@ -172,6 +179,10 @@ S9sDisplay::refreshScreen()
 
         case WatchClusters:
             printClusters();
+            break;
+        
+        case WatchJobs:
+            printJobs();
             break;
             
         case PrintEvents:
@@ -200,6 +211,7 @@ S9sDisplay::eventCallback(
 
         case WatchNodes:
         case WatchClusters:
+        case WatchJobs:
             //if (event.eventTypeString() != "EventHost")
             //    return;
             break;
@@ -228,6 +240,13 @@ S9sDisplay::processEvent(
         // FIXME: what about cluster delete events?
         if (cluster.clusterId() != 0)
             m_clusters[cluster.clusterId()] = cluster;
+    }
+
+    if (event.hasJob())
+    {
+        S9sJob job = event.job();
+            
+        m_jobs[job.id()] = job;
     }
     
     if (event.hasHost())
@@ -269,6 +288,11 @@ S9sDisplay::processEvent(
 
         case WatchClusters:
             printClusters();
+            ++m_refreshCounter;
+            break;
+        
+        case WatchJobs:
+            printJobs();
             ++m_refreshCounter;
             break;
     }
@@ -327,31 +351,61 @@ void
 S9sDisplay::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
-    
-    ::printf("%s", TERM_SCREEN_TITLE);
+    S9sString   title;
+
     switch (m_displayMode)
     {
         case WatchNodes:
-            ::printf("S9S NODE VIEW ");
+            title = "S9S NODE VIEW      ";
             break;
 
         case WatchClusters:
-            ::printf("S9S CLUSTER VIEW ");
+            title = "S9S CLUSTER VIEW   ";
             break;
 
+        case WatchJobs:
+            title = "S9S JOB VIEW       ";
+            break;
+            
         default:
             break;
     }
 
+    ::printf("%s", TERM_SCREEN_TITLE);
+    ::printf("%s ", STR(title));
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
-    ::printf("%3lu node(s) ", m_nodes.size());
-    ::printf("%3lu cluster(s) ", m_clusters.size());
+    ::printf("%lu node(s) ", m_nodes.size());
+    ::printf("%lu cluster(s) ", m_clusters.size());
+    ::printf("%lu jobs(s) ", m_jobs.size());
     ::printf("%08x ", m_lastKey1);
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("\r\n");
     ::printf("%s", TERM_NORMAL);
+    m_lineCounter++;
+}
+
+void
+S9sDisplay::printFooter()
+{
+    ::printf("%s", TERM_ERASE_EOL);
+    for (;m_lineCounter < m_rows - 1; ++m_lineCounter)
+    {
+        ::printf("\n\r");
+        ::printf("%s", TERM_ERASE_EOL);
+    }
+    
+    const char *normal = "\033[0m\033[2m\033[48;5;20m";
+    ::printf("%s ", TERM_SCREEN_TITLE);
+
+    ::printf("%sn%s-nodes  ", "\033[1m", normal);
+    ::printf("%sc%s-clusters  ", "\033[1m", normal);
+    ::printf("%sj%s-jobs  ", "\033[1m", normal);
+
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    fflush(stdout);
     m_lineCounter++;
 }
 
@@ -381,6 +435,27 @@ S9sDisplay::printClusters()
         messageFormat.widen(cluster.statusText());
     }
 
+    if (true)
+    {
+        versionFormat.widen("VERSION");
+        idFormat.widen("ID");
+        stateFormat.widen("STATE");
+        typeFormat.widen("TYPE");
+        nameFormat.widen("CLUSTER STATE");
+        messageFormat.widen("MESSAGE");
+
+        printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
+        versionFormat.printf("VERSION");
+        idFormat.printf("ID");
+        stateFormat.printf("STATE");
+        typeFormat.printf("TYPE");
+        nameFormat.printf("CLUSTER STATE");
+        messageFormat.printf("MESSAGE");
+        
+        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
+        ++m_lineCounter;
+    }
+
     /*
      * Printing.
      */
@@ -403,9 +478,106 @@ S9sDisplay::printClusters()
 
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
+        ++m_lineCounter;
     }
 
-    ::printf("%s", TERM_ERASE_EOL);
+    printFooter();
+}
+
+void
+S9sDisplay::printJobs()
+{
+    S9sFormat idFormat;
+    S9sFormat stateFormat;
+    S9sFormat progressFormat;
+    S9sFormat titleFormat;
+    S9sFormat statusTextFormat;
+
+    startScreen();
+    printHeader();
+    
+    foreach (const S9sJob &job, m_jobs)
+    {
+        S9sString statusText = S9sString::html2ansi(job.statusText());
+
+        idFormat.widen(job.id());
+        stateFormat.widen(job.status());
+        progressFormat.widen("[--------- ]");
+        titleFormat.widen(job.title());
+        statusTextFormat.widen(statusText);
+    }
+
+    if (true)
+    {
+        idFormat.widen("ID");
+        stateFormat.widen("STATE");
+        progressFormat.widen("PROGRESS");
+        titleFormat.widen("TITLE");
+        titleFormat.widen("STATUS");
+
+        printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
+        idFormat.printf("ID");
+        stateFormat.printf("STATE");
+        progressFormat.printf("PROGRESS");
+        titleFormat.printf("TITLE");
+        statusTextFormat.printf("STATUS");
+        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
+        ++m_lineCounter;
+    }
+
+    foreach (const S9sJob &job, m_jobs)
+    {
+        S9sString statusText  = S9sString::html2ansi(job.statusText());
+        bool      hasPercent  = job.hasProgressPercent();
+        S9sString status      = job.status();
+        double    percent     = job.progressPercent();
+        S9sString progressBar;
+
+        if (status == "FINISHED")
+        {
+            percent = 100.0;
+            hasPercent = true;
+            progressBar = S9sRpcReply::progressBar(percent, true);
+            progressBar = "             ";
+        } else if (status == "FAILED")
+        {
+            progressBar = "             ";
+        } else if (status == "CREATED")
+        {
+            progressBar = "             ";
+        } else if (status == "SCHEDULED")
+        {
+            progressBar = "             ";
+        } else if (status == "DEFINED")
+        {
+            progressBar = "             ";
+        } else {
+            if (hasPercent)
+                progressBar = S9sRpcReply::progressBar(percent, true);
+            else
+                progressBar = S9sRpcReply::progressBar(true);
+        }
+
+        idFormat.printf(job.id());
+        
+        printf("%s", m_formatter.jobStateColorBegin(job.status()));
+        stateFormat.printf(job.status());
+        printf("%s", m_formatter.jobStateColorEnd());
+
+        ::printf("%s", STR(progressBar));
+
+        ::printf("%s", TERM_BOLD);
+        titleFormat.printf(job.title());
+        ::printf("%s", TERM_NORMAL);
+
+        statusTextFormat.printf(statusText);
+
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ++m_lineCounter;
+    }
+
+    printFooter();
 }
 
 void
@@ -450,7 +622,7 @@ S9sDisplay::printNodes()
         hostNameFormat.widen("HOST");
         portFormat.widen("PORT");
 
-        printf("%s", m_formatter.headerColorBegin());
+        printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
         printf("STAT ");
         versionFormat.printf("VERSION");
         clusterIdFormat.printf("CID");
@@ -458,7 +630,7 @@ S9sDisplay::printNodes()
         hostNameFormat.printf("HOST");
         portFormat.printf("PORT");
         printf("COMMENT");
-        printf("%s\n\r", m_formatter.headerColorEnd());
+        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
         ++m_lineCounter;
     }
 
@@ -494,12 +666,7 @@ S9sDisplay::printNodes()
         ++m_lineCounter;
     }
 
-    ::printf("%s", TERM_ERASE_EOL);
-    for (;m_lineCounter < m_rows - 1; ++m_lineCounter)
-    {
-        ::printf("\n\r");
-        ::printf("%s", TERM_ERASE_EOL);
-    }
+    printFooter();
 }
 
 void

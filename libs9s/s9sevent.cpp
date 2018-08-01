@@ -730,3 +730,17 @@ S9sEvent::cluster() const
     return cluster;
 }
 
+bool
+S9sEvent::hasJob() const
+{
+    return m_properties.valueByPath("/event_specifics/job").isVariantMap();
+}
+
+S9sJob
+S9sEvent::job() const
+{
+    S9sJob job =
+        m_properties.valueByPath("/event_specifics/job").toVariantMap();
+
+    return job;
+}

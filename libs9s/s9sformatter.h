@@ -19,9 +19,14 @@ class S9sFormatter
         const char *clusterStateColorBegin(const S9sString &state);
         const char *clusterStateColorEnd() const;
 
+        const char *jobStateColorBegin(const S9sString &state);
+        const char *jobStateColorEnd() const;
+
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
- 
+
+
+
         S9sString bytesToHuman(ulonglong bytes) const;
         S9sString mBytesToHuman(ulonglong mBytes) const;
         S9sString kiloBytesToHuman(ulonglong kBytes) const;

@@ -43,6 +43,7 @@ class S9sJob : public S9sObject
         int userId() const;
         S9sString groupName() const;
         S9sString status() const;
+        S9sString statusText() const;
         S9sString createdString() const;
         S9sString endedString() const;
         S9sString startedString() const;
