@@ -109,6 +109,9 @@ typedef enum S9sMessageLevel
 #define TERM_INVERSE "\033[7m"
 /** Turns underline in the terminal. */
 #define TERM_UNDERLINE    "\033[4m"
+
+#define TERM_SCREEN_TITLE "\033[48;5;21m"
+
 /** Dark red. */
 #define XTERM_COLOR_1 "\033[38;5;1m"
 /** Dark green. */

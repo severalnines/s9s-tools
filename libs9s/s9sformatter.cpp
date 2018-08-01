@@ -54,6 +54,32 @@ S9sFormatter::directoryColorEnd() const
 }
 
 const char *
+S9sFormatter::clusterStateColorBegin(
+        const S9sString &state)
+{
+    if (useSyntaxHighLight())
+    {
+        if (state == "STARTED")
+            return XTERM_COLOR_GREEN;
+       else if (state == "FAILED" || state == "FAILURE")
+            return XTERM_COLOR_RED;
+        else
+            return XTERM_COLOR_YELLOW;
+    }
+    
+    return "";
+}
+
+const char *
+S9sFormatter::clusterStateColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::clusterColorBegin() const
 {
     if (useSyntaxHighLight())

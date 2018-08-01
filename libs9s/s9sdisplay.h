@@ -59,7 +59,7 @@ class S9sDisplay : public S9sThread
         void printNodes();
         void printClusters();
 
-
+        void startScreen();
         void printHeader();
         char rotatingCharacter() const;
 
@@ -71,4 +71,7 @@ class S9sDisplay : public S9sThread
         S9sVector<S9sNode>      m_nodes;
         S9sMap<int, S9sCluster> m_clusters;
         int                     m_lastKey1;
+        int                     m_columns;
+        int                     m_rows;
+        int                     m_lineCounter;
 };

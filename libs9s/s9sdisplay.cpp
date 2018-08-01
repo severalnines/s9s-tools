@@ -33,6 +33,8 @@
 #include <sys/select.h>
 #include <termios.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
 
 struct termios orig_termios1;
 
@@ -76,7 +78,9 @@ S9sDisplay::S9sDisplay(
         S9sDisplay::DisplayMode mode) :
     m_displayMode(mode),
     m_refreshCounter(0),
-    m_lastKey1(0)
+    m_lastKey1(0),
+    m_columns(0),
+    m_rows(0)
 {
     set_conio_terminal_mode();
 }
@@ -222,7 +226,8 @@ S9sDisplay::processEvent(
     {
         S9sCluster cluster = event.cluster();
         // FIXME: what about cluster delete events?
-        m_clusters[cluster.clusterId()] = cluster;
+        if (cluster.clusterId() != 0)
+            m_clusters[cluster.clusterId()] = cluster;
     }
     
     if (event.hasHost())
@@ -297,10 +302,33 @@ S9sDisplay::rotatingCharacter() const
 }
 
 void
+S9sDisplay::startScreen()
+{
+    struct winsize w;
+
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    if (m_refreshCounter == 0 || 
+            m_columns == w.ws_col ||
+            m_rows    == w.ws_row)
+    {
+        ::printf("%s", TERM_CLEAR_SCREEN);
+        ::printf("%s", TERM_HOME);
+    } else {
+        ::printf("%s", TERM_HOME);
+    }
+    
+    m_columns = w.ws_col;
+    m_rows    = w.ws_row;
+    m_lineCounter = 0;
+}
+
+void
 S9sDisplay::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
     
+    ::printf("%s", TERM_SCREEN_TITLE);
     switch (m_displayMode)
     {
         case WatchNodes:
@@ -322,21 +350,62 @@ S9sDisplay::printHeader()
     ::printf("%08x ", m_lastKey1);
 
     ::printf("%s", TERM_ERASE_EOL);
-    ::printf("\n\r");
+    ::printf("\r\n");
+    ::printf("%s", TERM_NORMAL);
+    m_lineCounter++;
 }
 
 void
 S9sDisplay::printClusters()
 {
-    if (m_refreshCounter == 0)
+    S9sFormat versionFormat;
+    S9sFormat idFormat;
+    S9sFormat typeFormat;
+    S9sFormat stateFormat;
+    S9sFormat nameFormat;
+    S9sFormat messageFormat;
+
+    startScreen();
+    printHeader();
+
+    /*
+     * Collecting some information.
+     */
+    foreach (const S9sCluster &cluster, m_clusters)
     {
-        ::printf("%s", TERM_CLEAR_SCREEN);
-        ::printf("%s", TERM_HOME);
-    } else {
-        ::printf("%s", TERM_HOME);
+        versionFormat.widen(cluster.vendorAndVersion());
+        idFormat.widen(cluster.clusterId());
+        typeFormat.widen(cluster.clusterType());
+        stateFormat.widen(cluster.state());
+        nameFormat.widen(cluster.name());
+        messageFormat.widen(cluster.statusText());
     }
 
-    printHeader();
+    /*
+     * Printing.
+     */
+    foreach (const S9sCluster &cluster, m_clusters)
+    {
+        versionFormat.printf(cluster.vendorAndVersion());
+        idFormat.printf(cluster.clusterId());
+        
+        printf("%s", m_formatter.clusterStateColorBegin(cluster.state()));
+        stateFormat.printf(cluster.state());
+        printf("%s", m_formatter.clusterStateColorEnd());
+
+        typeFormat.printf(cluster.clusterType());
+
+        printf("%s", m_formatter.clusterColorBegin());
+        nameFormat.printf(cluster.name());
+        printf("%s", m_formatter.clusterColorEnd());
+        
+        messageFormat.printf(cluster.statusText());
+
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+    }
+
+    ::printf("%s", TERM_ERASE_EOL);
 }
 
 void
@@ -349,14 +418,7 @@ S9sDisplay::printNodes()
     S9sFormat   portFormat;
     const char *beginColor, *endColor;
 
-    if (m_refreshCounter == 0)
-    {
-        ::printf("%s", TERM_CLEAR_SCREEN);
-        ::printf("%s", TERM_HOME);
-    } else {
-        ::printf("%s", TERM_HOME);
-    }
-
+    startScreen();
     printHeader();
 
     /*
@@ -397,6 +459,7 @@ S9sDisplay::printNodes()
         portFormat.printf("PORT");
         printf("COMMENT");
         printf("%s\n\r", m_formatter.headerColorEnd());
+        ++m_lineCounter;
     }
 
     for (uint idx = 0u; idx < m_nodes.size(); ++idx)
@@ -428,9 +491,15 @@ S9sDisplay::printNodes()
         ::printf("%s ", STR(node.message()));
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
+        ++m_lineCounter;
     }
 
     ::printf("%s", TERM_ERASE_EOL);
+    for (;m_lineCounter < m_rows - 1; ++m_lineCounter)
+    {
+        ::printf("\n\r");
+        ::printf("%s", TERM_ERASE_EOL);
+    }
 }
 
 void
