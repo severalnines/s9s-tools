@@ -143,7 +143,10 @@ S9sDisplay::processKey(
         case 0x1b:
         case 3:
             ::printf("%s", TERM_CLEAR_SCREEN);
+            ::printf("Exiting on key press.\n");
+            fflush(stdout);
             exit(0);
+            break;
 
         case 'c':
         case 'C':

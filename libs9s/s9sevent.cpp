@@ -703,7 +703,22 @@ S9sEvent::clusterId() const
 bool
 S9sEvent::hasHost() const
 {
-    return m_properties.valueByPath("/event_specifics/host").isVariantMap();
+    S9sString className;
+    if (!m_properties.valueByPath("/event_specifics/host").isVariantMap())
+        return false;
+
+    className = m_properties.valueByPath("/event_specifics/host/class_name").
+        toString();
+
+    // We handle these using a different class.
+    if (className == "CmonLxcServer")
+        return false;
+    else if (className == "CmonCloudServer")
+        return false;
+    else if (className == "CmonContainerServer")
+        return false;
+
+    return true;
 }
 
 S9sNode
