@@ -6465,7 +6465,7 @@ S9sRpcClient::doExecuteRequest(
                 if (m_priv->m_bufferSize == 0)
                 {
                     m_priv->m_jsonReply.insert(0,1,'\036');
-                    m_priv->setBuffer(m_priv->m_jsonReply);
+                    m_priv->setBuffer(m_priv->m_jsonReply, READ_SIZE);
                 }
                 else if (options->isDebug())
                 {
