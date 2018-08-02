@@ -6468,7 +6468,11 @@ S9sRpcClient::doExecuteRequest(
 
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
-                m_priv->m_errorString.sprintf("Error parsing JSON reply.");
+                //m_priv->m_errorString.sprintf("Error parsing JSON reply.");
+                m_priv->m_errorString.sprintf(
+                        "Error parsing JSON reply: \n%s\n",
+                        STR(m_priv->m_jsonReply));
+
                 options->setExitStatus(S9sOptions::ConnectionError);
                 setError(m_priv->m_errorString);
 

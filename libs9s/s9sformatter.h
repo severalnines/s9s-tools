@@ -25,7 +25,14 @@ class S9sFormatter
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
 
+        const char *ipColorBegin(const S9sString &ip);
+        const char *ipColorEnd(const S9sString &ip);
 
+        const char *serverColorBegin();
+        const char *serverColorEnd();
+
+        const char *containerColorBegin(int stateAsChar);
+        const char *containerColorEnd();
 
         S9sString bytesToHuman(ulonglong bytes) const;
         S9sString mBytesToHuman(ulonglong mBytes) const;

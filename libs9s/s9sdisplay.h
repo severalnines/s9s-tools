@@ -24,6 +24,7 @@
 #include "S9sVariantMap"
 #include "S9sEvent"
 #include "S9sNode"
+#include "S9sServer"
 #include "S9sCluster"
 #include "S9sJob"
 #include "S9sMutex"
@@ -38,6 +39,7 @@ class S9sDisplay : public S9sThread
             WatchNodes,
             WatchClusters,
             WatchJobs,
+            WatchContainers,
         };
 
         S9sDisplay(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
@@ -58,6 +60,7 @@ class S9sDisplay : public S9sThread
         void processEventList(S9sEvent &event);
 
         void refreshScreen();
+        void printContainers();
         void printNodes();
         void printClusters();
         void printJobs();
@@ -68,12 +71,15 @@ class S9sDisplay : public S9sThread
         void printMiddle(const S9sString text);
         char rotatingCharacter() const;
 
+        int nContainers() const;
+
     private:
         S9sMutex                m_mutex;
         S9sFormatter            m_formatter;
         DisplayMode             m_displayMode;
         int                     m_refreshCounter;
-        S9sVector<S9sNode>      m_nodes;
+        S9sMap<int, S9sNode>    m_nodes;
+        S9sMap<S9sString, S9sServer>  m_servers;
         S9sMap<int, S9sCluster> m_clusters;
         S9sMap<int, S9sJob>     m_jobs;
         int                     m_lastKey1;

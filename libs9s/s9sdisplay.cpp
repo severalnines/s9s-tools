@@ -21,6 +21,7 @@
 
 #include "S9sOptions"
 #include "S9sCluster"
+#include "S9sContainer"
 #include "S9sRpcReply"
 #include "S9sMutexLocker"
 #include "S9sDateTime"
@@ -165,6 +166,12 @@ S9sDisplay::processKey(
             m_displayMode = WatchJobs;
             ::printf("%s", TERM_CLEAR_SCREEN);
             break;
+        
+        case 'v':
+        case 'V':
+            m_displayMode = WatchContainers;
+            ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
     }
 }
 
@@ -178,6 +185,10 @@ S9sDisplay::refreshScreen()
     {
         case WatchNodes:
             printNodes();
+            break;
+        
+        case WatchContainers:
+            printContainers();
             break;
 
         case WatchClusters:
@@ -215,6 +226,7 @@ S9sDisplay::eventCallback(
         case WatchNodes:
         case WatchClusters:
         case WatchJobs:
+        case WatchContainers:
             //if (event.eventTypeString() != "EventHost")
             //    return;
             break;
@@ -255,27 +267,17 @@ S9sDisplay::processEvent(
     if (event.hasHost())
     {
         S9sNode  node;
-        bool     found = false;
 
         node = event.host();
-        for (uint idx = 0u; idx < m_nodes.size(); ++idx)
-        {
-            if (m_nodes[idx].hostName() != node.hostName())
-                continue;
-        
-            if (m_nodes[idx].port() != node.port())
-                continue;
+        m_nodes[node.id()] = node;
+    }
+    
+    if (event.hasServer())
+    {
+        S9sServer  server;
 
-            if (m_nodes[idx].id() != node.id())
-                continue;
-
-            m_nodes[idx] = node;
-            found = true;
-            break;
-        }
-
-        if (!found)
-            m_nodes << node;
+        server = event.server();
+        m_servers[server.id()] = server;
     }
 
     switch (m_displayMode)
@@ -286,6 +288,11 @@ S9sDisplay::processEvent(
 
         case WatchNodes:
             printNodes();
+            ++m_refreshCounter;
+            break;
+        
+        case WatchContainers:
+            printContainers();
             ++m_refreshCounter;
             break;
 
@@ -328,6 +335,17 @@ S9sDisplay::rotatingCharacter() const
     return charset[m_refreshCounter % 3];
 }
 
+int
+S9sDisplay::nContainers() const
+{
+    int retval = 0;
+
+    foreach (const S9sServer &server, m_servers)
+        retval += server.nContainers();
+
+    return retval;
+}
+
 void
 S9sDisplay::startScreen()
 {
@@ -339,7 +357,7 @@ S9sDisplay::startScreen()
             m_columns == w.ws_col ||
             m_rows    == w.ws_row)
     {
-        ::printf("%s", TERM_CLEAR_SCREEN);
+        //::printf("%s", TERM_CLEAR_SCREEN);
         ::printf("%s", TERM_HOME);
     } else {
         ::printf("%s", TERM_HOME);
@@ -369,6 +387,10 @@ S9sDisplay::printHeader()
         case WatchJobs:
             title = "S9S JOB VIEW       ";
             break;
+        
+        case WatchContainers:
+            title = "S9S CONTAINER VIEW ";
+            break;
             
         default:
             break;
@@ -379,6 +401,7 @@ S9sDisplay::printHeader()
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     ::printf("%lu node(s) ", m_nodes.size());
+    ::printf("%d VM(s) ", nContainers());
     ::printf("%lu cluster(s) ", m_clusters.size());
     ::printf("%lu jobs(s) ", m_jobs.size());
     ::printf("0x%02x ", m_lastKey1);
@@ -406,6 +429,7 @@ S9sDisplay::printFooter()
     ::printf("%sn%s-nodes  ", "\033[1m", normal);
     ::printf("%sc%s-clusters  ", "\033[1m", normal);
     ::printf("%sj%s-jobs  ", "\033[1m", normal);
+    ::printf("%sv%s-VMs  ", "\033[1m", normal);
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
@@ -612,6 +636,97 @@ S9sDisplay::printJobs()
 }
 
 void
+S9sDisplay::printContainers()
+{
+    S9sFormat  typeFormat;
+    S9sFormat  templateFormat;
+    S9sFormat  stateFormat;
+    S9sFormat  ipFormat;
+    S9sFormat  serverFormat;
+    S9sFormat  aliasFormat;
+
+    startScreen();
+    printHeader();
+    
+    foreach (const S9sServer &server, m_servers)
+    {
+        S9sVariantList maps = server.containers();
+
+        for (uint idx = 0u; idx < maps.size(); ++idx)
+        {
+            S9sContainer container = maps[idx].toVariantMap();
+            S9sString    ipAddress = container.ipAddress(
+                    S9s::AnyIpv4Address, "-");
+
+            typeFormat.widen(container.type());
+            templateFormat.widen(container.templateName("-"));
+            stateFormat.widen(container.state());
+            ipFormat.widen(ipAddress);
+            serverFormat.widen(container.parentServerName());
+            aliasFormat.widen(container.alias());
+        }
+    }
+    
+    if (nContainers() > 0)
+    {
+        typeFormat.widen("TYPE");
+        templateFormat.widen("TEMPLATE");
+        stateFormat.widen("STATE");
+        ipFormat.widen("IP ADDRESS");
+        serverFormat.widen("SERVER");
+        aliasFormat.widen("NAME");
+        
+        printf("%s", TERM_SCREEN_HEADER);
+        typeFormat.printf("TYPE");
+        templateFormat.printf("TEMPLATE");
+        stateFormat.printf("STATE");
+        ipFormat.printf("IP ADDRESS");
+        serverFormat.printf("SERVER");
+        aliasFormat.printf("NAME");
+
+        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
+        ++m_lineCounter; 
+    } else {
+        printMiddle("*** No containers. ***");
+    }
+
+    foreach (const S9sServer &server, m_servers)
+    {
+        S9sVariantList maps = server.containers();
+
+        for (uint idx = 0u; idx < maps.size(); ++idx)
+        {
+            S9sContainer container = maps[idx].toVariantMap();
+            S9sString    ipAddress = container.ipAddress(
+                    S9s::AnyIpv4Address, "-");
+
+            typeFormat.printf(STR(container.type()));
+            templateFormat.printf(container.templateName("-"));
+            stateFormat.printf(STR(container.state()));
+
+            ::printf("%s", m_formatter.ipColorBegin(ipAddress));
+            ipFormat.printf(STR(ipAddress));
+            ::printf("%s", m_formatter.ipColorEnd(ipAddress));
+
+            ::printf("%s", m_formatter.serverColorBegin());
+            serverFormat.printf(container.parentServerName());
+            ::printf("%s", m_formatter.serverColorEnd());
+
+            ::printf("%s",
+                    m_formatter.containerColorBegin(container.stateAsChar()));
+            aliasFormat.printf(container.alias());
+            ::printf("%s", m_formatter.containerColorEnd());
+        
+            ::printf("%s", TERM_ERASE_EOL);
+            ::printf("\n\r");
+            ++m_lineCounter;
+        }
+    }
+    
+    printFooter();
+}
+
+void
 S9sDisplay::printNodes()
 {
     S9sFormat   versionFormat;
@@ -627,9 +742,8 @@ S9sDisplay::printNodes()
     /*
      * Collecting information for formatting.
      */
-    for (uint idx = 0u; idx < m_nodes.size(); ++idx)
+    foreach (const S9sNode &node, m_nodes)
     {
-        const S9sNode &node = m_nodes[idx];
         S9sString      clusterName = "-";
 
         if (m_clusters.contains(node.clusterId()))
@@ -653,7 +767,7 @@ S9sDisplay::printNodes()
         hostNameFormat.widen("HOST");
         portFormat.widen("PORT");
 
-        printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
+        printf("%s", TERM_SCREEN_HEADER);
         printf("STAT ");
         versionFormat.printf("VERSION");
         clusterIdFormat.printf("CID");
@@ -667,9 +781,8 @@ S9sDisplay::printNodes()
         printMiddle("*** No nodes. ***");
     }
 
-    for (uint idx = 0u; idx < m_nodes.size(); ++idx)
+    foreach (const S9sNode &node, m_nodes)
     {
-        const S9sNode &node = m_nodes[idx];
         S9sString      clusterName = "-";
 
         if (m_clusters.contains(node.clusterId()))

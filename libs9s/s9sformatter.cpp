@@ -151,6 +151,74 @@ S9sFormatter::bytesToHuman(
     return retval;
 }
 
+const char *
+S9sFormatter::ipColorBegin(
+        const S9sString &ip)
+{
+    if (useSyntaxHighLight() && ip.looksLikeIpAddress())
+        return XTERM_COLOR_IP;
+
+    return "";
+}
+
+const char *
+S9sFormatter::ipColorEnd(
+        const S9sString &ip) 
+{
+    if (useSyntaxHighLight() && ip.looksLikeIpAddress())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sFormatter::serverColorBegin() 
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_SERVER;
+
+    return "";
+}
+
+const char *
+S9sFormatter::serverColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sFormatter::containerColorBegin(
+        int stateAsChar)
+{
+    if (useSyntaxHighLight())
+    {
+        if (stateAsChar == 't')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == 's')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == '?')
+            return XTERM_COLOR_RED;
+        else if (stateAsChar == 'q')
+            return XTERM_COLOR_YELLOW;
+
+        return XTERM_COLOR_NODE;
+    }
+
+    return "";
+}
+
+const char *
+S9sFormatter::containerColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
 S9sString 
 S9sFormatter::mBytesToHuman(
         ulonglong mBytes) const

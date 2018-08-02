@@ -23,11 +23,12 @@
 #include "S9sFormatter"
 
 class S9sNode;
+class S9sServer;
 class S9sCluster;
 class S9sJob;
 
 /**
- * A class that represents a node/host/server. 
+ * A class that represents an event sent by the controller. 
  */
 class S9sEvent : public S9sObject
 {
@@ -112,6 +113,9 @@ class S9sEvent : public S9sObject
 
         bool hasHost() const;
         S9sNode host() const;
+        
+        bool hasServer() const;
+        S9sServer server() const;
 
         bool hasCluster() const;
         S9sCluster cluster() const;

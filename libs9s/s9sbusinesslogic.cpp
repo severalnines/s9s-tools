@@ -183,9 +183,24 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             S9sDisplay display;
-            
+            bool       success;
+
             display.start();
-            client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display);
+            
+            do {
+                success = client.subscribeEvents(
+                        S9sDisplay::eventHandler, (void *)&display);
+            } while (success);
+
+            if (!success)
+            {
+                S9sString errorString = client.errorString();
+
+                errorString.replace("\n", "\n\r");
+                PRINT_ERROR("%s", STR(errorString));
+            }
+            
+            ::printf("Call ended\n");
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -197,9 +212,24 @@ S9sBusinessLogic::execute()
         } else if (options->isWatchRequested())
         {
             S9sDisplay display(S9sDisplay::WatchNodes);
+            bool       success;
 
             display.start();
-            client.subscribeEvents(S9sDisplay::eventHandler, (void *)&display); 
+            
+            do {
+                success = client.subscribeEvents(
+                        S9sDisplay::eventHandler, (void *)&display); 
+            } while (success);
+            
+            if (!success)
+            {
+                S9sString errorString = client.errorString();
+
+                errorString.replace("\n", "\n\r");
+                PRINT_ERROR("%s", STR(errorString));
+            }
+
+            ::printf("Call ended\n");
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);

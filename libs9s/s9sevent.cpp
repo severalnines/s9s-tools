@@ -22,6 +22,7 @@
 #include "S9sOptions"
 #include "S9sJob"
 #include "S9sNode"
+#include "S9sServer"
 #include "S9sCluster"
 
 //#define DEBUG
@@ -728,6 +729,36 @@ S9sEvent::host() const
         m_properties.valueByPath("/event_specifics/host").toVariantMap();
 
     return host;
+}
+
+bool
+S9sEvent::hasServer() const
+{
+    S9sString className;
+    if (!m_properties.valueByPath("/event_specifics/host").isVariantMap())
+        return false;
+
+    className = m_properties.valueByPath("/event_specifics/host/class_name").
+        toString();
+
+    // We handle these using a different class.
+    if (className == "CmonLxcServer")
+        return true;
+    else if (className == "CmonCloudServer")
+        return true;
+    else if (className == "CmonContainerServer")
+        return true;
+
+    return false;
+}
+
+S9sServer
+S9sEvent::server() const
+{
+    S9sServer server =
+        m_properties.valueByPath("/event_specifics/host").toVariantMap();
+
+    return server;
 }
 
 bool
