@@ -29,6 +29,8 @@ class S9sRpcClientPrivate
         ssize_t write(const char *data, size_t length);
         ssize_t read(char *buffer, size_t bufSize);
 
+        void setBuffer(S9sString &content, int additionalSize = 0);
+
         void parseHeaders();
         S9sString cookieHeaders() const;
         S9sString serverVersionString() const;

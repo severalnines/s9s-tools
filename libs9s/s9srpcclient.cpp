@@ -6458,14 +6458,27 @@ S9sRpcClient::doExecuteRequest(
 
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
-                // log errors?
-                if (options->isDebug())
+                /*
+                 * When no other JSon strings in the queue (so buffer is empty)
+                 * lets continue the reading (data got fragmented)
+                 */
+                if (m_priv->m_bufferSize == 0)
                 {
+                    m_priv->m_jsonReply.insert(0,1,'\036');
+                    m_priv->setBuffer(m_priv->m_jsonReply);
+                }
+                else if (options->isDebug())
+                {
+                    /*
+                     * There are more JSon records in the buffer (as not empty)
+                     * lets ignore this broken JSon string then...
+                     * Q: howto properly log errors here?
+                     */
                     printf("---- Error parsing JSON reply:\n%s\n----\n",
                         STR(m_priv->m_jsonReply));
                 }
 
-                // keep trying...
+                m_priv->m_jsonReply.clear();
                 continue;
             }
             else if (m_priv->m_callbackFunction == 0)

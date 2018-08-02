@@ -356,3 +356,19 @@ S9sRpcClientPrivate::serverVersionString() const
     return m_serverHeader;
 }
 
+/**
+ * Replaces the buffer contents with the specified content,
+ * and reserves additional space for further reading.
+ * (incomplete JSon..)
+ */
+void
+S9sRpcClientPrivate::setBuffer(S9sString &content, int additionalSize)
+{
+    clearBuffer();   
+
+    ensureHasBuffer(content.size() + additionalSize + 1);
+
+    memcpy(m_buffer, STR(content), content.size());
+    m_dataSize = content.size();
+}
+
