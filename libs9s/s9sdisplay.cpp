@@ -381,7 +381,8 @@ S9sDisplay::printHeader()
     ::printf("%lu node(s) ", m_nodes.size());
     ::printf("%lu cluster(s) ", m_clusters.size());
     ::printf("%lu jobs(s) ", m_jobs.size());
-    ::printf("%08x ", m_lastKey1);
+    ::printf("0x%02x ", m_lastKey1);
+    ::printf("%02dx%02d ", m_columns, m_rows);
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("\r\n");
@@ -413,6 +414,29 @@ S9sDisplay::printFooter()
 }
 
 void
+S9sDisplay::printMiddle(
+        const S9sString text)
+{
+    int nSpaces;
+
+    for (;m_lineCounter < m_rows / 2;)
+    {
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\r\n");
+        ++m_lineCounter;
+    }
+
+    nSpaces = (m_columns - text.length()) / 2;
+    for (;nSpaces > 0;--nSpaces)
+        ::printf(" ");
+
+    ::printf("%s", STR(text));
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("\r\n");
+    ++m_lineCounter;
+}
+
+void
 S9sDisplay::printClusters()
 {
     S9sFormat versionFormat;
@@ -438,7 +462,7 @@ S9sDisplay::printClusters()
         messageFormat.widen(cluster.statusText());
     }
 
-    if (true)
+    if (!m_clusters.empty())
     {
         versionFormat.widen("VERSION");
         idFormat.widen("ID");
@@ -457,6 +481,8 @@ S9sDisplay::printClusters()
         
         printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
         ++m_lineCounter;
+    } else {
+        printMiddle("*** No clusters. ***");
     }
 
     /*
@@ -510,7 +536,7 @@ S9sDisplay::printJobs()
         statusTextFormat.widen(statusText);
     }
 
-    if (true)
+    if (!m_jobs.empty())
     {
         idFormat.widen("ID");
         stateFormat.widen("STATE");
@@ -526,6 +552,8 @@ S9sDisplay::printJobs()
         statusTextFormat.printf("STATUS");
         printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
         ++m_lineCounter;
+    } else {
+        printMiddle("*** No jobs. ***");
     }
 
     foreach (const S9sJob &job, m_jobs)
@@ -617,7 +645,7 @@ S9sDisplay::printNodes()
     /*
      * Printing the header.
      */
-    if (/*!options->isNoHeaderRequested()*/true)
+    if (!m_nodes.empty())
     {
         versionFormat.widen("VERSION");
         clusterIdFormat.widen("CID");
@@ -635,6 +663,8 @@ S9sDisplay::printNodes()
         printf("COMMENT");
         printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
         ++m_lineCounter;
+    } else {
+        printMiddle("*** No nodes. ***");
     }
 
     for (uint idx = 0u; idx < m_nodes.size(); ++idx)

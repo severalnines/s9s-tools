@@ -65,6 +65,7 @@ class S9sDisplay : public S9sThread
         void startScreen();
         void printHeader();
         void printFooter();
+        void printMiddle(const S9sString text);
         char rotatingCharacter() const;
 
     private:
