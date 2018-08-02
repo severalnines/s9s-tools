@@ -6344,50 +6344,7 @@ S9sRpcClient::doExecuteRequest(
         m_priv->m_port,
         STR(m_priv->cookieHeaders()),
         payloadSize);
-#if 0
-    /*
-     * Sending the HTTP request header.
-     */
-    writtenLength = m_priv->write(STR(header), header.length());
-    S9S_DEBUG("Header length: %u, written: %zd", 
-            header.length(), writtenLength);
-    if (writtenLength < 0)
-    {
-        // we shall use m_priv->m_errorString TODO
-        S9S_DEBUG("Error writing socket: %m");
 
-        // priv shall do this:
-        m_priv->m_errorString.sprintf("Error writing socket: %m");
-        m_priv->close();
-
-        return false;
-    }
-
-    /*
-     * Sending the JSON payload.
-     */
-    if (!payload.empty())
-    {
-        writtenLength = m_priv->write(STR(payload), payload.length());
-        S9S_DEBUG("Payload length: %u, written: %zd", 
-                payload.length(), writtenLength);
-
-        if (writtenLength < 0)
-        {
-            // we shall use m_priv->m_errorString TODO
-            m_priv->m_errorString.sprintf(
-                    "Error writing socket: %m");
-       
-            m_priv->close();
-            return false;
-        } else {
-            if (options->isJsonRequested() && options->isVerbose())
-            {
-                printf("Sent request.\n");
-            }
-        }
-    }
-#else
     dataToSend = header + payload;
     dataSize   = strlen(STR(dataToSend));
     
@@ -6419,7 +6376,6 @@ S9sRpcClient::doExecuteRequest(
         printf("Sent request.\n");
     }
 
-#endif
     /*
      * Reading the reply from the server.
      */
@@ -6437,7 +6393,13 @@ S9sRpcClient::doExecuteRequest(
                 STR(timeStampString()), readLength);
 
         if (readLength > 0)
+        {
             m_priv->m_dataSize += readLength;
+
+            // read may got interrupted due to too small buffer
+            if (readLength >= READ_SIZE - 1)
+                continue;
+        }
         else if (readLength < 0)
         {
             m_priv->m_errorString.sprintf(
@@ -6456,28 +6418,55 @@ S9sRpcClient::doExecuteRequest(
         if (m_priv->m_buffer[0] == '\036')
             isJSonStream = true;
 
-        if (isJSonStream &&
-            readLength > 0 &&
-            m_priv->m_buffer[m_priv->m_dataSize-1] == '\n')
+        m_priv->m_jsonReply.clear();
+
+        if (isJSonStream && m_priv->m_dataSize > 0)
+        {
+            /*
+             * Look for multiple records first, and process the first one.
+             */
+            char *nextRecord = (char *) memchr(
+                (void *) (m_priv->m_buffer+1), '\036', m_priv->m_dataSize-1);
+
+            if (nextRecord != NULL)
+            {
+                // there are multiple records in the buffer, process the first JSon
+                size_t length = nextRecord - m_priv->m_buffer;
+                *nextRecord = '\0';
+                m_priv->m_jsonReply = std::string(m_priv->m_buffer+1, length-1);
+
+                // and move the data in buffer
+                *nextRecord = '\036';
+                memmove(m_priv->m_buffer, nextRecord, m_priv->m_dataSize - length);
+                m_priv->m_dataSize = m_priv->m_dataSize - length;
+            }
+            else
+            {
+                // optimistic version, expecting a whole JSon string here 
+                m_priv->m_buffer[m_priv->m_dataSize-1] = '\0';
+                m_priv->m_jsonReply = std::string(m_priv->m_buffer+1, m_priv->m_dataSize-1);
+
+                // processed all, drop it
+                m_priv->clearBuffer();
+            }
+        }
+
+        if (m_priv->m_jsonReply.size() > 0u)
         {
             // found a record, lets parse and notify back using the callback
             S9sVariantMap jsonRecord;
 
-            m_priv->m_buffer[m_priv->m_dataSize-1] = '\0';
-            m_priv->m_jsonReply = m_priv->m_buffer+1;
-
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
-                //m_priv->m_errorString.sprintf("Error parsing JSON reply.");
-                m_priv->m_errorString.sprintf(
-                        "Error parsing JSON reply: \n%s\n",
+                // log errors?
+                if (options->isDebug())
+                {
+                    printf("---- Error parsing JSON reply:\n%s\n----\n",
                         STR(m_priv->m_jsonReply));
+                }
 
-                options->setExitStatus(S9sOptions::ConnectionError);
-                setError(m_priv->m_errorString);
-
-                m_priv->close();
-                return false;
+                // keep trying...
+                continue;
             }
             else if (m_priv->m_callbackFunction == 0)
             {
@@ -6497,8 +6486,7 @@ S9sRpcClient::doExecuteRequest(
                 (*m_priv->m_callbackFunction)(jsonRecord, m_priv->m_callbackUserData);
             }
 
-            // and prepare for next JSon record in the stream
-            m_priv->clearBuffer();
+            m_priv->m_jsonReply.clear();
             continue;
         }
 
