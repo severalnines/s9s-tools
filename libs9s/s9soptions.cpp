@@ -265,6 +265,7 @@ enum S9sOptionType
     OptionFirewalls,
     OptionSortByMemory,
     OptionOutputFile,
+    OptionInputFile,
 };
 
 /**
@@ -1126,6 +1127,18 @@ S9sOptions::nodes() const
         return m_options.at("nodes").toVariantList();
 
     return S9sVariantList();
+}
+
+S9sString
+S9sOptions::inputFile() const
+{
+    return getString("input_file");
+}
+
+S9sString
+S9sOptions::outputFile() const
+{
+    return getString("output_file");
 }
 
 /**
@@ -5764,10 +5777,9 @@ S9sOptions::readOptionsEvent(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "nodes",            required_argument, 0, OptionNodes           },
+        { "output-file",      required_argument, 0, OptionOutputFile      },
+        { "input-file",       required_argument, 0, OptionInputFile       },
         
-        // Job Related Options
-        { "wait",             no_argument,       0, OptionWait            },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
@@ -5884,9 +5896,14 @@ S9sOptions::readOptionsEvent(
                 m_options["config-file"] = optarg;
                 break;
             
-            case OptionWait:
-                // --wait
-                m_options["wait"] = true;
+            case OptionOutputFile:
+                // --output-file=FILE
+                m_options["output_file"] = optarg;
+                break;
+            
+            case OptionInputFile:
+                // --input-file=FILE
+                m_options["input_file"] = optarg;
                 break;
 
             case OptionBatch:

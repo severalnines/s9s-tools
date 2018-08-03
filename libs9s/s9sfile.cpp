@@ -37,7 +37,7 @@
 
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sFile::S9sFile() :
@@ -170,6 +170,36 @@ S9sFile::exists() const
     return retval;
 }
 
+bool
+S9sFile::openForAppend()
+{
+    /*
+     * If the file is open we close it first.
+     */
+    close();
+
+    /*
+     * Opening for append.
+     */
+    m_priv->m_outputStream = fopen(STR(m_priv->m_path), "a");
+    if (!m_priv->m_outputStream)
+    {
+        m_priv->m_errorString.sprintf(
+                "Unable to open '%s' for append: %m",
+                STR(m_priv->m_path));
+        return false;
+    }
+    
+    return true;
+}
+
+void
+S9sFile::flush()
+{
+    if (m_priv->m_outputStream != NULL)
+        fflush(m_priv->m_outputStream);
+}
+
 void
 S9sFile::close()
 {
@@ -293,6 +323,8 @@ S9sFile::fprintf(
             m_priv->m_errorString.sprintf(
                     "Unable to open '%s' for writing: %m",
                     STR(m_priv->m_path));
+
+            S9S_WARNING("%s", STR(m_priv->m_errorString));
             return false;
         }
     }
@@ -305,7 +337,12 @@ S9sFile::fprintf(
 
     nChars = vfprintf(m_priv->m_outputStream, formatString, arguments);
     if (nChars <= 0)
+    {
         m_priv->m_errorString.sprintf("Error writing file: %m.");
+        S9S_WARNING("%s", STR(m_priv->m_errorString));
+    } else {
+        S9S_WARNING("Wrote %d chars to %s.", nChars, STR(m_priv->m_path));
+    }
 
     va_end(arguments);
 
@@ -322,12 +359,12 @@ S9sFile::errorString() const
 S9sFilePath 
 S9sFile::currentWorkingDirectory()
 {
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     char        *buffer = get_current_dir_name();
-#else
+    #else
     size_t sz = 0;
     char * buffer = getcwd(NULL, sz);
-#endif
+    #endif
 
     S9sFilePath  retval = buffer;
 

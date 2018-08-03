@@ -6430,7 +6430,8 @@ S9sRpcClient::doExecuteRequest(
 
             if (nextRecord != NULL)
             {
-                // there are multiple records in the buffer, process the first JSon
+                // there are multiple records in the buffer, process the first
+                // JSon
                 size_t length = nextRecord - m_priv->m_buffer;
                 *nextRecord = '\0';
                 m_priv->m_jsonReply = std::string(m_priv->m_buffer+1, length-1);
@@ -6476,6 +6477,8 @@ S9sRpcClient::doExecuteRequest(
                      */
                     printf("---- Error parsing JSON reply:\n%s\n----\n",
                         STR(m_priv->m_jsonReply));
+                    fflush(stdout);
+                    //exit(1);
                 }
 
                 m_priv->m_jsonReply.clear();

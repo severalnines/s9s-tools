@@ -77,13 +77,38 @@ int kbhit()
 
 S9sDisplay::S9sDisplay(
         S9sDisplay::DisplayMode mode) :
+    S9sThread(),
     m_displayMode(mode),
     m_refreshCounter(0),
     m_lastKey1(0),
     m_columns(0),
     m_rows(0)
 {
+    S9sOptions       *options = S9sOptions::instance();
+    bool              success;
+
     set_conio_terminal_mode();
+
+    m_outputFileName = options->outputFile();
+    if (!m_outputFileName.empty())
+    {
+        m_outputFile = S9sFile(m_outputFileName);
+        if (m_outputFile.exists())
+        {
+            PRINT_ERROR("File '%s' already exists.", STR(m_outputFileName));
+            exit(1);
+        }
+
+        success = m_outputFile.openForAppend();
+        if (!success)
+        {
+            PRINT_ERROR("%s", STR(m_outputFile.errorString()));
+            exit(1);
+        }
+
+        m_outputFile.close();
+
+    }
 }
 
 S9sDisplay::~S9sDisplay()
@@ -207,6 +232,21 @@ S9sDisplay::eventCallback(
 {
     S9sMutexLocker    locker(m_mutex);
     S9sOptions       *options = S9sOptions::instance();
+
+    
+    if (!m_outputFileName.empty())
+    {
+        bool success;
+
+        success = m_outputFile.fprintf("%s\n\n", STR(event.toString()));
+        if (!success)
+        {
+            PRINT_ERROR("%s", STR(m_outputFile.errorString()));
+            exit(1);
+        }
+
+        m_outputFile.flush();
+    }
 
     switch (m_displayMode)
     {
@@ -490,6 +530,9 @@ S9sDisplay::printFooter()
     ::printf("%sj%s-jobs ", "\033[1m", normal);
     ::printf("%sv%s-VMs ", "\033[1m", normal);
     ::printf("%se%s-events ", "\033[1m", normal);
+   
+    if (!m_outputFileName.empty())
+        ::printf("    [%s]", STR(m_outputFileName));
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);

@@ -101,6 +101,7 @@ class S9sEvent : public S9sObject
 
         int clusterId() const;
 
+        S9sString toString() const;
         S9sString toOneLiner() const;
 
         static S9sEvent::EventType 

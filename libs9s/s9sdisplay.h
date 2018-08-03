@@ -29,6 +29,7 @@
 #include "S9sJob"
 #include "S9sMutex"
 #include "S9sThread"
+#include "S9sFile"
 
 class S9sDisplay : public S9sThread
 {
@@ -92,4 +93,7 @@ class S9sDisplay : public S9sThread
         int                          m_columns;
         int                          m_rows;
         int                          m_lineCounter;
+
+        S9sFile                      m_outputFile;
+        S9sString                    m_outputFileName;
 };

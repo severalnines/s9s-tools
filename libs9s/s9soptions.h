@@ -119,6 +119,9 @@ class S9sOptions
         bool hasContainers() const;
         S9sVariantList containers() const;
 
+        S9sString inputFile() const;
+        S9sString outputFile() const;
+
         S9sString briefJobLogFormat() const;
         S9sString briefLogFormat() const;
         S9sString longLogFormat() const;

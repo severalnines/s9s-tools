@@ -45,6 +45,12 @@ S9sEvent::~S9sEvent()
 {
 }
 
+S9sString
+S9sEvent::toString() const
+{
+    return toVariantMap().toString();
+}
+
 S9sString 
 S9sEvent::toOneLiner() const
 {

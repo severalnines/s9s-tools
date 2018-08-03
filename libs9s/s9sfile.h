@@ -40,6 +40,9 @@ class S9sFile
 
         static bool fileExists(const S9sString &path);
         bool exists() const;
+
+        bool openForAppend();
+        void flush();
         void close();
         bool readTxtFile(S9sString &content);
         bool writeTxtFile(const S9sString &content);
