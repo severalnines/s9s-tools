@@ -119,13 +119,22 @@ S9sDisplay::~S9sDisplay()
 int 
 S9sDisplay::exec()
 {
-    do {
-    
+    do { 
         // Reading the key the user may have hit.
         if (kbhit())
         {
+#if 0
             m_lastKey1 = getchar();
+#else
+            int code;
 
+            m_lastKey1 = 0;
+            code = read(fileno(stdin), (void*)&m_lastKey1, sizeof(m_lastKey1));
+            if (code < 0)
+            {
+                S9S_WARNING("code: %d", code);
+            }
+#endif
             m_mutex.lock();
             processKey(m_lastKey1);
             m_mutex.unlock();
@@ -226,6 +235,11 @@ S9sDisplay::refreshScreen()
     }
 }
 
+/**
+ * \param event The event to process.
+ *
+ * This is the function that will be called when an event came to be processed.
+ */
 void 
 S9sDisplay::eventCallback(
         S9sEvent &event)
