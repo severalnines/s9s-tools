@@ -40,6 +40,7 @@ class S9sDisplay : public S9sThread
             WatchClusters,
             WatchJobs,
             WatchContainers,
+            WatchEvents,
         };
 
         S9sDisplay(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
@@ -63,6 +64,7 @@ class S9sDisplay : public S9sThread
         void refreshScreen();
         void printContainers();
         void printNodes();
+        void printEvents();
         void printClusters();
         void printJobs();
 

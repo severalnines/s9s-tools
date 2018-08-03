@@ -127,8 +127,11 @@ S9sDisplay::processKey(
         case 'Q':
         case 0x1b:
         case 3:
+            ::printf("\n\r");
             ::printf("%s", TERM_CLEAR_SCREEN);
-            ::printf("Exiting on key press.\n");
+            ::printf("%s", TERM_HOME);
+            ::printf("\n\r");
+            ::printf("Exiting on key press.\n\r");
             fflush(stdout);
             exit(0);
             break;
@@ -154,6 +157,12 @@ S9sDisplay::processKey(
         case 'v':
         case 'V':
             m_displayMode = WatchContainers;
+            ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+        
+        case 'e':
+        case 'E':
+            m_displayMode = WatchEvents;
             ::printf("%s", TERM_CLEAR_SCREEN);
             break;
     }
@@ -182,7 +191,11 @@ S9sDisplay::refreshScreen()
         case WatchJobs:
             printJobs();
             break;
-            
+    
+        case WatchEvents:
+            printEvents();
+            break;
+
         case PrintEvents:
             break;
     }
@@ -207,6 +220,7 @@ S9sDisplay::eventCallback(
 
             break;
 
+        case WatchEvents:
         case WatchNodes:
         case WatchClusters:
         case WatchJobs:
@@ -304,6 +318,11 @@ S9sDisplay::processEvent(
         
         case WatchJobs:
             printJobs();
+            ++m_refreshCounter;
+            break;
+        
+        case WatchEvents:
+            printEvents();
             ++m_refreshCounter;
             break;
     }
@@ -462,10 +481,11 @@ S9sDisplay::printFooter()
     const char *normal = "\033[0m\033[2m\033[48;5;20m";
     ::printf("%s ", TERM_SCREEN_TITLE);
 
-    ::printf("%sn%s-nodes  ", "\033[1m", normal);
-    ::printf("%sc%s-clusters  ", "\033[1m", normal);
-    ::printf("%sj%s-jobs  ", "\033[1m", normal);
-    ::printf("%sv%s-VMs  ", "\033[1m", normal);
+    ::printf("%sn%s-nodes ", "\033[1m", normal);
+    ::printf("%sc%s-clusters ", "\033[1m", normal);
+    ::printf("%sj%s-jobs ", "\033[1m", normal);
+    ::printf("%sv%s-VMs ", "\033[1m", normal);
+    ::printf("%se%s-events ", "\033[1m", normal);
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
@@ -876,6 +896,33 @@ S9sDisplay::printNodes()
     printFooter();
 }
 
+void
+S9sDisplay::printEvents()
+{
+    int startIndex;
+
+    startScreen();
+    printHeader();
+
+    startIndex = m_eventLines.size() - (m_rows - 2);
+    if (startIndex < 0)
+        startIndex = 0;
+
+    for (uint idx = startIndex; idx < m_eventLines.size(); ++idx)
+    {
+        S9sString line = m_eventLines[idx];
+
+        line.replace("\n", "\\n");
+        line.replace("\r", "\\r");
+        
+        ::printf("%s ", STR(line));
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ++m_lineCounter;
+    }
+
+    printFooter();
+}
 
 void
 S9sDisplay::eventHandler(
