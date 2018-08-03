@@ -4611,6 +4611,8 @@ S9sOptions::printHelpEvent()
 "  --list                     List the events as they are detected.\n"
 "  --watch                    Open an interactive UI to monitor events.\n"
 "\n"
+"  --output-file=FILENAME     Save the events into the output file.\n"
+"\n"
 "  --with-event-alarm         Process alarm events.\n"
 "  --with-event-cluster       Process cluster events.\n"
 "  --with-event-debug         Process debug events.\n"
