@@ -536,6 +536,10 @@ S9sEvent::eventClusterToOneLiner() const
                     "Cluster %d state %s: %s",
                     clusterId, STR(stateName), STR(reason));
             break;
+        
+        case NoSubClass:
+            retval.sprintf("Cluster %d ping.", clusterId);
+            break;
 
         default:
             retval = m_properties.toString();

@@ -201,14 +201,6 @@ S9sBusinessLogic::execute()
             }
             
             ::printf("Call ended\n");
-        } else {
-            PRINT_ERROR("Operation is not specified.");
-        }
-    } else if (options->isNodeOperation())
-    {
-        if (options->isStatRequested() && !options->graph().empty())
-        {
-            executeNodeGraph(client);
         } else if (options->isWatchRequested())
         {
             S9sDisplay display(S9sDisplay::WatchNodes);
@@ -230,6 +222,14 @@ S9sBusinessLogic::execute()
             }
 
             ::printf("Call ended\n");
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
+    } else if (options->isNodeOperation())
+    {
+        if (options->isStatRequested() && !options->graph().empty())
+        {
+            executeNodeGraph(client);
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeNodeList(client);

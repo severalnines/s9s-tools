@@ -264,6 +264,7 @@ enum S9sOptionType
     OptionShowFailed,
     OptionFirewalls,
     OptionSortByMemory,
+    OptionOutputFile,
 };
 
 /**
@@ -4595,6 +4596,7 @@ S9sOptions::printHelpEvent()
     printf(
 "Options for the \"event\" command:\n"
 "  --list                     List the events as they are detected.\n"
+"  --watch                    Open an interactive UI to monitor events.\n"
 "\n"
 "  --with-event-alarm         Process alarm events.\n"
 "  --with-event-cluster       Process cluster events.\n"
@@ -4673,7 +4675,6 @@ S9sOptions::readOptionsNode(
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
         { "unregister",       no_argument,       0, OptionUnregister      },
-        { "watch",            no_argument,       0, OptionWatch           },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -4823,11 +4824,6 @@ S9sOptions::readOptionsNode(
             case OptionUnregister:
                 // --unregister
                 m_options["unregister"] = true;
-                break;
-
-            case OptionWatch:
-                // --watch
-                m_options["watch"] = true;
                 break;
 
             case 4:
@@ -5485,9 +5481,9 @@ S9sOptions::checkOptionsEvent()
     if (isListRequested())
         countOptions++;
     
-    if (isCreateRequested())
+    if (isWatchRequested())
         countOptions++;
-
+    
     if (countOptions > 1)
     {
         m_errorMessage = 
@@ -5762,6 +5758,7 @@ S9sOptions::readOptionsEvent(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
+        { "watch",            no_argument,       0, OptionWatch           },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -5875,6 +5872,11 @@ S9sOptions::readOptionsEvent(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionWatch:
+                // --watch
+                m_options["watch"] = true;
                 break;
 
             case 4:

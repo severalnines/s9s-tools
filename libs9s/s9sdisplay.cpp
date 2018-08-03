@@ -443,6 +443,10 @@ S9sDisplay::printHeader()
         case WatchContainers:
             title = "S9S CONTAINER VIEW ";
             break;
+        
+        case WatchEvents:
+            title = "S9S EVENT VIEW     ";
+            break;
             
         default:
             break;

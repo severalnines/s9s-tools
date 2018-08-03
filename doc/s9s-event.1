@@ -26,8 +26,20 @@ indefinitely.
 
 .B EXAMPLE
 .nf
+s9s event --list 
+.fi
+
+.TP
+.B \-\-watch
+Open an interactive UI to monitor the events and various objects through the
+events.
+
+.B EXAMPLE
+.nf
 s9s event \\
-    --list 
+    --watch \\
+    --cmon-user=admin \\
+    --password=adminpasswd
 .fi
 
 .\"
