@@ -95,39 +95,23 @@ int
 S9sDisplay::exec()
 {
     do {
-        usleep(500000);
     
+        // Reading the key the user may have hit.
         if (kbhit())
         {
             m_lastKey1 = getchar();
-#if 0
-            #if 0
-            usleep(50000);
 
-            while (kbhit())
-            {
-                m_lastKey1 *= 256;
-                m_lastKey1 += getchar();
-                usleep(50000);
-            }
-            #else
-            if (m_lastKey1 == 27 && kbhit())
-            {
-                m_lastKey1 *= 256;
-                m_lastKey1 += getchar();
-                m_lastKey1 *= 256;
-                m_lastKey1 += getchar();
-            }
-            #endif
-#endif
             m_mutex.lock();
             processKey(m_lastKey1);
             m_mutex.unlock();
         }
 
+        // Refreshing the screen.
         m_mutex.lock();
         refreshScreen();
         m_mutex.unlock();
+        
+        usleep(500000);
     } while (!shouldStop());
 
     return 0;
@@ -249,6 +233,17 @@ S9sDisplay::processEvent(
 {
     ++m_refreshCounter;
 
+    // The events themselves.
+    m_events << event;
+    m_eventLines << event.toOneLiner();
+
+    while (m_events.size() > 300)
+        m_events.takeFirst();
+
+    while (m_eventLines.size() > 300)
+        m_eventLines.takeFirst();
+
+    // The clusters.
     if (event.hasCluster())
     {
         S9sCluster cluster = event.cluster();
@@ -257,13 +252,16 @@ S9sDisplay::processEvent(
             m_clusters[cluster.clusterId()] = cluster;
     }
 
+    // The jobs.
     if (event.hasJob())
     {
         S9sJob job = event.job();
             
         m_jobs[job.id()] = job;
+        m_jobActivity[job.id()] = time(NULL);
     }
     
+    // The hosts.
     if (event.hasHost())
     {
         S9sNode  node;
@@ -272,6 +270,7 @@ S9sDisplay::processEvent(
         m_nodes[node.id()] = node;
     }
     
+    // The servers (together with the containers).
     if (event.hasServer())
     {
         S9sServer  server;
@@ -279,6 +278,8 @@ S9sDisplay::processEvent(
         server = event.server();
         m_servers[server.id()] = server;
     }
+
+    removeOldObjects();
 
     switch (m_displayMode)
     {
@@ -327,6 +328,30 @@ S9sDisplay::processEventList(
         ::printf("%s\n\r", STR(output));
 }
 
+void
+S9sDisplay::removeOldObjects()
+{
+    S9sVector<int> jobIds = m_jobs.keys();
+    time_t         now    = time(NULL);
+
+    for (uint idx = 0u; idx < jobIds.size(); ++idx)
+    {
+        int jobId = jobIds[idx];
+
+        if (now - m_jobActivity[jobId] < 10)
+            continue;
+
+        if (m_jobs[jobId].status() != "FINISHED" &&
+                m_jobs[jobId].status() != "FAILED")
+        {
+            continue;
+        }
+
+        m_jobs.erase(jobId);
+        m_jobActivity.erase(jobId);
+    }
+}
+
 char
 S9sDisplay::rotatingCharacter() const
 {
@@ -346,6 +371,11 @@ S9sDisplay::nContainers() const
     return retval;
 }
 
+/**
+ * This method should be called when a new screen update cycle is started. This
+ * will jump the cursor to the upper left corner as well as doing some other
+ * things for the screen refresh.
+ */
 void
 S9sDisplay::startScreen()
 {
@@ -368,6 +398,9 @@ S9sDisplay::startScreen()
     m_lineCounter = 0;
 }
 
+/**
+ * Printing the top part of the screen.
+ */
 void
 S9sDisplay::printHeader()
 {
@@ -413,6 +446,9 @@ S9sDisplay::printHeader()
     m_lineCounter++;
 }
 
+/**
+ * Printing the bottom part of the screen.
+ */
 void
 S9sDisplay::printFooter()
 {
@@ -437,6 +473,9 @@ S9sDisplay::printFooter()
     m_lineCounter++;
 }
 
+/**
+ * This method will print one message on the middle of the screen.
+ */
 void
 S9sDisplay::printMiddle(
         const S9sString text)
@@ -460,6 +499,9 @@ S9sDisplay::printMiddle(
     ++m_lineCounter;
 }
 
+/**
+ * Print method for the "clusters" mode.
+ */
 void
 S9sDisplay::printClusters()
 {
@@ -532,11 +574,17 @@ S9sDisplay::printClusters()
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
         ++m_lineCounter;
+        
+        if (m_lineCounter >= m_rows - 1)
+            break;
     }
 
     printFooter();
 }
 
+/**
+ * Print method for the "jobs" mode.
+ */
 void
 S9sDisplay::printJobs()
 {
@@ -577,7 +625,7 @@ S9sDisplay::printJobs()
         printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
         ++m_lineCounter;
     } else {
-        printMiddle("*** No jobs. ***");
+        printMiddle("*** No running jobs. ***");
     }
 
     foreach (const S9sJob &job, m_jobs)
@@ -630,11 +678,17 @@ S9sDisplay::printJobs()
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
         ++m_lineCounter;
+        
+        if (m_lineCounter >= m_rows - 1)
+            break;
     }
 
     printFooter();
 }
 
+/**
+ * Print method for the "containers" view.
+ */
 void
 S9sDisplay::printContainers()
 {
@@ -699,7 +753,7 @@ S9sDisplay::printContainers()
             S9sContainer container = maps[idx].toVariantMap();
             S9sString    ipAddress = container.ipAddress(
                     S9s::AnyIpv4Address, "-");
-
+        
             typeFormat.printf(STR(container.type()));
             templateFormat.printf(container.templateName("-"));
             stateFormat.printf(STR(container.state()));
@@ -720,12 +774,19 @@ S9sDisplay::printContainers()
             ::printf("%s", TERM_ERASE_EOL);
             ::printf("\n\r");
             ++m_lineCounter;
+            
+            if (m_lineCounter >= m_rows - 1)
+                break;
         }
+            
     }
     
     printFooter();
 }
 
+/**
+ * Print method for the nodes view.
+ */
 void
 S9sDisplay::printNodes()
 {
@@ -814,6 +875,7 @@ S9sDisplay::printNodes()
 
     printFooter();
 }
+
 
 void
 S9sDisplay::eventHandler(

@@ -58,6 +58,7 @@ class S9sDisplay : public S9sThread
         void processKey(int key);
         void processEvent(S9sEvent &event);
         void processEventList(S9sEvent &event);
+        void removeOldObjects();
 
         void refreshScreen();
         void printContainers();
@@ -74,16 +75,19 @@ class S9sDisplay : public S9sThread
         int nContainers() const;
 
     private:
-        S9sMutex                m_mutex;
-        S9sFormatter            m_formatter;
-        DisplayMode             m_displayMode;
-        int                     m_refreshCounter;
-        S9sMap<int, S9sNode>    m_nodes;
-        S9sMap<S9sString, S9sServer>  m_servers;
-        S9sMap<int, S9sCluster> m_clusters;
-        S9sMap<int, S9sJob>     m_jobs;
-        int                     m_lastKey1;
-        int                     m_columns;
-        int                     m_rows;
-        int                     m_lineCounter;
+        S9sMutex                     m_mutex;
+        S9sFormatter                 m_formatter;
+        DisplayMode                  m_displayMode;
+        int                          m_refreshCounter;
+        S9sMap<int, S9sNode>         m_nodes;
+        S9sMap<S9sString, S9sServer> m_servers;
+        S9sMap<int, S9sCluster>      m_clusters;
+        S9sMap<int, S9sJob>          m_jobs;
+        S9sMap<int, time_t>          m_jobActivity;
+        S9sVector<S9sEvent>          m_events;
+        S9sVector<S9sString>         m_eventLines;
+        int                          m_lastKey1;
+        int                          m_columns;
+        int                          m_rows;
+        int                          m_lineCounter;
 };
