@@ -6399,8 +6399,7 @@ S9sRpcClient::doExecuteRequest(
             // read may got interrupted due to too small buffer
             if (readLength >= READ_SIZE - 1)
                 continue;
-        }
-        else if (readLength < 0)
+        } else if (readLength < 0)
         {
             m_priv->m_errorString.sprintf(
                     "Error while reading from controller (%s:%d TLS: %s): %m",
@@ -6426,26 +6425,55 @@ S9sRpcClient::doExecuteRequest(
              * Look for multiple records first, and process the first one.
              */
             char *nextRecord = (char *) memchr(
-                (void *) (m_priv->m_buffer+1), '\036', m_priv->m_dataSize-1);
+                (void *) (m_priv->m_buffer + 1), 
+                '\036', m_priv->m_dataSize - 1);
 
+            // FIXME: This is all fucked up. This code is too complicated, can't
+            // read it and it has multiple bugs. 
+            // 1) It now duplicates the json strings, when the second json
+            //    message comes it sends the first one, then the second. When
+            //    the third comes it sends the second, then the third.
+            // 2) "optimistic version, expecting a whole JSon string here"
+            //    This is not how TCP works. Our json strings are big, bigger 
+            //    than the MTU and *very* often the json messages are broke up.
+            // 3) It is not acceptable to loose messages! I am bugfixing a
+            //    program that leaks messages, I worked hours to figure out why
+            //    my code does not work, when in fact the messages are leaked
+            //    here.
+            // 4) It is not acceptable to discover we have have a message in the
+            //    buffer and then go block on reading the next message. If we
+            //    have a next message and it is complete we *have* to process
+            //    it. The user is watching the terminal and the next message
+            //    might come a long time later.
+            //
+            // I think this part should be complete rewritten.
+            S9S_WARNING("    record : %p", m_priv->m_buffer);
+            S9S_WARNING("nextRecord : %p", nextRecord);
+            S9S_WARNING("    record : %s", m_priv->m_buffer);
+            S9S_WARNING("nextRecord : %s", nextRecord);
             if (nextRecord != NULL)
             {
+                S9S_WARNING("Multiple records");
                 // there are multiple records in the buffer, process the first
                 // JSon
                 size_t length = nextRecord - m_priv->m_buffer;
+
                 *nextRecord = '\0';
-                m_priv->m_jsonReply = std::string(m_priv->m_buffer+1, length-1);
+                m_priv->m_jsonReply = std::string(
+                        m_priv->m_buffer + 1, length - 1);
 
                 // and move the data in buffer
                 *nextRecord = '\036';
-                memmove(m_priv->m_buffer, nextRecord, m_priv->m_dataSize - length);
+                memmove(m_priv->m_buffer, nextRecord, 
+                        m_priv->m_dataSize - length);
+
                 m_priv->m_dataSize = m_priv->m_dataSize - length;
-            }
-            else
-            {
+            } else {
+                S9S_WARNING("Single   records");
                 // optimistic version, expecting a whole JSon string here 
-                m_priv->m_buffer[m_priv->m_dataSize-1] = '\0';
-                m_priv->m_jsonReply = std::string(m_priv->m_buffer+1, m_priv->m_dataSize-1);
+                m_priv->m_buffer[m_priv->m_dataSize - 1] = '\0';
+                m_priv->m_jsonReply = 
+                    std::string(m_priv->m_buffer + 1, m_priv->m_dataSize - 1);
 
                 // processed all, drop it
                 m_priv->clearBuffer();
@@ -6454,9 +6482,9 @@ S9sRpcClient::doExecuteRequest(
 
         if (m_priv->m_jsonReply.size() > 0u)
         {
-            // found a record, lets parse and notify back using the callback
             S9sVariantMap jsonRecord;
 
+            S9S_WARNING("Parsing: %s", STR(m_priv->m_jsonReply));
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
                 /*
@@ -6465,10 +6493,9 @@ S9sRpcClient::doExecuteRequest(
                  */
                 if (m_priv->m_bufferSize == 0)
                 {
-                    m_priv->m_jsonReply.insert(0,1,'\036');
+                    m_priv->m_jsonReply.insert(0, 1, '\036');
                     m_priv->setBuffer(m_priv->m_jsonReply, READ_SIZE);
-                }
-                else if (options->isDebug())
+                } else if (options->isDebug())
                 {
                     /*
                      * There are more JSon records in the buffer (as not empty)
@@ -6483,8 +6510,7 @@ S9sRpcClient::doExecuteRequest(
 
                 m_priv->m_jsonReply.clear();
                 continue;
-            }
-            else if (m_priv->m_callbackFunction == 0)
+            } else if (m_priv->m_callbackFunction == 0)
             {
                 m_priv->m_errorString.sprintf(
                         "Got JSon stream when expecting JSon object:\n%s.",
@@ -6495,11 +6521,10 @@ S9sRpcClient::doExecuteRequest(
                 setError(m_priv->m_errorString);
 
                 return false;
-            }
-            else
-            {
+            } else {
                 // notify back using the callback
-                (*m_priv->m_callbackFunction)(jsonRecord, m_priv->m_callbackUserData);
+                (*m_priv->m_callbackFunction)(
+                        jsonRecord, m_priv->m_callbackUserData);
             }
 
             m_priv->m_jsonReply.clear();

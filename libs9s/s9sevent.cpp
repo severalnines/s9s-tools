@@ -226,6 +226,7 @@ S9sEvent::eventHostToOneLiner() const
     S9sString     hostName, statusName, reason;
     S9sString     retval;
     S9sVariantMap tmpMap;
+    S9sString     name, value;
 
     switch (subClass)
     {
@@ -248,12 +249,24 @@ S9sEvent::eventHostToOneLiner() const
             break;
 
         case Changed:
-            retval.sprintf(
-                    "Host %s%s%s updated: %s", 
-                    XTERM_COLOR_NODE, 
-                    STR(host().hostName()), 
-                    TERM_NORMAL,
-                    STR(host().message()));
+            name  = getString("event_specifics/property_name");
+            value = getString("event_specifics/property_value");
+            if (!name.empty())
+            {
+                retval.sprintf(
+                        "Host %s%s%s updated: %s = %s", 
+                        XTERM_COLOR_NODE, 
+                        STR(host().hostName()), 
+                        TERM_NORMAL,
+                        STR(name), STR(value));
+            } else {
+                retval.sprintf(
+                        "Host %s%s%s updated: %s", 
+                        XTERM_COLOR_NODE, 
+                        STR(host().hostName()), 
+                        TERM_NORMAL,
+                        STR(host().message()));
+            }
             break;
 
         case Measurements:

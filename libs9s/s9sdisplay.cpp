@@ -48,6 +48,7 @@ void reset_terminal_mode()
 
 void set_conio_terminal_mode()
 {
+#if 1
     struct termios new_termios;
 
     /* take two copies - one for now, one for later */
@@ -61,6 +62,7 @@ void set_conio_terminal_mode()
     
     ::printf("%s", TERM_CURSOR_OFF);
     ::printf("%s", TERM_AUTOWRAP_OFF);
+#endif
 }
 
 int kbhit()
