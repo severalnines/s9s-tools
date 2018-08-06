@@ -820,6 +820,8 @@ function createCluster()
     check_exit_code $?
     remember_cmon_container "$node003"
 
+    mys9s node --list --long
+
     return 0
 }
 
