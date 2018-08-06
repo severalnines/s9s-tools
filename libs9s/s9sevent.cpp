@@ -52,9 +52,9 @@ S9sEvent::toString() const
 }
 
 S9sString 
-S9sEvent::toOneLiner() const
+S9sEvent::toOneLiner(
+        bool isDebugMode) const
 {
-    S9sOptions *options = S9sOptions::instance();
     S9sString   retval;
     S9sString   eventClass;
     S9sString   eventName;
@@ -67,7 +67,7 @@ S9sEvent::toOneLiner() const
     eventName  = property("event_name").toString();
 
     // The source file and source line.
-    if (options->isDebug())
+    if (isDebugMode)
     {
         tmp.sprintf("%s%28s%s:%-5d ",
                 XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,

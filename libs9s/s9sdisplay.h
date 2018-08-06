@@ -46,6 +46,9 @@ class S9sDisplay : public S9sThread
 
         int lastKeyCode() const;
 
+        int columns() const;
+        int rows() const;
+
     protected:
         virtual int exec();
         
@@ -71,5 +74,4 @@ class S9sDisplay : public S9sThread
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;
-        int                          m_selectionIndex;
 };

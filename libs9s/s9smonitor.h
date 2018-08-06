@@ -73,7 +73,9 @@ class S9sMonitor : public S9sDisplay
         S9sMap<int, S9sJob>          m_jobs;
         S9sMap<int, time_t>          m_jobActivity;
         S9sVector<S9sEvent>          m_events;
-        S9sVector<S9sString>         m_eventLines;
-        
+
+        bool                         m_viewDebug;
+        int                          m_selectionIndex;
+        bool                         m_selectionEnabled;
 };
 

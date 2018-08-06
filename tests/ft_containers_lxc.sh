@@ -806,7 +806,8 @@ function createCluster()
     fi
 
     #
-    # 
+    # We had a bug that was caused by the "node" property not being handled in 
+    # replaceNodesWithContainers().
     #
     print_title "Adding a Database Node"
     

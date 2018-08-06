@@ -33,7 +33,10 @@
 S9sMonitor::S9sMonitor(
         S9sMonitor::DisplayMode mode) : 
     S9sDisplay(),
-    m_displayMode(mode)
+    m_displayMode(mode),
+    m_viewDebug(false),
+    m_selectionIndex(0),
+    m_selectionEnabled(true)
 {
 }
 
@@ -41,6 +44,9 @@ S9sMonitor::~S9sMonitor()
 {
 }
 
+/**
+ * \returns How many containers found.
+ */
 int
 S9sMonitor::nContainers() const
 {
@@ -84,7 +90,6 @@ S9sMonitor::refreshScreen()
             break;
     }
 }
-
 
 /**
  * Print method for the "containers" view.
@@ -154,7 +159,9 @@ S9sMonitor::printContainers()
             S9sString    ipAddress = container.ipAddress(
                     S9s::AnyIpv4Address, "-");
             int          stateAsChar = container.stateAsChar();
-            bool         selected = (int) idx == m_selectionIndex;
+            bool         selected = 
+                (int) idx == m_selectionIndex &&
+                m_selectionEnabled;
 
             if (!selected)
             {
@@ -190,7 +197,7 @@ S9sMonitor::printContainers()
             ::printf("\n\r");
             ++m_lineCounter;
             
-            if (m_lineCounter >= m_rows - 1)
+            if (m_lineCounter >= rows() - 1)
                 break;
         }
             
@@ -277,7 +284,7 @@ S9sMonitor::printClusters()
         ::printf("\n\r");
         ++m_lineCounter;
         
-        if (m_lineCounter >= m_rows - 1)
+        if (m_lineCounter >= rows() - 1)
             break;
     }
 
@@ -381,13 +388,16 @@ S9sMonitor::printJobs()
         ::printf("\n\r");
         ++m_lineCounter;
         
-        if (m_lineCounter >= m_rows - 1)
+        if (m_lineCounter >= rows() - 1)
             break;
     }
 
     printFooter();
 }
 
+/**
+ * \param event The event that arrived and shall be processed.
+ */
 void 
 S9sMonitor::processEvent(
         S9sEvent &event)
@@ -396,13 +406,9 @@ S9sMonitor::processEvent(
 
     // The events themselves.
     m_events << event;
-    m_eventLines << event.toOneLiner();
 
     while (m_events.size() > 300)
         m_events.takeFirst();
-
-    while (m_eventLines.size() > 300)
-        m_eventLines.takeFirst();
 
     // The clusters.
     if (event.hasCluster())
@@ -475,6 +481,11 @@ S9sMonitor::processEvent(
     }
 }
 
+/**
+ * This is where we process the 
+ *   s9s event --list 
+ * list. It just prints the events and does nothing else.
+ */
 void 
 S9sMonitor::processEventList(
         S9sEvent &event)
@@ -486,7 +497,7 @@ S9sMonitor::processEventList(
     {
         output = event.toVariantMap().toString();
     } else {
-        output = event.toOneLiner();
+        output = event.toOneLiner(options->isDebug());
     }
 
     output.replace("\n", "\n\r");
@@ -494,7 +505,10 @@ S9sMonitor::processEventList(
         ::printf("%s\n\r", STR(output));
 }
 
-
+/**
+ * This method is called from time to time to remove the old objects e.g. the
+ * jobs that are finished a while ago.
+ */
 void
 S9sMonitor::removeOldObjects()
 {
@@ -562,8 +576,12 @@ S9sMonitor::printHeader()
     ::printf("%d VM(s) ", nContainers());
     ::printf("%lu cluster(s) ", m_clusters.size());
     ::printf("%lu jobs(s) ", m_jobs.size());
-    ::printf("0x%02x ",      lastKeyCode());
-    ::printf("%02dx%02d ",   m_columns, m_rows);
+
+    if (m_viewDebug)
+    {
+        ::printf("0x%02x ",      lastKeyCode());
+        ::printf("%02dx%02d ",   columns(), rows());
+    }
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("\r\n");
@@ -578,7 +596,7 @@ void
 S9sMonitor::printFooter()
 {
     ::printf("%s", TERM_ERASE_EOL);
-    for (;m_lineCounter < m_rows - 1; ++m_lineCounter)
+    for (;m_lineCounter < rows() - 1; ++m_lineCounter)
     {
         ::printf("\n\r");
         ::printf("%s", TERM_ERASE_EOL);
@@ -697,6 +715,9 @@ S9sMonitor::printNodes()
     printFooter();
 }
 
+/**
+ * Printing method for the event view.
+ */
 void
 S9sMonitor::printEvents()
 {
@@ -705,13 +726,16 @@ S9sMonitor::printEvents()
     startScreen();
     printHeader();
 
-    startIndex = m_eventLines.size() - (m_rows - 2);
+    startIndex = m_events.size() - (rows() - 2);
     if (startIndex < 0)
         startIndex = 0;
 
-    for (uint idx = startIndex; idx < m_eventLines.size(); ++idx)
+    for (uint idx = startIndex; idx < m_events.size(); ++idx)
     {
-        S9sString line = m_eventLines[idx];
+        S9sEvent  &event = m_events[idx];
+        S9sString  line;
+        
+        line = event.toOneLiner(m_viewDebug);
 
         line.replace("\n", "\\n");
         line.replace("\r", "\\r");
@@ -749,7 +773,13 @@ S9sMonitor::processKey(
             m_displayMode = WatchClusters;
             ::printf("%s", TERM_CLEAR_SCREEN);
             break;
-        
+       
+        case 'd':
+        case 'D':
+            // Turning on and off teh debug mode.
+            m_viewDebug = !m_viewDebug;
+            break;
+
         case 'n':
         case 'N':
             m_displayMode = WatchNodes;
@@ -775,15 +805,41 @@ S9sMonitor::processKey(
             break;
 
         case S9S_KEY_DOWN:
-            // Key down.
-            ++m_selectionIndex;
+            switch (m_displayMode)
+            {
+                case PrintEvents:
+                    break;
+
+                case WatchEvents:
+                case WatchNodes:
+                case WatchClusters:
+                case WatchJobs:
+                    break;
+
+                case WatchContainers:
+                    if (m_selectionIndex < nContainers())
+                        ++m_selectionIndex;
+                    break;
+            }
             break;
 
         case S9S_KEY_UP:
-            // Key up.
-            --m_selectionIndex;
-            if (m_selectionIndex < 0)
-                m_selectionIndex = 0;
+            switch (m_displayMode)
+            {
+                case PrintEvents:
+                    break;
+
+                case WatchEvents:
+                case WatchNodes:
+                case WatchClusters:
+                case WatchJobs:
+                    break;
+
+                case WatchContainers:
+                    if (m_selectionIndex > 0)
+                        --m_selectionIndex;
+                    break;
+            }
             break;
     }
 }

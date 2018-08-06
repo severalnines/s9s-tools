@@ -80,8 +80,7 @@ S9sDisplay::S9sDisplay() :
     m_refreshCounter(0),
     m_lastKeyCode(0),
     m_columns(0),
-    m_rows(0),
-    m_selectionIndex(0)
+    m_rows(0)
 {
     S9sOptions       *options = S9sOptions::instance();
     bool              success;
@@ -115,6 +114,38 @@ S9sDisplay::~S9sDisplay()
     reset_terminal_mode();
 }
 
+int
+S9sDisplay::lastKeyCode() const
+{
+    return m_lastKeyCode;
+}
+
+char
+S9sDisplay::rotatingCharacter() const
+{
+    char charset[] = { '/', '-', '\\',  '|' };
+
+    return charset[m_refreshCounter % 3];
+}
+
+/**
+ * \returns How many columns the terminal has.
+ */
+int
+S9sDisplay::columns() const
+{
+    return m_columns;
+}
+
+/**
+ * \returns How many rows the terminal has.
+ */
+int 
+S9sDisplay::rows() const
+{
+    return m_rows;
+}
+
 int 
 S9sDisplay::exec()
 {
@@ -146,26 +177,18 @@ S9sDisplay::exec()
             m_mutex.lock();
             refreshScreen();
             m_mutex.unlock();
-            usleep(500000);
         }
             
+        for (int idx = 0; idx < 100; ++idx)
+        {
+            if (kbhit())
+                break;
+
+            usleep(10000);
+        }
     } while (!shouldStop());
 
     return 0;
-}
-
-int
-S9sDisplay::lastKeyCode() const
-{
-    return m_lastKeyCode;
-}
-
-char
-S9sDisplay::rotatingCharacter() const
-{
-    char charset[] = { '/', '-', '\\',  '|' };
-
-    return charset[m_refreshCounter % 3];
 }
 
 /**
@@ -181,8 +204,8 @@ S9sDisplay::startScreen()
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
     if (m_refreshCounter == 0 || 
-            m_columns == w.ws_col ||
-            m_rows    == w.ws_row)
+            columns() == w.ws_col ||
+            rows()    == w.ws_row)
     {
         //::printf("%s", TERM_CLEAR_SCREEN);
         ::printf("%s", TERM_HOME);
@@ -204,7 +227,7 @@ S9sDisplay::printMiddle(
 {
     int nSpaces;
 
-    for (;m_lineCounter < m_rows / 2;)
+    for (;m_lineCounter < rows() / 2;)
     {
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\r\n");

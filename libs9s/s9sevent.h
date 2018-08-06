@@ -102,7 +102,7 @@ class S9sEvent : public S9sObject
         int clusterId() const;
 
         S9sString toString() const;
-        S9sString toOneLiner() const;
+        S9sString toOneLiner(bool isDebugMode = false) const;
 
         static S9sEvent::EventType 
             stringToEventType(
