@@ -189,7 +189,7 @@ S9sBusinessLogic::execute()
             
             do {
                 success = client.subscribeEvents(
-                        S9sDisplay::eventHandler, (void *)&display);
+                        S9sMonitor::eventHandler, (void *)&display);
             } while (success);
 
             if (!success)
@@ -203,14 +203,14 @@ S9sBusinessLogic::execute()
             ::printf("Call ended\n");
         } else if (options->isWatchRequested())
         {
-            S9sMonitor display(S9sDisplay::WatchNodes);
+            S9sMonitor display(S9sMonitor::WatchNodes);
             bool       success;
 
             display.start();
             
             do {
                 success = client.subscribeEvents(
-                        S9sDisplay::eventHandler, (void *)&display); 
+                        S9sMonitor::eventHandler, (void *)&display); 
             } while (success);
             
             if (!success)

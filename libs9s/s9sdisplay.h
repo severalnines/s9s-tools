@@ -31,69 +31,42 @@
 #include "S9sThread"
 #include "S9sFile"
 
+#define S9S_KEY_DOWN 0x425b1b
+#define S9S_KEY_UP   0x415b1b
+
+/**
+ * A UI screen that can be used as a parent class for views continuously
+ * refreshed on the terminal screen.
+ */
 class S9sDisplay : public S9sThread
 {
     public:
-        enum DisplayMode 
-        {
-            PrintEvents,
-            WatchNodes,
-            WatchClusters,
-            WatchJobs,
-            WatchContainers,
-            WatchEvents,
-        };
-
-        S9sDisplay(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
+        S9sDisplay();
         virtual ~S9sDisplay();
-
-        void eventCallback(S9sEvent &event);
-
-        static void eventHandler(
-                const S9sVariantMap &jsonMessage,
-                void                *userData);
 
     protected:
         virtual int exec();
         
     protected:
-        void processKey(int key);
-        void processEvent(S9sEvent &event);
-        void processEventList(S9sEvent &event);
-        void removeOldObjects();
-
-        void refreshScreen();
-        void printContainers();
-        void printNodes();
-        void printEvents();
-        void printClusters();
-        void printJobs();
+        virtual void processKey(int key) = 0;
+        virtual void refreshScreen() = 0;
 
         void startScreen();
-        void printHeader();
-        void printFooter();
+        
+        virtual void printHeader() = 0;
+        virtual void printFooter() = 0;
+
         void printMiddle(const S9sString text);
         char rotatingCharacter() const;
-
-        int nContainers() const;
 
     protected:
         S9sMutex                     m_mutex;
         S9sFormatter                 m_formatter;
-        DisplayMode                  m_displayMode;
         int                          m_refreshCounter;
-        S9sMap<int, S9sNode>         m_nodes;
-        S9sMap<S9sString, S9sServer> m_servers;
-        S9sMap<int, S9sCluster>      m_clusters;
-        S9sMap<int, S9sJob>          m_jobs;
-        S9sMap<int, time_t>          m_jobActivity;
-        S9sVector<S9sEvent>          m_events;
-        S9sVector<S9sString>         m_eventLines;
         int                          m_lastKey1;
         int                          m_columns;
         int                          m_rows;
         int                          m_lineCounter;
-
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;
         int                          m_selectionIndex;

@@ -27,7 +27,53 @@
 class S9sMonitor : public S9sDisplay
 {
     public:
-        S9sMonitor(S9sDisplay::DisplayMode mode = S9sDisplay::PrintEvents);
+        enum DisplayMode 
+        {
+            PrintEvents,
+            WatchNodes,
+            WatchClusters,
+            WatchJobs,
+            WatchContainers,
+            WatchEvents,
+        };
+
+        S9sMonitor(S9sMonitor::DisplayMode mode = S9sMonitor::PrintEvents);
         virtual ~S9sMonitor();
+
+        static void eventHandler(
+                const S9sVariantMap &jsonMessage,
+                void                *userData);
+
+        int nContainers() const;
+    protected:
+
+        void eventCallback(S9sEvent &event);
+
+        virtual void processKey(int key);
+        virtual void refreshScreen();
+        virtual void printHeader();
+        virtual void printFooter();
+        
+        virtual void processEvent(S9sEvent &event);
+        void processEventList(S9sEvent &event);
+        void removeOldObjects();
+        
+    private:
+        void printContainers();
+        void printNodes();
+        void printEvents();
+        void printClusters();
+        void printJobs();
+
+    private:
+        DisplayMode                  m_displayMode;
+        S9sMap<int, S9sNode>         m_nodes;
+        S9sMap<S9sString, S9sServer> m_servers;
+        S9sMap<int, S9sCluster>      m_clusters;
+        S9sMap<int, S9sJob>          m_jobs;
+        S9sMap<int, time_t>          m_jobActivity;
+        S9sVector<S9sEvent>          m_events;
+        S9sVector<S9sString>         m_eventLines;
+        
 };
 
