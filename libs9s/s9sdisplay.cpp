@@ -82,7 +82,8 @@ S9sDisplay::S9sDisplay(
     m_refreshCounter(0),
     m_lastKey1(0),
     m_columns(0),
-    m_rows(0)
+    m_rows(0),
+    m_selectionIndex(0)
 {
     S9sOptions       *options = S9sOptions::instance();
     bool              success;
@@ -119,33 +120,39 @@ S9sDisplay::~S9sDisplay()
 int 
 S9sDisplay::exec()
 {
-    do { 
+    do {
+        bool refreshed = false;
+
         // Reading the key the user may have hit.
         if (kbhit())
         {
-#if 0
-            m_lastKey1 = getchar();
-#else
             int code;
 
+            //usleep(500000);
+
             m_lastKey1 = 0;
-            code = read(fileno(stdin), (void*)&m_lastKey1, sizeof(m_lastKey1));
+            code = read(fileno(stdin), (void*)&m_lastKey1, 3);
             if (code < 0)
             {
                 S9S_WARNING("code: %d", code);
             }
-#endif
+
             m_mutex.lock();
             processKey(m_lastKey1);
+            refreshScreen();
+            refreshed = true;
             m_mutex.unlock();
         }
 
         // Refreshing the screen.
-        m_mutex.lock();
-        refreshScreen();
-        m_mutex.unlock();
-        
-        usleep(500000);
+        if (!refreshed)
+        {
+            m_mutex.lock();
+            refreshScreen();
+            m_mutex.unlock();
+            usleep(500000);
+        }
+            
     } while (!shouldStop());
 
     return 0;
@@ -198,6 +205,18 @@ S9sDisplay::processKey(
         case 'E':
             m_displayMode = WatchEvents;
             ::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+
+        case 0x425b1b:
+            // Key down.
+            ++m_selectionIndex;
+            break;
+
+        case 0x415b1b:
+            // Key up.
+            --m_selectionIndex;
+            if (m_selectionIndex < 0)
+                m_selectionIndex = 0;
             break;
     }
 }
@@ -834,25 +853,40 @@ S9sDisplay::printContainers()
             S9sContainer container = maps[idx].toVariantMap();
             S9sString    ipAddress = container.ipAddress(
                     S9s::AnyIpv4Address, "-");
-        
-            typeFormat.printf(STR(container.type()));
-            templateFormat.printf(container.templateName("-"));
-            stateFormat.printf(STR(container.state()));
+            int          stateAsChar = container.stateAsChar();
+            bool         selected = (int) idx == m_selectionIndex;
 
-            ::printf("%s", m_formatter.ipColorBegin(ipAddress));
-            ipFormat.printf(STR(ipAddress));
-            ::printf("%s", m_formatter.ipColorEnd(ipAddress));
+            if (!selected)
+            {
+                typeFormat.printf(STR(container.type()));
+                templateFormat.printf(container.templateName("-"));
+                stateFormat.printf(STR(container.state()));
 
-            ::printf("%s", m_formatter.serverColorBegin());
-            serverFormat.printf(container.parentServerName());
-            ::printf("%s", m_formatter.serverColorEnd());
+                ::printf("%s", m_formatter.ipColorBegin(ipAddress));
+                ipFormat.printf(STR(ipAddress));
+                ::printf("%s", m_formatter.ipColorEnd(ipAddress));
 
-            ::printf("%s",
-                    m_formatter.containerColorBegin(container.stateAsChar()));
-            aliasFormat.printf(container.alias());
-            ::printf("%s", m_formatter.containerColorEnd());
-        
-            ::printf("%s", TERM_ERASE_EOL);
+                ::printf("%s", m_formatter.serverColorBegin());
+                serverFormat.printf(container.parentServerName());
+                ::printf("%s", m_formatter.serverColorEnd());
+
+                ::printf("%s", m_formatter.containerColorBegin(stateAsChar));
+                aliasFormat.printf(container.alias());
+                ::printf("%s", m_formatter.containerColorEnd());
+            
+                ::printf("%s", TERM_ERASE_EOL);
+            } else {
+                ::printf("%s", "\033[1m\033[48;5;4m");
+                typeFormat.printf(STR(container.type()));
+                templateFormat.printf(container.templateName("-"));
+                stateFormat.printf(STR(container.state()));
+                ipFormat.printf(STR(ipAddress));
+                serverFormat.printf(container.parentServerName());
+                aliasFormat.printf(container.alias());
+                ::printf("%s", TERM_ERASE_EOL);
+                ::printf("%s", TERM_NORMAL);
+            }
+
             ::printf("\n\r");
             ++m_lineCounter;
             

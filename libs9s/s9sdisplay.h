@@ -56,7 +56,7 @@ class S9sDisplay : public S9sThread
     protected:
         virtual int exec();
         
-    private:
+    protected:
         void processKey(int key);
         void processEvent(S9sEvent &event);
         void processEventList(S9sEvent &event);
@@ -77,7 +77,7 @@ class S9sDisplay : public S9sThread
 
         int nContainers() const;
 
-    private:
+    protected:
         S9sMutex                     m_mutex;
         S9sFormatter                 m_formatter;
         DisplayMode                  m_displayMode;
@@ -96,4 +96,5 @@ class S9sDisplay : public S9sThread
 
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;
+        int                          m_selectionIndex;
 };

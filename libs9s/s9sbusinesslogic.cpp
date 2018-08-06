@@ -32,7 +32,7 @@
 #include "S9sDir"
 #include "S9sCmonGraph"
 #include "S9sEvent"
-#include "S9sDisplay"
+#include "S9sMonitor"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -182,7 +182,7 @@ S9sBusinessLogic::execute()
     {
         if (options->isListRequested())
         {
-            S9sDisplay display;
+            S9sMonitor display;
             bool       success;
 
             display.start();
@@ -203,7 +203,7 @@ S9sBusinessLogic::execute()
             ::printf("Call ended\n");
         } else if (options->isWatchRequested())
         {
-            S9sDisplay display(S9sDisplay::WatchNodes);
+            S9sMonitor display(S9sDisplay::WatchNodes);
             bool       success;
 
             display.start();

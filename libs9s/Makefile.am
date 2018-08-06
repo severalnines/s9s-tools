@@ -165,6 +165,8 @@ libs9s_public_h_headers =     \
 	s9sstringlist.h           \
 	S9sDisplay                \
 	s9sdisplay.h              \
+	S9sMonitor                \
+	s9smonitor.h              \
 	S9sTopUi                  \
 	s9stopui.h                \
 	s9sunion.h                \
@@ -231,6 +233,7 @@ libs9s_a_SOURCES =            \
 	s9srpcclient.cpp          \
 	s9sbusinesslogic.cpp      \
 	s9sdisplay.cpp            \
+	s9smonitor.cpp            \
 	s9stopui.cpp              \
 	s9sgraph.cpp              \
 	s9scmongraph.cpp          \
