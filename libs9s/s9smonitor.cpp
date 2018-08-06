@@ -562,8 +562,8 @@ S9sMonitor::printHeader()
     ::printf("%d VM(s) ", nContainers());
     ::printf("%lu cluster(s) ", m_clusters.size());
     ::printf("%lu jobs(s) ", m_jobs.size());
-    ::printf("0x%02x ", m_lastKey1);
-    ::printf("%02dx%02d ", m_columns, m_rows);
+    ::printf("0x%02x ",      lastKeyCode());
+    ::printf("%02dx%02d ",   m_columns, m_rows);
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("\r\n");

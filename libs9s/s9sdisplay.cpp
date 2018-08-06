@@ -78,7 +78,7 @@ int kbhit()
 S9sDisplay::S9sDisplay() :
     S9sThread(),
     m_refreshCounter(0),
-    m_lastKey1(0),
+    m_lastKeyCode(0),
     m_columns(0),
     m_rows(0),
     m_selectionIndex(0)
@@ -126,15 +126,15 @@ S9sDisplay::exec()
         {
             int code;
 
-            m_lastKey1 = 0;
-            code = read(fileno(stdin), (void*)&m_lastKey1, 3);
+            m_lastKeyCode = 0;
+            code = read(fileno(stdin), (void*)&m_lastKeyCode, 3);
             if (code < 0)
             {
                 S9S_WARNING("code: %d", code);
             }
 
             m_mutex.lock();
-            processKey(m_lastKey1);
+            processKey(m_lastKeyCode);
             refreshScreen();
             refreshed = true;
             m_mutex.unlock();
@@ -152,6 +152,12 @@ S9sDisplay::exec()
     } while (!shouldStop());
 
     return 0;
+}
+
+int
+S9sDisplay::lastKeyCode() const
+{
+    return m_lastKeyCode;
 }
 
 char

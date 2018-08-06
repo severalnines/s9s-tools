@@ -723,6 +723,7 @@ function createCluster()
 {
     local node001="ft_containers_lxc_21_$$"
     local node002="ft_containers_lxc_22_$$"
+    local node003="ft_containers_lxc_23_$$"
     local node_ip
     local container_id
 
@@ -803,6 +804,21 @@ function createCluster()
     if ! is_server_running_ssh "$node_ip" "$USER"; then
         failure "Could not SSH into the ProxySql node."
     fi
+
+    #
+    # 
+    #
+    print_title "Adding a Database Node"
+    
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$node003" \
+        --containers="$node003" \
+        $LOG_OPTION
+
+    check_exit_code $?
+    remember_cmon_container "$node003"
 
     return 0
 }

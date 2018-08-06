@@ -44,6 +44,8 @@ class S9sDisplay : public S9sThread
         S9sDisplay();
         virtual ~S9sDisplay();
 
+        int lastKeyCode() const;
+
     protected:
         virtual int exec();
         
@@ -63,7 +65,7 @@ class S9sDisplay : public S9sThread
         S9sMutex                     m_mutex;
         S9sFormatter                 m_formatter;
         int                          m_refreshCounter;
-        int                          m_lastKey1;
+        int                          m_lastKeyCode;
         int                          m_columns;
         int                          m_rows;
         int                          m_lineCounter;
