@@ -18,7 +18,16 @@ Fullname:                              Email:
 
 
 
-
+--- a/src/cmonrpcserver_p.cpp
++++ b/src/cmonrpcserver_p.cpp
+@@ -674,6 +674,7 @@ CmonRpcServerPrivate::handleConnection (
+     //
+     if (restRequest.path.startsWith("/v2/subscribe_events"))
+     {
++        CmonString username = sessionStore.get(restRequest.sessionId, "authenticated-username");
+         cmon_main_loop_subscribe_events(socket, restRequest);
+         // the connection has been moved there, so return
+         return;
 
 
 

@@ -20,6 +20,12 @@ class S9sRpcClientPrivate
         void ref();
         int unRef();
 
+        void printBuffer(const S9sString &title);
+
+        bool hasCompleteJSon() const;
+        S9sString getCompleteJSon() const;
+        bool skipRecord();
+
     private:
         void clearBuffer();
         void ensureHasBuffer(size_t size);

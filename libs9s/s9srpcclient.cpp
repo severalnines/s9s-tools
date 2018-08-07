@@ -6389,16 +6389,17 @@ S9sRpcClient::doExecuteRequest(
         readLength = m_priv->read(
                 m_priv->m_buffer + m_priv->m_dataSize, READ_SIZE - 1);
 
-        S9S_DEBUG("%s: Read length: %zd", 
-                STR(timeStampString()), readLength);
-
         if (readLength > 0)
         {
             m_priv->m_dataSize += readLength;
 
             // read may got interrupted due to too small buffer
             if (readLength >= READ_SIZE - 1)
+            {
+                S9S_WARNING("%u >= %d", readLength, READ_SIZE - 1);
+                S9S_WARNING("continue");
                 continue;
+            }
         } else if (readLength < 0)
         {
             m_priv->m_errorString.sprintf(
@@ -6419,6 +6420,66 @@ S9sRpcClient::doExecuteRequest(
 
         m_priv->m_jsonReply.clear();
 
+        S9S_WARNING("    dataSize: %u", m_priv->m_dataSize);
+        S9S_WARNING("isJSonStream: %s", isJSonStream ? "true" : "false");
+        S9S_WARNING("  readLength: %zd", readLength);
+        S9S_WARNING("   READ_SIZE: %d", READ_SIZE);
+        S9S_WARNING("    dataSize: %zd", m_priv->m_dataSize);
+        //if (isJSonStream)
+        //    m_priv->printBuffer("before");
+
+        /*
+         * If this is a JSon stream we process the JSon messages until we done
+         * with all of them in the buffer. The buffer might have zero or more 
+         * complete JSon messages.
+         */
+        while (isJSonStream && m_priv->hasCompleteJSon())
+        {
+            S9sVariantMap jsonRecord;
+
+            m_priv->m_jsonReply = m_priv->getCompleteJSon();
+            //S9S_WARNING("json: %s", STR(m_priv->m_jsonReply));
+            S9S_WARNING("1 Parsing json");
+
+            m_priv->skipRecord();
+            if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
+            {
+                PRINT_ERROR("Failed to parse JSon string.");
+                return false;
+            } else if (m_priv->m_callbackFunction == 0)
+            {
+                m_priv->m_errorString.sprintf(
+                        "Got JSon stream when expecting JSon object:\n%s.",
+                        STR(m_priv->m_jsonReply));
+                PRINT_ERROR("%s", STR(m_priv->m_errorString));
+
+                options->setExitStatus(S9sOptions::ConnectionError);
+                setError(m_priv->m_errorString);
+
+                return false;
+            }
+
+            (*m_priv->m_callbackFunction)(
+                        jsonRecord, m_priv->m_callbackUserData);
+
+            m_priv->m_jsonReply = "";
+        }
+
+        if (isJSonStream)
+        {
+            // If we read no data in streaming mode that simply means the
+            // connecttion ended by the server.
+            if (readLength == 0)
+                return true;
+
+            continue;
+        }
+            
+        if (readLength == 0)
+            break;
+
+#if 0
+        //m_priv->printBuffer("*** One *******");
         if (isJSonStream && m_priv->m_dataSize > 0)
         {
             /*
@@ -6428,25 +6489,7 @@ S9sRpcClient::doExecuteRequest(
                 (void *) (m_priv->m_buffer + 1), 
                 '\036', m_priv->m_dataSize - 1);
 
-            // FIXME: This is all fucked up. This code is too complicated, can't
-            // read it and it has multiple bugs. 
-            // 1) It now duplicates the json strings, when the second json
-            //    message comes it sends the first one, then the second. When
-            //    the third comes it sends the second, then the third.
-            // 2) "optimistic version, expecting a whole JSon string here"
-            //    This is not how TCP works. Our json strings are big, bigger 
-            //    than the MTU and *very* often the json messages are broke up.
-            // 3) It is not acceptable to loose messages! I am bugfixing a
-            //    program that leaks messages, I worked hours to figure out why
-            //    my code does not work, when in fact the messages are leaked
-            //    here.
-            // 4) It is not acceptable to discover we have have a message in the
-            //    buffer and then go block on reading the next message. If we
-            //    have a next message and it is complete we *have* to process
-            //    it. The user is watching the terminal and the next message
-            //    might come a long time later.
-            //
-            // I think this part should be complete rewritten.
+
             S9S_WARNING("    record : %p", m_priv->m_buffer);
             S9S_WARNING("nextRecord : %p", nextRecord);
             S9S_WARNING("    record : %s", m_priv->m_buffer);
@@ -6480,11 +6523,14 @@ S9sRpcClient::doExecuteRequest(
             }
         }
 
+#endif
+#if 0
         if (m_priv->m_jsonReply.size() > 0u)
         {
             S9sVariantMap jsonRecord;
 
-            S9S_WARNING("Parsing: %s", STR(m_priv->m_jsonReply));
+            //S9S_WARNING("2 Parsing: %s", STR(m_priv->m_jsonReply));
+            S9S_WARNING("2 Parsing");
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
             {
                 /*
@@ -6530,10 +6576,12 @@ S9sRpcClient::doExecuteRequest(
             m_priv->m_jsonReply.clear();
             continue;
         }
-
+#endif
+#if 0
         if (readLength == 0)
             break;
-    };
+#endif
+    } // for(;;)
 
     // Closing the buffer with a null terminating byte.
     m_priv->ensureHasBuffer(m_priv->m_dataSize + 1);

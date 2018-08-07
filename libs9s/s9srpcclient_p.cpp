@@ -275,9 +275,13 @@ S9sRpcClientPrivate::read(
     int     loopCount = 0;
 
     if (m_ssl)
+    {
+        S9S_WARNING("calling SSL_read");
         return SSL_read(m_ssl, buffer, bufSize);
+    }
 
     do {
+        S9S_WARNING("calling read");
         retval = ::read(m_socketFd, buffer, bufSize);
 
         loopCount += 1;
@@ -357,12 +361,13 @@ S9sRpcClientPrivate::serverVersionString() const
 }
 
 /**
- * Replaces the buffer contents with the specified content,
- * and reserves additional space for further reading.
- * (incomplete JSon..)
+ * Replaces the buffer contents with the specified content, and reserves
+ * additional space for further reading.  (incomplete JSon..)
  */
 void
-S9sRpcClientPrivate::setBuffer(S9sString &content, int additionalSize)
+S9sRpcClientPrivate::setBuffer(
+        S9sString &content, 
+        int additionalSize)
 {
     clearBuffer();   
 
@@ -370,5 +375,125 @@ S9sRpcClientPrivate::setBuffer(S9sString &content, int additionalSize)
 
     memcpy(m_buffer, STR(content), content.size());
     m_dataSize = content.size();
+}
+
+void
+S9sRpcClientPrivate::printBuffer(
+        const S9sString &title)
+{
+    ::printf("\n\n");
+    ::printf("%s\n", STR(title));
+
+    for (int n = 0; n < (int) m_dataSize; ++n)
+    {
+        int c = m_buffer[n];
+
+        if (c == '\036')
+        {
+            ::printf("%s\\36%s", TERM_RED, TERM_NORMAL);
+        } else if (c == '\n')
+        {
+            ::printf("\\n");
+        } else if (c == '\r')
+        {
+            ::printf("\\r");
+        } else if (c >= 'a' && c < 'z')
+        {
+            ::printf("%c", c);
+        } else if (c >= 'A' && c < 'Z')
+        {
+            ::printf("%c", c);
+        } else if (c >= '!' && c < '/')
+        {
+            ::printf("%c", c);
+        } else if (c >= '0' && c < '9')
+        {
+            ::printf("%c", c);
+        } else if (c == '{' || c == '}' || c == '[' || c == ']')
+        {
+            ::printf("%c", c);
+        } else if (c == ' ')
+        {
+            ::printf("%c", c);
+        } else {
+            ::printf("\\%02d", c);
+        }
+
+        //printf(" ");
+        if (n % 40 == 0 && n != 0)
+            printf("\n");
+    }
+
+    printf("\n");
+    fflush(stdout);
+}
+
+bool
+S9sRpcClientPrivate::hasCompleteJSon() const
+{
+    if (m_buffer == NULL)
+        return false;
+
+    if (memmem(m_buffer, m_dataSize, "\n\n", 2) != NULL)
+        return true;
+
+    if (memchr(m_buffer, m_dataSize, '\036') != NULL)
+        return true;
+
+    return false;
+}
+
+S9sString 
+S9sRpcClientPrivate::getCompleteJSon() const
+{
+    S9sString retval;
+    char      previousChar = '\0';
+
+    for (uint idx = 0; idx < m_dataSize; ++idx)
+    {
+        char c = m_buffer[idx];
+
+        if (idx == 0 && c == '\036')
+            continue;
+
+        if (c == '\036')
+            break;
+
+        if (c == '\n' && previousChar == '\n')
+            break;
+
+        retval += c;
+        previousChar = c;
+    }
+
+    return retval;
+}
+
+bool
+S9sRpcClientPrivate::skipRecord()
+{
+    char *nextRecord;
+    size_t remaining;
+    size_t recordSize;
+    
+    nextRecord = (char *) memmem(m_buffer, m_dataSize, "\n\n", 2);
+    if (nextRecord == NULL)
+        return false;
+
+    nextRecord += 2;
+    if (*nextRecord == '\036')
+        ++nextRecord;
+
+    recordSize = nextRecord - m_buffer;
+    remaining  = m_dataSize - recordSize;
+    if (remaining == 0)
+    {
+        m_dataSize = 0;
+        return true;
+    }
+
+    memmove(m_buffer, nextRecord, remaining);
+    m_dataSize = remaining;
+    return true;
 }
 
