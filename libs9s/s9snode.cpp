@@ -662,6 +662,19 @@ S9sNode::hostName() const
     return S9sString();
 }
 
+S9sString
+S9sNode::fullCdtPath() const
+{
+    S9sString retval;
+
+    retval.sprintf("%s/%s:%d", 
+            STR(cdtPath()),
+            STR(hostName()),
+            port());
+
+    return retval;
+}
+
 /**
  * \returns The IP address of the node.
  */

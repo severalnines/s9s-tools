@@ -377,6 +377,11 @@ S9sRpcClientPrivate::setBuffer(
     m_dataSize = content.size();
 }
 
+/**
+ * \param title Just a string to be printed.
+ *
+ * A method for debugging.
+ */
 void
 S9sRpcClientPrivate::printBuffer(
         const S9sString &title)
@@ -428,6 +433,14 @@ S9sRpcClientPrivate::printBuffer(
     fflush(stdout);
 }
 
+/**
+ * \returns True if there is at least one complete JSon string is in the 
+ * buffer.
+ *
+ * This method can be used when processing a JSon stream, otherwise it may
+ * return false negatives. When streaming the end of the JSon string is marked
+ * by either a '\036' character or an empty line.
+ */
 bool
 S9sRpcClientPrivate::hasCompleteJSon() const
 {
@@ -443,6 +456,13 @@ S9sRpcClientPrivate::hasCompleteJSon() const
     return false;
 }
 
+/**
+ * \returns One JSon string.
+ *
+ * This method can be used only when JSon streaming is processed. When streaming
+ * the end of the JSon string is marked by either a '\036' character or an empty
+ * line.
+ */
 S9sString 
 S9sRpcClientPrivate::getCompleteJSon() const
 {
@@ -469,6 +489,13 @@ S9sRpcClientPrivate::getCompleteJSon() const
     return retval;
 }
 
+/**
+ * \returns True if the JSon string was removed from the buffer.
+ *
+ * This method can be used only when JSon streaming is processed. When streaming
+ * the end of the JSon string is marked by either a '\036' character or an empty
+ * line.
+ */
 bool
 S9sRpcClientPrivate::skipRecord()
 {

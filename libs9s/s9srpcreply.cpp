@@ -5864,9 +5864,9 @@ S9sRpcReply::printNodeStat(
     
     printf("%s Owner:%s ", greyBegin, greyEnd);
     printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
-            groupColorBegin(cluster.groupOwnerName()), 
-            STR(cluster.groupOwnerName()), 
+            userColorBegin(), STR(node.ownerName()), userColorEnd(),
+            groupColorBegin(node.groupOwnerName()), 
+            STR(node.groupOwnerName()), 
             groupColorEnd());
     printf("\n");
    

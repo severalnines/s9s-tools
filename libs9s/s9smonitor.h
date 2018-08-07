@@ -68,6 +68,7 @@ class S9sMonitor : public S9sDisplay
     private:
         DisplayMode                  m_displayMode;
         S9sMap<int, S9sNode>         m_nodes;
+        S9sMap<int, S9sEvent>        m_eventsForNodes;
         S9sMap<S9sString, S9sServer> m_servers;
         S9sMap<int, S9sCluster>      m_clusters;
         S9sMap<int, S9sJob>          m_jobs;
@@ -75,6 +76,7 @@ class S9sMonitor : public S9sDisplay
         S9sVector<S9sEvent>          m_events;
 
         bool                         m_viewDebug;
+        bool                         m_viewObjects;
         int                          m_selectionIndex;
         bool                         m_selectionEnabled;
 };

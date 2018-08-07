@@ -36,6 +36,48 @@ S9sFormatter::headerColorEnd() const
 }
 
 const char *
+S9sFormatter::userColorBegin() 
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_ORANGE;
+
+    return "";
+}
+
+const char *
+S9sFormatter::userColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sFormatter::groupColorBegin(
+        const S9sString &groupName) 
+{
+    if (useSyntaxHighLight())
+    {
+        if (groupName == "0")
+            return XTERM_COLOR_RED;
+        else
+            return XTERM_COLOR_CYAN;
+    }
+
+    return "";
+}
+
+const char *
+S9sFormatter::groupColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::directoryColorBegin() const
 {
     if (useSyntaxHighLight())
@@ -157,6 +199,8 @@ S9sFormatter::ipColorBegin(
 {
     if (useSyntaxHighLight() && ip.looksLikeIpAddress())
         return XTERM_COLOR_IP;
+    else if (useSyntaxHighLight() && ip.empty())
+        return XTERM_COLOR_IP;
 
     return "";
 }
@@ -166,6 +210,8 @@ S9sFormatter::ipColorEnd(
         const S9sString &ip) 
 {
     if (useSyntaxHighLight() && ip.looksLikeIpAddress())
+        return TERM_NORMAL;
+    else if (useSyntaxHighLight() && ip.empty())
         return TERM_NORMAL;
 
     return "";

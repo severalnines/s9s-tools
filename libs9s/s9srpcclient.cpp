@@ -448,8 +448,8 @@ S9sRpcClient::getCluster(
 
     request["operation"]       = "getClusterInfo";
     request["with_hosts"]      = true;
-    request["with_containers"] = true;
-    request["with_sheet_info"] = true;
+    //request["with_containers"] = true;
+    //request["with_sheet_info"] = true;
 
     if (S9S_CLUSTER_ID_IS_VALID(clusterId))
         request["cluster_id"]   = clusterId;
@@ -486,8 +486,8 @@ S9sRpcClient::getClusters()
 
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
-    request["with_containers"] = true;
-    request["with_sheet_info"] = true;
+    //request["with_containers"] = true;
+    //request["with_sheet_info"] = true;
 
     retval = executeRequest(uri, request);
 
@@ -6420,14 +6420,6 @@ S9sRpcClient::doExecuteRequest(
 
         m_priv->m_jsonReply.clear();
 
-        S9S_WARNING("    dataSize: %u", m_priv->m_dataSize);
-        S9S_WARNING("isJSonStream: %s", isJSonStream ? "true" : "false");
-        S9S_WARNING("  readLength: %zd", readLength);
-        S9S_WARNING("   READ_SIZE: %d", READ_SIZE);
-        S9S_WARNING("    dataSize: %zd", m_priv->m_dataSize);
-        //if (isJSonStream)
-        //    m_priv->printBuffer("before");
-
         /*
          * If this is a JSon stream we process the JSon messages until we done
          * with all of them in the buffer. The buffer might have zero or more 
@@ -6468,119 +6460,18 @@ S9sRpcClient::doExecuteRequest(
         if (isJSonStream)
         {
             // If we read no data in streaming mode that simply means the
-            // connecttion ended by the server.
+            // connection ended by the server.
             if (readLength == 0)
                 return true;
 
+            // We continue reading the connection.
             continue;
         }
             
+        // If this is not a JSon stream and we could not read data we break the
+        // read-loop, the next lines will handle this.
         if (readLength == 0)
             break;
-
-#if 0
-        //m_priv->printBuffer("*** One *******");
-        if (isJSonStream && m_priv->m_dataSize > 0)
-        {
-            /*
-             * Look for multiple records first, and process the first one.
-             */
-            char *nextRecord = (char *) memchr(
-                (void *) (m_priv->m_buffer + 1), 
-                '\036', m_priv->m_dataSize - 1);
-
-
-            S9S_WARNING("    record : %p", m_priv->m_buffer);
-            S9S_WARNING("nextRecord : %p", nextRecord);
-            S9S_WARNING("    record : %s", m_priv->m_buffer);
-            S9S_WARNING("nextRecord : %s", nextRecord);
-            if (nextRecord != NULL)
-            {
-                S9S_WARNING("Multiple records");
-                // there are multiple records in the buffer, process the first
-                // JSon
-                size_t length = nextRecord - m_priv->m_buffer;
-
-                *nextRecord = '\0';
-                m_priv->m_jsonReply = std::string(
-                        m_priv->m_buffer + 1, length - 1);
-
-                // and move the data in buffer
-                *nextRecord = '\036';
-                memmove(m_priv->m_buffer, nextRecord, 
-                        m_priv->m_dataSize - length);
-
-                m_priv->m_dataSize = m_priv->m_dataSize - length;
-            } else {
-                S9S_WARNING("Single   records");
-                // optimistic version, expecting a whole JSon string here 
-                m_priv->m_buffer[m_priv->m_dataSize - 1] = '\0';
-                m_priv->m_jsonReply = 
-                    std::string(m_priv->m_buffer + 1, m_priv->m_dataSize - 1);
-
-                // processed all, drop it
-                m_priv->clearBuffer();
-            }
-        }
-
-#endif
-#if 0
-        if (m_priv->m_jsonReply.size() > 0u)
-        {
-            S9sVariantMap jsonRecord;
-
-            //S9S_WARNING("2 Parsing: %s", STR(m_priv->m_jsonReply));
-            S9S_WARNING("2 Parsing");
-            if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
-            {
-                /*
-                 * When no other JSon strings in the queue (so buffer is empty)
-                 * lets continue the reading (data got fragmented)
-                 */
-                if (m_priv->m_bufferSize == 0)
-                {
-                    m_priv->m_jsonReply.insert(0, 1, '\036');
-                    m_priv->setBuffer(m_priv->m_jsonReply, READ_SIZE);
-                } else if (options->isDebug())
-                {
-                    /*
-                     * There are more JSon records in the buffer (as not empty)
-                     * lets ignore this broken JSon string then...
-                     * Q: howto properly log errors here?
-                     */
-                    printf("---- Error parsing JSON reply:\n%s\n----\n",
-                        STR(m_priv->m_jsonReply));
-                    fflush(stdout);
-                    //exit(1);
-                }
-
-                m_priv->m_jsonReply.clear();
-                continue;
-            } else if (m_priv->m_callbackFunction == 0)
-            {
-                m_priv->m_errorString.sprintf(
-                        "Got JSon stream when expecting JSon object:\n%s.",
-                        STR(m_priv->m_jsonReply));
-                PRINT_ERROR("%s", STR(m_priv->m_errorString));
-
-                options->setExitStatus(S9sOptions::ConnectionError);
-                setError(m_priv->m_errorString);
-
-                return false;
-            } else {
-                // notify back using the callback
-                (*m_priv->m_callbackFunction)(
-                        jsonRecord, m_priv->m_callbackUserData);
-            }
-
-            m_priv->m_jsonReply.clear();
-            continue;
-        }
-#endif
-#if 0
-        if (readLength == 0)
-            break;
-#endif
     } // for(;;)
 
     // Closing the buffer with a null terminating byte.

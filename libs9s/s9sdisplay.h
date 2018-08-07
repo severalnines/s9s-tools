@@ -54,6 +54,7 @@ class S9sDisplay : public S9sThread
         
     protected:
         virtual void processKey(int key) = 0;
+        virtual void processButton(uint button, uint x, uint y);
         virtual void refreshScreen() = 0;
 
         void startScreen();
@@ -68,10 +69,18 @@ class S9sDisplay : public S9sThread
         S9sMutex                     m_mutex;
         S9sFormatter                 m_formatter;
         int                          m_refreshCounter;
-        int                          m_lastKeyCode;
+        
+        union {
+            unsigned char  inputBuffer[6];
+            int   lastKeyCode;
+        } m_lastKeyCode;
+
         int                          m_columns;
         int                          m_rows;
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;
+        int                          m_lastButton;
+        int                          m_lastX;
+        int                          m_lastY;
 };

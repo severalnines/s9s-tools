@@ -13,6 +13,12 @@ class S9sFormatter
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
 
+        const char *userColorBegin() ;
+        const char *userColorEnd();
+
+        const char *groupColorBegin(const S9sString &groupName = "");
+        const char *groupColorEnd();
+
         const char *directoryColorBegin() const;
         const char *directoryColorEnd() const;
 
@@ -25,8 +31,8 @@ class S9sFormatter
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
 
-        const char *ipColorBegin(const S9sString &ip);
-        const char *ipColorEnd(const S9sString &ip);
+        const char *ipColorBegin(const S9sString &ip = "");
+        const char *ipColorEnd(const S9sString &ip = "");
 
         const char *serverColorBegin();
         const char *serverColorEnd();

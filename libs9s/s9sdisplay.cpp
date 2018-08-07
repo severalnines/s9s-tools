@@ -44,11 +44,16 @@ void reset_terminal_mode()
     tcsetattr(0, TCSANOW, &orig_termios1);
     ::printf("%s", TERM_CURSOR_ON);
     ::printf("%s", TERM_AUTOWRAP_ON);
+
+    ::printf("%s", "\e[?9l");
+    ::printf("%s", "\e[?47l");
 }
 
+/**
+ * https://stackoverflow.com/questions/8476332/writing-a-real-interactive-terminal-program-like-vim-htop-in-c-c-witho
+ */
 void set_conio_terminal_mode()
 {
-#if 1
     struct termios new_termios;
 
     /* take two copies - one for now, one for later */
@@ -62,7 +67,12 @@ void set_conio_terminal_mode()
     
     ::printf("%s", TERM_CURSOR_OFF);
     ::printf("%s", TERM_AUTOWRAP_OFF);
-#endif
+    
+    // Switch to the alternate buffer screen
+    ::printf("%s", "\e[?47h");
+
+    // Enable mouse tracking
+    ::printf("%s", "\e[?9h");
 }
 
 int kbhit()
@@ -80,12 +90,17 @@ int kbhit()
 S9sDisplay::S9sDisplay() :
     S9sThread(),
     m_refreshCounter(0),
-    m_lastKeyCode(0),
     m_columns(0),
     m_rows(0)
 {
     S9sOptions       *options = S9sOptions::instance();
     bool              success;
+
+    m_lastKeyCode.lastKeyCode = 0;
+    m_lastButton = 0;
+    m_lastX      = 0;
+    m_lastY      = 0;
+
 
     set_conio_terminal_mode();
 
@@ -119,7 +134,7 @@ S9sDisplay::~S9sDisplay()
 int
 S9sDisplay::lastKeyCode() const
 {
-    return m_lastKeyCode;
+    return m_lastKeyCode.lastKeyCode;
 }
 
 char
@@ -159,15 +174,39 @@ S9sDisplay::exec()
         {
             int code;
 
-            m_lastKeyCode = 0;
-            code = read(fileno(stdin), (void*)&m_lastKeyCode, 3);
+            m_lastKeyCode.lastKeyCode = 0;
+            code = read(fileno(stdin), (void*)&m_lastKeyCode, 6);
             if (code < 0)
             {
                 S9S_WARNING("code: %d", code);
             }
 
+            // Processing the input.
             m_mutex.lock();
-            processKey(m_lastKeyCode);
+
+            if (m_lastKeyCode.inputBuffer[0] == 0x1b &&
+                    m_lastKeyCode.inputBuffer[1] == 0x5b &&
+                    m_lastKeyCode.inputBuffer[2] == 0x4d)
+            {
+                uint btn = m_lastKeyCode.inputBuffer[3] - 32;
+                uint x   = m_lastKeyCode.inputBuffer[4] - 32;
+                uint y   = m_lastKeyCode.inputBuffer[5] - 32;
+                processButton(btn, x, y);
+                #if 0
+                ::printf ("\n\rbutton:%u\n\rx:%u\n\ry:%u\n\n\r", btn, x, y);
+                for (int idx = 0; idx < 6; ++idx)
+                {
+                    printf("[%d] 0x%x\n\r", 
+                            idx,
+                            (int)m_lastKeyCode.inputBuffer[idx]);
+                }
+
+                sleep(1);
+                #endif
+            } else {
+                processKey(m_lastKeyCode.lastKeyCode);
+            }
+
             refreshScreen();
             refreshed = true;
             m_mutex.unlock();
@@ -191,6 +230,17 @@ S9sDisplay::exec()
     } while (!shouldStop());
 
     return 0;
+}
+
+void 
+S9sDisplay::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+    m_lastButton = button;
+    m_lastX      = x;
+    m_lastY      = y;
 }
 
 /**
