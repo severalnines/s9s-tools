@@ -144,8 +144,7 @@ S9sMonitor::printContainers()
         serverFormat.printf("SERVER");
         aliasFormat.printf("NAME");
 
-        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
-        ++m_lineCounter; 
+        printNewLine();
     } else {
         printMiddle("*** No containers. ***");
     }
@@ -181,8 +180,6 @@ S9sMonitor::printContainers()
                 ::printf("%s", m_formatter.containerColorBegin(stateAsChar));
                 aliasFormat.printf(container.alias());
                 ::printf("%s", m_formatter.containerColorEnd());
-            
-                ::printf("%s", TERM_ERASE_EOL);
             } else {
                 ::printf("%s", "\033[1m\033[48;5;4m");
                 typeFormat.printf(STR(container.type()));
@@ -195,8 +192,7 @@ S9sMonitor::printContainers()
                 ::printf("%s", TERM_NORMAL);
             }
 
-            ::printf("\n\r");
-            ++m_lineCounter;
+            printNewLine();
             
             if (m_lineCounter >= rows() - 1)
                 break;
@@ -221,6 +217,15 @@ S9sMonitor::printClusters()
     S9sFormat stateFormat;
     S9sFormat nameFormat;
     S9sFormat messageFormat;
+    S9sFormat   aclFormat;
+    S9sFormat   ownerFormat(
+            m_formatter.userColorBegin(), m_formatter.userColorEnd());
+
+    S9sFormat   groupFormat(
+            m_formatter.groupColorBegin(), m_formatter.groupColorEnd());
+
+    S9sFormat   pathFormat
+        (m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
 
     startScreen();
     printHeader();
@@ -236,6 +241,11 @@ S9sMonitor::printClusters()
         stateFormat.widen(cluster.state());
         nameFormat.widen(cluster.name());
         messageFormat.widen(cluster.statusText());
+        
+        aclFormat.widen("c" + cluster.aclShortString());
+        ownerFormat.widen(cluster.ownerName());
+        groupFormat.widen(cluster.groupOwnerName());
+        pathFormat.widen(cluster.fullCdtPath());
     }
 
     if (!m_clusters.empty())
@@ -246,17 +256,30 @@ S9sMonitor::printClusters()
         typeFormat.widen("TYPE");
         nameFormat.widen("CLUSTER STATE");
         messageFormat.widen("MESSAGE");
+        
+        aclFormat.widen("MODE");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        pathFormat.widen("PATH");
 
         printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
-        versionFormat.printf("VERSION");
-        idFormat.printf("ID");
-        stateFormat.printf("STATE");
-        typeFormat.printf("TYPE");
-        nameFormat.printf("CLUSTER STATE");
-        messageFormat.printf("MESSAGE");
         
-        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
-        ++m_lineCounter;
+        if (m_viewObjects)
+        {
+            aclFormat.printf("MODE", false);
+            ownerFormat.printf("OWNER", false);
+            groupFormat.printf("GROUP", false);
+            pathFormat.printf("PATH", false);
+        } else {
+            versionFormat.printf("VERSION");
+            idFormat.printf("ID");
+            stateFormat.printf("STATE");
+            typeFormat.printf("TYPE");
+            nameFormat.printf("CLUSTER STATE");
+            messageFormat.printf("MESSAGE");
+        }
+        
+        printNewLine();
     } else {
         printMiddle("*** No clusters. ***");
     }
@@ -266,24 +289,30 @@ S9sMonitor::printClusters()
      */
     foreach (const S9sCluster &cluster, m_clusters)
     {
-        versionFormat.printf(cluster.vendorAndVersion());
-        idFormat.printf(cluster.clusterId());
+        if (m_viewObjects)
+        {
+            aclFormat.printf("n" + cluster.aclShortString());
+            ownerFormat.printf(cluster.ownerName());
+            groupFormat.printf(cluster.groupOwnerName());
+            pathFormat.printf(cluster.fullCdtPath());
+        } else {
+            versionFormat.printf(cluster.vendorAndVersion());
+            idFormat.printf(cluster.clusterId());
         
-        printf("%s", m_formatter.clusterStateColorBegin(cluster.state()));
-        stateFormat.printf(cluster.state());
-        printf("%s", m_formatter.clusterStateColorEnd());
+            printf("%s", m_formatter.clusterStateColorBegin(cluster.state()));
+            stateFormat.printf(cluster.state());
+            printf("%s", m_formatter.clusterStateColorEnd());
 
-        typeFormat.printf(cluster.clusterType());
-
-        printf("%s", m_formatter.clusterColorBegin());
-        nameFormat.printf(cluster.name());
-        printf("%s", m_formatter.clusterColorEnd());
+            typeFormat.printf(cluster.clusterType());
+    
+            printf("%s", m_formatter.clusterColorBegin());
+            nameFormat.printf(cluster.name());
+            printf("%s", m_formatter.clusterColorEnd());
         
-        messageFormat.printf(cluster.statusText());
+            messageFormat.printf(cluster.statusText());
+        }
 
-        ::printf("%s", TERM_ERASE_EOL);
-        ::printf("\n\r");
-        ++m_lineCounter;
+        printNewLine();
         
         if (m_lineCounter >= rows() - 1)
             break;
@@ -332,8 +361,7 @@ S9sMonitor::printJobs()
         progressFormat.printf("PROGRESS");
         titleFormat.printf("TITLE");
         statusTextFormat.printf("STATUS");
-        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
-        ++m_lineCounter;
+        printNewLine();
     } else {
         printMiddle("*** No running jobs. ***");
     }
@@ -385,9 +413,7 @@ S9sMonitor::printJobs()
 
         statusTextFormat.printf(statusText);
 
-        ::printf("%s", TERM_ERASE_EOL);
-        ::printf("\n\r");
-        ++m_lineCounter;
+        printNewLine();
         
         if (m_lineCounter >= rows() - 1)
             break;
@@ -585,10 +611,7 @@ S9sMonitor::printHeader()
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
 
-    ::printf("%s", TERM_ERASE_EOL);
-    ::printf("\r\n");
-    ::printf("%s", TERM_NORMAL);
-    m_lineCounter++;
+    printNewLine();
 }
 
 /**
@@ -621,8 +644,6 @@ S9sMonitor::printFooter()
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
-    fflush(stdout);
-    m_lineCounter++;
 }
 
 
@@ -643,9 +664,14 @@ S9sMonitor::printNodes()
     S9sFormat   portFormat;
 
     S9sFormat   aclFormat;
-    S9sFormat   ownerFormat(m_formatter.userColorBegin(), m_formatter.userColorEnd());
-    S9sFormat   groupFormat(m_formatter.groupColorBegin(), m_formatter.groupColorEnd());
-    S9sFormat   pathFormat(m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
+    S9sFormat   ownerFormat(
+            m_formatter.userColorBegin(), m_formatter.userColorEnd());
+
+    S9sFormat   groupFormat(
+            m_formatter.groupColorBegin(), m_formatter.groupColorEnd());
+
+    S9sFormat   pathFormat
+        (m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
 
     const char *beginColor, *endColor;
 
@@ -690,6 +716,11 @@ S9sMonitor::printNodes()
         clusterNameFormat.widen("CLUSTER");
         hostNameFormat.widen("HOST");
         portFormat.widen("PORT");
+        
+        aclFormat.widen("MODE");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        pathFormat.widen("PATH");
 
         printf("%s", TERM_SCREEN_HEADER);
        
@@ -715,8 +746,7 @@ S9sMonitor::printNodes()
             printf("COMMENT");
         }
 
-        printf("%s%s\n\r", TERM_ERASE_EOL, m_formatter.headerColorEnd());
-        ++m_lineCounter;
+        printNewLine();
     } else {
         printMiddle("*** No nodes. ***");
     }
@@ -745,7 +775,6 @@ S9sMonitor::printNodes()
             ownerFormat.printf(node.ownerName());
             groupFormat.printf(node.groupOwnerName());
             pathFormat.printf(node.fullCdtPath());
-
         } else {
             ::printf("%c", node.nodeTypeFlag());
             ::printf("%c", node.hostStatusFlag());
@@ -765,9 +794,7 @@ S9sMonitor::printNodes()
             ::printf("%s ", STR(node.message()));
         }
 
-        ::printf("%s", TERM_ERASE_EOL);
-        ::printf("\n\r");
-        ++m_lineCounter;
+        printNewLine();
     }
 
     printFooter();
@@ -797,11 +824,9 @@ S9sMonitor::printEvents()
 
         line.replace("\n", "\\n");
         line.replace("\r", "\\r");
-        
+       
         ::printf("%s ", STR(line));
-        ::printf("%s", TERM_ERASE_EOL);
-        ::printf("\n\r");
-        ++m_lineCounter;
+        printNewLine();
     }
 
     printFooter();

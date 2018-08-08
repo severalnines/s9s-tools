@@ -63,7 +63,13 @@ class S9sDisplay : public S9sThread
         virtual void printFooter() = 0;
 
         void printMiddle(const S9sString text);
+        void printNewLine();
+        
         char rotatingCharacter() const;
+
+    private:
+        void setConioTerminalMode();
+        int kbhit();
 
     protected:
         S9sMutex                     m_mutex;

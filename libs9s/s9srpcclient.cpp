@@ -487,7 +487,7 @@ S9sRpcClient::getClusters()
     request["operation"]       = "getAllClusterInfo";
     request["with_hosts"]      = true;
     //request["with_containers"] = true;
-    //request["with_sheet_info"] = true;
+    request["with_sheet_info"] = true;
 
     retval = executeRequest(uri, request);
 

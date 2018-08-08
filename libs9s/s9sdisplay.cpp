@@ -49,44 +49,6 @@ void reset_terminal_mode()
     ::printf("%s", "\e[?47l");
 }
 
-/**
- * https://stackoverflow.com/questions/8476332/writing-a-real-interactive-terminal-program-like-vim-htop-in-c-c-witho
- */
-void set_conio_terminal_mode()
-{
-    struct termios new_termios;
-
-    /* take two copies - one for now, one for later */
-    tcgetattr(0, &orig_termios1);
-    memcpy(&new_termios, &orig_termios1, sizeof(new_termios));
-
-    /* register cleanup handler, and set the new terminal mode */
-    atexit(reset_terminal_mode);
-    cfmakeraw(&new_termios);
-    tcsetattr(0, TCSANOW, &new_termios);
-    
-    ::printf("%s", TERM_CURSOR_OFF);
-    ::printf("%s", TERM_AUTOWRAP_OFF);
-    
-    // Switch to the alternate buffer screen
-    ::printf("%s", "\e[?47h");
-
-    // Enable mouse tracking
-    ::printf("%s", "\e[?9h");
-}
-
-int kbhit()
-{
-    struct timeval tv = { 0L, 0L };
-    fd_set fds;
-
-    FD_ZERO(&fds);
-    FD_SET(0, &fds);
-
-    return select(1, &fds, NULL, NULL, &tv);
-}
-
-
 S9sDisplay::S9sDisplay() :
     S9sThread(),
     m_refreshCounter(0),
@@ -102,7 +64,7 @@ S9sDisplay::S9sDisplay() :
     m_lastY      = 0;
 
 
-    set_conio_terminal_mode();
+    setConioTerminalMode();
 
     m_outputFileName = options->outputFile();
     if (!m_outputFileName.empty())
@@ -295,5 +257,54 @@ S9sDisplay::printMiddle(
     ::printf("\r\n");
     ++m_lineCounter;
 }
+
+void
+S9sDisplay::printNewLine()
+{
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    ::printf("\n\r");
+    ++m_lineCounter;
+}
+
+/**
+ * https://stackoverflow.com/questions/8476332/writing-a-real-interactive-terminal-program-like-vim-htop-in-c-c-witho
+ */
+void 
+S9sDisplay::setConioTerminalMode()
+{
+    struct termios new_termios;
+
+    /* take two copies - one for now, one for later */
+    tcgetattr(0, &orig_termios1);
+    memcpy(&new_termios, &orig_termios1, sizeof(new_termios));
+
+    /* register cleanup handler, and set the new terminal mode */
+    atexit(reset_terminal_mode);
+    cfmakeraw(&new_termios);
+    tcsetattr(0, TCSANOW, &new_termios);
+    
+    ::printf("%s", TERM_CURSOR_OFF);
+    ::printf("%s", TERM_AUTOWRAP_OFF);
+    
+    // Switch to the alternate buffer screen
+    ::printf("%s", "\e[?47h");
+
+    // Enable mouse tracking
+    ::printf("%s", "\e[?9h");
+}
+
+int 
+S9sDisplay::kbhit()
+{
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+
+    return select(1, &fds, NULL, NULL, &tv);
+}
+
 
 

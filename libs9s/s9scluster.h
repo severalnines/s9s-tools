@@ -39,7 +39,8 @@ class S9sCluster : public S9sObject
 
         virtual S9sString className() const;
         virtual S9sString name() const;
-        
+        S9sString fullCdtPath() const;
+
         virtual S9sString id(const S9sString &defaultValue) const;
 
         virtual S9sString ownerName() const;

@@ -85,6 +85,18 @@ S9sCluster::name() const
     return S9sString();
 }
 
+S9sString
+S9sCluster::fullCdtPath() const
+{
+    S9sString retval;
+
+    retval.sprintf("%s/%s", 
+            STR(cdtPath()),
+            STR(name()));
+
+    return retval;
+}
+
 /**
  * \returns The name of the user that owns the cluster.
  */
