@@ -269,8 +269,8 @@ void
 S9sDisplay::printNewLine()
 {
     ::printf("%s", TERM_ERASE_EOL);
-    ::printf("%s", TERM_NORMAL);
     ::printf("\n\r");
+    ::printf("%s", TERM_NORMAL);
     ++m_lineCounter;
 }
 

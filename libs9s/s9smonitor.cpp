@@ -104,6 +104,7 @@ S9sMonitor::printContainers()
     S9sFormat  ipFormat;
     S9sFormat  serverFormat;
     S9sFormat  aliasFormat;
+    int        totalIndex;
 
     startScreen();
     printHeader();
@@ -149,6 +150,7 @@ S9sMonitor::printContainers()
         printMiddle("*** No containers. ***");
     }
 
+    totalIndex = 0;
     foreach (const S9sServer &server, m_servers)
     {
         S9sVariantList maps = server.containers();
@@ -159,8 +161,10 @@ S9sMonitor::printContainers()
             S9sString    ipAddress = container.ipAddress(
                     S9s::AnyIpv4Address, "-");
             int          stateAsChar = container.stateAsChar();
-            bool         selected = 
-                (int) idx == m_selectionIndex &&
+            bool         selected;
+            
+            selected = 
+                totalIndex == m_selectionIndex &&
                 m_selectionEnabled;
 
             if (!selected)
@@ -181,6 +185,7 @@ S9sMonitor::printContainers()
                 aliasFormat.printf(container.alias());
                 ::printf("%s", m_formatter.containerColorEnd());
             } else {
+                // The line is selected, we use a highlight color.
                 ::printf("%s", "\033[1m\033[48;5;4m");
                 typeFormat.printf(STR(container.type()));
                 templateFormat.printf(container.templateName("-"));
@@ -188,16 +193,17 @@ S9sMonitor::printContainers()
                 ipFormat.printf(STR(ipAddress));
                 serverFormat.printf(container.parentServerName());
                 aliasFormat.printf(container.alias());
-                ::printf("%s", TERM_ERASE_EOL);
-                ::printf("%s", TERM_NORMAL);
             }
 
+            ++totalIndex;
             printNewLine();
             
             if (m_lineCounter >= rows() - 1)
                 break;
-        }
+        }   
             
+        if (m_lineCounter >= rows() - 1)
+            break;
     }
     
     printFooter();
@@ -530,7 +536,7 @@ S9sMonitor::processEventList(
 
     output.replace("\n", "\n\r");
     if (!output.empty())
-        ::printf("%s\n\r", STR(output));
+        ::printf("\n\r%s", STR(output));
 }
 
 /**
