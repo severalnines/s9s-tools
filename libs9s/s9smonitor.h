@@ -50,6 +50,8 @@ class S9sMonitor : public S9sDisplay
         void eventCallback(S9sEvent &event);
 
         virtual void processKey(int key);
+        virtual void processButton(uint button, uint x, uint y);
+
         virtual void refreshScreen();
         virtual void printHeader();
         virtual void printFooter();

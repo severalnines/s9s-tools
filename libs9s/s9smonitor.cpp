@@ -817,19 +817,19 @@ S9sMonitor::processKey(
         case 'Q':
         case 0x1b:
         case 3:
-            ::printf("\n\r");
-            ::printf("%s", TERM_CLEAR_SCREEN);
-            ::printf("%s", TERM_HOME);
-            ::printf("\n\r");
-            ::printf("Exiting on key press.\n\r");
-            fflush(stdout);
+            //::printf("\n\r");
+            //::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_HOME);
+            //::printf("\n\r");
+            //::printf("Exiting on key press.\n\r");
+            //fflush(stdout);
             exit(0);
             break;
 
         case 'c':
         case 'C':
             m_displayMode = WatchClusters;
-            ::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
        
         case 'd':
@@ -846,25 +846,25 @@ S9sMonitor::processKey(
         case 'n':
         case 'N':
             m_displayMode = WatchNodes;
-            ::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
         
         case 'j':
         case 'J':
             m_displayMode = WatchJobs;
-            ::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
         
         case 'v':
         case 'V':
             m_displayMode = WatchContainers;
-            ::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
         
         case 'e':
         case 'E':
             m_displayMode = WatchEvents;
-            ::printf("%s", TERM_CLEAR_SCREEN);
+            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
 
         case S9S_KEY_DOWN:
@@ -904,6 +904,41 @@ S9sMonitor::processKey(
                     break;
             }
             break;
+    }
+}
+
+void 
+S9sMonitor::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+    S9sDisplay::processButton(button, x, y);
+
+    if ((int) y == rows())
+    {
+        if (x >= 2 && x <= 8)
+        {
+            m_displayMode = WatchNodes;            
+        } else if (x >= 10 && x <= 19)
+        {
+            m_displayMode = WatchClusters;
+        } else if (x >= 21 && x <= 26)
+        {
+            m_displayMode = WatchJobs;
+        } else if (x >= 28 && x <= 39)
+        {
+            m_displayMode = WatchContainers;
+        } else if (x >= 41 && x <= 48)
+        {
+            m_displayMode = WatchEvents;
+        } else if (x >= 50 && x <= 61)
+        {
+            m_viewDebug = !m_viewDebug;
+        } else if (x >= 63 && x <= 68)
+        {
+            exit(0);
+        }
     }
 }
 
