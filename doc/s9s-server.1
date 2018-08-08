@@ -155,6 +155,18 @@ s9s server --list-subnets
 .fi
 
 .TP
+.B \-\^\-list\-templates
+Lists the supported templates. Various virtualization techonolgies handle
+templates differently, some even use a different terminology (for example 
+"size" is one of such a synonym).
+
+.B EXAMPLE
+.nf
+s9s server --list-templates --long
+.fi
+
+
+.TP
 .B \-\-register
 Register an existint container server. If this command line option is provided
 the controller will register the server to be used as container server later. No

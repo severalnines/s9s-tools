@@ -49,6 +49,12 @@ void reset_terminal_mode()
     ::printf("%s", "\e[?47l");
 }
 
+/**
+ * \param interactive If this is true the cursor will be disabled, a new screen
+ *   buffer will be used (no scroll in the terminal), the automatic line wrap
+ *   will be disabled, the mouse tracking will be enabled, so a screen oriented
+ *   UI will be provided.
+ */
 S9sDisplay::S9sDisplay(
         bool interactive) :
     S9sThread(),
