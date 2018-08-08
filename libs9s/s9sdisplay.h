@@ -41,7 +41,7 @@
 class S9sDisplay : public S9sThread
 {
     public:
-        S9sDisplay();
+        S9sDisplay(bool interactive = true);
         virtual ~S9sDisplay();
 
         int lastKeyCode() const;
@@ -68,7 +68,7 @@ class S9sDisplay : public S9sThread
         char rotatingCharacter() const;
 
     private:
-        void setConioTerminalMode();
+        void setConioTerminalMode(bool interactive);
         int kbhit();
 
     protected:

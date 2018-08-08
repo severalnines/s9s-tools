@@ -32,7 +32,7 @@
 
 S9sMonitor::S9sMonitor(
         S9sMonitor::DisplayMode mode) : 
-    S9sDisplay(),
+    S9sDisplay(mode != PrintEvents),
     m_displayMode(mode),
     m_viewDebug(false),
     m_viewObjects(false),

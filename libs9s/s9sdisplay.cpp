@@ -49,7 +49,8 @@ void reset_terminal_mode()
     ::printf("%s", "\e[?47l");
 }
 
-S9sDisplay::S9sDisplay() :
+S9sDisplay::S9sDisplay(
+        bool interactive) :
     S9sThread(),
     m_refreshCounter(0),
     m_columns(0),
@@ -64,7 +65,7 @@ S9sDisplay::S9sDisplay() :
     m_lastY      = 0;
 
 
-    setConioTerminalMode();
+    setConioTerminalMode(interactive);
 
     m_outputFileName = options->outputFile();
     if (!m_outputFileName.empty())
@@ -249,7 +250,7 @@ S9sDisplay::printMiddle(
     }
 
     nSpaces = (m_columns - text.length()) / 2;
-    for (;nSpaces > 0;--nSpaces)
+    for (;nSpaces > 0; --nSpaces)
         ::printf(" ");
 
     ::printf("%s", STR(text));
@@ -271,7 +272,8 @@ S9sDisplay::printNewLine()
  * https://stackoverflow.com/questions/8476332/writing-a-real-interactive-terminal-program-like-vim-htop-in-c-c-witho
  */
 void 
-S9sDisplay::setConioTerminalMode()
+S9sDisplay::setConioTerminalMode(
+        bool interactive)
 {
     struct termios new_termios;
 
@@ -284,14 +286,17 @@ S9sDisplay::setConioTerminalMode()
     cfmakeraw(&new_termios);
     tcsetattr(0, TCSANOW, &new_termios);
     
-    ::printf("%s", TERM_CURSOR_OFF);
-    ::printf("%s", TERM_AUTOWRAP_OFF);
+    if (interactive)
+    {
+        ::printf("%s", TERM_CURSOR_OFF);
+        ::printf("%s", TERM_AUTOWRAP_OFF);
     
-    // Switch to the alternate buffer screen
-    ::printf("%s", "\e[?47h");
+        // Switch to the alternate buffer screen
+        ::printf("%s", "\e[?47h");
 
-    // Enable mouse tracking
-    ::printf("%s", "\e[?9h");
+        // Enable mouse tracking
+        ::printf("%s", "\e[?9h");
+    }
 }
 
 int 
