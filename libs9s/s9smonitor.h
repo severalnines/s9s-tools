@@ -34,6 +34,7 @@ class S9sMonitor : public S9sDisplay
             WatchClusters,
             WatchJobs,
             WatchContainers,
+            WatchServers,
             WatchEvents,
         };
 
@@ -62,6 +63,7 @@ class S9sMonitor : public S9sDisplay
         
     private:
         void printContainers();
+        void printServers();
         void printNodes();
         void printEvents();
         void printClusters();

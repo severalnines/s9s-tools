@@ -284,6 +284,14 @@ S9sEvent::eventHostToOneLiner() const
             #endif
             break;
 
+        case NoSubClass:
+            retval.sprintf(
+                    "Host %s%s%s ping.", 
+                    XTERM_COLOR_NODE, 
+                    STR(host().hostName()), 
+                    TERM_NORMAL);
+            break;
+
         default:
             retval = "Unknown host event";
     }

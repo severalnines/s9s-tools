@@ -74,6 +74,10 @@ S9sMonitor::refreshScreen()
         case WatchContainers:
             printContainers();
             break;
+        
+        case WatchServers:
+            printServers();
+            break;
 
         case WatchClusters:
             printClusters();
@@ -209,6 +213,73 @@ S9sMonitor::printContainers()
     printFooter();
 }
 
+void
+S9sMonitor::printServers()
+{
+    S9sFormat  typeFormat;
+    S9sFormat  versionFormat;
+    S9sFormat  nContainersFormat;
+    S9sFormat  nameFormat;
+    S9sFormat  ipFormat(m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
+    S9sFormat  commentsFormat;
+
+    startScreen();
+    printHeader();
+    
+    foreach (const S9sServer &server, m_servers)
+    {
+        typeFormat.widen(server.protocol());
+        versionFormat.widen(server.version());
+        nContainersFormat.widen(server.nContainers());
+        nameFormat.widen(server.hostName());
+        ipFormat.widen(server.ipAddress());
+        commentsFormat.widen(server.message("-"));
+    }
+    
+    if (!m_servers.empty())
+    {
+        typeFormat.widen("TYPE");
+        versionFormat.widen("VERSION");
+        nContainersFormat.widen("#C");
+        nameFormat.widen("HOSTNAME");
+        ipFormat.widen("IPADDRESS");
+        commentsFormat.widen("COMMENT");
+
+        printf("%s", TERM_SCREEN_HEADER);
+        
+        typeFormat.printf("TYPE", false);
+        versionFormat.printf("VERSION", false);
+        nContainersFormat.printf("#C", false);
+        nameFormat.printf("HOSTNAME", false);
+        ipFormat.printf("IPADDRESS", false);
+        commentsFormat.printf("COMMENT", false);
+
+        printNewLine();
+    } else {
+        printMiddle("*** No servers. ***");
+    }
+
+    foreach (const S9sServer &server, m_servers)
+    {
+        nameFormat.setColor(
+                server.colorBegin(true),
+                server.colorEnd(true));
+
+        typeFormat.printf(server.protocol());
+        versionFormat.printf(server.version());
+        nContainersFormat.printf(server.nContainers());
+        nameFormat.printf(server.hostName());
+        ipFormat.printf(server.ipAddress());
+        commentsFormat.printf(server.message("-"));
+
+        printNewLine();
+            
+        if (m_lineCounter >= rows() - 1)
+            break;
+    }
+    
+    printFooter();
+}
 
 
 /**
@@ -497,6 +568,11 @@ S9sMonitor::processEvent(
             printContainers();
             ++m_refreshCounter;
             break;
+        
+        case WatchServers:
+            printServers();
+            ++m_refreshCounter;
+            break;
 
         case WatchClusters:
             printClusters();
@@ -592,6 +668,10 @@ S9sMonitor::printHeader()
         
         case WatchContainers:
             title = "S9S CONTAINER VIEW ";
+            break;
+        
+        case WatchServers:
+            title = "S9S SERVER VIEW    ";
             break;
         
         case WatchEvents:
@@ -848,19 +928,12 @@ S9sMonitor::processKey(
         case 'Q':
         case 0x1b:
         case 3:
-            //::printf("\n\r");
-            //::printf("%s", TERM_CLEAR_SCREEN);
-            //::printf("%s", TERM_HOME);
-            //::printf("\n\r");
-            //::printf("Exiting on key press.\n\r");
-            //fflush(stdout);
             exit(0);
             break;
 
         case 'c':
         case 'C':
             m_displayMode = WatchClusters;
-            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
        
         case 'd':
@@ -877,25 +950,26 @@ S9sMonitor::processKey(
         case 'n':
         case 'N':
             m_displayMode = WatchNodes;
-            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
         
         case 'j':
         case 'J':
             m_displayMode = WatchJobs;
-            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
         
         case 'v':
         case 'V':
             m_displayMode = WatchContainers;
-            //::printf("%s", TERM_CLEAR_SCREEN);
+            break;
+        
+        case 's':
+        case 'S':
+            m_displayMode = WatchServers;
             break;
         
         case 'e':
         case 'E':
             m_displayMode = WatchEvents;
-            //::printf("%s", TERM_CLEAR_SCREEN);
             break;
 
         case S9S_KEY_DOWN:
@@ -908,6 +982,7 @@ S9sMonitor::processKey(
                 case WatchNodes:
                 case WatchClusters:
                 case WatchJobs:
+                case WatchServers:
                     break;
 
                 case WatchContainers:
@@ -927,6 +1002,7 @@ S9sMonitor::processKey(
                 case WatchNodes:
                 case WatchClusters:
                 case WatchJobs:
+                case WatchServers:
                     break;
 
                 case WatchContainers:
@@ -1017,8 +1093,7 @@ S9sMonitor::eventCallback(
         case WatchClusters:
         case WatchJobs:
         case WatchContainers:
-            //if (event.eventTypeString() != "EventHost")
-            //    return;
+        case WatchServers:
             break;
     }
 
