@@ -37,7 +37,7 @@ S9sMonitor::S9sMonitor(
     m_viewDebug(false),
     m_viewObjects(false),
     m_selectionIndex(0),
-    m_selectionEnabled(true)
+    m_selectionEnabled(false)
 {
 }
 
@@ -97,7 +97,7 @@ S9sMonitor::refreshScreen()
 }
 
 /**
- * Print method for the "containers" view.
+ * Screen refresh for the "containers" mode.
  */
 void
 S9sMonitor::printContainers()
@@ -177,17 +177,17 @@ S9sMonitor::printContainers()
                 templateFormat.printf(container.templateName("-"));
                 stateFormat.printf(STR(container.state()));
 
-                ::printf("%s", m_formatter.ipColorBegin(ipAddress));
+                ::printf("%s", ipColorBegin(ipAddress));
                 ipFormat.printf(STR(ipAddress));
-                ::printf("%s", m_formatter.ipColorEnd(ipAddress));
+                ::printf("%s", ipColorEnd(ipAddress));
 
-                ::printf("%s", m_formatter.serverColorBegin());
+                ::printf("%s", serverColorBegin());
                 serverFormat.printf(container.parentServerName());
-                ::printf("%s", m_formatter.serverColorEnd());
+                ::printf("%s", serverColorEnd());
 
-                ::printf("%s", m_formatter.containerColorBegin(stateAsChar));
+                ::printf("%s", containerColorBegin(stateAsChar));
                 aliasFormat.printf(container.alias());
-                ::printf("%s", m_formatter.containerColorEnd());
+                ::printf("%s", containerColorEnd());
             } else {
                 // The line is selected, we use a highlight color.
                 ::printf("%s", "\033[1m\033[48;5;4m");
@@ -213,14 +213,19 @@ S9sMonitor::printContainers()
     printFooter();
 }
 
+/**
+ * Screen refresh function for the "servers" mode.
+ */
 void
 S9sMonitor::printServers()
 {
     S9sFormat  typeFormat;
     S9sFormat  versionFormat;
     S9sFormat  nContainersFormat;
+    S9sFormat  ownerFormat(userColorBegin(), userColorEnd());
+    S9sFormat  groupFormat(groupColorBegin(), groupColorEnd());
     S9sFormat  nameFormat;
-    S9sFormat  ipFormat(m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
+    S9sFormat  ipFormat(ipColorBegin(), ipColorEnd());
     S9sFormat  commentsFormat;
 
     startScreen();
@@ -229,8 +234,10 @@ S9sMonitor::printServers()
     foreach (const S9sServer &server, m_servers)
     {
         typeFormat.widen(server.protocol());
-        versionFormat.widen(server.version());
+        versionFormat.widen(server.version("-"));
         nContainersFormat.widen(server.nContainers());
+        ownerFormat.widen(server.ownerName());
+        groupFormat.widen(server.groupOwnerName());
         nameFormat.widen(server.hostName());
         ipFormat.widen(server.ipAddress());
         commentsFormat.widen(server.message("-"));
@@ -238,18 +245,22 @@ S9sMonitor::printServers()
     
     if (!m_servers.empty())
     {
-        typeFormat.widen("TYPE");
+        typeFormat.widen("CLD");
         versionFormat.widen("VERSION");
         nContainersFormat.widen("#C");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
         nameFormat.widen("HOSTNAME");
         ipFormat.widen("IPADDRESS");
         commentsFormat.widen("COMMENT");
 
         printf("%s", TERM_SCREEN_HEADER);
         
-        typeFormat.printf("TYPE", false);
+        typeFormat.printf("CLD", false);
         versionFormat.printf("VERSION", false);
         nContainersFormat.printf("#C", false);
+        ownerFormat.printf("OWNER", false);
+        groupFormat.printf("GROUP", false);
         nameFormat.printf("HOSTNAME", false);
         ipFormat.printf("IPADDRESS", false);
         commentsFormat.printf("COMMENT", false);
@@ -266,8 +277,10 @@ S9sMonitor::printServers()
                 server.colorEnd(true));
 
         typeFormat.printf(server.protocol());
-        versionFormat.printf(server.version());
+        versionFormat.printf(server.version("-"));
         nContainersFormat.printf(server.nContainers());
+        ownerFormat.printf(server.ownerName());
+        groupFormat.printf(server.groupOwnerName());
         nameFormat.printf(server.hostName());
         ipFormat.printf(server.ipAddress());
         commentsFormat.printf(server.message("-"));
@@ -283,7 +296,7 @@ S9sMonitor::printServers()
 
 
 /**
- * Print method for the "clusters" mode.
+ * Screen refresh method for the "clusters" mode.
  */
 void
 S9sMonitor::printClusters()
@@ -294,15 +307,10 @@ S9sMonitor::printClusters()
     S9sFormat stateFormat;
     S9sFormat nameFormat;
     S9sFormat messageFormat;
-    S9sFormat   aclFormat;
-    S9sFormat   ownerFormat(
-            m_formatter.userColorBegin(), m_formatter.userColorEnd());
-
-    S9sFormat   groupFormat(
-            m_formatter.groupColorBegin(), m_formatter.groupColorEnd());
-
-    S9sFormat   pathFormat
-        (m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
+    S9sFormat aclFormat;
+    S9sFormat ownerFormat(userColorBegin(), userColorEnd());
+    S9sFormat groupFormat(groupColorBegin(), groupColorEnd());
+    S9sFormat pathFormat(ipColorBegin(), ipColorEnd());
 
     startScreen();
     printHeader();
@@ -339,7 +347,7 @@ S9sMonitor::printClusters()
         groupFormat.widen("GROUP");
         pathFormat.widen("PATH");
 
-        printf("%s", TERM_SCREEN_HEADER /*m_formatter.headerColorBegin()*/);
+        printf("%s", TERM_SCREEN_HEADER);
         
         if (m_viewObjects)
         {
@@ -376,15 +384,15 @@ S9sMonitor::printClusters()
             versionFormat.printf(cluster.vendorAndVersion());
             idFormat.printf(cluster.clusterId());
         
-            printf("%s", m_formatter.clusterStateColorBegin(cluster.state()));
+            printf("%s", clusterStateColorBegin(cluster.state()));
             stateFormat.printf(cluster.state());
-            printf("%s", m_formatter.clusterStateColorEnd());
+            printf("%s", clusterStateColorEnd());
 
             typeFormat.printf(cluster.clusterType());
     
-            printf("%s", m_formatter.clusterColorBegin());
+            printf("%s", clusterColorBegin());
             nameFormat.printf(cluster.name());
-            printf("%s", m_formatter.clusterColorEnd());
+            printf("%s", clusterColorEnd());
         
             messageFormat.printf(cluster.statusText());
         }
@@ -478,9 +486,9 @@ S9sMonitor::printJobs()
 
         idFormat.printf(job.id());
         
-        printf("%s", m_formatter.jobStateColorBegin(job.status()));
+        printf("%s", jobStateColorBegin(job.status()));
         stateFormat.printf(job.status());
-        printf("%s", m_formatter.jobStateColorEnd());
+        printf("%s", jobStateColorEnd());
 
         ::printf("%s", STR(progressBar));
 
@@ -494,6 +502,183 @@ S9sMonitor::printJobs()
         
         if (m_lineCounter >= rows() - 1)
             break;
+    }
+
+    printFooter();
+}
+
+/**
+ * Print method for the nodes view.
+ */
+void
+S9sMonitor::printNodes()
+{
+    S9sFormat   sourceFileFormat(XTERM_COLOR_BLUE, TERM_NORMAL);
+    S9sFormat   sourceLineFormat;
+    S9sFormat   versionFormat;
+    S9sFormat   clusterNameFormat;
+    S9sFormat   clusterIdFormat;
+    S9sFormat   hostNameFormat;
+    S9sFormat   portFormat;
+    S9sFormat   aclFormat;
+    S9sFormat   ownerFormat(userColorBegin(), userColorEnd());
+    S9sFormat   groupFormat(groupColorBegin(), groupColorEnd());
+    S9sFormat   pathFormat(ipColorBegin(), ipColorEnd());
+
+    const char *beginColor, *endColor;
+
+    startScreen();
+    printHeader();
+
+    /*
+     * Collecting information for formatting.
+     */
+    foreach (const S9sNode &node, m_nodes)
+    {
+        S9sEvent       event = m_eventsForNodes[node.id()];
+        S9sString      clusterName = "-";
+
+        if (m_clusters.contains(node.clusterId()))
+            clusterName = m_clusters[node.clusterId()].name();
+
+        sourceFileFormat.widen(event.senderFile());
+        sourceLineFormat.widen(event.senderLine());
+        versionFormat.widen(node.version());
+        clusterIdFormat.widen(node.clusterId());
+        clusterNameFormat.widen(clusterName);
+        hostNameFormat.widen(node.hostName());
+        portFormat.widen(node.port());
+            
+        aclFormat.widen("n" + node.aclShortString());
+        ownerFormat.widen(node.ownerName());
+        groupFormat.widen(node.groupOwnerName());
+        pathFormat.widen(node.fullCdtPath());
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!m_nodes.empty())
+    {
+        sourceFileFormat.widen("SOURCE FILE");
+        sourceLineFormat.widen("LINE");
+
+        versionFormat.widen("VERSION");
+        clusterIdFormat.widen("CID");
+        clusterNameFormat.widen("CLUSTER");
+        hostNameFormat.widen("HOST");
+        portFormat.widen("PORT");
+        
+        aclFormat.widen("MODE");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        pathFormat.widen("PATH");
+
+        printf("%s", TERM_SCREEN_HEADER);
+       
+        if (m_viewDebug)
+        {
+            sourceFileFormat.printf("SOURCE FILE", false);
+            sourceLineFormat.printf("LINE");
+        }
+
+        if (m_viewObjects)
+        {
+            aclFormat.printf("MODE", false);
+            ownerFormat.printf("OWNER", false);
+            groupFormat.printf("GROUP", false);
+            pathFormat.printf("PATH", false);
+        } else {
+            printf("STAT ");
+            versionFormat.printf("VERSION");
+            clusterIdFormat.printf("CID");
+            clusterNameFormat.printf("CLUSTER");
+            hostNameFormat.printf("HOST");
+            portFormat.printf("PORT");
+            printf("COMMENT");
+        }
+
+        printNewLine();
+    } else {
+        printMiddle("*** No nodes. ***");
+    }
+
+    foreach (const S9sNode &node, m_nodes)
+    {
+        S9sEvent       event = m_eventsForNodes[node.id()];
+        S9sString      clusterName = "-";
+
+        if (m_clusters.contains(node.clusterId()))
+            clusterName = m_clusters[node.clusterId()].name();
+
+        beginColor = S9sRpcReply::hostStateColorBegin(node.hostStatus());
+        endColor   = S9sRpcReply::hostStateColorEnd();
+        hostNameFormat.setColor(beginColor, endColor);
+
+        if (m_viewDebug)
+        {
+            sourceFileFormat.printf(event.senderFile());
+            sourceLineFormat.printf(event.senderLine());
+        }
+
+        if (m_viewObjects)
+        {
+            aclFormat.printf("n" + node.aclShortString());
+            ownerFormat.printf(node.ownerName());
+            groupFormat.printf(node.groupOwnerName());
+            pathFormat.printf(node.fullCdtPath());
+        } else {
+            ::printf("%c", node.nodeTypeFlag());
+            ::printf("%c", node.hostStatusFlag());
+            ::printf("%c", node.roleFlag());
+            ::printf("%c ", node.maintenanceFlag());
+
+            versionFormat.printf(node.version());
+            clusterIdFormat.printf(node.clusterId());
+
+            printf("%s", clusterColorBegin());
+            clusterNameFormat.printf(clusterName);
+            printf("%s", clusterColorEnd());
+
+            hostNameFormat.printf(node.hostName());
+            portFormat.printf(node.port());
+
+            ::printf("%s ", STR(node.message()));
+        }
+
+        printNewLine();
+    }
+
+    printFooter();
+}
+
+/**
+ * Printing method for the event view.
+ */
+void
+S9sMonitor::printEvents()
+{
+    int startIndex;
+
+    startScreen();
+    printHeader();
+
+    startIndex = m_events.size() - (rows() - 2);
+    if (startIndex < 0)
+        startIndex = 0;
+
+    for (uint idx = startIndex; idx < m_events.size(); ++idx)
+    {
+        S9sEvent  &event = m_events[idx];
+        S9sString  line;
+        
+        line = event.toOneLiner(m_viewDebug);
+
+        line.replace("\n", "\\n");
+        line.replace("\r", "\\r");
+       
+        ::printf("%s ", STR(line));
+        printNewLine();
     }
 
     printFooter();
@@ -692,7 +877,7 @@ S9sMonitor::printHeader()
 
     if (m_viewDebug)
     {
-        ::printf("0x%02x ",      lastKeyCode());
+        //::printf("0x%02x ",      lastKeyCode());
         ::printf("%02dx%02d ",   columns(), rows());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
@@ -732,192 +917,9 @@ S9sMonitor::printFooter()
     ::printf("%s", TERM_NORMAL);
 }
 
-
-
-
 /**
- * Print method for the nodes view.
+ * Virtual function that called when the user pressed a key on the keyboard.
  */
-void
-S9sMonitor::printNodes()
-{
-    S9sFormat   sourceFileFormat(XTERM_COLOR_BLUE, TERM_NORMAL);
-    S9sFormat   sourceLineFormat;
-    S9sFormat   versionFormat;
-    S9sFormat   clusterNameFormat;
-    S9sFormat   clusterIdFormat;
-    S9sFormat   hostNameFormat;
-    S9sFormat   portFormat;
-
-    S9sFormat   aclFormat;
-    S9sFormat   ownerFormat(
-            m_formatter.userColorBegin(), m_formatter.userColorEnd());
-
-    S9sFormat   groupFormat(
-            m_formatter.groupColorBegin(), m_formatter.groupColorEnd());
-
-    S9sFormat   pathFormat
-        (m_formatter.ipColorBegin(), m_formatter.ipColorEnd());
-
-    const char *beginColor, *endColor;
-
-    startScreen();
-    printHeader();
-
-    /*
-     * Collecting information for formatting.
-     */
-    foreach (const S9sNode &node, m_nodes)
-    {
-        S9sEvent       event = m_eventsForNodes[node.id()];
-        S9sString      clusterName = "-";
-
-        if (m_clusters.contains(node.clusterId()))
-            clusterName = m_clusters[node.clusterId()].name();
-
-        sourceFileFormat.widen(event.senderFile());
-        sourceLineFormat.widen(event.senderLine());
-        versionFormat.widen(node.version());
-        clusterIdFormat.widen(node.clusterId());
-        clusterNameFormat.widen(clusterName);
-        hostNameFormat.widen(node.hostName());
-        portFormat.widen(node.port());
-            
-        aclFormat.widen("n" + node.aclShortString());
-        ownerFormat.widen(node.ownerName());
-        groupFormat.widen(node.groupOwnerName());
-        pathFormat.widen(node.fullCdtPath());
-    }
-
-    /*
-     * Printing the header.
-     */
-    if (!m_nodes.empty())
-    {
-        sourceFileFormat.widen("SOURCE FILE");
-        sourceLineFormat.widen("LINE");
-
-        versionFormat.widen("VERSION");
-        clusterIdFormat.widen("CID");
-        clusterNameFormat.widen("CLUSTER");
-        hostNameFormat.widen("HOST");
-        portFormat.widen("PORT");
-        
-        aclFormat.widen("MODE");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        pathFormat.widen("PATH");
-
-        printf("%s", TERM_SCREEN_HEADER);
-       
-        if (m_viewDebug)
-        {
-            sourceFileFormat.printf("SOURCE FILE", false);
-            sourceLineFormat.printf("LINE");
-        }
-
-        if (m_viewObjects)
-        {
-            aclFormat.printf("MODE", false);
-            ownerFormat.printf("OWNER", false);
-            groupFormat.printf("GROUP", false);
-            pathFormat.printf("PATH", false);
-        } else {
-            printf("STAT ");
-            versionFormat.printf("VERSION");
-            clusterIdFormat.printf("CID");
-            clusterNameFormat.printf("CLUSTER");
-            hostNameFormat.printf("HOST");
-            portFormat.printf("PORT");
-            printf("COMMENT");
-        }
-
-        printNewLine();
-    } else {
-        printMiddle("*** No nodes. ***");
-    }
-
-    foreach (const S9sNode &node, m_nodes)
-    {
-        S9sEvent       event = m_eventsForNodes[node.id()];
-        S9sString      clusterName = "-";
-
-        if (m_clusters.contains(node.clusterId()))
-            clusterName = m_clusters[node.clusterId()].name();
-
-        beginColor = S9sRpcReply::hostStateColorBegin(node.hostStatus());
-        endColor   = S9sRpcReply::hostStateColorEnd();
-        hostNameFormat.setColor(beginColor, endColor);
-
-        if (m_viewDebug)
-        {
-            sourceFileFormat.printf(event.senderFile());
-            sourceLineFormat.printf(event.senderLine());
-        }
-
-        if (m_viewObjects)
-        {
-            aclFormat.printf("n" + node.aclShortString());
-            ownerFormat.printf(node.ownerName());
-            groupFormat.printf(node.groupOwnerName());
-            pathFormat.printf(node.fullCdtPath());
-        } else {
-            ::printf("%c", node.nodeTypeFlag());
-            ::printf("%c", node.hostStatusFlag());
-            ::printf("%c", node.roleFlag());
-            ::printf("%c ", node.maintenanceFlag());
-
-            versionFormat.printf(node.version());
-            clusterIdFormat.printf(node.clusterId());
-
-            printf("%s", m_formatter.clusterColorBegin());
-            clusterNameFormat.printf(clusterName);
-            printf("%s", m_formatter.clusterColorEnd());
-
-            hostNameFormat.printf(node.hostName());
-            portFormat.printf(node.port());
-
-            ::printf("%s ", STR(node.message()));
-        }
-
-        printNewLine();
-    }
-
-    printFooter();
-}
-
-/**
- * Printing method for the event view.
- */
-void
-S9sMonitor::printEvents()
-{
-    int startIndex;
-
-    startScreen();
-    printHeader();
-
-    startIndex = m_events.size() - (rows() - 2);
-    if (startIndex < 0)
-        startIndex = 0;
-
-    for (uint idx = startIndex; idx < m_events.size(); ++idx)
-    {
-        S9sEvent  &event = m_events[idx];
-        S9sString  line;
-        
-        line = event.toOneLiner(m_viewDebug);
-
-        line.replace("\n", "\\n");
-        line.replace("\r", "\\r");
-       
-        ::printf("%s ", STR(line));
-        printNewLine();
-    }
-
-    printFooter();
-}
-
 void
 S9sMonitor::processKey(
         int key)
@@ -1014,6 +1016,13 @@ S9sMonitor::processKey(
     }
 }
 
+/**
+ * \param button The mouse button code.
+ * \param x The x coordinate measured in characters.
+ * \param y The y coordinate measured in characters.
+ *
+ * Virtual function that is called when the user pressed a mouse button.
+ */
 void 
 S9sMonitor::processButton(
         uint button, 
@@ -1107,6 +1116,9 @@ S9sMonitor::eventCallback(
     processEvent(event);
 }
 
+/**
+ * Static callback function for the event processing.
+ */
 void
 S9sMonitor::eventHandler(
         const S9sVariantMap &jsonMessage,

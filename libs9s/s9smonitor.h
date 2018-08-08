@@ -20,11 +20,14 @@
 #pragma once
 
 #include "S9sDisplay"
+#include "S9sFormatter"
 
 /**
  * Implements a view that can be used to monitor objects through events.
  */
-class S9sMonitor : public S9sDisplay
+class S9sMonitor : 
+    public S9sDisplay, 
+    public S9sFormatter
 {
     public:
         enum DisplayMode 

@@ -20,7 +20,6 @@
 #pragma once
 
 #include "S9sString"
-#include "S9sFormatter"
 #include "S9sVariantMap"
 #include "S9sEvent"
 #include "S9sNode"
@@ -73,7 +72,6 @@ class S9sDisplay : public S9sThread
 
     protected:
         S9sMutex                     m_mutex;
-        S9sFormatter                 m_formatter;
         int                          m_refreshCounter;
         
         union {

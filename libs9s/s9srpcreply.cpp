@@ -4009,7 +4009,7 @@ S9sRpcReply::printServersLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        protocolFormat.widen("PRV");
+        protocolFormat.widen("CLD");
         versionFormat.widen("VERSION");
         nContainersFormat.widen("#C");
         ownerFormat.widen("OWNER");
@@ -4018,7 +4018,7 @@ S9sRpcReply::printServersLong()
         ipFormat.widen("IP");
         
         printf("%s", headerColorBegin());
-        protocolFormat.printf("PRV");
+        protocolFormat.printf("CLD");
         versionFormat.printf("VERSION");
         nContainersFormat.printf("#C");
         ownerFormat.printf("OWNER");

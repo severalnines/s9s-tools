@@ -113,9 +113,15 @@ S9sServer::message(
 }
 
 S9sString
-S9sServer::version() const
+S9sServer::version(
+        const S9sString &defaultValue) const
 {
-    return property("version").toString();
+    S9sString retval = property("version").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
 }
 
 S9sString
