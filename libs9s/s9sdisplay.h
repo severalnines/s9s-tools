@@ -54,7 +54,7 @@ class S9sDisplay : public S9sThread
     protected:
         virtual void processKey(int key) = 0;
         virtual void processButton(uint button, uint x, uint y);
-        virtual void refreshScreen() = 0;
+        virtual bool refreshScreen() = 0;
 
         void startScreen();
         

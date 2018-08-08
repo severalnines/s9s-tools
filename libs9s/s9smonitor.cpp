@@ -60,9 +60,13 @@ S9sMonitor::nContainers() const
 }
 
 /**
- * The mutex is locked when this private method is called.
+ * \returns True if the program should continue refreshing the screen, false to
+ *   exit.
+ *
+ * Virtual function that should paint the whole screen once. The mutex is 
+ * locked when this method is called.
  */
-void
+bool
 S9sMonitor::refreshScreen()
 {
     switch (m_displayMode)
@@ -93,7 +97,12 @@ S9sMonitor::refreshScreen()
 
         case PrintEvents:
             break;
+
+        default:
+            ::printf("error");
     }
+
+    return true;
 }
 
 /**
@@ -524,7 +533,6 @@ S9sMonitor::printNodes()
     S9sFormat   ownerFormat(userColorBegin(), userColorEnd());
     S9sFormat   groupFormat(groupColorBegin(), groupColorEnd());
     S9sFormat   pathFormat(ipColorBegin(), ipColorEnd());
-
     const char *beginColor, *endColor;
 
     startScreen();
@@ -891,15 +899,16 @@ S9sMonitor::printHeader()
 void
 S9sMonitor::printFooter()
 {
-    ::printf("%s", TERM_ERASE_EOL);
+    const char *bold   = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
+
+    //::printf("%s", TERM_ERASE_EOL);
     for (;m_lineCounter < rows() - 1; ++m_lineCounter)
     {
         ::printf("\n\r");
         ::printf("%s", TERM_ERASE_EOL);
     }
     
-    const char *bold   = TERM_SCREEN_TITLE_BOLD;
-    const char *normal = TERM_SCREEN_TITLE;
 
     ::printf("%s ", normal);
     ::printf("%sN%s-Nodes ", bold, normal);
@@ -915,6 +924,7 @@ S9sMonitor::printFooter()
 
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
+    fflush(stdout);
 }
 
 /**

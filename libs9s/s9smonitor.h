@@ -56,7 +56,7 @@ class S9sMonitor :
         virtual void processKey(int key);
         virtual void processButton(uint button, uint x, uint y);
 
-        virtual void refreshScreen();
+        virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();
         

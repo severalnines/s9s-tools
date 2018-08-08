@@ -135,6 +135,7 @@ S9sDisplay::rows() const
 int 
 S9sDisplay::exec()
 {
+    bool refreshOk = true;
     do {
         bool refreshed = false;
 
@@ -176,7 +177,7 @@ S9sDisplay::exec()
                 processKey(m_lastKeyCode.lastKeyCode);
             }
 
-            refreshScreen();
+            refreshOk = refreshScreen();
             refreshed = true;
             m_mutex.unlock();
         }
@@ -185,7 +186,7 @@ S9sDisplay::exec()
         if (!refreshed)
         {
             m_mutex.lock();
-            refreshScreen();
+            refreshOk = refreshScreen();
             m_mutex.unlock();
         }
             
@@ -196,11 +197,20 @@ S9sDisplay::exec()
 
             usleep(10000);
         }
-    } while (!shouldStop());
+    } while (!shouldStop() && refreshOk);
 
     return 0;
 }
 
+/**
+ * \param button The mouse button code.
+ * \param x The x coordinate measured in characters.
+ * \param y The y coordinate measured in characters.
+ *
+ * Virtual function that is called when the user pressed a mouse button. The
+ * default implementation simply stores the mouse press event so that debug
+ * methods can print it.
+ */
 void 
 S9sDisplay::processButton(
         uint button, 
