@@ -102,15 +102,157 @@ S9sTopUi::printHeader()
         m_memoryStatsReply.printMemoryStatLine2();
         printNewLine();
         
-        m_processReply.printProcessListTop(rows() - 6);
+        printProcessList(rows() - 6);
     } else {
         printNewLine();
+    }
+}
+
+static bool 
+compareProcess(
+        const S9sVariant &a,
+        const S9sVariant &b)
+{
+    S9sVariantMap aMap = a.toVariantMap();
+    S9sVariantMap bMap = b.toVariantMap();
+
+    return aMap["cpu_usage"].toDouble() > bMap["cpu_usage"].toDouble();
+}
+
+void
+S9sTopUi::printProcessList(
+        int maxLines)
+{
+    S9sVariantList  hostList = m_processReply["data"].toVariantList();
+    S9sVariantList  processList;
+
+    S9sFormat       pidFormat;
+    S9sFormat       userFormat(userColorBegin(), userColorEnd());
+    S9sFormat       hostFormat(XTERM_COLOR_GREEN, TERM_NORMAL);
+    S9sFormat       priorityFormat;
+    S9sFormat       virtFormat;
+    S9sFormat       resFormat;
+    S9sFormat       stateFormat;
+    S9sFormat       cpuFormat;
+    S9sFormat       memFormat;
+    S9sFormat       commandFormat("\033[1;2m\033[38;5;46m", TERM_NORMAL);
+    
+    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    {
+        S9sString hostName = hostList[idx]["hostname"].toString();
+        S9sVariantList processes = hostList[idx]["processes"].toVariantList();
+    
+        for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
+        {
+            S9sVariantMap process = processes[idx1].toVariantMap();
+
+            process["hostname"] = hostName;
+            processList << process;
+        }
+    }
+    
+    sort(processList.begin(), processList.end(), compareProcess);
+    
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     user       = process["user"].toString();
+        S9sString     hostName   = process["hostname"].toString();
+        int           priority   = process["priority"].toInt();
+
+        if (maxLines > 0 && (int) idx >= maxLines)
+            break;
+
+        pidFormat.widen(pid);
+        userFormat.widen(user);
+        hostFormat.widen(hostName);
+        priorityFormat.widen(priority);
+    }
+
+    
+    if (!processList.empty())
+    {
+        pidFormat.widen("PID");
+        userFormat.widen("USER");
+        hostFormat.widen("HOST");
+        priorityFormat.widen("PR");
+        virtFormat.widen("VIRT");
+        resFormat.widen("RES");
+        stateFormat.widen("S");
+        cpuFormat.widen("%CPU");
+        memFormat.widen("%MEM");
+        commandFormat.widen("COMMAND");
+
+        printf("%s", TERM_SCREEN_HEADER);
+        pidFormat.printf("PID", false);
+        userFormat.printf("USER", false);
+        hostFormat.printf("HOST", false);
+        priorityFormat.printf("PR", false);
+        virtFormat.printf("VIRT", false);
+        resFormat.printf("RES", false);
+        stateFormat.printf("S", false);
+        cpuFormat.printf("%CPU", false);
+        memFormat.printf("%MEM", false);
+        commandFormat.printf("COMMAND", false);
+        printNewLine();
+    }
+
+    for (uint idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sVariantMap process    = processList[idx].toVariantMap();
+        int           pid        = process["pid"].toInt();
+        S9sString     hostName   = process["hostname"].toString();
+        S9sString     user       = process["user"].toString();
+        S9sString     executable = process["executable"].toString();
+        double        cpuUsage   = process["cpu_usage"].toDouble();
+        double        memUsage   = process["mem_usage"].toDouble();
+        S9sString     state      = process["state"].toString();
+        ulonglong     rss        = process["res_mem"].toULongLong();
+        ulonglong     virtMem    = process["virt_mem"].toULongLong();
+        int           priority   = process["priority"].toInt();
+        
+        rss     /= 1024;
+        virtMem /= 1024;
+
+        pidFormat.printf(pid);
+        userFormat.printf(user);
+        hostFormat.printf(hostName);
+        priorityFormat.printf(priority);
+
+        printf("%8llu ", virtMem);
+        printf("%8llu ", rss);
+        printf("%1s ", STR(state));
+        printf("%6.2f ", cpuUsage);
+        printf("%6.2f ", memUsage); 
+        commandFormat.printf(executable);
+
+        printNewLine();
+        if (maxLines > 0 && (int) idx + 1 >= maxLines)
+            break;
     }
 }
 
 void
 S9sTopUi::printFooter()
 {
+    const char *bold   = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
+
+    // Goint to the last line.
+    for (;m_lineCounter < rows() - 1; ++m_lineCounter)
+    {
+        ::printf("\n\r");
+        ::printf("%s", TERM_ERASE_EOL);
+    } 
+
+    ::printf("%s ", normal);
+    ::printf("%sQ%s-Quit", bold, normal);
+
+    // No new-line at the end, this is the last line.
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    fflush(stdout);
 }
 
 void

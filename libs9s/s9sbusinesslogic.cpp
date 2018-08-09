@@ -1336,6 +1336,8 @@ S9sBusinessLogic::executeTop(
     S9sTopUi ui(client);
 
     ui.start();
+    sleep(1);
+
     ui.executeTop();
 }
 

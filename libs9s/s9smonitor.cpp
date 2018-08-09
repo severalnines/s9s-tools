@@ -922,6 +922,7 @@ S9sMonitor::printFooter()
     if (!m_outputFileName.empty())
         ::printf("    [%s]", STR(m_outputFileName));
 
+    // No new-line at the end, this is the last line.
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
     fflush(stdout);

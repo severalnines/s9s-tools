@@ -22,6 +22,7 @@
 #include <termios.h>
 
 #include "S9sDisplay"
+#include "S9sFormatter"
 #include "S9sRpcReply"
 
 class S9sRpcClient;
@@ -30,7 +31,8 @@ class S9sRpcClient;
  * http://stackoverflow.com/questions/905060/non-blocking-getch-ncurses
  */
 class S9sTopUi :
-    public S9sDisplay
+    public S9sDisplay,
+    public S9sFormatter
 {
     public:
         S9sTopUi(S9sRpcClient &client);
@@ -46,6 +48,7 @@ class S9sTopUi :
         
         bool executeTopOnce();
         void printProcesses();
+        void printProcessList(int maxLines);
 
     private:
         S9sRpcClient &m_client;
