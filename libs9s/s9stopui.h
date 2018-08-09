@@ -24,6 +24,7 @@
 #include "S9sDisplay"
 #include "S9sFormatter"
 #include "S9sRpcReply"
+#include "S9sProcess"
 
 class S9sRpcClient;
 

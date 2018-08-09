@@ -907,8 +907,7 @@ S9sMonitor::printFooter()
     {
         ::printf("\n\r");
         ::printf("%s", TERM_ERASE_EOL);
-    }
-    
+    } 
 
     ::printf("%s ", normal);
     ::printf("%sN%s-Nodes ", bold, normal);

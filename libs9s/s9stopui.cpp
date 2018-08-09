@@ -144,10 +144,10 @@ S9sTopUi::printProcessList(
     
         for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
         {
-            S9sVariantMap process = processes[idx1].toVariantMap();
+            S9sVariantMap processMap = processes[idx1].toVariantMap();
 
-            process["hostname"] = hostName;
-            processList << process;
+            processMap["hostname"] = hostName;
+            processList << processMap;
         }
     }
     
@@ -155,11 +155,13 @@ S9sTopUi::printProcessList(
     
     for (uint idx = 0u; idx < processList.size(); ++idx)
     {
-        S9sVariantMap process    = processList[idx].toVariantMap();
-        int           pid        = process["pid"].toInt();
-        S9sString     user       = process["user"].toString();
-        S9sString     hostName   = process["hostname"].toString();
-        int           priority   = process["priority"].toInt();
+        S9sProcess    process    = processList[idx].toVariantMap();
+        int           pid        = process.pid();
+        S9sString     user       = process.userName();
+        S9sString     hostName   = process.hostName();
+        int           priority   = process.priority();
+        S9sString     rss        = process.resMem("");
+        S9sString     virtMem    = process.virtMem("");
 
         if (maxLines > 0 && (int) idx >= maxLines)
             break;
@@ -168,8 +170,16 @@ S9sTopUi::printProcessList(
         userFormat.widen(user);
         hostFormat.widen(hostName);
         priorityFormat.widen(priority);
+        virtFormat.widen(virtMem);
+        resFormat.widen(rss);
     }
 
+    // Flickering of the widths is a bit annyoying, so we introduce some minimal
+    // widths.
+    userFormat.widen("xxxxxxxxxx");
+    
+    virtFormat.setRightJustify();
+    resFormat.setRightJustify();
     
     if (!processList.empty())
     {
@@ -197,31 +207,33 @@ S9sTopUi::printProcessList(
         commandFormat.printf("COMMAND", false);
         printNewLine();
     }
+    
 
     for (uint idx = 0u; idx < processList.size(); ++idx)
     {
-        S9sVariantMap process    = processList[idx].toVariantMap();
-        int           pid        = process["pid"].toInt();
-        S9sString     hostName   = process["hostname"].toString();
-        S9sString     user       = process["user"].toString();
-        S9sString     executable = process["executable"].toString();
-        double        cpuUsage   = process["cpu_usage"].toDouble();
-        double        memUsage   = process["mem_usage"].toDouble();
-        S9sString     state      = process["state"].toString();
-        ulonglong     rss        = process["res_mem"].toULongLong();
-        ulonglong     virtMem    = process["virt_mem"].toULongLong();
-        int           priority   = process["priority"].toInt();
-        
-        rss     /= 1024;
-        virtMem /= 1024;
+        S9sVariantMap processMap    = processList[idx].toVariantMap();
+        S9sProcess    process    = processList[idx].toVariantMap();
+        int           pid        = process.pid();
+        S9sString     user       = process.userName();
+        S9sString     hostName   = process.hostName();
+        int           priority   = process.priority();
 
+        double        cpuUsage   = processMap["cpu_usage"].toDouble();
+        double        memUsage   = processMap["mem_usage"].toDouble();
+        S9sString     state      = processMap["state"].toString();
+
+        S9sString     rss        = process.resMem("");
+        S9sString     virtMem    = process.virtMem("");
+        S9sString     executable = processMap["executable"].toString();
+        
         pidFormat.printf(pid);
         userFormat.printf(user);
         hostFormat.printf(hostName);
         priorityFormat.printf(priority);
 
-        printf("%8llu ", virtMem);
-        printf("%8llu ", rss);
+        virtFormat.printf(virtMem);
+        resFormat.printf(rss);
+
         printf("%1s ", STR(state));
         printf("%6.2f ", cpuUsage);
         printf("%6.2f ", memUsage); 
