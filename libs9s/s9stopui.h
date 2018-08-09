@@ -21,21 +21,41 @@
 
 #include <termios.h>
 
+#include "S9sDisplay"
+#include "S9sRpcReply"
+
 class S9sRpcClient;
 
 /*
  * http://stackoverflow.com/questions/905060/non-blocking-getch-ncurses
  */
-class S9sTopUi
+class S9sTopUi :
+    public S9sDisplay
 {
     public:
-        S9sTopUi();
+        S9sTopUi(S9sRpcClient &client);
         virtual ~S9sTopUi();
 
-        void executeTop(S9sRpcClient &client);
+        void executeTop();
+
+    protected:
+        virtual void processKey(int key);
+        virtual bool refreshScreen();
+        virtual void printHeader();
+        virtual void printFooter();
+        
+        bool executeTopOnce();
+        void printProcesses();
 
     private:
-        bool executeTopOnce(S9sRpcClient &client);
+        S9sRpcClient &m_client;
+        int           m_nReplies;
+        S9sRpcReply   m_clustersReply;
+        S9sRpcReply   m_cpuStatsReply;
+        S9sRpcReply   m_memoryStatsReply;
+        S9sRpcReply   m_processReply;
+        int           m_clusterId;
+        S9sString     m_clusterName;
 };
 
 

@@ -994,9 +994,10 @@ S9sRpcReply::printProcessListTop(
     hostFormat.printf("HOST");
     priorityFormat.printf("PR");
     printf("%s", " VIRT      RES    S   %CPU   %MEM COMMAND    ");
-    printf("%s", STR(S9sString::space * columns));
-    printf("%s", TERM_NORMAL);
-    //printf("\n");
+    
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("\n\r");
+    ::printf("%s", TERM_NORMAL);
 
     // rss          resident set size
     // vsz          virtual memory size
@@ -1014,10 +1015,6 @@ S9sRpcReply::printProcessListTop(
         ulonglong     virtMem    = process["virt_mem"].toULongLong();
         int           priority   = process["priority"].toInt();
         
-        printf("\n");
-        //printf("%d ", maxLines);
-        //printf("%u ", idx);
-
         rss     /= 1024;
         virtMem /= 1024;
 
@@ -1033,7 +1030,9 @@ S9sRpcReply::printProcessListTop(
         printf("%6.2f ", memUsage); 
         printf("%s", STR(executable));
 
-        printf(TERM_ERASE_EOL);
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ::printf("%s", TERM_NORMAL);
 
         if (maxLines > 0 && (int) idx + 1 >= maxLines)
             break;
@@ -8912,8 +8911,6 @@ S9sRpcReply::printCpuStatLine1()
     printf("%s%5.1f%s id,",  numberStart, idle, numberEnd);
     printf("%s%5.1f%s wa,", numberStart, wait, numberEnd);
     printf("%s%5.1f%s st,", numberStart, steal, numberEnd);
-    
-    printf("\n");
 }
 
 /**
@@ -9004,8 +9001,6 @@ S9sRpcReply::printMemoryStatLine1()
     printf("%s%.1f%s used, ",    numberStart, sumTotal - (sumFree + sumBuffers + sumCached), numberEnd);
     printf("%s%.1f%s buffers, ", numberStart, sumBuffers, numberEnd);
     printf("%s%.1f%s cached",    numberStart, sumCached, numberEnd);
-
-    printf("\n");
 }
 
 void
@@ -9059,8 +9054,6 @@ S9sRpcReply::printMemoryStatLine2()
     printf("%s%llu%s total, ", numberStart, sumTotal, numberEnd);
     printf("%s%llu%s used, ",  numberStart, sumTotal - sumFree, numberEnd);
     printf("%s%llu%s free, ",  numberStart, sumFree, numberEnd);
-
-    printf("\n");
 }
 
 /**

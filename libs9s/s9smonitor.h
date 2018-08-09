@@ -49,6 +49,7 @@ class S9sMonitor :
                 void                *userData);
 
         int nContainers() const;
+
     protected:
 
         void eventCallback(S9sEvent &event);

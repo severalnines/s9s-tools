@@ -1079,7 +1079,6 @@ S9sMonitor::eventCallback(
 {
     S9sMutexLocker    locker(m_mutex);
     S9sOptions       *options = S9sOptions::instance();
-
     
     if (!m_outputFileName.empty())
     {

@@ -22,6 +22,7 @@
 #include "S9sRpcClient"
 #include "S9sOptions"
 #include "S9sDateTime"
+#include "S9sMutexLocker"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -33,7 +34,11 @@
         
 struct termios orig_termios;
 
-S9sTopUi::S9sTopUi()
+S9sTopUi::S9sTopUi(
+        S9sRpcClient &client) :
+    S9sDisplay(true),
+    m_client(client),
+    m_nReplies(0)
 {
 }
 
@@ -42,8 +47,79 @@ S9sTopUi::~S9sTopUi()
 }
 
 void
-S9sTopUi::executeTop(
-        S9sRpcClient &client)
+S9sTopUi::processKey(
+        int key)
+{
+    switch (key)
+    {
+        case 'q':
+        case 'Q':
+        case 0x1b:
+        case 3:
+            exit(0);
+            break;
+    }
+}
+
+bool
+S9sTopUi::refreshScreen()
+{
+    startScreen();
+    printHeader();
+    if (m_nReplies == 0)
+        printMiddle("*** Waiting for data. ***");
+    else
+        printProcesses();
+    
+    printFooter();
+    return true;
+}
+
+void
+S9sTopUi::printHeader()
+{
+    S9sDateTime dt = S9sDateTime::currentDateTime();
+    S9sString   title;
+
+    title = "S9S TOP ";
+
+    ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
+    ::printf("%c ", rotatingCharacter());
+    ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
+
+    if (m_nReplies > 0)
+    {
+        ::printf("%s - ", STR(m_clusterName));
+        ::printf("%s ", STR(m_clustersReply.clusterStatusText(m_clusterId)));
+        printNewLine();
+
+        m_cpuStatsReply.printCpuStatLine1();
+        printNewLine();
+
+        m_memoryStatsReply.printMemoryStatLine1();
+        printNewLine();
+
+        m_memoryStatsReply.printMemoryStatLine2();
+        printNewLine();
+        
+        m_processReply.printProcessListTop(rows() - 6);
+    } else {
+        printNewLine();
+    }
+}
+
+void
+S9sTopUi::printFooter()
+{
+}
+
+void
+S9sTopUi::printProcesses()
+{
+}
+
+void
+S9sTopUi::executeTop()
 {
     S9sOptions  *options = S9sOptions::instance();
     int          clusterId = options->clusterId();
@@ -52,14 +128,12 @@ S9sTopUi::executeTop(
     if (clusterId <= 0)
     {
         PRINT_ERROR("The cluster ID is invalid while executing 'top'.");
-        return;
+        exit (1);
     }
-
-    printf("%s", TERM_CLEAR_SCREEN);
 
     for (;;)
     {
-        success = executeTopOnce(client);
+        success = executeTopOnce();
 
         if (!success)
             break;
@@ -69,9 +143,9 @@ S9sTopUi::executeTop(
 }
 
 bool
-S9sTopUi::executeTopOnce(
-        S9sRpcClient &client)
+S9sTopUi::executeTopOnce()
 {
+    S9sMutexLocker    locker(m_mutex);
     S9sOptions  *options     = S9sOptions::instance();
     int          clusterId   = options->clusterId();
     S9sString    clusterName = options->clusterName();
@@ -87,12 +161,28 @@ S9sTopUi::executeTopOnce(
     //
     // The cluster information.
     //
-    success = client.getCluster(clusterName, clusterId);
-    reply = client.reply();
+    m_clusterId   = options->clusterId();
+    m_clusterName = options->clusterName();
+
+    success = m_client.getCluster(m_clusterName, m_clusterId);
+    m_clustersReply = m_client.reply();
     if (!success)
         return success;
 
-    clusterName = reply.clusterName(clusterId);
+    m_client.getCpuStats(m_clusterId);
+    m_cpuStatsReply = m_client.reply();
+    
+    m_client.getMemoryStats(m_clusterId);
+    m_memoryStatsReply = m_client.reply();
+    
+    m_client.getRunningProcesses();
+    m_processReply = m_client.reply();
+
+    m_nReplies++;
+    m_refreshCounter++;
+    m_clusterName = m_clustersReply.clusterName(m_clusterId);
+    return true;
+
     clusterStatusText = reply.clusterStatusText(clusterId);
         
     columns  = terminalWidth;
@@ -112,16 +202,16 @@ S9sTopUi::executeTopOnce(
     //
     // Summary of CPU usage.
     //
-    client.getCpuStats(clusterId);
-    reply = client.reply();
+    m_client.getCpuStats(clusterId);
+    reply = m_client.reply();
 
     reply.printCpuStatLine1();
    
     //
     // The memory summary.
     //
-    client.getMemoryStats(clusterId);
-    reply = client.reply();
+    m_client.getMemoryStats(clusterId);
+    reply = m_client.reply();
     reply.printMemoryStatLine1();
     reply.printMemoryStatLine2();
     printf("\n");
@@ -129,15 +219,15 @@ S9sTopUi::executeTopOnce(
     //
     // List of processes.
     //
-    client.getRunningProcesses();
-    reply = client.reply();
+    m_client.getRunningProcesses();
+    reply = m_client.reply();
 
     reply.printProcessListTop(options->terminalHeight() - 7);
 
 
     if (!success)
     {
-        PRINT_ERROR("%s", STR(client.errorString()));
+        PRINT_ERROR("%s", STR(m_client.errorString()));
     }
 
     return success;

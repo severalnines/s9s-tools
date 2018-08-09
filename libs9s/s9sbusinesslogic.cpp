@@ -1333,9 +1333,10 @@ void
 S9sBusinessLogic::executeTop(
         S9sRpcClient &client)
 {
-    S9sTopUi ui;
+    S9sTopUi ui(client);
 
-    ui.executeTop(client);
+    ui.start();
+    ui.executeTop();
 }
 
 /**
