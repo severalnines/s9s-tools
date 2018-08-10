@@ -25,6 +25,7 @@
 #include "S9sFormatter"
 #include "S9sRpcReply"
 #include "S9sProcess"
+#include "S9sVector"
 
 class S9sRpcClient;
 
@@ -41,6 +42,12 @@ class S9sTopUi :
 
         void executeTop();
 
+        enum  SortOrder
+        {
+            PidOrder,
+            CpuUsage,
+            MemUsage,
+        };
     protected:
         virtual void processKey(int key);
         virtual bool refreshScreen();
@@ -52,14 +59,21 @@ class S9sTopUi :
         void printProcessList(int maxLines);
 
     private:
-        S9sRpcClient &m_client;
-        int           m_nReplies;
-        S9sRpcReply   m_clustersReply;
-        S9sRpcReply   m_cpuStatsReply;
-        S9sRpcReply   m_memoryStatsReply;
-        S9sRpcReply   m_processReply;
-        int           m_clusterId;
-        S9sString     m_clusterName;
+        S9sRpcClient          &m_client;
+        int                    m_nReplies;
+
+        S9sMutex               m_networkMutex;        
+        S9sRpcReply            m_clustersReply;
+        time_t                 m_clustersReplyReceived;
+        S9sRpcReply            m_cpuStatsReply;
+        S9sRpcReply            m_memoryStatsReply;
+        S9sRpcReply            m_processReply;
+        S9sVector<S9sProcess>  m_processes;
+        int                    m_clusterId;
+        S9sString              m_clusterName;
+
+        SortOrder              m_sortOrder;
+        bool                   m_communicating;
 };
 
 

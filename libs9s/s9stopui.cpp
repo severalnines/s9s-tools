@@ -38,7 +38,10 @@ S9sTopUi::S9sTopUi(
         S9sRpcClient &client) :
     S9sDisplay(true),
     m_client(client),
-    m_nReplies(0)
+    m_nReplies(0),
+    m_clustersReplyReceived(0),
+    m_sortOrder(CpuUsage),
+    m_communicating(false)
 {
 }
 
@@ -57,6 +60,21 @@ S9sTopUi::processKey(
         case 0x1b:
         case 3:
             exit(0);
+            break;
+
+        case 'p':
+        case 'P':
+            m_sortOrder = PidOrder;
+            break;
+
+        case 'm':
+        case 'M':
+            m_sortOrder = MemUsage;
+            break;
+        
+        case 'c':
+        case 'C':
+            m_sortOrder = CpuUsage;
             break;
     }
 }
@@ -87,6 +105,11 @@ S9sTopUi::printHeader()
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
 
+    if (m_communicating)
+        ::printf("⚫ ");
+    else
+        ::printf("  ");
+
     if (m_nReplies > 0)
     {
         ::printf("%s - ", STR(m_clusterName));
@@ -109,23 +132,39 @@ S9sTopUi::printHeader()
 }
 
 static bool 
-compareProcess(
-        const S9sVariant &a,
-        const S9sVariant &b)
+compareProcessPid(
+        const S9sProcess &a,
+        const S9sProcess &b)
 {
-    S9sVariantMap aMap = a.toVariantMap();
-    S9sVariantMap bMap = b.toVariantMap();
+    return a.pid() > b.pid();
+}
 
-    return aMap["cpu_usage"].toDouble() > bMap["cpu_usage"].toDouble();
+static bool 
+compareProcessCpu(
+        const S9sProcess &a,
+        const S9sProcess &b)
+{
+    if (a.cpuUsage() == b.cpuUsage())
+        return a.pid() > b.pid();
+
+    return a.cpuUsage() > b.cpuUsage();
+}
+
+static bool 
+compareProcessMem(
+        const S9sProcess &a,
+        const S9sProcess &b)
+{
+    if (a.memUsage() == b.memUsage())
+        return a.pid() > b.pid();
+
+    return a.memUsage() > b.memUsage();
 }
 
 void
 S9sTopUi::printProcessList(
         int maxLines)
 {
-    S9sVariantList  hostList = m_processReply["data"].toVariantList();
-    S9sVariantList  processList;
-
     S9sFormat       pidFormat;
     S9sFormat       userFormat(userColorBegin(), userColorEnd());
     S9sFormat       hostFormat(XTERM_COLOR_GREEN, TERM_NORMAL);
@@ -137,31 +176,33 @@ S9sTopUi::printProcessList(
     S9sFormat       memFormat;
     S9sFormat       commandFormat("\033[1;2m\033[38;5;46m", TERM_NORMAL);
     
-    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    switch (m_sortOrder)
     {
-        S9sString hostName = hostList[idx]["hostname"].toString();
-        S9sVariantList processes = hostList[idx]["processes"].toVariantList();
-    
-        for (uint idx1 = 0u; idx1 < processes.size(); ++idx1)
-        {
-            S9sVariantMap processMap = processes[idx1].toVariantMap();
+        case PidOrder:
+            sort(m_processes.begin(), m_processes.end(), compareProcessPid);
+            break;
 
-            processMap["hostname"] = hostName;
-            processList << processMap;
-        }
+        case CpuUsage:
+            sort(m_processes.begin(), m_processes.end(), compareProcessCpu);
+            break;
+
+        case MemUsage:
+            sort(m_processes.begin(), m_processes.end(), compareProcessMem);
+            break;
     }
     
-    sort(processList.begin(), processList.end(), compareProcess);
-    
-    for (uint idx = 0u; idx < processList.size(); ++idx)
+    for (uint idx = 0u; idx < m_processes.size(); ++idx)
     {
-        S9sProcess    process    = processList[idx].toVariantMap();
+        const S9sProcess  &process = m_processes[idx];
         int           pid        = process.pid();
         S9sString     user       = process.userName();
         S9sString     hostName   = process.hostName();
         int           priority   = process.priority();
         S9sString     rss        = process.resMem("");
         S9sString     virtMem    = process.virtMem("");
+        S9sString     cpuUsage   = process.cpuUsage("");
+        S9sString     memUsage   = process.memUsage("");
+        S9sString     executable = process.executable();
 
         if (maxLines > 0 && (int) idx >= maxLines)
             break;
@@ -172,6 +213,9 @@ S9sTopUi::printProcessList(
         priorityFormat.widen(priority);
         virtFormat.widen(virtMem);
         resFormat.widen(rss);
+        cpuFormat.widen(cpuUsage);
+        memFormat.widen(memUsage);
+        commandFormat.widen(executable);
     }
 
     // Flickering of the widths is a bit annyoying, so we introduce some minimal
@@ -180,8 +224,10 @@ S9sTopUi::printProcessList(
     
     virtFormat.setRightJustify();
     resFormat.setRightJustify();
+    cpuFormat.setRightJustify();
+    memFormat.setRightJustify();
     
-    if (!processList.empty())
+    if (!m_processes.empty())
     {
         pidFormat.widen("PID");
         userFormat.widen("USER");
@@ -209,22 +255,21 @@ S9sTopUi::printProcessList(
     }
     
 
-    for (uint idx = 0u; idx < processList.size(); ++idx)
+    for (uint idx = 0u; idx < m_processes.size(); ++idx)
     {
-        S9sVariantMap processMap    = processList[idx].toVariantMap();
-        S9sProcess    process    = processList[idx].toVariantMap();
+        const S9sProcess  &process = m_processes[idx];
         int           pid        = process.pid();
         S9sString     user       = process.userName();
         S9sString     hostName   = process.hostName();
         int           priority   = process.priority();
 
-        double        cpuUsage   = processMap["cpu_usage"].toDouble();
-        double        memUsage   = processMap["mem_usage"].toDouble();
-        S9sString     state      = processMap["state"].toString();
+        S9sString     cpuUsage   = process.cpuUsage("");
+        S9sString     memUsage   = process.memUsage("");
+        S9sString     state      = process.state();
 
         S9sString     rss        = process.resMem("");
         S9sString     virtMem    = process.virtMem("");
-        S9sString     executable = processMap["executable"].toString();
+        S9sString     executable = process.executable();
         
         pidFormat.printf(pid);
         userFormat.printf(user);
@@ -235,8 +280,8 @@ S9sTopUi::printProcessList(
         resFormat.printf(rss);
 
         printf("%1s ", STR(state));
-        printf("%6.2f ", cpuUsage);
-        printf("%6.2f ", memUsage); 
+        cpuFormat.printf(cpuUsage);
+        memFormat.printf(memUsage);
         commandFormat.printf(executable);
 
         printNewLine();
@@ -259,7 +304,9 @@ S9sTopUi::printFooter()
     } 
 
     ::printf("%s ", normal);
-    ::printf("%sQ%s-Quit", bold, normal);
+    ::printf("%sC%s-CPU Order ", bold, normal);
+    ::printf("%sM%s-Memory Order ", bold, normal);
+    ::printf("%sQ%s-Quit ", bold, normal);
 
     // No new-line at the end, this is the last line.
     ::printf("%s", TERM_ERASE_EOL);
@@ -299,91 +346,96 @@ S9sTopUi::executeTop()
 bool
 S9sTopUi::executeTopOnce()
 {
-    S9sMutexLocker    locker(m_mutex);
-    S9sOptions  *options     = S9sOptions::instance();
-    int          clusterId   = options->clusterId();
-    S9sString    clusterName = options->clusterName();
-    S9sString    clusterStatusText;
-    S9sRpcReply  reply;
-    bool         success = true;
-    S9sDateTime  date = S9sDateTime::currentDateTime();
-    S9sString    dateString = date.toString(S9sDateTime::LongTimeFormat);
-    int          terminalWidth = options->terminalWidth();
-    int          columns;
-    S9sString    tmp;
-
-    //
-    // The cluster information.
-    //
-    m_clusterId   = options->clusterId();
-    m_clusterName = options->clusterName();
-
-    success = m_client.getCluster(m_clusterName, m_clusterId);
-    m_clustersReply = m_client.reply();
-    if (!success)
-        return success;
-
-    m_client.getCpuStats(m_clusterId);
-    m_cpuStatsReply = m_client.reply();
+    S9sMutexLocker   locker(m_networkMutex);
+    S9sOptions      *options     = S9sOptions::instance();
+    S9sVariantList   hostList;
+    S9sString        clusterStatusText;
+    S9sRpcReply      reply;
     
-    m_client.getMemoryStats(m_clusterId);
-    m_memoryStatsReply = m_client.reply();
-    
-    m_client.getRunningProcesses();
-    m_processReply = m_client.reply();
+    S9sRpcReply            clustersReply;
+    time_t                 clustersReplyReceived;
+    S9sRpcReply            cpuStatsReply;
+    S9sRpcReply            memoryStatsReply;
+    S9sRpcReply            processReply;
+    S9sVector<S9sProcess>  processes;
+    int                    clusterId;
+    S9sString              clusterName;
 
-    m_nReplies++;
-    m_refreshCounter++;
-    m_clusterName = m_clustersReply.clusterName(m_clusterId);
-    return true;
+    bool                   success = true;
 
-    clusterStatusText = reply.clusterStatusText(clusterId);
-        
-    columns  = terminalWidth;
-    columns -= clusterName.length();
-    columns -= clusterStatusText.length();
-    columns -= 13;
-        
-    tmp = S9sString::space * columns;
+    m_communicating = true;
 
-    printf("\033[0;0H");
-    //printf("columns: %d\n", columns);
-    printf("%s - %s ", STR(clusterName), STR(dateString));
-    printf("%s", STR(tmp));
-    printf("%s", STR(clusterStatusText));
-    printf("\n");
+    /*
+     * The cluster information.
+     */
+    clustersReplyReceived = m_clustersReplyReceived;
+    clusterId   = options->clusterId();
+    clusterName = options->clusterName();
 
-    //
-    // Summary of CPU usage.
-    //
-    m_client.getCpuStats(clusterId);
-    reply = m_client.reply();
-
-    reply.printCpuStatLine1();
-   
-    //
-    // The memory summary.
-    //
-    m_client.getMemoryStats(clusterId);
-    reply = m_client.reply();
-    reply.printMemoryStatLine1();
-    reply.printMemoryStatLine2();
-    printf("\n");
-
-    //
-    // List of processes.
-    //
-    m_client.getRunningProcesses();
-    reply = m_client.reply();
-
-    reply.printProcessListTop(options->terminalHeight() - 7);
-
-
-    if (!success)
+    if (time(NULL) - clustersReplyReceived > 30)
     {
-        PRINT_ERROR("%s", STR(m_client.errorString()));
+        success = m_client.getCluster(clusterName, clusterId);
+        clustersReply = m_client.reply();
+        if (!success)
+            return success;
+
+        clustersReplyReceived = time(NULL);
+    } else {
+        clustersReply = m_clustersReply;
     }
 
-    return success;
+    /*
+     * The CPU statistics.
+     */
+    m_client.getCpuStats(clusterId);
+    cpuStatsReply = m_client.reply();
+    
+    /*
+     * The memory statistics.
+     */
+    m_client.getMemoryStats(clusterId);
+    memoryStatsReply = m_client.reply();
+    
+    /*
+     * Getting the list of the running processes.
+     */
+    m_client.getRunningProcesses();
+    processReply = m_client.reply();
+   
+    hostList = processReply["data"].toVariantList();
+    for (uint idx = 0u; idx < hostList.size(); ++idx)
+    {
+        S9sString hostName = hostList[idx]["hostname"].toString();
+        S9sVariantList processList = hostList[idx]["processes"].toVariantList();
+    
+        for (uint idx1 = 0u; idx1 < processList.size(); ++idx1)
+        {
+            S9sVariantMap processMap = processList[idx1].toVariantMap();
+            S9sProcess    process;
+
+            processMap["hostname"] = hostName;
+            process = processMap;
+            processes << process;
+        }
+    }
+
+    /*
+     *
+     */
+    m_mutex.lock(); 
+    m_clustersReply = clustersReply;
+    m_clustersReplyReceived = clustersReplyReceived;
+    m_cpuStatsReply = cpuStatsReply;
+    m_memoryStatsReply = memoryStatsReply;
+    m_processReply = processReply;
+    m_processes = processes;
+    m_clusterId = clusterId;
+    m_clusterName = m_clustersReply.clusterName(m_clusterId);
+    m_nReplies++;
+    m_refreshCounter++;
+    m_communicating = false;
+    m_mutex.unlock();
+
+    return true;
 }
 
