@@ -50,6 +50,7 @@ class S9sTopUi :
         };
     protected:
         virtual void processKey(int key);
+        virtual void processButton(uint button, uint x, uint y);        
         virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();
@@ -74,6 +75,8 @@ class S9sTopUi :
 
         SortOrder              m_sortOrder;
         bool                   m_communicating;
+        bool                   m_viewDebug;
+        bool                   m_reloadRequested;
 };
 
 

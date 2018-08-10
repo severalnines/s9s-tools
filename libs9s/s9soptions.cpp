@@ -1748,7 +1748,7 @@ S9sOptions::updateFreq() const
     }
 
     if (retval.empty())
-        return 3;
+        return 10;
 
     //S9S_DEBUG("-> %d", retval.toInt());
     return retval.toInt();

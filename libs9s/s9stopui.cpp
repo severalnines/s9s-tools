@@ -41,7 +41,9 @@ S9sTopUi::S9sTopUi(
     m_nReplies(0),
     m_clustersReplyReceived(0),
     m_sortOrder(CpuUsage),
-    m_communicating(false)
+    m_communicating(false),
+    m_viewDebug(false),
+    m_reloadRequested(false)
 {
 }
 
@@ -76,7 +78,41 @@ S9sTopUi::processKey(
         case 'C':
             m_sortOrder = CpuUsage;
             break;
+
+        case 'd':
+        case 'D':
+            // Turning on and off the debug mode.
+            m_viewDebug = !m_viewDebug;
+            break;
     }
+}
+
+void 
+S9sTopUi::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+    S9sDisplay::processButton(button, x, y);
+
+    if (y == 1)
+    {
+        if (x >= 19 && x <= 21)
+        {
+            // The reload/abort button.
+            if (m_communicating)
+            {
+                m_communicating = false;
+            } else {
+                m_reloadRequested = true;
+            }
+        }
+    }
+#if 0
+    if ((int) y == rows())
+    {
+    }
+#endif
 }
 
 bool
@@ -97,25 +133,38 @@ void
 S9sTopUi::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
-    S9sString   title;
-
-    title = "S9S TOP ";
+    S9sString   title = "S9S TOP";
 
     ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
 
-    if (m_communicating)
-        ::printf("⚫ ");
+    if (m_communicating || m_reloadRequested)
+        ::printf("❌ ");
     else
-        ::printf("  ");
+        ::printf("⟳ ");
 
     if (m_nReplies > 0)
     {
         ::printf("%s - ", STR(m_clusterName));
         ::printf("%s ", STR(m_clustersReply.clusterStatusText(m_clusterId)));
-        printNewLine();
 
+    } else {
+        ::printf("            ");
+    }
+    
+    if (m_viewDebug)
+    {
+        //::printf("0x%02x ",      lastKeyCode());
+        ::printf("%02dx%02d ",   columns(), rows());
+        ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
+    }
+        
+    printNewLine();
+    
+
+    if (m_nReplies > 0)
+    {
         m_cpuStatsReply.printCpuStatLine1();
         printNewLine();
 
@@ -126,8 +175,6 @@ S9sTopUi::printHeader()
         printNewLine();
         
         printProcessList(rows() - 6);
-    } else {
-        printNewLine();
     }
 }
 
@@ -324,22 +371,26 @@ S9sTopUi::executeTop()
 {
     S9sOptions  *options = S9sOptions::instance();
     int          clusterId = options->clusterId();
+    int          updateFreq = options->updateFreq();
     bool         success;
+    time_t       startTime;
 
     if (clusterId <= 0)
     {
         PRINT_ERROR("The cluster ID is invalid while executing 'top'.");
-        exit (1);
+        exit(1);
     }
 
     for (;;)
     {
-        success = executeTopOnce();
+        startTime = time(NULL);
 
+        success = executeTopOnce();
         if (!success)
             break;
         
-        sleep(options->updateFreq());
+        while (time(NULL) - startTime < updateFreq && !m_reloadRequested)
+            usleep(100000);
     }
 }
 
@@ -363,7 +414,8 @@ S9sTopUi::executeTopOnce()
 
     bool                   success = true;
 
-    m_communicating = true;
+    m_communicating   = true;
+    m_reloadRequested = false;
 
     /*
      * The cluster information.
@@ -375,6 +427,11 @@ S9sTopUi::executeTopOnce()
     if (time(NULL) - clustersReplyReceived > 30)
     {
         success = m_client.getCluster(clusterName, clusterId);
+
+        // If the user aborted download.
+        if (!m_communicating)
+            return true;
+
         clustersReply = m_client.reply();
         if (!success)
             return success;
@@ -388,18 +445,33 @@ S9sTopUi::executeTopOnce()
      * The CPU statistics.
      */
     m_client.getCpuStats(clusterId);
+    
+    // If the user aborted download.
+    if (!m_communicating)
+        return true;
+
     cpuStatsReply = m_client.reply();
     
     /*
      * The memory statistics.
      */
     m_client.getMemoryStats(clusterId);
+
+    // If the user aborted download.
+    if (!m_communicating)
+        return true;
+
     memoryStatsReply = m_client.reply();
     
     /*
      * Getting the list of the running processes.
      */
     m_client.getRunningProcesses();
+    
+    // If the user aborted download.
+    if (!m_communicating)
+        return true;
+
     processReply = m_client.reply();
    
     hostList = processReply["data"].toVariantList();
@@ -417,6 +489,10 @@ S9sTopUi::executeTopOnce()
             process = processMap;
             processes << process;
         }
+
+        // If the user aborted download.
+        if (!m_communicating)
+            return true;
     }
 
     /*
