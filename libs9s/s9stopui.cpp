@@ -129,8 +129,6 @@ S9sTopUi::refreshScreen()
     printHeader();
     if (m_nReplies == 0)
         printMiddle("*** Waiting for data. ***");
-    else
-        printProcesses();
     
     printFooter();
     return true;
@@ -226,6 +224,7 @@ void
 S9sTopUi::printProcessList(
         int maxLines)
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sFormat       pidFormat;
     S9sFormat       userFormat(userColorBegin(), userColorEnd());
     S9sFormat       hostFormat(XTERM_COLOR_GREEN, TERM_NORMAL);
@@ -236,7 +235,8 @@ S9sTopUi::printProcessList(
     S9sFormat       cpuFormat;
     S9sFormat       memFormat;
     S9sFormat       commandFormat("\033[1;2m\033[38;5;46m", TERM_NORMAL);
-    
+    int             nLines;
+
     switch (m_sortOrder)
     {
         case PidOrder:
@@ -252,6 +252,10 @@ S9sTopUi::printProcessList(
             break;
     }
     
+    /*
+     * Collecting data.
+     */
+    nLines = 0;
     for (uint idx = 0u; idx < m_processes.size(); ++idx)
     {
         const S9sProcess  &process = m_processes[idx];
@@ -265,8 +269,8 @@ S9sTopUi::printProcessList(
         S9sString     memUsage   = process.memUsage("");
         S9sString     executable = process.executable();
 
-        if (maxLines > 0 && (int) idx >= maxLines)
-            break;
+        if (!options->isStringMatchExtraArguments(executable))
+            continue;
 
         pidFormat.widen(pid);
         userFormat.widen(user);
@@ -277,6 +281,11 @@ S9sTopUi::printProcessList(
         cpuFormat.widen(cpuUsage);
         memFormat.widen(memUsage);
         commandFormat.widen(executable);
+
+        if (maxLines > 0 && nLines + 1 >= maxLines)
+            break;
+
+        ++nLines;
     }
 
     // Flickering of the widths is a bit annyoying, so we introduce some minimal
@@ -315,7 +324,7 @@ S9sTopUi::printProcessList(
         printNewLine();
     }
     
-
+    nLines = 0;
     for (uint idx = 0u; idx < m_processes.size(); ++idx)
     {
         const S9sProcess  &process = m_processes[idx];
@@ -332,6 +341,9 @@ S9sTopUi::printProcessList(
         S9sString     virtMem    = process.virtMem("");
         S9sString     executable = process.executable();
         
+        if (!options->isStringMatchExtraArguments(executable))
+            continue;
+
         pidFormat.printf(pid);
         userFormat.printf(user);
         hostFormat.printf(hostName);
@@ -346,8 +358,10 @@ S9sTopUi::printProcessList(
         commandFormat.printf(executable);
 
         printNewLine();
-        if (maxLines > 0 && (int) idx + 1 >= maxLines)
+        if (maxLines > 0 && nLines + 1 >= maxLines)
             break;
+
+        ++nLines;
     }
 }
 
@@ -373,11 +387,6 @@ S9sTopUi::printFooter()
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
     fflush(stdout);
-}
-
-void
-S9sTopUi::printProcesses()
-{
 }
 
 void

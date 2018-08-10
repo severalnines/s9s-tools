@@ -34,15 +34,17 @@ s9s process \\
 
 .TP
 .B \-\-top
-Continue showing the processes that use the most CPU resources in any given
-cluster.
+Continue showing the processes in an interactive UI like the well, known "top"
+utility. Please note that if the terminal program supports the UI can be
+controller with the mouse.
 
 .B EXAMPLE
 .nf
 s9s process \\
     --top \\
     --cluster-id=1 \\
-    --color=always
+    --update-freq=30 \\
+    mysql*
 .fi
 
 .SS Generic Options
