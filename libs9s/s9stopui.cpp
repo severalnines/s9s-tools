@@ -107,12 +107,19 @@ S9sTopUi::processButton(
                 m_reloadRequested = true;
             }
         }
-    }
-#if 0
-    if ((int) y == rows())
+    } else if ((int) y == rows())
     {
+        if (x >= 2 && x <= 12)
+        {
+            m_sortOrder = CpuUsage;
+        } else if (x >= 14 && x <= 27)
+        {
+            m_sortOrder = MemUsage;
+        } else if (x >= 29 && x <= 34)
+        {
+            exit(0);
+        }
     }
-#endif
 }
 
 bool
@@ -135,6 +142,13 @@ S9sTopUi::printHeader()
     S9sDateTime dt = S9sDateTime::currentDateTime();
     S9sString   title = "S9S TOP";
 
+    if (!m_clusterName.empty())
+    {
+        title.sprintf("%s (s9s top)", STR(m_clusterName));
+        printf("%s%s%s", "\033]0;", STR(title), "\007");
+    }
+
+    title = "S9S TOP";
     ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
@@ -183,7 +197,7 @@ compareProcessPid(
         const S9sProcess &a,
         const S9sProcess &b)
 {
-    return a.pid() > b.pid();
+    return a.pid() < b.pid();
 }
 
 static bool 
