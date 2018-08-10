@@ -56,7 +56,6 @@ class S9sTopUi :
         virtual void printFooter();
         
         bool executeTopOnce();
-        void printProcesses();
         void printProcessList(int maxLines);
 
     private:
