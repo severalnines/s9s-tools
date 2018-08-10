@@ -132,8 +132,8 @@ S9sMonitor::printContainers()
             S9sString    ipAddress = container.ipAddress(
                     S9s::AnyIpv4Address, "-");
 
-            typeFormat.widen(container.type());
-            templateFormat.widen(container.templateName("-"));
+            typeFormat.widen(container.provider());
+            templateFormat.widen(container.templateName("-", true));
             stateFormat.widen(container.state());
             ipFormat.widen(ipAddress);
             serverFormat.widen(container.parentServerName());
@@ -143,7 +143,7 @@ S9sMonitor::printContainers()
     
     if (nContainers() > 0)
     {
-        typeFormat.widen("TYPE");
+        typeFormat.widen("CLOUD");
         templateFormat.widen("TEMPLATE");
         stateFormat.widen("STATE");
         ipFormat.widen("IP ADDRESS");
@@ -151,7 +151,7 @@ S9sMonitor::printContainers()
         aliasFormat.widen("NAME");
         
         printf("%s", TERM_SCREEN_HEADER);
-        typeFormat.printf("TYPE");
+        typeFormat.printf("CLOUD");
         templateFormat.printf("TEMPLATE");
         stateFormat.printf("STATE");
         ipFormat.printf("IP ADDRESS");
@@ -182,8 +182,8 @@ S9sMonitor::printContainers()
 
             if (!selected)
             {
-                typeFormat.printf(STR(container.type()));
-                templateFormat.printf(container.templateName("-"));
+                typeFormat.printf(STR(container.provider()));
+                templateFormat.printf(container.templateName("-", true));
                 stateFormat.printf(STR(container.state()));
 
                 ::printf("%s", ipColorBegin(ipAddress));
@@ -200,7 +200,7 @@ S9sMonitor::printContainers()
             } else {
                 // The line is selected, we use a highlight color.
                 ::printf("%s", "\033[1m\033[48;5;4m");
-                typeFormat.printf(STR(container.type()));
+                typeFormat.printf(STR(container.provider()));
                 templateFormat.printf(container.templateName("-"));
                 stateFormat.printf(STR(container.state()));
                 ipFormat.printf(STR(ipAddress));
@@ -228,20 +228,28 @@ S9sMonitor::printContainers()
 void
 S9sMonitor::printServers()
 {
-    S9sFormat  typeFormat;
-    S9sFormat  versionFormat;
-    S9sFormat  nContainersFormat;
-    S9sFormat  ownerFormat(userColorBegin(), userColorEnd());
-    S9sFormat  groupFormat(groupColorBegin(), groupColorEnd());
-    S9sFormat  nameFormat;
-    S9sFormat  ipFormat(ipColorBegin(), ipColorEnd());
-    S9sFormat  commentsFormat;
+    S9sFormat   sourceFileFormat(XTERM_COLOR_BLUE, TERM_NORMAL);
+    S9sFormat   sourceLineFormat;
+    S9sFormat   idFormat;
+    S9sFormat   typeFormat;
+    S9sFormat   versionFormat;
+    S9sFormat   nContainersFormat;
+    S9sFormat   ownerFormat(userColorBegin(), userColorEnd());
+    S9sFormat   groupFormat(groupColorBegin(), groupColorEnd());
+    S9sFormat   nameFormat;
+    S9sFormat   ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat   commentsFormat;
 
     startScreen();
     printHeader();
     
     foreach (const S9sServer &server, m_servers)
     {
+        S9sEvent       event = m_serverEvents[server.id()];
+        
+        sourceFileFormat.widen(event.senderFile());
+        sourceLineFormat.widen(event.senderLine());
+        idFormat.widen(server.id("-"));
         typeFormat.widen(server.protocol());
         versionFormat.widen(server.version("-"));
         nContainersFormat.widen(server.nContainers());
@@ -254,6 +262,11 @@ S9sMonitor::printServers()
     
     if (!m_servers.empty())
     {
+        sourceFileFormat.widen("SOURCE FILE");
+        sourceLineFormat.widen("LINE");
+        
+        idFormat.widen("ID");
+
         typeFormat.widen("CLD");
         versionFormat.widen("VERSION");
         nContainersFormat.widen("#C");
@@ -265,6 +278,17 @@ S9sMonitor::printServers()
 
         printf("%s", TERM_SCREEN_HEADER);
         
+        if (m_viewDebug)
+        {
+            sourceFileFormat.printf("SOURCE FILE", false);
+            sourceLineFormat.printf("LINE");
+        }
+
+        if (m_viewObjects)
+        {
+            idFormat.printf("ID");
+        }
+
         typeFormat.printf("CLD", false);
         versionFormat.printf("VERSION", false);
         nContainersFormat.printf("#C", false);
@@ -281,9 +305,22 @@ S9sMonitor::printServers()
 
     foreach (const S9sServer &server, m_servers)
     {
+        S9sEvent       event = m_serverEvents[server.id()];
+
         nameFormat.setColor(
                 server.colorBegin(true),
                 server.colorEnd(true));
+
+        if (m_viewDebug)
+        {
+            sourceFileFormat.printf(event.senderFile());
+            sourceLineFormat.printf(event.senderLine());
+        }
+
+        if (m_viewObjects)
+        {
+            idFormat.printf(server.id("-"));
+        }
 
         typeFormat.printf(server.protocol());
         versionFormat.printf(server.version("-"));
@@ -731,6 +768,7 @@ S9sMonitor::processEvent(
         S9sNode  node;
 
         node = event.host();
+
         m_nodes[node.id()] = node;
         m_eventsForNodes[node.id()] = event;
     }
@@ -738,10 +776,27 @@ S9sMonitor::processEvent(
     // The servers (together with the containers).
     if (event.hasServer())
     {
-        S9sServer  server;
+        S9sServer  server = event.server();
 
-        server = event.server();
-        m_servers[server.id()] = server;
+        if (event.eventSubClass() == S9sEvent::Destroyed)
+        {
+            m_servers.erase(server.id());
+            m_serverEvents.erase(server.id());
+        } else {
+            m_servers[server.id()]      = server;
+            m_serverEvents[server.id()] = event;
+        }
+
+        #if 0
+        if (server.id() != "0" && m_servers.contains("0"))
+        {
+            if (m_servers["0"].hostName() == server.hostName())
+            {
+                m_servers.erase("0");
+                m_serverEvents.erase("0");
+            }
+        }
+        #endif
     }
 
     removeOldObjects();
@@ -905,6 +960,7 @@ S9sMonitor::printFooter()
     //::printf("%s", TERM_ERASE_EOL);
     for (;m_lineCounter < rows() - 1; ++m_lineCounter)
     {
+        ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
         ::printf("%s", TERM_ERASE_EOL);
     } 
@@ -950,7 +1006,7 @@ S9sMonitor::processKey(
        
         case 'd':
         case 'D':
-            // Turning on and off teh debug mode.
+            // Turning on and off the debug mode.
             m_viewDebug = !m_viewDebug;
             break;
 

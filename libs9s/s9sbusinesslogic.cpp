@@ -493,6 +493,17 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printImages();
             client.setExitStatus();
+        } else if (options->isListRegionsRequested())
+        {
+            /*
+             * s9s server --list-regions
+             */
+            S9sRpcReply reply;
+
+            success = client.getServers();
+            reply = client.reply();
+            reply.printRegionsBrief();
+            client.setExitStatus();
         } else if (options->isListProcessorsRequested())
         {
             /*

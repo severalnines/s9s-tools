@@ -217,9 +217,12 @@ enum S9sOptionType
     OptionIndividualFiles,
     OptionTestServer,
     OptionBackupDatadir,
+    
     OptionListImages,
+    OptionListRegions,
     OptionListSubnets,
     OptionListTemplates,
+
     OptionSetupAudit,
 
     OptionEventCluster,
@@ -2748,6 +2751,15 @@ bool
 S9sOptions::isListImagesRequested() const
 {
     return getBool("list_images");
+}
+
+/**
+ * \returns True if the --list-regions command line option is provided.
+ */
+bool
+S9sOptions::isListRegionsRequested() const
+{
+    return getBool("list_regions");
 }
 
 /**
@@ -9331,6 +9343,7 @@ S9sOptions::readOptionsServer(
         { "list-containers",  no_argument,       0, OptionListContainers  },
         { "list-disks",       no_argument,       0, OptionListDisks       },
         { "list-images",      no_argument,       0, OptionListImages      },
+        { "list-regions",     no_argument,       0, OptionListRegions     },
         { "list-memory",      no_argument,       0, OptionListMemory      },
         { "list-nics",        no_argument,       0, OptionListNics        },
         { "list",             no_argument,       0, 'L'                   },
@@ -9508,6 +9521,11 @@ S9sOptions::readOptionsServer(
             case OptionListImages:
                 // --list-images
                 m_options["list_images"] = true;
+                break;
+            
+            case OptionListRegions:
+                // --list-regions
+                m_options["list_regions"] = true;
                 break;
             
             case OptionListMemory:
@@ -10054,6 +10072,9 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isListImagesRequested())
+        countOptions++;
+    
+    if (isListRegionsRequested())
         countOptions++;
     
     if (isListMemoryRequested())

@@ -39,6 +39,7 @@ SUPPORTED TESTS:
   o createContainer  Creates a new container.
   o createFail       A container creation that should fail.
   o createCluster    Creates a cluster on VMs created on the fly.
+  o dropObjects      Unregistering server (more to come).
   o deleteContainer  Deletes all the containers that were created.
 
 EOF
@@ -461,6 +462,20 @@ function createCluster()
     check_exit_code $?
 }
 
+function dropObjects()
+{
+    if [ -n "$CMON_CLOUD_CONTAINER_SERVER" ]; then
+        print_title "Unregistering Cmon-cloud server"
+        
+        mys9s server \
+            --unregister \
+            --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
+
+        check_exit_code_no_job $?
+    fi
+
+}
+
 #
 # This will delete the containers we created before.
 #
@@ -513,6 +528,7 @@ else
     runFunctionalTest createContainer
     runFunctionalTest createFail
     runFunctionalTest createCluster
+    runFunctionalTest dropObjects
     runFunctionalTest deleteContainer
 fi
 

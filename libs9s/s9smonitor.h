@@ -78,6 +78,7 @@ class S9sMonitor :
         S9sMap<int, S9sNode>         m_nodes;
         S9sMap<int, S9sEvent>        m_eventsForNodes;
         S9sMap<S9sString, S9sServer> m_servers;
+        S9sMap<S9sString, S9sEvent>  m_serverEvents;
         S9sMap<int, S9sCluster>      m_clusters;
         S9sMap<int, S9sJob>          m_jobs;
         S9sMap<int, time_t>          m_jobActivity;

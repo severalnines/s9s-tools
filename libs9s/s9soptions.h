@@ -318,6 +318,7 @@ class S9sOptions
         bool isListRequested() const;
         bool isListPartitionsRequested() const;
         bool isListImagesRequested() const;
+        bool isListRegionsRequested() const;
         bool isListSubnetsRequested() const;
         bool isListTemplatesRequested() const;
         bool isListMemoryRequested() const;

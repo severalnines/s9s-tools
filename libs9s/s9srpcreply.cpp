@@ -3413,6 +3413,25 @@ S9sRpcReply::printMemoryBanks(
 }
 
 void
+S9sRpcReply::printRegionsBrief()
+{
+    //S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap     = theList[idx].toVariantMap();
+        S9sVariantList regionList = theMap["regions_supported"].toVariantList();
+
+        for (uint idx1 = 0; idx1 < regionList.size(); ++idx1)
+        {
+            S9sString regionName = regionList[idx1].toString();
+            ::printf("%s\n", STR(regionName));
+        }
+    }
+}
+
+void
 S9sRpcReply::printTemplates()
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -3562,7 +3581,6 @@ S9sRpcReply::printSubnets()
         return;
     }
 
-    S9S_WARNING("------------");
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();

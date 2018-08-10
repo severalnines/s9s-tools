@@ -73,7 +73,8 @@ S9sString
 S9sServer::id(
         const S9sString &defaultValue) const
 {
-    S9sString retval = property("hostId").toString();
+    //S9sString retval = property("hostId").toString();
+    S9sString retval = property("unique_id").toString();
 
     if (retval.empty())
         retval = defaultValue;

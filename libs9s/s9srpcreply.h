@@ -104,6 +104,7 @@ class S9sRpcReply : public S9sVariantMap
         void printNics(S9sString indent = S9sString());
         void printMemoryBanks(S9sString indent = S9sString());
         void printTemplates();
+        void printRegionsBrief();
         void printSubnets();
         void printImages();
 
