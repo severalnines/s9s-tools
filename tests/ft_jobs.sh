@@ -94,6 +94,13 @@ function testSimpleJobs()
     local exit_code
     local n_lines
 
+    print_title "Warning"
+    echo "It seems that if we start and execute a job shortly after the "
+    echo "backend started the job will be aborted with 'backend restart.'"
+    echo ""
+    echo "So now we wait for a few seconds."
+    sleep 30
+
     #
     #
     #
