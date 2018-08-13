@@ -138,11 +138,24 @@ s9s server --list-partitions
 
 .TP
 .B \-\^\-list\-processors
-List processors from one or more servers.
+List processors from one or more servers. For some clouds the number of the
+processors (and their model) is known (e.g. lxc) and for some others it is not
+(e.g. AWS).
 
 .B EXAMPLE
 .nf
 s9s server --list-processors
+.fi
+
+.TP
+.B \-\^\-list\-regions
+Prints the list of regions the server(s) support together with some important
+information (e.g. if the controller has credentials to use those regions or
+not).
+
+.B EXAMPLE
+.nf
+s9s server --list-regions --long '*[Ee]urope*'
 .fi
 
 .TP

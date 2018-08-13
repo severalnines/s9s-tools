@@ -3784,12 +3784,15 @@ S9sRpcReply::printRegions()
             hostNameFormat.setColor(
                     server.colorBegin(syntaxHighlight),
                     server.colorEnd(syntaxHighlight));
-            
-            if (regionMap["has_credentials"].toBoolean())
+           
+            if (syntaxHighlight)
             {
-                nameFormat.setColor(XTERM_COLOR_REGION_OK, TERM_NORMAL);
-            } else {
-                nameFormat.setColor(XTERM_COLOR_REGION_FAIL, TERM_NORMAL);
+                if (regionMap["has_credentials"].toBoolean())
+                {
+                    nameFormat.setColor(XTERM_COLOR_REGION_OK, TERM_NORMAL);
+                } else {
+                    nameFormat.setColor(XTERM_COLOR_REGION_FAIL, TERM_NORMAL);
+                }
             }
 
             hasCredentialsFormat.printf(hasCredentials);
