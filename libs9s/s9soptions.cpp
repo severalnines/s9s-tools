@@ -4550,6 +4550,7 @@ S9sOptions::printHelpServer()
 "  --list-nics                List network controllers from multiple servers.\n"
 "  --list-partitions          List partitions from multiple servers.\n"
 "  --list-processors          List processors from multiple servers.\n"
+"  --list-regions             List the regions the server(s) support.\n"
 "  --list-subnets             List the supported subnets.\n"
 "  --list-templates           List the supported templates.\n"
 "  --register                 Register an existint container server.\n"
@@ -8892,6 +8893,7 @@ S9sOptions::readOptionsJob(
         { "log-format",       required_argument, 0, OptionLogFormat       },
         { "offset",           required_argument, 0, OptionOffset          },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "timeout",          required_argument, 0, OptionTimeout         },
         { "schedule",         required_argument, 0, OptionSchedule        },
         
         { "show-aborted",     no_argument,       0, OptionShowAborted     },
@@ -9030,6 +9032,11 @@ S9sOptions::readOptionsJob(
             case OptionJobTags:
                 // --job-tags=LIST
                 setJobTags(optarg);
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
                 break;
 
             case 5:

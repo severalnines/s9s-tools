@@ -6197,6 +6197,9 @@ S9sRpcClient::composeJobData(
 
     if (options->isGenerateKeyRequested())
         jobData["ssh_generate_key"] = true;
+    
+    if (options->hasTimeout())
+        jobData["timeout"] = options->timeout();
 
     return jobData;
 }
