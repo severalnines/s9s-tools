@@ -61,9 +61,12 @@ S9sBusinessLogic::execute()
     /*
      *
      */
-    success = authenticate(client);
+    success = client.maybeAuthenticate();
     if (!success)
+    {
+        PRINT_ERROR("%s", STR(client.errorString()));
         return;
+    }
 
     if (options->isClusterOperation())
     {
@@ -763,84 +766,6 @@ S9sBusinessLogic::execute()
         PRINT_ERROR("Unknown operation.");
     }
 }
-
-bool
-S9sBusinessLogic::authenticate(
-        S9sRpcClient &client)
-{
-    S9sOptions  *options    = S9sOptions::instance();
-    S9sString    errorString;
-    bool         canAuthenticate;
-    bool         needAuthenticate;
-
-    canAuthenticate  = client.canAuthenticate(errorString);
-    needAuthenticate = client.needToAuthenticate();
-
-    // We can authenticate, the user intended to.
-    if (canAuthenticate)
-    {
-        bool success = client.authenticate();
-        if (!success)
-        {
-            if (options->isJsonRequested())
-            {
-                printf("%s\n", STR(client.reply().toString()));
-            } else {
-                S9sString errorString = client.errorString();
-
-                if (errorString.empty())
-                    errorString = client.reply().errorString();
-
-                if (errorString.empty())
-                    errorString = "Access denied.";
-
-                PRINT_ERROR("%s", STR(errorString));
-            }
-
-            // continuing, server replies a nice error
-            // The lower levels set a more spcific error code.
-            // options->setExitStatus(S9sOptions::AccessDenied);
-        }
-
-        S9sString controllerVersion = client.serverVersion();
-        if (options->isVerbose())
-        {
-            printf("Controller version: %s\n", STR(controllerVersion));
-        }
-
-        // I am not sure if this is the best place, but this version
-        // of the s9s CLI is not compatible with versions <= 1.4.2
-        if (controllerVersion.startsWith("1.4.2") ||
-            controllerVersion.startsWith("1.4.1"))
-        {
-            PRINT_ERROR(
-                    "\n"
-                    "WARNING: clustercontrol-controller <= 1.4.2 is detected.\n"
-                    "Some features may be unavailable until the controller "
-                    "software is upraded.\n");
-
-            #if 0
-            options->setExitStatus(S9sOptions::Failed);
-            success = false;
-            #endif
-        }
-
-        return success;
-    }
-
-    // Can't authenticate, but we need.
-    if (needAuthenticate)
-    {
-        PRINT_ERROR("%s", STR(errorString));
-        options->setExitStatus(S9sOptions::BadOptions);
-
-        return false;
-    }
-
-    // We can't and we don't have to... ok then.
-    return true;
-}
-
 
 /**
  * \param client A client for the communication.

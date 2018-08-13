@@ -47,6 +47,7 @@ class S9sRpcClient
         bool hasPrivateKey() const;
         bool canAuthenticate(S9sString &reason) const;
         bool needToAuthenticate() const;
+        bool maybeAuthenticate();
 
         bool detectVersion();
         S9sString serverVersion() const;

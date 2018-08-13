@@ -171,6 +171,84 @@ S9sRpcClient::needToAuthenticate() const
 }
 
 /**
+ * This method checks if it is possible to authenticate (e.g. because the
+ * username and the password is provided) and if it is needed to authenticate
+ * (because the requested operation needs authentication). Then if it is
+ * possible theauthentication will be performed. If it is needed, but not
+ * possible an error will be returned. If it is nor needed nor possible nothing
+ * will be done but the return value will be true.
+ */
+bool
+S9sRpcClient::maybeAuthenticate()
+{
+    S9sOptions  *options    = S9sOptions::instance();
+    bool         canDoAuthentication;
+    bool         needAuthenticate;
+
+    canDoAuthentication  = canAuthenticate(m_priv->m_errorString);
+    needAuthenticate = needToAuthenticate();
+
+    // We can authenticate, the user intended to.
+    if (canDoAuthentication)
+    {
+        bool success = authenticate();
+        if (!success)
+        {
+            if (options->isJsonRequested())
+            {
+                printf("%s\n", STR(reply().toString()));
+            } else {
+                if (m_priv->m_errorString.empty())
+                    m_priv->m_errorString = reply().errorString();
+
+                if (m_priv->m_errorString.empty())
+                    m_priv->m_errorString = "Access denied.";
+            }
+
+            // continuing, server replies a nice error
+            // The lower levels set a more spcific error code.
+            // options->setExitStatus(S9sOptions::AccessDenied);
+        }
+
+        S9sString controllerVersion = serverVersion();
+        if (options->isVerbose())
+        {
+            printf("Controller version: %s\n", STR(controllerVersion));
+        }
+
+        // I am not sure if this is the best place, but this version
+        // of the s9s CLI is not compatible with versions <= 1.4.2
+        if (controllerVersion.startsWith("1.4.2") ||
+            controllerVersion.startsWith("1.4.1"))
+        {
+            PRINT_ERROR(
+                    "\n"
+                    "WARNING: clustercontrol-controller <= 1.4.2 is detected.\n"
+                    "Some features may be unavailable until the controller "
+                    "software is upraded.\n");
+
+            #if 0
+            options->setExitStatus(S9sOptions::Failed);
+            success = false;
+            #endif
+        }
+
+        return success;
+    }
+
+    // Can't authenticate, but we need.
+    if (needAuthenticate)
+    {
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    // We can't and we don't have to... ok then.
+    return true;
+}
+
+
+/**
  * \returns the reply that received from the controller.
  *
  * The reply the controller sends is a JSON string which is parsed by the

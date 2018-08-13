@@ -29,7 +29,6 @@ class S9sBusinessLogic
 {
     public:
         void execute();
-        bool authenticate(S9sRpcClient &client);
 
         void waitForJob(
                 const int     clusterId,
