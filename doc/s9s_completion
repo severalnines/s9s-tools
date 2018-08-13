@@ -240,7 +240,8 @@ function _s9s()
             main_opt+="--list-nics --list-partitions --list-processors "
             main_opt+="--list-subnets --list-templates --list-containers "
             main_opt+="--register --unregister --start --stop "
-            main_opt+="--tree --unregister --get-acl --set-acl"
+            main_opt+="--tree --unregister --get-acl --set-acl "
+            main_opt+="--list-regions "
             
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
