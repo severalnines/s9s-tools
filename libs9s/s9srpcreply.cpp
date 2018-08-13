@@ -3412,6 +3412,7 @@ S9sRpcReply::printMemoryBanks(
     }
 }
 
+// Deprecated.
 void
 S9sRpcReply::printRegionsBrief()
 {
@@ -3581,6 +3582,9 @@ S9sRpcReply::printSubnets()
         return;
     }
 
+    /*
+     * Collecting information for the long variant of the list.
+     */
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
@@ -3667,6 +3671,134 @@ S9sRpcReply::printSubnets()
                 numberColorBegin(), nSubnetsFound, numberColorEnd(),
                 numberColorBegin(), (int)regions.size(), numberColorEnd()
                 );
+    }
+}
+
+void
+S9sRpcReply::printRegions()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       hasCredentialsFormat;
+    S9sFormat       providerFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       nameFormat;
+    int             nLines = 0;
+    int             nRegions = 0;
+    S9sVariantMap   cloudMap;
+
+    // If the json is requested we simply print it and that's all.
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
+    
+    /*
+     * Collecting information for the long list format.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sServer      server   = theList[idx].toVariantMap();
+        S9sVariantList regions  = server.regions();
+        S9sString      hostName = server.hostName();
+
+        for (uint idx1 = 0u; idx1 < regions.size(); ++idx1)
+        {
+            S9sVariantMap regionMap = regions[idx1].toVariantMap();
+            S9sString     name = regionMap["name"].toString();
+            S9sString     provider = regionMap["provider"].toString();
+            S9sString     hasCredentials;
+
+            // Statistics.
+            ++nRegions;
+            cloudMap[provider] = true;
+
+            // Filtering.
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
+
+            if (!options->cloudName().empty() &&
+                    options->cloudName() != provider)
+            {
+                continue;
+            }
+        
+            hasCredentials = 
+                regionMap["has_credentials"].toBoolean() ? "Y" : "N";
+        
+            hasCredentialsFormat.widen(hasCredentials);
+            providerFormat.widen(provider);
+            hostNameFormat.widen(hostName);
+            nameFormat.widen(name);
+
+            ++nLines;
+        }
+    }
+    
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        hasCredentialsFormat.widen("CRED");
+        providerFormat.widen("CLOUD");
+        hostNameFormat.widen("SERVER");
+        nameFormat.widen("REGION");
+
+        printf("%s", headerColorBegin());
+        hasCredentialsFormat.printf("CRED");
+        providerFormat.printf("CLOUD");
+        hostNameFormat.printf("SERVER");
+        nameFormat.printf("REGION");
+        printf("%s\n", headerColorEnd());
+    }
+    
+    /*
+     * Printing the long list.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sServer      server   = theList[idx].toVariantMap();
+        S9sVariantList regions  = server.regions();
+        S9sString      hostName = server.hostName();
+
+        for (uint idx1 = 0u; idx1 < regions.size(); ++idx1)
+        {
+            S9sVariantMap regionMap = regions[idx1].toVariantMap();
+            S9sString     name = regionMap["name"].toString();
+            S9sString     provider = regionMap["provider"].toString();
+            S9sString     hasCredentials;
+
+            // Filtering.
+            if (!options->isStringMatchExtraArguments(name))
+                continue;
+            
+            if (!options->cloudName().empty() &&
+                    options->cloudName() != provider)
+            {
+                continue;
+            }
+
+            hasCredentials = 
+                regionMap["has_credentials"].toBoolean() ? "Y" : "N";
+
+            hostNameFormat.setColor(
+                    server.colorBegin(syntaxHighlight),
+                    server.colorEnd(syntaxHighlight));
+
+            hasCredentialsFormat.printf(hasCredentials);
+            providerFormat.printf(provider);
+            hostNameFormat.printf(hostName);
+            nameFormat.printf(name);
+
+            ::printf("\n");
+        }
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s%d%s regions in %s%lu%s clouds.\n", 
+                numberColorBegin(), nRegions, numberColorEnd(),
+                numberColorBegin(), cloudMap.size(), numberColorEnd());
     }
 }
 

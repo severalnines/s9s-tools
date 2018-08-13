@@ -9367,6 +9367,7 @@ S9sOptions::readOptionsServer(
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "refresh",          no_argument,       0, OptionRefresh         },
         { "servers",          required_argument, 0, OptionServers         },
+        { "cloud",            required_argument, 0, OptionCloud           },
 
         { 0, 0, 0, 0 }
     };
@@ -9649,6 +9650,11 @@ S9sOptions::readOptionsServer(
                 // --servers=LIST
                 if (!setServers(optarg))
                     return false;
+                break;
+            
+            case OptionCloud:
+                // --cloud=NAME
+                m_options["cloud"] = optarg;
                 break;
 
             case '?':

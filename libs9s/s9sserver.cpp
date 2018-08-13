@@ -170,6 +170,25 @@ S9sServer::subnets() const
     return property("subnets").toVariantList();
 }
 
+/**
+ *
+ * Here is how the "regions" property looks like:
+ * \code{.js}
+ * "regions": [ 
+ * {
+ *     "has_credentials": false,
+ *     "name": "ap-south-1",
+ *     "provider": "aws"
+ * }, 
+ * . . . 
+ * \endcode
+ */
+S9sVariantList
+S9sServer::regions() const
+{
+    return property("regions").toVariantList();
+}
+
 int
 S9sServer::nSubnets() const
 {

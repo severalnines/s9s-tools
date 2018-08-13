@@ -49,6 +49,7 @@ class S9sServer : public S9sObject
         S9sString hostStatus() const;
 
         S9sVariantList subnets() const;
+        S9sVariantList regions() const;
         int nSubnets() const;
         S9sString subnetCidr(const int idx) const;
         S9sString subnetRegion(const int idx) const;

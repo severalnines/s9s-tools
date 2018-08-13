@@ -502,7 +502,7 @@ S9sBusinessLogic::execute()
 
             success = client.getServers();
             reply = client.reply();
-            reply.printRegionsBrief();
+            reply.printRegions();
             client.setExitStatus();
         } else if (options->isListProcessorsRequested())
         {
