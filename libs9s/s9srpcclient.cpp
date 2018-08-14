@@ -388,7 +388,6 @@ S9sRpcClient::authenticate()
 bool 
 S9sRpcClient::authenticateWithPassword()
 {
-    S9S_DEBUG(" ");
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request;
     S9sString      uri = "/v2/auth";
@@ -400,12 +399,16 @@ S9sRpcClient::authenticateWithPassword()
     
     retval = executeRequest(uri, request);
     if (!retval)
+    {
+        m_priv->m_authenticated = false;
         return false;
+    }
    
     if (!reply().isOk())
         options->setExitStatus(S9sOptions::AccessDenied);
 
-    return reply().isOk();
+    m_priv->m_authenticated = reply().isOk();
+    return m_priv->m_authenticated;
 }
 
 /**
@@ -432,6 +435,7 @@ S9sRpcClient::authenticateWithKey()
                 "Private key not specified, authentication is not possible.";
         
         options->setExitStatus(S9sOptions::BadOptions);
+        m_priv->m_authenticated = false;
         return false;
     }
 
@@ -446,6 +450,7 @@ S9sRpcClient::authenticateWithKey()
                 STR(privKeyPath));
 
         options->setExitStatus(S9sOptions::BadOptions);
+        m_priv->m_authenticated = false;
         return false;
     }
 
@@ -454,6 +459,7 @@ S9sRpcClient::authenticateWithKey()
      */
     request = S9sVariantMap();
     request["operation"]    = "authenticate";
+
     /*
      * Please keep this as 'username' to be compatible with
      * clustercontrol-controller 1.4.1 and 1.4.2
@@ -463,7 +469,7 @@ S9sRpcClient::authenticateWithKey()
     retval = executeRequest(uri, request);
     if (!retval)
     {
-        S9S_DEBUG("request failed: %s", STR(reply().toString()));
+        m_priv->m_authenticated = false;
         return false;
     }
 
@@ -494,7 +500,10 @@ S9sRpcClient::authenticateWithKey()
 
     retval = executeRequest(uri, request);
     if (!retval)
+    {
+        m_priv->m_authenticated = false;
         return false;
+    }
 
     /*
      * If reply doesn't contain an error and we are ok, auth succeed
@@ -504,7 +513,8 @@ S9sRpcClient::authenticateWithKey()
     if (!reply().isOk())
         options->setExitStatus(S9sOptions::AccessDenied);
 
-    return reply().isOk();
+    m_priv->m_authenticated = reply().isOk();
+    return m_priv->m_authenticated;
 }
 
 /**

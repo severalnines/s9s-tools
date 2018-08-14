@@ -30,7 +30,8 @@ S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_sslContext(0),
     m_ssl(0),
     m_callbackFunction(0),
-    m_callbackUserData(0)
+    m_callbackUserData(0),
+    m_authenticated(false)
 {
 }
 

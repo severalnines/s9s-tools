@@ -62,7 +62,8 @@ class S9sRpcClientPrivate
 
         S9sJSonHandler  m_callbackFunction;
         void           *m_callbackUserData;
-
+        bool            m_authenticated;
+        
         friend class S9sRpcClient;
 };
 
