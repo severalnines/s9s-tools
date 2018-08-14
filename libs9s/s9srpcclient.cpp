@@ -305,7 +305,9 @@ S9sRpcClient::setExitStatus()
                 break;
 
             case S9sRpcReply::AuthRequired:
+            case S9sRpcReply::ConnectError:
                 options->setExitStatus(S9sOptions::Failed);
+                m_priv->m_authenticated = false;
                 break;
         }
     }
@@ -373,6 +375,12 @@ S9sRpcClient::printServerRegistered(
 }
 
 bool
+S9sRpcClient::isAuthenticated() const
+{
+    return m_priv->m_authenticated;
+}
+
+bool
 S9sRpcClient::authenticate()
 {
     S9sOptions    *options = S9sOptions::instance();
@@ -398,6 +406,7 @@ S9sRpcClient::authenticateWithPassword()
     request["password"]     = options->password();
     
     retval = executeRequest(uri, request);
+    m_priv->m_errorString = reply().errorString();
     if (!retval)
     {
         m_priv->m_authenticated = false;
@@ -467,6 +476,7 @@ S9sRpcClient::authenticateWithKey()
     request["username"]     = options->userName();
 
     retval = executeRequest(uri, request);
+    m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
         m_priv->m_authenticated = false;
@@ -499,6 +509,7 @@ S9sRpcClient::authenticateWithKey()
         request["operation"] = "response";
 
     retval = executeRequest(uri, request);
+    m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
         m_priv->m_authenticated = false;
@@ -5464,6 +5475,8 @@ S9sRpcClient::subscribeEvents(
     S9sJSonHandler  callbackFunction,
     void           *userData)
 {
+    bool retval;
+
     m_priv->m_callbackFunction = callbackFunction;
     m_priv->m_callbackUserData = userData;
 
@@ -5476,7 +5489,9 @@ S9sRpcClient::subscribeEvents(
     // NOTE: this wont return (unless error happens or callback is NULL) as 
     // the JSon stream will be stopped only if the client (so S9S CLI)
     // closes the connection.
-    return executeRequest(uri, request);
+    retval = executeRequest(uri, request);
+    setExitStatus();
+    return retval;
 }
 
 /**
@@ -6400,7 +6415,7 @@ S9sRpcClient::doExecuteRequest(
 
     if (!m_priv->connect())
     {
-        PRINT_VERBOSE ("Connection failed: %s", STR(m_priv->m_errorString));
+        PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));
         options->setExitStatus(S9sOptions::ConnectionError);
 
         setError(m_priv->m_errorString);

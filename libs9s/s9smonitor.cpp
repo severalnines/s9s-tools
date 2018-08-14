@@ -26,13 +26,18 @@
 #include "S9sMutexLocker"
 #include "S9sDateTime"
 
+#include <unistd.h>
+
+
 #define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
 S9sMonitor::S9sMonitor(
-        S9sMonitor::DisplayMode mode) : 
+        S9sRpcClient            &client,
+        S9sMonitor::DisplayMode  mode) : 
     S9sDisplay(mode != PrintEvents),
+    m_client(client),
     m_displayMode(mode),
     m_viewDebug(false),
     m_viewObjects(false),
@@ -43,6 +48,37 @@ S9sMonitor::S9sMonitor(
 
 S9sMonitor::~S9sMonitor()
 {
+}
+
+/**
+ * Starts the screen preiodic refresh that will keep updating the terminal from
+ * a secondary thread. This method will authenticate if necessary,
+ * re-authenticate if the session expires. The code will also subscribe to the
+ * events with the callback that will update the data in the monitor object
+ * whenever an event is received.
+ *
+ * This method in its current state will never return, when the user requests
+ * exit the exit() function will be called.
+ */
+void
+S9sMonitor::main()
+{
+    start();
+    
+    while (true)
+    {
+        while (!m_client.isAuthenticated())
+        {
+            m_client.maybeAuthenticate();
+
+            if (!m_client.isAuthenticated())
+                usleep(3000000);
+        }
+
+        m_client.subscribeEvents(
+                S9sMonitor::eventHandler, (void *) this); 
+        sleep(1);
+    }
 }
 
 /**
@@ -69,6 +105,22 @@ S9sMonitor::nContainers() const
 bool
 S9sMonitor::refreshScreen()
 {
+    if (!m_client.isAuthenticated())
+    {
+        S9sString message;
+
+        if (!m_client.errorString().empty())
+            message.sprintf("*** %s ***", STR(m_client.errorString()));
+        else 
+            message = "*** Not connected. ***";
+
+        startScreen();
+        printHeader();
+        printMiddle(message);
+        printFooter();
+        return true;
+    }
+
     switch (m_displayMode)
     {
         case WatchNodes:
@@ -976,6 +1028,9 @@ S9sMonitor::printFooter()
    
     if (!m_outputFileName.empty())
         ::printf("    [%s]", STR(m_outputFileName));
+
+    // Just for debugging now.
+    //::printf("'%s'", STR(m_client.reply().requestStatusAsString()));
 
     // No new-line at the end, this is the last line.
     ::printf("%s", TERM_ERASE_EOL);

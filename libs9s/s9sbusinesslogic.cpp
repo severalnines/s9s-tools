@@ -62,7 +62,7 @@ S9sBusinessLogic::execute()
      *
      */
     success = client.maybeAuthenticate();
-    if (!success)
+    if (!success && !options->isWatchRequested())
     {
         PRINT_ERROR("%s", STR(client.errorString()));
         return;
@@ -183,16 +183,17 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isEventOperation())
     {
+        // s9s event --list
         if (options->isListRequested())
         {
-            S9sMonitor display;
+            S9sMonitor monitor(client);
             bool       success;
 
-            display.start();
+            monitor.start();
             
             do {
                 success = client.subscribeEvents(
-                        S9sMonitor::eventHandler, (void *)&display);
+                        S9sMonitor::eventHandler, (void *)&monitor);
             } while (success);
 
             if (!success)
@@ -206,25 +207,9 @@ S9sBusinessLogic::execute()
             ::printf("Call ended\n");
         } else if (options->isWatchRequested())
         {
-            S9sMonitor display(S9sMonitor::WatchNodes);
-            bool       success;
-
-            display.start();
-            
-            do {
-                success = client.subscribeEvents(
-                        S9sMonitor::eventHandler, (void *)&display); 
-            } while (success);
-            
-            if (!success)
-            {
-                S9sString errorString = client.errorString();
-
-                errorString.replace("\n", "\n\r");
-                PRINT_ERROR("%s", STR(errorString));
-            }
-
-            ::printf("Call ended\n");
+            //s9s event --watch
+            S9sMonitor monitor(client, S9sMonitor::WatchNodes);
+            monitor.main();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

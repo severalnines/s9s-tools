@@ -72,10 +72,25 @@ S9sRpcReply::requestStatus() const
         retval = AccessDenied;
     else if (errorCodeString == "authrequeired")
         retval = AuthRequired;
+    else if (errorCodeString == "connecterror")
+        retval = ConnectError;
     else 
         retval = UnknownError;
 
     return retval;
+}
+
+S9sString
+S9sRpcReply::requestStatusAsString() const
+{
+    S9sString errorCodeString = "???";
+
+    if (contains("requestStatus"))
+        errorCodeString = at("requestStatus").toString().toLower();
+    else if (contains("request_status"))
+        errorCodeString = at("request_status").toString().toLower();
+
+    return errorCodeString;
 }
 
 /**

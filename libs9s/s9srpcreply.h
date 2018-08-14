@@ -43,11 +43,14 @@ class S9sRpcReply : public S9sVariantMap
             ClusterNotFound   = 103,
             UnknownError      = 104,
             AccessDenied      = 105,
-            AuthRequired      = 106
+            AuthRequired      = 106,
+            ConnectError      = 107,
         };
 
         bool isOk() const;
         S9sRpcReply::ErrorCode requestStatus() const;
+        S9sString requestStatusAsString() const;
+
         bool isAuthRequired() const;
         S9sString errorString() const;
         S9sString uuid() const;

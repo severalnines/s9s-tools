@@ -21,6 +21,7 @@
 
 #include "S9sDisplay"
 #include "S9sFormatter"
+#include "S9sRpcClient"
 
 /**
  * Implements a view that can be used to monitor objects through events.
@@ -41,7 +42,9 @@ class S9sMonitor :
             WatchEvents,
         };
 
-        S9sMonitor(S9sMonitor::DisplayMode mode = S9sMonitor::PrintEvents);
+        S9sMonitor(
+                S9sRpcClient            &client,
+                S9sMonitor::DisplayMode  mode = S9sMonitor::PrintEvents);
         virtual ~S9sMonitor();
 
         static void eventHandler(
@@ -49,6 +52,7 @@ class S9sMonitor :
                 void                *userData);
 
         int nContainers() const;
+        void main();
 
     protected:
 
@@ -74,6 +78,7 @@ class S9sMonitor :
         void printJobs();
 
     private:
+        S9sRpcClient                &m_client;
         DisplayMode                  m_displayMode;
         S9sMap<int, S9sNode>         m_nodes;
         S9sMap<int, S9sEvent>        m_eventsForNodes;
