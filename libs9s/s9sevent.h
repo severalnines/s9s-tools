@@ -26,6 +26,7 @@ class S9sNode;
 class S9sServer;
 class S9sCluster;
 class S9sJob;
+class S9sDateTime;
 
 /**
  * A class that represents an event sent by the controller. 
@@ -93,6 +94,7 @@ class S9sEvent : public S9sObject
         S9sEvent::EventType eventType() const;
         S9sString eventName() const;
         S9sEvent::EventSubClass eventSubClass() const;
+        S9sDateTime created() const;
 
         S9sString cmonDiskInfoToOneLiner(S9sVariantMap sample) const;
 

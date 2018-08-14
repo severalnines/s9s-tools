@@ -24,7 +24,9 @@
 
 S9sFilePrivate::S9sFilePrivate() :
     m_referenceCounter(1),
-    m_outputStream(0)
+    m_outputStream(0),
+    m_inputStream(0),
+    m_lineNumber(0ull)
 {
 }
 
@@ -37,7 +39,9 @@ S9sFilePrivate::S9sFilePrivate(
     m_fileName(orig.m_fileName),
     m_path(orig.m_path),
     m_errorString(orig.m_path),
-    m_outputStream(NULL)
+    m_outputStream(0),
+    m_inputStream(0),
+    m_lineNumber(0ull)
 {
 }
 
@@ -65,5 +69,11 @@ S9sFilePrivate::close()
     {
         fclose(m_outputStream);
         m_outputStream = 0;
+    }
+
+    if (m_inputStream)
+    {
+        fclose(m_inputStream);
+        m_inputStream = 0;
     }
 }

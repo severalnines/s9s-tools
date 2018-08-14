@@ -212,6 +212,9 @@ S9sBusinessLogic::execute()
 
             if (!options->outputFile().empty())
                 monitor.setOutputFileName(options->outputFile());
+            
+            if (!options->inputFile().empty())
+                monitor.setInputFileName(options->inputFile());
 
             monitor.main();
         } else {

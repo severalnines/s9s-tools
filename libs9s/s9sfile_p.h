@@ -39,6 +39,8 @@ class S9sFilePrivate
         S9sFilePath             m_path;
         mutable S9sString       m_errorString;
         FILE                   *m_outputStream;
-
+        FILE                   *m_inputStream;
+        ulonglong               m_lineNumber;
+        
         friend class S9sFile;
 };

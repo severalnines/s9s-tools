@@ -19,6 +19,7 @@ SUBDIRS =     	     \
 	ut_s9soptions    \
 	ut_s9sgraph      \
 	ut_s9srpcclient  \
+	ut_s9sfile       \
 	ut_s9sconfigfile 
 
 

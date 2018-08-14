@@ -21,6 +21,7 @@
 #include "s9sfile_p.h"
 
 #include "S9sVariantList"
+#include "S9sEvent"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -193,6 +194,32 @@ S9sFile::openForAppend()
     return true;
 }
 
+bool
+S9sFile::openForRead()
+{
+    /*
+     * If the file is open we close it first.
+     */
+    close();
+
+    /*
+     * Opening for append.
+     */
+    m_priv->m_inputStream = fopen(STR(m_priv->m_path), "r");
+    if (!m_priv->m_inputStream)
+    {
+        m_priv->m_errorString.sprintf(
+                "Unable to open '%s' for reading: %m",
+                STR(m_priv->m_path));
+
+        S9S_WARNING("%s", STR(m_priv->m_errorString));
+        return false;
+    }
+    
+    S9S_DEBUG("Opened '%s' for reading.", STR(m_priv->m_path));
+    return true;
+}
+
 void
 S9sFile::flush()
 {
@@ -206,6 +233,92 @@ S9sFile::close()
     m_priv->close();
 }
 
+bool
+S9sFile::readEvent(
+        S9sEvent &event)
+{
+    S9sVariantMap theMap;
+    S9sString     jsonString;
+    S9sString     line;
+
+    event = S9sEvent();
+    for (;;)
+    {
+        if (!readLine(line))
+            return false;
+
+        if (line.trim(" \n\r").empty())
+            break;
+
+        S9S_DEBUG("[%6llu] %s", m_priv->m_lineNumber, STR(line));
+        jsonString += line;
+    }
+
+    if (!theMap.parse(STR(jsonString)))
+    {
+        S9S_WARNING("Error parsing: \n%s", STR(jsonString));
+        return false;
+    }
+
+    event = theMap;
+    return true;
+}
+
+/**
+ * \returns The current line number, the number of the line where the readline
+ * function works.
+ */
+ulonglong 
+S9sFile::lineNumber() const
+{
+    return m_priv->m_lineNumber;
+}
+
+bool
+S9sFile::readLine(
+        S9sString &line)
+{
+    int c;
+
+    line.clear();
+
+    if (m_priv->m_inputStream == NULL)
+        openForRead();
+
+    if (m_priv->m_inputStream == NULL)
+        return false;
+
+    for (;;)
+    {
+        c = fgetc(m_priv->m_inputStream);
+
+        S9S_DEBUG("%c/%3d ", c, c);
+        //::printf("%c/%3d\r\n", c, c);
+        //fflush(stdout);
+
+        switch (c)
+        {
+            case EOF:
+                return !line.empty();
+
+            case '\n':
+                ++m_priv->m_lineNumber;
+                line += c;
+                return true;
+
+            default:
+                line += c;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * \param content The place where we put the content of the file.
+ *
+ * Reads the entire file into a string object.
+ */
 bool
 S9sFile::readTxtFile(
         S9sString &content)

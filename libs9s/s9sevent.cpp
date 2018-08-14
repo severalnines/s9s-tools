@@ -24,6 +24,7 @@
 #include "S9sNode"
 #include "S9sServer"
 #include "S9sCluster"
+#include "S9sDateTime"
 
 //#define DEBUG
 #define WARNING
@@ -158,6 +159,16 @@ S9sEvent::EventSubClass
 S9sEvent::eventSubClass() const
 {
     return stringToEventSubClass(property("event_name").toString());
+}
+
+S9sDateTime
+S9sEvent::created() const
+{
+    S9sVariantMap theMap = property("event_origins").toVariantMap();
+    S9sDateTime   retval;
+
+    retval.setFromVariantMap(theMap);
+    return retval;
 }
 
 S9sEvent::EventType

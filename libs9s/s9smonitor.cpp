@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 
-#define DEBUG
+//#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
 
@@ -40,6 +40,7 @@ S9sMonitor::S9sMonitor(
     m_client(client),
     m_displayMode(mode),
     m_viewDebug(false),
+    m_stopped(false),
     m_viewObjects(false),
     m_selectionIndex(0),
     m_selectionEnabled(false)
@@ -63,21 +64,62 @@ S9sMonitor::~S9sMonitor()
 void
 S9sMonitor::main()
 {
+    int nEvents = 0;
+    double millis;
+    double speedFactor = 1.0;
     start();
-    
-    while (true)
+
+    if (hasInputFile())
     {
-        while (!m_client.isAuthenticated())
+        S9sDateTime  prevCreated;
+        S9sDateTime  thisCreated;
+        S9sEvent     event;
+        bool         success;
+
+        S9S_DEBUG("Has input file...");
+        for (;;)
         {
-            m_client.maybeAuthenticate();
+            if (m_stopped)
+            {
+                usleep(100000);
+                continue;
+            }
 
-            if (!m_client.isAuthenticated())
-                usleep(3000000);
+            success = m_inputFile.readEvent(event);
+            if (!success)
+                break;
+
+            if (nEvents == 0)
+            {
+                thisCreated = event.created();
+            } else {
+                prevCreated = thisCreated;
+                thisCreated = event.created();
+
+                millis  = S9sDateTime::milliseconds(thisCreated, prevCreated);
+                millis *= speedFactor;
+                usleep(millis * 1000);
+            }
+
+            processEvent(event);
+            S9S_DEBUG("Processed event %d.", nEvents);
+            ++nEvents;
         }
+    } else {
+        while (true)
+        {
+            while (!m_client.isAuthenticated())
+            {
+                m_client.maybeAuthenticate();
 
-        m_client.subscribeEvents(
-                S9sMonitor::eventHandler, (void *) this); 
-        sleep(1);
+                if (!m_client.isAuthenticated())
+                    usleep(3000000);
+            }
+
+            m_client.subscribeEvents(
+                    S9sMonitor::eventHandler, (void *) this); 
+            sleep(1);
+        }
     }
 }
 
@@ -105,7 +147,7 @@ S9sMonitor::nContainers() const
 bool
 S9sMonitor::refreshScreen()
 {
-    if (!m_client.isAuthenticated())
+    if (!m_client.isAuthenticated() && !hasInputFile())
     {
         S9sString message;
 
@@ -984,11 +1026,25 @@ S9sMonitor::printHeader()
 
     ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
     ::printf("%c ", rotatingCharacter());
+    
+    if (hasInputFile())
+    {
+        if (m_stopped)
+            ::printf(" ▶️ ");
+        else
+            ::printf(" ⏸️ ");
+    } else {
+        ::printf("   ");
+    }
+
+    //::printf("⏺ ⏹ ⏸ ⏵ ⏩");
+
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     ::printf("%lu node(s) ", m_nodes.size());
     ::printf("%d VM(s) ", nContainers());
     ::printf("%lu cluster(s) ", m_clusters.size());
     ::printf("%lu jobs(s) ", m_jobs.size());
+
 
     if (m_viewDebug)
     {
@@ -1026,12 +1082,12 @@ S9sMonitor::printFooter()
     ::printf("%sD%s-Debug mode ", bold, normal);
     ::printf("%sQ%s-Quit", bold, normal);
    
-    if (!m_outputFileName.empty())
-        ::printf("    [%s]", STR(m_outputFileName));
+    //if (!m_outputFileName.empty())
+    //    ::printf("    [%s]", STR(m_outputFileName));
+    //    ::printf("    {%s}", STR(m_inputFileName));
 
     // Just for debugging now.
     //::printf("'%s'", STR(m_client.reply().requestStatusAsString()));
-
     // No new-line at the end, this is the last line.
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
@@ -1093,6 +1149,10 @@ S9sMonitor::processKey(
         case 'e':
         case 'E':
             m_displayMode = WatchEvents;
+            break;
+
+        case ' ':
+            m_stopped = !m_stopped;
             break;
 
         case S9S_KEY_DOWN:

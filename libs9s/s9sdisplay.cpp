@@ -82,7 +82,6 @@ S9sDisplay::setOutputFileName(
     bool success = true;
 
     m_outputFileName = fileName;
-
     if (!m_outputFileName.empty())
     {
         m_outputFile = S9sFile(m_outputFileName);
@@ -107,6 +106,36 @@ S9sDisplay::setOutputFileName(
     }
 
     return success;
+}
+
+bool
+S9sDisplay::setInputFileName(
+        const S9sString &fileName)
+{
+    bool success = true;
+
+    m_inputFileName = fileName;
+    if (!m_inputFileName.empty())
+    {
+        m_inputFile = S9sFile(m_inputFileName);
+
+        // FIXME: Here we do exit.
+        if (!m_inputFile.exists())
+        {
+            PRINT_ERROR("Input file '%s' does not exist.", STR(fileName));
+            exit(1);
+        }
+    } else {
+        m_inputFile = S9sFile();
+    }
+
+    return success;
+}
+
+bool
+S9sDisplay::hasInputFile() const
+{
+    return !m_inputFileName.empty();
 }
 
 int

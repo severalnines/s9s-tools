@@ -1132,12 +1132,20 @@ S9sOptions::nodes() const
     return S9sVariantList();
 }
 
+/**
+ * \returns The argument of the comman line option --input-file if provided,
+ *   the empty string if not.
+ */
 S9sString
 S9sOptions::inputFile() const
 {
     return getString("input_file");
 }
 
+/**
+ * \returns The argument of the comman line option --output-file if provided,
+ *   the empty string if not.
+ */
 S9sString
 S9sOptions::outputFile() const
 {

@@ -54,8 +54,10 @@ main(int argc, char **argv)
     bool        success, finished;
     int         exitStatus;
 
-    setlocale(LC_NUMERIC, getenv("LC_NUMERIC"));
-    setlocale(LC_ALL,     getenv("LC_ALL"));
+    setlocale(LC_NUMERIC, getenv("C"));
+    setlocale(LC_ALL,     getenv("C"));
+    //setlocale(LC_NUMERIC, getenv("LC_NUMERIC"));
+    //setlocale(LC_ALL,     getenv("LC_ALL"));
 
     #if 0
     for (;;)

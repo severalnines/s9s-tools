@@ -44,6 +44,9 @@ class S9sDisplay : public S9sThread
         virtual ~S9sDisplay();
 
         bool setOutputFileName(const S9sString &fileName);
+        bool setInputFileName(const S9sString &fileName);
+        bool hasInputFile() const;
+
         int lastKeyCode() const;
 
         int columns() const;
@@ -85,6 +88,8 @@ class S9sDisplay : public S9sThread
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;
+        S9sFile                      m_inputFile;
+        S9sString                    m_inputFileName;
         int                          m_lastButton;
         int                          m_lastX;
         int                          m_lastY;

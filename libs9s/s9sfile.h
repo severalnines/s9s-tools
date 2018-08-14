@@ -23,6 +23,7 @@
 #include <sys/types.h>
 
 class S9sFilePrivate;
+class S9sEvent;
 
 class S9sFile
 {
@@ -42,9 +43,14 @@ class S9sFile
         bool exists() const;
 
         bool openForAppend();
+        bool openForRead();
         void flush();
         void close();
         bool readTxtFile(S9sString &content);
+        bool readLine(S9sString &line);
+        bool readEvent(S9sEvent &event);
+        ulonglong lineNumber() const;
+        
         bool writeTxtFile(const S9sString &content);
         bool fprintf(const char *formatString, ...);
 
