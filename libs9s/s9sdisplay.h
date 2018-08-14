@@ -43,6 +43,7 @@ class S9sDisplay : public S9sThread
         S9sDisplay(bool interactive = true);
         virtual ~S9sDisplay();
 
+        bool setOutputFileName(const S9sString &fileName);
         int lastKeyCode() const;
 
         int columns() const;

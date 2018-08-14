@@ -62,21 +62,32 @@ S9sDisplay::S9sDisplay(
     m_columns(0),
     m_rows(0)
 {
-    S9sOptions       *options = S9sOptions::instance();
-    bool              success;
-
     m_lastKeyCode.lastKeyCode = 0;
     m_lastButton = 0;
     m_lastX      = 0;
     m_lastY      = 0;
 
-
     setConioTerminalMode(interactive);
+}
 
-    m_outputFileName = options->outputFile();
+S9sDisplay::~S9sDisplay()
+{
+    reset_terminal_mode();
+}
+
+bool
+S9sDisplay::setOutputFileName(
+        const S9sString &fileName)
+{
+    bool success = true;
+
+    m_outputFileName = fileName;
+
     if (!m_outputFileName.empty())
     {
         m_outputFile = S9sFile(m_outputFileName);
+
+        // FIXME: Here we do exit.
         if (m_outputFile.exists())
         {
             PRINT_ERROR("File '%s' already exists.", STR(m_outputFileName));
@@ -91,13 +102,11 @@ S9sDisplay::S9sDisplay(
         }
 
         m_outputFile.close();
-
+    } else {
+        m_outputFile = S9sFile();
     }
-}
 
-S9sDisplay::~S9sDisplay()
-{
-    reset_terminal_mode();
+    return success;
 }
 
 int

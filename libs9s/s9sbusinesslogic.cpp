@@ -209,6 +209,10 @@ S9sBusinessLogic::execute()
         {
             //s9s event --watch
             S9sMonitor monitor(client, S9sMonitor::WatchNodes);
+
+            if (!options->outputFile().empty())
+                monitor.setOutputFileName(options->outputFile());
+
             monitor.main();
         } else {
             PRINT_ERROR("Operation is not specified.");
