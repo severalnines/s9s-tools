@@ -41,6 +41,7 @@ S9sMonitor::S9sMonitor(
     m_displayMode(mode),
     m_viewDebug(false),
     m_viewObjects(false),
+    m_fastMode(false),
     m_selectionIndex(0),
     m_selectionEnabled(false)
 {
@@ -94,10 +95,13 @@ S9sMonitor::main()
 
                 millis  = S9sDateTime::milliseconds(thisCreated, prevCreated);
                 millis *= speedFactor;
+
+                if (millis > 500)
+                    millis = 500;
                 usleep(millis * 1000);
             }
             
-            while (m_isStopped)
+            while (m_fastMode && m_isStopped)
                 usleep(100000);
 
             processEvent(event);
@@ -1030,9 +1034,14 @@ S9sMonitor::printHeader()
     if (hasInputFile())
     {
         if (m_isStopped)
-            ::printf(" ▶️ ");
-        else
+        {
+            if (m_fastMode)
+                ::printf(" ⏩ ");
+            else
+                ::printf(" ▶️ ");
+        } else {
             ::printf(" ⏸️ ");
+        }
     } else {
         ::printf("   ");
     }
@@ -1149,6 +1158,11 @@ S9sMonitor::processKey(
         case 'e':
         case 'E':
             m_displayMode = WatchEvents;
+            break;
+        
+        case 'f':
+        case 'F':
+            m_fastMode = !m_fastMode;
             break;
 
         case ' ':

@@ -91,6 +91,7 @@ class S9sMonitor :
 
         bool                         m_viewDebug;
         bool                         m_viewObjects;
+        bool                         m_fastMode;
 
         int                          m_selectionIndex;
         bool                         m_selectionEnabled;
