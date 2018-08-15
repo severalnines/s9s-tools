@@ -27,7 +27,7 @@
 #include "S9sDateTime"
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 S9sEvent::S9sEvent() :

@@ -624,18 +624,19 @@ S9sMonitor::printJobs()
                 progressBar = S9sRpcReply::progressBar(true);
         }
 
+        stateFormat.setColor(
+                jobStateColorBegin(job.status()),
+                jobStateColorEnd());
+
+        titleFormat.setColor(
+                TERM_BOLD, TERM_NORMAL);
+
         idFormat.printf(job.id());
-        
-        printf("%s", jobStateColorBegin(job.status()));
         stateFormat.printf(job.status());
-        printf("%s", jobStateColorEnd());
 
         ::printf("%s", STR(progressBar));
 
-        ::printf("%s", TERM_BOLD);
         titleFormat.printf(job.title());
-        ::printf("%s", TERM_NORMAL);
-
         statusTextFormat.printf(statusText);
 
         printNewLine();

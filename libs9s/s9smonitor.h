@@ -92,6 +92,7 @@ class S9sMonitor :
         bool                         m_viewDebug;
         bool                         m_stopped;
         bool                         m_viewObjects;
+
         int                          m_selectionIndex;
         bool                         m_selectionEnabled;
 };
