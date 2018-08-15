@@ -60,7 +60,8 @@ S9sDisplay::S9sDisplay(
     S9sThread(),
     m_refreshCounter(0),
     m_columns(0),
-    m_rows(0)
+    m_rows(0),
+    m_isStopped(0)
 {
     m_lastKeyCode.lastKeyCode = 0;
     m_lastButton = 0;

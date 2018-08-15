@@ -40,7 +40,6 @@ S9sMonitor::S9sMonitor(
     m_client(client),
     m_displayMode(mode),
     m_viewDebug(false),
-    m_stopped(false),
     m_viewObjects(false),
     m_selectionIndex(0),
     m_selectionEnabled(false)
@@ -79,11 +78,8 @@ S9sMonitor::main()
         S9S_DEBUG("Has input file...");
         for (;;)
         {
-            if (m_stopped)
-            {
+            while (m_isStopped)
                 usleep(100000);
-                continue;
-            }
 
             success = m_inputFile.readEvent(event);
             if (!success)
@@ -100,6 +96,9 @@ S9sMonitor::main()
                 millis *= speedFactor;
                 usleep(millis * 1000);
             }
+            
+            while (m_isStopped)
+                usleep(100000);
 
             processEvent(event);
             S9S_DEBUG("Processed event %d.", nEvents);
@@ -1030,7 +1029,7 @@ S9sMonitor::printHeader()
     
     if (hasInputFile())
     {
-        if (m_stopped)
+        if (m_isStopped)
             ::printf(" ▶️ ");
         else
             ::printf(" ⏸️ ");
@@ -1153,7 +1152,7 @@ S9sMonitor::processKey(
             break;
 
         case ' ':
-            m_stopped = !m_stopped;
+            m_isStopped = !m_isStopped;
             break;
 
         case S9S_KEY_DOWN:

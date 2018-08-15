@@ -93,4 +93,6 @@ class S9sDisplay : public S9sThread
         int                          m_lastButton;
         int                          m_lastX;
         int                          m_lastY;
+        bool                         m_isStopped;
+
 };

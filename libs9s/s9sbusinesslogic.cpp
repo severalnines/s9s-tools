@@ -59,13 +59,20 @@ S9sBusinessLogic::execute()
     bool         success;
 
     /*
-     *
+     * Authenticating... maybe.
      */
-    success = client.maybeAuthenticate();
-    if (!success && !options->isWatchRequested())
+    if (options->isEventOperation() && !options->inputFile().empty())
     {
-        PRINT_ERROR("%s", STR(client.errorString()));
-        return;
+        //
+        // We do not authenticate here, we simply do process an input file.
+        //
+    } else {
+        success = client.maybeAuthenticate();
+        if (!success && !options->isWatchRequested())
+        {
+            PRINT_ERROR("%s", STR(client.errorString()));
+            return;
+        }
     }
 
     if (options->isClusterOperation())
@@ -183,28 +190,18 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isEventOperation())
     {
-        // s9s event --list
         if (options->isListRequested())
         {
+            // s9s event --list
             S9sMonitor monitor(client);
-            bool       success;
 
-            monitor.start();
+            if (!options->outputFile().empty())
+                monitor.setOutputFileName(options->outputFile());
             
-            do {
-                success = client.subscribeEvents(
-                        S9sMonitor::eventHandler, (void *)&monitor);
-            } while (success);
+            if (!options->inputFile().empty())
+                monitor.setInputFileName(options->inputFile());
 
-            if (!success)
-            {
-                S9sString errorString = client.errorString();
-
-                errorString.replace("\n", "\n\r");
-                PRINT_ERROR("%s", STR(errorString));
-            }
-            
-            ::printf("Call ended\n");
+            monitor.main();
         } else if (options->isWatchRequested())
         {
             //s9s event --watch
