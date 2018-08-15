@@ -70,6 +70,7 @@ class S9sMonitor :
         void removeOldObjects();
         
     private:
+        void printHelp();
         void printContainers();
         void printServers();
         void printNodes();
@@ -92,6 +93,7 @@ class S9sMonitor :
         bool                         m_viewDebug;
         bool                         m_viewObjects;
         bool                         m_fastMode;
+        bool                         m_viewHelp;
 
         int                          m_selectionIndex;
         bool                         m_selectionEnabled;

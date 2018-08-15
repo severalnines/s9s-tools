@@ -42,6 +42,7 @@ S9sMonitor::S9sMonitor(
     m_viewDebug(false),
     m_viewObjects(false),
     m_fastMode(false),
+    m_viewHelp(false),
     m_selectionIndex(0),
     m_selectionEnabled(false)
 {
@@ -199,7 +200,55 @@ S9sMonitor::refreshScreen()
             ::printf("error");
     }
 
+    //if (m_viewHelp)
+    //    printHelp();
+
     return true;
+}
+
+void
+S9sMonitor::printHelp()
+{
+    S9sVariantList lines;
+    int            indent;
+
+    lines <<
+        "┌─────────────────────────────────────────────────────────────────┐" <<
+        "│                     PLAYBACK CONTROL KEYS                       │" <<
+        "│                                                                 │" <<
+        "│ SPACE - Start and stop playback.                                │" <<
+        "│     F - Toggle fast playback mode.                              │" <<
+        "│     H - Toggle help screen.                                     │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "└─────────────────────────────────────────────────────────────────┘";
+        ;
+
+    indent = (columns() - 65) / 2;
+    if (indent < 2) 
+        indent = 2;
+
+    for (int n = 0; n < (int)lines.size(); ++n)
+    {
+        S9sString line = lines[n].toString();
+        
+        gotoXy(indent, n + 3);
+        ::printf("%s", STR(line));
+    }
 }
 
 /**
@@ -906,32 +955,38 @@ S9sMonitor::processEvent(
             break;
 
         case WatchNodes:
-            printNodes();
+            if (!m_viewHelp)
+                printNodes();
             ++m_refreshCounter;
             break;
         
         case WatchContainers:
-            printContainers();
+            if (!m_viewHelp)
+                printContainers();
             ++m_refreshCounter;
             break;
         
         case WatchServers:
-            printServers();
+            if (!m_viewHelp)
+                printServers();
             ++m_refreshCounter;
             break;
 
         case WatchClusters:
-            printClusters();
+            if (!m_viewHelp)
+                printClusters();
             ++m_refreshCounter;
             break;
         
         case WatchJobs:
-            printJobs();
+            if (!m_viewHelp)
+                printJobs();
             ++m_refreshCounter;
             break;
         
         case WatchEvents:
-            printEvents();
+            if (!m_viewHelp)
+                printEvents();
             ++m_refreshCounter;
             break;
     }
@@ -1100,6 +1155,10 @@ S9sMonitor::printFooter()
     // No new-line at the end, this is the last line.
     ::printf("%s", TERM_ERASE_EOL);
     ::printf("%s", TERM_NORMAL);
+
+    if (m_viewHelp)
+        printHelp();
+    
     fflush(stdout);
 }
 
@@ -1114,7 +1173,16 @@ S9sMonitor::processKey(
     {
         case 'q':
         case 'Q':
+            exit(0);
+            break;
+
         case 0x1b:
+            if (m_viewHelp)
+                m_viewHelp = false;
+            else
+                exit(0);
+            break;
+
         case 3:
             exit(0);
             break;
@@ -1163,6 +1231,11 @@ S9sMonitor::processKey(
         case 'f':
         case 'F':
             m_fastMode = !m_fastMode;
+            break;
+        
+        case 'h':
+        case 'H':
+            m_viewHelp = !m_viewHelp;
             break;
 
         case ' ':

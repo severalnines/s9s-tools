@@ -171,6 +171,17 @@ S9sDisplay::rows() const
     return m_rows;
 }
 
+void 
+S9sDisplay::gotoXy(
+        int x,
+        int y)
+{
+    S9sString sequence;
+
+    sequence.sprintf("\033[%d;%dH", y, x);
+    ::printf("%s", STR(sequence));
+}
+
 int 
 S9sDisplay::exec()
 {

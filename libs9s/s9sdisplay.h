@@ -51,6 +51,7 @@ class S9sDisplay : public S9sThread
 
         int columns() const;
         int rows() const;
+        void gotoXy(int x, int y);
 
     protected:
         virtual int exec();
