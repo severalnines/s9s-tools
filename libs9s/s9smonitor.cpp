@@ -102,7 +102,7 @@ S9sMonitor::main()
                 usleep(millis * 1000);
             }
             
-            while (m_fastMode && m_isStopped)
+            while (m_isStopped)
                 usleep(100000);
 
             processEvent(event);
@@ -214,23 +214,23 @@ S9sMonitor::printHelp()
 
     lines <<
         "┌─────────────────────────────────────────────────────────────────┐" <<
+        "│                             VIEWS                               │" <<
+        "│                                                                 │" <<
+        "│     N - Nodes             J - Jobs           S - Servers        │" <<
+        "│     C - Clusters          E - Events         V - Containers     │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│     H - Toggle help screen.                                     │" <<
+        "│     D - Debug mode.                                             │" <<
+        "│     O - View objects.                                           │" <<
+        "│     Q - Quit program.                                           │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
+        "│                                                                 │" <<
         "│                     PLAYBACK CONTROL KEYS                       │" <<
         "│                                                                 │" <<
         "│ SPACE - Start and stop playback.                                │" <<
         "│     F - Toggle fast playback mode.                              │" <<
-        "│     H - Toggle help screen.                                     │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
-        "│                                                                 │" <<
         "│                                                                 │" <<
         "│                                                                 │" <<
         "│                                                                 │" <<
@@ -1144,6 +1144,7 @@ S9sMonitor::printFooter()
     ::printf("%sV%s-Containers ", bold, normal);
     ::printf("%sE%s-Events ", bold, normal);
     ::printf("%sD%s-Debug mode ", bold, normal);
+    ::printf("%sH%s-Help ", bold, normal);
     ::printf("%sQ%s-Quit", bold, normal);
    
     //if (!m_outputFileName.empty())
@@ -1320,6 +1321,9 @@ S9sMonitor::processButton(
         {
             m_viewDebug = !m_viewDebug;
         } else if (x >= 63 && x <= 68)
+        {
+            m_viewHelp = !m_viewHelp;
+        } else if (x >= 70 && x <= 75)
         {
             exit(0);
         }
