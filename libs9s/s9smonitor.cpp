@@ -44,7 +44,9 @@ S9sMonitor::S9sMonitor(
     m_fastMode(false),
     m_viewHelp(false),
     m_selectionIndex(0),
-    m_selectionEnabled(false)
+    m_selectionEnabled(true),
+    m_leftKeyPresses(0),
+    m_rightKeyPresses(0)
 {
 }
 
@@ -65,9 +67,10 @@ S9sMonitor::~S9sMonitor()
 void
 S9sMonitor::main()
 {
-    int nEvents = 0;
+    int    nEvents = 0;
     double millis;
     double speedFactor = 1.0;
+
     start();
 
     if (hasInputFile())
@@ -80,7 +83,7 @@ S9sMonitor::main()
         S9S_DEBUG("Has input file...");
         for (;;)
         {
-            while (m_isStopped)
+            while (m_isStopped && m_rightKeyPresses == 0)
                 usleep(100000);
 
             success = m_inputFile.readEvent(event);
@@ -99,14 +102,39 @@ S9sMonitor::main()
 
                 if (millis > 500)
                     millis = 500;
-                usleep(millis * 1000);
+
+                if (m_rightKeyPresses == 0)
+                    usleep(millis * 1000);
             }
-            
-            while (m_isStopped)
+           
+            if (m_rightKeyPresses > 0)
+            {
+                S9sMutexLocker locker(m_mutex);
+                int    skipSeconds = m_rightKeyPresses * 60 * 3;
+                time_t target = thisCreated.toTimeT() + skipSeconds;
+
+                do {
+                    processEvent(event);
+
+                    success = m_inputFile.readEvent(event);
+                    if (!success)
+                        break;
+                
+                    prevCreated = thisCreated;
+                    thisCreated = event.created();
+                    ++nEvents;
+                } while (thisCreated.toTimeT() < target);
+                
+                m_rightKeyPresses = 0;
+                refreshScreen();
+            }
+
+            while (m_isStopped && m_rightKeyPresses == 0)
                 usleep(100000);
 
+            m_mutex.lock();
             processEvent(event);
-            S9S_DEBUG("Processed event %d.", nEvents);
+            m_mutex.unlock();
             ++nEvents;
         }
     } else {
@@ -265,6 +293,7 @@ S9sMonitor::printContainers()
     S9sFormat  aliasFormat;
     int        totalIndex;
 
+
     startScreen();
     printHeader();
     
@@ -309,6 +338,13 @@ S9sMonitor::printContainers()
         printMiddle("*** No containers. ***");
     }
 
+    /*
+     * Printing the list.
+     */
+    m_containerListWidget.setSize(columns(), rows() - 3);
+    m_containerListWidget.setNumberOfItems(nContainers());
+    m_containerListWidget.ensureSelectionVisible();
+
     totalIndex = 0;
     foreach (const S9sServer &server, m_servers)
     {
@@ -321,9 +357,15 @@ S9sMonitor::printContainers()
                     S9s::AnyIpv4Address, "-");
             int          stateAsChar = container.stateAsChar();
             bool         selected;
-            
+           
+            if (!m_containerListWidget.isVisible(totalIndex))
+            {
+                ++totalIndex;
+                continue;
+            }
+
             selected = 
-                totalIndex == m_selectionIndex &&
+                m_containerListWidget.isSelected(totalIndex) &&
                 m_selectionEnabled;
 
             if (!selected)
@@ -933,20 +975,11 @@ S9sMonitor::processEvent(
             m_servers[server.id()]      = server;
             m_serverEvents[server.id()] = event;
         }
-
-        #if 0
-        if (server.id() != "0" && m_servers.contains("0"))
-        {
-            if (m_servers["0"].hostName() == server.hostName())
-            {
-                m_servers.erase("0");
-                m_serverEvents.erase("0");
-            }
-        }
-        #endif
     }
 
     removeOldObjects();
+    if (m_rightKeyPresses > 0)
+        return;
 
     switch (m_displayMode)
     {
@@ -1086,6 +1119,8 @@ S9sMonitor::printHeader()
     ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
     ::printf("%c ", rotatingCharacter());
     
+    //::printf("%3d", m_containerListWidget.selectionIndex());
+
     if (hasInputFile())
     {
         if (m_isStopped)
@@ -1112,7 +1147,7 @@ S9sMonitor::printHeader()
 
     if (m_viewDebug)
     {
-        //::printf("0x%02x ",      lastKeyCode());
+        ::printf("0x%02x ",      lastKeyCode());
         ::printf("%02dx%02d ",   columns(), rows());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
@@ -1243,6 +1278,14 @@ S9sMonitor::processKey(
             m_isStopped = !m_isStopped;
             break;
 
+        case S9S_KEY_LEFT:
+            m_leftKeyPresses++;
+            break;
+
+        case S9S_KEY_RIGHT:
+            m_rightKeyPresses++;
+            break;
+
         case S9S_KEY_DOWN:
             switch (m_displayMode)
             {
@@ -1257,8 +1300,9 @@ S9sMonitor::processKey(
                     break;
 
                 case WatchContainers:
-                    if (m_selectionIndex < nContainers())
-                        ++m_selectionIndex;
+                    m_containerListWidget.selectionDown();
+                    //if (m_selectionIndex < nContainers())
+                    //    ++m_selectionIndex;
                     break;
             }
             break;
@@ -1277,8 +1321,9 @@ S9sMonitor::processKey(
                     break;
 
                 case WatchContainers:
-                    if (m_selectionIndex > 0)
-                        --m_selectionIndex;
+                    m_containerListWidget.selectionUp();
+                    //if (m_selectionIndex > 0)
+                    //    --m_selectionIndex;
                     break;
             }
             break;

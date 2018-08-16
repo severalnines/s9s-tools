@@ -22,6 +22,7 @@
 #include "S9sDisplay"
 #include "S9sFormatter"
 #include "S9sRpcClient"
+#include "S9sDisplayList"
 
 /**
  * Implements a view that can be used to monitor objects through events.
@@ -97,5 +98,9 @@ class S9sMonitor :
 
         int                          m_selectionIndex;
         bool                         m_selectionEnabled;
+        int                          m_leftKeyPresses;
+        int                          m_rightKeyPresses;
+
+        S9sDisplayList               m_containerListWidget;
 };
 

@@ -27,6 +27,21 @@ class S9sDisplayList
         S9sDisplayList();
         virtual ~S9sDisplayList();
 
+        int selectionIndex() const;
+        void setSize(int nColumns, int nRows);
+        void setNumberOfItems(int n);
+
+        void selectionUp();
+        void selectionDown();
+        bool isSelected(const int index) const;
+        bool isVisible(const int index) const;
+
+        void ensureSelectionVisible();
+
     private:
         int  m_selectionIndex;
+        int  m_width;
+        int  m_height;
+        int  m_startIndex;
+        int  m_numberOfItems;
 };
