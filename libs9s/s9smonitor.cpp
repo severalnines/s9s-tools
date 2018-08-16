@@ -169,6 +169,19 @@ S9sMonitor::nContainers() const
     return retval;
 }
 
+S9sVector<S9sServer>
+S9sMonitor::servers() const
+{
+    S9sVector<S9sServer> retval;
+
+    foreach (const S9sServer &server, m_servers)
+        retval << server;
+
+    sort(retval.begin(), retval.end(), S9sServer::compareByName);
+
+    return retval;
+}
+
 /**
  * \returns True if the program should continue refreshing the screen, false to
  *   exit.
@@ -285,6 +298,7 @@ S9sMonitor::printHelp()
 void
 S9sMonitor::printContainers()
 {
+    S9sVector<S9sServer> theServers = servers();
     S9sFormat  typeFormat;
     S9sFormat  templateFormat;
     S9sFormat  stateFormat;
@@ -297,9 +311,10 @@ S9sMonitor::printContainers()
     startScreen();
     printHeader();
     
-    foreach (const S9sServer &server, m_servers)
+    for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
     {
-        S9sVariantList maps = server.containers();
+        S9sServer      &server = theServers[idx1];
+        S9sVariantList  maps = server.containers();
 
         for (uint idx = 0u; idx < maps.size(); ++idx)
         {
@@ -346,8 +361,9 @@ S9sMonitor::printContainers()
     m_containerListWidget.ensureSelectionVisible();
 
     totalIndex = 0;
-    foreach (const S9sServer &server, m_servers)
+    for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
     {
+        S9sServer      &server = theServers[idx1];
         S9sVariantList maps = server.containers();
 
         for (uint idx = 0u; idx < maps.size(); ++idx)
@@ -416,6 +432,7 @@ S9sMonitor::printContainers()
 void
 S9sMonitor::printServers()
 {
+    S9sVector<S9sServer> theServers = servers();
     S9sFormat   sourceFileFormat(XTERM_COLOR_BLUE, TERM_NORMAL);
     S9sFormat   sourceLineFormat;
     S9sFormat   idFormat;
@@ -431,9 +448,10 @@ S9sMonitor::printServers()
     startScreen();
     printHeader();
     
-    foreach (const S9sServer &server, m_servers)
+    for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
     {
-        S9sEvent       event = m_serverEvents[server.id()];
+        S9sServer      &server = theServers[idx1];
+        S9sEvent        event = m_serverEvents[server.id()];
         
         sourceFileFormat.widen(event.senderFile());
         sourceLineFormat.widen(event.senderLine());
@@ -491,9 +509,10 @@ S9sMonitor::printServers()
         printMiddle("*** No servers. ***");
     }
 
-    foreach (const S9sServer &server, m_servers)
+    for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
     {
-        S9sEvent       event = m_serverEvents[server.id()];
+        S9sServer      &server = theServers[idx1];
+        S9sEvent        event = m_serverEvents[server.id()];
 
         nameFormat.setColor(
                 server.colorBegin(true),

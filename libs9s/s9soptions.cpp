@@ -10130,17 +10130,18 @@ S9sOptions::checkOptionsServer()
     
     if (isStartRequested())
         countOptions++;
+    
+    if (isStopRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
-        m_errorMessage = "Main option is required.";
+        m_errorMessage = "Main options are mutually exclusive.";
         m_exitStatus = BadOptions;
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --execute and --delete options is mandatory.";
-
+        m_errorMessage = "Main option is required.";
         m_exitStatus = BadOptions;
 
         return false;

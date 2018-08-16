@@ -687,3 +687,23 @@ S9sServer::nThreads() const
     return retval;
 }
 
+bool 
+S9sServer::compareByName(
+        const S9sServer &server1,
+        const S9sServer &server2)
+{
+    if (server1.status() == "CmonHostOnline" &&
+            server2.status() != "CmonHostOnline")
+    {
+        return true;
+    }
+    
+    if (server1.status() != "CmonHostOnline" &&
+            server2.status() == "CmonHostOnline")
+    {
+        return false;
+    }
+
+    return server1.hostName() < server2.hostName();
+}
+

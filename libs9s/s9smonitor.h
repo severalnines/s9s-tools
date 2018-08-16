@@ -53,6 +53,8 @@ class S9sMonitor :
                 void                *userData);
 
         int nContainers() const;
+        S9sVector<S9sServer> servers() const;
+
         void main();
 
     protected:
