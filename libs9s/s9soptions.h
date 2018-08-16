@@ -270,6 +270,8 @@ class S9sOptions
         bool hasFirewalls() const;
         S9sString firewalls() const;
 
+        S9sString region() const;
+
         bool hasJobTags() const;
         S9sVariantList jobTags() const;
         bool setJobTags(const S9sString &value);

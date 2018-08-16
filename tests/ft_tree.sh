@@ -167,22 +167,22 @@ mys9s server --list --long --refresh --color=always
 # Creating a container.
 #
 print_title "Creating a Container"
-pip-container-destroy --server="$CONTAINER_SERVER" container_001
-pip-container-destroy --server="$CONTAINER_SERVER" container_002
+pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
+pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
 
     mys9s container \
         --create \
         --template=ubuntu \
         $LOG_OPTION \
-        container_001
+        ft_tree_001
 
     check_exit_code $?
 
-    container_created "container_001"
+    container_created "ft_tree_001"
     CONTAINER_IP=$(\
         s9s server \
             --list-containers \
-            --long container_001 \
+            --long ft_tree_001 \
             --batch \
         | awk '{print $6}')
 

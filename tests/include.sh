@@ -1105,17 +1105,19 @@ function clean_up_after_test()
     # Some closing logs.
     #
     print_title "Preparing to Exit"
-    mys9s tree \
-        --cat \
-        --cmon-user=system \
-        --password=secret \
-        /.runtime/job_manager
+    if false; then
+        mys9s tree \
+            --cat \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime/job_manager
     
-    mys9s tree \
-        --cat \
-        --cmon-user=system \
-        --password=secret \
-        /.runtime/host_manager
+        mys9s tree \
+            --cat \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime/host_manager
+    fi
 
     # Reading the container list file.
     if [ -f "$container_list_file" ]; then

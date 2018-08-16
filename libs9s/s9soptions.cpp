@@ -269,6 +269,7 @@ enum S9sOptionType
     OptionSortByMemory,
     OptionOutputFile,
     OptionInputFile,
+    OptionRegion,
 };
 
 /**
@@ -2422,6 +2423,15 @@ S9sString
 S9sOptions::firewalls() const
 {
     return getString("firewalls");
+}
+
+/**
+ * \returns The option argument for the --region option.
+ */
+S9sString
+S9sOptions::region() const
+{
+    return getString("region");
 }
 
 bool 
@@ -8569,6 +8579,7 @@ S9sOptions::readOptionsContainer(
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
+        { "region",           required_argument, 0, OptionRegion          },
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
@@ -8795,6 +8806,11 @@ S9sOptions::readOptionsContainer(
             case OptionOsUser:
                 // --os-user=USERNAME
                 m_options["os_user"] = optarg;
+                break;
+
+            case OptionRegion:
+                // --region=REGION
+                m_options["region"] = optarg;
                 break;
                 
             case OptionServers:
