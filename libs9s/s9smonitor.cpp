@@ -403,7 +403,7 @@ S9sMonitor::printContainers()
                 ::printf("%s", containerColorEnd());
             } else {
                 // The line is selected, we use a highlight color.
-                ::printf("%s", "\033[1m\033[48;5;4m");
+                ::printf("%s", XTERM_COLOR_SELECTION);
                 typeFormat.printf(STR(container.provider()));
                 templateFormat.printf(container.templateName("-"));
                 stateFormat.printf(STR(container.state()));
@@ -537,7 +537,7 @@ S9sMonitor::printServers()
 
         if (isSelected)
         {
-            ::printf("%s", "\033[1m\033[48;5;4m");
+            ::printf("%s", XTERM_COLOR_SELECTION);
 
             if (m_viewDebug)
             {
