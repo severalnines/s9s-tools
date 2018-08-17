@@ -30,8 +30,10 @@ class S9sDisplayList
         void setSelectionEnabled(const bool value);
         bool isSelectionEnabled() const;
         int selectionIndex() const;
-        
+
+        void setLocation(int x, int y);
         void setSize(int nColumns, int nRows);
+        bool contains(int x, int y) const;
         void setNumberOfItems(int n);
 
         void selectionUp();
@@ -44,8 +46,11 @@ class S9sDisplayList
     private:
         int  m_selectionEnabled;
         int  m_selectionIndex;
-        int  m_width;
-        int  m_height;
         int  m_startIndex;
         int  m_numberOfItems;
+        
+        int  m_x;
+        int  m_y;
+        int  m_width;
+        int  m_height;
 };

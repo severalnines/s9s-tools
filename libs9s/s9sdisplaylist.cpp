@@ -23,7 +23,11 @@ S9sDisplayList::S9sDisplayList() :
     m_selectionEnabled(false),
     m_selectionIndex(0),
     m_startIndex(0),
-    m_numberOfItems(0)
+    m_numberOfItems(0),
+    m_x(0),
+    m_y(0),
+    m_width(0),
+    m_height(0)
 {
 }
 
@@ -70,12 +74,31 @@ S9sDisplayList::isVisible(
 }
 
 void
+S9sDisplayList::setLocation(
+        int x, 
+        int y)
+{
+    m_x = x;
+    m_y = y;
+}
+
+void
 S9sDisplayList::setSize(
         int nColumns,
         int nRows)
 {
     m_width  = nColumns;
     m_height = nRows;
+}
+
+bool
+S9sDisplayList::contains(
+        int x,
+        int y) const
+{
+    return 
+        x >= m_x && x < m_x + m_width &&
+        y >= m_y && y < m_y + m_height;
 }
 
 void

@@ -356,6 +356,7 @@ S9sMonitor::printContainers()
     /*
      * Printing the list.
      */
+    m_containerListWidget.setLocation(1, 3);
     m_containerListWidget.setSize(columns(), rows() - 3);
     m_containerListWidget.setNumberOfItems(nContainers());
     m_containerListWidget.ensureSelectionVisible();
@@ -515,6 +516,7 @@ S9sMonitor::printServers()
     /*
      * Printing the list.
      */
+    m_serverListWidget.setLocation(1, 3);
     m_serverListWidget.setSize(columns(), rows() - 3);
     m_serverListWidget.setNumberOfItems(theServers.size());
     m_serverListWidget.ensureSelectionVisible();
@@ -1406,10 +1408,52 @@ S9sMonitor::processButton(
 
     if (button == 64)
     {
-        processKey(S9S_KEY_UP);
+        //processKey(S9S_KEY_UP);
+            switch (m_displayMode)
+            {
+                case PrintEvents:
+                    break;
+
+                case WatchEvents:
+                case WatchNodes:
+                case WatchClusters:
+                case WatchJobs:
+                    break;
+
+                case WatchServers:
+                    if (m_serverListWidget.contains(x, y))
+                        m_serverListWidget.selectionUp();
+                    break;
+
+                case WatchContainers:
+                    if (m_containerListWidget.contains(x, y))
+                        m_containerListWidget.selectionUp();
+                    break;
+            }
     } else if (button == 65)
     {
-        processKey(S9S_KEY_DOWN);
+        //processKey(S9S_KEY_DOWN);
+            switch (m_displayMode)
+            {
+                case PrintEvents:
+                    break;
+
+                case WatchEvents:
+                case WatchNodes:
+                case WatchClusters:
+                case WatchJobs:
+                    break;
+
+                case WatchServers:
+                    if (m_serverListWidget.contains(x, y))
+                        m_serverListWidget.selectionDown();
+                    break;
+
+                case WatchContainers:
+                    if (m_containerListWidget.contains(x, y))
+                        m_containerListWidget.selectionDown();
+                    break;
+            }
     } else if ((int) y == rows())
     {
         if (x >= 2 && x <= 8)
