@@ -104,5 +104,6 @@ class S9sMonitor :
         int                          m_rightKeyPresses;
 
         S9sDisplayList               m_containerListWidget;
+        S9sDisplayList               m_serverListWidget;
 };
 

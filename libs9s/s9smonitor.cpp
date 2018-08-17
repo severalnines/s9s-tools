@@ -466,6 +466,9 @@ S9sMonitor::printServers()
         commentsFormat.widen(server.message("-"));
     }
     
+    /*
+     * Printing the header.
+     */
     if (!m_servers.empty())
     {
         sourceFileFormat.widen("SOURCE FILE");
@@ -509,34 +512,69 @@ S9sMonitor::printServers()
         printMiddle("*** No servers. ***");
     }
 
+    /*
+     * Printing the list.
+     */
+    m_serverListWidget.setSize(columns(), rows() - 3);
+    m_serverListWidget.setNumberOfItems(theServers.size());
+    m_serverListWidget.ensureSelectionVisible();
     for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
     {
         S9sServer      &server = theServers[idx1];
         S9sEvent        event = m_serverEvents[server.id()];
+        bool            isSelected;
+
+        if (!m_serverListWidget.isVisible(idx1))
+            continue;
+
+        isSelected = 
+                m_serverListWidget.isSelected(idx1) &&
+                m_selectionEnabled;
 
         nameFormat.setColor(
                 server.colorBegin(true),
                 server.colorEnd(true));
 
-        if (m_viewDebug)
+        if (isSelected)
         {
-            sourceFileFormat.printf(event.senderFile());
-            sourceLineFormat.printf(event.senderLine());
-        }
+            ::printf("%s", "\033[1m\033[48;5;4m");
 
-        if (m_viewObjects)
-        {
-            idFormat.printf(server.id("-"));
-        }
+            if (m_viewDebug)
+            {
+                sourceFileFormat.printf(event.senderFile(), false);
+                sourceLineFormat.printf(event.senderLine());
+            }
 
-        typeFormat.printf(server.protocol());
-        versionFormat.printf(server.version("-"));
-        nContainersFormat.printf(server.nContainers());
-        ownerFormat.printf(server.ownerName());
-        groupFormat.printf(server.groupOwnerName());
-        nameFormat.printf(server.hostName());
-        ipFormat.printf(server.ipAddress());
-        commentsFormat.printf(server.message("-"));
+            if (m_viewObjects)
+                idFormat.printf(server.id("-"), false);
+
+            typeFormat.printf(server.protocol(), false);
+            versionFormat.printf(server.version("-"), false);
+            nContainersFormat.printf(server.nContainers());
+            ownerFormat.printf(server.ownerName(), false);
+            groupFormat.printf(server.groupOwnerName(), false);
+            nameFormat.printf(server.hostName(), false);
+            ipFormat.printf(server.ipAddress(), false);
+            commentsFormat.printf(server.message("-"), false);
+        } else {
+            if (m_viewDebug)
+            {
+                sourceFileFormat.printf(event.senderFile());
+                sourceLineFormat.printf(event.senderLine());
+            }
+
+            if (m_viewObjects)
+                idFormat.printf(server.id("-"));
+
+            typeFormat.printf(server.protocol());
+            versionFormat.printf(server.version("-"));
+            nContainersFormat.printf(server.nContainers());
+            ownerFormat.printf(server.ownerName());
+            groupFormat.printf(server.groupOwnerName());
+            nameFormat.printf(server.hostName());
+            ipFormat.printf(server.ipAddress());
+            commentsFormat.printf(server.message("-"));
+        }
 
         printNewLine();
             
@@ -1138,8 +1176,6 @@ S9sMonitor::printHeader()
     ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
     ::printf("%c ", rotatingCharacter());
     
-    //::printf("%3d", m_containerListWidget.selectionIndex());
-
     if (hasInputFile())
     {
         if (m_isStopped)
@@ -1315,13 +1351,14 @@ S9sMonitor::processKey(
                 case WatchNodes:
                 case WatchClusters:
                 case WatchJobs:
+                    break;
+
                 case WatchServers:
+                    m_serverListWidget.selectionDown();
                     break;
 
                 case WatchContainers:
                     m_containerListWidget.selectionDown();
-                    //if (m_selectionIndex < nContainers())
-                    //    ++m_selectionIndex;
                     break;
             }
             break;
@@ -1336,13 +1373,14 @@ S9sMonitor::processKey(
                 case WatchNodes:
                 case WatchClusters:
                 case WatchJobs:
+                    break;
+
                 case WatchServers:
+                    m_serverListWidget.selectionUp();
                     break;
 
                 case WatchContainers:
                     m_containerListWidget.selectionUp();
-                    //if (m_selectionIndex > 0)
-                    //    --m_selectionIndex;
                     break;
             }
             break;
@@ -1364,7 +1402,13 @@ S9sMonitor::processButton(
 {
     S9sDisplay::processButton(button, x, y);
 
-    if ((int) y == rows())
+    if (button == 64)
+    {
+        processKey(S9S_KEY_UP);
+    } else if (button == 65)
+    {
+        processKey(S9S_KEY_DOWN);
+    } else if ((int) y == rows())
     {
         if (x >= 2 && x <= 8)
         {

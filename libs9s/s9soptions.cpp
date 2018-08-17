@@ -4495,6 +4495,7 @@ S9sOptions::printHelpContainer()
 "  --os-key-file=PATH         The key file to register on the container.\n"
 "  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The username to create on the container.\n"
+"  --region=NAME              The regionin which the container is created.\n"
 "  --servers=LIST             A list of servers to work with.\n"
 "  --subnet-id=ID             The ID of the subnet.\n"
 "  --template=NAME            The name of the container template.\n"
