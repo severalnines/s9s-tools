@@ -27,6 +27,12 @@ class S9sDisplayList
         S9sDisplayList();
         virtual ~S9sDisplayList();
 
+        void setVisible(bool value);
+        bool isVisible() const;
+
+        bool processButton(uint button, uint x, uint y);
+        void processKey(int key);
+
         void setSelectionEnabled(const bool value);
         bool isSelectionEnabled() const;
         int selectionIndex() const;
@@ -36,14 +42,15 @@ class S9sDisplayList
         bool contains(int x, int y) const;
         void setNumberOfItems(int n);
 
-        void selectionUp();
-        void selectionDown();
+        void selectionUp(int nSteps = 1);
+        void selectionDown(int nSteps = 1);
         bool isSelected(const int index) const;
         bool isVisible(const int index) const;
 
         void ensureSelectionVisible();
 
     private:
+        bool m_isVisible;
         int  m_selectionEnabled;
         int  m_selectionIndex;
         int  m_startIndex;

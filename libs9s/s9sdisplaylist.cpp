@@ -18,6 +18,7 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sdisplaylist.h"
+#include "S9sDisplay"
 
 S9sDisplayList::S9sDisplayList() :
     m_selectionEnabled(false),
@@ -36,21 +37,23 @@ S9sDisplayList::~S9sDisplayList()
 }
 
 void
-S9sDisplayList::selectionUp()
+S9sDisplayList::selectionUp(
+        int nSteps)
 {
     if (m_selectionEnabled)
-        m_selectionIndex--;
+        m_selectionIndex -= nSteps;
     else
-        m_startIndex--;
+        m_startIndex -= nSteps;
 }
 
 void 
-S9sDisplayList::selectionDown()
+S9sDisplayList::selectionDown(
+        int nSteps)
 {
     if (m_selectionEnabled)
-        m_selectionIndex++;
+        m_selectionIndex += nSteps;
     else 
-        m_startIndex++;
+        m_startIndex += nSteps;
 }
 
 bool
@@ -71,6 +74,19 @@ S9sDisplayList::isVisible(
         return false;
 
     return true;
+}
+
+void
+S9sDisplayList::setVisible(
+        bool value)
+{
+    m_isVisible = value;
+}
+
+bool
+S9sDisplayList::isVisible() const
+{
+    return m_isVisible;
 }
 
 void
@@ -99,6 +115,67 @@ S9sDisplayList::contains(
     return 
         x >= m_x && x < m_x + m_width &&
         y >= m_y && y < m_y + m_height;
+}
+
+/**
+ * \returns True if the mouse event is processed and should not considered by
+ *   other widgets.
+ */
+bool
+S9sDisplayList::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+    if (!isVisible())
+        return false;
+
+    if (!contains(x, y))
+        return false;
+
+    switch (button)
+    {
+        case 64:
+            selectionUp();
+            break;
+
+        case 65:
+            selectionDown();
+            break;
+    }
+
+    return true;
+}
+
+void
+S9sDisplayList::processKey(
+        int key)
+{
+    if (!isVisible())
+        return;
+
+    switch (key)
+    {
+        case S9S_KEY_DOWN:
+            selectionDown();
+            break;
+
+        case S9S_KEY_UP:
+            selectionUp();
+            break;
+
+        case S9S_KEY_PGUP:
+            selectionUp(m_height);
+            break;
+
+        case S9S_KEY_PGDN:
+            selectionDown(m_height);
+            break;
+
+        default:
+            ::printf(" %x ", key);
+            //sleep(5);
+    }
 }
 
 void

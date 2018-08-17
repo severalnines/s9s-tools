@@ -34,6 +34,8 @@
 #define S9S_KEY_UP    0x415b1b
 #define S9S_KEY_RIGHT 0x435b1b
 #define S9S_KEY_LEFT  0x445b1b
+#define S9S_KEY_PGUP  0x7e355b1b
+#define S9S_KEY_PGDN  0x7e365b1b
 
 /**
  * A UI screen that can be used as a parent class for views continuously

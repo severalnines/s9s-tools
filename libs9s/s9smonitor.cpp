@@ -48,10 +48,41 @@ S9sMonitor::S9sMonitor(
     m_leftKeyPresses(0),
     m_rightKeyPresses(0)
 {
+    setDisplayMode(mode);
 }
 
 S9sMonitor::~S9sMonitor()
 {
+}
+
+void
+S9sMonitor::setDisplayMode(
+        const S9sMonitor::DisplayMode mode)
+{
+    m_displayMode = mode;
+
+    switch (m_displayMode)
+    {
+        case PrintEvents:
+        case WatchEvents:
+        case WatchNodes:
+        case WatchClusters:
+        case WatchJobs:
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(false);
+            break;
+
+        case WatchServers:
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(true);
+            break;
+
+        case WatchContainers:
+            m_containerListWidget.setVisible(true);
+            m_serverListWidget.setVisible(false);
+            break;
+    }
+    
 }
 
 /**
@@ -1206,7 +1237,7 @@ S9sMonitor::printHeader()
 
     if (m_viewDebug)
     {
-        ::printf("0x%02x ",      lastKeyCode());
+        ::printf("0x%08x ",      lastKeyCode());
         ::printf("%02dx%02d ",   columns(), rows());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
@@ -1284,7 +1315,7 @@ S9sMonitor::processKey(
 
         case 'c':
         case 'C':
-            m_displayMode = WatchClusters;
+            setDisplayMode(WatchClusters);
             break;
        
         case 'd':
@@ -1300,27 +1331,27 @@ S9sMonitor::processKey(
 
         case 'n':
         case 'N':
-            m_displayMode = WatchNodes;
+            setDisplayMode(WatchNodes);
             break;
         
         case 'j':
         case 'J':
-            m_displayMode = WatchJobs;
+            setDisplayMode(WatchJobs);
             break;
         
         case 'v':
         case 'V':
-            m_displayMode = WatchContainers;
+            setDisplayMode(WatchContainers);
             break;
         
         case 's':
         case 'S':
-            m_displayMode = WatchServers;
+            setDisplayMode(WatchServers);
             break;
         
         case 'e':
         case 'E':
-            m_displayMode = WatchEvents;
+            setDisplayMode(WatchEvents);
             break;
         
         case 'f':
@@ -1345,49 +1376,9 @@ S9sMonitor::processKey(
             m_rightKeyPresses++;
             break;
 
-        case S9S_KEY_DOWN:
-            switch (m_displayMode)
-            {
-                case PrintEvents:
-                    break;
-
-                case WatchEvents:
-                case WatchNodes:
-                case WatchClusters:
-                case WatchJobs:
-                    break;
-
-                case WatchServers:
-                    m_serverListWidget.selectionDown();
-                    break;
-
-                case WatchContainers:
-                    m_containerListWidget.selectionDown();
-                    break;
-            }
-            break;
-
-        case S9S_KEY_UP:
-            switch (m_displayMode)
-            {
-                case PrintEvents:
-                    break;
-
-                case WatchEvents:
-                case WatchNodes:
-                case WatchClusters:
-                case WatchJobs:
-                    break;
-
-                case WatchServers:
-                    m_serverListWidget.selectionUp();
-                    break;
-
-                case WatchContainers:
-                    m_containerListWidget.selectionUp();
-                    break;
-            }
-            break;
+        default:
+            m_serverListWidget.processKey(key);
+            m_containerListWidget.processKey(key);
     }
 }
 
@@ -1406,71 +1397,28 @@ S9sMonitor::processButton(
 {
     S9sDisplay::processButton(button, x, y);
 
-    if (button == 64)
-    {
-        //processKey(S9S_KEY_UP);
-            switch (m_displayMode)
-            {
-                case PrintEvents:
-                    break;
+    if (m_containerListWidget.processButton(button, x, y))
+        return;
+    else if (m_serverListWidget.processButton(button, x, y))
+        return;
 
-                case WatchEvents:
-                case WatchNodes:
-                case WatchClusters:
-                case WatchJobs:
-                    break;
-
-                case WatchServers:
-                    if (m_serverListWidget.contains(x, y))
-                        m_serverListWidget.selectionUp();
-                    break;
-
-                case WatchContainers:
-                    if (m_containerListWidget.contains(x, y))
-                        m_containerListWidget.selectionUp();
-                    break;
-            }
-    } else if (button == 65)
-    {
-        //processKey(S9S_KEY_DOWN);
-            switch (m_displayMode)
-            {
-                case PrintEvents:
-                    break;
-
-                case WatchEvents:
-                case WatchNodes:
-                case WatchClusters:
-                case WatchJobs:
-                    break;
-
-                case WatchServers:
-                    if (m_serverListWidget.contains(x, y))
-                        m_serverListWidget.selectionDown();
-                    break;
-
-                case WatchContainers:
-                    if (m_containerListWidget.contains(x, y))
-                        m_containerListWidget.selectionDown();
-                    break;
-            }
-    } else if ((int) y == rows())
+    if ((int) y == rows())
     {
         if (x >= 2 && x <= 8)
         {
-            m_displayMode = WatchNodes;            
+            setDisplayMode(WatchNodes);
         } else if (x >= 10 && x <= 19)
         {
-            m_displayMode = WatchClusters;
+            setDisplayMode(WatchClusters);
         } else if (x >= 21 && x <= 26)
         {
-            m_displayMode = WatchJobs;
+            setDisplayMode(WatchJobs);
         } else if (x >= 28 && x <= 39)
         {
-            m_displayMode = WatchContainers;
+            setDisplayMode(WatchContainers);
         } else if (x >= 41 && x <= 48)
         {
-            m_displayMode = WatchEvents;
+            setDisplayMode(WatchEvents);
         } else if (x >= 50 && x <= 61)
         {
             m_viewDebug = !m_viewDebug;

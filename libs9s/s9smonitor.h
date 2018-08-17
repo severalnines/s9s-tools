@@ -55,6 +55,8 @@ class S9sMonitor :
         int nContainers() const;
         S9sVector<S9sServer> servers() const;
 
+        void setDisplayMode(const S9sMonitor::DisplayMode mode);
+
         void main();
 
     protected:
