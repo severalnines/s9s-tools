@@ -630,7 +630,7 @@ S9sMonitor::printClusters()
         idFormat.widen("ID");
         stateFormat.widen("STATE");
         typeFormat.widen("TYPE");
-        nameFormat.widen("CLUSTER STATE");
+        nameFormat.widen("NAME");
         messageFormat.widen("MESSAGE");
         
         aclFormat.widen("MODE");
@@ -651,7 +651,7 @@ S9sMonitor::printClusters()
             idFormat.printf("ID");
             stateFormat.printf("STATE");
             typeFormat.printf("TYPE");
-            nameFormat.printf("CLUSTER STATE");
+            nameFormat.printf("NAME");
             messageFormat.printf("MESSAGE");
         }
         
@@ -1113,6 +1113,8 @@ S9sMonitor::processEventList(
 void
 S9sMonitor::removeOldObjects()
 {
+    // FIXME: this is disabled
+    return;
     S9sVector<int> jobIds = m_jobs.keys();
     time_t         now    = time(NULL);
 

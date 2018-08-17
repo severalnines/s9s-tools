@@ -20,6 +20,7 @@
 #include "s9sdisplaylist.h"
 
 S9sDisplayList::S9sDisplayList() :
+    m_selectionEnabled(false),
     m_selectionIndex(0),
     m_startIndex(0),
     m_numberOfItems(0)
@@ -33,23 +34,26 @@ S9sDisplayList::~S9sDisplayList()
 void
 S9sDisplayList::selectionUp()
 {
-    if (m_selectionIndex == 0)
-        return;
-
-    m_selectionIndex--;
+    if (m_selectionEnabled)
+        m_selectionIndex--;
+    else
+        m_startIndex--;
 }
 
 void 
 S9sDisplayList::selectionDown()
 {
-    m_selectionIndex++;
+    if (m_selectionEnabled)
+        m_selectionIndex++;
+    else 
+        m_startIndex++;
 }
 
 bool
 S9sDisplayList::isSelected(
         const int index) const
 {
-    return index == m_selectionIndex;
+    return m_selectionEnabled && index == m_selectionIndex;
 }
 
 bool
@@ -84,6 +88,19 @@ S9sDisplayList::setNumberOfItems(
         m_selectionIndex = m_numberOfItems - 1;
 }
 
+void
+S9sDisplayList::setSelectionEnabled(
+        const bool value)
+{
+    m_selectionEnabled = value;
+}
+
+bool
+S9sDisplayList::isSelectionEnabled() const
+{
+    return m_selectionEnabled;
+}
+
 int 
 S9sDisplayList::selectionIndex() const
 {
@@ -94,19 +111,27 @@ S9sDisplayList::selectionIndex() const
 void
 S9sDisplayList::ensureSelectionVisible()
 {
-    if (m_selectionIndex < 0)
-        m_selectionIndex = 0;
-
-    if (m_selectionIndex >= m_numberOfItems)
-        m_numberOfItems = m_numberOfItems - 1;
-
-    if (m_selectionIndex - m_startIndex + 1 > m_height)
+    if (m_selectionEnabled)
     {
-        // The selection is below the last visible line, need to scroll.
-        m_startIndex = m_selectionIndex - m_height + 1;
-    } else if (m_startIndex > m_selectionIndex)
-    {
-        m_startIndex = m_selectionIndex;
+        if (m_selectionIndex < 0)
+            m_selectionIndex = 0;
+
+        if (m_selectionIndex >= m_numberOfItems)
+            m_numberOfItems = m_numberOfItems - 1;
+
+        if (m_selectionIndex - m_startIndex + 1 > m_height)
+        {
+            // The selection is below the last visible line, need to scroll.
+            m_startIndex = m_selectionIndex - m_height + 1;
+        } else if (m_startIndex > m_selectionIndex)
+        {
+            m_startIndex = m_selectionIndex;
+        }
+    } else {
+        if (m_startIndex + m_height > m_numberOfItems)
+            m_startIndex = m_numberOfItems - m_height;
+        
+        if (m_startIndex < 0)
+            m_startIndex = 0;
     }
-
 }
