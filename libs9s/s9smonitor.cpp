@@ -1188,6 +1188,8 @@ S9sMonitor::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
     S9sString   title;
+    const char *bold = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
 
     switch (m_displayMode)
     {
@@ -1219,7 +1221,7 @@ S9sMonitor::printHeader()
             break;
     }
 
-    ::printf("%s%s%s ", TERM_SCREEN_TITLE_BOLD, STR(title), TERM_SCREEN_TITLE);
+    ::printf("%s%s%s ", bold, STR(title), normal);
     ::printf("%c ", rotatingCharacter());
     
     if (hasInputFile())
@@ -1240,11 +1242,12 @@ S9sMonitor::printHeader()
     //::printf("⏺ ⏹ ⏸ ⏵ ⏩");
 
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
-    ::printf("%lu node(s) ", m_nodes.size());
-    ::printf("%d VM(s) ", nContainers());
-    ::printf("%lu cluster(s) ", m_clusters.size());
-    ::printf("%lu jobs(s) ", m_jobs.size());
-
+    
+    ::printf("%s%4lu%s event(s) ", bold, m_events.size(), normal);
+    ::printf("%s%lu%s node(s) ",   bold, m_nodes.size(), normal);
+    ::printf("%s%d%s VM(s) ",      bold, nContainers(), normal);
+    ::printf("%s%lu%s cluster(s) ", bold, m_clusters.size(), normal);
+    ::printf("%s%lu%s jobs(s) ",   bold, m_jobs.size(), normal);
 
     if (m_viewDebug)
     {
