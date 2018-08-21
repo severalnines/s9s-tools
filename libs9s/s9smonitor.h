@@ -22,6 +22,7 @@
 #include "S9sDisplay"
 #include "S9sFormatter"
 #include "S9sRpcClient"
+#include "S9sRpcReply"
 #include "S9sDisplayList"
 
 /**
@@ -61,6 +62,7 @@ class S9sMonitor :
 
     protected:
 
+        void replyCallback(S9sRpcReply &reply);
         void eventCallback(S9sEvent &event);
 
         virtual void processKey(int key);
@@ -85,6 +87,7 @@ class S9sMonitor :
 
     private:
         S9sRpcClient                &m_client;
+        S9sRpcReply                  m_lastReply;
         DisplayMode                  m_displayMode;
         S9sMap<int, S9sNode>         m_nodes;
         S9sMap<int, S9sEvent>        m_eventsForNodes;

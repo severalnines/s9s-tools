@@ -93,6 +93,15 @@ S9sRpcReply::requestStatusAsString() const
     return errorCodeString;
 }
 
+
+S9sRpcReply &
+S9sRpcReply::operator=(
+        const S9sVariantMap &theMap)
+{
+    S9sVariantMap::operator=(theMap);
+    return *this;
+}
+
 /**
  * \returns true if the reply states that the request status is 'ok'.
  */

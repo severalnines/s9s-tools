@@ -68,12 +68,11 @@ SUPPORTED TESTS:
   o testStart            Starts the cluster.
 
 EXAMPLE
- ./$MYNAME --print-commands --server=storage01 --reset-config --install
+ ./$MYNAME --print-commands --server=core1 --reset-config --install
 
 EOF
     exit 1
 }
-
 
 ARGS=$(\
     getopt -o h \

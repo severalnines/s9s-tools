@@ -44,6 +44,11 @@ Usage:
   --provider-version=STRING The SQL server provider version.
   --leave-nodes    Do not destroy the nodes at exit.
 
+SUPPORTED TESTS
+  o testCreateCluster       Creates a cluster.
+  o testCreateClusterFail   Fails to create a cluster by re-using nodes.
+  o testRemoveClusterFail   Fails to remove cluster 0.
+
 EXAMPLE
  ./$MYNAME --print-commands --server=core1 --reset-config --install
 

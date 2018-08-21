@@ -25,6 +25,7 @@
 #include "S9sRpcReply"
 #include "S9sMutexLocker"
 #include "S9sDateTime"
+#include "S9sRpcReply"
 
 #include <unistd.h>
 
@@ -179,8 +180,9 @@ S9sMonitor::main()
                     usleep(3000000);
             }
 
-            m_client.subscribeEvents(
-                    S9sMonitor::eventHandler, (void *) this); 
+            m_lastReply = S9sRpcReply();
+            m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
+            m_lastReply = m_client.reply();
             sleep(1);
         }
     }
@@ -223,20 +225,29 @@ S9sMonitor::servers() const
 bool
 S9sMonitor::refreshScreen()
 {
-    if (!m_client.isAuthenticated() && !hasInputFile())
+    if (!hasInputFile())
     {
-        S9sString message;
+        if (!m_client.isAuthenticated() || 
+                (!m_lastReply.empty() && !m_lastReply.isOk()))
+        {
+            S9sString message;
+    
+            if (!m_lastReply.isOk() && !m_lastReply.errorString().empty())
+            {
+                message.sprintf("*** %s ***", STR(m_lastReply.errorString()));
+            } else if (!m_client.errorString().empty())
+            {
+                message.sprintf("*** %s ***", STR(m_client.errorString()));
+            } else {
+                message.sprintf("*** Not connected. ***");
+            }
 
-        if (!m_client.errorString().empty())
-            message.sprintf("*** %s ***", STR(m_client.errorString()));
-        else 
-            message = "*** Not connected. ***";
-
-        startScreen();
-        printHeader();
-        printMiddle(message);
-        printFooter();
-        return true;
+            startScreen();
+            printHeader();
+            printMiddle(message);
+            printFooter();
+            return true;
+        }
     }
 
     switch (m_displayMode)
@@ -1432,6 +1443,13 @@ S9sMonitor::processButton(
     }
 }
 
+void
+S9sMonitor::replyCallback(
+        S9sRpcReply   &reply)
+{
+    m_lastReply = reply;
+}
+
 /**
  * \param event The event to process.
  *
@@ -1506,11 +1524,16 @@ S9sMonitor::eventHandler(
     if (!jsonMessage.contains("class_name") ||
             jsonMessage.at("class_name").toString() != "CmonEvent")
     {
-        return;
+        // Not an event.
+        S9sRpcReply   reply;
+        S9sMonitor *display = (S9sMonitor *) userData;
+       
+        reply = jsonMessage;
+        display->replyCallback(reply);
+    } else {
+        S9sEvent    event = jsonMessage;
+        S9sMonitor *display = (S9sMonitor *) userData;
+
+        display->eventCallback(event);
     }
-
-    S9sEvent    event = jsonMessage;
-    S9sMonitor *display = (S9sMonitor *) userData;
-
-    display->eventCallback(event);
 }
