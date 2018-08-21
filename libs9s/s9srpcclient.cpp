@@ -2015,7 +2015,8 @@ S9sRpcClient::createCluster()
     {
         success = createGaleraCluster(
                 hosts, osUserName, vendor, dbVersion, uninstall);
-    } else if (options->clusterType() == "mysqlreplication")
+    } else if (options->clusterType() == "mysqlreplication" ||
+            options->clusterType() == "mysql")
     {
         success = createMySqlReplication(
                 hosts, osUserName, vendor, dbVersion, uninstall);
