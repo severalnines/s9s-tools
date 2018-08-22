@@ -30,6 +30,9 @@ class S9sDisplayList
         void setVisible(bool value);
         bool isVisible() const;
 
+        bool isActive() const;
+        void setActive(bool active);
+
         int firstVisibleIndex() const;
         int lastVisibleIndex() const;
 
@@ -42,6 +45,11 @@ class S9sDisplayList
 
         void setLocation(int x, int y);
         void setSize(int nColumns, int nRows);
+        int y() const;
+        int x() const;
+        int height() const;
+        int width() const;
+
         bool contains(int x, int y) const;
         void setNumberOfItems(int n);
 
@@ -54,6 +62,7 @@ class S9sDisplayList
 
     private:
         bool m_isVisible;
+        bool m_isActive;
         int  m_selectionEnabled;
         int  m_selectionIndex;
         int  m_startIndex;

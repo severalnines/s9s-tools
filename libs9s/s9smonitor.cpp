@@ -49,6 +49,8 @@ S9sMonitor::S9sMonitor(
     m_leftKeyPresses(0),
     m_rightKeyPresses(0)
 {
+    m_eventListWidget.setSelectionEnabled(false);
+    m_eventViewWidget.setActive(false);
     setDisplayMode(mode);
 }
 
@@ -68,12 +70,16 @@ S9sMonitor::setDisplayMode(
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
+
+            m_eventViewWidget.setVisible(false);
             break;
 
         case WatchEvents:
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(true);
+            
+            m_eventViewWidget.setVisible(true);
             break;
 
         case WatchNodes:
@@ -81,24 +87,32 @@ S9sMonitor::setDisplayMode(
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
+            
+            m_eventViewWidget.setVisible(false);
             break;
 
         case WatchJobs:
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
+            
+            m_eventViewWidget.setVisible(false);
             break;
 
         case WatchServers:
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(true);
             m_eventListWidget.setVisible(false);
+            
+            m_eventViewWidget.setVisible(false);
             break;
 
         case WatchContainers:
             m_containerListWidget.setVisible(true);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
+            
+            m_eventViewWidget.setVisible(false);
             break;
     }
     
@@ -1011,16 +1025,48 @@ S9sMonitor::printNodes()
 void
 S9sMonitor::printEvents()
 {
-    int firstIndex, lastIndex;
-
     startScreen();
     printHeader();
 
-    m_eventListWidget.setLocation(1, 3);
-    m_eventListWidget.setSize(columns(), rows() - 2);
+    if (m_events.empty())
+    {
+        printMiddle("*** No events. ***");
+    } else {
+        printEventList();
+        printEventView();
+    }
+
+    printFooter();
+}
+
+void
+S9sMonitor::printEventList()
+{
+    int firstIndex, lastIndex;
+    int viewHeight;
+
+    if (m_eventListWidget.selectionIndex() < (int) m_events.size() &&
+            m_eventListWidget.selectionIndex() >= 0)
+        m_selectedEvent = m_events[m_eventListWidget.selectionIndex()];
+
+    /*
+     * Layout.
+     */
+    viewHeight = 
+        m_eventViewWidget.isActive() ? (rows() - 2) / 2 : rows() - 2;
+
+    m_eventListWidget.setLocation(1, 2);
+    m_eventListWidget.setSize(columns(), viewHeight);
     m_eventListWidget.setNumberOfItems(m_events.size());
     m_eventListWidget.ensureSelectionVisible();
 
+    m_eventViewWidget.setLocation(1, viewHeight + 1);
+    m_eventViewWidget.setSize(columns(), viewHeight);
+    m_eventViewWidget.setSelectionEnabled(false);
+
+    /*
+     * Printing the list.
+     */
     firstIndex = m_eventListWidget.firstVisibleIndex();
     lastIndex  = m_eventListWidget.lastVisibleIndex();
     for (uint idx = firstIndex; (int) idx <= lastIndex; ++idx)
@@ -1051,7 +1097,66 @@ S9sMonitor::printEvents()
         }
     }
 
-    printFooter();
+    // The remaining lines of the event list.
+    while (m_lineCounter < 
+            m_eventListWidget.y() + m_eventListWidget.height() - 1)
+    {
+        #if 0
+        ::printf("%3d %3d %3d", m_lineCounter, m_eventListWidget.y(), 
+                m_eventListWidget.height());
+        #endif
+        printNewLine();
+    }
+}
+
+void
+S9sMonitor::printEventView()
+{
+    if (!m_eventViewWidget.isActive())
+        return;
+
+    S9sString title = " Event JSon";
+
+    // The title bar.
+    ::printf("%s", TERM_INVERSE);
+    ::printf("%s", STR(title));
+
+#if 1
+    for (int n = title.length(); n < columns() - 2; ++n)
+        ::printf(" ");
+
+    ::printf("x ");
+#else
+    ::printf("  %d, %d %dx%d %d - %d", 
+            m_eventViewWidget.x(), m_eventViewWidget.y(),
+            m_eventViewWidget.height(), m_eventViewWidget.width(),
+            m_eventViewWidget.firstVisibleIndex(),
+            m_eventViewWidget.lastVisibleIndex()
+            );
+#endif
+    printNewLine();
+   
+    S9sVariantList lines = m_selectedEvent.toString().split("\n");
+    uint startLineIdx, endLineIdx;
+
+    m_eventViewWidget.setNumberOfItems(lines.size());
+    m_eventViewWidget.ensureSelectionVisible();
+
+    startLineIdx = m_eventViewWidget.firstVisibleIndex();
+    endLineIdx   = m_eventViewWidget.lastVisibleIndex();
+    for (uint idx = startLineIdx; idx < endLineIdx; ++idx)
+    {
+        if (idx >= lines.size())
+            break;
+
+        S9sString line = lines[idx].toString();
+
+        line.replace("\n", "\\n");
+        line.replace("\r", "\\r");
+        ::printf("%s", STR(line));
+        printNewLine();
+
+    }
 }
 
 /**
@@ -1351,11 +1456,38 @@ S9sMonitor::processKey(
             exit(0);
             break;
 
+        case 0x0d: 
+            // The enter key...
+            if (m_displayMode == WatchEvents)
+            {
+                if (!m_eventListWidget.isSelectionEnabled())
+                    m_eventListWidget.setSelectionEnabled(true);
+                else
+                    m_eventViewWidget.setActive(true);
+            }
+            break;
+
+        case 'x': 
+            if (m_displayMode == WatchEvents)
+                m_eventViewWidget.setActive(false);
+            break;
+            
         case 0x1b:
+            // The ESC key.
             if (m_viewHelp)
+            {
                 m_viewHelp = false;
-            else
+            } else if (m_displayMode == WatchEvents)
+            {
+                if (m_eventViewWidget.isActive())
+                    m_eventViewWidget.setActive(false);
+                else if (m_eventListWidget.isSelectionEnabled())
+                    m_eventListWidget.setSelectionEnabled(false);
+                else
+                    exit(0);
+            } else {
                 exit(0);
+            }
             break;
 
         case 3:
@@ -1447,12 +1579,16 @@ S9sMonitor::processButton(
 {
     S9sDisplay::processButton(button, x, y);
 
+    m_eventViewWidget.processButton(button, x, y);
+
     if (m_containerListWidget.processButton(button, x, y))
         return;
     else if (m_serverListWidget.processButton(button, x, y))
         return;
     else if (m_eventListWidget.processButton(button, x, y))
         return;
+    //else if (m_eventViewWidget.processButton(button, x, y))
+    //    return;
 
     if ((int) y == rows())
     {

@@ -96,7 +96,10 @@ class S9sEvent : public S9sObject
         S9sEvent::EventSubClass eventSubClass() const;
         S9sDateTime created() const;
 
-        S9sString cmonDiskInfoToOneLiner(S9sVariantMap sample) const;
+        S9sString 
+            cmonDiskInfoToOneLiner(
+                S9sVariantMap sample,
+                bool          useSyntaxHighlight) const;
 
         S9sString senderFile() const;
         int senderLine() const;
@@ -137,7 +140,10 @@ class S9sEvent : public S9sObject
         S9sString eventMaintenanceToOneLiner() const;
         S9sString eventClusterToOneLiner() const;
 
-        S9sString measurementToOneLiner(S9sVariantMap specifics) const;
+        S9sString 
+            measurementToOneLiner(
+                S9sVariantMap specifics,
+                bool          useSyntaxHighlight) const;
         
         S9sString getString(const S9sString &path) const;
         int getInt(const S9sString &path) const;

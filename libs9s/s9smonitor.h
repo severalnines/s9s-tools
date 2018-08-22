@@ -81,7 +81,11 @@ class S9sMonitor :
         void printContainers();
         void printServers();
         void printNodes();
+        
         void printEvents();
+        void printEventList();
+        void printEventView();
+
         void printClusters();
         void printJobs();
 
@@ -110,6 +114,9 @@ class S9sMonitor :
 
         S9sDisplayList               m_containerListWidget;
         S9sDisplayList               m_serverListWidget;
+
         S9sDisplayList               m_eventListWidget;
+        S9sDisplayList               m_eventViewWidget;
+        S9sEvent                     m_selectedEvent;
 };
 

@@ -77,7 +77,7 @@ S9sEvent::toOneLiner(
                     XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
                     senderLine());
         } else {
-            tmp.sprintf("%s%28s%s:%-5d ",
+            tmp.sprintf("%28s:%-5d ",
                     STR(senderFile()), senderLine());
         }
         retval += tmp;
@@ -311,7 +311,7 @@ S9sEvent::eventHostToOneLiner(
             retval.sprintf(
                     "Host %s%s%s %s", 
                     nodeColorStart, STR(hostName), nodeColorEnd,
-                    STR(measurementToOneLiner(tmpMap)));
+                    STR(measurementToOneLiner(tmpMap, useSyntaxHighlight)));
             #else
             retval = m_properties.toString();
             #endif
@@ -610,7 +610,8 @@ S9sEvent::eventClusterToOneLiner() const
 
 S9sString 
 S9sEvent::measurementToOneLiner(
-        S9sVariantMap specifics) const
+        S9sVariantMap specifics,
+        bool          useSyntaxHighlight) const
 {
     S9sVariantMap measurements;
     S9sString     className;
@@ -629,7 +630,7 @@ S9sEvent::measurementToOneLiner(
                 if (!retval.empty())
                     retval += "; ";
 
-                retval += cmonDiskInfoToOneLiner(sample);
+                retval += cmonDiskInfoToOneLiner(sample, useSyntaxHighlight);
             } else {
                 retval += sample.toString();
                 return retval;
@@ -701,7 +702,8 @@ S9sEvent::measurementToOneLiner(
  */
 S9sString
 S9sEvent::cmonDiskInfoToOneLiner(
-        S9sVariantMap sample) const
+        S9sVariantMap sample,
+        bool          useSyntaxHighlight) const
 {
     S9sVariantList partitions = sample["partitions"].toVariantList();
     S9sString      retval;
@@ -717,12 +719,20 @@ S9sEvent::cmonDiskInfoToOneLiner(
         if (!retval.empty())
             retval += ", ";
 
-        tmp.sprintf("%s%s%s: %s (%s) free", 
-                m_formatter.directoryColorBegin(),
-                STR(mountPoint), 
-                m_formatter.directoryColorEnd(),
-                STR(m_formatter.bytesToHuman(freeBytes)),
-                STR(m_formatter.percent(totalBytes, freeBytes)));
+        if (useSyntaxHighlight)
+        {
+            tmp.sprintf("%s%s%s: %s (%s) free", 
+                    m_formatter.directoryColorBegin(),
+                    STR(mountPoint), 
+                    m_formatter.directoryColorEnd(),
+                    STR(m_formatter.bytesToHuman(freeBytes)),
+                    STR(m_formatter.percent(totalBytes, freeBytes)));
+        } else {
+            tmp.sprintf("%s: %s (%s) free", 
+                    STR(mountPoint), 
+                    STR(m_formatter.bytesToHuman(freeBytes)),
+                    STR(m_formatter.percent(totalBytes, freeBytes)));
+        }
                 
         retval+= tmp;
     }

@@ -21,6 +21,8 @@
 #include "S9sDisplay"
 
 S9sDisplayList::S9sDisplayList() :
+    m_isVisible(false),
+    m_isActive(true),
     m_selectionEnabled(true),
     m_selectionIndex(0),
     m_startIndex(0),
@@ -83,6 +85,19 @@ S9sDisplayList::setVisible(
     m_isVisible = value;
 }
 
+bool
+S9sDisplayList::isActive() const
+{
+    return m_isActive;
+}
+
+void
+S9sDisplayList::setActive(
+        bool active)
+{
+    m_isActive = active;
+}
+
 int 
 S9sDisplayList::firstVisibleIndex() const
 {
@@ -134,6 +149,31 @@ S9sDisplayList::contains(
         y >= m_y && y < m_y + m_height;
 }
 
+int
+S9sDisplayList::y() const
+{
+    return m_y;
+}
+
+int
+S9sDisplayList::x() const
+{
+    return m_x;
+}
+
+
+int
+S9sDisplayList::height() const
+{
+    return m_height;
+}
+
+int
+S9sDisplayList::width() const
+{
+    return m_width;
+}
+
 /**
  * \returns True if the mouse event is processed and should not considered by
  *   other widgets.
@@ -145,6 +185,8 @@ S9sDisplayList::processButton(
         uint y)
 {
     if (!isVisible())
+        return false;
+    else if (!isActive())
         return false;
 
     if (!contains(x, y))
