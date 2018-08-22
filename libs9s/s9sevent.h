@@ -104,7 +104,10 @@ class S9sEvent : public S9sObject
         int clusterId() const;
 
         S9sString toString() const;
-        S9sString toOneLiner(bool isDebugMode = false) const;
+
+        S9sString toOneLiner(
+                bool useSyntaxHighlight,
+                bool isDebugMode) const;
 
         static S9sEvent::EventType 
             stringToEventType(
@@ -128,7 +131,7 @@ class S9sEvent : public S9sObject
 
     protected:
         S9sString eventLogToOneLiner() const;
-        S9sString eventHostToOneLiner() const;
+        S9sString eventHostToOneLiner(bool useSyntaxHighlight) const;
         S9sString eventJobToOneLiner() const;
         S9sString eventAlarmToOneLiner() const;
         S9sString eventMaintenanceToOneLiner() const;

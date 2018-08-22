@@ -110,5 +110,6 @@ class S9sMonitor :
 
         S9sDisplayList               m_containerListWidget;
         S9sDisplayList               m_serverListWidget;
+        S9sDisplayList               m_eventListWidget;
 };
 

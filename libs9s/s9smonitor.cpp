@@ -65,22 +65,40 @@ S9sMonitor::setDisplayMode(
     switch (m_displayMode)
     {
         case PrintEvents:
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(false);
+            break;
+
         case WatchEvents:
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(true);
+            break;
+
         case WatchNodes:
         case WatchClusters:
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(false);
+            break;
+
         case WatchJobs:
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(false);
             break;
 
         case WatchServers:
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(true);
+            m_eventListWidget.setVisible(false);
             break;
 
         case WatchContainers:
             m_containerListWidget.setVisible(true);
             m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(false);
             break;
     }
     
@@ -993,27 +1011,44 @@ S9sMonitor::printNodes()
 void
 S9sMonitor::printEvents()
 {
-    int startIndex;
+    int firstIndex, lastIndex;
 
     startScreen();
     printHeader();
 
-    startIndex = m_events.size() - (rows() - 2);
-    if (startIndex < 0)
-        startIndex = 0;
+    m_eventListWidget.setLocation(1, 3);
+    m_eventListWidget.setSize(columns(), rows() - 2);
+    m_eventListWidget.setNumberOfItems(m_events.size());
+    m_eventListWidget.ensureSelectionVisible();
 
-    for (uint idx = startIndex; idx < m_events.size(); ++idx)
+    firstIndex = m_eventListWidget.firstVisibleIndex();
+    lastIndex  = m_eventListWidget.lastVisibleIndex();
+    for (uint idx = firstIndex; (int) idx <= lastIndex; ++idx)
     {
+
+        if (idx >= m_events.size())
+            break;
+
         S9sEvent  &event = m_events[idx];
         S9sString  line;
+        bool       isSelected;
         
-        line = event.toOneLiner(m_viewDebug);
+        isSelected = m_eventListWidget.isSelected(idx);
+
+        line = event.toOneLiner(!isSelected, m_viewDebug);
 
         line.replace("\n", "\\n");
         line.replace("\r", "\\r");
        
-        ::printf("%s ", STR(line));
-        printNewLine();
+        if (isSelected)
+        {
+            ::printf("%s", XTERM_COLOR_SELECTION);
+            ::printf("%s ", STR(line));
+            printNewLine();
+        } else {
+            ::printf("%s ", STR(line));
+            printNewLine();
+        }
     }
 
     printFooter();
@@ -1031,7 +1066,7 @@ S9sMonitor::processEvent(
     // The events themselves.
     m_events << event;
 
-    while (m_events.size() > 300)
+    while (m_events.size() > 3000)
         m_events.takeFirst();
 
     // The clusters.
@@ -1142,7 +1177,7 @@ S9sMonitor::processEventList(
     {
         output = event.toVariantMap().toString();
     } else {
-        output = event.toOneLiner(options->isDebug());
+        output = event.toOneLiner(true, options->isDebug());
     }
 
     output.replace("\n", "\n\r");
@@ -1393,6 +1428,7 @@ S9sMonitor::processKey(
         default:
             m_serverListWidget.processKey(key);
             m_containerListWidget.processKey(key);
+            m_eventListWidget.processKey(key);
     }
 }
 
@@ -1414,6 +1450,8 @@ S9sMonitor::processButton(
     if (m_containerListWidget.processButton(button, x, y))
         return;
     else if (m_serverListWidget.processButton(button, x, y))
+        return;
+    else if (m_eventListWidget.processButton(button, x, y))
         return;
 
     if ((int) y == rows())

@@ -21,7 +21,7 @@
 #include "S9sDisplay"
 
 S9sDisplayList::S9sDisplayList() :
-    m_selectionEnabled(false),
+    m_selectionEnabled(true),
     m_selectionIndex(0),
     m_startIndex(0),
     m_numberOfItems(0),
@@ -81,6 +81,23 @@ S9sDisplayList::setVisible(
         bool value)
 {
     m_isVisible = value;
+}
+
+int 
+S9sDisplayList::firstVisibleIndex() const
+{
+    return m_startIndex;
+}
+
+int
+S9sDisplayList::lastVisibleIndex() const
+{
+    int retval = m_startIndex + m_height - 1;
+#if 0
+    if (retval >= m_numberOfItems)
+        retval = m_numberOfItems - 1;
+#endif
+    return retval;
 }
 
 bool
@@ -225,6 +242,7 @@ S9sDisplayList::ensureSelectionVisible()
             m_startIndex = m_selectionIndex - m_height + 1;
         } else if (m_startIndex > m_selectionIndex)
         {
+            // The selection is above the first visible line, need to scroll.
             m_startIndex = m_selectionIndex;
         }
     } else {

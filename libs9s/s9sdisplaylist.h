@@ -30,6 +30,9 @@ class S9sDisplayList
         void setVisible(bool value);
         bool isVisible() const;
 
+        int firstVisibleIndex() const;
+        int lastVisibleIndex() const;
+
         bool processButton(uint button, uint x, uint y);
         void processKey(int key);
 

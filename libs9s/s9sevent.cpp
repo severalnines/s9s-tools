@@ -54,6 +54,7 @@ S9sEvent::toString() const
 
 S9sString 
 S9sEvent::toOneLiner(
+        bool useSyntaxHighlight,
         bool isDebugMode) const
 {
     S9sString   retval;
@@ -70,16 +71,28 @@ S9sEvent::toOneLiner(
     // The source file and source line.
     if (isDebugMode)
     {
-        tmp.sprintf("%s%28s%s:%-5d ",
-                XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
-                senderLine());
+        if (useSyntaxHighlight)
+        {
+            tmp.sprintf("%s%28s%s:%-5d ",
+                    XTERM_COLOR_BLUE, STR(senderFile()), TERM_NORMAL,
+                    senderLine());
+        } else {
+            tmp.sprintf("%s%28s%s:%-5d ",
+                    STR(senderFile()), senderLine());
+        }
         retval += tmp;
     }
 
-    tmp.sprintf("%s%12s%s %s%-13s%s ",
-            XTERM_COLOR_CLASS, STR(eventClass), TERM_NORMAL,
-            XTERM_COLOR_SUBCLASS, STR(eventName), TERM_NORMAL
-            );
+    if (useSyntaxHighlight)
+    {
+        tmp.sprintf("%s%12s%s %s%-13s%s ",
+                XTERM_COLOR_CLASS, STR(eventClass), TERM_NORMAL,
+                XTERM_COLOR_SUBCLASS, STR(eventName), TERM_NORMAL
+                );
+    } else {
+        tmp.sprintf("%12s %-13s ", STR(eventClass), STR(eventName));
+    }
+
     retval += tmp;
 
     switch (eventType())
@@ -93,7 +106,7 @@ S9sEvent::toOneLiner(
             break;
 
         case EventHost:
-            retval += eventHostToOneLiner();
+            retval += eventHostToOneLiner(useSyntaxHighlight);
             break;
 
         case EventAlarm:
@@ -231,22 +244,31 @@ S9sEvent::stringToEventSubClass(
 
 
 S9sString
-S9sEvent::eventHostToOneLiner() const
+S9sEvent::eventHostToOneLiner(
+        bool useSyntaxHighlight) const
 {
     EventSubClass subClass = eventSubClass();
     S9sString     hostName, statusName, reason;
     S9sString     retval;
     S9sVariantMap tmpMap;
     S9sString     name, value;
+    const char   *nodeColorStart = "";
+    const char   *nodeColorEnd   = "";
+
+    if (useSyntaxHighlight)
+    {
+        nodeColorStart = XTERM_COLOR_NODE;
+        nodeColorEnd   = TERM_NORMAL;
+    }
 
     switch (subClass)
     {
         case Created:
             retval.sprintf(
                     "Host %s%s%s created.", 
-                    XTERM_COLOR_NODE, 
+                    nodeColorStart, 
                     STR(host().hostName()), 
-                    TERM_NORMAL);
+                    nodeColorEnd);
             break;
 
         case StateChanged:
@@ -255,7 +277,7 @@ S9sEvent::eventHostToOneLiner() const
             reason     = getString("event_specifics/reason");
             retval.sprintf(
                     "Host %s%s%s state: %s reason: %s", 
-                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL,
+                    nodeColorStart, STR(hostName), nodeColorEnd,
                     STR(statusName), STR(reason));
             break;
 
@@ -266,16 +288,16 @@ S9sEvent::eventHostToOneLiner() const
             {
                 retval.sprintf(
                         "Host %s%s%s updated: %s = %s", 
-                        XTERM_COLOR_NODE, 
+                        nodeColorStart, 
                         STR(host().hostName()), 
-                        TERM_NORMAL,
+                        nodeColorEnd,
                         STR(name), STR(value));
             } else {
                 retval.sprintf(
                         "Host %s%s%s updated: %s", 
-                        XTERM_COLOR_NODE, 
+                        nodeColorStart, 
                         STR(host().hostName()), 
-                        TERM_NORMAL,
+                        nodeColorEnd,
                         STR(host().message()));
             }
             break;
@@ -288,7 +310,7 @@ S9sEvent::eventHostToOneLiner() const
 
             retval.sprintf(
                     "Host %s%s%s %s", 
-                    XTERM_COLOR_NODE, STR(hostName), TERM_NORMAL,
+                    nodeColorStart, STR(hostName), nodeColorEnd,
                     STR(measurementToOneLiner(tmpMap)));
             #else
             retval = m_properties.toString();
@@ -298,9 +320,7 @@ S9sEvent::eventHostToOneLiner() const
         case NoSubClass:
             retval.sprintf(
                     "Host %s%s%s ping.", 
-                    XTERM_COLOR_NODE, 
-                    STR(host().hostName()), 
-                    TERM_NORMAL);
+                    nodeColorStart, STR(host().hostName()), nodeColorEnd);
             break;
 
         default:
