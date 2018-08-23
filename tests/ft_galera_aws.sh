@@ -175,7 +175,7 @@ function createServer()
 function createCluster()
 {
     local node001="ft_galera_aws_01_$$"
-    #local node002="ft_galera_aws_02_$$"
+    local node002="ft_galera_aws_02_$$"
 
     #
     # Creating a Cluster.
@@ -187,9 +187,10 @@ function createCluster()
         --cluster-type=galera \
         --provider-version="$PROVIDER_VERSION" \
         --vendor=$OPTION_VENDOR \
-        --nodes="$node001" \
-        --containers="$node001" \
-        $LOG_OPTION
+        --nodes="$node001;$node002" \
+        --containers="$node001;$node002" \
+        --image="centos7" \
+        --log
 
     check_exit_code $?
 
