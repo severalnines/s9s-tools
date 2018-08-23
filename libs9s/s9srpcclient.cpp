@@ -1837,6 +1837,42 @@ S9sRpcClient::createSuccessJob()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::executeSystemCommand()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sString      clusterName = options->clusterName();
+    int            clusterId   = options->clusterId();
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sVariantMap  jobData = composeJobData();    
+    S9sString      uri = "/v2/jobs/";
+
+    if (!options->shellCommand().empty())
+        jobData["shell_command"] = options->shellCommand();
+
+    jobSpec["command"]       = "execute";
+    jobSpec["job_data"]      = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]             = "Execute System Command";
+    job["job_spec"]          = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]     = "createJobInstance";
+    request["job"]           = job;
+    
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+        request["cluster_id"]   = clusterId;
+
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
+    
+    
+    return executeRequest(uri, request);
+}
+
 /**
  * \param clusterId the ID of the cluster that will be restarted
  * \returns true if the operation was successful, a reply is received from the

@@ -155,6 +155,7 @@ enum S9sOptionType
     OptionPullConfig,
     OptionPushConfig,
     OptionExecute,
+    OptionSystem,
     OptionTree,
     OptionOutputDir,
     OptionLogFormat,
@@ -270,6 +271,7 @@ enum S9sOptionType
     OptionOutputFile,
     OptionInputFile,
     OptionRegion,
+    OptionShellCommand,
 };
 
 /**
@@ -2434,6 +2436,15 @@ S9sOptions::region() const
     return getString("region");
 }
 
+/**
+ * \returns The option argument for the --shell-command option.
+ */
+S9sString
+S9sOptions::shellCommand() const
+{
+    return getString("shell_command");
+}
+
 bool 
 S9sOptions::hasJobTags() const
 {
@@ -3166,6 +3177,16 @@ bool
 S9sOptions::isExecuteRequested() const
 {
     return getBool("execute");
+}
+
+/**
+ * \returns true if the --system command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isSystemRequested() const
+{
+    return getBool("system");
 }
 
 /**
@@ -4544,10 +4565,11 @@ S9sOptions::printHelpScript()
 
     printf(
 "Options for the \"script\" command:\n"
-"  --execute                  Execute a script.\n"
-"  --tree                     Print the scripts available on the controller.\n"
+"  --execute                  Execute a CJS imparetive program.\n"
+"  --system                   Execute commands on nodes.\n"
+"  --tree                     Print the available programs on the controller.\n"
 "\n"
-"  --cluster-id=ID            The cluster for cluster maintenances.\n"
+"  --cluster-id=ID            The cluster ID.\n"
 "\n"
     );
 }
@@ -4727,9 +4749,9 @@ S9sOptions::readOptionsNode(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "nodes",            required_argument, 0, OptionNodes           },
+        { "batch",            no_argument,       0, OptionBatch           },
         
         // Job Related Options
-        { "batch",            no_argument,       0, OptionBatch           },
         { "force",            no_argument,       0, OptionForce           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
@@ -9184,13 +9206,24 @@ S9sOptions::readOptionsScript(
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        
+        // Job Related Options
+        { "force",            no_argument,       0, OptionForce           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
 
         // Main Option
         { "execute",          no_argument,       0, OptionExecute         },
+        { "system",           no_argument,       0, OptionSystem          },
         { "tree",             no_argument,       0, OptionTree            },
        
-        // Options about the maintenance period.
+        // 
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "shell-command",    required_argument, 0, OptionShellCommand    },
 
         { 0, 0, 0, 0 }
     };
@@ -9292,14 +9325,68 @@ S9sOptions::readOptionsScript(
                 m_options["cluster_id"] = atoi(optarg);
                 break;
 
+            /*
+             * Job options.
+             */
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+            
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+            
+            /*
+             * Main options.
+             */
             case OptionExecute:
                 // --execute
                 m_options["execute"] = true;
                 break;
-            
+           
+            case OptionSystem:
+                // --system
+                m_options["system"]  = true;
+                break;
+
             case OptionTree:
                 // --tree
                 m_options["tree"] = true;
+                break;
+
+            /*
+             * Options about the execution.
+             */
+            case OptionShellCommand:
+                // --shell-command=COMMAND
+                m_options["shell_command"] = optarg;
                 break;
 
             case '?':
@@ -10029,14 +10116,11 @@ S9sOptions::checkOptionsScript()
      */
     if (isTreeRequested())
         countOptions++;
-
-    if (isListRequested())
-        countOptions++;
     
     if (isExecuteRequested())
         countOptions++;
     
-    if (isDeleteRequested())
+    if (isSystemRequested())
         countOptions++;
 
     if (countOptions > 1)

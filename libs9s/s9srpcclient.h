@@ -197,6 +197,8 @@ class S9sRpcClient
 
         bool treeScripts();
 
+        bool executeSystemCommand();
+
         /*
          * Requests related to the cmon users.
          */

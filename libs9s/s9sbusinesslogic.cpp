@@ -265,6 +265,10 @@ S9sBusinessLogic::execute()
         } else if (options->isExecuteRequested())
         {
             executeExecute(client);
+        } else if (options->isSystemRequested())
+        {
+            success = client.executeSystemCommand();
+            maybeJobRegistered(client, clusterId, success);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

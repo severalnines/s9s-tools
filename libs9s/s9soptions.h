@@ -271,7 +271,8 @@ class S9sOptions
         S9sString firewalls() const;
 
         S9sString region() const;
-
+        S9sString shellCommand() const;
+        
         bool hasJobTags() const;
         S9sVariantList jobTags() const;
         bool setJobTags(const S9sString &value);
@@ -393,6 +394,7 @@ class S9sOptions
         bool isListFilesRequested() const; 
         bool isDropRequested() const;
         bool isExecuteRequested() const;
+        bool isSystemRequested() const;
         bool isTreeRequested() const;
 
         bool isLongRequested() const;
