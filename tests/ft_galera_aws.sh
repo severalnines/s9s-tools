@@ -213,20 +213,6 @@ function createCluster()
     fi
 
     check_container_ids --galera-nodes
-
-    #
-    # Adding a proxysql node.
-    #
-    print_title "Adding a ProxySql Node"
-
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="proxysql://$node002" \
-        --containers="$node002" \
-        $LOG_OPTION
-
-    check_exit_code $?
 }
 
 #
