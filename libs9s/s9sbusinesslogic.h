@@ -82,6 +82,7 @@ class S9sBusinessLogic
         void executePullConfig(S9sRpcClient &client);
 
         void executeExecute(S9sRpcClient &client);
+        void executeSystemCommand(S9sRpcClient &client);
 
         void executeTop(S9sRpcClient &client);
         void executeProcessList(S9sRpcClient &client);

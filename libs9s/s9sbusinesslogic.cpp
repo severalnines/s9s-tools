@@ -267,8 +267,7 @@ S9sBusinessLogic::execute()
             executeExecute(client);
         } else if (options->isSystemRequested())
         {
-            success = client.executeSystemCommand();
-            maybeJobRegistered(client, clusterId, success);
+            executeSystemCommand(client);
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -1237,6 +1236,73 @@ S9sBusinessLogic::executeExecute(
             reply = client.reply();
             reply.printScriptOutput();
         }
+    }
+}
+
+void 
+S9sBusinessLogic::executeSystemCommand(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options    = S9sOptions::instance();
+    uint         nFileNames = options->nExtraArguments();
+    S9sString    content;
+    S9sString    fileName  = "stdin";
+    S9sString    arguments = "";
+    S9sString    errorString;
+    S9sRpcReply  reply;
+    bool         success;
+ 
+    if (!options->shellCommand().empty() && nFileNames > 1u)
+    {
+        PRINT_ERROR(
+                "The --shell-command and the filename are mutually"
+                "exclusive. Provide one or the other.");
+
+    } else if (!options->shellCommand().empty())
+    {
+        success = client.executeSystemCommand(options->shellCommand());
+        maybeJobRegistered(client, options->clusterId(), success);
+    } else if (nFileNames == 0u)
+    {
+        content = S9sString::readStdIn();
+        S9sVariantList lines = content.split("\n");
+        S9sString      line;
+
+        if (lines.empty())
+        {
+            PRINT_ERROR("No lines.");
+            return;
+        }
+
+        success = client.executeSystemCommand(lines);
+        maybeJobRegistered(client, options->clusterId(), success);
+    } else if (nFileNames > 1u)
+    {
+        PRINT_ERROR("Multiple file names in the command line.");
+    } else {
+        S9sVariantList lines;
+        S9sString      line;
+        S9sFile        file(options->extraArgument(0u));
+       
+        if (!file.openForRead())
+        {
+            PRINT_ERROR("%s", STR(file.errorString()));
+            return;
+        }
+
+        while (file.readLine(line))
+        {
+            lines << line.trim("\r\n");
+        }
+
+        if (lines.empty())
+        {
+            PRINT_ERROR("File is empty.");
+            return;
+        }
+
+        success = client.executeSystemCommand(lines);
+        maybeJobRegistered(client, options->clusterId(), success);
     }
 }
 

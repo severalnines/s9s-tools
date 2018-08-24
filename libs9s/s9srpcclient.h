@@ -197,7 +197,8 @@ class S9sRpcClient
 
         bool treeScripts();
 
-        bool executeSystemCommand();
+        bool executeSystemCommand(const S9sVariant shellCommand);
+        bool executeSystemCommand(const S9sVariantList &scriptLines);
 
         /*
          * Requests related to the cmon users.

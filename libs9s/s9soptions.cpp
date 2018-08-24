@@ -9210,6 +9210,7 @@ S9sOptions::readOptionsScript(
         // Job Related Options
         { "force",            no_argument,       0, OptionForce           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log-format",       required_argument, 0, OptionLogFormat       },
         { "log",              no_argument,       0, 'G'                   },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "schedule",         required_argument, 0, OptionSchedule        },
@@ -9223,6 +9224,7 @@ S9sOptions::readOptionsScript(
        
         // 
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "nodes",            required_argument, 0, OptionNodes           },
         { "shell-command",    required_argument, 0, OptionShellCommand    },
 
         { 0, 0, 0, 0 }
@@ -9319,10 +9321,19 @@ S9sOptions::readOptionsScript(
                 // --print-json
                 m_options["print_json"] = true;
                 break;
-            
+           
+            /*
+             * Options about the cluster.
+             */
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            case OptionNodes:
+                // --nodes=LIST
+                if (!setNodes(optarg))
+                    return false;
                 break;
 
             /*
@@ -9336,6 +9347,11 @@ S9sOptions::readOptionsScript(
             case OptionJobTags:
                 // --job-tags=LIST
                 setJobTags(optarg);
+                break;
+            
+            case OptionLogFormat:
+                // --log-format=FORMAT
+                m_options["log_format"] = optarg;
                 break;
 
             case 'G':

@@ -21,11 +21,86 @@ following:
 
 .TP
 .B \-\-execute
-Execute a script from a local file.
+Execute a CJS script from a local file.
+
+.TP
+.B \-\-system
+This option will create a new job to execute a shell command or an entire shell
+script on the nodes of the cluster showing the output of the command as job
+messages.
+
+If the \fB\-\^\-shell\-command\fP command line option is provided the option
+argument will be executed. If a file name is provided as command line argument
+that content of the file will be executed as shell script. If neither found in
+thecommand line the \fBs9s\fP will read its standard input and execute the lines
+found as shell script on the nodes (this is the way to implement self contained
+remote executed shell scripts using a shebang).
+
+Please note that this will be a job and it can be blocked by other jobs running
+on the same cluster.
+
+.B EXAMPLE
+.nf
+s9s script \\
+    --system \\
+    --log \\
+    --cluster-id=1 \\
+    --shell-command="df -h"
+.fi
+
+The command/script will be executed using the pre-configured OS user of the
+cluster. If that user has no superuser privileges the sudo(1) utility can be
+used in the command or the script to gain superuser privileges.
+
+By default the command/script will be executed on all nodes, all members of the
+cluster except the controller. This can be changed by providing a node list
+using the \fB\-\^\-nodes=\fP command line option.
+
+To execute shell commands the authenticated user has to have execute privileges
+on the nodes. If the execute privilege is not granted the credentials of an
+other Cmon User can be passed in the command line or the privileges can be
+changed (see s9s-tree(1) for details about owners, privileges and ACLs). 
+
+.B EXAMPLE
+.nf
+s9s script \\
+    --system \\
+    --cmon-user=system \\
+    --password=mysecret \\
+    --log \\
+    --cluster-id=1 \\
+    --timeout=2 \\
+    --nodes='192.168.0.127;192.168.0.44' \\
+    --shell-command="df -h" 
+.fi
+
+Please note that the job will by default has a 10 seconds timeout, so if the
+command/script keeps running the job will be failed and the execution of
+the command(s) aborted. The timeout value can be set using the 
+\fB\-\^\-timeout\fP command line option.
+
+.B EXAMPLE
+.nf
+s9s script \\
+    --system \\
+    --log \\
+    --log-format="%M\\n" \\
+    --timeout=20 \\
+    --cluster-id=1 \\
+    test_script.sh
+.fi
+
 
 .TP
 .B \-\-tree
-Print the names of the scripts stored on the controller in tree format.
+Print the names of the CJS scripts stored on the controller in tree format.
+
+.B EXAMPLE
+.nf
+s9s script \\
+    --tree \\
+    --cluster-id=1
+.fi
 
 .\"
 .\"
@@ -110,19 +185,5 @@ Controls which cluster to check.
 
 .TP
 .BI \-n " NAME" "\fR,\fP \-\^\-cluster-name=" NAME
-Controls which cluster to check.
+Controls which cluster to work on.
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-Execute a script stored in a local file:
-
-.nf
-# \fBs9s script \\
-    --execute \\
-    --cluster-id=1 \\
-    test005.js\fR
-.fi
