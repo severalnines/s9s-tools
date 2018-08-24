@@ -1,3 +1,6 @@
+* Implement firewall listing and manipulating, maybe other things too:
+  https://github.com/severalnines/cloudlink-go/blob/develop/HTTP.md#firewall-module
+
 o Adding command line options to create audit logging.
 
   http://52.58.107.236/cmon-docs/current/cmonjobs.html#audit_logging
