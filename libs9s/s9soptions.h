@@ -380,6 +380,7 @@ class S9sOptions
         bool isRollingRestartRequested() const;
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
+        bool isDeployAgentsRequested() const;
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;

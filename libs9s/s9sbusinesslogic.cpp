@@ -126,6 +126,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createReport(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDeployAgentsRequested())
+        {
+            success = client.deployAgents(clusterId);
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isAddNodeRequested())
         {
             success = client.createNode();
