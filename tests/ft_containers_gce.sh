@@ -386,7 +386,7 @@ function createFail()
         --image="no_such_image" \
         --cloud=gce \
         $LOG_OPTION \
-        "ft-containers-aws"
+        "ft-containers-gce"
     
     exitCode=$?
 
@@ -404,7 +404,7 @@ function createFail()
         --firewalls="nosuchfirewall" \
         --cloud=gce \
         $LOG_OPTION \
-        "ft-containers-aws"
+        "ft-containers-gce"
     
     exitCode=$?
 
@@ -460,6 +460,10 @@ function createCluster()
     #
     # Adding a proxysql node.
     #
+    # We don't need to set the region here, it is inherited from the cluster, 
+    # the controller will put this new container into the same region the nodes
+    # are.
+    #
     print_title "Adding a ProxySql Node"
 
     mys9s cluster \
@@ -468,7 +472,6 @@ function createCluster()
         --nodes="proxysql://$node002" \
         --containers="$node002" \
         --cloud=gce \
-        --region="europe-west2-b" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -485,8 +488,8 @@ function deleteContainer()
     #mys9s container --list --print-json
 
     containers="$LAST_CONTAINER_NAME"
-    containers+=" ft-containers_aws-01-$$"
-    containers+=" ft-containers-aws-02-$$"
+    containers+=" ft-containers-gce-01-$$"
+    containers+=" ft-containers-gce-02-$$"
 
     print_title "Deleting Containers"
 

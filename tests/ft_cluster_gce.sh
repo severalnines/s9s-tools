@@ -209,7 +209,7 @@ function createServer()
 }
 
 #
-# Creates then destroys a cluster on AWS.
+# Creates then destroys a cluster on gce.
 #
 function createContainer()
 {
@@ -297,7 +297,7 @@ function createCluster()
     #
     # Creating a Cluster.
     #
-    print_title "Creating a Cluster on AWS"
+    print_title "Creating a Cluster on GCE"
 
     mys9s cluster \
         --create \
