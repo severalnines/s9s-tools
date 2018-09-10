@@ -1,0 +1,181 @@
+#! /bin/bash
+
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.1"
+VERBOSE=""
+LOGFILE="$HOME/.pip/${MYNAME}.log"
+OPTION_DEVICE=""
+PDU_SERVER=""
+PDU_OUTLETS="all"
+PDU_OPERATION="on"
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# $*: the error message
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "ERROR $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "DEBUG $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... DEVICE 
+
+  $MYNAME - Turns on and off pdu outlets.
+
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --on)
+            shift
+            PDU_OPERATION="on"
+            ;;
+
+        --off)
+            shift
+            PDU_OPERATION="off"
+            ;;
+
+        --state)
+            shift
+            PDU_OPERATION="state"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+OPTION_DEVICES="$@"
+
+logger "Log file is: '$LOGFILE'."
+touch "$LOGFILE"
+
+
+LOGFILE="$HOME/.pip/${OPTION_DEVICES}.log"
+if [ -z "$OPTION_DEVICES" ]; then
+    printError "Device name is not provided."
+    exit 1
+fi
+
+#
+# pipas@t7500:~$ curl http://192.168.2.5/cm?cmnd=Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
+# 24.4
+#
+function temperature_tasmota()
+{
+    local output
+
+    #
+    #
+    #
+    curl http://$CONF_PDU_SERVER/cm?cmnd=Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
+}
+
+for OPTION_DEVICE in $OPTION_DEVICES; do
+    CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
+
+    #create_pdu_config_file "$OPTION_DEVICE"
+    if [ ! -f "$CONFIG_FILE_PATH" ]; then
+        printError "Config file '$CONFIG_FILE_PATH' does not exist."
+        continue
+    fi
+
+    CONF_PDU_OUTLET=""
+    source "$CONFIG_FILE_PATH"
+
+    case "$CONF_PDU_STANDARD" in
+        tasmota)
+            temperature_tasmota
+            ;;
+
+        *)
+            printError "The CONF_PDU_STANDARD is invalid in '$CONFIG_FILE_PATH'"
+    esac
+done

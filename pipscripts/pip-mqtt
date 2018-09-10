@@ -1,0 +1,275 @@
+#! /bin/bash
+
+export PIP_STATE="normal"
+
+TERM_ERASE_EOL="\033[K"
+TERM_HOME="\033[0;0H"
+TERM_NORMAL="\033[0;39m"
+TERM_BOLD="\033[1m"
+TERM_INVERSE="\033[7m"
+XTERM_COLOR_RED="\033[0;31m"
+XTERM_COLOR_GREEN="\033[0;32m"
+XTERM_COLOR_ORANGE="\033[0;33m"
+XTERM_COLOR_BLUE="\033[0;34m"
+XTERM_COLOR_PURPLE="\033[0;35m"
+XTERM_COLOR_CYAN="\033[0;36m"
+XTERM_COLOR_LIGHT_GRAY="\033[0;37m"
+XTERM_COLOR_DARK_GRAY="\033[1;30m"
+XTERM_COLOR_LIGHT_RED="\033[1;31m"
+XTERM_COLOR_LIGHT_GREEN="\033[1;32m"
+XTERM_COLOR_YELLOW="\033[1;33m"
+XTERM_COLOR_LIGHT_BLUE="\033[1;34m"
+XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
+XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
+XTERM_COLOR_WHITE="\033[1;37m"
+
+stringContain() { [ -z "${2##*$1*}" ] && [ -z "$1" -o -n "$2" ]; }
+
+function printWarning()
+{
+    local date_string=$(date "+%Y-%m-%d %H:%M:%S")
+    local log_file="$HOME/.pip/warnings.log"
+
+    echo -n "$date_string "     >&2
+    printf "${XTERM_COLOR_RED}" >&2
+    echo -en "$*"               >&2
+    printf "${TERM_NORMAL}\n"   >&2
+    
+
+    echo -n  "$date_string "    >>$log_file
+    echo -en "$*"               >>$log_file
+    echo     ""                 >>$log_file
+}
+
+#
+# $*: the message
+#
+# Prints all the arguments but only if the program is in the verbose mode.
+#
+function printVerbose()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        echo -e "DEBUG $*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+function change_state()
+{
+    local new_state="$1"
+
+    if [ "$new_state" == "$PIP_STATE" ]; then
+        return 0
+    fi
+
+    printf "State %s -> %s\n" "$PIP_STATE" "$new_state"
+    case "$new_state" in 
+        night)
+            pip-say "Changing $PIP_STATE mode to $new_state mode now." &
+            pip-pdu-control --on  --group=safety_lights
+            pip-pdu-control --off --group=main_lights
+            pip-pdu-control --off --group=safety_lights
+            pip-pdu-control --on  nightlight
+            ;;
+
+        party)
+            pip-say "Changing $PIP_STATE mode to $new_state mode now." &
+            pip-pdu-control --on  --group=safety_lights
+            pip-pdu-control --off --group=main_lights
+            ;;
+    esac
+
+    PIP_STATE="$new_state"
+}
+
+#
+# $2: '{"RfReceived":{"Sync":9220,"Low":350,"High":1020,"Data":"7ECCE6","RfKey":"None"}}'
+#   : '{"Time":"1970-01-01T10:20:19","Uptime":11,"Vcc":3.208,"Wifi":{"AP":1,"SSId":"pipas","RSSI":68,"APMac":"AC:22:05:DA:77:0F"}}'
+#   : 
+#
+function process_message()
+{
+    local topic="$1"
+    local message="$2"
+    local data=$(echo "$message" | jq -r '."RfReceived"."Data"' 2>/dev/null)
+    local mac=$(echo "$message" | jq -r '."Wifi"."ApMac"' 2>/dev/null)
+    local device=$(echo "$topic" | awk -F/ '{print $2}')
+
+    if [ "$message" == "OFF" ]; then
+        # Topic: "stat/sonoffXX/POWER"
+        printVerbose "     OFF: $device"
+        #pip-pdu-control --off sonoff4ch01_02
+    elif [ "$message" == "ON" ]; then
+        # Topic: "stat/sonoffXX/POWER"
+        printVerbose "      ON: $device"
+        #pip-pdu-control --on sonoff4ch01_02
+    elif [ "$topic" == "tele/sonoff_rf_bridge_01/RESULT" ]; then 
+        #echo " device : sonoff_rf_bridge_01"
+        
+        case "$data" in 
+            D2D49E)
+                echo "message : PIR01"
+                #pip-pdu-control --on tasmota02
+                #sleep 3
+                #pip-pdu-control --off tasmota02
+                ;;
+
+            D250DE)
+                echo "message : PIR03"
+                ;;
+
+
+            7D5503)
+                echo "message : button 1"
+                pip-pdu-control --on tasmota02
+                ;;
+
+            7D5530)
+                echo "message : button 2"
+                pip-pdu-control --off tasmota02
+                ;;
+
+            7D550C)
+                echo "message : button 3"
+                pip-pdu-control --off nightlight
+                ;;
+
+            7D550F)
+                echo "message : button 4"
+                pip-pdu-control --on nightlight
+                ;;
+
+            7D5533)
+                echo "message : button 5"
+                change_state "night"
+                ;;
+
+
+            7D553C)
+                echo "message : button 6"
+                change_state "party"
+                ;;
+            
+            7D553F)
+                echo "message : button 7"
+                pip-pdu-control --off sonoff21
+                pip-pdu-control --off orvibo04
+                ;;
+
+
+            BD5AD8)
+                # Light switch
+                echo "message : switch 01"
+                pip-pdu-control --off sonoff21
+                ;;
+            #
+            # Another remote controller.
+            #
+            592EB8)
+                echo "Button A"
+                pip-pdu-control --on nightlight
+                pip-pdu-control --on sonoff19
+                ;;
+
+            592EB4)
+                echo "Button B"
+                pip-pdu-control --off nightlight
+                pip-pdu-control --off sonoff19
+                ;;
+
+            592EB2)
+                echo "Button C"
+                ;;
+
+            592EB1)
+                echo "Button D"
+                ;;
+
+
+            #
+            # Door opening sensors.
+            #
+            7ECCE6)
+                echo "message : door open 01"
+                ;;
+
+            C3CD19)
+                echo "message : door open 02"
+                ;;
+
+            7CFEE1)
+                #3E7F70)
+                echo "message : door open 10"
+                pip-pdu-control --on sonoff21
+                ;;
+
+            #
+            # Water alarms.
+            #
+            4492A9)
+                printWarning "Water alarm 01."
+                ;;
+
+            1576A9)
+                printWarning "Water alarm 02."
+                ;;
+
+            7541E9)
+                printWarning "Water alarm 03."
+                ;;
+
+            4541E9)
+                printWarning "Water alarm 04."
+                ;;
+
+            *)
+                echo "UNHANDLED RF"
+                echo "message : '$message'"
+                echo "   data : '$data'"
+                echo "    mac : '$mac'"
+        esac
+    elif [ "$topic" == "/sonofftouch01/button/state" ]; then
+        # A sonoff touch 1
+        if [ "$message" == "0" ]; then
+            pip-pdu-control --off sonoff21
+        else 
+            pip-pdu-control --on  sonoff21
+        fi
+    else
+        if false; then
+            echo "UNHANDLED"
+            echo "  topic : '$topic'"
+            echo "message : '$message'"
+            echo "   data : '$data'"
+            echo "    mac : '$mac'"
+        fi
+    fi
+}
+
+pip-say "Core system process is starting now." &
+
+MQTT_SERVER="192.168.0.5"
+MQTT_PORT=1883
+MQTT_USER=pipas
+MQTT_PASSWORD=p
+
+if [ -f "$HOME/.pip/mqtt.conf" ]; then
+    source "$HOME/.pip/mqtt.conf"
+fi 
+
+while read msg; do
+    topic=$(echo "$msg" | awk '{print $1}')
+    message=$(echo "$msg" | awk '{print $2}')
+    process_message "$topic" "$message"
+    #echo "msg: '$msg'";
+done < <(mosquitto_sub \
+    -h "$MQTT_SERVER" \
+    -u "$MQTT_USER" \
+    -P "$MQTT_PASSWORD" \
+    -t '#' -v -q 1)
+
