@@ -81,7 +81,7 @@ function install_package()
     package="$1"
 
     printf "%-32s" "${package}"
-    if dpkg -l | grep $1 > /dev/null 2>&1; then
+    if dpkg -l | grep " $1 " > /dev/null 2>&1; then
         echo "[INSTALLED]"
     else
         echo "[INSTALLING]"
@@ -100,6 +100,8 @@ function install_package()
 function install_packages()
 {
     pip-host-control --status="Installing packages..."
+    install_package lxc1
+    install_package jq
     install_package tree
     install_package iotop
     install_package wget

@@ -107,22 +107,26 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]... DEVICE 
 
-  $MYNAME - Turns on and off pdu outlets.
+  $MYNAME - Lists and controls servers.
 
   -h, --help           Print this help and exit.
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+  --long               Print detailed/long list.
+  --print-report       Print a summary at the end.
+  --print-files        Print file names instead of names.
+  --wait               Wait for the server.
 
   --list               List the power distribution units.
-  --long               Print detailed/long list.
+  --wake               Start the server.
+  --shut-down          Shut down the server.
 
-  --on                 Turn the socket on.
-  --off                Turn the socket off.
-  --state              Check the state of the socket.
-  --power              Read the current power consumption in watts.
-  --temperature        Read the temperature.
-  --print-files        Print file names instead of names.
+
+EXAMPLE:
+  pip-server-control --list --long host01 host02
+  pip-server-control --wake --wait host01 host02
+  pip-server-control --shut-down host01 host02
 
 EOF
     exit 0
@@ -131,8 +135,9 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,list,long,on,off,state,\
-power,temperature,print-files" \
+        -l "help,verbose,version,log-file:,long,print-report,\
+list,wake,shut-down,\
+print-files,wait" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -169,9 +174,29 @@ while true; do
             LIST_OPTION="true"
             ;;
 
+        --wake)
+            shift
+            WAKE_OPTION="true"
+            ;;
+        
+        --shut-down)
+            shift
+            SHUT_DOWN_OPTION="true"
+            ;;
+
         --long)
             shift
             LONG_OPTION="true"
+            ;;
+
+        --print-report)
+            shift
+            OPTION_PRINT_REPORT="yes"
+            ;;
+
+        --wait)
+            shift
+            WAIT_OPTION="true"
             ;;
 
         --on)
@@ -215,6 +240,147 @@ while true; do
     esac
 done
 
+ARGUMENTS=$*
+
+#
+# Returns true if the given server was requested providing the --server command
+# line option or the --server option was not used at all.
+# FIXME: Move this to include file.
+#
+function is_server_requested()
+{
+    local server="$1"
+    local this_server
+
+    if [ -z "$ARGUMENTS" ]; then
+        return 0
+    fi
+
+    for this_server in $(echo "$ARGUMENTS" | tr ',' ' '); do
+        if [ "$this_server" == "$server" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+#
+# $1: the server name
+#
+function is_server_running_ssh()
+{
+    local serverName="$1"
+    local isOK
+
+    isOk=$(ssh -o ConnectTimeout=1 "$serverName" 2>/dev/null -- echo OK)
+    if [ "$isOk" == "OK" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+#
+# $2: the server name
+#
+# Waits until the server is accepting SSH connections. There is also a timeout
+# implemented here.
+#
+function wait_for_server_ssh()
+{
+    local serverName="$1"
+    local nTry=0
+
+    while true; do
+        if is_server_running_ssh "$serverName"; then
+            echo "Server '$serverName' is started."
+            return 0
+        fi
+
+        # 60 x 10 = 10 minutes
+        if [ "$nTry" -gt 60 ]; then
+            printError "Server '$serverName' did not came alive."
+            return 1
+        fi
+
+        sleep 10
+        let nTry+=1
+    done
+
+    return 0
+}
+
+#
+# $1: the server name
+#
+# This function finds the MAC address for a given host. The MAC addresses should
+# be stored in '~/.pip/servers.mac' like this:
+#
+# server1;00:1a:a0:03:b3:b5
+# server2;00:1d:09:15:17:8a
+# storage01;00:1d:09:24:59:33
+#
+# Very primitive format, I did not want to spend much time developing it. 
+#
+function mac_for_server()
+{
+    local serverName="$1"
+    local line
+    local field1
+    local field2
+
+    for line in $(cat ~/.pip/servers.mac); do
+        line=$(echo "$line" | tr ';' ' ' | tr ',' ' ')
+        field1=$(echo "$line" | cut -d' ' -f1)
+        field2=$(echo "$line" | cut -d' ' -f2)
+
+        if [ "$field1" == "$serverName" ]; then
+            echo "$field2"
+            return 0
+        fi
+    done
+}
+
+#
+# $1: the name of the server
+#
+function wake_server ()
+{
+    local hostName="$1"
+    local macAddress
+
+    if [ -z "$hostName" ]; then
+        return 1
+    fi
+
+    if is_server_running_ssh "$hostName"; then
+        printVerbose "Server '$hostName' is already running."
+        return 0
+    fi
+
+    macAddress=$(mac_for_server "$hostName")
+    if [ -z "$macAddress" ]; then
+        printError "MAC address for $hostName was not found."
+        return 1
+    fi
+
+    printVerbose "Waking server ${hostName} on ${macAddress}."
+    wakeonlan "$macAddress"
+    return 0
+}
+
+function shut_down_server ()
+{
+    local hostname="$1"
+
+    if [ -z "$hostname" ]; then
+        return 1
+    fi
+
+    ssh "$hostname" -- sudo poweroff
+}
+
 function print_header()
 {
     echo -en $TERM_BOLD
@@ -229,6 +395,10 @@ EOF
 
 function print_summary()
 {
+    if [ -z "$OPTION_PRINT_REPORT" ]; then
+        return 0
+    fi
+
     printf "\n"
     printf "Summary:\n"
     printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
@@ -293,8 +463,8 @@ function print_host_list_long()
         device_name=$(basename "$config_file" .host)
         info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
 
-        if [ "$device_name" == "www" ]; then
-            continue;
+        if ! is_server_requested "$device_name"; then
+            continue
         fi
 
         CONF_HOST_NAME=""
@@ -413,9 +583,9 @@ function print_host_list_brief()
 
         device_name=$(basename "$config_file" .host)
         info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
-
-        if [ "$device_name" == "www" ]; then
-            continue;
+        
+        if ! is_server_requested "$device_name"; then
+            continue
         fi
 
         CONF_HOST_NAME=""
@@ -472,7 +642,7 @@ function print_host_list_brief()
     done
 }
 
-if [ "$LIST_OPTION" ]; then
+if [ -n "$LIST_OPTION" ]; then
     download_current_data
     
     if [ -n "$LONG_OPTION" ]; then
@@ -483,6 +653,35 @@ if [ "$LIST_OPTION" ]; then
     fi
 
     exit 0
+elif [ -n "$SHUT_DOWN_OPTION" ]; then
+    for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 
+        shut_down_server "$hostname"
+    done
+elif [ -n "$WAKE_OPTION" ]; then
+    #
+    # Wake up the servers.
+    #
+    nthserver=0
+    for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 
+        # Not proper: we should know when the last actual wake happened.
+        if [ "$nthserver" -gt 0 ]; then
+            printVerbose "Waiting a while before waking the next server."
+            sleep 4
+        fi
+
+        wake_server "$hostname"
+        let nthserver+=1
+    done
+
+    retcode=0
+    if [ -n "$WAIT_OPTION" ]; then
+        for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do
+            wait_for_server_ssh "$hostname"
+            if [ $? -gt 0 ]; then
+                retcode=1
+            fi
+        done
+    fi
 fi
 
 
