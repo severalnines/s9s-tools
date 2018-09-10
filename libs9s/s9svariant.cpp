@@ -218,6 +218,54 @@ S9sVariant::operator== (
         // It seems that comparing a string with other than a string returning
         // true is rather counterintuitive. 
         return false;
+    } else if (isVariantMap() && rhs.isVariantMap())
+    {
+        const S9sVariantMap &map1 = toVariantMap();
+        const S9sVariantMap &map2 = rhs.toVariantMap();
+        std::vector<S9sString> keys1 = map1.keys();
+        std::vector<S9sString> keys2 = map2.keys();
+
+        if (keys1 != keys2)
+            return false;
+
+        for (auto it = map1.begin(); it != map1.end(); ++it)
+        {
+            // all keys must exists with the same value, otherwise not the same
+            if (map2.valueByPath(it->first) == it->second)
+                continue;
+
+            return false;
+        }
+
+        // everything is the same
+        return true;
+    } else if (isVariantMap() && rhs.isVariantMap())
+    {
+        const S9sVariantMap &map1 = toVariantMap();
+        const S9sVariantMap &map2 = rhs.toVariantMap();
+        std::vector<S9sString> keys1 = map1.keys();
+        std::vector<S9sString> keys2 = map2.keys();
+
+        // different keys?
+        if (keys1 != keys2)
+            return true;
+
+        // different values?
+        for (auto it = map1.begin(); it != map1.end(); ++it)
+        {
+            // are values the same?
+            if (map2.valueByPath(it->first) == it->second)
+                continue;
+
+            // okay, different values has been found
+            return true;
+        }
+
+        // ah no, everything was the same
+        return false;
+    } else if (isVariantList() && rhs.isVariantList())
+    {
+        return toVariantList() == rhs.toVariantList();
     } else {
         //S9S_WARNING("TBD: (%s)%s == (%s)%s", 
         //        STR(toString()), STR(typeName()),
@@ -256,6 +304,33 @@ S9sVariant::operator!= (
         // It seems that comparing a string with other than a string returning
         // true is rather counterintuitive. 
         return false;
+    } else if (isVariantMap() && rhs.isVariantMap())
+    {
+        const S9sVariantMap &map1 = toVariantMap();
+        const S9sVariantMap &map2 = rhs.toVariantMap();
+        std::vector<S9sString> keys1 = map1.keys();
+        std::vector<S9sString> keys2 = map2.keys();
+
+        // different keys?
+        if (keys1 != keys2)
+            return true;
+
+        // different values?
+        for (auto it = map1.begin(); it != map1.end(); ++it)
+        {
+            // are values the same?
+            if (map2.valueByPath(it->first) == it->second)
+                continue;
+
+            // okay, different values has been found
+            return true;
+        }
+
+        // ah no, everything was the same
+        return false;
+    } else if (isVariantList() && rhs.isVariantList())
+    {
+        return toVariantList() != rhs.toVariantList();
     } else {
         //S9S_WARNING("TBD: (%s)%s == (%s)%s", 
         //        STR(toString()), STR(typeName()),

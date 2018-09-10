@@ -20,6 +20,8 @@
 #include "ut_s9svariant.h"
 
 #include "S9sVariant"
+#include "S9sVariantMap"
+#include "S9sVariantList"
 #include <cstdio>
 #include <cstring>
 
@@ -47,6 +49,7 @@ UtS9sVariant::runTest(const char *testName)
     PERFORM_TEST(testToInt,       retval);
     PERFORM_TEST(testToULongLong, retval);
     PERFORM_TEST(testOperators01, retval);
+    PERFORM_TEST(testEqual,       retval);
 
     return retval;
 }
@@ -236,6 +239,67 @@ UtS9sVariant::testOperators01()
 
     variant += 0.125;
     S9S_COMPARE(variant.typeName(), "double");
+
+    return true;
+}
+
+bool
+UtS9sVariant::testEqual()
+{
+    S9sVariant   var1 = 42;
+    S9sVariant   var2 = 42;
+    S9sVariant   var3 = 42.0;
+    S9sVariant   var4 = "string";
+    S9sVariant   var5 = "string";
+    S9sVariant   var6 = "other string";
+    S9sVariant   var7 = "42";
+    S9sVariant   var8 = 42.1;
+
+    S9S_VERIFY(var1 == var2)
+    S9S_VERIFY(var1 == var3)
+    S9S_VERIFY(var4 == var5)
+    S9S_VERIFY(!(var5 == var6))
+    S9S_VERIFY(!(var1 == var7))
+    S9S_VERIFY(!(var1 == var8))
+    S9S_VERIFY(!(var3 == var8))
+    
+    S9S_VERIFY(var1 == 42);
+    S9S_VERIFY(var3 == 42.0);
+    S9S_VERIFY(var3 == 42);
+    S9S_VERIFY(var4 == "string");
+
+    S9S_VERIFY(S9sVariant(true) == S9sVariant(true));
+    S9S_VERIFY(S9sVariant(false) == S9sVariant(false));
+
+    /*
+     * Compare maps
+     */
+    S9sVariantMap map1, map2;
+    S9S_VERIFY(S9sVariant(map1) == S9sVariant(map2));
+
+    map1["key1"] = "value1";
+    S9S_VERIFY(! ( S9sVariant(map1) == S9sVariant(map2)));
+    S9S_VERIFY(    S9sVariant(map1) != S9sVariant(map2));
+
+    map2["key1"] = "value1";
+    S9S_VERIFY(    S9sVariant(map1) == S9sVariant(map2));
+    S9S_VERIFY(! ( S9sVariant(map1) != S9sVariant(map2)));
+
+    /*
+     * Compare lists
+     */
+    S9sVariantList list1, list2;
+    S9S_VERIFY(S9sVariant(list1) == S9sVariant(list2));
+
+    list1.push_back("item1");
+    list1.push_back(S9sVariant(1234));
+    S9S_VERIFY(! ( S9sVariant(list1) == S9sVariant(list2)));
+    S9S_VERIFY(    S9sVariant(list1) != S9sVariant(list2));
+
+    list2.push_back("item1");
+    list2.push_back(S9sVariant(1234));
+    S9S_VERIFY(    S9sVariant(list1) == S9sVariant(list2));
+    S9S_VERIFY(! ( S9sVariant(list1) != S9sVariant(list2)));
 
     return true;
 }

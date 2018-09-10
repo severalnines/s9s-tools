@@ -2023,6 +2023,44 @@ S9sRpcClient::createReport(
     return retval;
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::deployAgents(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    // When no node specified, backend will deploys to the controller
+    if (!hosts.empty())
+        jobData["node"] = hosts[0].toVariantMap();
+    
+    jobSpec["command"]    = "deploy_agents";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Deploy Monitoring Agents";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the

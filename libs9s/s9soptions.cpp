@@ -175,6 +175,7 @@ enum S9sOptionType
     OptionDensity,
     OptionRollingRestart,
     OptionCreateReport,
+    OptionDeployAgents,
     OptionLimit,
     OptionOffset,
     OptionRegister,
@@ -3109,6 +3110,7 @@ S9sOptions::isCreateRequested() const
     return getBool("create");
 }
 
+
 /**
  * \returns true if the --register command line option was provided when the
  *   program was started.
@@ -3336,6 +3338,16 @@ bool
 S9sOptions::isCreateReportRequested() const
 {
     return getBool("create_report");
+}
+
+/**
+ * \returns true if the --deploy-agents command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isDeployAgentsRequested() const
+{
+    return getBool("deploy_agents");
 }
 
 /**
@@ -4443,7 +4455,8 @@ S9sOptions::printHelpCluster()
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
-"  --create-report            Starts a job that will create a report.\n"
+"  --create-report            Starts a job that will create an error report.\n"
+"  --deploy-agents            Starts a job that will deploy agents to the nodes.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --demote-node              Demote a node to slave.\n"
 "  --drop                     Drop cluster from the controller.\n"
@@ -6341,6 +6354,9 @@ S9sOptions::checkOptionsCluster()
     if (isCreateReportRequested())
         countOptions++;
 
+    if (isDeployAgentsRequested())
+        countOptions++;
+
     if (isAddNodeRequested())
         countOptions++;
 
@@ -8023,6 +8039,7 @@ S9sOptions::readOptionsCluster(
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
+        { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "drop",             no_argument,       0, OptionDrop            },
         { "grant",            no_argument,       0, OptionGrant           },
@@ -8181,6 +8198,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateReport:
                 // --create-report
                 m_options["create_report"] = true;
+                break;
+
+            case OptionDeployAgents:
+                // --deploy-agents
+                m_options["deploy_agents"] = true;
                 break;
 
             case OptionAddNode:

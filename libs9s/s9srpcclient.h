@@ -251,6 +251,8 @@ class S9sRpcClient
 
         bool createReport(const int clusterId);
 
+        bool deployAgents(const int clusterId);
+
         bool createLocalRepository(
                 const int          clusterId,
                 const S9sString   &clusterType,
