@@ -182,12 +182,16 @@ function createServer()
 
     check_exit_code $?
 
-    #while s9s server --list --long | grep refused; do
-    #    sleep 10
-    #done
-
     mys9s server --list --long
     check_exit_code_no_job $?
+
+    #
+    # 
+    #
+    mys9s tree \
+        --cmon-user=system \
+        --password=secret \
+        --cat .runtime/server_manager 
 
     #
     # Checking the class is very important.
