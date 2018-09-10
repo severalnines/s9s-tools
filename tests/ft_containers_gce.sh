@@ -246,12 +246,13 @@ function createContainer()
     print_title "Creating Container"
 
     #
-    # Creating a container.
+    # Creating a container on GCE.
+    #   a) Only one volume is supported for gce.
     #
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --volumes="vol1:5:hdd;vol2:10:hdd" \
+        --volumes="vol1:5:hdd" \
         --cloud=gce \
         $LOG_OPTION \
         "$container_name"
