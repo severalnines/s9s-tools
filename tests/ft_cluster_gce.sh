@@ -303,7 +303,7 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="5.7" \
         --vendor=percona \
         --cloud=gce \
         --region="europe-west2-b" \
