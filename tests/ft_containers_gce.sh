@@ -168,6 +168,12 @@ function createServer()
     #
     mys9s tree --cat /$nodeName/.runtime/state
 
+    #
+    # Checking the regions.
+    #
+    mys9s server --list-regions --cloud=gce --long 
+
+
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
 
@@ -254,6 +260,7 @@ function createContainer()
         --create \
         --volumes="vol1:15:hdd" \
         --cloud=gce \
+        --region="europe-west2-b" \
         $LOG_OPTION \
         "$container_name"
     
