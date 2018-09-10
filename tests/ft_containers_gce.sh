@@ -468,6 +468,7 @@ function createCluster()
         --nodes="proxysql://$node002" \
         --containers="$node002" \
         --cloud=gce \
+        --region="europe-west2-b" \
         $LOG_OPTION
 
     check_exit_code $?
