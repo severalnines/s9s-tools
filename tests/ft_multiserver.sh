@@ -43,6 +43,13 @@ Usage:
   --vendor=STRING  Use the given Galera vendor.
   --provider-version=STRING The SQL server provider version.
 
+SUPPORTED TESTS:
+  o createCluster    Creates a new cluster.
+  o createServer     Creates a cmon-cloud server on one of the nodes.
+  o createContainer  Creates a container.
+  o recreateServer   Unregisters and re-registers the server.
+  o deleteContainer  Deletes the container of the cmon-cloud.
+
 EXAMPLE
  ./$MYNAME --print-commands --server=storage01 --reset-config --install
 
@@ -122,7 +129,7 @@ done
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster()
+function createCluster()
 {
     local nodes
     local nodeName
@@ -283,7 +290,7 @@ function recreateServer()
     # First we unregister the server that will leave the cmon-cloud software
     # installed.
     #
-    print_title "Unregistering Server"
+    print_title "Unregistering and Re-registering Server"
     serverName="$FIRST_ADDED_NODE"
 
     mys9s server \
@@ -346,7 +353,7 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    runFunctionalTest createCluster
     runFunctionalTest createServer
     runFunctionalTest createContainer
     runFunctionalTest recreateServer
@@ -355,7 +362,7 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testCreateCluster
+    runFunctionalTest createCluster
     runFunctionalTest createServer
     runFunctionalTest createContainer
     runFunctionalTest recreateServer
