@@ -248,11 +248,12 @@ function createContainer()
     #
     # Creating a container on GCE.
     #   a) Only one volume is supported for gce.
+    #   b) Disk size can not be smaller than image size.
     #
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --volumes="vol1:5:hdd" \
+        --volumes="vol1:15:hdd" \
         --cloud=gce \
         $LOG_OPTION \
         "$container_name"
