@@ -214,7 +214,7 @@ function createServer()
 function createContainer()
 {
     local config_dir="$HOME/.s9s"
-    local container_name="${MYBASENAME}_01_$$"
+    local container_name="ft-cluster-gce-01-$$"
     local template
     local owner
 
@@ -289,8 +289,8 @@ function createContainer()
 function createCluster()
 {
     local config_dir="$HOME/.s9s"
-    local container_name1="${MYBASENAME}_11_$$"
-    local container_name2="${MYBASENAME}_12_$$"
+    local container_name1="ft-cluster-gce-11-$$"
+    local container_name2="ft-cluster-gce-12-$$"
     local node_ip
     local container_id
 
@@ -330,8 +330,8 @@ function createCluster()
 
 function deleteContainers()
 {
-    local container_name1="${MYBASENAME}_11_$$"
-    local container_name2="${MYBASENAME}_12_$$"
+    local container_name1="ft-cluster-gce-11-$$"
+    local container_name2="ft-cluster-gce-12-$$"
 
     #
     # Dropping and deleting.
