@@ -240,7 +240,7 @@ function registerServer()
 function createContainer()
 {
     local owner
-    local container_name="ft_containers_gce_00_$$"
+    local container_name="ft-containers-gce-00-$$"
     local template
 
     print_title "Creating Container"
@@ -345,7 +345,7 @@ function createFail()
         --cloud="no_such_cloud" \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft-containers-gce"
     
     exitCode=$?
 
@@ -364,7 +364,7 @@ function createFail()
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft-containers-gce"
     
     exitCode=$?
 
@@ -383,7 +383,7 @@ function createFail()
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft-containers-aws"
     
     exitCode=$?
 
@@ -402,7 +402,7 @@ function createFail()
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
-        "ft_containers_aws"
+        "ft-containers-aws"
     
     exitCode=$?
 
@@ -414,8 +414,8 @@ function createFail()
 
 function createCluster()
 {
-    local node001="ft_containers_gce_01_$$"
-    local node002="ft_containers_gce_02_$$"
+    local node001="ft-containers-gce-01-$$"
+    local node002="ft-containers-gce-02-$$"
 
     #
     # Creating a Cluster.
@@ -481,8 +481,8 @@ function deleteContainer()
     #mys9s container --list --print-json
 
     containers="$LAST_CONTAINER_NAME"
-    containers+=" ft_containers_aws_01_$$"
-    containers+=" ft_containers_aws_02_$$"
+    containers+=" ft-containers_aws-01-$$"
+    containers+=" ft-containers-aws-02-$$"
 
     print_title "Deleting Containers"
 
