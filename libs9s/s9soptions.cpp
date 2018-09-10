@@ -8102,6 +8102,7 @@ S9sOptions::readOptionsCluster(
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
+        { "region",           required_argument, 0, OptionRegion          },
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
         { "template",         required_argument, 0, OptionTemplate        },
@@ -8504,6 +8505,11 @@ S9sOptions::readOptionsCluster(
                 m_options["os_user"] = optarg;
                 break;
                 
+            case OptionRegion:
+                // --region=REGION
+                m_options["region"] = optarg;
+                break;
+
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
@@ -8630,8 +8636,7 @@ S9sOptions::readOptionsContainer(
         { "template",         required_argument, 0, OptionTemplate        },
         { "volumes",          required_argument, 0, OptionVolumes         },
         { "vpc-id",           required_argument, 0, OptionVpcId           },
-        
-        
+         
         { 0, 0, 0, 0 }
     };
 
