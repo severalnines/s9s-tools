@@ -432,6 +432,7 @@ function createCluster()
         --nodes="$node001" \
         --containers="$node001" \
         --cloud=gce \
+        --region="europe-west2-b" \
         $LOG_OPTION
 
     check_exit_code $?
