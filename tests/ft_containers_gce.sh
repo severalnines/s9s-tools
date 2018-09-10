@@ -252,7 +252,6 @@ function createContainer()
     #
     mys9s container \
         --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --volumes="vol1:15:hdd" \
         --cloud=gce \
         $LOG_OPTION \
@@ -325,7 +324,6 @@ function createFail()
     print_title "Creating Container with Duplicate Name"
     mys9s container \
         --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
         "$LAST_CONTAINER_NAME"
@@ -344,7 +342,6 @@ function createFail()
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "ft-containers-gce"
     
@@ -362,7 +359,6 @@ function createFail()
     mys9s container \
         --create \
         --subnet-id="no_such_subnet" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
         "ft-containers-gce"
@@ -381,7 +377,6 @@ function createFail()
     mys9s container \
         --create \
         --image="no_such_image" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
         "ft-containers-aws"
@@ -400,7 +395,6 @@ function createFail()
     mys9s container \
         --create \
         --firewalls="nosuchfirewall" \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
         $LOG_OPTION \
         "ft-containers-aws"
