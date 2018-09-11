@@ -3484,7 +3484,7 @@ S9sRpcReply::printTemplates()
         for (int idx1 = 0; idx1 < nTemplates; ++idx1)
         {
             S9sString cloud  = server.templateProvider(idx1);
-            S9sString region = server.templateRegion(idx1);
+            S9sString region = server.templateRegion(idx1, "all");
             S9sString name   = server.templateName(idx1);
 
             if (!options->cloudName().empty() && 
@@ -3535,7 +3535,7 @@ S9sRpcReply::printTemplates()
         for (int idx1 = 0; idx1 < nTemplates; ++idx1)
         {
             S9sString cloud  = server.templateProvider(idx1);
-            S9sString region = server.templateRegion(idx1);
+            S9sString region = server.templateRegion(idx1, "all");
             S9sString name   = server.templateName(idx1);
 
             if (!options->cloudName().empty() && 

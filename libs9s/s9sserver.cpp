@@ -293,7 +293,8 @@ S9sServer::templateName(
 
 S9sString
 S9sServer::templateRegion(
-        const int idx) const
+        const int       idx,
+        const S9sString defaultValue) const
 {
     S9sVariantList theList = templates();
     S9sString      retval;
@@ -302,6 +303,9 @@ S9sServer::templateRegion(
         return retval;
 
     retval = theList[idx]["region"].toString();
+    if (retval.empty())
+        retval = defaultValue;
+
     return retval;
 }
 

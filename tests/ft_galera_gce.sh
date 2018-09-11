@@ -192,6 +192,7 @@ function createCluster()
         --image="centos7" \
         --cloud=gce \
         --region="europe-west2-b" \
+        --template="n1-highcpu-4" \
         --log
 
     check_exit_code $?
