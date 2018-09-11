@@ -3464,12 +3464,20 @@ S9sRpcReply::printTemplates()
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sFormat       cloudFormat;
     S9sFormat       regionFormat;
+    S9sFormat       cpuFormat, memoryFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       nameFormat;
     S9sFormat       vpcFormat;
     S9sFormat       idFormat;
     int             nTemplatesFound = 0;
     S9sStringList   regions;
+    
+    // If the json is requested we simply print it and that's all.
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+        return;
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -3485,7 +3493,9 @@ S9sRpcReply::printTemplates()
         {
             S9sString cloud  = server.templateProvider(idx1);
             S9sString region = server.templateRegion(idx1, "all");
-            S9sString name   = server.templateName(idx1);
+            S9sString name   = server.templateName(idx1, true);
+            int       nCpus  = server.templatenVcpus(idx1);
+            S9sString memory = server.templateMemory(idx1);
 
             if (!options->cloudName().empty() && 
                     options->cloudName() != cloud)
@@ -3495,6 +3505,8 @@ S9sRpcReply::printTemplates()
 
             cloudFormat.widen(cloud);
             regionFormat.widen(region);
+            cpuFormat.widen(nCpus);
+            memoryFormat.widen(memory);
             hostNameFormat.widen(hostName);
             nameFormat.widen(name);
 
@@ -3509,18 +3521,24 @@ S9sRpcReply::printTemplates()
     {
         cloudFormat.widen("CLD");
         regionFormat.widen("REGION");
+        cpuFormat.widen("CPU");
+        memoryFormat.widen("MEM");
         hostNameFormat.widen("SERVER");
         nameFormat.widen("TEMPLATE");
 
         printf("%s", headerColorBegin());
         cloudFormat.printf("CLD");
         regionFormat.printf("REGION");
+        cpuFormat.printf("CPU");
+        memoryFormat.printf("MEM");
         hostNameFormat.printf("SERVER");
         nameFormat.printf("TEMPLATE", false);
         printf("%s", headerColorEnd());
         printf("\n");
 
     }
+    
+    memoryFormat.setRightJustify();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -3536,7 +3554,9 @@ S9sRpcReply::printTemplates()
         {
             S9sString cloud  = server.templateProvider(idx1);
             S9sString region = server.templateRegion(idx1, "all");
-            S9sString name   = server.templateName(idx1);
+            S9sString name   = server.templateName(idx1, true);
+            int       nCpus  = server.templatenVcpus(idx1);
+            S9sString memory = server.templateMemory(idx1);
 
             if (!options->cloudName().empty() && 
                     options->cloudName() != cloud)
@@ -3550,6 +3570,8 @@ S9sRpcReply::printTemplates()
             
             cloudFormat.printf(cloud);
             regionFormat.printf(region);
+            cpuFormat.printf(nCpus);
+            memoryFormat.printf(memory);
             hostNameFormat.printf(hostName);
             nameFormat.printf(name);
 

@@ -19,6 +19,7 @@
  */
 #include "s9sserver.h"
 #include "S9sContainer"
+#include "S9sRegExp"
 
 //#define DEBUG
 //#define WARNING
@@ -279,18 +280,41 @@ S9sServer::nTemplates() const
 
 S9sString
 S9sServer::templateName(
-        const int idx) const
+        const int idx, 
+        bool      truncate) const
 {
     S9sVariantList theList = templates();
     S9sString      retval;
 
-    if (idx < 0 || idx >= (int)theList.size())
-        return retval;
+    if (idx >= 0 && idx < (int)theList.size())
+    {
+        retval = theList[idx]["name"].toString();
+    }
 
-    retval = theList[idx]["name"].toString();
+
+    if (truncate)
+    {
+        S9sString shortVersion;
+
+        for (uint idx = 0u; idx < retval.length(); ++idx)
+        {
+            if (retval[idx] == ' ')
+                break;
+
+            shortVersion += retval[idx];
+        }
+
+        retval = shortVersion;
+    }
+
     return retval;
 }
 
+/**
+ * \param idx The index of the template in the list of available templates.
+ * \param defaultValue The value returned if the region of the given template is
+ *   not set (template available for all regions).
+ */
 S9sString
 S9sServer::templateRegion(
         const int       idx,
@@ -307,6 +331,40 @@ S9sServer::templateRegion(
         retval = defaultValue;
 
     return retval;
+}
+
+int
+S9sServer::templatenVcpus(
+        const int        idx) const
+{
+    S9sString   theName = templateName(idx);
+    S9sRegExp   regexp("[^ ]* \\(([0-9]+) ?vCPUs, ([0-9]+[a-z]+)\\)");
+
+    if (theName.empty())
+        return 0;
+
+    regexp.setIgnoreCase(true);    
+    if (regexp == theName)
+        return regexp[1].toInt();
+
+    return 0;
+}
+
+S9sString
+S9sServer::templateMemory(
+        const int        idx) const
+{
+    S9sString   theName = templateName(idx);
+    S9sRegExp   regexp("[^ ]* \\(([0-9]+) ?vCPUs, ([0-9]+[a-z]+)\\)");
+
+    if (theName.empty())
+        return "";
+
+    regexp.setIgnoreCase(true);    
+    if (regexp == theName)
+        return regexp[2];
+
+    return "";
 }
 
 S9sString

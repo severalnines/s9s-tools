@@ -31,7 +31,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the server and exit.
+ --install        Just installs the server and the cluster and exits.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
@@ -125,13 +125,14 @@ fi
 #
 function createServer()
 {
+    local container_name="ft_galera_gce_00"
     local class
     local nodeName
 
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy $container_name)
 
     #
     # Creating a cmon-cloud server.
@@ -193,7 +194,7 @@ function createCluster()
         --cloud=gce \
         --region="europe-west2-b" \
         --template="n1-highcpu-4" \
-        --log
+        $LOG_OPTION
 
     check_exit_code $?
 
@@ -280,6 +281,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
+    runFunctionalTest createCluster
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
