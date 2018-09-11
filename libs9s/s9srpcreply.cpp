@@ -3495,7 +3495,7 @@ S9sRpcReply::printTemplates()
             S9sString region = server.templateRegion(idx1, "all");
             S9sString name   = server.templateName(idx1, true);
             int       nCpus  = server.templatenVcpus(idx1);
-            S9sString memory = server.templateMemory(idx1);
+            S9sString memory = server.templateMemory(idx1, "-");
 
             if (!options->cloudName().empty() && 
                     options->cloudName() != cloud)
@@ -3522,7 +3522,7 @@ S9sRpcReply::printTemplates()
         cloudFormat.widen("CLD");
         regionFormat.widen("REGION");
         cpuFormat.widen("CPU");
-        memoryFormat.widen("MEM");
+        memoryFormat.widen("MEMORY");
         hostNameFormat.widen("SERVER");
         nameFormat.widen("TEMPLATE");
 
@@ -3530,7 +3530,7 @@ S9sRpcReply::printTemplates()
         cloudFormat.printf("CLD");
         regionFormat.printf("REGION");
         cpuFormat.printf("CPU");
-        memoryFormat.printf("MEM");
+        memoryFormat.printf("MEMORY");
         hostNameFormat.printf("SERVER");
         nameFormat.printf("TEMPLATE", false);
         printf("%s", headerColorEnd());
@@ -3538,6 +3538,7 @@ S9sRpcReply::printTemplates()
 
     }
     
+    cpuFormat.setRightJustify();
     memoryFormat.setRightJustify();
     
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -3556,7 +3557,7 @@ S9sRpcReply::printTemplates()
             S9sString region = server.templateRegion(idx1, "all");
             S9sString name   = server.templateName(idx1, true);
             int       nCpus  = server.templatenVcpus(idx1);
-            S9sString memory = server.templateMemory(idx1);
+            S9sString memory = server.templateMemory(idx1, "-");
 
             if (!options->cloudName().empty() && 
                     options->cloudName() != cloud)
@@ -3570,7 +3571,11 @@ S9sRpcReply::printTemplates()
             
             cloudFormat.printf(cloud);
             regionFormat.printf(region);
-            cpuFormat.printf(nCpus);
+            if (nCpus > 0)
+                cpuFormat.printf(nCpus);
+            else
+                cpuFormat.printf("-");
+
             memoryFormat.printf(memory);
             hostNameFormat.printf(hostName);
             nameFormat.printf(name);

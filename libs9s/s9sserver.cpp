@@ -352,19 +352,23 @@ S9sServer::templatenVcpus(
 
 S9sString
 S9sServer::templateMemory(
-        const int        idx) const
+        const int        idx,
+        const S9sString  defaultValue) const
 {
     S9sString   theName = templateName(idx);
     S9sRegExp   regexp("[^ ]* \\(([0-9]+) ?vCPUs, ([0-9]+[a-z]+)\\)");
 
     if (theName.empty())
-        return "";
+        return defaultValue;
 
     regexp.setIgnoreCase(true);    
     if (regexp == theName)
-        return regexp[2];
+    {
+        if (!regexp[2].empty())
+            return regexp[2];
+    }
 
-    return "";
+    return defaultValue;
 }
 
 S9sString

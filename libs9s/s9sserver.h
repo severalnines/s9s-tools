@@ -73,7 +73,8 @@ class S9sServer : public S9sObject
                 const int        idx) const;
 
         S9sString templateMemory(
-                const int        idx) const;
+                const int        idx,
+                const S9sString  defaultValue = "") const;
 
         S9sString templateProvider(const int idx) const;
 
