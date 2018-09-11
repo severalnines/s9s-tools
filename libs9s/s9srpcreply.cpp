@@ -3487,6 +3487,12 @@ S9sRpcReply::printTemplates()
             S9sString region = server.templateRegion(idx1);
             S9sString name   = server.templateName(idx1);
 
+            if (!options->cloudName().empty() && 
+                    options->cloudName() != cloud)
+            {
+                continue;
+            }
+
             cloudFormat.widen(cloud);
             regionFormat.widen(region);
             hostNameFormat.widen(hostName);
@@ -3531,6 +3537,12 @@ S9sRpcReply::printTemplates()
             S9sString cloud  = server.templateProvider(idx1);
             S9sString region = server.templateRegion(idx1);
             S9sString name   = server.templateName(idx1);
+
+            if (!options->cloudName().empty() && 
+                    options->cloudName() != cloud)
+            {
+                continue;
+            }
 
             hostNameFormat.setColor(
                     server.colorBegin(syntaxHighlight),
