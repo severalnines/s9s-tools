@@ -204,8 +204,8 @@ function deleteContainer()
     local containers
     local container
 
-    containers+=="ft-postgresql-gce-01-$$ "
-    containers+=="ft-postgresql-gce-02-$$"
+    containers+="ft-postgresql-gce-01-$$ "
+    containers+="ft-postgresql-gce-02-$$"
 
     print_title "Deleting Containers"
 
