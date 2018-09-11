@@ -324,6 +324,7 @@ function createCluster()
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
+    s9s tree --list --long --recursive --cmon-user=system --password=secret
 
     return 0
 }
