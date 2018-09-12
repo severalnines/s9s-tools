@@ -175,7 +175,8 @@ function testCreateUser()
 }
 
 #####
-# Creating a user to be a new superuser.
+# Creating a user as superuser. Now that we have automatically created admin
+# user we don't really need this. 
 #
 function testCreateSuperuser()
 {
@@ -201,18 +202,49 @@ function testCreateSuperuser()
 #
 function testRegisterServer()
 {
+    local old_ifs="$IFS"
+    local object_found
+    local line
+    local name
+    local mode
+    local owner
+    local group
+
     print_title "Registering a container server."
     mys9s server \
         --register \
         --servers="lxc://$CONTAINER_SERVER"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while registering server."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
-    mys9s server --list --long 
+    #
+    # Checking the tree...
+    #
+    mys9s tree --list --long
+    
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        case $name in 
+            $CONTAINER_SERVER)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                object_found="yes"
+                ;;
+        esac
+    done
+    IFS=$old_ifs    
+
+    if [ -z "$object_found" ]; then
+        failure "Object was not found."
+    fi
 }
 
 #####
@@ -220,34 +252,70 @@ function testRegisterServer()
 #
 function testCreateContainer()
 {
+    local old_ifs="$IFS"
+    local container_name="ft_tree_01_$$"
+    local object_found
+    local line
+    local name
+    local mode
+    local owner
+    local group
+    
+    #
+    #
+    #
     print_title "Creating a Container"
-    pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
-    pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
+    #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
+    #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
 
     mys9s container \
         --create \
         --template=ubuntu \
         $LOG_OPTION \
-        ft_tree_001
+        "$container_name"
 
     check_exit_code $?
-    remember_cmon_container "ft_tree_001"
+    remember_cmon_container "$container_name"
 
     CONTAINER_IP=$(\
         s9s server \
             --list-containers \
-            --long ft_tree_001 \
+            --long "$container_name" \
             --batch \
         | awk '{print $6}')
 
     if [ -z "$CONTAINER_IP" ]; then
         failure "Container IP could not be found."
         exit 1
-    fi
-
-    if [ "$CONTAINER_IP" == "-" ]; then
+    elif [ "$CONTAINER_IP" == "-" ]; then
         failure "Container IP is invalid."
         exit 1
+    fi
+    
+    mys9s tree --list --long $CONTAINER_SERVER/containers
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch $CONTAINER_SERVER/containers)
+    do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        case $name in 
+            $container_name)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                object_found="yes"
+                ;;
+        esac
+    done
+    IFS=$old_ifs    
+
+    if [ -z "$object_found" ]; then
+        failure "Object was not found."
     fi
 }
 
@@ -256,17 +324,47 @@ function testCreateContainer()
 #
 function testCreateCluster()
 {
+    local old_ifs="$IFS"
+    local cluster_name="galera_001"
+    local line
+    local name
+    local mode
+    local owner
+    local group
+
+    #
+    #
+    #
     print_title "Creating a cluster."
     mys9s cluster \
         --create \
         --cluster-type=galera \
         --nodes="$CONTAINER_IP" \
         --vendor=percona \
-        --cluster-name="galera_001" \
+        --cluster-name="$cluster_name" \
         --provider-version=5.6 \
         --wait
 
     check_exit_code $?
+    
+    #
+    #
+    #
+    mys9s tree --list --long "$cluster_name"
+    
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch "$cluster_name"); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+        [ "$group" != "users" ] && failure "Group is '$group'."
+    done
+    IFS=$old_ifs    
 }
 
 #####
@@ -274,30 +372,90 @@ function testCreateCluster()
 #
 function testCreateDatabase()
 {
-    print_title "Creating databases."
+    local old_ifs="$IFS"
+    local cluster_name="galera_001"
+    local n_object_found=0
+    local line
+    local name
+    local mode
+    local owner
+    local group
+
+    #
+    #
+    #
+    print_title "Creating Databases"
     mys9s cluster \
         --create-database \
-        --cluster-name="galera_001" \
+        --cluster-name="$cluster_name" \
         --db-name="domain_names_ngtlds_diff" \
         --batch
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating database."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s cluster \
         --create-database \
-        --cluster-name="galera_001" \
+        --cluster-name="$cluster_name" \
         --db-name="domain_names_diff" \
         --batch
+    
+    check_exit_code_no_job $?
 
     mys9s cluster \
         --create-database \
-        --cluster-name="galera_001" \
+        --cluster-name="$cluster_name1" \
         --db-name="whois_records_delta" \
         --batch
+    
+    check_exit_code_no_job $?
+
+    #for n in 1 2 3 4 5 6 7 8 9 10; do
+    #    mys9s tree --tree 
+    #    sleep 10
+    #done
+    # FIXME: I am not sure why we need this.
+    sleep 15
+
+    mys9s tree --list --long "$cluster_name/databases"
+    
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch "$cluster_name/databases")
+    do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        case "$name" in 
+            domain_names_diff)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
+            domain_names_ngtlds_diff)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
+            whois_records_delta)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+        esac
+    done
+    IFS=$old_ifs    
+
+    if [ "$n_objects_found" -lt 3 ]; then
+        failure "Some databases were not found."
+    fi
 }
 
 #####
@@ -305,18 +463,14 @@ function testCreateDatabase()
 #
 function testCreateAccount()
 {
-    print_title "Creating database account"
+    print_title "Creating Database Account"
     mys9s account \
         --create \
         --cluster-name="galera_001" \
         --account="pipas:pipas" \
         --privileges="*.*:ALL"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating account."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 }
 
 #
@@ -325,14 +479,62 @@ function testCreateAccount()
 #
 function testMoveObjects()
 {
-    print_title "Moving objects into subfolder"
+    local old_ifs="$IFS"
+    local cluster_name="galera_001"
+    local n_object_found=0
+    local line
+    local name
+    local mode
+    local owner
+    local group
+
     TEST_PATH="/home/pipas"
+
+    #
+    #
+    #
+    print_title "Moving objects into subfolder"
+
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move /$CONTAINER_SERVER "$TEST_PATH"
     mys9s tree --move /galera_001 "$TEST_PATH"
     mys9s tree --move /pipas "$TEST_PATH"
 
-    mys9s tree --tree --color=always --refresh
+    mys9s tree --tree 
+    
+    #
+    #
+    #
+    mys9s tree --list --long --recursive --full-path
+
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --recursive --full-path)
+    do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        case "$name" in 
+            /$cluster_name)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
+            /$cluster_name/databases/domain_names_diff)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+        esac
+    done
+
+    mys9s tree --list --long --recursive --full-path --cmon-user=system --password=secret
 }
 
 #
