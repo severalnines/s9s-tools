@@ -453,7 +453,7 @@ function testCreateDatabase()
     done
     IFS=$old_ifs    
 
-    if [ "$n_objects_found" -lt 3 ]; then
+    if [ "$n_object_found" -lt 3 ]; then
         failure "Some databases were not found."
     fi
 }
@@ -508,10 +508,11 @@ function testMoveObjects()
     mys9s tree --list --long --recursive --full-path
 
     IFS=$'\n'
-    for line in $(s9s tree --list --long --recursive --full-path)
+    for line in $(s9s tree --list --long --recursive --full-path --batch)
     do
         echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
+        line=$(echo "$line" | sed 's/3, 1/   -/g')
         name=$(echo "$line" | awk '{print $5}')
         mode=$(echo "$line" | awk '{print $1}')
         owner=$(echo "$line" | awk '{print $3}')
@@ -531,10 +532,54 @@ function testMoveObjects()
                 [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
+
+            /$CONTAINER_SERVER)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
+            /$CONTAINER_SERVER/containers)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "drwxr--r--" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
         esac
     done
 
+    echo "n_object_found: $n_object_found"
     mys9s tree --list --long --recursive --full-path --cmon-user=system --password=secret
+
+    #
+    #
+    #
+    n_object_found=0
+    
+    IFS=$'\n'
+    for line in $(s9s tree \
+        --list --long --recursive --full-path --batch \
+        --cmon-user=system --password=secret)
+    do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        line=$(echo "$line" | sed 's/3, 1/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+        case "$name" in 
+            /home/pipas/$cluster_name)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+        esac
+    done
+    IFS=$old_ifs    
+    
 }
 
 #
