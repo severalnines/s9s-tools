@@ -123,6 +123,9 @@ function mys9s()
     fi
 }
 
+#
+# Prints a title line that looks nice on the terminal and also on the web.
+#
 function print_title()
 {
     if [ -t 1 ]; then

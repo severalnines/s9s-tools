@@ -96,79 +96,133 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
 fi
 
 
-reset_config
 
 #####
 # Creating a user to be a normal user. 
 #
-print_title "Creating a user with normal privileges."
-mys9s user \
-    --create \
-    --cmon-user="system" \
-    --password="secret" \
-    --group="users" \
-    --create-group \
-    --email-address="laszlo@severalnines.com" \
-    --first-name="Laszlo" \
-    --last-name="Pere"   \
-    --generate-key \
-    --new-password="pipas" \
-    "pipas"
+function testCreateUser()
+{
+    local old_ifs="$IFS"
+    local columns_found=0
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating user through RPC"
-    exit 1
-fi
+    print_title "Creating a Normal User"
+    mys9s user \
+        --create \
+        --cmon-user="system" \
+        --password="secret" \
+        --group="users" \
+        --create-group \
+        --email-address="laszlo@severalnines.com" \
+        --first-name="Laszlo" \
+        --last-name="Pere"   \
+        --generate-key \
+        --new-password="pipas" \
+        "pipas"
 
-# An extra key for the SSH login to the container.
-mys9s user \
-    --add-key \
-    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-    --public-key-name="The SSH key"
+    check_exit_code_no_job $?
 
-check_exit_code_no_job $?
+    # An extra key for the SSH login to the container.
+    mys9s user \
+        --add-key \
+        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --public-key-name="The SSH key"
+
+    check_exit_code_no_job $?
+
+    #
+    #
+    #
+    mys9s tree --list --long
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        owner=$(echo "$line" | awk '{print $3}')
+
+        case $name in 
+            groups)
+                let columns_found+=1
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                ;;
+
+            admin)
+                let columns_found+=1
+                [ "$owner" != "admin" ] && failure "Owner is '$owner'."
+                ;;
+
+            nobody)
+                let columns_found+=1
+                [ "$owner" != "nobody" ] && failure "Owner is '$owner'."
+                ;;
+
+            pipas)
+                let columns_found+=1
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                ;;
+
+            system)
+                let columns_found+=1
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                ;;
+
+            *)
+                failure "Unexpected name '$name'."
+                ;;
+        esac
+    done
+    IFS=$old_ifs
+}
 
 #####
 # Creating a user to be a new superuser.
 #
-print_title "Creating a user with superuser privileges."
-mys9s user \
-    --create \
-    --cmon-user="system" \
-    --password="secret" \
-    --group="admins" \
-    --email-address="laszlo@severalnines.com" \
-    --first-name="Cmon" \
-    --last-name="Administrator"   \
-    --generate-key \
-    --new-password="admin" \
-    "admin"
+function testCreateSuperuser()
+{
+    print_title "Creating a user with superuser privileges."
+    mys9s user \
+        --create \
+        --cmon-user="system" \
+        --password="secret" \
+        --group="admins" \
+        --email-address="laszlo@severalnines.com" \
+        --first-name="Cmon" \
+        --last-name="Administrator"   \
+        --generate-key \
+        --new-password="admin" \
+        "superuser"
 
-check_exit_code_no_job $?
+    check_exit_code_no_job $?
+    mys9s tree --list --long
+}
 
 #####
 # Registering a server.
 #
-print_title "Registering a container server."
-mys9s server \
-    --register \
-    --servers="lxc://$CONTAINER_SERVER"
+function testRegisterServer()
+{
+    print_title "Registering a container server."
+    mys9s server \
+        --register \
+        --servers="lxc://$CONTAINER_SERVER"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while registering server."
-    exit 1
-fi
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while registering server."
+        exit 1
+    fi
 
-mys9s server --list --long --refresh --color=always
+    mys9s server --list --long 
+}
 
 #####
 # Creating a container.
 #
-print_title "Creating a Container"
-pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
-pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
+function testCreateContainer()
+{
+    print_title "Creating a Container"
+    pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
+    pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
 
     mys9s container \
         --create \
@@ -177,8 +231,8 @@ pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
         ft_tree_001
 
     check_exit_code $?
+    remember_cmon_container "ft_tree_001"
 
-    container_created "ft_tree_001"
     CONTAINER_IP=$(\
         s9s server \
             --list-containers \
@@ -186,192 +240,276 @@ pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
             --batch \
         | awk '{print $6}')
 
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "Container IP could not be found."
+        exit 1
+    fi
 
-
-if [ -z "$CONTAINER_IP" ]; then
-    failure "Container IP could not be found."
-    exit 1
-fi
-
-if [ "$CONTAINER_IP" == "-" ]; then
-    failure "Container IP is invalid."
-    exit 1
-fi
-
-container_created "$CONTAINER_IP"
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "Container IP is invalid."
+        exit 1
+    fi
+}
 
 #####
 # Creating a Galera cluster.
 #
-print_title "Creating a cluster."
-mys9s cluster \
-    --create \
-    --cluster-type=galera \
-    --nodes="$CONTAINER_IP" \
-    --vendor=percona \
-    --cluster-name="galera_001" \
-    --provider-version=5.6 \
-    --color=always \
-    --wait
+function testCreateCluster()
+{
+    print_title "Creating a cluster."
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$CONTAINER_IP" \
+        --vendor=percona \
+        --cluster-name="galera_001" \
+        --provider-version=5.6 \
+        --wait
 
-check_exit_code $?
+    check_exit_code $?
+}
 
 #####
 # Creating databases.
 #
-print_title "Creating databases."
-mys9s cluster \
-    --create-database \
-    --cluster-name="galera_001" \
-    --db-name="domain_names_ngtlds_diff" \
-    --batch
+function testCreateDatabase()
+{
+    print_title "Creating databases."
+    mys9s cluster \
+        --create-database \
+        --cluster-name="galera_001" \
+        --db-name="domain_names_ngtlds_diff" \
+        --batch
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating database."
-    exit 1
-fi
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating database."
+        exit 1
+    fi
 
-mys9s cluster \
-    --create-database \
-    --cluster-name="galera_001" \
-    --db-name="domain_names_diff" \
-    --batch
+    mys9s cluster \
+        --create-database \
+        --cluster-name="galera_001" \
+        --db-name="domain_names_diff" \
+        --batch
 
-mys9s cluster \
-    --create-database \
-    --cluster-name="galera_001" \
-    --db-name="whois_records_delta" \
-    --batch
+    mys9s cluster \
+        --create-database \
+        --cluster-name="galera_001" \
+        --db-name="whois_records_delta" \
+        --batch
+}
 
 #####
 # Creating a database account.
 #
-print_title "Creating database account"
-mys9s account \
-    --create \
-    --cluster-name="galera_001" \
-    --account="pipas:pipas" \
-    --privileges="*.*:ALL"
+function testCreateAccount()
+{
+    print_title "Creating database account"
+    mys9s account \
+        --create \
+        --cluster-name="galera_001" \
+        --account="pipas:pipas" \
+        --privileges="*.*:ALL"
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating account."
-    exit 1
-fi
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating account."
+        exit 1
+    fi
+}
 
 #
 # Moving some objects into a sub-folder. The user is moving itself at the last
 # step, so this is a chroot environment.
 #
-print_title "Moving objects into subfolder"
-TEST_PATH="/home/pipas"
-mys9s tree --mkdir "$TEST_PATH"
-mys9s tree --move /$CONTAINER_SERVER "$TEST_PATH"
-mys9s tree --move /galera_001 "$TEST_PATH"
-mys9s tree --move /pipas "$TEST_PATH"
+function testMoveObjects()
+{
+    print_title "Moving objects into subfolder"
+    TEST_PATH="/home/pipas"
+    mys9s tree --mkdir "$TEST_PATH"
+    mys9s tree --move /$CONTAINER_SERVER "$TEST_PATH"
+    mys9s tree --move /galera_001 "$TEST_PATH"
+    mys9s tree --move /pipas "$TEST_PATH"
 
-mys9s tree --tree --color=always --refresh
+    mys9s tree --tree --color=always --refresh
+}
 
 #
 # Checking the --get-acl in a chroot environment.
 #
-THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
-THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
-if [ "$THE_PATH" != '"/"' ]; then
-    s9s tree --get-acl --print-json / | jq .
-    failure "The path should be '/' in getAcl reply not '$THE_PATH'."
-    exit 1
-fi
+function testAclChroot()
+{
+    THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
 
-if [ "$THE_NAME" != '""' ]; then
-    s9s tree --get-acl --print-json / | jq .
-    failure "The object name should be empty in getAcl reply."
-    exit 1
-fi
+    if [ "$THE_PATH" != '"/"' ]; then
+        s9s tree --get-acl --print-json / | jq .
+        failure "The path should be '/' in getAcl reply not '$THE_PATH'."
+        exit 1
+    fi
 
-THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
-THE_PATH=$(s9s tree --get-acl --print-json /galera_001 | jq .object_path)
-if [ "$THE_PATH" != '"/"' ]; then
-    s9s tree --get-acl --print-json /galera_001 | jq .
-    failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
-    exit 1
-fi
+    if [ "$THE_NAME" != '""' ]; then
+        s9s tree --get-acl --print-json / | jq .
+        failure "The object name should be empty in getAcl reply."
+        exit 1
+    fi
 
-if [ "$THE_NAME" != '"galera_001"' ]; then
-    s9s tree --get-acl --print-json /galera_001 | jq .
-    failure "The object name should be 'galera_001' in getAcl reply."
-    exit 1
-fi
+    THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json /galera_001 | jq .object_path)
+    if [ "$THE_PATH" != '"/"' ]; then
+        s9s tree --get-acl --print-json /galera_001 | jq .
+        failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
+        exit 1
+    fi
 
-THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
-THE_PATH=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_path)
-if [ "$THE_PATH" != '"/galera_001"' ]; then
-    s9s tree --get-acl --print-json /galera_001/databases | jq .
-    failure "The path should be '/galera_001' in getAcl reply."
-    exit 1
-fi
+    if [ "$THE_NAME" != '"galera_001"' ]; then
+        s9s tree --get-acl --print-json /galera_001 | jq .
+        failure "The object name should be 'galera_001' in getAcl reply."
+        exit 1
+    fi
 
-if [ "$THE_NAME" != '"databases"' ]; then
-    s9s tree --get-acl --print-json /galera_001/databases | jq .
-    failure "The object name should be 'databases' in getAcl reply."
-    exit 1
-fi
+    THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_path)
+    if [ "$THE_PATH" != '"/galera_001"' ]; then
+        s9s tree --get-acl --print-json /galera_001/databases | jq .
+        failure "The path should be '/galera_001' in getAcl reply."
+        exit 1
+    fi
+
+    if [ "$THE_NAME" != '"databases"' ]; then
+        s9s tree --get-acl --print-json /galera_001/databases | jq .
+        failure "The object name should be 'databases' in getAcl reply."
+        exit 1
+    fi
+}
 
 #####
 # Creating a directory.
 #
-print_title "Creating directory"
-mys9s tree \
-    --mkdir \
-    /tmp
+function testCreateFolder()
+{
+    print_title "Creating directory"
+    mys9s tree \
+        --mkdir \
+        /tmp
 
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating account."
-    exit 1
-fi
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating account."
+        exit 1
+    fi
+}
 
 #####
 # Adding an ACL.
 #
-print_title "Adding an ACL entry"
-mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating account."
-    exit 1
-fi
+function testManipulate()
+{
+    print_title "Adding an ACL entry"
+    mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating account."
+        exit 1
+    fi
 
-#####
-# Changing the owner
-#
-print_title "Changing the owner"
-mys9s tree --chown --owner=admin:admins /tmp
-exitCode=$?
-if [ "$exitCode" -ne 0 ]; then
-    failure "The exit code is ${exitCode} while creating account."
-    exit 1
-fi
+    #####
+    # Changing the owner
+    #
+    print_title "Changing the owner"
+    mys9s tree --chown --owner=admin:admins /tmp
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "The exit code is ${exitCode} while creating account."
+        exit 1
+    fi
 
-mys9s tree --list --directory --long /tmp
-OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
-GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
-if [ "$OWNER" != 'admin' ]; then
-    failure "The owner should be 'admin' not '$OWNER'."
-    exit 1
-fi
+    mys9s tree --list --directory --long /tmp
+    OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
+    GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
+    if [ "$OWNER" != 'admin' ]; then
+        failure "The owner should be 'admin' not '$OWNER'."
+        exit 1
+    fi
 
-if [ "$GROUP" != 'admins' ]; then
-    failure "The group should be 'admins' not '$GROUP'."
-    exit 1
-fi
+    if [ "$GROUP" != 'admins' ]; then
+        failure "The group should be 'admins' not '$GROUP'."
+        exit 1
+    fi
+}
 
 #####
 # A final view and exit.
 #
-print_title "Printing tree and ending test"
+function testTree()
+{
+    print_title "Printing tree and ending test"
 
-mys9s tree --list --color=always
+    mys9s tree --list --color=always
+}
+
+#
+# This will delete the containers we created before.
+#
+function deleteContainers()
+{
+    local containers=$(cmon_container_list)
+    local container
+
+    print_title "Deleting Containers"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    #mys9s job --list
+}
+
+#
+# Running the requested tests.
+#
+startTests
+
+reset_config
+
+if [ "$OPTION_INSTALL" ]; then
+    if [ "$*" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
+elif [ "$1" ]; then
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
+else
+    runFunctionalTest testCreateUser
+    runFunctionalTest testCreateSuperuser
+    runFunctionalTest testRegisterServer
+    runFunctionalTest testCreateContainer
+    runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateDatabase
+    runFunctionalTest testCreateAccount
+    runFunctionalTest testMoveObjects
+    runFunctionalTest testAclChroot
+    runFunctionalTest testCreateFolder
+    runFunctionalTest testManipulate
+    runFunctionalTest testTree
+    runFunctionalTest deleteContainers
+fi
 
 endTests
+

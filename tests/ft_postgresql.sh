@@ -128,6 +128,7 @@ done
 #
 function testCreateCluster()
 {
+    local node1="ft_postgresql_01_$$"
     local nodes
     local nodeName
 
@@ -145,12 +146,12 @@ function testCreateCluster()
     #
     # Creating containers.
     #
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy $node1)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
   
     #
-    #
+    # Check the nodes before creating a cluster.
     #
     mys9s cluster \
         --check-hosts \
