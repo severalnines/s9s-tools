@@ -186,6 +186,114 @@ function checkTreeAccess()
     done
 }
 
+function checkList()
+{
+    local old_ifs="$IFS"
+    local n_object_found=0
+    local line
+    local name
+    local mode
+    local owner
+    local group
+
+    #
+    #
+    #
+    print_title "Checking Tree List"
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --all --recursive --full-path --batch)
+    do
+        line=$(echo "$line" | sed 's/[0-9]*, [0-9]*/   -/g')
+        line=$(echo "$line" | sed 's/  / /g')
+        line=$(echo "$line" | sed 's/  / /g')
+        line=$(echo "$line" | sed 's/  / /g')
+
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+        
+        echo "  checking line: $line"
+        case "$name" in
+            /.runtime)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "drwxrwxr--" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/cluster_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/host_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/job_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/mutexes)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/process_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/server_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/threads)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.runtime/user_manager)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+            
+            /.issue)
+                [ "$owner" != "system" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "-rw-r--r--" ] && failure "Mode is '$mode'."
+                let n_object_found+=1
+                ;;
+        esac
+    done
+    IFS=$old_ifs 
+
+    echo "n_object_found: $n_object_found"
+    if [ "$n_object_found" -lt 10 ]; then
+        failure "Some special files were not found."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -202,6 +310,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest checkTreeAccess
+    runFunctionalTest checkList
 fi
 
 endTests
