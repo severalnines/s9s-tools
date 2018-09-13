@@ -4310,7 +4310,6 @@ bool
 S9sRpcClient::dropCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job       = composeJob();
@@ -4321,8 +4320,15 @@ S9sRpcClient::dropCluster()
     
     title = "Remove Cluster";
 
-    // The job_data describing the cluster that will be deleted.
-    jobData["clusterid"]  = clusterId;
+    // The job_data describing the cluster that will be deleted. The drop
+    // cluster can only be executed in cluster 0, so we can't put this into the
+    // request. 
+    if (options->hasClusterIdOption())
+        jobData["clusterid"]    = options->clusterId();
+
+    // Well, this is not going to work.
+    if (options->hasClusterNameOption())
+        jobData["cluster_name"] = options->clusterName();
     
     // The jobspec describing the command.
     jobSpec["command"]    = "remove_cluster";

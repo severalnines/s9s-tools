@@ -3,9 +3,12 @@ MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
-VERSION="0.0.3"
+VERSION="0.0.4"
 LOG_OPTION="--wait"
 CONTAINER_SERVER=""
+
+CLUSTER_NAME="galera_002"
+CLUSTER_ID=""
 
 cd $MYDIR
 source include.sh
@@ -96,148 +99,284 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
-startTests
 
 #####
 # Creating a user to be a normal user. 
 #
-print_title "Creating a user with normal privileges."
-mys9s user \
-    --create \
-    --cmon-user="system" \
-    --password="secret" \
-    --group="users" \
-    --create-group \
-    --email-address="laszlo@severalnines.com" \
-    --first-name="Laszlo" \
-    --last-name="Pere"   \
-    --generate-key \
-    --new-password="pipas" \
-    "pipas"
+function testCreateUser()
+{
+    print_title "Creating a user with normal privileges."
+    mys9s user \
+        --create \
+        --cmon-user="system" \
+        --password="secret" \
+        --group="users" \
+        --create-group \
+        --email-address="laszlo@severalnines.com" \
+        --first-name="Laszlo" \
+        --last-name="Pere"   \
+        --generate-key \
+        --new-password="pipas" \
+        "pipas"
 
-check_exit_code $?
+    check_exit_code $?
+    
+    # An extra key for the SSH login to the container.
+    mys9s user \
+        --add-key \
+        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --public-key-name="The SSH key"
 
-# An extra key for the SSH login to the container.
-mys9s user \
-    --add-key \
-    --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-    --public-key-name="The SSH key"
+    check_exit_code_no_job $?
 
-check_exit_code_no_job $?
-
-#####
-# Creating a user to be a new superuser.
-#
-print_title "Creating a user with superuser privileges."
-mys9s user \
-    --create \
-    --cmon-user="system" \
-    --password="secret" \
-    --group="admins" \
-    --email-address="laszlo@severalnines.com" \
-    --first-name="Cmon" \
-    --last-name="Administrator"   \
-    --generate-key \
-    --new-password="admin" \
-    "admin"
-
-check_exit_code $?
+    mys9s tree --list --long
+}
 
 #####
 # Moving the normal user in the tree.
 #
-print_title "The user moves itself in CDT"
+function testMoveUser()
+{
+    print_title "The user moves itself in CDT"
 
-TEST_PATH="/home/pipas"
-mys9s tree --mkdir "$TEST_PATH"
-mys9s tree --move /pipas "$TEST_PATH"
+    TEST_PATH="/home/pipas"
+    mys9s tree --mkdir "$TEST_PATH"
+    mys9s tree --move /pipas "$TEST_PATH"
 
-check_exit_code $?
+    check_exit_code $?
+
+    mys9s tree --list --long
+}
 
 #####
 # Registering second server.
 #
-print_title "Registering a container server."
-mys9s server \
-    --register \
-    --cmon-user=pipas \
-    --servers="lxc://$CONTAINER_SERVER"
+function testRegisterServer()
+{
+    #
+    #
+    #
+    print_title "Registering a Server in Chroot"
+    mys9s server \
+        --register \
+        --cmon-user=pipas \
+        --servers="lxc://$CONTAINER_SERVER"
 
-check_exit_code $?
+    check_exit_code $?
 
-OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
-GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
-if [ "$OWNER" != 'pipas' ]; then
-    s9s tree --list /$CONTAINER_SERVER 
-    failure "The owner should be 'pipas'."
-    exit 1
-fi
+    #
+    # Checking.
+    #
+    OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
+    GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
+    if [ "$OWNER" != 'pipas' ]; then
+        s9s tree --list /$CONTAINER_SERVER 
+        failure "The owner should be 'pipas'."
+        exit 1
+    fi
 
-if [ "$GROUP" != 'users' ]; then
-    s9s tree --list /$CONTAINER_SERVER 
-    failure "The group should be 'users'."
-    exit 1
-fi
+    if [ "$GROUP" != 'users' ]; then
+        s9s tree --list /$CONTAINER_SERVER 
+        failure "The group should be 'users'."
+        exit 1
+    fi
+
+    mys9s tree --list --long
+}
 
 #####
 # Creating a container.
 #
-print_title "Creating a Container."
-mys9s container \
-    --create \
-    --template=ubuntu \
-    --wait ft_treechroot_$$
+function testCreateContainer()
+{
+    local container_name="ft_treechroot_$$"
 
-check_exit_code $?
+    print_title "Creating a Container in Chroot"
+    mys9s container \
+        --create \
+        --template=ubuntu \
+        --wait \
+        $container_name
 
-CONTAINER_IP=$(\
-    s9s server \
-        --list-containers \
-        --long ft_treechroot_$$ \
-        --batch \
-    | awk '{print $6}')
+    check_exit_code $?
 
-if [ -z "$CONTAINER_IP" ]; then
-    failure "Container IP could not be found."
-    exit 1
-fi
+    CONTAINER_IP=$(\
+        s9s server \
+            --list-containers \
+            --long "$container_name" \
+            --batch \
+        | awk '{print $6}')
 
-if [ "$CONTAINER_IP" == "-" ]; then
-    failure "Container IP is invalid."
-    exit 1
-fi
+    if [ -z "$CONTAINER_IP" ]; then
+        failure "Container IP could not be found."
+        exit 1
+    fi
 
-node_created "$CONTAINER_IP"
+    if [ "$CONTAINER_IP" == "-" ]; then
+        failure "Container IP is invalid."
+        exit 1
+    fi
+
+    node_created "$CONTAINER_IP"
+
+    mys9s tree --list --long
+}
 
 #####
 # Creating a Galera cluster.
 #
-print_title "Creating an other cluster."
-mys9s cluster \
-    --create \
-    --cluster-type=galera \
-    --nodes="$CONTAINER_IP" \
-    --vendor=percona \
-    --cluster-name="galera_002" \
-    --provider-version=5.6 \
-    --wait
+function testCreateCluster()
+{
+    local old_ifs="$IFS"
+    local n_object_found="0"
+    local line
+    local name
+    local mode
+    local owner
+    local group
 
-check_exit_code $?
+    #
+    # Creating a cluster 
+    #
+    print_title "Creating a Cluster in Chroot"
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$CONTAINER_IP" \
+        --vendor=percona \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=5.6 \
+        --wait
 
-OWNER=$(s9s tree --list /galera_002 --batch --long | head -n1 | awk '{print $3}')
-GROUP=$(s9s tree --list /galera_002 --batch --long | head -n1 | awk '{print $4}')
-if [ "$OWNER" != 'pipas' ]; then
-    mys9s tree --list /galera_002
-    failure "The owner of '/galera_002' should be 'pipas'."
-    exit 1
+    check_exit_code $?
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+ 
+    #
+    # Checking the cluster in the tree.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        case "$name" in
+            $CLUSTER_NAME)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+        esac
+    done
+    IFS=$old_ifs
+
+    if [ "$n_object_found" -ne 1 ]; then
+        failure "Some objects were not found or duplicate."
+    fi
+}
+
+function dropCluster()
+{
+    local old_ifs="$IFS"
+    local line
+    local name
+
+    #
+    # Dropping the cluster.
+    #
+    print_title "Dropping Cluster"
+    mys9s cluster \
+        --drop \
+        --cluster-id="$CLUSTER_ID" \
+        $LOG_OPTION
+
+    mys9s tree --list --long
+
+    #
+    # Checking.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+
+        case "$name" in
+            $CLUSTER_NAME)
+                failure "Cluster found after it is dropped."
+                ;;
+        esac
+    done
+    IFS=$old_ifs  
+}
+
+#
+# This will delete the containers we created before.
+#
+function deleteContainers()
+{
+    local containers=$(cmon_container_list)
+    local container
+
+    print_title "Deleting Containers"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    mys9s tree --list --long
+}
+
+
+#
+# Running the requested tests.
+#
+startTests
+
+reset_config
+
+if [ "$OPTION_INSTALL" ]; then
+    if [ "$*" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
+elif [ "$1" ]; then
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
+else
+    runFunctionalTest testCreateUser
+    runFunctionalTest testMoveUser
+    runFunctionalTest testRegisterServer
+    runFunctionalTest testCreateContainer
+    runFunctionalTest testCreateCluster
+    runFunctionalTest dropCluster
+    runFunctionalTest deleteContainers
 fi
 
-if [ "$GROUP" != 'users' ]; then
-    mys9s tree --list /galera_002
-    failure "The group of '/galera_002' should be 'users'."
-    exit 1
-fi
-
-mys9s tree --tree
-mys9s tree --list 
 endTests
+
+
