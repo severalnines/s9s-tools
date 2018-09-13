@@ -212,11 +212,13 @@ function registerServer()
     done 
 
     echo "n_names_found: $n_names_found"
-
+    echo 
     #
     #
     #
     file="/.runtime/server_manager"
+    n_names_found=0
+
     #mys9s tree \
     #    --cat \
     #    --cmon-user=system \
@@ -233,7 +235,39 @@ function registerServer()
         
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
+        case "$name" in 
+            server_manager_instance)
+                let n_names_found+=1
+                ;;
+            
+            number_of_servers)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            number_of_processors)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            number_of_processor_threads)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            total_memory_gbyte)
+                [ "$value" -lt 2 ] && \
+                    failure "Value is less than 2."
+                let n_names_found+=1
+                ;;
+        esac 
     done 
+    
+    echo "n_names_found: $n_names_found"
+    echo 
 }
 
 function createCluster()
