@@ -294,6 +294,54 @@ function checkList()
     fi
 }
 
+function testClusterManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/cluster_manager"
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+    done 
+}
+
+function testHostManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/host_manager"
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+    done 
+}
+
 #
 # Running the requested tests.
 #
@@ -311,6 +359,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest checkTreeAccess
     runFunctionalTest checkList
+    runFunctionalTest testClusterManager
+    runFunctionalTest testHostManager
 fi
 
 endTests
