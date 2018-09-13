@@ -569,17 +569,41 @@ function testMoveObjects()
         mode=$(echo "$line" | awk '{print $1}')
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
-        case "$name" in 
+        case "$name" in
+            /home/pipas/pipas)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "admins" ] && failure "Group is '$group'."
+                [ "$mode"  != "urwxr--r--" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
             /home/pipas/$cluster_name)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
+
+            /home/pipas/$CONTAINER_SERVER)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
+
+            /home/pipas/$cluster_name/databases/domain_names_diff)
+                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                let n_object_found+=1
+                ;;
         esac
     done
     IFS=$old_ifs    
     
+    if [ "$n_object_found" -lt 4 ]; then
+        failure "Some objects were not found."
+    fi
 }
 
 #
