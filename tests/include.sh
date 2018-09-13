@@ -1125,6 +1125,7 @@ function check_container_server()
 
     print_title "Checking Server $container_server"
     mys9s server --list --long $container_server
+    mys9s server --stat        $container_server
 
     #
     # Checking the class is very important.
