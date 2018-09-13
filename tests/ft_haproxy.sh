@@ -125,6 +125,7 @@ fi
 #
 function registerServer()
 {
+    local container_server="$CONTAINER_SERVER"
     local old_ifs="$IFS"
     local n_names_found
     local class
@@ -137,137 +138,16 @@ function registerServer()
     #
     mys9s server \
         --register \
-        --servers="lxc://$CONTAINER_SERVER" 
+        --servers="lxc://$container_server" 
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
-    check_exit_code_no_job $?
+    #mys9s server --list --long
+    #check_exit_code_no_job $?
 
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonLxcServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    print_title "Checking Container Server"
-    file="/$CONTAINER_SERVER/.runtime/state"
-    n_names_found=0
-    #mys9s tree --cat $file
-    
-    IFS=$'\n'
-    for line in $(s9s tree --cat $file)
-    do
-        name=$(echo "$line" | awk '{print $1}')
-        value=$(echo "$line" | awk '{print substr($0, index($0,$3))}')
-        printf "$XTERM_COLOR_BLUE%32s$TERM_NORMAL is " "$name"
-        printf "'$XTERM_COLOR_ORANGE%s$TERM_NORMAL'\n" "$value"
-        
-        [ -z "$name" ]  && failure "Name is empty."
-        [ -z "$value" ] && failure "Value is empty for $name."
-        case "$name" in
-            container_server_instance)
-                let n_names_found+=1
-                ;;
-
-            container_server_class)
-                [ "$value" != "CmonLxcServer" ] && \
-                    failure "Value is '$value'."
-                let n_names_found+=1
-                ;;
-
-            server_name)
-                [ "$value" != "$CONTAINER_SERVER" ] && \
-                    failure "Value is '$value'."
-                let n_names_found+=1
-                ;;
-
-            number_of_processors)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
-                let n_names_found+=1
-                ;;
-
-            number_of_processor_threads)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
-                let n_names_found+=1
-                ;;
-            
-            total_memory_gbyte)
-                [ "$value" -lt 2 ] && \
-                    failure "Value is less than 2."
-                let n_names_found+=1
-                ;;
-        esac
-    done 
-
-    echo "n_names_found: $n_names_found"
-    echo 
-    #
-    #
-    #
-    file="/.runtime/server_manager"
-    n_names_found=0
-
-    #mys9s tree \
-    #    --cat \
-    #    --cmon-user=system \
-    #    --password=secret \
-    #    $file
-
-    IFS=$'\n'
-    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
-    do
-        name=$(echo "$line" | awk '{print $1}')
-        value=$(echo "$line" | awk '{print $3}')
-        printf "$XTERM_COLOR_BLUE%32s$TERM_NORMAL is " "$name"
-        printf "'$XTERM_COLOR_ORANGE%s$TERM_NORMAL'\n" "$value"
-        
-        [ -z "$name" ]  && failure "Name is empty."
-        [ -z "$value" ] && failure "Value is empty for $name."
-        case "$name" in 
-            server_manager_instance)
-                let n_names_found+=1
-                ;;
-            
-            number_of_servers)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
-                let n_names_found+=1
-                ;;
-
-            number_of_processors)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
-                let n_names_found+=1
-                ;;
-
-            number_of_processor_threads)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
-                let n_names_found+=1
-                ;;
-
-            total_memory_gbyte)
-                [ "$value" -lt 2 ] && \
-                    failure "Value is less than 2."
-                let n_names_found+=1
-                ;;
-        esac 
-    done 
-    
-    echo "n_names_found: $n_names_found"
-    echo 
+    check_container_server \
+        --server-name "$CONTAINER_SERVER" \
+        --class       "CmonLxcServer"
 }
 
 function createCluster()

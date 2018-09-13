@@ -1093,6 +1093,180 @@ function grant_user()
 }
 
 #
+# A flexible function to check the properties and the state of a container
+# server.
+#
+function check_container_server()
+{
+    local container_server
+    local expected_class_name
+    local old_ifs="$IFS"
+    local n_names_found
+    local class
+    local file
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --server-name)
+                container_server="$2"
+                shift 2
+                ;;
+
+            --class)
+                expected_class_name="$2"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    print_title "Checking Server $container_server"
+    mys9s server --list --long $container_server
+
+    #
+    # Checking the class is very important.
+    #
+    class=$(\
+        s9s server --stat "$container_server" \
+        | grep "Class:" | awk '{print $2}')
+
+    if [ -n "$expected_class_name" ]; then
+        if [ "$class" != "$expected_class_name" ]; then
+            failure "Server $container_server has '$class' class."
+            return 1
+        fi
+    elif [ -z "$class" ]; then
+        failure "Server $container_server has empty class name."
+        return 1
+    fi
+
+    #
+    # Checking the state runtime information.
+    #
+    echo ""
+    file="/$container_server/.runtime/state"
+    n_names_found=0
+    #mys9s tree --cat $file
+    
+    IFS=$'\n'
+    for line in $(s9s tree --cat $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print substr($0, index($0,$3))}')
+        printf "$XTERM_COLOR_BLUE%32s$TERM_NORMAL is " "$name"
+        printf "'$XTERM_COLOR_ORANGE%s$TERM_NORMAL'\n" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+        case "$name" in
+            container_server_instance)
+                let n_names_found+=1
+                ;;
+
+            container_server_class)
+                [ "$value" != "CmonLxcServer" ] && \
+                    failure "Value is '$value'."
+                let n_names_found+=1
+                ;;
+
+            server_name)
+                [ "$value" != "$container_server" ] && \
+                    failure "Value is '$value'."
+                let n_names_found+=1
+                ;;
+
+            number_of_processors)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            number_of_processor_threads)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+            
+            total_memory_gbyte)
+                [ "$value" -lt 2 ] && \
+                    failure "Value is less than 2."
+                let n_names_found+=1
+                ;;
+        esac
+    done 
+
+    #echo "n_names_found: $n_names_found"
+    #echo 
+    if [ "$n_names_found" -lt 6 ]; then
+        failure "Some lines could not be found."
+    fi
+
+    #
+    # Checking the server manager.
+    #
+    echo ""
+    file="/.runtime/server_manager"
+    n_names_found=0
+
+    #mys9s tree \
+    #    --cat \
+    #    --cmon-user=system \
+    #    --password=secret \
+    #    $file
+
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        printf "$XTERM_COLOR_BLUE%32s$TERM_NORMAL is " "$name"
+        printf "'$XTERM_COLOR_ORANGE%s$TERM_NORMAL'\n" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+        case "$name" in 
+            server_manager_instance)
+                let n_names_found+=1
+                ;;
+            
+            number_of_servers)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            number_of_processors)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            number_of_processor_threads)
+                [ "$value" -lt 1 ] && \
+                    failure "Value is less than 1."
+                let n_names_found+=1
+                ;;
+
+            total_memory_gbyte)
+                [ "$value" -lt 2 ] && \
+                    failure "Value is less than 2."
+                let n_names_found+=1
+                ;;
+        esac 
+    done 
+    
+    #echo "n_names_found: $n_names_found"
+    #echo 
+
+    if [ "$n_names_found" -lt 5 ]; then
+        failure "Some lines could not be found."
+    fi
+}
+
+#
 # This will destroy the containers we created. This method is automatically
 # called by this:
 #
