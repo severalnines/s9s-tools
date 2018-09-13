@@ -5059,9 +5059,12 @@ S9sRpcReply::printObjectListLong(
     fullPath += node.name();
 
     if (options->fullPathRequested())
+    {
         name = fullPath;
-    else
+        S9S_WARNING("Full path: %s", STR(name));
+    } else {
         name = node.name();
+    }
 
     /*
      * The type and then the acl string.
@@ -5129,7 +5132,7 @@ S9sRpcReply::printObjectListLong(
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
-                STR(node.name()), 
+                STR(name), 
                 folderColorEnd());
     } else if (type == "Cluster")
     {
