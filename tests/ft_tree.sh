@@ -6,6 +6,8 @@ VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
 
+CLUSTER_NAME="galera_001"
+
 cd $MYDIR
 source include.sh
 
@@ -325,7 +327,6 @@ function testCreateContainer()
 function testCreateCluster()
 {
     local old_ifs="$IFS"
-    local cluster_name="galera_001"
     local line
     local name
     local mode
@@ -341,7 +342,7 @@ function testCreateCluster()
         --cluster-type=galera \
         --nodes="$CONTAINER_IP" \
         --vendor=percona \
-        --cluster-name="$cluster_name" \
+        --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
         --wait
 
@@ -350,10 +351,10 @@ function testCreateCluster()
     #
     #
     #
-    mys9s tree --list --long "$cluster_name"
+    mys9s tree --list --long "$CLUSTER_NAME"
     
     IFS=$'\n'
-    for line in $(s9s tree --list --long --batch "$cluster_name"); do
+    for line in $(s9s tree --list --long --batch "$CLUSTER_NAME"); do
         echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
@@ -373,7 +374,6 @@ function testCreateCluster()
 function testCreateDatabase()
 {
     local old_ifs="$IFS"
-    local cluster_name="galera_001"
     local n_object_found=0
     local line
     local name
@@ -387,7 +387,7 @@ function testCreateDatabase()
     print_title "Creating Databases"
     mys9s cluster \
         --create-database \
-        --cluster-name="$cluster_name" \
+        --cluster-name="$CLUSTER_NAME" \
         --db-name="domain_names_ngtlds_diff" \
         --batch
 
@@ -395,7 +395,7 @@ function testCreateDatabase()
 
     mys9s cluster \
         --create-database \
-        --cluster-name="$cluster_name" \
+        --cluster-name="$CLUSTER_NAME" \
         --db-name="domain_names_diff" \
         --batch
     
@@ -403,7 +403,7 @@ function testCreateDatabase()
 
     mys9s cluster \
         --create-database \
-        --cluster-name="$cluster_name1" \
+        --cluster-name="$CLUSTER_NAME" \
         --db-name="whois_records_delta" \
         --batch
     
@@ -416,10 +416,10 @@ function testCreateDatabase()
     # FIXME: I am not sure why we need this.
     sleep 15
 
-    mys9s tree --list --long "$cluster_name/databases"
+    mys9s tree --list --long "$CLUSTER_NAME/databases"
     
     IFS=$'\n'
-    for line in $(s9s tree --list --long --batch "$cluster_name/databases")
+    for line in $(s9s tree --list --long --batch "$CLUSTER_NAME/databases")
     do
         echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
@@ -480,7 +480,6 @@ function testCreateAccount()
 function testMoveObjects()
 {
     local old_ifs="$IFS"
-    local cluster_name="galera_001"
     local n_object_found=0
     local line
     local name
@@ -519,14 +518,14 @@ function testMoveObjects()
         group=$(echo "$line" | awk '{print $4}')
 
         case "$name" in 
-            /$cluster_name)
+            /$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /$cluster_name/databases/domain_names_diff)
+            /$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
@@ -577,7 +576,7 @@ function testMoveObjects()
                 let n_object_found+=1
                 ;;
 
-            /home/pipas/$cluster_name)
+            /home/pipas/$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
@@ -591,7 +590,7 @@ function testMoveObjects()
                 let n_object_found+=1
                 ;;
 
-            /home/pipas/$cluster_name/databases/domain_names_diff)
+            /home/pipas/$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
@@ -715,9 +714,38 @@ function testManipulate()
 #
 function testTree()
 {
+    local name
+    local n_object_found=0
+
     print_title "Printing tree and ending test"
 
-    mys9s tree --list --color=always
+    mys9s tree --list 
+    mys9s tree --list --long
+
+    for name in $(s9s tree --list); do
+        case "$name" in
+            $CLUSTER_NAME)
+                let n_object_found+=1
+                ;;
+
+            $CONTAINER_SERVER)
+                let n_object_found+=1
+                ;;
+
+            tmp)
+                let n_object_found+=1
+                ;;
+
+            pipas)
+                let n_object_found+=1
+                ;;
+
+        esac
+    done
+    
+    if [ "$n_object_found" -lt 4 ]; then
+        failure "Some objects were not found."
+    fi
 }
 
 #
