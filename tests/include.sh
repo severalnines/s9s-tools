@@ -1198,6 +1198,7 @@ function check_container_server()
                 ;;
         esac
     done 
+    IFS=$old_ifs
 
     #echo "n_names_found: $n_names_found"
     #echo 
@@ -1258,6 +1259,7 @@ function check_container_server()
                 ;;
         esac 
     done 
+    IFS=$old_ifs
     
     #echo "n_names_found: $n_names_found"
     #echo 

@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -239,6 +239,8 @@ function createContainer()
     # Checking that sisko can log in.
     #
     print_title "Checking SSH Access for 'sisko'"
+    ls -lha "$config_dir/sisko.key"
+
     is_server_running_ssh \
         --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
 
