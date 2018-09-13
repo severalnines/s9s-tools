@@ -8,7 +8,6 @@ LOG_OPTION="--wait"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
-CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
@@ -204,7 +203,6 @@ function createContainer()
     #
     mys9s container \
         --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=lxc \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
