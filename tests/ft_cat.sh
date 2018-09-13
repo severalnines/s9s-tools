@@ -315,6 +315,9 @@ function testClusterManager()
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print $3}')
         #printf "%32s is %s\n" "$name" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
     done 
 }
 
@@ -339,7 +342,127 @@ function testHostManager()
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print $3}')
         #printf "%32s is %s\n" "$name" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
     done 
+}
+
+function testJobManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/job_manager"
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+    done 
+}
+
+function testProcessManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/process_manager"
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+    done 
+}
+
+function testServerManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/server_manager"
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+        
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+    done 
+}
+
+function testUserManager()
+{
+    local old_ifs="$IFS"
+    local file="/.runtime/user_manager"
+    local n_names_found=0
+
+    print_title "Checking $file"
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        $file
+
+    #
+    # Checking the format of the file and the data.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    do
+        name=$(echo "$line" | awk '{print $1}')
+        value=$(echo "$line" | awk '{print $3}')
+        #printf "%32s is %s\n" "$name" "$value"
+        case "$name" in 
+            user_manager_instance)
+                [ -z "$value" ] && failure "Value is empty for $name."
+                let n_names_found+=1
+                ;;
+        esac
+                
+        [ -z "$name" ]  && failure "Name is empty."
+        [ -z "$value" ] && failure "Value is empty for $name."
+    done 
+
+    echo "  n_names_found: $n_names_found"
 }
 
 #
@@ -361,6 +484,10 @@ else
     runFunctionalTest checkList
     runFunctionalTest testClusterManager
     runFunctionalTest testHostManager
+    runFunctionalTest testJobManager
+    runFunctionalTest testProcessManager
+    runFunctionalTest testServerManager
+    runFunctionalTest testUserManager
 fi
 
 endTests
