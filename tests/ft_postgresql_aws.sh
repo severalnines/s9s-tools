@@ -113,7 +113,7 @@ done
 #
 function createServer()
 {
-    local container_name="ft_postgresql_aws_00"
+    local container_name="ft_postgresql_aws_00_$$"
     local class
     local nodeName
 
@@ -164,7 +164,8 @@ function createCluster()
     fi
 
     mys9s node --list --long 
-    echo "Node IP: $(node_ip $node001)"
+    echo "  Public Ip: $(container_ip $node001)"
+    echo "    Private: $(container_ip --private $node001)"
 }
 
 #
@@ -174,8 +175,9 @@ function createCluster()
 #
 function testAddNode()
 {
+    local node001="ft_postgresql_aws_01_$$"
+    local node001_ip=$(container_ip $node001)
     local node002="ft_postgresql_aws_02_$$"
-
     print_title "Adding a New Node"
 
     #
@@ -185,7 +187,7 @@ function testAddNode()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$node002?slave" \
+        --nodes="$node001_ip?master;$node002?slave" \
         --containers="$node002" \
         --image="centos7" \
         --cloud=aws \
@@ -246,7 +248,7 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
+    runFunctionalTest testAddNode
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -254,7 +256,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
+    runFunctionalTest testAddNode
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
 fi

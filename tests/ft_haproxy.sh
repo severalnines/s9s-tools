@@ -142,9 +142,6 @@ function registerServer()
 
     check_exit_code_no_job $?
 
-    #mys9s server --list --long
-    #check_exit_code_no_job $?
-
     check_container_server \
         --server-name "$CONTAINER_SERVER" \
         --class       "CmonLxcServer"

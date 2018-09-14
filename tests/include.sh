@@ -523,6 +523,31 @@ function node_ip()
     s9s node --list --batch --long --node-format="%A" "$nodeName"
 }
 
+function container_ip()
+{
+    local is_private
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --private)
+                shift
+                is_private="true"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+
+    if [ -z "$is_private" ]; then
+        s9s container --list --batch --long --container-format="%A" "$1"
+    else
+        s9s container --list --batch --long --container-format="%a" "$1"
+    fi
+}
+
 #
 # This function will wait for a node to pick up a state and stay in that state
 # for a while.
