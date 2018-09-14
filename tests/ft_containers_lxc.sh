@@ -233,7 +233,7 @@ function checkServer()
     for line in $(s9s server --list-templates --long --batch); do
         cloud=$(echo "$line" | awk '{print $1}')
         region=$(echo "$line" | awk '{print $2}')
-        hostname=$(echo "$line" | awk '{print $3}')
+        hostname=$(echo "$line" | awk '{print $5}')
 
         if [ "$cloud" != "lxc" ]; then
             failure "The cloud is '$cloud' instead of 'lxc'"
