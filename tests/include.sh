@@ -516,6 +516,13 @@ function node_state()
     s9s node --list --batch --long --node-format="%S" "$nodeName"
 }
 
+function node_ip()
+{
+    local nodeName="$1"
+        
+    s9s node --list --batch --long --node-format="%A" "$nodeName"
+}
+
 #
 # This function will wait for a node to pick up a state and stay in that state
 # for a while.
