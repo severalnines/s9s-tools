@@ -411,6 +411,7 @@ function prepare_source()
 {
     if [ -z "$NO_GIT_PULL" ]; then
         pip-host-control --log "Pulling source."
+        git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
         pip-host-control --log "Pulled source."
     fi
