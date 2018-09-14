@@ -171,18 +171,16 @@ function createCluster()
 #
 # This test will add one new node to the cluster.
 #
-# FIXME: I am not sure what's wrong with this.
-#
 function testAddNode()
 {
     local node001="ft_postgresql_aws_01_$$"
     local node001_ip=$(container_ip $node001)
     local node002="ft_postgresql_aws_02_$$"
+
     print_title "Adding a New Node"
 
     #
     # Adding a node to the cluster.
-    #    --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
     #
     mys9s cluster \
         --add-node \

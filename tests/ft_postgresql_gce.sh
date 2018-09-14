@@ -170,24 +170,21 @@ function createCluster()
 #
 # This test will add one new node to the cluster.
 #
-# FIXME: I am not sure what's wrong with this.
-#
 function testAddNode()
 {
+    local node001="ft-postgresql-gce-01-$$"
+    local node001_ip=$(container_ip $node001)
     local node002="ft-postgresql-gce-02-$$"
 
     print_title "Adding a New Node"
 
-    LAST_ADDED_NODE=$(create_node --autodestroy)
-
     #
     # Adding a node to the cluster.
-    #    --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
     #
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$node002?slave" \
+        --nodes="$node001_ip?master;$node002?slave" \
         --containers="$node002" \
         --image="centos7" \
         --cloud=gce \
@@ -207,7 +204,7 @@ function deleteContainer()
     local container
 
     containers+="ft-postgresql-gce-01-$$ "
-    #containers+="ft-postgresql-gce-02-$$"
+    containers+="ft-postgresql-gce-02-$$"
 
     print_title "Deleting Containers"
 
@@ -251,7 +248,7 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
+    runFunctionalTest testAddNode
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -259,7 +256,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
+    runFunctionalTest testAddNode
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
 fi
