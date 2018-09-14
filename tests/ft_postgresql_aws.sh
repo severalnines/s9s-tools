@@ -136,7 +136,7 @@ function createServer()
 
 function createCluster()
 {
-    local node001="ft_postgresql_aws-01-$$"
+    local node001="ft_postgresql_aws_01_$$"
 
     #
     # Creating a Cluster.
@@ -202,7 +202,7 @@ function deleteContainer()
     local containers
     local container
 
-    containers+="ft_postgresql_aws_01-$$ "
+    containers+="ft_postgresql_aws_01_$$ "
 
     print_title "Deleting Containers"
 
