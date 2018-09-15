@@ -660,6 +660,7 @@ function createServer()
     mys9s server --unregister --servers="lxc://$CONTAINER_IP"
 
     check_exit_code_no_job $?
+    mys9s server --list --long 
 }
 
 #

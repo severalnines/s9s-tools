@@ -383,7 +383,7 @@ function check_container()
             --list-containers \
             --batch \
             --long  "$container_name" \
-        | awk '{print $7}')
+        | awk '{print $6}')
     
     if [ -z "$container_ip" ]; then
         failure "The container was not created or got no IP."
