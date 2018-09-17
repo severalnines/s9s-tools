@@ -125,13 +125,14 @@ fi
 #
 function createServer()
 {
+    local node001="ft_galera_aws_01_$$"
     local class
     local nodeName
 
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$node001")
 
     #
     # Creating a container.
@@ -143,33 +144,15 @@ function createServer()
 
     check_exit_code_no_job $?
 
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
-
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
     #
-    # Checking the class is very important.
+    # Checking the state and the class name... 
     #
-    class=$(\
-        s9s server --stat "$nodeName" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonCloudServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$nodeName/.runtime/state
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$nodeName" \
+        --cloud        "aws"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
-    mys9s server --list-images --long
-
 }
 
 function createCluster()
