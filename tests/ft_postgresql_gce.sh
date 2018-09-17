@@ -132,6 +132,14 @@ function createServer()
 
     check_exit_code_no_job $?
 
+    #
+    # Checking the state and the class name... 
+    #
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$nodeName" \
+        --cloud        "gce"
+
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
 
