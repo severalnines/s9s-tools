@@ -413,7 +413,7 @@ function createFail()
     #if [ "$exitCode" == "0" ]; then
     #    failure "Creating container with invalid firewall should have failed."
     #    exit 1
-    xfi
+    #fi
 }
 
 function createCluster()

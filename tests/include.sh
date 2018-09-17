@@ -1146,7 +1146,7 @@ function check_container_server()
 
             --class)
                 expected_class_name="$2"
-                shift
+                shift 2
                 ;;
 
             *)
@@ -1156,6 +1156,12 @@ function check_container_server()
     done
 
     print_title "Checking Server $container_server"
+
+    if [ -z "$container_server" ]; then
+        failure "check_container_server(): No server name."
+        return 1
+    fi
+
     mys9s server --list --long $container_server
     mys9s server --stat        $container_server
 
@@ -1200,7 +1206,7 @@ function check_container_server()
                 ;;
 
             container_server_class)
-                [ "$value" != "CmonLxcServer" ] && \
+                [ "$value" != "$expected_class_name" ] && \
                     failure "Value is '$value'."
                 let n_names_found+=1
                 ;;
@@ -1212,20 +1218,29 @@ function check_container_server()
                 ;;
 
             number_of_processors)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 1 ] && \
+                        failure "Value is less than 1."
+                fi
+
                 let n_names_found+=1
                 ;;
 
             number_of_processor_threads)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 1 ] && \
+                        failure "Value is less than 1."
+                fi
+
                 let n_names_found+=1
                 ;;
             
             total_memory_gbyte)
-                [ "$value" -lt 2 ] && \
-                    failure "Value is less than 2."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 2 ] && \
+                        failure "Value is less than 2."
+                fi
+
                 let n_names_found+=1
                 ;;
         esac
@@ -1273,20 +1288,29 @@ function check_container_server()
                 ;;
 
             number_of_processors)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 1 ] && \
+                        failure "Value is less than 1."
+                fi
+
                 let n_names_found+=1
                 ;;
 
             number_of_processor_threads)
-                [ "$value" -lt 1 ] && \
-                    failure "Value is less than 1."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 1 ] && \
+                        failure "Value is less than 1."
+                fi
+
                 let n_names_found+=1
                 ;;
 
             total_memory_gbyte)
-                [ "$value" -lt 2 ] && \
-                    failure "Value is less than 2."
+                if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    [ "$value" -lt 2 ] && \
+                        failure "Value is less than 2."
+                fi
+
                 let n_names_found+=1
                 ;;
         esac 
