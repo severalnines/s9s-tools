@@ -152,7 +152,8 @@ function createServer()
     #
     check_container_server \
         --class        CmonCloudServer \
-        --server-name  "$nodeName"
+        --server-name  "$nodeName" \
+        --cloud        "aws"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
@@ -176,7 +177,6 @@ function registerServer()
 
     check_exit_code_no_job $?
 
-
     #
     # Registering the server.
     #
@@ -193,7 +193,8 @@ function registerServer()
     #
     check_container_server \
         --class        CmonCloudServer \
-        --server-name  "$CMON_CLOUD_CONTAINER_SERVER"
+        --server-name  "$CMON_CLOUD_CONTAINER_SERVER" \
+        --cloud        "aws"
 }
 
 #

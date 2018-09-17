@@ -126,13 +126,13 @@ fi
 #
 function createServer()
 {
-    local class
+    local node001="ft_containers_gce_01_$$"
     local nodeName
 
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$node001")
 
     #
     # Creating a container.
@@ -144,35 +144,16 @@ function createServer()
 
     check_exit_code_no_job $?
 
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
-
     mys9s server --list --long
     check_exit_code_no_job $?
 
     #
-    # Checking the class is very important.
+    # Checking the state and the class name... 
     #
-    class=$(\
-        s9s server --stat "$nodeName" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonCloudServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$nodeName/.runtime/state
-
-    #
-    # Checking the regions.
-    #
-    mys9s server --list-regions --cloud=gce --long 
-
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$nodeName"     \
+        --cloud        "gce"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
@@ -211,32 +192,10 @@ function registerServer()
     #
     # Checking the state... 
     #
-    print_title "Checking the Re-registered Server "
-    mys9s server --list --long
-
-    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
-    check_exit_code_no_job $?
-
-    lines=$(s9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state)
-    if ! echo "$lines" | grep --quiet "server_name"; then
-        failure "Server state file is not ok"
-    fi
-
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CMON_CLOUD_CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonCloudServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonCloudServer'."
-        exit 1
-    fi
-
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$CMON_CLOUD_CONTAINER_SERVER"     \
+        --cloud        "gce"
 }
 
 #
@@ -533,7 +492,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest createServer
+    if [ "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest createServer
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"

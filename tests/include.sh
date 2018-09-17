@@ -1135,6 +1135,8 @@ function check_container_server()
     local old_ifs="$IFS"
     local n_names_found
     local class
+    local cloud
+    local cloud_option
     local file
 
     while [ -n "$1" ]; do
@@ -1146,6 +1148,12 @@ function check_container_server()
 
             --class)
                 expected_class_name="$2"
+                shift 2
+                ;;
+
+            --cloud)
+                cloud="$2"
+                cloud_option="--cloud=$cloud"
                 shift 2
                 ;;
 
@@ -1250,7 +1258,7 @@ function check_container_server()
     #echo "n_names_found: $n_names_found"
     #echo 
     if [ "$n_names_found" -lt 6 ]; then
-        failure "Some lines could not be found."
+        failure "Some lines could not be found in $file."
     fi
 
     #
@@ -1321,7 +1329,75 @@ function check_container_server()
     #echo 
 
     if [ "$n_names_found" -lt 5 ]; then
-        failure "Some lines could not be found."
+        failure "Some lines could not be found in $file."
+    fi
+
+    #
+    # Checking the regions.
+    #
+    mys9s server --list-regions $cloud_option
+
+    n_names_found=0
+    IFS=$'\n'
+    for line in $(s9s server --list-regions --batch $cloud_option)
+    do
+        echo "Checking line $line"
+        the_credentials=$(echo "$line" | awk '{print $1}')
+        the_cloud=$(echo "$line" | awk '{print $2}')
+        the_server=$(echo "$line" | awk '{print $3}')
+        the_region=$(echo "$line" | awk '{print $4}')
+
+        if [ "$the_server" != "$container_server" ]; then
+            continue
+        fi
+
+        if [ "$the_credentials" != 'Y' ]; then
+            continue
+        fi
+
+        let n_names_found+=1
+    done
+    IFS=$old_ifs
+    
+    if [ "$n_names_found" -lt 1 ]; then
+        failure "No regions with credentials found."
+    fi
+
+    #
+    # Checking the templates.
+    #
+    mys9s server --list-templates --long $cloud_option
+
+    n_names_found=0
+    IFS=$'\n'
+    for line in $(s9s server --list-templates --batch --long $cloud_option)
+    do
+        echo "Checking line $line"
+        the_cloud=$(echo "$line" | awk '{print $1}')
+        the_region=$(echo "$line" | awk '{print $2}')
+        the_server=$(echo "$line" | awk '{print $5}')
+        the_template=$(echo "$line" | awk '{print $6}')
+
+        if [ "$the_server" != "$container_server" ]; then
+            continue
+        fi
+
+        if [ -n "$cloud" ]; then
+            if [ "$the_cloud" != "$cloud" ]; then
+                failure "The cloud is $the_cloud is not $cloud."
+            fi
+        fi
+
+        if [ -z "$the_template" ]; then
+            failure "Template name is missing."
+        fi
+
+        let n_names_found+=1
+    done
+    IFS=$old_ifs
+
+    if [ "$n_names_found" -lt 1 ]; then
+        failure "No templates found."
     fi
 }
 
