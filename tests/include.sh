@@ -153,6 +153,14 @@ function startTests ()
     TEST_SUITE_NAME=$(basename $0 .sh)
 
     echo "Starting test $TEST_SUITE_NAME"
+    
+    echo -n "Checking if jq is installed..."
+    if [ -z "$(which jq)" ]; then
+        echo "[INSTALLING]"
+        sudo apt install jq
+    else
+        echo "[OK]"
+    fi
 
     echo -n "Checking if s9s is installed..."
     if [ -z "$S9S" ]; then
