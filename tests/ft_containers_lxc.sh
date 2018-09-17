@@ -144,26 +144,13 @@ function registerServer()
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
     #
-    # Checking the class is very important.
+    # Checking the state and the class name... 
     #
-    class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonLxcServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        s9s server --stat "$CONTAINER_SERVER"
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+    check_container_server \
+        --class        CmonLxcServer \
+        --server-name  "$CONTAINER_SERVER" \
+        --cloud        "lxc"
 }
 
 #
@@ -864,9 +851,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest registerServer
-    runFunctionalTest checkServer
-    runFunctionalTest createCluster
+    if [ "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest registerServer
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
