@@ -126,13 +126,13 @@ fi
 #
 function createServer()
 {
-    local class
+    local node001="ft_containers_az_01_$$"
     local nodeName
 
     print_title "Creating Container Server"
     
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$node001")
 
     #
     # Creating a container.
@@ -140,33 +140,17 @@ function createServer()
     mys9s server \
         --create \
         --servers="cmon-cloud://$nodeName" \
-        --log
+        $LOG_OPTION
 
     check_exit_code_no_job $?
 
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
-
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
     #
-    # Checking the class is very important.
+    # Checking the state and the class name... 
     #
-    class=$(\
-        s9s server --stat "$nodeName" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonCloudServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$nodeName/.runtime/state
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$nodeName" \
+        --cloud        "az"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
 }
@@ -186,7 +170,7 @@ function registerServer()
     mys9s server \
         --unregister \
         --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" \
-        --log
+        $LOG_OPTION
 
     check_exit_code_no_job $?
 
@@ -199,33 +183,17 @@ function registerServer()
     mys9s server \
         --register \
         --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" \
-        --log
+        $LOG_OPTION
 
     check_exit_code_no_job $?
 
     #
-    # Checking the state... TBD
+    # Checking the state and the class name... 
     #
-    mys9s server --list --long
-
-    # FIXME: this will fail, the host id is changed.
-    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
-
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CMON_CLOUD_CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonCloudServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonCloudServer'."
-        exit 1
-    fi
-
-    while s9s server --list --long | grep refused; do
-        sleep 10
-    done
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "$CMON_CLOUD_CONTAINER_SERVER" \
+        --cloud        "az"
 }
 
 #
@@ -519,7 +487,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest createServer
+    if [ "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest createServer
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"

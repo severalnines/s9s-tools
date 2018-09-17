@@ -144,9 +144,6 @@ function createServer()
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
     #
     # Checking the state and the class name... 
     #
