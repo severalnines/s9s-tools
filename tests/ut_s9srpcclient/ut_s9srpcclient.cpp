@@ -22,7 +22,7 @@
 #include "S9sNode"
 #include "S9sOptions"
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -102,6 +102,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateFailJob,       retval);
     PERFORM_TEST(testCreateSuccessJob,    retval);
     PERFORM_TEST(testRollingRestart,      retval);
+    PERFORM_TEST(testRegisterServers,     retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -362,6 +363,36 @@ UtS9sRpcClient::testRollingRestart()
 
     return true;
 }
+
+bool
+UtS9sRpcClient::testRegisterServers()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->setServers("lxc://10.10.2.3;cmon-cloud://10.10.2.4");
+
+    S9S_VERIFY(client.registerServers());
+    S9S_COMPARE(client.uri(0u), "/v2/host/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"], "registerServers");
+    S9S_COMPARE(payload["servers"][0]["class_name"], "CmonLxcServer");
+    S9S_COMPARE(payload["servers"][0]["hostname"],   "10.10.2.3");
+    S9S_COMPARE(payload["servers"][0]["protocol"],   "lxc");
+    
+    S9S_COMPARE(payload["servers"][1]["class_name"], "CmonCloudServer");
+    S9S_COMPARE(payload["servers"][1]["hostname"],   "10.10.2.4");
+    S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+
 
 /**
  * Testing the setHost() call.

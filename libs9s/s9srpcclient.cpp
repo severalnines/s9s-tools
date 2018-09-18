@@ -2032,7 +2032,7 @@ S9sRpcClient::deployAgents(
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
-    // When no node specified, backend will deploys to the controller
+    // When no node specified, backend will deploy to the controller.
     if (!hosts.empty())
         jobData["node"] = hosts[0].toVariantMap();
     
@@ -2724,7 +2724,6 @@ bool
 S9sRpcClient::registerGroupReplication(
         const S9sVariantList &hosts,
         const S9sString      &osUserName)
-
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -3010,7 +3009,6 @@ bool
 S9sRpcClient::registerPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName)
-
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
