@@ -116,7 +116,7 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, 0, success);
         } else if (options->isRollingRestartRequested())
         {
-            success = client.rollingRestart(clusterId);
+            success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetupAuditLoggingRequested())
         {

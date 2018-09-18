@@ -22,7 +22,7 @@
 #include "S9sNode"
 #include "S9sOptions"
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -93,13 +93,15 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetCluster,          retval);
     PERFORM_TEST(testPing,                retval);
     PERFORM_TEST(testGetMateTypes,        retval);
-    PERFORM_TEST(testGetMetaTypeProperties, retval);
+    PERFORM_TEST(testGetMetaTypeProps,    retval);
     PERFORM_TEST(testGetJobInstance,      retval);
     PERFORM_TEST(testDeleteJobInstance,   retval);
     PERFORM_TEST(testGetJobLog,           retval);
     PERFORM_TEST(testGetAlarm,            retval);
     PERFORM_TEST(testGetAlarmStatistics,  retval);
     PERFORM_TEST(testCreateFailJob,       retval);
+    PERFORM_TEST(testCreateSuccessJob,    retval);
+    PERFORM_TEST(testRollingRestart,      retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -177,7 +179,7 @@ UtS9sRpcClient::testGetMateTypes()
 }
 
 bool
-UtS9sRpcClient::testGetMetaTypeProperties()
+UtS9sRpcClient::testGetMetaTypeProps()
 {
     S9sRpcClientTester client;
     S9sVariantMap      payload;
@@ -303,6 +305,58 @@ UtS9sRpcClient::testCreateFailJob()
     S9S_COMPARE(payload["job"]["title"], "Simulated Failure");
     S9S_COMPARE(payload["job"]["job_spec"]["command"],  "fail");
     S9S_COMPARE(payload["job"]["job_spec"]["job_data"]["timeout"],  100);
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateSuccessJob()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["timeout"] = 100;
+    options->m_options["cluster_id"]     = 42;
+
+    S9S_VERIFY(client.createSuccessJob());
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 42);
+    S9S_COMPARE(payload["job"]["class_name"], "CmonJobInstance");
+    S9S_COMPARE(payload["job"]["title"], "Simulated Success");
+    S9S_COMPARE(payload["job"]["job_spec"]["command"],  "success");
+    S9S_COMPARE(payload["job"]["job_spec"]["job_data"]["timeout"],  100);
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testRollingRestart()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"]     = 42;
+
+    S9S_VERIFY(client.rollingRestart());
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 42);
+    S9S_COMPARE(payload["job"]["class_name"], "CmonJobInstance");
+    S9S_COMPARE(payload["job"]["title"], "Rolling Restart");
+    S9S_COMPARE(payload["job"]["job_spec"]["command"],  "rolling_restart");
 
     S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
 
