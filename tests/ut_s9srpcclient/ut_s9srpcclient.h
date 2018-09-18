@@ -30,6 +30,8 @@ class UtS9sRpcClient : public S9sUnitTest
     
     protected:
         bool testGetAllClusterInfo();
+        bool testGetCluster();
+        bool testPing();
         bool testSetHost();
         bool testCreateGalera();
         bool testCreateReplication();
@@ -42,6 +44,7 @@ class S9sRpcClientTester : public S9sRpcClient
     public:
         S9sString uri(const uint index) const;
         S9sString payload(const uint index) const;
+        S9sVariantMap &lastPayload();
 
     protected:
        virtual bool 
@@ -52,5 +55,6 @@ class S9sRpcClientTester : public S9sRpcClient
     private:
         S9sVariantList    m_urls;
         S9sVariantList    m_payloads;
+        S9sVariantMap     m_lastPayload;
 };
 

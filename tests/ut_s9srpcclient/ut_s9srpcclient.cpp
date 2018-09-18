@@ -40,6 +40,7 @@ S9sRpcClientTester::executeRequest(
 
     m_urls     << uri;
     m_payloads << payload.toString();
+    m_lastPayload = payload;
 
     return true;
 }
@@ -64,6 +65,13 @@ S9sRpcClientTester::payload(
     return m_payloads[index].toString();
 }
 
+
+S9sVariantMap &
+S9sRpcClientTester::lastPayload() 
+{
+    return m_lastPayload;
+}
+
 /******************************************************************************
  *
  */
@@ -82,6 +90,8 @@ UtS9sRpcClient::runTest(
     bool retval = true;
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
+    PERFORM_TEST(testGetCluster,          retval);
+    PERFORM_TEST(testPing,                retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -98,11 +108,49 @@ bool
 UtS9sRpcClient::testGetAllClusterInfo()
 {
     S9sRpcClientTester client;
+    S9sVariantMap      payload;
 
     S9S_VERIFY(client.getClusters());
     S9S_COMPARE(client.uri(0u), "/v2/clusters/");
-    S9S_VERIFY(client.payload(0u).contains(
-                "\"operation\": \"getAllClusterInfo\""));
+    
+    payload = client.lastPayload();
+    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
+    S9S_COMPARE(payload["operation"], "getAllClusterInfo");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetCluster()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getCluster("", 42));
+    S9S_COMPARE(client.uri(0u), "/v2/clusters/");
+    
+    payload = client.lastPayload();
+    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
+    S9S_COMPARE(payload["operation"],  "getClusterInfo");
+    S9S_COMPARE(payload["cluster_id"], 42);
+    S9S_COMPARE(payload["with_hosts"], true);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testPing()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.ping());
+    S9S_COMPARE(client.uri(0u), "/v2/clusters/");
+    
+    payload = client.lastPayload();
+    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
+    S9S_COMPARE(payload["operation"],  "ping");
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
 
     return true;
 }
