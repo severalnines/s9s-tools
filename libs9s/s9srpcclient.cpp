@@ -1091,6 +1091,9 @@ S9sRpcClient::getMemStats(
     return getStats(clusterId, "memorystat");
 }
 
+/**
+ * Gets the list of metatypes.
+ */
 bool
 S9sRpcClient::getMetaTypes()
 {
@@ -1105,6 +1108,9 @@ S9sRpcClient::getMetaTypes()
     return retval;    
 }
 
+/**
+ * Gets information about all metatypes.
+ */
 bool
 S9sRpcClient::getMetaTypeProperties(
         const S9sString &typeName)

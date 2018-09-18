@@ -33,6 +33,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testGetCluster();
         bool testPing();
         bool testGetMateTypes();
+        bool testGetMetaTypeProperties();
         bool testSetHost();
         bool testCreateGalera();
         bool testCreateReplication();
