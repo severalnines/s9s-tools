@@ -92,6 +92,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetAllClusterInfo,   retval);
     PERFORM_TEST(testGetCluster,          retval);
     PERFORM_TEST(testPing,                retval);
+    PERFORM_TEST(testGetMateTypes,        retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -154,6 +155,24 @@ UtS9sRpcClient::testPing()
 
     return true;
 }
+
+bool
+UtS9sRpcClient::testGetMateTypes()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getMetaTypes());
+    S9S_COMPARE(client.uri(0u), "/v2/clusters/");
+    
+    payload = client.lastPayload();
+    S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
+    S9S_COMPARE(payload["operation"],  "ping");
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
 
 /**
  * Testing the setHost() call.
