@@ -22,7 +22,7 @@
 #include "S9sNode"
 #include "S9sOptions"
 
-//#define DEBUG
+#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -30,7 +30,7 @@
  *
  */
 bool 
-S9sRpcClientTester::executeRequest(
+S9sRpcClientTester::doExecuteRequest(
         const S9sString &uri,
         S9sVariantMap &payload)
 {
@@ -115,7 +115,6 @@ UtS9sRpcClient::testGetAllClusterInfo()
     S9S_COMPARE(client.uri(0u), "/v2/clusters/");
     
     payload = client.lastPayload();
-    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
     S9S_COMPARE(payload["operation"], "getAllClusterInfo");
 
     return true;
@@ -131,7 +130,6 @@ UtS9sRpcClient::testGetCluster()
     S9S_COMPARE(client.uri(0u), "/v2/clusters/");
     
     payload = client.lastPayload();
-    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
     S9S_COMPARE(payload["operation"],  "getClusterInfo");
     S9S_COMPARE(payload["cluster_id"], 42);
     S9S_COMPARE(payload["with_hosts"], true);
@@ -149,7 +147,6 @@ UtS9sRpcClient::testPing()
     S9S_COMPARE(client.uri(0u), "/v2/clusters/");
     
     payload = client.lastPayload();
-    //S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
     S9S_COMPARE(payload["operation"],  "ping");
     S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
 
@@ -166,8 +163,7 @@ UtS9sRpcClient::testGetMateTypes()
     S9S_COMPARE(client.uri(0u), "/v2/metatype/");
     
     payload = client.lastPayload();
-    S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
-    S9S_COMPARE(payload["operation"],  "ping");
+    S9S_COMPARE(payload["operation"],  "getMetaTypes");
     S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
 
     return true;

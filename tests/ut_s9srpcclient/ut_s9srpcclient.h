@@ -49,7 +49,7 @@ class S9sRpcClientTester : public S9sRpcClient
 
     protected:
        virtual bool 
-            executeRequest(
+            doExecuteRequest(
                 const S9sString &uri,
                 S9sVariantMap &payload);
 

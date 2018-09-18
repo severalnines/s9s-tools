@@ -1095,7 +1095,7 @@ bool
 S9sRpcClient::getMetaTypes()
 {
     S9sString      uri = "/v2/metatype/";
-    S9sVariantMap  request;
+    S9sVariantMap  request = composeRequest() ;
     bool           retval;
 
     request["operation"] = "getMetaTypes";
@@ -1109,8 +1109,8 @@ bool
 S9sRpcClient::getMetaTypeProperties(
         const S9sString &typeName)
 {
-    S9sString      uri = "/v2/metatype/";
-    S9sVariantMap  request;
+    S9sString      uri     = "/v2/metatype/";
+    S9sVariantMap  request = composeRequest() ;
     bool           retval;
 
     request["operation"] = "getMetaTypeInfo";
@@ -6519,7 +6519,7 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
 
-    return doExecuteRequest(uri, request.toString());
+    return doExecuteRequest(uri, request);
 }
 
 /**
@@ -6533,9 +6533,10 @@ S9sRpcClient::executeRequest(
  */
 bool
 S9sRpcClient::doExecuteRequest(
-        const S9sString &uri,
-        const S9sString &payload)
+        const S9sString     &uri,
+        S9sVariantMap &request)
 {
+    S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
     S9sDateTime  replyReceived;
     S9sString    header;

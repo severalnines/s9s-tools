@@ -312,8 +312,8 @@ class S9sRpcClient
 
         virtual bool 
             doExecuteRequest(
-                const S9sString &uri,
-                const S9sString &payload);
+                const S9sString     &uri,
+                S9sVariantMap &request);
 
         void setError(
                 const S9sString &errorString,
