@@ -22,7 +22,7 @@
 #include "S9sNode"
 #include "S9sOptions"
 
-#define DEBUG
+//#define DEBUG
 #define WARNING
 #include "s9sdebug.h"
 
@@ -103,6 +103,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateSuccessJob,    retval);
     PERFORM_TEST(testRollingRestart,      retval);
     PERFORM_TEST(testRegisterServers,     retval);
+    PERFORM_TEST(testCreateServer,        retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -393,6 +394,40 @@ UtS9sRpcClient::testRegisterServers()
 }
 
 
+bool
+UtS9sRpcClient::testCreateServer()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    options->m_options.clear();
+    options->setServers("lxc://10.10.2.3");
+
+    S9S_VERIFY(client.createServer());
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    
+    S9S_COMPARE(payload["job"]["class_name"], "CmonJobInstance");
+    S9S_COMPARE(payload["job"]["title"], "Create Container Server");
+    S9S_COMPARE(payload["job"]["job_spec"]["command"], "create_container_server");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["disable_firewall"], true);
+    S9S_COMPARE(jobData["disable_selinux"], true);
+    S9S_COMPARE(jobData["install_software"], true);
+
+    S9S_COMPARE(jobData["server"]["class_name"], "CmonLxcServer");
+    S9S_COMPARE(jobData["server"]["hostname"],   "10.10.2.3");
+    S9S_COMPARE(jobData["server"]["protocol"],   "lxc");
+    
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
 
 /**
  * Testing the setHost() call.
