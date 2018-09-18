@@ -43,6 +43,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testDeleteJobInstance();
         bool testRollingRestart();
         bool testRegisterServers();
+        bool testUnregisterServers();
         bool testCreateServer();
         bool testSetHost();
         bool testCreateGalera();
