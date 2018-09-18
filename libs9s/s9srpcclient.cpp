@@ -1246,10 +1246,7 @@ S9sRpcClient::getJobInstances(
     return retval;
 }
 
-
-
 /**
- * \param clusterId the ID of the cluster
  * \param jobId the ID of the job
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
@@ -1274,6 +1271,13 @@ S9sRpcClient::getJobInstance(
     return retval;
 }
 
+/**
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Deletes a job from the controller.
+ */
 bool
 S9sRpcClient::deleteJobInstance(
         const int jobId)
@@ -1451,7 +1455,6 @@ S9sRpcClient::getLog()
     if (!options->until().empty())
         request["created_before"] = options->until();
 
-        
     if (limit > 0)
         request["limit"]  = limit;
 

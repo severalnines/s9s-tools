@@ -94,6 +94,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testPing,                retval);
     PERFORM_TEST(testGetMateTypes,        retval);
     PERFORM_TEST(testGetMetaTypeProperties, retval);
+    PERFORM_TEST(testGetJobInstance,      retval);
+    PERFORM_TEST(testDeleteJobInstance,   retval);
+    PERFORM_TEST(testGetJobLog,           retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -182,6 +185,61 @@ UtS9sRpcClient::testGetMetaTypeProperties()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getMetaTypeInfo");
     S9S_COMPARE(payload["type-name"],  "typename");
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetJobInstance()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getJobInstance(42));
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"],  "getJobInstance");
+    S9S_COMPARE(payload["job_id"],     42);
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDeleteJobInstance()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.deleteJobInstance(42));
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"],  "deleteJobInstance");
+    S9S_COMPARE(payload["job_id"],     42);
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetJobLog()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getJobLog(42, 10, 25));
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"],  "getJobLog");
+    S9S_COMPARE(payload["job_id"],     42);
+    S9S_COMPARE(payload["ascending"],  true);
+    S9S_COMPARE(payload["limit"],      10);
+    S9S_COMPARE(payload["offset"],     25);
+
     S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
 
     return true;

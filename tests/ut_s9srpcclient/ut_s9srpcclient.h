@@ -34,6 +34,9 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testPing();
         bool testGetMateTypes();
         bool testGetMetaTypeProperties();
+        bool testGetJobInstance();
+        bool testGetJobLog();
+        bool testDeleteJobInstance();
         bool testSetHost();
         bool testCreateGalera();
         bool testCreateReplication();
