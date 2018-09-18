@@ -1780,15 +1780,17 @@ S9sRpcClient::createLocalRepository(
     return executeRequest(uri, request);
 }
 
+/**
+ *
+ */
 bool
 S9sRpcClient::createFailJob()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request;
-    S9sVariantMap  job     = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
-    S9sString      uri = "/v2/jobs/";
+    S9sString      uri       = "/v2/jobs/";
     
     // The jobspec describing the command.
     jobSpec["command"]    = "fail";
@@ -1801,14 +1803,6 @@ S9sRpcClient::createFailJob()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"]   = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    }
 
     return executeRequest(uri, request);
 }

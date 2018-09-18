@@ -97,6 +97,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetJobInstance,      retval);
     PERFORM_TEST(testDeleteJobInstance,   retval);
     PERFORM_TEST(testGetJobLog,           retval);
+    PERFORM_TEST(testGetAlarm,            retval);
+    PERFORM_TEST(testGetAlarmStatistics,  retval);
+    PERFORM_TEST(testCreateFailJob,       retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
@@ -245,6 +248,66 @@ UtS9sRpcClient::testGetJobLog()
     return true;
 }
 
+bool
+UtS9sRpcClient::testGetAlarm()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getAlarm());
+    S9S_COMPARE(client.uri(0u), "/v2/alarm/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"],  "getAlarm");
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetAlarmStatistics()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    S9S_VERIFY(client.getAlarmStatistics());
+    S9S_COMPARE(client.uri(0u), "/v2/alarm/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"],  "getStatistics");
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateFailJob()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["timeout"] = 100;
+    options->m_options["cluster_id"]     = 42;
+
+    S9S_VERIFY(client.createFailJob());
+    S9S_COMPARE(client.uri(0u), "/v2/jobs/");
+    
+    payload = client.lastPayload();
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 42);
+    S9S_COMPARE(payload["job"]["class_name"], "CmonJobInstance");
+    S9S_COMPARE(payload["job"]["title"], "Simulated Failure");
+    S9S_COMPARE(payload["job"]["job_spec"]["command"],  "fail");
+    S9S_COMPARE(payload["job"]["job_spec"]["job_data"]["timeout"],  100);
+
+    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+
+    return true;
+}
 
 /**
  * Testing the setHost() call.
