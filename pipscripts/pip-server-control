@@ -473,6 +473,7 @@ function print_host_list_long()
         CONF_HOST_STANDARD=""
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
+        CONF_HOST_VIRTUAL=""
 
         HOSTNAME=""
         NUMBER_OF_CORES=""
@@ -488,6 +489,9 @@ function print_host_list_long()
             source "$info_file"
         fi
     
+        if [ -n "$CONF_HOST_VIRTUAL" ]; then
+            continue
+        fi
 
         category="$CONF_HOST_CATEGORY"
         if [ -z "$category" ]; then
