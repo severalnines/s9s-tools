@@ -163,7 +163,7 @@ UtS9sRpcClient::testGetMateTypes()
     S9sVariantMap      payload;
 
     S9S_VERIFY(client.getMetaTypes());
-    S9S_COMPARE(client.uri(0u), "/v2/clusters/");
+    S9S_COMPARE(client.uri(0u), "/v2/metatype/");
     
     payload = client.lastPayload();
     S9S_WARNING("payload: \n%s\n", STR(payload.toString()));
