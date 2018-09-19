@@ -7879,12 +7879,13 @@ S9sRpcReply::printBackupListDatabasesLong()
     S9sFormat       sizeFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       idFormat;
+    S9sFormat       parentIdFormat;
     S9sFormat       cidFormat;
+    S9sFormat       verifyFormat;
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
-    //const char     *colorBegin = "";
-    //const char     *colorEnd   = "";
+    S9sFormat       incrementalFormat;
    
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
@@ -7902,8 +7903,10 @@ S9sRpcReply::printBackupListDatabasesLong()
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId(); 
+        S9sString      verifyFlag = backup.verificationFlag();
         S9sString      owner     = backup.configOwner();
         int            id        = backup.id(); 
+        int            parentId   = backup.parentId();
         S9sString      status    = backup.status(); 
         ulonglong      fullSize  = 0ull;
         S9sString      sizeString;
@@ -7916,6 +7919,8 @@ S9sRpcReply::printBackupListDatabasesLong()
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
         ownerFormat.widen(owner);
+        verifyFormat.widen(verifyFlag);
+        incrementalFormat.widen("-");
         
         if (backups.size() == 0u)
         {
@@ -7931,6 +7936,7 @@ S9sRpcReply::printBackupListDatabasesLong()
         for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
             idFormat.widen(id);
+            parentIdFormat.widen(parentId);
 
             for (int fileIdx = 0; 
                     fileIdx < backup.nFiles(backupIdx); ++fileIdx)
@@ -7954,7 +7960,10 @@ S9sRpcReply::printBackupListDatabasesLong()
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
+        parentIdFormat.widen("PI");
         cidFormat.widen("CID");
+        verifyFormat.widen("V");
+        incrementalFormat.widen("I");
         stateFormat.widen("STATE");
         ownerFormat.widen("OWNER");
         hostNameFormat.widen("HOSTNAME");
@@ -7963,7 +7972,10 @@ S9sRpcReply::printBackupListDatabasesLong()
 
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        parentIdFormat.printf("PI");
         cidFormat.printf("CID");
+        verifyFormat.printf("V");
+        incrementalFormat.printf("I");
         stateFormat.printf("STATE");
         ownerFormat.printf("OWNER");
         hostNameFormat.printf("HOSTNAME");
@@ -7976,6 +7988,7 @@ S9sRpcReply::printBackupListDatabasesLong()
     }
     
     sizeFormat.setRightJustify();
+    parentIdFormat.setRightJustify();
 
     /*
      * Second run, we print things here.
@@ -7987,13 +8000,17 @@ S9sRpcReply::printBackupListDatabasesLong()
         S9sVariantList backups   = theMap["backup"].toVariantList();
         S9sString      hostName  = backup.backupHost();
         int            clusterId = backup.clusterId();
+        S9sString      verifyFlag = backup.verificationFlag();
         S9sString      owner     = backup.configOwner();
         int            id        = backup.id();
+        int            parentId   = backup.parentId();
         S9sString      status    = backup.status();
         S9sString      root      = backup.rootDir();
         ulonglong      fullSize  = 0ull;
         S9sString      sizeString;
         S9sString      created;
+        bool           hasInc     = false;
+        bool           hasNotInc  = false;
 
         /*
          * Filtering.
@@ -8011,8 +8028,17 @@ S9sRpcReply::printBackupListDatabasesLong()
             S9sString     createdString = "-";
                 
             idFormat.printf(id);
-            cidFormat.printf(clusterId);
+            if (parentId > 0)
+                parentIdFormat.printf(parentId);
+            else
+                parentIdFormat.printf("-");
             
+            cidFormat.printf(clusterId);
+            verifyFormat.printf(verifyFlag);
+            
+            // incremental
+            printf("- ");
+
             printf("%s", backup.statusColorBegin(syntaxHighlight));
             stateFormat.printf(status);
             printf("%s", backup.statusColorEnd(syntaxHighlight));
@@ -8040,16 +8066,40 @@ S9sRpcReply::printBackupListDatabasesLong()
             for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
                 ulonglong   size = backup.fileSize(backupIdx, fileIdx).toUll();
+                bool      incremental = 
+                    backup.incremental(backupIdx, fileIdx).toBoolean();
 
                 fullSize += size;
+                
+                if (incremental)
+                {
+                    hasInc = true;
+                } else {
+                    hasNotInc = true;
+                }
             }
 
             created = backup.beginAsString();
             sizeString = S9sFormat::toSizeString(fullSize);
 
             idFormat.printf(id);
+            if (parentId > 0)
+                parentIdFormat.printf(parentId);
+            else
+                parentIdFormat.printf("-");
+
             cidFormat.printf(clusterId);
+            verifyFormat.printf(verifyFlag);
             
+            if (hasInc && hasNotInc)
+                printf("B ");
+            else if (hasInc)
+                printf("I ");
+            else if (hasNotInc)
+                printf("F ");
+            else 
+                printf("- ");
+
             databaseNames = backup.databaseNamesAsString(backupIdx);
             if (databaseNames.empty())
                 databaseNames = "-";
