@@ -366,6 +366,7 @@ class S9sOptions
         bool isUnregisterRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;
+        bool isCloneRequested() const;
         bool isFailRequested() const;
         bool isSuccessRequested() const;
         bool isEnableRequested() const;

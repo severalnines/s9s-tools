@@ -145,6 +145,7 @@ class S9sRpcClient
                 const int         clusterId);
 
         bool deleteJobInstance(const int jobId);
+        bool cloneJobInstance(const int jobId);
         
         /*
          * Backup related methods.

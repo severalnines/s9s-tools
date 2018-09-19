@@ -78,6 +78,7 @@ enum S9sOptionType
     OptionVendor,
     OptionCreate,
     OptionDelete,
+    OptionClone,
     OptionEnable,
     OptionDisable,
     OptionSetGroup,
@@ -3212,6 +3213,16 @@ S9sOptions::isDeleteRequested() const
 }
 
 /**
+ * \returns True if the --clone command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isCloneRequested() const
+{
+    return getBool("clone");
+}
+
+/**
  * \returns True if the --fail command line option was provided.
  */
 bool
@@ -4248,6 +4259,7 @@ S9sOptions::printHelpJob()
 
     printf(
 "Options for the \"job\" command:\n"
+"  --clone                    Clone and re-run a job.\n"
 "  --delete                   Delete the job referenced by the job ID.\n"
 "  --fail                     Create a job that does nothing and fails.\n"
 "  --list                     List the jobs.\n"
@@ -6278,6 +6290,15 @@ S9sOptions::checkOptionsJob()
     } else if (isSuccessRequested())
     {
         countOptions++;
+    } else if (isCloneRequested())
+    {
+        if (!hasJobId())
+        {
+            PRINT_ERROR("The --clone option requires the --job-id=ID option.");
+            return false;
+        }
+
+        countOptions++;
     } else { 
         if (isLogRequested())
             countOptions++;
@@ -6286,7 +6307,6 @@ S9sOptions::checkOptionsJob()
             countOptions++;
     }
 
-    
     if (isDeleteRequested())
     {
         if (!hasJobId())
@@ -8950,13 +8970,14 @@ S9sOptions::readOptionsJob(
         { "date-format",      required_argument, 0,  OptionDateFormat     },
 
         // Main Option
-        { "wait",             no_argument,       0,  5                    },
-        { "log",              no_argument,       0, 'G'                   },
         { "batch",            no_argument,       0, OptionBatch           },
-        { "list",             no_argument,       0, 'L'                   },
+        { "clone",            no_argument,       0,  OptionClone          },
         { "delete",           no_argument,       0,  OptionDelete         },
         { "fail",             no_argument,       0,  OptionFail           },
+        { "list",             no_argument,       0, 'L'                   },
+        { "log",              no_argument,       0, 'G'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
+        { "wait",             no_argument,       0,  5                    },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -9058,6 +9079,11 @@ S9sOptions::readOptionsJob(
             case OptionDelete: 
                 // --delete
                 m_options["delete"] = true;
+                break;
+            
+            case OptionClone: 
+                // --clone
+                m_options["clone"] = true;
                 break;
 
             case OptionFail:

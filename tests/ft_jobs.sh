@@ -28,6 +28,9 @@ Usage:
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
+SUPPORTED TESTS:
+  o testSimpleJobs       Executes "fail" and "success" jobs.
+
 EOF
     exit 1
 }

@@ -1296,6 +1296,30 @@ S9sRpcClient::deleteJobInstance(
 
 /**
  * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * This request will clone the job instance, make a new job instance that is
+ * exactly the same as the instance that has the given job ID.
+ */
+bool
+S9sRpcClient::cloneJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request = composeRequest();
+    bool           retval;
+
+    request["operation"] = "cloneJobInstance";
+    request["job_id"]    = jobId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param jobId the ID of the job
  * \param limit the maximum number of log entries we are ready to process
  * \param offset the number of log entries to skip
  * \returns true if the operation was successful, a reply is received from the
@@ -4862,10 +4886,10 @@ S9sRpcClient::getContainers()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList servers   = options->servers();
    
-    request["operation"]      = "getContainers";
+    request["operation"]     = "getContainers";
 
     if (!servers.empty())
-        request["servers"]    = serversField(servers);
+        request["servers"]   = serversField(servers);
     
     return executeRequest(uri, request);
 }

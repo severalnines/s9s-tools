@@ -604,6 +604,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createSuccessJob();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isCloneRequested())
+        {
+            success = client.cloneJobInstance(options->jobId());
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isLogRequested())
         {
             executeJobLog(client);
