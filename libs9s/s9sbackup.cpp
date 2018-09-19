@@ -168,6 +168,15 @@ S9sBackup::id() const
     return 0;
 }
 
+int
+S9sBackup::parentId() const
+{
+    if (m_properties.contains("chain_up"))
+        return m_properties.at("chain_up").toInt();
+
+    return 0;
+}
+
 /**
  * \returns The ID of the cluster.
  */
@@ -234,7 +243,7 @@ S9sBackup::statusColorEnd(
 }
 
 /**
- * Possible values are "Unverified"...
+ * Possible values are "Verified", "NotVerified". 
  */
 S9sString
 S9sBackup::verificationStatus() const
@@ -245,6 +254,15 @@ S9sBackup::verificationStatus() const
         verificationMap = m_properties.at("verified").toVariantMap();
 
     return verificationMap["status"].toString();
+}
+
+S9sString
+S9sBackup::verificationFlag() const
+{
+    if (verificationStatus() == "Verified")
+        return "V";
+
+    return "-";
 }
 
 bool
@@ -533,6 +551,19 @@ S9sBackup::fileCreatedString(
 
     retval = options->formatDateTime(created);
     return retval;
+}
+
+S9sVariant
+S9sBackup::incremental(
+        const int backupIndex,
+        const int fileIndex) const
+{
+    S9sVariantMap theFileMap = fileMap(backupIndex, fileIndex);
+
+    if (theFileMap.contains("type"))
+        return theFileMap.at("type").toString() == "incr";
+
+    return false;
 }
 
 /**

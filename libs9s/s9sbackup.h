@@ -49,6 +49,8 @@ class S9sBackup
 
         S9sString title() const;
         int id() const;
+        int parentId() const;
+
         int clusterId() const;
         int jobId() const;
         
@@ -57,6 +59,8 @@ class S9sBackup
         const char *statusColorEnd(const bool syntaxHighlight);
 
         S9sString verificationStatus() const;
+        S9sString verificationFlag() const;
+        
         bool encrypted() const;
 
         S9sVariant begin() const;
@@ -96,6 +100,10 @@ class S9sBackup
                 const int fileIndex) const;
 
         S9sString fileCreatedString(
+                const int backupIndex,
+                const int fileIndex) const;
+
+        S9sVariant incremental(
                 const int backupIndex,
                 const int fileIndex) const;
         

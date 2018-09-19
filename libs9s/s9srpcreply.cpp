@@ -7604,12 +7604,13 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       sizeFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       idFormat;
+    S9sFormat       parentIdFormat;
     S9sFormat       cidFormat;
+    S9sFormat       verifyFormat;
+    S9sFormat       incrementalFormat;
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
-    //const char     *colorBegin = "";
-    //const char     *colorEnd   = "";
    
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
@@ -7622,15 +7623,16 @@ S9sRpcReply::printBackupListLong()
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-        S9sBackup      backup    = theMap;
-        S9sVariantList backups   = theMap["backup"].toVariantList();
-        S9sString      hostName  = backup.backupHost();
-        int            clusterId = backup.clusterId(); 
-        S9sString      owner     = backup.configOwner();
-        int            id        = backup.id(); 
-        S9sString      status    = backup.status(); 
-        ulonglong      fullSize  = 0ull;
+        S9sVariantMap  theMap     = dataList[idx].toVariantMap();
+        S9sBackup      backup     = theMap;
+        S9sString      hostName   = backup.backupHost();
+        int            id         = backup.id(); 
+        int            parentId   = backup.parentId();
+        int            clusterId  = backup.clusterId(); 
+        S9sString      verifyFlag = backup.verificationFlag();
+        S9sString      owner      = backup.configOwner();
+        S9sString      status     = backup.status(); 
+        ulonglong      fullSize   = 0ull;
         S9sString      sizeString;
         S9sString      created;
 
@@ -7641,21 +7643,13 @@ S9sRpcReply::printBackupListLong()
         stateFormat.widen(status);
         hostNameFormat.widen(hostName);
         ownerFormat.widen(owner);
-        
-        if (backups.size() == 0u)
-        {
-            S9sString     sizeString    = "-";
-            S9sString     createdString = "-";
-            
-            createdFormat.widen(createdString);
-            sizeFormat.widen(sizeString);
-            
-            continue;
-        }
+        verifyFormat.widen(verifyFlag);
+        incrementalFormat.widen("-");
 
         for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
             idFormat.widen(id);
+            parentIdFormat.widen(parentId);
 
             for (int fileIdx = 0; 
                     fileIdx < backup.nFiles(backupIdx); ++fileIdx)
@@ -7679,7 +7673,10 @@ S9sRpcReply::printBackupListLong()
     if (!options->isNoHeaderRequested())
     {
         idFormat.widen("ID");
+        parentIdFormat.widen("PI");
         cidFormat.widen("CID");
+        verifyFormat.widen("V");
+        incrementalFormat.widen("I");
         stateFormat.widen("STATE");
         ownerFormat.widen("OWNER");
         hostNameFormat.widen("HOSTNAME");
@@ -7688,7 +7685,10 @@ S9sRpcReply::printBackupListLong()
 
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        parentIdFormat.printf("PI");
         cidFormat.printf("CID");
+        verifyFormat.printf("V");
+        incrementalFormat.printf("I");
         stateFormat.printf("STATE");
         ownerFormat.printf("OWNER");
         hostNameFormat.printf("HOSTNAME");
@@ -7701,22 +7701,26 @@ S9sRpcReply::printBackupListLong()
     }
     
     sizeFormat.setRightJustify();
+    parentIdFormat.setRightJustify();
 
     /*
      * Second run, we print things here.
      */
     for (uint idx = 0; idx < dataList.size(); ++idx)
     {
-        S9sVariantMap  theMap    = dataList[idx].toVariantMap();
-        S9sBackup      backup    = theMap;
-        S9sVariantList backups   = theMap["backup"].toVariantList();
-        S9sString      hostName  = backup.backupHost();
-        int            clusterId = backup.clusterId();
-        S9sString      owner     = backup.configOwner();
-        int            id        = backup.id();
-        S9sString      status    = backup.status();
-        S9sString      root      = backup.rootDir();
-        ulonglong      fullSize  = 0ull;
+        S9sVariantMap  theMap     = dataList[idx].toVariantMap();
+        S9sBackup      backup     = theMap;
+        S9sString      hostName   = backup.backupHost();
+        int            clusterId  = backup.clusterId();
+        S9sString      verifyFlag = backup.verificationFlag();
+        bool           hasInc     = false;
+        bool           hasNotInc  = false;
+        S9sString      owner      = backup.configOwner();
+        int            id         = backup.id();
+        int            parentId   = backup.parentId();
+        S9sString      status     = backup.status();
+        S9sString      root       = backup.rootDir();
+        ulonglong      fullSize   = 0ull;
         S9sString      sizeString;
         S9sString      created;
 
@@ -7727,8 +7731,9 @@ S9sRpcReply::printBackupListLong()
             continue;
 
         /*
-         *
+         * Let's keep this for a while...
          */
+#if 0
         if (backups.size() == 0u)
         {
             S9sString     path          = "-";
@@ -7737,7 +7742,11 @@ S9sRpcReply::printBackupListLong()
                 
             idFormat.printf(id);
             cidFormat.printf(clusterId);
+
+            printf("%s", backup.statusColorBegin(syntaxHighlight));
             stateFormat.printf(status);
+            printf("%s", backup.statusColorEnd(syntaxHighlight));
+
             ownerFormat.printf(owner);
             hostNameFormat.printf(hostName);
             createdFormat.printf(createdString);
@@ -7747,14 +7756,22 @@ S9sRpcReply::printBackupListLong()
 
             continue;
         }
-
+#endif
         for (int backupIdx = 0; backupIdx < backup.nBackups(); ++backupIdx)
         {
             for (int fileIdx = 0; fileIdx < backup.nFiles(backupIdx); ++fileIdx)
             {
-                ulonglong   size = backup.fileSize(backupIdx, fileIdx).toUll();
+                ulonglong size = backup.fileSize(backupIdx, fileIdx).toUll();
+                bool      incremental = 
+                    backup.incremental(backupIdx, fileIdx).toBoolean();
 
                 fullSize += size;
+                if (incremental)
+                {
+                    hasInc = true;
+                } else {
+                    hasNotInc = true;
+                }
             }
         }
 
@@ -7762,8 +7779,23 @@ S9sRpcReply::printBackupListLong()
         sizeString = S9sFormat::toSizeString(fullSize);
 
         idFormat.printf(id);
+        if (parentId > 0)
+            parentIdFormat.printf(parentId);
+        else
+            parentIdFormat.printf("-");
+
         cidFormat.printf(clusterId);
+        verifyFormat.printf(verifyFlag);
         
+        if (hasInc && hasNotInc)
+            printf("B ");
+        else if (hasInc)
+            printf("I ");
+        else if (hasNotInc)
+            printf("F ");
+        else 
+            printf("- ");
+
         printf("%s", backup.statusColorBegin(syntaxHighlight));
         stateFormat.printf(status);
         printf("%s", backup.statusColorEnd(syntaxHighlight));

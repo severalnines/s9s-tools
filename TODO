@@ -1,3 +1,5 @@
+* Implement repeating of jobs.
+
 * Implement firewall listing and manipulating, maybe other things too:
   https://github.com/severalnines/cloudlink-go/blob/develop/HTTP.md#firewall-module
 

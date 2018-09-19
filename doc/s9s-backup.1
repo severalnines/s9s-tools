@@ -96,6 +96,72 @@ s9s backup \\
     --long
 .fi
 
+When listing the backups with the \fB\-\^\-long\fP option the following columns
+are listed:
+
+.\"
+.\" The list of columns the s9s backup --list --long command will produce.
+.\"
+.RS 7
+.TP
+.B ID
+The numerical ID of the backup.
+
+.TP 
+.B PI
+The numerical ID of the parent backup if there is a parent backup for the given
+entry.
+
+.TP
+.B CID
+The numerical ID of the cluster to which the backup belongs.
+
+.TP
+.B V
+The verification status. Here 'V' means the backup is verified, '-' means the
+backup is not verified.
+
+.TP
+.B I 
+The flag showing if the backup is incremental or not. Here 'F' means the backup
+is a full backup, 'I' means the backup is incremental, '-' means the backup
+contains no incremental or full backup files (because for example the backup
+failed) and 'B' means the backup contains both full and incremental backups
+files (which is impossible).
+
+.TP
+.B STATE
+The state of the backup. Here "COMPLETED" means the backup is completed,
+"FAILED" means the backup has failed and "RUNNING" means the backup is being
+created.
+
+.TP
+.B OWNER
+The name of the Cmon user that owns the backup.
+
+.TP
+.B HOSTNAME 
+The name of the host where the backup was created.
+
+.TP
+.B CREATED
+The date and time whosing when the backup was created.
+
+.TP
+.B SIZE
+The total size of the created backup files.
+
+.TP
+.B TITLE
+The name or title of the backup. This is a human readable string that helps
+identify the backup.
+
+.RE
+.\"
+.\" End of the list.
+.\"
+
+
 .TP
 .B \-\^\-restore
 Restore a backup.
