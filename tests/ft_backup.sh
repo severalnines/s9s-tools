@@ -301,19 +301,19 @@ function testCreateBackup01()
         exit 1
     fi
     
-    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $6}')
     if [ "$value" != "COMPLETED" ]; then
         failure "The backup should be completed"
         exit 1
     fi
 
-    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $4}')
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
         failure "The owner of the backup should be '$USER'"
         exit 1
     fi
     
-    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $2}')
+    value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
     if [ "$value" != "1" ]; then
         failure "The cluster ID for the backup should be '1'."
         exit 1
