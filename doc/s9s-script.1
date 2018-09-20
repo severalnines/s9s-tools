@@ -23,6 +23,16 @@ following:
 .B \-\-execute
 Execute a CJS script from a local file.
 
+.B EXAMPLE
+.nf
+s9s script \\
+    --execute \\
+    --cmon-user=system \\
+    --password=p \\
+    --cluster-id=1 \\
+    imperative_001.js
+.fi
+
 .TP
 .B \-\-system
 This option will create a new job to execute a shell command or an entire shell
