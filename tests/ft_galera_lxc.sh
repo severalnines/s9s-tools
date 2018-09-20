@@ -8,7 +8,6 @@ LOG_OPTION="--wait"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
-CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 OPTION_VENDOR="mariadb"
@@ -24,7 +23,8 @@ function printHelpAndExit()
 {
 cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+
+ $MYNAME - Test script for s9s to check Galera on LXC.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -36,8 +36,9 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
-  o createServer     Creates a new cmon-cloud container server. 
+  o registerServer   Creates a new cmon-cloud container server. 
   o createCluster    Creates a cluster on VMs created on the fly.
+  o dropCluster      Drops the created cluster.
   o deleteContainer  Deletes all the containers that were created.
   o unregisterServer Unregistering cmon-cloud server.
 
@@ -121,26 +122,20 @@ if [ -z "$CONTAINER_SERVER" ]; then
 fi
 
 #
-# This will install a new cmon-cloud server. 
+# This will register the container server. 
 #
-function createServer()
+function registerServer()
 {
-    local node001="ft_galera_aws_01_$$"
     local class
-    local nodeName
 
-    print_title "Creating Container Server"
-    
-    echo "Creating node #0"
-    nodeName=$(create_node --autodestroy "$node001")
+    print_title "Registering Container Server"
 
     #
     # Creating a container.
     #
     mys9s server \
-        --create \
-        --servers="cmon-cloud://$nodeName" \
-        $LOG_OPTION
+        --register \
+        --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
 
@@ -148,17 +143,16 @@ function createServer()
     # Checking the state and the class name... 
     #
     check_container_server \
-        --class        CmonCloudServer \
-        --server-name  "$nodeName" \
-        --cloud        "aws"
-
-    CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+        --class        CmonLxcServer \
+        --server-name  "$CONTAINER_SERVER" \
+        --cloud        "lxc"
 }
+
 
 function createCluster()
 {
-    local node001="ft_galera_aws_01_$$"
-    local node002="ft_galera_aws_02_$$"
+    local node001="ft_galera_lxc_01_$$"
+    local node002="ft_galera_lxc_02_$$"
 
     #
     # Creating a Cluster.
@@ -172,7 +166,6 @@ function createCluster()
         --vendor=$OPTION_VENDOR \
         --nodes="$node001;$node002" \
         --containers="$node001;$node002" \
-        --image="centos7" \
         --log
 
     check_exit_code $?
@@ -196,6 +189,48 @@ function createCluster()
     fi
 
     check_container_ids --galera-nodes
+
+    wait_for_cluster_started "$CLUSTER_NAME"
+    #for i in $(seq 1 10); do
+    #    mys9s cluster --list --long
+    #    mys9s node    --list --long
+    #    sleep 6
+    #done
+}
+
+function dropCluster()
+{
+    local old_ifs="$IFS"
+    local line
+    local name
+
+    #
+    # Dropping the cluster.
+    #
+    print_title "Dropping Cluster"
+    mys9s cluster \
+        --drop \
+        --cluster-id="$CLUSTER_ID" \
+        $LOG_OPTION
+
+    mys9s tree --list --long
+
+    #
+    # Checking.
+    #
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --batch); do
+        echo "  checking line: $line"
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+
+        case "$name" in
+            $CLUSTER_NAME)
+                failure "Cluster found after it is dropped."
+                ;;
+        esac
+    done
+    IFS=$old_ifs  
 }
 
 #
@@ -206,8 +241,8 @@ function deleteContainer()
     local containers
     local container
 
-    containers+=" ft_galera_aws_01_$$"
-    containers+=" ft_galera_aws_02_$$"
+    containers+=" ft_galera_lxc_01_$$"
+    containers+=" ft_galera_lxc_02_$$"
 
     print_title "Deleting Containers"
 
@@ -230,12 +265,12 @@ function deleteContainer()
 
 function unregisterServer()
 {
-    if [ -n "$CMON_CLOUD_CONTAINER_SERVER" ]; then
+    if [ -n "$CONTAINER_SERVER" ]; then
         print_title "Unregistering Cmon-cloud server"
         
         mys9s server \
             --unregister \
-            --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
+            --servers="cmon-cloud://$CONTAINER_SERVER"
 
         check_exit_code_no_job $?
     fi
@@ -251,14 +286,21 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest createServer
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest registerServer
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest createServer
+    runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest dropCluster
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
 fi

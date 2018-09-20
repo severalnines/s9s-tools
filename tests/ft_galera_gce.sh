@@ -237,7 +237,7 @@ function deleteContainer()
     local container
 
     containers+=" ft-galera-gce-01-$$"
-    #containers+=" ft-galera-gce-02-$$"
+    containers+=" ft-galera-gce-02-$$"
 
     print_title "Deleting Containers"
 
