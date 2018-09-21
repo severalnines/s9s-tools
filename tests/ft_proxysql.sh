@@ -27,7 +27,8 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
+Usage:
+  $MYNAME [OPTION]... [TESTNAME]
  
   $MYNAME - Test script for s9s to check the ProxySQL support. 
 
@@ -39,6 +40,14 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
   --install        Just install the cluster and exit.
+
+SUPPORTED TESTS:
+  o registerServer     Registers a container server for containers.
+  o createCluster      Creates a cluster to test.
+  o testAddProxySql    Adds a ProxySQL server to the cluster.
+  o testStopProxySql   Stops the added ProxySQL server.
+  o testStartProxySql  Starts the ProxySQL server that was stopped.
+  o destroyContainers  Destroys the previously created containers.
 
 EOF
     exit 1
@@ -283,9 +292,15 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest registerServer
-    runFunctionalTest createCluster
-    runFunctionalTest testAddProxySql
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest registerServer
+        runFunctionalTest createCluster
+        runFunctionalTest testAddProxySql
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
