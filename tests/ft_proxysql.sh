@@ -194,7 +194,7 @@ function testAddProxySql()
         --cluster-id=1 \
         --nodes="proxySql://$CONTAINER_NAME9" \
         --containers="$CONTAINER_NAME9" \
-        $LOG_OPTION
+        --log --debug
     
     check_exit_code $?
 
