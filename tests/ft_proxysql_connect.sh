@@ -32,15 +32,24 @@ Usage:
  
   $MYNAME - Checks if a created ProxySql server can be connected.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --provider-version=STRING The SQL server provider version.
- --leave-nodes    Do not destroy the nodes at exit.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --provider-version=STRING The SQL server provider version.
+  --leave-nodes    Do not destroy the nodes at exit.
+
+SUPPORTED TESTS:
+  o testPing           Pinging the controller.
+  o testCreateCluster  Creates a cluster.
+  o testCreateDatabase Creates some accounts and databases.
+  o testAddProxySql    Adds a ProxySQL node.
+  o testConnect01      Tests if the ProxySQL accepts connections.
+  o testConnect02      Tests connections using the previously created account.
+  o testUploadData     Uploads data through the ProxySQL server.
 
 EXAMPLE
  ./$MYNAME --print-commands --server=storage01 --reset-config --install
@@ -146,6 +155,7 @@ function testPing()
 function testCreateCluster()
 {
     local nodes
+    local node
     local nodeName
     local n_nodes_added=0
 
@@ -156,7 +166,9 @@ function testCreateCluster()
 
     while true; do
         echo "Creating node #$n_nodes_added"
-        nodeName=$(create_node  --autodestroy)
+
+        node=$(printf "ft_proxysql_connect_node%02d_$$" "$n_nodes_added")
+        nodeName=$(create_node --autodestroy "$node")
         
         if [ "$nodes" ]; then
             nodes+=";"
@@ -263,9 +275,12 @@ function testAddProxySql()
     local nodes
     local nodeName
 
+    #
+    #
+    #
     print_title "Adding a ProxySQL Node"
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "ft_proxysql_connect_proxy00_$$")
     PROXY_SERVER="$nodeName"
     nodes+="proxySql://$nodeName"
 
@@ -418,31 +433,6 @@ function testUploadData()
 }
 
 #
-# This test will add a HaProxy node.
-#
-function testAddHaProxy()
-{
-    local node
-    local nodes
-    
-    print_title "Adding a HaProxy Node"
-
-    node=$(create_node --autodestroy)
-    nodes+="haProxy://$node"
-
-    #
-    # Adding haproxy to the cluster.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION
-    
-    check_exit_code $?
-}
-
-#
 # Running the requested tests.
 #
 startTests
@@ -451,7 +441,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
