@@ -923,7 +923,13 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
