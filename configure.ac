@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(s9s, 1.6.0)
+AC_INIT(s9s, 1.7.0)
 AC_CONFIG_SRCDIR([libs9s/library.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])
@@ -55,6 +55,10 @@ AC_ARG_ENABLE([gcov],
 AM_CONDITIONAL([COND_GCOV],[test '!' "$enable_gcov" = no])
 
 GIT_VERSION=$([LANG=C git rev-parse --short HEAD])
+if test "x$GIT_VERSION" = "x"; then
+    # no git client and .git directory for release builds (buildbot)
+    GIT_VERSION="release"
+fi
 AC_DEFINE_UNQUOTED([GIT_VERSION], ["$GIT_VERSION"], [The git version hash])
 AC_SUBST(GIT_VERSION)
 

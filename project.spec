@@ -1,7 +1,7 @@
 %define build_timestamp %(date +"%Y%m%d")
 
 Name: s9s-tools
-Version: 1.6
+Version: 1.7
 Release: %{build_timestamp}%{?dist}
 Summary: Severalnines ClusterControl CLI Tools
 
@@ -40,6 +40,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Mon Sep 24 2018 David Kedves <kedazo@severalnines.com> 1.7.20180924
+- New clustercontrol release
 * Fri Jun  8 2018 David Kedves <kedazo@severalnines.com> 1.6.20180608
 - New patch release
 * Tue Jun  5 2018 David Kedves <kedazo@severalnines.com> 1.6.20180605
