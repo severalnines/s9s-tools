@@ -1383,11 +1383,11 @@ S9sMonitor::printHeader()
 
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     
-    ::printf("%s%4lu%s event(s) ", bold, m_events.size(), normal);
-    ::printf("%s%lu%s node(s) ",   bold, m_nodes.size(), normal);
+    ::printf("%s%4zu%s event(s) ", bold, m_events.size(), normal);
+    ::printf("%s%zu%s node(s) ",   bold, m_nodes.size(), normal);
     ::printf("%s%d%s VM(s) ",      bold, nContainers(), normal);
-    ::printf("%s%lu%s cluster(s) ", bold, m_clusters.size(), normal);
-    ::printf("%s%lu%s jobs(s) ",   bold, m_jobs.size(), normal);
+    ::printf("%s%zu%s cluster(s) ", bold, m_clusters.size(), normal);
+    ::printf("%s%zu%s jobs(s) ",   bold, m_jobs.size(), normal);
 
     if (m_viewDebug)
     {
