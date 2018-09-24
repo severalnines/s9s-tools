@@ -3869,7 +3869,7 @@ S9sRpcReply::printRegions()
     
     if (!options->isBatchRequested())
     {
-        printf("Total: %s%d%s regions in %s%lu%s clouds.\n", 
+        printf("Total: %s%d%s regions in %s%zu%s clouds.\n", 
                 numberColorBegin(), nRegions, numberColorEnd(),
                 numberColorBegin(), cloudMap.size(), numberColorEnd());
     }
