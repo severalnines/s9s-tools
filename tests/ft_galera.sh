@@ -8,10 +8,13 @@ VERSION="1.0.0"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
-OPTION_INSTALL=""
+
+
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+OPTION_INSTALL=""
+OPTION_NUMBER_OF_NODES="3"
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
@@ -41,8 +44,10 @@ Usage:
   --install        Just install the cluster and exit.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --vendor=STRING  Use the given Galera vendor.
-  --provider-version=STRING The SQL server provider version.
   --leave-nodes    Do not destroy the nodes at exit.
+  
+  --provider-version=VERSION The SQL server provider version.
+  --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
   o testPing             Pings the controller.
@@ -77,7 +82,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,vendor:,leave-nodes" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -129,6 +134,12 @@ while true; do
             PROVIDER_VERSION="$1"
             shift
             ;;
+
+        --number-of-nodes)
+            shift
+            OPTION_NUMBER_OF_NODES="$1"
+            shift
+            ;;
         
         --vendor)
             shift
@@ -173,24 +184,32 @@ function testPing()
 function testCreateCluster()
 {
     local nodes
-    local nodeName
+    local node_ip
     local exitCode
+    local node_serial=1
+    local node_name
 
     print_title "Creating a Galera Cluster"
+    
+    while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
+        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
-    echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName;"
-    FIRST_ADDED_NODE=$nodeName
-    
-    echo "Creating node #1"
-    nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName;"
-    
-    echo "Creating node #2"
-    nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName"
-    
+        echo "Creating node #$node_serial"
+        node_ip=$(create_node --autodestroy "$node_name")
+
+        if [ -n "$nodes" ]; then
+            nodes+=";"
+        fi
+
+        nodes+="$node_ip"
+
+        if [ -z "$FIRST_ADDED_NODE" ]; then
+            FIRST_ADDED_NODE="$node_ip"
+        fi
+
+        let node_serial+=1
+    done
+     
     #
     # Creating a Galera cluster.
     #
