@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016-2017 severalnines.com
+# Copyright (C) 2016-2018 severalnines.com
 #
 
 AM_CPPFLAGS = -Wall -Werror -fno-strict-aliasing
@@ -13,7 +13,7 @@ AM_CPPFLAGS += -pipe
 LDADD = -L../../libs9s -ls9s -lrt
 
 #add '../libs9s' to the lib search path
-AM_LDFLAGS = -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,../../libs9s -Wl,-rpath,./libs9s
+AM_LDFLAGS = -pthread -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,../../libs9s -Wl,-rpath,./libs9s
 
 if COND_GCOV
    AM_CPPFLAGS += -fprofile-arcs -ftest-coverage --no-inline
