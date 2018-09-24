@@ -15,7 +15,8 @@ SUM_TESTING_SERVERS=0
 SUM_IDLE_SERVERS=0
 SUM_CORES=0
 SUM_MEMORY=0
-
+SUM_DISK=0
+SUM_CONTAINERS=0
 
 TERM_ERASE_EOL="\033[K"
 TERM_HOME="\033[0;0H"
@@ -395,9 +396,14 @@ EOF
 
 function print_summary()
 {
+    local disk_terabytes
+
     if [ -z "$OPTION_PRINT_REPORT" ]; then
         return 0
     fi
+
+    let disk_terabytes=SUM_DISK
+    let disk_terabytes/=1024
 
     printf "\n"
     printf "Summary:\n"
@@ -405,8 +411,11 @@ function print_summary()
     printf "       Testing: %'6d server(s)\n" "$SUM_TESTING_SERVERS" 
     printf "          Idle: %'6d server(s)\n" "$SUM_IDLE_SERVERS" 
     printf "      Off-line: %'6d server(s)\n" "$SUM_OFF_LINE_SERVERS" 
+    printf "    Containers: %'6d instance(s)\n" "$SUM_CONTAINERS"
+    printf "\n"
     printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
     printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
+    printf "   Total Disks: %6d TBytes\n" "$disk_terabytes"
     printf "\n"
 }
 
@@ -476,10 +485,10 @@ function print_host_list_long()
         CONF_HOST_VIRTUAL=""
 
         HOSTNAME=""
-        NUMBER_OF_CORES=""
-        MEMORY_GIGABYTES=""
-        DISK_GIGABYTES=""
-        NUMBER_OF_CONTAINERS=""
+        NUMBER_OF_CORES="0"
+        MEMORY_GIGABYTES="0"
+        DISK_GIGABYTES="0"
+        NUMBER_OF_CONTAINERS="0"
         AVERAGE_LOAD=""
         HOST_STATUS=""
         STATUS_TEXT=""
@@ -517,6 +526,8 @@ function print_host_list_long()
         
         let SUM_CORES+=NUMBER_OF_CORES
         let SUM_MEMORY+=MEMORY_GIGABYTES
+        let SUM_DISK+=DISK_GIGABYTES
+        let SUM_CONTAINERS+=NUMBER_OF_CONTAINERS
 
         [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
         
