@@ -39,5 +39,15 @@ class S9sAlarm : public S9sObject
         const S9sVariantMap &toVariantMap() const;
 
         S9sString title() const;
+        int alarmId() const;
+        int clusterId() const;
+        S9sString typeName(const S9sString &defaultValue = "");
+        S9sString componentName(const S9sString &defaultValue = "");
+        S9sString severityName(const S9sString &defaultValue = "");
+        S9sString hostName(const S9sString &defaultValue = "-");
+
+        const char *severityColorBegin(const bool syntaxHighlight);
+        const char *severityColorEnd(const bool syntaxHighlight);
+
 };
 

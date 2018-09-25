@@ -61,6 +61,27 @@ S9sAlarm::operator=(
  * \returns The S9sAlarm converted to a variant map.
  *
  * \code{.js}
+    {
+        "alarm_id": 3,
+        "class_name": "CmonAlarm",
+        "cluster_id": 1,
+        "component": 0,
+        "component_name": "Network",
+        "counter": 1,
+        "created": "2018-09-25T05:09:24.000Z",
+        "host_id": 1,
+        "hostname": "192.168.0.79",
+        "ignored": 0,
+        "measured": 0,
+        "message": "Server 192.168.0.79 reports: Host 192.168.0.79 is not responding to ping after 3 cycles, the host is most likely unreachable.",
+        "recommendation": "Restart failed host, check firewall.",
+        "reported": "2018-09-25T05:09:24.000Z",
+        "severity": 2,
+        "severity_name": "ALARM_CRITICAL",
+        "title": "Host is not responding",
+        "type": 10006,
+        "type_name": "HostUnreachable"
+    }
  * \endcode
  */
 const S9sVariantMap &
@@ -80,3 +101,87 @@ S9sAlarm::title() const
     return retval;
 }
 
+int
+S9sAlarm::alarmId() const
+{
+    return property("alarm_id").toInt();
+}
+
+int
+S9sAlarm::clusterId() const
+{
+    return property("cluster_id").toInt();
+}
+
+S9sString
+S9sAlarm::typeName(
+        const S9sString &defaultValue)
+{
+    S9sString retval = property("type_name").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString
+S9sAlarm::componentName(
+        const S9sString &defaultValue)
+{
+    S9sString retval = property("component_name").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString
+S9sAlarm::severityName(
+        const S9sString &defaultValue)
+{
+    S9sString retval = property("severity_name").toString();
+
+    retval.replace("ALARM_", "");
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+S9sString
+S9sAlarm::hostName(
+        const S9sString &defaultValue)
+{
+    S9sString retval = property("hostname").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+const char *
+S9sAlarm::severityColorBegin(
+        const bool syntaxHighlight)
+{
+    if (!syntaxHighlight)
+        return "";
+
+    if (severityName() == "CRITICAL")
+        return XTERM_COLOR_RED;
+
+    return XTERM_COLOR_ORANGE;
+}
+
+const char *
+S9sAlarm::severityColorEnd(
+        const bool syntaxHighlight)
+{
+    if (!syntaxHighlight)
+        return "";
+
+    return TERM_NORMAL;
+}

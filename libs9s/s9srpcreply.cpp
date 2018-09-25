@@ -2215,14 +2215,104 @@ S9sRpcReply::printDatabaseListBrief()
 void 
 S9sRpcReply::printAlarmListLong()
 {
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = alarms();
+    S9sFormat       idFormat;
+    S9sFormat       clusterIdFormat;
+    S9sFormat       severityFormat;
+    S9sFormat       typeNameFormat;
+    S9sFormat       componentNameFormat;
+    S9sFormat       titleFormat;
+    S9sFormat       hostNameFormat;
+    int             nLines = 0;
+    const char     *hostColorBegin = "";
+    const char     *hostColorEnd   = "";
+    const char     *keyColorBegin = "";
+    const char     *keyColorEnd   = "";
+        
+    if (syntaxHighlight)
+    {
+        hostColorBegin  = XTERM_COLOR_GREEN;
+        hostColorEnd    = TERM_NORMAL;
+
+        keyColorBegin   = "\033[38;5;57m";
+        keyColorEnd     = TERM_NORMAL;
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap alarmMap  = theList[idx].toVariantMap();
         S9sAlarm      alarm(alarmMap);
 
+        idFormat.widen(alarm.alarmId());
+        clusterIdFormat.widen(alarm.clusterId());
+        componentNameFormat.widen(alarm.componentName());
+        severityFormat.widen(alarm.severityName());
+        typeNameFormat.widen(alarm.typeName());
+        titleFormat.widen(alarm.title());
+        hostNameFormat.widen(alarm.hostName());
+        ++nLines;
+    }
+
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        clusterIdFormat.widen("CID");
+        severityFormat.widen("SEVERITY");
+        componentNameFormat.widen("COMPONENT");
+        typeNameFormat.widen("TYPE");
+        hostNameFormat.widen("HOSTNAME");
+        titleFormat.widen("TITLE");
+        
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        clusterIdFormat.printf("CID");
+        severityFormat.printf("SEVERITY");
+        componentNameFormat.printf("COMPONENT");
+        typeNameFormat.printf("TYPE");
+        hostNameFormat.printf("HOSTNAME");
+        titleFormat.printf("TITLE");
+        
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap alarmMap  = theList[idx].toVariantMap();
+        S9sAlarm      alarm(alarmMap);
+
+        idFormat.printf(alarm.alarmId());
+        clusterIdFormat.printf(alarm.clusterId());
+
+        ::printf("%s", alarm.severityColorBegin(syntaxHighlight));
+        severityFormat.printf(alarm.severityName());
+        ::printf("%s", alarm.severityColorEnd(syntaxHighlight));
+
+        ::printf("%s", keyColorBegin);
+        componentNameFormat.printf(alarm.componentName());
+        ::printf("%s", keyColorEnd);
+
+        ::printf("%s", keyColorBegin);
+        typeNameFormat.printf(alarm.typeName());
+        ::printf("%s", keyColorEnd);
+
+        ::printf("%s", hostColorBegin);
+        hostNameFormat.printf(alarm.hostName());
+        ::printf("%s", hostColorEnd);
+
         ::printf("%s\n", STR(alarm.title()));
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s%lu%s active alarm(s)\n", 
+                numberColorBegin(),
+                (unsigned long int) theList.size(),
+                numberColorEnd());
     }
 }
 
