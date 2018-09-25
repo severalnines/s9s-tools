@@ -653,6 +653,18 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
+    } else if (options->isAlarmOperation())
+    {
+        if (options->isListRequested() || options->isStatRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getAlarms();
+            reply = client.reply();
+            reply.printAlarmList();
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isProcessOperation())
     {
         if (options->isListRequested())

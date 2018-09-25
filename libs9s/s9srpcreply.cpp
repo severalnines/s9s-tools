@@ -2199,6 +2199,7 @@ S9sRpcReply::printDatabaseListBrief()
         fflush(stdout);
     }
 }
+
 /**
  * This method will print the reply as a detailed cluster list (aka 
  * "cluster --list --long").
@@ -2436,6 +2437,25 @@ S9sRpcReply::printClusterListLong()
    
     if (!options->isBatchRequested())
         printf("Total: %lu\n", (unsigned long int) theList.size());
+}
+
+void
+S9sRpcReply::printAlarmList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+#if 0
+    else if (options->isStatRequested())
+        printClusterListStat();
+    else if (options->isLongRequested())
+        printClusterListLong();
+    else
+        printClusterListBrief();    
+#endif
 }
 
 /**

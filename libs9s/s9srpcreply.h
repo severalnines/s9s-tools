@@ -78,6 +78,7 @@ class S9sRpcReply : public S9sVariantMap
         void printCat();
         void printAcl();
         void printClusterList();
+        void printAlarmList();
         void printConfigList();
         void printLogList();
         void printNodeList();
