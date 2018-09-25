@@ -65,6 +65,8 @@ class S9sRpcReply : public S9sVariantMap
         // Methods handling clusters.
         S9sCluster cluster(const S9sString &clusterName);
         S9sVariantList clusters();
+        
+        S9sVariantList alarms();
 
         S9sString clusterName(const int clusterId);
         S9sString clusterStatusText(const int clusterId);
@@ -261,6 +263,8 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterListBrief();
         void printClusterListLong();
         void printClusterListStat();
+        
+        void printAlarmListLong();
         
         void printHostTable(S9sCluster &cluster);
         void printClusterStat(S9sCluster &cluster);

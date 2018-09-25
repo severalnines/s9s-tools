@@ -28,6 +28,7 @@
 #include "S9sRegExp"
 #include "S9sNode"
 #include "S9sCluster"
+#include "S9sAlarm"
 #include "S9sBackup"
 #include "S9sMessage"
 #include "S9sCmonGraph"
@@ -287,6 +288,17 @@ S9sRpcReply::clusters()
         theList = operator[]("clusters").toVariantList();
     else if (contains("cluster"))
         theList << operator[]("cluster");
+
+    return theList;
+}
+
+S9sVariantList
+S9sRpcReply::alarms()
+{
+    S9sVariantList  theList;
+    
+    if (contains("alarms"))
+        theList = operator[]("alarms").toVariantList();
 
     return theList;
 }
@@ -2200,6 +2212,20 @@ S9sRpcReply::printDatabaseListBrief()
     }
 }
 
+void 
+S9sRpcReply::printAlarmListLong()
+{
+    S9sVariantList  theList = alarms();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap alarmMap  = theList[idx].toVariantMap();
+        S9sAlarm      alarm(alarmMap);
+
+        ::printf("%s\n", STR(alarm.title()));
+    }
+}
+
 /**
  * This method will print the reply as a detailed cluster list (aka 
  * "cluster --list --long").
@@ -2448,14 +2474,12 @@ S9sRpcReply::printAlarmList()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-#if 0
-    else if (options->isStatRequested())
-        printClusterListStat();
+    //else if (options->isStatRequested())
+    //    printClusterListStat();
     else if (options->isLongRequested())
-        printClusterListLong();
-    else
-        printClusterListBrief();    
-#endif
+        printAlarmListLong();
+    //else
+    //    printClusterListBrief();    
 }
 
 /**

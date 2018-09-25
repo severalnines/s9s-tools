@@ -132,6 +132,8 @@ libs9s_public_h_headers =     \
 	s9smap.h                  \
 	S9sMessage                \
 	s9smessage.h              \
+	S9sAlarm                  \
+	s9salarm.h                \
 	S9sNode                   \
 	s9snode.h                 \
 	S9sServer                 \
@@ -208,6 +210,7 @@ libs9s_a_SOURCES =            \
 	s9sformatter.cpp          \
 	s9sdatetime.cpp           \
 	s9surl.cpp                \
+	s9salarm.cpp              \
 	s9snode.cpp               \
 	s9scontainer.cpp          \
 	s9sevent.cpp              \
