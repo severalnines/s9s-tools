@@ -185,3 +185,23 @@ S9sAlarm::severityColorEnd(
 
     return TERM_NORMAL;
 }
+
+int
+S9sAlarm::counter() const
+{
+    return property("counter").toInt();
+}
+
+int
+S9sAlarm::ignoredCounter() const
+{
+    return property("ignored").toInt();
+}
+
+bool
+S9sAlarm::isIgnored() const
+{
+    return counter() > 0 &&
+        ignoredCounter() >= counter();
+}
+

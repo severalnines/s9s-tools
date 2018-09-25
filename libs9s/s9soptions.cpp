@@ -274,6 +274,8 @@ enum S9sOptionType
     OptionInputFile,
     OptionRegion,
     OptionShellCommand,
+
+    OptionAlarmId,
 };
 
 /**
@@ -1696,6 +1698,20 @@ S9sOptions::hasClusterIdOption() const
 {
     return m_options.contains("cluster_id");
 }
+
+bool
+S9sOptions::hasAlarmIdOption() const
+{
+    return m_options.contains("alarm_id");
+}
+
+int
+S9sOptions::alarmId() const
+{
+    return getInt("alarm_id");
+}
+
+
 
 /**
  * \returns True if the --backup-id command line option was provided.
@@ -4756,6 +4772,7 @@ S9sOptions::printHelpAlarm()
     printf(
 "Options for the \"alarm\" command:\n"
 "  --list                     List the alarms.\n"
+"  --delete                   Set the alarm to be ignored.\n"
 "\n"
     );
 }
@@ -5651,7 +5668,7 @@ S9sOptions::checkOptionsAlarm()
     if (isListRequested())
         countOptions++;
     
-    if (isWatchRequested())
+    if (isDeleteRequested())
         countOptions++;
     
     if (countOptions > 1)
@@ -6297,7 +6314,12 @@ S9sOptions::readOptionsAlarm(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
-        { "watch",            no_argument,       0, OptionWatch           },
+        { "delete",           no_argument,       0, OptionDelete          },
+        
+        /*
+         * Alarm related options.
+         */
+        { "alarm-id",         required_argument, 0, OptionAlarmId         },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -6376,11 +6398,6 @@ S9sOptions::readOptionsAlarm(
                 m_options["long"] = true;
                 break;
 
-            case 'L': 
-                // --list
-                m_options["list"] = true;
-                break;
-            
             case 4:
                 // --config-file=FILE
                 m_options["config-file"] = optarg;
@@ -6428,7 +6445,28 @@ S9sOptions::readOptionsAlarm(
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
+
+            /*
+             * Main options.
+             */
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
             
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
+                break;
+           
+            /*
+             * Options related to alarms.
+             */
+            case OptionAlarmId:
+                // --alarm-id=ID
+                m_options["alarm_id"] = atoi(optarg);
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");

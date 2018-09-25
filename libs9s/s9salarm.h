@@ -46,6 +46,10 @@ class S9sAlarm : public S9sObject
         S9sString severityName(const S9sString &defaultValue = "");
         S9sString hostName(const S9sString &defaultValue = "-");
 
+        int counter() const;
+        int ignoredCounter() const;
+        bool isIgnored() const;
+
         const char *severityColorBegin(const bool syntaxHighlight);
         const char *severityColorEnd(const bool syntaxHighlight);
 

@@ -1670,6 +1670,39 @@ S9sRpcClient::getAlarm()
 }
 
 bool
+S9sRpcClient::ignoreAlarm()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/alarm/";
+    S9sVariantMap  request;
+    int            alarmId = 2;
+    
+    if (!options->hasAlarmIdOption())
+    {
+        PRINT_ERROR("Alarm ID is not provided.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+
+    // Building the request.
+    request["operation"]  = "ignoreAlarm";
+    request["alarm_id"]   = alarmId;
+    request["ignore"]     = true;
+    request["alarm_id"]   = options->alarmId();
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::getAlarmStatistics()
 {
     S9sOptions    *options   = S9sOptions::instance();

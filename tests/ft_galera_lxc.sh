@@ -198,6 +198,27 @@ function createCluster()
     #done
 }
 
+function testAlarms()
+{
+    local node002="ft_galera_lxc_02_$$"
+
+    print_title "Check Alarms"
+
+    # Before.
+    mys9s alarm --list --long 
+    
+    # Stopping a container.
+    mys9s container --stop "$node002"
+    sleep 60
+
+    mys9s alarm --list --long 
+
+    # Starting a container.
+    mys9s container --start "$node002"
+    sleep 60
+    mys9s alarm --list --long 
+}
+
 function dropCluster()
 {
     local old_ifs="$IFS"
@@ -300,6 +321,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest testAlarms
     runFunctionalTest dropCluster
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer

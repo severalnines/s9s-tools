@@ -2245,6 +2245,9 @@ S9sRpcReply::printAlarmListLong()
         S9sVariantMap alarmMap  = theList[idx].toVariantMap();
         S9sAlarm      alarm(alarmMap);
 
+        if (alarm.isIgnored())
+            continue;
+
         idFormat.widen(alarm.alarmId());
         clusterIdFormat.widen(alarm.clusterId());
         componentNameFormat.widen(alarm.componentName());
@@ -2285,6 +2288,9 @@ S9sRpcReply::printAlarmListLong()
         S9sVariantMap alarmMap  = theList[idx].toVariantMap();
         S9sAlarm      alarm(alarmMap);
 
+        if (alarm.isIgnored())
+            continue;
+
         idFormat.printf(alarm.alarmId());
         clusterIdFormat.printf(alarm.clusterId());
 
@@ -2309,7 +2315,7 @@ S9sRpcReply::printAlarmListLong()
     
     if (!options->isBatchRequested())
     {
-        printf("Total: %s%lu%s active alarm(s)\n", 
+        printf("Total: %s%lu%s alarm(s)\n", 
                 numberColorBegin(),
                 (unsigned long int) theList.size(),
                 numberColorEnd());

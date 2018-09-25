@@ -662,6 +662,11 @@ S9sBusinessLogic::execute()
             client.getAlarms();
             reply = client.reply();
             reply.printAlarmList();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.ignoreAlarm();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
@@ -758,7 +763,7 @@ S9sBusinessLogic::execute()
         } else if (options->isDeleteRequested())
         {
             success = client.deleteMaintenance();
-            client.printMessages("Created.", success);
+            client.printMessages("Deleted.", success);
             client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
