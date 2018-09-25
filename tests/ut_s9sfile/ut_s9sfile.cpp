@@ -77,6 +77,7 @@ UtS9sFile::testConstruct()
             S9S_DEBUG("[%6d] ", nEvents);
         } else {
             double millis;
+            S9S_UNUSED(millis);
 
             thisCreated = event.created();
             millis      = S9sDateTime::milliseconds(thisCreated, prevCreated);

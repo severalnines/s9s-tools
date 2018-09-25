@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016 severalnines.com
+# Copyright (C) 2016-2018 severalnines.com
 #
 
 AM_CPPFLAGS  = -Wall -Werror -fno-strict-aliasing
@@ -15,12 +15,12 @@ lib_LIBRARIES = libs9s.a
 libs9s.so: libs9s.a $(libs9s_a_OBJECTS)
 if !DARWIN
 	@echo "  CXXLD    $@"
-	@$(CXX) $(AM_CPPFLAGS) -shared \
+	@$(CXX) $(AM_CPPFLAGS) -shared -pthread \
 			-Wl,--whole-archive libs9s.a -Wl,--no-whole-archive -o $@
 
 else
 	@echo "  CXXLD    $@"
-	@$(CXX) $(AM_CPPFLAGS) -shared \
+	@$(CXX) $(AM_CPPFLAGS) -shared -pthread \
 			-Wl,-all_load libs9s.a  -L/usr/local/opt/openssl/lib/ -lcrypto -lssl -o $@
 endif
 
