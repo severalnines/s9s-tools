@@ -166,7 +166,7 @@ function createCluster()
         --vendor=$OPTION_VENDOR \
         --nodes="$node001;$node002" \
         --containers="$node001;$node002" \
-        --log
+        $LOG_OPTION
 
     check_exit_code $?
 
@@ -201,22 +201,53 @@ function createCluster()
 function testAlarms()
 {
     local node002="ft_galera_lxc_02_$$"
+    local n_alarms
 
     print_title "Check Alarms"
 
     # Before.
+    echo "Alarms before doing anything nasty."
+    echo ""
     mys9s alarm --list --long 
+    echo ""
+    echo ""
     
+    n_alarms=$(s9s alarm --list --long --batch | wc -l)
+    if [ "$n_alarms" -gt 0 ]; then
+        failure "There are $n_alarms, there should be none."
+    fi
+
     # Stopping a container.
-    mys9s container --stop "$node002"
+    echo "Stopping one container holding a node, then checking the alarms."
+    echo "There should be an alarm because we just shut down a node."
+    echo ""
+    mys9s container --stop "$node002" --wait
     sleep 60
 
     mys9s alarm --list --long 
+    echo ""
+    echo ""
+
+    n_alarms=$(s9s alarm --list --long --batch | wc -l)
+    if [ "$n_alarms" -lt 1 ]; then
+        failure "There are $n_alarms, there should be at least one."
+    fi
 
     # Starting a container.
+    echo "Starting the node again. The alarms should disappear, we solved "
+    echo "the issue that caused trouble."
+    echo ""
     mys9s container --start "$node002"
     sleep 60
+
     mys9s alarm --list --long 
+    echo ""
+    echo ""
+    
+    n_alarms=$(s9s alarm --list --long --batch | wc -l)
+    if [ "$n_alarms" -gt 0 ]; then
+        failure "There are $n_alarms, there should be none."
+    fi
 }
 
 function dropCluster()
