@@ -74,7 +74,7 @@ class S9sMonitor :
         
         virtual void processEvent(S9sEvent &event);
         void processEventList(S9sEvent &event);
-        void removeOldObjects();
+        //void removeOldObjects();
         
     private:
         void printHelp();

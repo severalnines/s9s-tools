@@ -399,7 +399,7 @@ S9sVariant
 S9sCluster::memFree() const
 {
     S9sVariantList ids = hostIds();
-    S9sVariant     retval;
+    S9sVariant     retval = 0;
 
     for (uint idx = 0u; idx < ids.size(); ++idx)
     {

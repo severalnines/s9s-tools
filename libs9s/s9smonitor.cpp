@@ -1218,7 +1218,7 @@ S9sMonitor::processEvent(
         }
     }
 
-    removeOldObjects();
+    //removeOldObjects();
     if (m_rightKeyPresses > 0)
         return;
 
@@ -1294,11 +1294,10 @@ S9sMonitor::processEventList(
  * This method is called from time to time to remove the old objects e.g. the
  * jobs that are finished a while ago.
  */
+#if 0
 void
 S9sMonitor::removeOldObjects()
 {
-    // FIXME: this is disabled
-    return;
     S9sVector<int> jobIds = m_jobs.keys();
     time_t         now    = time(NULL);
 
@@ -1319,6 +1318,7 @@ S9sMonitor::removeOldObjects()
         m_jobActivity.erase(jobId);
     }
 }
+#endif
 
 /**
  * Printing the top part of the screen.
