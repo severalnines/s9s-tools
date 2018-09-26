@@ -48,6 +48,12 @@
 
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
+S9sRpcReply::S9sRpcReply() :
+    m_numberOfObjects(0),
+    m_numberOfFolders(0)
+{
+}
+
 S9sRpcReply::ErrorCode
 S9sRpcReply::requestStatus() const
 {
@@ -2868,7 +2874,11 @@ S9sRpcReply::printNodeListBrief()
     }
 
     nColumns          = terminalWidth / (maxHostNameLength + 1);
-    maxHostNameLength = terminalWidth / nColumns;
+
+    if (nColumns > 0)
+        maxHostNameLength = terminalWidth / nColumns;
+    else 
+        maxHostNameLength = 16;
 
     hostNameFormat.sprintf("%%s%%-%us%%s", maxHostNameLength);
 

@@ -21,7 +21,8 @@ S9sParseContext::S9sParseContext(
 }
 
 S9sParseContext::S9sParseContext(
-        const S9sParseContext &orig)
+        const S9sParseContext &orig) :
+    m_flex_scanner(0)
 {
     m_states       = orig.m_states;
     m_currentToken = 0;

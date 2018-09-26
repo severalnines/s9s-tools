@@ -47,6 +47,8 @@ class S9sRpcReply : public S9sVariantMap
             ConnectError      = 107,
         };
 
+        S9sRpcReply();
+        
         S9sRpcReply &operator=(const S9sVariantMap &theMap);
         
         bool isOk() const;
