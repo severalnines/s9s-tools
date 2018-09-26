@@ -144,6 +144,9 @@ inline
 S9sVariant::S9sVariant() :
     m_type(Invalid)
 {
+    // Just so that we have a value set, it does not matter what. Basically for
+    // Coverity...
+    m_union.iVal = 0;
 }
 
 inline 
