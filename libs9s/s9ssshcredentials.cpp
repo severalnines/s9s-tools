@@ -37,6 +37,15 @@ S9sSshCredentials::operator=(
     return *this;
 }
 
+S9sString 
+S9sSshCredentials::className() const 
+{
+    if (hasProperty("class_name"))
+        return property("class_name").toString();
+
+    return "CmonSshCredentials"; 
+}
+
 void
 S9sSshCredentials::setUserName(
         const S9sString &value) 

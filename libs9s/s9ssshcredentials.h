@@ -30,7 +30,7 @@ class S9sSshCredentials : public S9sObject
        
         virtual S9sSshCredentials &operator=(const S9sVariantMap &rhs);
 
-        virtual const char *className() { return "CmonSshCredentials"; };
+        virtual S9sString className() const;
 
         void setUserName(const S9sString &value);
         void setPassword(const S9sString &value);
