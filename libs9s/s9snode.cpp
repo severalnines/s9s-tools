@@ -1507,7 +1507,7 @@ S9sNode::backendServerPort(
     S9sVariantList theList = backendServers();
     int            retval  = -1;
 
-    if (index >= 0u && index < theList.size())
+    if (index < theList.size())
         retval = theList[index]["port"].toInt();
 
     return retval;
@@ -1520,7 +1520,7 @@ S9sNode::backendServerStatus(
     S9sVariantList theList = backendServers();
     S9sString      retval;
 
-    if (index >= 0u && index < theList.size())
+    if (index < theList.size())
         retval = theList[index]["status"].toString();
 
     return retval;
@@ -1534,7 +1534,7 @@ S9sNode::backendServerComment(
     S9sVariantList theList = backendServers();
     S9sString      retval;
 
-    if (index >= 0u && index < theList.size())
+    if (index < theList.size())
         retval = theList[index]["comment"].toString();
 
     if (retval.empty())
