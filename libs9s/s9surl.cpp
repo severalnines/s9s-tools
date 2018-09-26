@@ -27,7 +27,8 @@
 
 S9sUrl::S9sUrl() :
     m_port(0),
-    m_hasPort(false)
+    m_hasPort(false),
+    m_parseCursor(0)
 {
 }
 

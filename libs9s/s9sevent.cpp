@@ -535,6 +535,7 @@ S9sEvent::eventMaintenanceToOneLiner() const
 
         case Started:
             retval += " maintenance started";
+            break;
 
         case Created:
             retval += " maintenance created";
