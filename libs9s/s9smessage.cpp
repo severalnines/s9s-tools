@@ -278,12 +278,12 @@ S9sMessage::toString(
     {
         c = formatString[n];
         
-        if (c == '%')
+        if (c == '%' && !percent)
         {
             percent    = true;
             partFormat = "%";
             continue;
-        } else if (c == '\\')
+        } else if (c == '\\' && !escaped)
         {
             escaped = true;
             continue;
