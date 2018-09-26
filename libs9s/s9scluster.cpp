@@ -452,7 +452,7 @@ S9sVariant
 S9sCluster::nNics() const
 {
     S9sVariantList ids = hostIds();
-    S9sVariant     retval;
+    S9sVariant     retval = 0;
 
     for (uint idx = 0u; idx < ids.size(); ++idx)
     {
@@ -469,7 +469,7 @@ S9sVariant
 S9sCluster::nDevices() const
 {
     S9sVariantList ids = hostIds();
-    S9sVariant     retval;
+    S9sVariant     retval = 0;
 
     for (uint idx = 0u; idx < ids.size(); ++idx)
     {
@@ -532,7 +532,7 @@ S9sVariant
 S9sCluster::swapFree() const
 {
     S9sVariantList ids = hostIds();
-    S9sVariant     retval;
+    S9sVariant     retval = 0;
 
     for (uint idx = 0u; idx < ids.size(); ++idx)
     {

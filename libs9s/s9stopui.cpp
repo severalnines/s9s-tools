@@ -40,6 +40,7 @@ S9sTopUi::S9sTopUi(
     m_client(client),
     m_nReplies(0),
     m_clustersReplyReceived(0),
+    m_clusterId(0),
     m_sortOrder(CpuUsage),
     m_communicating(false),
     m_viewDebug(false),

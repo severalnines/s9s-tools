@@ -1507,7 +1507,7 @@ S9sNode::backendServerPort(
     S9sVariantList theList = backendServers();
     int            retval  = -1;
 
-    if (index >= 0 && index < theList.size())
+    if (index >= 0u && index < theList.size())
         retval = theList[index]["port"].toInt();
 
     return retval;

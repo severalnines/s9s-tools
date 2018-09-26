@@ -285,7 +285,12 @@ S9sFormatter::percent(
         const ulonglong part) const
 {
     S9sString retval;
-    double    percent = 100.0 * ((double)part / (double)total);
+    double    percent;
+    
+    if (total == 0ull)
+        percent = 100.0;
+    else
+        percent = 100.0 * ((double)part / (double)total);
 
     retval.sprintf("%.1f%%", percent);
     return retval;

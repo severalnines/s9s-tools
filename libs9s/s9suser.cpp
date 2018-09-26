@@ -436,7 +436,6 @@ S9sUser::toString(
     S9sString    partFormat;
     bool         percent      = false;
     bool         escaped      = false;
-    bool         modifierFree = false;
 
     for (uint n = 0; n < formatString.size(); ++n)
     {
@@ -447,21 +446,10 @@ S9sUser::toString(
             percent    = true;
             partFormat = "%";
             continue;
-#if 0
-        } else if (percent && c == 'f')
-        {
-            modifierFree = true;
-            continue;
-#endif
         } else if (c == '\\')
         {
             escaped = true;
             continue;
-        }
-
-        if (modifierFree)
-        {
-            S9S_DEBUG("Modifier 'f' is not used here.");
         }
 
         if (escaped)
@@ -602,7 +590,6 @@ S9sUser::toString(
 
         percent      = false;
         escaped      = false;
-        modifierFree = false;
     }
 
     return retval;
