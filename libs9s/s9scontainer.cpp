@@ -220,7 +220,7 @@ S9sContainer::toString(
         {
             //modifierFree = true;
             continue;
-        } else if (c == '\\')
+        } else if (c == '\\' && !escaped)
         {
             escaped = true;
             continue;

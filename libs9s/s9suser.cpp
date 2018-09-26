@@ -446,7 +446,7 @@ S9sUser::toString(
             percent    = true;
             partFormat = "%";
             continue;
-        } else if (c == '\\')
+        } else if (c == '\\' && !escaped)
         {
             escaped = true;
             continue;

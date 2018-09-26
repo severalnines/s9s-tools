@@ -301,8 +301,7 @@ S9sFormat::toSizeString(
             if (retval.length() > 4)
                 retval.sprintf("%.0fT", dValue / TERA);
 
-            return retval;
-        
+            return retval; 
         } else {
             retval.sprintf("%.1fP", dValue / PETA);
 
@@ -311,9 +310,6 @@ S9sFormat::toSizeString(
 
             return retval;
         }
-
-        retval.sprintf("%.0f", dValue);
-        return retval;
     }
 
     return retval;
