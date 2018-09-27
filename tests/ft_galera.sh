@@ -5,7 +5,10 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="1.0.0"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 
@@ -105,6 +108,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -220,7 +224,8 @@ function testCreateCluster()
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -246,7 +251,8 @@ function testSetupAudit()
     mys9s cluster \
         --setup-audit-logging \
         --cluster-id=1 \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
@@ -387,7 +393,8 @@ function testRestartNode()
         --restart \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -413,7 +420,8 @@ function testStopStartNode()
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -428,7 +436,8 @@ function testStopStartNode()
         --start \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     exitCode=$?
     printVerbose "exitCode = $exitCode"
@@ -675,7 +684,8 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -737,7 +747,8 @@ function testAddRemoveHaProxy()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="haProxy://$node" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
    
@@ -751,7 +762,8 @@ function testAddRemoveHaProxy()
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$node:9600" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
     
@@ -778,7 +790,8 @@ function testAddHaProxy()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -802,7 +815,8 @@ function testRemoveNode()
         --remove-node \
         --cluster-name="$CLUSTER_NAME" \
         --nodes="$LAST_ADDED_NODE" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -820,7 +834,8 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -841,7 +856,8 @@ function testCreateBackup()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -868,7 +884,8 @@ function testRestoreBackup()
         --restore \
         --cluster-id="$CLUSTER_ID" \
         --backup-id="$backupId" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -887,12 +904,13 @@ function testRemoveBackup()
         awk '{print $1}')
 
     #
-    # Calling for a rolling restart.
+    # Removing the backup.
     #
     mys9s backup \
         --delete \
         --backup-id=$backupId \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -910,7 +928,8 @@ function testStop()
     mys9s cluster \
         --stop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -928,7 +947,8 @@ function testStart()
     mys9s cluster \
         --start \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }

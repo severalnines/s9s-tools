@@ -4,7 +4,9 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
-LOG_OPTION="--wait"
+
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -73,6 +75,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -166,7 +169,8 @@ function createCluster()
         --vendor=$OPTION_VENDOR \
         --nodes="$node001;$node002" \
         --containers="$node001;$node002" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -263,7 +267,8 @@ function dropCluster()
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     mys9s tree --list --long
 
@@ -307,6 +312,7 @@ function deleteContainer()
             --password=secret \
             --delete \
             $LOG_OPTION \
+            $DEBUG_OPTION \
             "$container"
     
         check_exit_code $?
