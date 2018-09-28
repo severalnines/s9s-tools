@@ -4050,7 +4050,7 @@ S9sRpcReply::printImages()
 void
 S9sRpcReply::printImagesBrief()
 {
-    //S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options = S9sOptions::instance();
     //bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sStringList   collectedList;
