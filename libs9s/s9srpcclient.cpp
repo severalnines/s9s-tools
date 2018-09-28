@@ -4961,6 +4961,7 @@ S9sRpcClient::createContainerWithJob()
     S9sOptions    *options      = S9sOptions::instance();
     S9sString      templateName = options->templateName();
     S9sString      imageName    = options->imageName();
+    S9sString      imageOsUser  = options->imageOsUser();
     S9sString      cloudName    = options->cloudName();
     S9sVariantList servers      = options->servers();
     S9sString      subnetId     = options->subnetId();
@@ -4978,6 +4979,9 @@ S9sRpcClient::createContainerWithJob()
     
     if (!imageName.empty())
         container.setImage(imageName);
+
+    if (!imageOsUser.empty())
+        container.setImageOsUser(imageOsUser);
 
     if (!cloudName.empty())
         container.setProvider(cloudName);
@@ -6386,6 +6390,7 @@ S9sRpcClient::composeJobData(
     S9sString      templateName = options->templateName();
     S9sString      cloudName    = options->cloudName();
     S9sString      imageName    = options->imageName();
+    S9sString      imageOsUser  = options->imageOsUser();
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
     S9sVariantList volumes      = options->volumes();
@@ -6411,6 +6416,9 @@ S9sRpcClient::composeJobData(
 
             if (!imageName.empty())
                 container.setImage(imageName);
+    
+            if (!imageOsUser.empty())
+                container.setImageOsUser(imageOsUser);
 
             if (!cloudName.empty())
                 container.setProvider(cloudName);
@@ -6448,6 +6456,9 @@ S9sRpcClient::composeJobData(
             
             if (!imageName.empty())
                 container.setImage(imageName);
+    
+            if (!imageOsUser.empty())
+                container.setImageOsUser(imageOsUser);
             
             if (!cloudName.empty())
                 container.setProvider(cloudName);

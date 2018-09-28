@@ -419,6 +419,11 @@ To find out what images are supported by the registered container severs please
 issue the \fBs9s server \-\^\-list\-images\fP command.
 
 .TP
+.BI \-\^\-image\-os\-user= NAME
+The name of the initial OS user defined in the image for the first login. Use
+this option to create containers based on custom images.
+
+.TP
 .BI \-\^\-os\-key\-file= PATH
 The path of the SSH key to install on a new container to allow the user to log
 in. This command line option can be passed when a new container is created, the

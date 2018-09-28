@@ -85,6 +85,9 @@ class S9sContainer : public S9sObject
 
         S9sString image(const S9sString &defaultValue = "") const;
         void setImage(const S9sString &image);
+        
+        S9sString imageOsUser(const S9sString &defaultValue = "") const;
+        void setImageOsUser(const S9sString &image);
 
         S9sString templateName(
                 const S9sString  &defaultValue,

@@ -252,6 +252,7 @@ class S9sOptions
         S9sString subnetId() const;
         S9sString vpcId() const;
         S9sString imageName() const;
+        S9sString imageOsUser() const;
         S9sVariantList volumes() const;
         bool appendVolumes(const S9sString &stringRep);
 

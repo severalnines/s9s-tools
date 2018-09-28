@@ -451,6 +451,11 @@ To find out what images are supported by the registered container severs please
 issue the \fBs9s server \-\^\-list\-images\fP command.
 
 .TP
+.BI \-\^\-image\-os\-user= NAME
+The name of the initial OS user defined in the image for the first login. Use
+this option to create containers based on custom images.
+
+.TP
 .BI \-\^\-nodes= NODELIST
 The list of nodes or hosts enumerated in a special string using a semicolon as
 field separator (e.g. "192.168.1.1;192.168.1.2"). 

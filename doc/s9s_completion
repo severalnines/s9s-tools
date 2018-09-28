@@ -182,7 +182,8 @@ function _s9s()
                 opts+="--output-dir= --donor= "
                 
                 # These are for when we also create containers.
-                opts+="--cloud= --containers= --image= --generate-key "
+                opts+="--cloud= --containers= --image= --image-os-user= "
+                opts+="--generate-key "
                 opts+="--os-key-file= --os-password= --os-user= --servers= "
                 opts+="--subnet-id= --template= --volumes= --vpc-id= "
             fi 

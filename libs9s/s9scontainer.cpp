@@ -863,6 +863,25 @@ S9sContainer::setImage(
     setProperty("image", image);
 }
 
+S9sString 
+S9sContainer::imageOsUser(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("image_os_user").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+void
+S9sContainer::setImageOsUser(
+        const S9sString &image)
+{
+    setProperty("image_os_user", image);
+}
+
 /**
  * \param defaultValue The string to return if the requested property is not
  *   set.

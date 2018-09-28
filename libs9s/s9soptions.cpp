@@ -217,6 +217,7 @@ enum S9sOptionType
     OptionVolumes,
     OptionCloud,
     OptionImage,
+    OptionImageOsUser,
     OptionIndividualFiles,
     OptionTestServer,
     OptionBackupDatadir,
@@ -2180,6 +2181,15 @@ S9sString
 S9sOptions::imageName() const
 {
     return getString("image");
+}
+
+/**
+ * \returns The value for the --image-os-user= command line option.
+ */
+S9sString
+S9sOptions::imageOsUser() const
+{
+    return getString("image_os_user");
 }
 
 /**
@@ -4536,6 +4546,7 @@ S9sOptions::printHelpCluster()
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
+"  --image-os-user=NAME       The name of the initial user on image.\n"
 "  --job-tags=LIST            Tags for the job if a job is created.\n"
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
@@ -4576,6 +4587,7 @@ S9sOptions::printHelpContainer()
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
+"  --image-os-user=NAME       The name of the initial user on image.\n"
 "  --os-key-file=PATH         The key file to register on the container.\n"
 "  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The username to create on the container.\n"
@@ -8416,6 +8428,7 @@ S9sOptions::readOptionsCluster(
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
+        { "image-os-user",    required_argument, 0, OptionImageOsUser     },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
@@ -8806,6 +8819,11 @@ S9sOptions::readOptionsCluster(
                 // --image=image
                 m_options["image"] = optarg;
                 break;
+            
+            case OptionImageOsUser:
+                // --image-os-user=user
+                m_options["image_os_user"] = optarg;
+                break;
 
             case OptionOsKeyFile:
                 // --os-key-file=PATH
@@ -8944,6 +8962,7 @@ S9sOptions::readOptionsContainer(
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
+        { "image-os-user",    required_argument, 0, OptionImageOsUser     },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
@@ -9159,7 +9178,12 @@ S9sOptions::readOptionsContainer(
                 // --image=image
                 m_options["image"] = optarg;
                 break;
-            
+
+            case OptionImageOsUser:
+                // --image-os-user=user
+                m_options["image_os_user"] = optarg;
+                break;
+
             case OptionOsKeyFile:
                 // --os-key-file=PATH
                 m_options["os_key_file"] = optarg;
