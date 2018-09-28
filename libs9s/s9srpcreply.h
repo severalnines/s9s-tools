@@ -117,7 +117,10 @@ class S9sRpcReply : public S9sVariantMap
         void printRegionsBrief();
         void printSubnets();
         void printRegions();
+        
         void printImages();
+        void printImagesLong();
+        void printImagesBrief();
 
         
         // Handling containers.

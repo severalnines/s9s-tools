@@ -9847,12 +9847,13 @@ S9sOptions::readOptionsServer(
         //{ "cluster-id",       required_argument, 0, 'i'                   },
         
         { "acl",              required_argument, 0, OptionAcl             },
+        { "cloud",            required_argument, 0, OptionCloud           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "refresh",          no_argument,       0, OptionRefresh         },
+        { "region",           required_argument, 0, OptionRegion          },
         { "servers",          required_argument, 0, OptionServers         },
-        { "cloud",            required_argument, 0, OptionCloud           },
 
         { 0, 0, 0, 0 }
     };
@@ -10131,16 +10132,22 @@ S9sOptions::readOptionsServer(
                 m_options["refresh"] = true;
                 break;
             
+            case OptionCloud:
+                // --cloud=NAME
+                m_options["cloud"] = optarg;
+                break;
+            
+            case OptionRegion:
+                // --region=REGION
+                m_options["region"] = optarg;
+                break;
+            
             case OptionServers:
                 // --servers=LIST
                 if (!setServers(optarg))
                     return false;
                 break;
             
-            case OptionCloud:
-                // --cloud=NAME
-                m_options["cloud"] = optarg;
-                break;
 
             case '?':
             default:

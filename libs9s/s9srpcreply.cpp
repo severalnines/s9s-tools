@@ -3863,6 +3863,9 @@ S9sRpcReply::printSubnets()
             S9sString vpcId  = server.subnetVpcId(idx1);
             S9sString id     = server.subnetId(idx1);
 
+            if (region.empty())
+                region = "-";
+
             hostNameFormat.setColor(
                     server.colorBegin(syntaxHighlight),
                     server.colorEnd(syntaxHighlight));
@@ -4028,76 +4031,186 @@ S9sRpcReply::printRegions()
 void
 S9sRpcReply::printImages()
 {
-    S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested()) 
+    {
+        printImagesLong();
+    } else {
+        printImagesBrief();
+    }
+}
+
+void
+S9sRpcReply::printImagesBrief()
+{
+    //S9sOptions     *options = S9sOptions::instance();
+    //bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  theList = operator[]("servers").toVariantList();
     S9sStringList   collectedList;
 
-    if (options->isLongRequested())
+    for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        for (uint idx = 0; idx < theList.size(); ++idx)
+        S9sVariantMap  theMap = theList[idx].toVariantMap();
+        S9sVariantList images = theMap["images"].toVariantList();
+
+        for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
         {
-            S9sVariantMap  theMap   = theList[idx].toVariantMap();
-            S9sServer      server   = theMap;
-            S9sString      hostName = server.hostName();
-            S9sVariantList images   = theMap["images"].toVariantList();
+            S9sVariantMap imageMap = images[idx1].toVariantMap();
+            S9sString     image    = imageMap["name"].toString();
 
-            if (!options->isStringMatchExtraArguments(hostName))
+            if (image.empty())
                 continue;
-           
-            // Printing the server name in color.
-            ::printf("%s%s%s:", 
-                    server.colorBegin(syntaxHighlight),
-                    STR(hostName),
-                    server.colorEnd(syntaxHighlight));
 
-            // Collecting all the images the given server supports.
-            for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
-            {
-                S9sVariantMap imageMap = images[idx1].toVariantMap();
-                S9sString     image    = imageMap["name"].toString();
+            if (collectedList.contains(image))
+                continue;
 
-                if (image.empty())
-                    continue;
+            collectedList << image;
+        }
+    }
+    
+    for (uint idx = 0; idx < collectedList.size(); ++idx)
+        ::printf("%s ", STR(collectedList[idx]));
 
-                if (collectedList.contains(image))
-                    continue;
+    ::printf("\n");
+}
 
-                collectedList << image;
-            }
+void
+S9sRpcReply::printImagesLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("servers").toVariantList();
+    S9sFormat       cloudFormat;
+    S9sFormat       regionFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       imageFormat;
+    int             nLines = 0;
+    int             nImages = 0;
 
-            // Printing the images.
-            for (uint idx = 0; idx < collectedList.size(); ++idx)
-                ::printf(" %s", STR(collectedList[idx]));
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        S9sVariantList images   = theMap["images"].toVariantList();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+       
+        #if 0
+        // Printing the server name in color.
+        ::printf("%s%s%s:", 
+                server.colorBegin(syntaxHighlight),
+                STR(hostName),
+                server.colorEnd(syntaxHighlight));
+        #endif
+
+        // Collecting all the images the given server supports.
+        for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+        {
+            S9sVariantMap imageMap = images[idx1].toVariantMap();
+            S9sString     image    = imageMap["name"].toString();
+            S9sString     cloud    = imageMap["provider"].toString();
+            S9sString     region   = imageMap["region"].toString();
+            
+            ++nImages;
+
+            /*
+             * Filtering.
+             */
+            if (!options->cloudName().empty() && options->cloudName() != cloud)
+                continue;
+
+            if (!options->region().empty() && options->region() != region)
+                continue;
+
+            /*
+             *
+             */
+            cloudFormat.widen(cloud);
+            regionFormat.widen(region);
+            hostNameFormat.widen(hostName);
+            imageFormat.widen(image);
+            ++nLines;
+        }
+    }
+
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        cloudFormat.widen("CLD");
+        regionFormat.widen("REGION");
+        hostNameFormat.widen("SERVER");
+        imageFormat.widen("IMAGE");
+
+        printf("%s", headerColorBegin());
+        cloudFormat.printf("CLD");
+        regionFormat.printf("REGION");
+        hostNameFormat.printf("SERVER");
+        imageFormat.printf("IMAGE");
+        printf("%s", headerColorEnd());
+        printf("\n");
+
+    }
+
+    /*
+     * Printing the table lines.
+     */
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        S9sVariantList images   = theMap["images"].toVariantList();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+       
+        // Collecting all the images the given server supports.
+        for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
+        {
+            S9sVariantMap imageMap = images[idx1].toVariantMap();
+            S9sString     image    = imageMap["name"].toString();
+            S9sString     cloud    = imageMap["provider"].toString();
+            S9sString     region   = imageMap["region"].toString();
+
+            /*
+             * Filtering.
+             */
+            if (!options->cloudName().empty() && options->cloudName() != cloud)
+                continue;
+
+            if (!options->region().empty() && options->region() != region)
+                continue;
+
+            /*
+             *
+             */
+            if (region.empty())
+                region = "-";
+
+            cloudFormat.printf(cloud);
+            regionFormat.printf(region);
         
+            ::printf("%s", server.colorBegin(syntaxHighlight));
+            hostNameFormat.printf(hostName);
+            ::printf("%s", server.colorEnd(syntaxHighlight));
+
+            imageFormat.printf(image);
             ::printf("\n");
         }
-    } else {
-
-        for (uint idx = 0; idx < theList.size(); ++idx)
-        {
-            S9sVariantMap  theMap = theList[idx].toVariantMap();
-            S9sVariantList images = theMap["images"].toVariantList();
-
-            for (uint idx1 = 0u; idx1 < images.size(); ++idx1)
-            {
-                S9sVariantMap imageMap = images[idx1].toVariantMap();
-                S9sString     image    = imageMap["name"].toString();
-
-                if (image.empty())
-                    continue;
-
-                if (collectedList.contains(image))
-                    continue;
-
-                collectedList << image;
-            }
-        }
+    }
     
-        for (uint idx = 0; idx < collectedList.size(); ++idx)
-            ::printf("%s ", STR(collectedList[idx]));
-
-        ::printf("\n");
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total %s%d%s image(s).\n",
+                numberColorBegin(), nImages, numberColorEnd());
     }
 }
 
