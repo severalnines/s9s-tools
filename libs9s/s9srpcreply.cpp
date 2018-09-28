@@ -4064,6 +4064,17 @@ S9sRpcReply::printImagesBrief()
         {
             S9sVariantMap imageMap = images[idx1].toVariantMap();
             S9sString     image    = imageMap["name"].toString();
+            S9sString     cloud    = imageMap["provider"].toString();
+            S9sString     region   = imageMap["region"].toString();
+
+            /*
+             * Filtering.
+             */
+            if (!options->cloudName().empty() && options->cloudName() != cloud)
+                continue;
+
+            if (!options->region().empty() && options->region() != region)
+                continue;
 
             if (image.empty())
                 continue;

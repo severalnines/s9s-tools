@@ -37,6 +37,7 @@ SUPPORTED TESTS:
   o createServer     Creates a new cmon-cloud container server. 
   o registerServer   Unregisters and then registers the previous server. 
   o createContainer  Creates a new container.
+  o containerImages  Creates containers with various images.
   o createFail       A container creation that should fail.
   o createCluster    Creates a cluster on VMs created on the fly.
   o deleteContainer  Deletes all the containers that were created.
@@ -266,6 +267,71 @@ function createContainer()
 }
 
 #
+# Creating containers with various images on AWS.
+#
+function containerImages()
+{
+    local container_name
+    local container_ip
+    local image
+    local owner
+    local n=0
+
+    print_title "Creating Containers with Images"
+
+    for image in "ubuntu16.04" "debian8" "centos7"; do
+        container_name=$(printf "ft_containers_aws_2%d_$$" "$n")
+
+        #
+        # Creating the container.
+        #
+        mys9s container \
+            --create \
+            --servers=$CMON_CLOUD_CONTAINER_SERVER \
+            --cloud="aws" \
+            --image="$image" \
+            $LOG_OPTION \
+            "$container_name"
+    
+        check_exit_code $?
+    
+        #
+        # Checking the container.
+        #
+        container_ip=$(get_container_ip "$container_name")
+        if [ -z "$container_ip" ]; then
+            failure "The container was not created or got no IP."
+            s9s container --list --long
+            exit 1
+        fi
+        
+        owner=$(\
+            s9s container --list --long --batch "$container_name" | \
+            awk '{print $4}')
+
+        if [ "$owner" != "$USER" ]; then
+            failure "The owner of '$container_name' is '$owner', not '$USER'"
+            exit 1
+        fi
+
+        if ! is_server_running_ssh "$container_ip" "$owner"; then
+            failure "User $owner can not log in to $container_ip"
+            exit 1
+        else
+            echo "SSH access granted for user '$USER' on $container_ip."
+        fi
+
+        #
+        # Deleting the container.
+        #
+        mys9s container --delete $LOG_OPTION "$container_name"
+        check_exit_code $?
+
+        let n+=1
+    done
+}
+
+#
 # This will try to create some containers with values that should cause failures
 # (like duplicate names).
 #
@@ -292,6 +358,8 @@ function createFail()
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with duplicate name should have failed."
         exit 1
+    else 
+        echo "Yes, this expected to fail."
     fi
     
     #
@@ -310,6 +378,8 @@ function createFail()
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid cloud should have failed."
         exit 1
+    else 
+        echo "Yes, this expected to fail."
     fi
     
     #
@@ -328,6 +398,8 @@ function createFail()
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid subnet should have failed."
         exit 1
+    else 
+        echo "Yes, this expected to fail."
     fi
 
     #
@@ -346,6 +418,8 @@ function createFail()
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
         exit 1
+    else 
+        echo "Yes, this expected to fail."
     fi
     
     #
@@ -364,6 +438,8 @@ function createFail()
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid firewall should have failed."
         exit 1
+    else 
+        echo "Yes, this expected to fail."
     fi
 }
 
@@ -494,6 +570,7 @@ else
     runFunctionalTest createServer
     runFunctionalTest registerServer
     runFunctionalTest createContainer
+    runFunctionalTest containerImages
     runFunctionalTest createFail
     runFunctionalTest createCluster
     runFunctionalTest deleteContainer
