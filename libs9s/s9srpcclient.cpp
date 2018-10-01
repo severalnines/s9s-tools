@@ -5577,6 +5577,8 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
+
+
 bool
 S9sRpcClient::getAccounts()
 {
@@ -5593,6 +5595,18 @@ S9sRpcClient::getAccounts()
     if (options->offset() >= 0)
         request["offset"] = options->offset();
 
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getSpreadsheets()
+{
+    //S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri       = "/v2/spreadsheets/";
+    S9sVariantMap  request   = composeRequest();
+
+    // Building the request.
+    request["operation"]  = "getSpreadsheetNames";
     return executeRequest(uri, request);
 }
 

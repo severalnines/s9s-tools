@@ -192,6 +192,18 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isSheetOperation())
+    {
+        if (options->isListRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getSpreadsheets();
+            reply = client.reply();
+            reply.printSheets();
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isEventOperation())
     {
         if (options->isListRequested())

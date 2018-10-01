@@ -304,6 +304,7 @@ S9sOptions::S9sOptions() :
     m_modes["node"]         = Node;
     m_modes["process"]      = Process;
     m_modes["script"]       = Script;
+    m_modes["sheet"]        = Sheet;
     m_modes["server"]       = Server;
     m_modes["tree"]         = Tree;
     m_modes["user"]         = User;
@@ -322,6 +323,7 @@ S9sOptions::S9sOptions() :
     m_modes["nodes"]        = Node;
     m_modes["processes"]    = Process;
     m_modes["scripts"]      = Script;
+    m_modes["sheets"]       = Sheet;
     m_modes["servers"]      = Server;
     m_modes["users"]        = User;
     m_modes["accounts"]     = Account;
@@ -2688,6 +2690,12 @@ S9sOptions::isScriptOperation() const
     return m_operationMode == Script;
 }
 
+bool
+S9sOptions::isSheetOperation() const
+{
+    return m_operationMode == Sheet;
+}
+
 /**
  * \returns true if the main operation is "server".
  */
@@ -4057,6 +4065,14 @@ S9sOptions::readOptions(
 
             break;
         
+        case Sheet:
+            retval = readOptionsSheet(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsSheet();
+
+            break;
+        
         case Server:
             retval = readOptionsServer(*argc, argv);
             
@@ -4228,6 +4244,10 @@ S9sOptions::printHelp()
             printHelpScript();
             break;
         
+        case Sheet:
+            printHelpSheet();
+            break;
+        
         case Server:
             printHelpServer();
             break;
@@ -4259,6 +4279,7 @@ S9sOptions::printHelpGeneric()
 "\n"
 "Where COMMAND is:\n"
 "  account - to manage accounts on clusters.\n"
+"    alarm - to manage alarms."
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -4648,6 +4669,21 @@ S9sOptions::printHelpScript()
 "\n"
     );
 }
+
+void
+S9sOptions::printHelpSheet()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"sheet\" command:\n"
+"  --list                     List the spreadsheets on the controller.\n"
+"\n"
+"  --cluster-id=ID            The cluster ID.\n"
+"\n"
+    );
+}
+
 
 void
 S9sOptions::printHelpServer()
@@ -9807,6 +9843,231 @@ S9sOptions::readOptionsScript(
 }
 
 /**
+ * Reads the command line options for the "sheet" mode.
+ */
+bool
+S9sOptions::readOptionsSheet(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        
+        // Job Related Options
+        { "force",            no_argument,       0, OptionForce           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log-format",       required_argument, 0, OptionLogFormat       },
+        { "log",              no_argument,       0, 'G'                   },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L'                   },
+       
+        // 
+        { "cluster-id",       required_argument, 0, 'i'                   },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+           
+            /*
+             * Options about the cluster.
+             */
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+            
+            /*
+             * Job options.
+             */
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+            
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+            
+            case OptionLogFormat:
+                // --log-format=FORMAT
+                m_options["log_format"] = optarg;
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+            
+            /*
+             * Main options.
+             */
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case '?':
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
  * Reads the command line options for the "server" mode.
  */
 bool
@@ -10534,6 +10795,40 @@ S9sOptions::checkOptionsScript()
         m_errorMessage = 
             "One of the --list, --execute and --delete options is mandatory.";
 
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok in "script" mode.
+ */
+bool
+S9sOptions::checkOptionsSheet()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (countOptions > 1)
+    {
+        m_errorMessage = "The main options are mutually exclusive.";
+        m_exitStatus = BadOptions;
+
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
 
         return false;

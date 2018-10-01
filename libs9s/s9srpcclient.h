@@ -163,6 +163,7 @@ class S9sRpcClient
          */
         bool createAccount();
         bool getAccounts();
+        bool getSpreadsheets();
         bool getRepositories();
         bool getSupportedSetups();
 
