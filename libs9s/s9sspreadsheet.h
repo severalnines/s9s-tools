@@ -41,6 +41,11 @@ class S9sSpreadsheet : public S9sObject
                 const uint column,
                 const uint row) const;
 
+        bool isAlignRight(
+                const uint sheet,
+                const uint column,
+                const uint row) const;
+
         int columnWidth(uint column) const;
 
     private: 

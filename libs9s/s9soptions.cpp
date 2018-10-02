@@ -9881,11 +9881,13 @@ S9sOptions::readOptionsSheet(
         { "wait",             no_argument,       0, OptionWait            },
 
         // Main Option
+        { "create",           no_argument,       0,  OptionCreate         },
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
        
-        // 
+        // Other options.
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "input-file",       required_argument, 0, OptionInputFile       },
 
         { 0, 0, 0, 0 }
     };
@@ -10036,6 +10038,11 @@ S9sOptions::readOptionsSheet(
             /*
              * Main options.
              */
+            case OptionCreate:
+                // --create
+                m_options["create"] = true;
+                break;
+
             case 'L': 
                 // --list
                 m_options["list"] = true;
@@ -10044,6 +10051,14 @@ S9sOptions::readOptionsSheet(
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
+                break;
+
+            /*
+             *
+             */
+            case OptionInputFile:
+                // --input-file=FILE
+                m_options["input_file"] = optarg;
                 break;
 
             case '?':
@@ -10826,6 +10841,8 @@ S9sOptions::checkOptionsSheet()
     if (isListRequested())
         countOptions++;
     else if (isStatRequested())
+        countOptions++;
+    else if (isCreateRequested())
         countOptions++;
     
     if (countOptions > 1)

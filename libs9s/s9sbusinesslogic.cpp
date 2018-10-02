@@ -208,6 +208,11 @@ S9sBusinessLogic::execute()
             success = client.getSpreadsheet();
             reply = client.reply();
             reply.printSheet();
+        } else if (options->isCreateRequested())
+        {
+            success = client.createSpreadsheet();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

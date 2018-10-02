@@ -61,6 +61,24 @@ S9sSpreadsheet::value(
     return theCell["value"].toString();
 }
 
+bool
+S9sSpreadsheet::isAlignRight(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    S9sVariantMap theCell   = cell(sheet, column, row);
+    S9sString     valueType = theCell["valuetype"].toString();
+
+    if (valueType == "Double")
+        return true;
+    else if (valueType == "Int")
+        return true;
+
+    return false;
+}
+
+
 void
 S9sSpreadsheet::print() const
 {
@@ -76,16 +94,12 @@ S9sSpreadsheet::print() const
         label += 'A' + col;
         
         for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
-        {
             ::printf(" ");
-        }
 
         ::printf("%s", STR(label));
         
         for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
-        {
             ::printf(" ");
-        }
     }
     ::printf("%s", headerColorEnd());
     ::printf("\n");
@@ -96,7 +110,7 @@ S9sSpreadsheet::print() const
         ::printf(" %3u ", row);
         ::printf("%s", headerColorEnd());
 
-        for (uint col = 0u; col < 10; ++col)
+        for (uint col = 0u; col < 8; ++col)
         {
             int       theWidth = columnWidth(col);
             S9sString theValue = value(0, col, row);
@@ -106,13 +120,21 @@ S9sSpreadsheet::print() const
                 theValue.resize(theWidth);
             }
 
-            ::printf("%10s ", STR(theValue));
-            if (theWidth > (int)theValue.length())
+            if (!isAlignRight(0, col, row))
             {
-                for (uint n = 0; n < theWidth - theValue.length(); ++n)
+                ::printf("%s", STR(theValue));
+                if (theWidth > (int)theValue.length())
                 {
-                    ::printf(" ");
+                    for (uint n = 0; n < theWidth - theValue.length(); ++n)
+                        ::printf(" ");
                 }
+            } else {
+                if (theWidth > (int)theValue.length())
+                {
+                    for (uint n = 0; n < theWidth - theValue.length(); ++n)
+                        ::printf(" ");
+                }
+                ::printf("%s", STR(theValue));
             }
 
         }
@@ -125,7 +147,7 @@ int
 S9sSpreadsheet::columnWidth(
         uint column) const
 {
-    return 10;
+    return 14;
 }
 
 S9sVariantMap

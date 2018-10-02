@@ -5598,6 +5598,9 @@ S9sRpcClient::getAccounts()
     return executeRequest(uri, request);
 }
 
+/**
+ * Gets the names of the spreadsheets.
+ */
 bool
 S9sRpcClient::getSpreadsheets()
 {
@@ -5609,6 +5612,7 @@ S9sRpcClient::getSpreadsheets()
     request["operation"]  = "getSpreadsheetNames";
     return executeRequest(uri, request);
 }
+
 
 bool
 S9sRpcClient::getSpreadsheet()
@@ -5633,6 +5637,52 @@ S9sRpcClient::getSpreadsheet()
 
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::createSpreadsheet()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri       = "/v2/spreadsheets/";
+    S9sVariantMap  request   = composeRequest();
+    S9sString      inputFileName = options->inputFile();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The command line argument should be the name "
+                "of the spreadsheet.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!inputFileName.empty())
+    {
+        S9sFile   inputFile(inputFileName);
+        S9sString content;
+        bool      success;
+
+        success = inputFile.readTxtFile(content);
+        if (!success)
+        {
+            PRINT_ERROR("%s", STR(inputFile.errorString()));
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+
+        request["content"] = content;
+
+        if (inputFileName.toLower().endsWith(".csv"))
+            request["format"] = "csv";
+    }
+
+    // Building the request.
+    request["operation"]  = "createSpreadsheet";
+    request["spreadsheet_name"] =  options->extraArgument(0);
+
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::getRepositories()
