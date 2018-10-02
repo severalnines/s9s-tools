@@ -352,6 +352,7 @@ class S9sOptions
         bool isListGroupsRequested() const;
         bool isStatRequested() const;
         bool isWatchRequested() const;
+        bool isEditRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
         bool isPullConfigRequested() const;

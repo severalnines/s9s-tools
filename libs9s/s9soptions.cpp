@@ -136,6 +136,7 @@ enum S9sOptionType
     OptionFullPath,
     OptionStat,
     OptionWatch,
+    OptionEdit,
     OptionCreateAccount,
     OptionGrant,
     OptionCheckHosts,
@@ -3027,6 +3028,12 @@ S9sOptions::isWatchRequested() const
     return getBool("watch");
 }
 
+bool
+S9sOptions::isEditRequested() const
+{
+    return getBool("edit");
+}
+
 /**
  * \returns true if the "list-config" function is requested by providing the
  *     --list command line option.
@@ -4677,7 +4684,9 @@ S9sOptions::printHelpSheet()
 
     printf(
 "Options for the \"sheet\" command:\n"
+"  --edit                     Edit a spreadsheet.\n"
 "  --list                     List the spreadsheets on the controller.\n"
+"  --stat                     Print the details of a spreadsheet.\n"
 "\n"
 "  --cluster-id=ID            The cluster ID.\n"
 "\n"
@@ -9882,6 +9891,7 @@ S9sOptions::readOptionsSheet(
 
         // Main Option
         { "create",           no_argument,       0,  OptionCreate         },
+        { "edit",             no_argument,       0, OptionEdit            },
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
        
@@ -10041,6 +10051,11 @@ S9sOptions::readOptionsSheet(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionEdit:
+                // --edit
+                m_options["edit"] = true;
                 break;
 
             case 'L': 
@@ -10843,6 +10858,8 @@ S9sOptions::checkOptionsSheet()
     else if (isStatRequested())
         countOptions++;
     else if (isCreateRequested())
+        countOptions++;
+    else if (isEditRequested())
         countOptions++;
     
     if (countOptions > 1)

@@ -34,6 +34,8 @@ class S9sSpreadsheet : public S9sObject
 
         S9sSpreadsheet &operator=(const S9sVariantMap &rhs);
 
+
+        void setScreenSize(uint columns, uint rows);
         void print() const;
 
         S9sString value(
@@ -60,5 +62,7 @@ class S9sSpreadsheet : public S9sObject
 
     private:
         mutable S9sVariantList m_cells;
+        uint                   m_screenRows;
+        uint                   m_screenColumns;
 };
 

@@ -175,6 +175,8 @@ libs9s_public_h_headers =     \
 	s9sdisplaylist.h          \
 	S9sMonitor                \
 	s9smonitor.h              \
+	S9sCalc                   \
+	s9scalc.h                 \
 	S9sTopUi                  \
 	s9stopui.h                \
 	s9sunion.h                \
@@ -246,6 +248,7 @@ libs9s_a_SOURCES =            \
 	s9sdisplay.cpp            \
 	s9sdisplaylist.cpp        \
 	s9smonitor.cpp            \
+	s9scalc.cpp               \
 	s9stopui.cpp              \
 	s9sgraph.cpp              \
 	s9scmongraph.cpp          \

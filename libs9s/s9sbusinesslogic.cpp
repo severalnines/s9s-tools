@@ -33,6 +33,7 @@
 #include "S9sCmonGraph"
 #include "S9sEvent"
 #include "S9sMonitor"
+#include "S9sCalc"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -213,6 +214,12 @@ S9sBusinessLogic::execute()
             success = client.createSpreadsheet();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isEditRequested())
+        {
+            // s9s sheet --edit --cluster-id=1 "spreadsheet 10"
+            S9sCalc calc(client);
+
+            calc.main();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

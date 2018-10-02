@@ -24,14 +24,18 @@
 #include "s9sdebug.h"
 
 S9sSpreadsheet::S9sSpreadsheet() :
-    S9sObject()
+    S9sObject(),
+    m_screenRows(-1),
+    m_screenColumns(-1)
 {
     m_properties["class_name"] = "CmonSpreadsheet";
 }
  
 S9sSpreadsheet::S9sSpreadsheet(
         const S9sVariantMap &properties) :
-    S9sObject(properties)
+    S9sObject(properties),
+    m_screenRows(25),
+    m_screenColumns(80)
 {
     if (!m_properties.contains("class_name"))
         m_properties["class_name"] = "CmonSpreadsheet";
@@ -48,6 +52,15 @@ S9sSpreadsheet::operator=(
     setProperties(rhs);
     
     return *this;
+}
+
+void
+S9sSpreadsheet::setScreenSize(
+        uint columns, 
+        uint rows)
+{
+    m_screenRows = rows;
+    m_screenColumns = columns;
 }
 
 S9sString
@@ -82,14 +95,25 @@ S9sSpreadsheet::isAlignRight(
 void
 S9sSpreadsheet::print() const
 {
-    ::printf("     ");
+    int thisColumn = 0;
 
+    if (m_screenRows < 2u || m_screenColumns < 5u)
+        return;
+
+    /*
+     * Printing the header line.
+     */
+    ::printf("     ");
     ::printf("%s", headerColorBegin());
-    for (uint col = 0u; col < 10; ++col)
+
+    thisColumn = 5;
+    for (uint col = 0u; col < 16; ++col)
     {
         int       theWidth = columnWidth(col);
-        //int       printed  = 0;
         S9sString label;
+
+        if (thisColumn + theWidth > (int) m_screenColumns + 1)
+            break;
 
         label += 'A' + col;
         
@@ -100,11 +124,21 @@ S9sSpreadsheet::print() const
         
         for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
             ::printf(" ");
-    }
-    ::printf("%s", headerColorEnd());
-    ::printf("\n");
 
-    for (uint row = 0u; row < 10; ++row)
+        thisColumn += theWidth;
+    }
+
+    for (;thisColumn < (int)m_screenColumns;++thisColumn)
+        ::printf(" ");
+
+    //::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", headerColorEnd());
+    ::printf("\r\n");
+
+    /*
+     *
+     */
+    for (uint row = 0u; row < m_screenRows - 1; ++row)
     {
         ::printf("%s", headerColorBegin());
         ::printf(" %3u ", row);
@@ -136,10 +170,9 @@ S9sSpreadsheet::print() const
                 }
                 ::printf("%s", STR(theValue));
             }
-
         }
         
-        ::printf("\n");
+        ::printf("\r\n");
     }
 }
 
