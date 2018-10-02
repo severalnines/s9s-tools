@@ -5611,6 +5611,30 @@ S9sRpcClient::getSpreadsheets()
 }
 
 bool
+S9sRpcClient::getSpreadsheet()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri       = "/v2/spreadsheets/";
+    S9sVariantMap  request   = composeRequest();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The command line argument should be the name "
+                "of the spreadsheet.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    // Building the request.
+    request["operation"]  = "getSpreadsheet";
+    request["spreadsheet_name"] =  options->extraArgument(0);
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::getRepositories()
 {
     #if 1

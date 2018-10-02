@@ -9882,6 +9882,7 @@ S9sOptions::readOptionsSheet(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
        
         // 
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -10038,6 +10039,11 @@ S9sOptions::readOptionsSheet(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
                 break;
 
             case '?':
@@ -10818,6 +10824,8 @@ S9sOptions::checkOptionsSheet()
      * Checking if multiple operations are requested.
      */
     if (isListRequested())
+        countOptions++;
+    else if (isStatRequested())
         countOptions++;
     
     if (countOptions > 1)

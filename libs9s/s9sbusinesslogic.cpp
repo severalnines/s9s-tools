@@ -201,6 +201,13 @@ S9sBusinessLogic::execute()
             success = client.getSpreadsheets();
             reply = client.reply();
             reply.printSheets();
+        } else if (options->isStatRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getSpreadsheet();
+            reply = client.reply();
+            reply.printSheet();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
