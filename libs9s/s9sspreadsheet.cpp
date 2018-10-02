@@ -50,4 +50,127 @@ S9sSpreadsheet::operator=(
     return *this;
 }
 
+S9sString
+S9sSpreadsheet::value(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    S9sVariantMap theCell = cell(sheet, column, row);
 
+    return theCell["value"].toString();
+}
+
+void
+S9sSpreadsheet::print() const
+{
+    ::printf("     ");
+
+    ::printf("%s", headerColorBegin());
+    for (uint col = 0u; col < 10; ++col)
+    {
+        int       theWidth = columnWidth(col);
+        //int       printed  = 0;
+        S9sString label;
+
+        label += 'A' + col;
+        
+        for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
+        {
+            ::printf(" ");
+        }
+
+        ::printf("%s", STR(label));
+        
+        for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
+        {
+            ::printf(" ");
+        }
+    }
+    ::printf("%s", headerColorEnd());
+    ::printf("\n");
+
+    for (uint row = 0u; row < 10; ++row)
+    {
+        ::printf("%s", headerColorBegin());
+        ::printf(" %3u ", row);
+        ::printf("%s", headerColorEnd());
+
+        for (uint col = 0u; col < 10; ++col)
+        {
+            int       theWidth = columnWidth(col);
+            S9sString theValue = value(0, col, row);
+
+            if ((int)theValue.length() > theWidth)
+            {
+                theValue.resize(theWidth);
+            }
+
+            ::printf("%10s ", STR(theValue));
+            if (theWidth > (int)theValue.length())
+            {
+                for (uint n = 0; n < theWidth - theValue.length(); ++n)
+                {
+                    ::printf(" ");
+                }
+            }
+
+        }
+        
+        ::printf("\n");
+    }
+}
+
+int
+S9sSpreadsheet::columnWidth(
+        uint column) const
+{
+    return 10;
+}
+
+S9sVariantMap
+S9sSpreadsheet::cell(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    S9sVariantMap retval;
+
+    if (m_cells.empty())
+        m_cells = property("cells").toVariantList();
+
+    for (uint idx = 0u; idx < m_cells.size(); ++idx)
+    {
+        S9sVariantMap theCell = m_cells[idx].toVariantMap();
+
+        S9S_DEBUG("idx: %u", idx);
+        if (theCell["sheetIndex"].toInt() != (int)sheet)
+            continue;
+        
+        if (theCell["rowIndex"].toInt() != (int)row)
+            continue;
+        
+        if (theCell["columnIndex"].toInt() != (int)column)
+            continue;
+
+        retval = theCell;
+        break;
+    }
+
+    S9S_DEBUG("%u, %u, %u -> %s", 
+            sheet, column, row,
+            STR(retval.toString()));
+    return retval;
+}
+        
+const char *
+S9sSpreadsheet::headerColorBegin() const
+{
+    return TERM_INVERSE;
+}
+
+const char *
+S9sSpreadsheet::headerColorEnd() const
+{
+    return TERM_NORMAL;
+}

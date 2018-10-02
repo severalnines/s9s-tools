@@ -33,5 +33,27 @@ class S9sSpreadsheet : public S9sObject
         virtual ~S9sSpreadsheet();
 
         S9sSpreadsheet &operator=(const S9sVariantMap &rhs);
+
+        void print() const;
+
+        S9sString value(
+                const uint sheet,
+                const uint column,
+                const uint row) const;
+
+        int columnWidth(uint column) const;
+
+    private: 
+        const char *headerColorBegin() const;
+        const char *headerColorEnd() const;
+
+        S9sVariantMap
+            cell(
+                    const uint sheet,
+                    const uint column,
+                    const uint row) const;
+
+    private:
+        mutable S9sVariantList m_cells;
 };
 

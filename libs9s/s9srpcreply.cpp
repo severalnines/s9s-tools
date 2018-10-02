@@ -27,6 +27,7 @@
 #include "S9sFormat"
 #include "S9sRegExp"
 #include "S9sNode"
+#include "S9sSpreadsheet"
 #include "S9sCluster"
 #include "S9sAlarm"
 #include "S9sBackup"
@@ -4064,10 +4065,21 @@ S9sRpcReply::printSheet()
     {
         //printImagesLong();
         printf("%s\n", STR(toString()));
+    } else if (options->isStatRequested())
+    {
+        printSheetStat();
     } else {
         printImagesBrief();
         printf("%s\n", STR(toString()));
     }
+}
+
+void
+S9sRpcReply::printSheetStat()
+{
+    S9sSpreadsheet  spreadsheet = operator[]("spreadheet").toVariantMap();
+
+    spreadsheet.print();
 }
 
 void
