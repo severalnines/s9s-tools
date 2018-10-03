@@ -4077,7 +4077,7 @@ S9sRpcReply::printSheet()
 void
 S9sRpcReply::printSheetStat()
 {
-    S9sSpreadsheet  spreadsheet = operator[]("spreadheet").toVariantMap();
+    S9sSpreadsheet  spreadsheet = operator[]("spreadsheet").toVariantMap();
 
     spreadsheet.print();
 }

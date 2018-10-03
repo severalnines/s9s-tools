@@ -61,7 +61,6 @@ class S9sMonitor :
         void main();
 
     protected:
-
         void replyCallback(S9sRpcReply &reply);
         void eventCallback(S9sEvent &event);
 

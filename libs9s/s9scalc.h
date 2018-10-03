@@ -30,6 +30,9 @@ class S9sCalc :
         S9sCalc(S9sRpcClient &client);
         virtual ~S9sCalc();
 
+        void setSpreadsheetName(const S9sString &name);
+        S9sString spreadsheetName() const;
+
         void main();
 
     protected:
@@ -42,5 +45,7 @@ class S9sCalc :
     private:
         S9sRpcClient                &m_client;
         S9sSpreadsheet               m_spreadsheet;
+        S9sString                    m_spreadsheetName;
+        S9sString                    m_errorString;
 };
 

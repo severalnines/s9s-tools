@@ -38,8 +38,38 @@ S9sCalc::~S9sCalc()
 }
 
 void
+S9sCalc::setSpreadsheetName(
+        const S9sString &name)
+{
+    m_spreadsheetName = name;
+}
+
+S9sString
+S9sCalc::spreadsheetName() const
+{
+    return m_spreadsheetName;
+}
+
+void
 S9sCalc::main()
 {
+    S9sRpcReply reply;
+    bool        success;
+
+    success = m_client.getSpreadsheet();
+    if (!success)
+    {
+        m_errorString = "Error getting spreadsheet.";
+    } else {
+        reply = m_client.reply();
+        m_spreadsheet = reply["spreadsheet"].toVariantMap();
+        //m_errorString = reply["spreadsheet"].toVariantMap().toString();
+        //m_errorString.replace("\n", "\r\n");
+        //::printf("-> \n%s\n", STR(m_errorString));
+        //sleep(100);
+    }
+
+
     start();
 
         while (true)
@@ -57,8 +87,8 @@ S9sCalc::main()
             m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
             m_lastReply = m_client.reply();
 #endif
-            //sleep(1);
-            usleep(10000);
+            sleep(100);
+            //usleep(10000);
 
         }
 }
@@ -121,6 +151,9 @@ S9sCalc::printHeader()
     const char *bold = TERM_SCREEN_TITLE_BOLD;
     const char *normal = TERM_SCREEN_TITLE;
 
+    if (!spreadsheetName().empty())
+        title = spreadsheetName();
+
     ::printf("%s%s%s ", bold, STR(title), normal);
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
         ::printf("0x%08x ",      lastKeyCode());
@@ -135,4 +168,5 @@ S9sCalc::printHeader()
 void
 S9sCalc::printFooter()
 {
+    ::printf("%s", STR(m_errorString));
 }

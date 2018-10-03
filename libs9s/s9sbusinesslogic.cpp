@@ -219,7 +219,15 @@ S9sBusinessLogic::execute()
             // s9s sheet --edit --cluster-id=1 "spreadsheet 10"
             S9sCalc calc(client);
 
-            calc.main();
+            if (options->nExtraArguments() != 1)
+            {
+                PRINT_ERROR(
+                    "The command line argument should be the name "
+                    "of the spreadsheet.");
+            } else {
+                calc.setSpreadsheetName(options->extraArgument(0));
+                calc.main();
+            }
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
