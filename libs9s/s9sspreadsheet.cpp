@@ -26,7 +26,9 @@
 S9sSpreadsheet::S9sSpreadsheet() :
     S9sObject(),
     m_screenRows(-1),
-    m_screenColumns(-1)
+    m_screenColumns(-1),
+    m_selectedCellRow(0),
+    m_selectedCellColumn(0)
 {
     m_properties["class_name"] = "CmonSpreadsheet";
 }
@@ -63,6 +65,44 @@ S9sSpreadsheet::setScreenSize(
     m_screenColumns = columns;
 }
 
+int
+S9sSpreadsheet::selectedCellRow() const
+{
+    return m_selectedCellRow;
+}
+
+int 
+S9sSpreadsheet::selectedCellColumn() const
+{
+    return m_selectedCellColumn;
+}
+
+void
+S9sSpreadsheet::selectedCellLeft()
+{
+    if (m_selectedCellColumn > 0)
+        m_selectedCellColumn--;
+}
+
+void
+S9sSpreadsheet::selectedCellRight()
+{
+    m_selectedCellColumn++;
+}
+
+void
+S9sSpreadsheet::selectedCellUp()
+{
+    if (m_selectedCellRow > 0)
+        m_selectedCellRow--;
+}
+
+void
+S9sSpreadsheet::selectedCellDown()
+{
+    m_selectedCellRow++;
+}
+
 S9sString
 S9sSpreadsheet::value(
         const uint sheet,
@@ -72,6 +112,47 @@ S9sSpreadsheet::value(
     S9sVariantMap theCell = cell(sheet, column, row);
 
     return theCell["value"].toString();
+}
+
+S9sString
+S9sSpreadsheet::contentString(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    S9sVariantMap theCell = cell(sheet, column, row);
+
+    return theCell["contentString"].toString();
+}
+
+const char *
+S9sSpreadsheet::cellBegin(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    if ((int)column == m_selectedCellColumn &&
+            (int(row) == m_selectedCellRow))
+    {
+        return headerColorBegin();
+    }
+
+    return "";
+}
+
+const char *
+S9sSpreadsheet::cellEnd(
+        const uint sheet,
+        const uint column,
+        const uint row) const
+{
+    if ((int)column == m_selectedCellColumn &&
+            (int(row) == m_selectedCellRow))
+    {
+        return headerColorEnd();
+    }
+
+    return "";
 }
 
 bool
@@ -150,10 +231,14 @@ S9sSpreadsheet::print() const
             S9sString theValue = value(0, col, row);
 
             if ((int)theValue.length() > theWidth)
-            {
                 theValue.resize(theWidth);
-            }
 
+            // 
+            ::printf("%s", cellBegin(0, col, row));
+
+            //
+            // Printing the cell content.
+            //
             if (!isAlignRight(0, col, row))
             {
                 ::printf("%s", STR(theValue));
@@ -170,6 +255,9 @@ S9sSpreadsheet::print() const
                 }
                 ::printf("%s", STR(theValue));
             }
+            
+            // 
+            ::printf("%s", cellEnd(0, col, row));
         }
         
         ::printf("\r\n");

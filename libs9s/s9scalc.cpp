@@ -87,8 +87,8 @@ S9sCalc::main()
             m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
             m_lastReply = m_client.reply();
 #endif
-            sleep(100);
-            //usleep(10000);
+            //sleep(1);
+            usleep(10000);
 
         }
 }
@@ -105,6 +105,22 @@ S9sCalc::processKey(
         case 'q':
         case 'Q':
             exit(0);
+            break;
+
+        case S9S_KEY_DOWN:
+            m_spreadsheet.selectedCellDown();
+            break;
+
+        case S9S_KEY_UP:
+            m_spreadsheet.selectedCellUp();
+            break;
+
+        case S9S_KEY_RIGHT:
+            m_spreadsheet.selectedCellRight();
+            break;
+
+        case S9S_KEY_LEFT:
+            m_spreadsheet.selectedCellLeft();
             break;
     }
 }
@@ -130,6 +146,14 @@ S9sCalc::refreshScreen()
 {
     startScreen();
     printHeader();
+
+    int      col = m_spreadsheet.selectedCellColumn();
+    int      row = m_spreadsheet.selectedCellRow();
+    S9sString content = m_spreadsheet.contentString(0, col, row);
+    
+    ::printf("%s ", STR(content));
+    printNewLine();
+    
 
     m_spreadsheet.setScreenSize(columns(), rows() - 3);
     m_spreadsheet.print();

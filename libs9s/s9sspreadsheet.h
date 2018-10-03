@@ -42,6 +42,11 @@ class S9sSpreadsheet : public S9sObject
                 const uint sheet,
                 const uint column,
                 const uint row) const;
+        
+        S9sString contentString(
+                const uint sheet,
+                const uint column,
+                const uint row) const;
 
         bool isAlignRight(
                 const uint sheet,
@@ -49,6 +54,13 @@ class S9sSpreadsheet : public S9sObject
                 const uint row) const;
 
         int columnWidth(uint column) const;
+
+        int selectedCellRow() const;
+        int selectedCellColumn() const;
+        void selectedCellLeft();
+        void selectedCellRight();
+        void selectedCellUp();
+        void selectedCellDown();
 
     private: 
         const char *headerColorBegin() const;
@@ -60,9 +72,22 @@ class S9sSpreadsheet : public S9sObject
                     const uint column,
                     const uint row) const;
 
+        const char *
+            cellBegin(
+                    const uint sheet,
+                    const uint column,
+                    const uint row) const;
+
+        const char *
+            cellEnd(
+                    const uint sheet,
+                    const uint column,
+                    const uint row) const;
     private:
         mutable S9sVariantList m_cells;
         uint                   m_screenRows;
         uint                   m_screenColumns;
+        int                    m_selectedCellRow;
+        int                    m_selectedCellColumn;
 };
 
