@@ -19,10 +19,13 @@ Usage:
 
   $MYNAME - Installs a development environment to the local server. 
 
- -h, --help         Print this help and exit.
- -v, --version      Print version information and exit.
- --verbose          Print more messages.
- --log-file=FILE    Store all the messages in the given file too.
+  -h, --help         Print this help and exit.
+  -v, --version      Print version information and exit.
+  --verbose          Print more messages.
+  --log-file=FILE    Store all the messages in the given file too.
+  
+  --all              Check everything, install everything.
+  --install-mongodb  Checks and installs the mongodb driver and mongo-c.
 
 EOF
     exit 0
@@ -31,7 +34,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,status:,shutdown,csv-output:" \
+        -l "help,verbose,version,log-file:,all,install-mongodb" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -60,6 +63,16 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
+            ;;
+
+        --all)
+            shift
+            OPTION_ALL="true"
+            ;;
+
+        --install-mongodb)
+            shift
+            OPTION_INSTALL_MONGODB="true"
             ;;
 
         --)
@@ -212,13 +225,139 @@ function compile_s9s()
     popd 
 }
 
-install_packages
 
-pull_clustercontrol_source
-compile_clustercontrol 
+function install_mongodb()
+{
+    tmp_dir="/var/tmp/pip_install_dev_mongodb_$$"
 
-pull_s9s_source
-compile_s9s
+    if grep -q 'MONGO_SASL 1' /opt/mongo/include/mongo/config.h; then
+        echo "The mongodb-driver (with sasl) is already installed."
+        return 0
+    fi
+
+    #
+    #
+    #
+    mkdir -p "$tmp_dir"
+    if [ ! -d "$tmp_dir" ]; then
+        echo "Failed to create directory '$tmp_dir'."
+        return 1
+    fi
+
+    echo "Entering directory '$tmp_dir'..."
+    pushd "$tmp_dir" >/dev/null 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Failed to enter directory"
+        return 1
+    fi
+
+    #
+    #
+    #
+    echo "Downloading the SASL library for MongoDb."
+    wget https://www.cyrusimap.org/releases/cyrus-sasl-2.1.26.tar.gz 
+    if [ $? -ne 0 ]; then
+        echo "Failed to download source"
+        return 1
+    fi
+    
+    echo "* installing the SASL library for MongoDb."
+    tar -xzpf cyrus-sasl-2.1.26.tar.gz || exit $?
+
+    pushd cyrus-sasl-2.1.26
+    ./configure --enable-scram --disable-gssapi --enable-static=yes --prefix=/opt/cyrus-sasl || exit $?
+    make -j3 || exit $?
+    sudo make -j3 install || exit $?
+    popd
+
+    if ! [ -f legacy-1.1.3.tar.gz ]; then
+        echo "* downloading mongodb-driver."
+        wget --no-check-certificate https://github.com/mongodb/mongo-cxx-driver/archive/legacy-1.1.3.tar.gz || exit $?
+    fi
+
+    echo "* compiling mongodb-driver."
+    tar -xzpvf legacy-1.1.3.tar.gz || exit $?
+
+    pushd mongo-cxx-driver-legacy-1.1.3/
+    sudo mv -f /opt/mongo /opt/mongo.bak || true
+    sudo mkdir -p /opt/mongo;
+    sudo chown -R ${USER} /opt/mongo || exit $?;
+    #scons --prefix=/opt/mongo --ssl=on --dynamic-boost=off --opt=on install
+    CXXFLAGS='-std=c++0x' scons --prefix=/opt/mongo --c++11=off CXXFLAGS='-std=c++0x' --ssl=on --dynamic-boost=off --use-sasl-client=on --disable-warnings-as-errors=on --opt=on --cpppath=/opt/cyrus-sasl/include/ --libpath=/opt/cyrus-sasl/lib/ install;# || exit $? # FIXME CheckCXX(), c++ compiler test fails 
+    popd
+    
+    popd
+}
+
+function install_mongoc()
+{
+    local tmp_dir="/var/tmp/pip_install_dev_mongoc_$$"
+
+    if [ -f /opt/mongo-c/include/libmongoc-1.0/mongoc.h ]; then
+        echo "The mongo-c is already installed."
+        return 0
+    fi
+
+    #
+    #
+    #
+    mkdir -p "$tmp_dir"
+    if [ ! -d "$tmp_dir" ]; then
+        echo "Failed to create directory '$tmp_dir'."
+        return 1
+    fi
+
+    echo "Entering directory '$tmp_dir'..."
+    pushd "$tmp_dir" >/dev/null 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Failed to enter directory"
+        return 1
+    fi
+
+    if [ ! -f mongo-c-driver-1.12.0.tar.gz ]; then
+        wget 'https://github.com/mongodb/mongo-c-driver/releases/download/1.12.0/mongo-c-driver-1.12.0.tar.gz' || exit $?
+    fi
+
+    echo "* installing the new MongoC driver"
+    tar -xzpf mongo-c-driver-1.12.0.tar.gz || exit $?
+    
+    pushd mongo-c-driver-1.12.0
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mongo-c -DMONGOC_ENABLE_ICU=OFF
+    make -j3 || exit $?
+    sudo make -j3 install
+    popd
+
+    #
+    #
+    #
+    popd
+    rm -rvf "$tmp_dir"
+}
+
+if [ -n "$OPTION_ALL" ]; then
+    install_packages
+    [ $? -ne 0 ] && exit 1
+    
+    install_mongodb
+    [ $? -ne 0 ] && exit 1
+    
+    install_mongoc
+    [ $? -ne 0 ] && exit 1
+
+    pull_clustercontrol_source
+    compile_clustercontrol 
+
+    pull_s9s_source
+    compile_s9s
+elif [ -n "$OPTION_INSTALL_MONGODB" ]; then
+    install_mongodb
+    [ $? -ne 0 ] && exit 1
+    
+    install_mongoc
+    [ $? -ne 0 ] && exit 1
+else
+    echo "Nothing to do, no command line option is provided with tasks."
+fi
 
 pip-host-control --status="Idle"
 
