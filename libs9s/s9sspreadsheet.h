@@ -36,6 +36,8 @@ class S9sSpreadsheet : public S9sObject
 
         void setScreenSize(uint columns, uint rows);
         int lastVisibleRow() const;
+        int lastVisibleColumn() const;
+
         void print() const;
 
         S9sString value(

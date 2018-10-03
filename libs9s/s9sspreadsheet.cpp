@@ -77,6 +77,24 @@ S9sSpreadsheet::lastVisibleRow() const
 }
 
 int
+S9sSpreadsheet::lastVisibleColumn() const
+{
+    int   retval  = m_firstVisibleColumn;
+    int   columns = columnWidth(retval);
+
+    for (;;)
+    {
+        retval += 1;
+        if (columns + columnWidth(retval) > (int)m_screenColumns - 5)
+            break;
+
+        columns += columnWidth(retval);
+    }
+
+    return retval;
+}
+
+int
 S9sSpreadsheet::selectedCellRow() const
 {
     return m_selectedCellRow;
@@ -93,12 +111,18 @@ S9sSpreadsheet::selectedCellLeft()
 {
     if (m_selectedCellColumn > 0)
         m_selectedCellColumn--;
+
+    if (m_selectedCellColumn < m_firstVisibleColumn)
+        m_firstVisibleColumn = m_selectedCellColumn;
 }
 
 void
 S9sSpreadsheet::selectedCellRight()
 {
     m_selectedCellColumn++;
+    
+    while (m_selectedCellColumn > lastVisibleColumn())
+        m_firstVisibleColumn++;
 }
 
 void
@@ -207,7 +231,7 @@ S9sSpreadsheet::print() const
     ::printf("%s", headerColorBegin());
 
     thisColumn = 5;
-    for (uint col = 0u; col < 16; ++col)
+    for (uint col = m_firstVisibleColumn; col < 32; ++col)
     {
         int       theWidth  = columnWidth(col);
         int       nChars    = 0;
@@ -246,7 +270,7 @@ S9sSpreadsheet::print() const
         ::printf(" %3u ", row);
         ::printf("%s", headerColorEnd());
 
-        for (uint col = 0u; col < 8; ++col)
+        for (uint col = m_firstVisibleColumn; col < 32; ++col)
         {
             int       theWidth = columnWidth(col);
             S9sString theValue = value(0, col, row);
