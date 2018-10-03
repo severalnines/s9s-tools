@@ -19,9 +19,9 @@
  */
 #pragma once
 
-#include "S9sString"
+#include "S9sWidget"
 
-class S9sDisplayList
+class S9sDisplayList : public S9sWidget
 {
     public:
         S9sDisplayList();
@@ -29,9 +29,6 @@ class S9sDisplayList
 
         void setVisible(bool value);
         bool isVisible() const;
-
-        bool isActive() const;
-        void setActive(bool active);
 
         int firstVisibleIndex() const;
         int lastVisibleIndex() const;
@@ -43,12 +40,7 @@ class S9sDisplayList
         bool isSelectionEnabled() const;
         int selectionIndex() const;
 
-        void setLocation(int x, int y);
-        void setSize(int nColumns, int nRows);
-        int y() const;
-        int x() const;
-        int height() const;
-        int width() const;
+
 
         bool contains(int x, int y) const;
         void setNumberOfItems(int n);
@@ -62,14 +54,8 @@ class S9sDisplayList
 
     private:
         bool m_isVisible;
-        bool m_isActive;
         int  m_selectionEnabled;
         int  m_selectionIndex;
         int  m_startIndex;
         int  m_numberOfItems;
-        
-        int  m_x;
-        int  m_y;
-        int  m_width;
-        int  m_height;
 };

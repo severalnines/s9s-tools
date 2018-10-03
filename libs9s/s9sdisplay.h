@@ -30,12 +30,15 @@
 #include "S9sThread"
 #include "S9sFile"
 
-#define S9S_KEY_DOWN  0x425b1b
-#define S9S_KEY_UP    0x415b1b
-#define S9S_KEY_RIGHT 0x435b1b
-#define S9S_KEY_LEFT  0x445b1b
-#define S9S_KEY_PGUP  0x7e355b1b
-#define S9S_KEY_PGDN  0x7e365b1b
+#define S9S_KEY_DOWN      0x425b1b
+#define S9S_KEY_UP        0x415b1b
+#define S9S_KEY_RIGHT     0x435b1b
+#define S9S_KEY_LEFT      0x445b1b
+#define S9S_KEY_PGUP      0x7e355b1b
+#define S9S_KEY_PGDN      0x7e365b1b
+#define S9S_KEY_ENTER     0x0d
+#define S9S_KEY_BACKSPACE 0x7f
+#define S9S_KEY_DELETE    0x7e335b1b
 
 /**
  * A UI screen that can be used as a parent class for views continuously

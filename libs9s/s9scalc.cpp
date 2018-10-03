@@ -31,6 +31,8 @@ S9sCalc::S9sCalc(
     S9sDisplay(true),
     m_client(client)
 {
+    m_formulaEntry.setLocation(1, 2);
+    m_formulaEntry.setActive(false);
 }
 
 S9sCalc::~S9sCalc()
@@ -100,6 +102,19 @@ void
 S9sCalc::processKey(
         int key)
 {
+    if (m_formulaEntry.isActive())
+    {
+        if (key == S9S_KEY_ENTER)
+        {
+            m_formulaEntry.setActive(false);
+            return;
+        } else {
+            m_formulaEntry.processKey(key);
+        }
+
+        return;
+    }
+
     switch (key)
     {
         case 'q':
@@ -109,18 +124,33 @@ S9sCalc::processKey(
 
         case S9S_KEY_DOWN:
             m_spreadsheet.selectedCellDown();
+            m_formulaEntry.setActive(false);
+            updateEntryText();
             break;
 
         case S9S_KEY_UP:
             m_spreadsheet.selectedCellUp();
+            m_formulaEntry.setActive(false);
+            updateEntryText();
             break;
 
         case S9S_KEY_RIGHT:
             m_spreadsheet.selectedCellRight();
+            m_formulaEntry.setActive(false);
+            updateEntryText();
             break;
 
         case S9S_KEY_LEFT:
             m_spreadsheet.selectedCellLeft();
+            m_formulaEntry.setActive(false);
+            updateEntryText();
+            break;
+
+        case S9S_KEY_ENTER:
+            if (!m_formulaEntry.isActive())
+            {
+                m_formulaEntry.setActive(true);
+            }
             break;
     }
 }
@@ -144,22 +174,21 @@ S9sCalc::processButton(
 bool
 S9sCalc::refreshScreen()
 {
+    printf("%s", TERM_CURSOR_OFF);
+
     startScreen();
     printHeader();
 
-    int      col = m_spreadsheet.selectedCellColumn();
-    int      row = m_spreadsheet.selectedCellRow();
-    S9sString content = m_spreadsheet.contentString(0, col, row);
     
-    ::printf("%s ", STR(content));
+    m_formulaEntry.print();
     printNewLine();
     
-
     m_spreadsheet.setScreenSize(columns(), rows() - 3);
     m_spreadsheet.print();
     //printMiddle();
 
     printFooter();
+    m_formulaEntry.showCursor();
 
     return true;
 }
@@ -180,8 +209,8 @@ S9sCalc::printHeader()
 
     ::printf("%s%s%s ", bold, STR(title), normal);
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
-        ::printf("0x%08x ",      lastKeyCode());
-        ::printf("%02dx%02d ",   columns(), rows());
+    ::printf("0x%08x ",      lastKeyCode());
+    ::printf("%02dx%02d ",   columns(), rows());
 
     printNewLine();
     
@@ -194,3 +223,14 @@ S9sCalc::printFooter()
 {
     ::printf("%s", STR(m_errorString));
 }
+
+void
+S9sCalc::updateEntryText()
+{
+    int      col = m_spreadsheet.selectedCellColumn();
+    int      row = m_spreadsheet.selectedCellRow();
+    S9sString content = m_spreadsheet.contentString(0, col, row);
+
+    m_formulaEntry.setText(content);
+}
+

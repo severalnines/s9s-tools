@@ -22,6 +22,7 @@
 #include "S9sDisplay"
 #include "S9sRpcClient"
 #include "S9sSpreadsheet"
+#include "S9sDisplayEntry"
 
 class S9sCalc :
     public S9sDisplay
@@ -43,6 +44,10 @@ class S9sCalc :
         virtual void printFooter();
 
     private:
+        void updateEntryText();
+
+    private:
+        S9sDisplayEntry              m_formulaEntry;
         S9sRpcClient                &m_client;
         S9sSpreadsheet               m_spreadsheet;
         S9sString                    m_spreadsheetName;

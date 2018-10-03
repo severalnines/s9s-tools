@@ -171,6 +171,10 @@ libs9s_public_h_headers =     \
 	s9sstringlist.h           \
 	S9sDisplay                \
 	s9sdisplay.h              \
+	S9sWidget                 \
+	s9swidget.h               \
+	S9sDisplayEntry           \
+	s9sdisplayentry.h         \
 	S9sDisplayList            \
 	s9sdisplaylist.h          \
 	S9sMonitor                \
@@ -246,6 +250,8 @@ libs9s_a_SOURCES =            \
 	s9srpcclient.cpp          \
 	s9sbusinesslogic.cpp      \
 	s9sdisplay.cpp            \
+	s9swidget.cpp      \
+	s9sdisplayentry.cpp       \
 	s9sdisplaylist.cpp        \
 	s9smonitor.cpp            \
 	s9scalc.cpp               \

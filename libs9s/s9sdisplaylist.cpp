@@ -22,15 +22,10 @@
 
 S9sDisplayList::S9sDisplayList() :
     m_isVisible(false),
-    m_isActive(true),
     m_selectionEnabled(true),
     m_selectionIndex(0),
     m_startIndex(0),
-    m_numberOfItems(0),
-    m_x(0),
-    m_y(0),
-    m_width(0),
-    m_height(0)
+    m_numberOfItems(0)
 {
 }
 
@@ -85,19 +80,6 @@ S9sDisplayList::setVisible(
     m_isVisible = value;
 }
 
-bool
-S9sDisplayList::isActive() const
-{
-    return m_isActive;
-}
-
-void
-S9sDisplayList::setActive(
-        bool active)
-{
-    m_isActive = active;
-}
-
 int 
 S9sDisplayList::firstVisibleIndex() const
 {
@@ -119,59 +101,6 @@ bool
 S9sDisplayList::isVisible() const
 {
     return m_isVisible;
-}
-
-void
-S9sDisplayList::setLocation(
-        int x, 
-        int y)
-{
-    m_x = x;
-    m_y = y;
-}
-
-void
-S9sDisplayList::setSize(
-        int nColumns,
-        int nRows)
-{
-    m_width  = nColumns;
-    m_height = nRows;
-}
-
-bool
-S9sDisplayList::contains(
-        int x,
-        int y) const
-{
-    return 
-        x >= m_x && x < m_x + m_width &&
-        y >= m_y && y < m_y + m_height;
-}
-
-int
-S9sDisplayList::y() const
-{
-    return m_y;
-}
-
-int
-S9sDisplayList::x() const
-{
-    return m_x;
-}
-
-
-int
-S9sDisplayList::height() const
-{
-    return m_height;
-}
-
-int
-S9sDisplayList::width() const
-{
-    return m_width;
 }
 
 /**
