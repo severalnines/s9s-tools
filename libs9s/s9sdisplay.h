@@ -39,6 +39,8 @@
 #define S9S_KEY_ENTER     0x0d
 #define S9S_KEY_BACKSPACE 0x7f
 #define S9S_KEY_DELETE    0x7e335b1b
+#define S9S_KEY_HOME      0x00485b1b
+#define S9S_KEY_END       0x00465b1b
 
 /**
  * A UI screen that can be used as a parent class for views continuously

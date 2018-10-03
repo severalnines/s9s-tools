@@ -28,7 +28,9 @@ S9sSpreadsheet::S9sSpreadsheet() :
     m_screenRows(-1),
     m_screenColumns(-1),
     m_selectedCellRow(0),
-    m_selectedCellColumn(0)
+    m_selectedCellColumn(0),
+    m_firstVisibleRow(0),
+    m_firstVisibleColumn(0)
 {
     m_properties["class_name"] = "CmonSpreadsheet";
 }
@@ -65,6 +67,15 @@ S9sSpreadsheet::setScreenSize(
     m_screenColumns = columns;
 }
 
+/**
+ * \returns The index of the last row of the sheet that is visible.
+ */
+int
+S9sSpreadsheet::lastVisibleRow() const
+{
+    return m_firstVisibleRow + m_screenRows - 1;
+}
+
 int
 S9sSpreadsheet::selectedCellRow() const
 {
@@ -94,13 +105,21 @@ void
 S9sSpreadsheet::selectedCellUp()
 {
     if (m_selectedCellRow > 0)
+    {
         m_selectedCellRow--;
+
+        if (m_selectedCellRow < m_firstVisibleRow)
+            m_firstVisibleRow = m_selectedCellRow;
+    }
 }
 
 void
 S9sSpreadsheet::selectedCellDown()
 {
     m_selectedCellRow++;
+
+    if (m_selectedCellRow >= lastVisibleRow())
+        m_firstVisibleRow = m_selectedCellRow - m_screenRows + 1;
 }
 
 S9sString
@@ -190,7 +209,8 @@ S9sSpreadsheet::print() const
     thisColumn = 5;
     for (uint col = 0u; col < 16; ++col)
     {
-        int       theWidth = columnWidth(col);
+        int       theWidth  = columnWidth(col);
+        int       nChars    = 0;
         S9sString label;
 
         if (thisColumn + theWidth > (int) m_screenColumns + 1)
@@ -198,12 +218,13 @@ S9sSpreadsheet::print() const
 
         label += 'A' + col;
         
-        for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
+        for (uint n = 0; n < (theWidth - label.length()) / 2; ++n, ++nChars)
             ::printf(" ");
 
         ::printf("%s", STR(label));
+        nChars += label.length();
         
-        for (uint n = 0; n < (theWidth - label.length()) / 2; ++n)
+        for (; nChars < theWidth; ++nChars)
             ::printf(" ");
 
         thisColumn += theWidth;
@@ -219,7 +240,7 @@ S9sSpreadsheet::print() const
     /*
      *
      */
-    for (uint row = 0u; row < m_screenRows - 1; ++row)
+    for (uint row = m_firstVisibleRow; (int)row <= lastVisibleRow(); ++row)
     {
         ::printf("%s", headerColorBegin());
         ::printf(" %3u ", row);

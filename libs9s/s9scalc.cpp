@@ -183,7 +183,7 @@ S9sCalc::refreshScreen()
     m_formulaEntry.print();
     printNewLine();
     
-    m_spreadsheet.setScreenSize(columns(), rows() - 3);
+    m_spreadsheet.setScreenSize(columns(), rows() - 4);
     m_spreadsheet.print();
     //printMiddle();
 
@@ -221,7 +221,22 @@ S9sCalc::printHeader()
 void
 S9sCalc::printFooter()
 {
-    ::printf("%s", STR(m_errorString));
+    //const char *bold   = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
+
+    ::printf("%s ", normal);
+
+    if (m_errorString.empty())
+    {
+        ::printf("ok");
+    } else {
+        ::printf("%s", STR(m_errorString));
+    }
+        
+    // No new-line at the end, this is the last line.
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    fflush(stdout);    
 }
 
 void
