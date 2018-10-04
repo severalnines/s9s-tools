@@ -167,6 +167,13 @@ class S9sRpcClient
         bool getSpreadsheets();
         bool getSpreadsheet();
         bool createSpreadsheet();
+        
+        bool setCell(
+                const S9sString &spreadsheetName,
+                const int        sheetIndex,
+                const int        columnIndex,
+                const int        rowIndex,
+                const S9sString &content);
 
         bool getRepositories();
         bool getSupportedSetups();

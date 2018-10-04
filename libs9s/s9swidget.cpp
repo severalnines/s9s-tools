@@ -51,6 +51,9 @@ S9sWidget::setSize(
     m_height = nRows;
 }
 
+/**
+ * \returns True if the given coordinate is inside of the widget.
+ */
 bool
 S9sWidget::contains(
         int x,

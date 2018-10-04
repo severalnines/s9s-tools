@@ -45,12 +45,21 @@ class S9sCalc :
 
     private:
         void updateEntryText();
+        void calculateSpreadsheet();
+
+        void updateCell(
+                const int         sheetIndex,
+                const int         column,
+                const int         row,
+                const S9sString  &content);
 
     private:
         S9sDisplayEntry              m_formulaEntry;
         S9sRpcClient                &m_client;
         S9sSpreadsheet               m_spreadsheet;
+        S9sMutex                     m_networkMutex;
         S9sString                    m_spreadsheetName;
         S9sString                    m_errorString;
+        time_t                       m_lastRefreshTime;
 };
 

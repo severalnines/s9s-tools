@@ -5613,7 +5613,6 @@ S9sRpcClient::getSpreadsheets()
     return executeRequest(uri, request);
 }
 
-
 bool
 S9sRpcClient::getSpreadsheet()
 {
@@ -5683,6 +5682,28 @@ S9sRpcClient::createSpreadsheet()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::setCell(
+        const S9sString &spreadsheetName,
+        const int        sheetIndex,
+        const int        columnIndex,
+        const int        rowIndex,
+        const S9sString &content)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri       = "/v2/spreadsheets/";
+    S9sVariantMap  request   = composeRequest();
+    
+    // Building the request.
+    request["operation"]        = "setCell";
+    request["spreadsheet_name"] =  options->extraArgument(0);
+    request["sheetIndex"]       = sheetIndex;
+    request["rowIndex"]         = rowIndex;
+    request["columnIndex"]      = columnIndex;
+    request["contentString"]    = content;
+
+    return executeRequest(uri, request);
+}
 
 bool
 S9sRpcClient::getRepositories()

@@ -40,9 +40,6 @@ class S9sDisplayList : public S9sWidget
         bool isSelectionEnabled() const;
         int selectionIndex() const;
 
-
-
-        bool contains(int x, int y) const;
         void setNumberOfItems(int n);
 
         void selectionUp(int nSteps = 1);

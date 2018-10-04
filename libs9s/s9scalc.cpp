@@ -20,6 +20,8 @@
 #include "s9scalc.h"
 
 #include "S9sDateTime"
+#include "S9sMutexLocker"
+
 #include <unistd.h>
 
 //#define DEBUG
@@ -29,7 +31,8 @@
 S9sCalc::S9sCalc(
         S9sRpcClient            &client) : 
     S9sDisplay(true),
-    m_client(client)
+    m_client(client),
+    m_lastRefreshTime(0)
 {
     m_formulaEntry.setLocation(1, 2);
     m_formulaEntry.setActive(false);
@@ -55,35 +58,34 @@ S9sCalc::spreadsheetName() const
 void
 S9sCalc::main()
 {
-    S9sRpcReply reply;
-    bool        success;
-
-    success = m_client.getSpreadsheet();
-    if (!success)
-    {
-        m_errorString = "Error getting spreadsheet.";
-    } else {
-        reply = m_client.reply();
-        m_spreadsheet = reply["spreadsheet"].toVariantMap();
-        //m_errorString = reply["spreadsheet"].toVariantMap().toString();
-        //m_errorString.replace("\n", "\r\n");
-        //::printf("-> \n%s\n", STR(m_errorString));
-        //sleep(100);
-    }
-
-
     start();
+    calculateSpreadsheet();
 
         while (true)
         {
-#if 0
+            // FIXME: If reconnecting the client does not know that it is not
+            // authenticated.
+            if (m_client.isAuthenticated())
+            {
+                if (time(NULL) - m_lastRefreshTime > 3)
+                    calculateSpreadsheet();
+            }
+            
             while (!m_client.isAuthenticated())
             {
+                m_errorString = "Authenticating...";
+
                 m_client.maybeAuthenticate();
 
                 if (!m_client.isAuthenticated())
-                    usleep(3000000);
+                {
+                    m_errorString = m_client.errorString();
+                    usleep(10000);
+                }
+                    
+                m_errorString = "";
             }
+#if 0
 
             m_lastReply = S9sRpcReply();
             m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
@@ -106,8 +108,15 @@ S9sCalc::processKey(
     {
         if (key == S9S_KEY_ENTER)
         {
+            S9sString    content = m_formulaEntry.text();
+            int          sheetIndex = 0;
+            int          column = m_spreadsheet.selectedCellColumn();
+            int          row    = m_spreadsheet.selectedCellRow();
+
+            updateCell(sheetIndex, column, row, content);
             m_formulaEntry.setActive(false);
-            return;
+            m_spreadsheet.selectedCellDown();
+            updateEntryText();
         } else {
             m_formulaEntry.processKey(key);
         }
@@ -146,11 +155,29 @@ S9sCalc::processKey(
             updateEntryText();
             break;
 
+        case '+':
+            m_spreadsheet.zoomIn();
+            break;
+
+        case '-':
+            m_spreadsheet.zoomOut();
+            break;
+
         case S9S_KEY_ENTER:
             if (!m_formulaEntry.isActive())
             {
                 m_formulaEntry.setActive(true);
             }
+            break;
+
+        case S9S_KEY_DELETE:
+            m_formulaEntry.setText("");
+
+            updateCell(
+                    0, 
+                    m_spreadsheet.selectedCellColumn(), 
+                    m_spreadsheet.selectedCellRow(), 
+                    "");
             break;
     }
 }
@@ -221,16 +248,21 @@ S9sCalc::printHeader()
 void
 S9sCalc::printFooter()
 {
+    S9sString warning = m_spreadsheet.warning();
+
     //const char *bold   = TERM_SCREEN_TITLE_BOLD;
     const char *normal = TERM_SCREEN_TITLE;
 
     ::printf("%s ", normal);
 
-    if (m_errorString.empty())
+    if (!m_errorString.empty())
     {
-        ::printf("ok");
-    } else {
         ::printf("%s", STR(m_errorString));
+    } else if (!warning.empty()) 
+    {
+        ::printf("%s", STR(warning));
+    } else {
+        ::printf("ok");
     }
         
     // No new-line at the end, this is the last line.
@@ -239,6 +271,9 @@ S9sCalc::printFooter()
     fflush(stdout);    
 }
 
+/**
+ * Updates the formula editor widget from the spreadsheet.
+ */
 void
 S9sCalc::updateEntryText()
 {
@@ -247,5 +282,84 @@ S9sCalc::updateEntryText()
     S9sString content = m_spreadsheet.contentString(0, col, row);
 
     m_formulaEntry.setText(content);
+}
+
+/**
+ * This locks the UI because the other function is called from the UI too. It
+ * could be enhanced.
+ */
+void
+S9sCalc::calculateSpreadsheet()
+{
+    S9sMutexLocker   locker1(m_mutex);
+    S9sMutexLocker   locker(m_networkMutex);    
+    S9sRpcReply      reply;
+    bool             success;
+
+    /*
+     *
+     */
+    success = m_client.getSpreadsheet();
+    m_lastRefreshTime = time(NULL); 
+
+    /*
+     *
+     */
+    if (!success)
+    {
+        m_errorString = m_client.errorString();
+    } else {
+        reply = m_client.reply();
+        if (!reply.isOk())
+        {
+            m_errorString = reply.errorString();
+        } else {
+            m_spreadsheet = reply["spreadsheet"].toVariantMap();
+        }
+    }
+}
+
+/**
+ * Updates the value in a cell, thenre-calculates the page and refreshes the
+ * spreadsheet that will be printed in the next round.
+ *
+ * This is currently called from the UI thread, so m_mutex is locked.
+ */
+void
+S9sCalc::updateCell(
+        const int         sheetIndex,
+        const int         column,
+        const int         row,
+        const S9sString  &content)
+{
+    S9sMutexLocker   locker(m_networkMutex);    
+    S9sRpcReply      reply;
+    bool             success;
+
+    /*
+     *
+     */
+    success = m_client.setCell(
+            m_spreadsheetName, sheetIndex, column, row, content);
+
+    m_lastRefreshTime = time(NULL); 
+
+    /*
+     *
+     */
+    if (!success)
+    {
+        m_errorString = m_client.errorString();
+    } else {            
+        reply = m_client.reply();
+        if (!reply.isOk())
+        {
+            m_errorString = reply.errorString();
+        } else {
+            m_spreadsheet = reply["spreadsheet"].toVariantMap();
+        }
+    }
+                
+    return;
 }
 

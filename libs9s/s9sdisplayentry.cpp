@@ -106,11 +106,17 @@ S9sDisplayEntry::processKey(
         doInsert = true;
     else if (key == ' ' || key == '/' || key == '*')
         doInsert = true;
+    else if (key == ' ' || key == '+' || key == '-')
+        doInsert = true;
     else if (key == '(' || key == ')' || key == '[' || key == ']')
         doInsert = true;
     else if (key == '!' || key == '&' || key == '[' || key == '|')
         doInsert = true;
-    else if (key == '#' || key == ':' || key == ';')
+    else if (key == '#' || key == ':' || key == ';' || key == '=')
+        doInsert = true;
+    else if (key == '.' || key == ',')
+        doInsert = true;
+    else if (key == '\'' || key == '"')
         doInsert = true;
 
     if (doInsert)

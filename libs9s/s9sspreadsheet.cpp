@@ -30,7 +30,8 @@ S9sSpreadsheet::S9sSpreadsheet() :
     m_selectedCellRow(0),
     m_selectedCellColumn(0),
     m_firstVisibleRow(0),
-    m_firstVisibleColumn(0)
+    m_firstVisibleColumn(0),
+    m_defaultColumnWidth(15)
 {
     m_properties["class_name"] = "CmonSpreadsheet";
 }
@@ -54,8 +55,20 @@ S9sSpreadsheet::operator=(
         const S9sVariantMap &rhs)
 {
     setProperties(rhs);
-    
+    m_cells = property("cells").toVariantList();
+
     return *this;
+}
+
+S9sString
+S9sSpreadsheet::warning() const
+{
+    S9sVariantList warnings = property("warnings").toVariantList();
+
+    if (!warnings.empty())
+        return warnings[0].toString();
+
+    return S9sString();
 }
 
 void
@@ -144,6 +157,20 @@ S9sSpreadsheet::selectedCellDown()
 
     if (m_selectedCellRow >= lastVisibleRow())
         m_firstVisibleRow = m_selectedCellRow - m_screenRows + 1;
+}
+
+void
+S9sSpreadsheet::zoomIn()
+{
+    if (m_defaultColumnWidth < 32)
+        ++m_defaultColumnWidth;
+}
+
+void
+S9sSpreadsheet::zoomOut()
+{
+    if (m_defaultColumnWidth > 3)
+        --m_defaultColumnWidth;
 }
 
 S9sString
@@ -267,7 +294,7 @@ S9sSpreadsheet::print() const
     for (uint row = m_firstVisibleRow; (int)row <= lastVisibleRow(); ++row)
     {
         ::printf("%s", headerColorBegin());
-        ::printf(" %3u ", row);
+        ::printf(" %3u ", row + 1);
         ::printf("%s", headerColorEnd());
 
         for (uint col = m_firstVisibleColumn; col < 32; ++col)
@@ -313,7 +340,7 @@ int
 S9sSpreadsheet::columnWidth(
         uint column) const
 {
-    return 14;
+    return m_defaultColumnWidth;
 }
 
 S9sVariantMap

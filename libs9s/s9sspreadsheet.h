@@ -34,6 +34,8 @@ class S9sSpreadsheet : public S9sObject
 
         S9sSpreadsheet &operator=(const S9sVariantMap &rhs);
 
+        S9sString warning() const;
+
         void setScreenSize(uint columns, uint rows);
         int lastVisibleRow() const;
         int lastVisibleColumn() const;
@@ -59,10 +61,14 @@ class S9sSpreadsheet : public S9sObject
 
         int selectedCellRow() const;
         int selectedCellColumn() const;
+
         void selectedCellLeft();
         void selectedCellRight();
         void selectedCellUp();
         void selectedCellDown();
+
+        void zoomIn();
+        void zoomOut();
 
     private: 
         const char *headerColorBegin() const;
@@ -87,11 +93,16 @@ class S9sSpreadsheet : public S9sObject
                     const uint row) const;
     private:
         mutable S9sVariantList m_cells;
+
         uint                   m_screenRows;
         uint                   m_screenColumns;
+
         int                    m_selectedCellRow;
         int                    m_selectedCellColumn;
+
         int                    m_firstVisibleRow;
         int                    m_firstVisibleColumn;
+
+        int                    m_defaultColumnWidth;
 };
 
