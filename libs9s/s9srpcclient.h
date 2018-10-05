@@ -227,6 +227,7 @@ class S9sRpcClient
                 const S9sString &newPassword,
                 bool             createGroup);
 
+        bool addToGroup();
         bool addToGroup(
                 const S9sUser     &user,
                 const S9sString   &groupName,

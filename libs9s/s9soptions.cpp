@@ -82,6 +82,7 @@ enum S9sOptionType
     OptionEnable,
     OptionDisable,
     OptionSetGroup,
+    OptionAddToGroup,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -3310,6 +3311,16 @@ S9sOptions::isSetGroupRequested() const
     return getBool("set_group");
 }
 
+/**
+ * \returns True if the --add-to-group command line option is provided at 
+ *   startup.
+ */
+bool
+S9sOptions::isAddToGroupRequested() const
+{
+    return getBool("add_to_group");
+}
+
 bool
 S9sOptions::isDisableRequested() const
 {
@@ -4482,6 +4493,7 @@ S9sOptions::printHelpUser()
     printf(
 "Options for the \"user\" command:\n"
 "  --add-key                  Register a new public key for a user.\n"
+"  --add-to-group             Add the user to a group.\n"
 "  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
 "  --disable                  Preventing users to log in.\n"
@@ -4493,7 +4505,6 @@ S9sOptions::printHelpUser()
 "  --set-group                Set the primary group for an existing user.\n"
 "  --stat                     Print the details of a user.\n"
 "  --whoami                   List the current user only.\n"
-""
 "\n"
 "  --create-group             Create the group if it doesn't exist.\n"
 "  --email-address=ADDRESS    The email address for the user.\n"
@@ -7020,6 +7031,9 @@ S9sOptions::checkOptionsUser()
     
     if (isSetGroupRequested())
         countOptions++;
+    
+    if (isAddToGroupRequested())
+        countOptions++;
 
     if (isDisableRequested())
         countOptions++;
@@ -7085,21 +7099,13 @@ S9sOptions::checkOptionsAccount()
 
     if (countOptions > 1)
     {
-        m_errorMessage = 
-            "The --list, --whoami, --set, --change-password, --list-keys, "
-            "--add-key "
-            " and --create options are mutually exclusive.";
-
+        m_errorMessage = "The main options are mutually exclusive.";
         m_exitStatus = BadOptions;
 
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --whoami, --set, --change-password,"
-            " --list-keys, --add-key, "
-            " and --create options is mandatory.";
-
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
 
         return false;
@@ -7391,6 +7397,8 @@ S9sOptions::readOptionsUser(
 
         // Main Options
         { "add-key",          no_argument,       0, OptionAddKey          },
+        { "add-to-group",     no_argument,       0, OptionAddToGroup      },
+        { "add-to-group",     no_argument,       0, OptionAddToGroup      },
         { "change-password",  no_argument,       0, OptionChangePassword  },
         { "create",           no_argument,       0, OptionCreate          },
         { "disable",          no_argument,       0, OptionDisable         },
@@ -7543,8 +7551,13 @@ S9sOptions::readOptionsUser(
                 break;
             
             case OptionAddKey:
-                // --list-keys
+                // --add-keys
                 m_options["add_key"] = true;
+                break;
+            
+            case OptionAddToGroup:
+                // --add-to-group
+                m_options["add_to_group"] = true;
                 break;
 
             case OptionWhoAmI:

@@ -5949,6 +5949,16 @@ S9sRpcClient::createUser(
     return executeRequest(uri, request);
 }
 
+/**
+ * \param user The user to be changed.
+ * \param groupName The name of the group.
+ * \param replacePrimaryGroup If true the primary group will be set, replaced by
+ *   the group denoted by the group name.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Adds a user to a group or sets the user's primary group.
+ */
 bool
 S9sRpcClient::addToGroup(
         const S9sUser     &user,
@@ -5964,6 +5974,27 @@ S9sRpcClient::addToGroup(
     request["replace_primary_group"] = replacePrimaryGroup;
     
     return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::addToGroup()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sUser        user;
+    S9sString      groupName;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when adding a user to a group.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    user.setProperty("user_name", options->extraArgument(0));
+    return addToGroup(user, options->group(), false);
 }
 
 bool

@@ -757,6 +757,11 @@ S9sBusinessLogic::execute()
             success = client.addKey();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->isAddToGroupRequested())
+        {
+            success = client.addToGroup();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
         } else if (options->isSetGroupRequested())
         {
             success = client.setGroup();

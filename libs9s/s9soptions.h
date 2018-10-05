@@ -379,6 +379,7 @@ class S9sOptions
         bool isSuccessRequested() const;
         bool isEnableRequested() const;
         bool isSetGroupRequested() const;
+        bool isAddToGroupRequested() const;
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isPromoteSlaveRequested() const;

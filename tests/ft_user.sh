@@ -796,6 +796,86 @@ EOF
     mys9s user --stat "$USER"
 }
 
+function testAcl()
+{
+    local acl
+
+    print_title "Testing ACL on a User"
+
+    mys9s tree --add-acl --acl="user:${USER}:rwx" /sisko
+    check_exit_code_no_job $?
+
+    acl=$(s9s tree --list --long sisko --batch | awk '{print $1}')
+    if [ "$acl" != "urwxr--r--+" ]; then
+        failure "ACL is '$acl' instead of 'urwxr--r--+'."
+    fi
+
+    acl=$(s9s user --stat sisko | grep ACL | awk '{print $4}')
+    if [ "$acl" != "rwxr--r--+" ]; then
+        failure "ACL is '$acl' instead of 'rwxr--r--+'."
+    else
+        echo "  o ACL in short is '$acl', ok"
+    fi
+}
+
+function testAddToGroup()
+{
+    local user_name="sisko"
+    local tmp
+
+    print_title "Adding User to a Group"
+    cat <<EOF
+This test will add a user to a group, so that the user will belong to two
+groups after the call. Then the privileges will be checked to see if the
+second group is considered when checking access rights.
+EOF
+
+    #
+    # Checking the access rights.
+    #
+    mys9s tree \
+        --access \
+        --privileges="rwx" \
+        --cmon-user=sisko \
+        /groups
+
+    if [ $? -eq 0 ]; then
+        failure "The user sisko has full access to the directory."
+    fi
+
+    #
+    # Adding the user to the admins group.
+    #
+    mys9s user \
+        --add-to-group \
+        --group=admins \
+        "$user_name"
+
+    check_exit_code_no_job $?
+
+    tmp=$(get_user_group "$user_name")
+    if [ "$tmp" != "ds9,admins" ]; then
+        failure "The group is '$tmp' instead of 'ds9,admins'."
+    else
+        echo "  o group is now 'ds9,admins', ok"
+    fi
+
+    #
+    # Checking the access rights.
+    #
+    mys9s tree \
+        --access \
+        --privileges="rwx" \
+        --cmon-user=sisko \
+        /groups
+
+    if [ $? -ne 0 ]; then
+        failure "The user sisko has full access to the directory."
+    fi
+
+    mys9s user --stat sisko
+}
+
 #
 # Running the requested tests.
 #
@@ -821,7 +901,10 @@ else
     runFunctionalTest testChangePassword
     runFunctionalTest testPrivateKey
     runFunctionalTest testSetGroup
-    
+    runFunctionalTest testAcl
+    runFunctionalTest testAddToGroup
+
+    print_title "Finished"
     mys9s user --list --long
 fi
 

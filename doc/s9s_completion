@@ -451,7 +451,8 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "user" ]]; then
             main_opt="--help "
-            main_opt+="--add-key --change-password --create --disable "
+            main_opt+="--add-key --add-to-group --change-password --create "
+            main_opt+="--disable "
             main_opt+="--enable --list-groups --list-keys --list "
             main_opt+="--set --set-group --stat --whoami "
             
