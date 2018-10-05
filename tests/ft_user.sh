@@ -773,7 +773,7 @@ function testSetGroup()
     #
     #
     #
-    print_title "Chacnging the Primary Group"
+    print_title "Changing the Primary Group"
     cat <<EOF
 This test will change the $user_name user, set its primary group to $group_name
 by calling the s9s with the --set-group command line option.
@@ -821,6 +821,7 @@ function testAcl()
 function testAddToGroup()
 {
     local user_name="sisko"
+    local return_code
     local tmp
 
     print_title "Adding User to a Group"
@@ -874,6 +875,26 @@ EOF
     fi
 
     mys9s user --stat sisko
+
+    #
+    # Adding the user again should fail.
+    #
+    print_title "Trying to Add to the Group Again"
+    
+    mys9s user \
+        --add-to-group \
+        --group=admins \
+        "$user_name"
+
+    return_code=$?
+
+    if [ $return_code -eq 0 ]; then
+        failure "Adding to the same group should not be successful."
+    elif [ $return_code -ne 2 ]; then
+        failure "Adding to the same group should give 2 as exit code."
+    else
+        echo "  o adding to the same group failed, ok"
+    fi
 }
 
 #

@@ -121,6 +121,18 @@ s9s user \\
     --public-key-name=The_SSH_key 
 .fi
 
+.TP
+.B \-\^\-add\-to\-group
+Adds the user to a group. 
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --add-to-group \\
+    --group=admins \\
+    myuser
+.fi
+
 .TP 
 .B \-\^\-change\-password
 Change the password of an existing user. The password is not a simple property,
