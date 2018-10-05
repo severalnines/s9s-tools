@@ -1194,3 +1194,32 @@ S9sString::buildPath(
 
     return buildPath(first, path3);
 }
+
+S9sString 
+aclStringToUiString(
+        S9sString aclString)
+{
+    S9sVariantList parts = aclString.split(",");
+    S9sString user  = "---";
+    S9sString group = "---";
+    S9sString other = "---";
+    S9sString extra = " ";
+
+    for (uint idx = 0u; idx < parts.size(); ++idx)
+    {
+        S9sString part = parts[idx].toString();
+        S9sString lastField = part.substr(part.find_last_of(":") + 1);
+
+        if (part.startsWith("user::"))
+            user = lastField;
+        else if (part.startsWith("group::"))
+            group = lastField;
+        else if (part.startsWith("other::"))
+            other = lastField;
+        else 
+            extra = "+";
+    }
+
+    return user + group + other + extra;
+}
+

@@ -401,6 +401,7 @@ EOF
         --email      "sisko@ds9.com" \
         --check-key 
 
+    # User odo
     mys9s user \
         --create \
         --cmon-user=system \
@@ -409,13 +410,21 @@ EOF
         --last-name="" \
         --email-address="odo@ds9.com" \
         --generate-key \
+        --new-password="odo" \
         --group=ds9 \
         --create-group \
         --batch \
         "odo"
     
     check_exit_code_no_job $?
+    check_user \
+        --group      "ds9" \
+        --user-name  "odo" \
+        --password   "odo" \
+        --email      "odo@ds9.com" \
+        --check-key 
 
+    # User jake
     mys9s user \
         --create \
         --cmon-user=system \

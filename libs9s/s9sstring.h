@@ -163,4 +163,7 @@ S9sString::contains(const char *s) const
     return find(s) != std::string::npos;
 }
 
+S9sString 
+aclStringToUiString(
+        S9sString aclString);
 

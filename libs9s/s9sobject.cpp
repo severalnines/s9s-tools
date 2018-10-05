@@ -198,16 +198,23 @@ S9sObject::aclString() const
     return property("acl").toString();
 }
 
+/**
+ * Converts the ACL string as it is received from the controller to a short
+ * string 
+ */
 S9sString 
 S9sObject::aclShortString() const
 {
     S9sString retval = property("acl").toString();
-
+#if 0 
     retval.replace("user::", "");
     retval.replace(",group::", "");
     retval.replace(",other::", "");
 
     return retval;
+#else
+    return aclStringToUiString(retval);
+#endif
 }
 
 S9sString 
