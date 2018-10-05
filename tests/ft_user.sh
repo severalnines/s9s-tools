@@ -383,12 +383,19 @@ function testCreateUsers()
         --last-name="Sisko"   \
         --email-address="sisko@ds9.com" \
         --generate-key \
+        --new-password="secret" \
         --group=ds9 \
         --create-group \
         --batch \
         "sisko"
       
     check_exit_code_no_job $?
+    check_user \
+        --group      "ds9" \
+        --user-name  "sisko" \
+        --password   "secret" \
+        --email      "sisko@ds9.com" \
+        --check-key 
 
     mys9s user \
         --create \
@@ -627,7 +634,7 @@ function testCreateThroughRpc()
     local userId
     local myself
 
-    print_title "Testing user creation through RPC"
+    print_title "Testing User Creation Through RPC"
 
     #
     # Here we pass the --cmon-user and --password options when creating the new
@@ -643,7 +650,7 @@ function testCreateThroughRpc()
         --email-address="rpc@email.com" \
         --generate-key \
         --new-password="p" \
-        "$newUserName" >/dev/null
+        "$newUserName" 
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then

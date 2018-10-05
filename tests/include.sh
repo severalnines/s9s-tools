@@ -1144,6 +1144,115 @@ function get_user_group()
     s9s user --list --user-format="%G" $user_name
 }
 
+function get_user_email()
+{
+    local user_name="$1"
+
+    if [ -z "$user_name" ]; then
+        failure "No user name in get_user_group()"
+        return 1
+    fi
+
+    s9s user --list --user-format="%M" $user_name
+}
+
+function check_user()
+{
+    local user_name
+    local group
+    local password
+    local email
+    local check_key
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --user-name)
+                user_name="$2"
+                shift 2
+                ;;
+
+            --group)
+                group="$2"
+                shift 2
+                ;;
+
+            --email-address|--email)
+                email="$2"
+                shift 2
+                ;;
+
+            --password)
+                password="$2"
+                shift 2
+                ;;
+
+            --check-key)
+                check_key="true"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    echo "Checking user $user_name:"
+    if [ -z "$user_name" ]; then
+        failure "check_user(): No username provided."
+        return 1
+    fi
+
+    #
+    # If the group is provided we check the group of the user.
+    #
+    if [ -n "$group" ]; then
+        tmp=$(get_user_group "$user_name")
+        if [ "$tmp" != "$group" ]; then
+            failure "The group of $user_name should be $group and not $tmp."
+        else
+            echo "  o group is $group, ok"
+        fi
+    fi
+
+    #
+    # Checking the authentication with a password.
+    #
+    if [ -n "$password" ]; then
+        tmp=$(s9s user --whoami --cmon-user="$user_name" --password="$password")
+        if [ "$tmp" != "$user_name" ]; then
+            failure "User $user_name can not log in with password."
+        else
+            echo "  o login with password ok"
+        fi
+    fi
+
+    #
+    # Checking the login with the key.
+    #
+    if [ -n "$check_key" ]; then
+        tmp=$(s9s user --whoami --cmon-user="$user_name")
+        if [ "$tmp" != "$user_name" ]; then
+            failure "User $user_name can not log in with key."
+        else
+            echo "  o login with key ok"
+        fi
+    fi
+
+    #
+    #
+    #
+    if [ -n "$email" ]; then
+        tmp=$(get_user_email "$user_name")
+        if [ "$tmp" != "$email" ]; then
+            failure "The email of $user_name should be $email and not $tmp."
+        else
+            echo "  o email address is $email, ok"
+        fi
+    fi
+}
+
 #
 # A flexible function to check the properties and the state of a container
 # server.
