@@ -1132,6 +1132,18 @@ function grant_user()
     #mys9s server --unregister --servers=cmon-cloud://localhost
 }
 
+function get_user_group()
+{
+    local user_name="$1"
+
+    if [ -z "$user_name" ]; then
+        failure "No user name in get_user_group()"
+        return 1
+    fi
+
+    s9s user --list --user-format="%G" $user_name
+}
+
 #
 # A flexible function to check the properties and the state of a container
 # server.

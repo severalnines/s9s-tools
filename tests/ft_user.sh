@@ -388,11 +388,7 @@ function testCreateUsers()
         --batch \
         "sisko"
       
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -407,11 +403,7 @@ function testCreateUsers()
         --batch \
         "odo"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -426,11 +418,7 @@ function testCreateUsers()
         --batch \
         "jake"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -446,11 +434,7 @@ function testCreateUsers()
         --batch \
         "bashir"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -466,11 +450,7 @@ function testCreateUsers()
         --batch \
         "chief"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -486,11 +466,7 @@ function testCreateUsers()
         --batch \
         "jadzia"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s user \
         --create \
@@ -506,13 +482,7 @@ function testCreateUsers()
         --batch \
         "worf"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user"
-        return 1
-    fi
-
-    #s9s user --list --long
+    check_exit_code_no_job $?
 
     #
     # After creating all these users the logged in user should still be me.
@@ -692,11 +662,11 @@ function testCreateThroughRpc()
         return 1
     fi
     
-    group=$(s9s user --list --user-format="%G" $newUserName)
+    group=$(get_user_group $newUserName)
     if [ "$group" == "rpc_group" ]; then
         printVerbose "    group : '$group'"
     else
-        failure "The group is '$group' while creating user through RPC"
+        failure "The group is '$group' while creating user through RPC."
         return 1
     fi
     
@@ -876,8 +846,42 @@ function testPrivateKey()
         return 1
     else
         printVerbose "   myself : '$myself'"
+    fi 
+}
+
+#
+# Sets the primary group for a user.
+#
+function testSetGroup()
+{
+    local user_name="$USER"
+    local group_name="admins"
+    local actual_group_name
+
+    #
+    #
+    #
+    print_title "Chacnging the Primary Group"
+    cat <<EOF
+This test will change the $user_name user, set its primary group to $group_name
+by calling the s9s with the --set-group command line option.
+EOF
+    mys9s user \
+        --set-group \
+        --group=admins \
+        --cmon-user=system \
+        --password=secret \
+        pipas
+
+    check_exit_code_no_job $?
+
+    actual_group_name=$(get_user_group "$user_name")
+    if [ "$actual_group_name" != "$group_name" ]; then
+        failure "The group for '$user_name' is '$actual_group_name'."
     fi
-    
+
+    mys9s user --list --long
+    mys9s user --stat "$USER"
 }
 
 #
@@ -905,6 +909,7 @@ else
     runFunctionalTest testCreateThroughRpc
     runFunctionalTest testChangePassword
     runFunctionalTest testPrivateKey
+    runFunctionalTest testSetGroup
     
     mys9s user --list --long
 fi
