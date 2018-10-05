@@ -1238,6 +1238,22 @@ function check_user()
         else
             echo "  o login with key ok"
         fi
+
+        tmp="$HOME/.s9s/${user_name}.key"
+        if [ ! -f "$tmp" ]; then
+            failure "File $tmp does not exist."
+        else
+            echo "  o file '$tmp' exists, ok"
+        fi
+        
+        tmp="$HOME/.s9s/${user_name}.pub"
+        if [ ! -f "$tmp" ]; then
+            failure "File $tmp does not exist."
+        else
+            echo "  o file '$tmp' exists, ok"
+        fi
+
+        #mys9s user --list-keys --cmon-user=$user_name
     fi
 
     #

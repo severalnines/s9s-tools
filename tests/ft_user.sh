@@ -369,7 +369,11 @@ function testCreateUsers()
 {
     local myself
 
-    print_title "Testing creation of users"
+    print_title "Testing Creation of Users"
+    cat <<EOF
+This test will create several users through RPC v2 and check if they are
+properly created.
+EOF
 
     #
     # Let's add some users so that we have something to work on.
@@ -623,114 +627,6 @@ function testSetOtherUser()
 }
 
 #
-# This test will create a new user through the RPC v2 encrypted network
-# connecttion (instead of using the old named pipe connection). We are creating
-# the new user, a new group, RSA keys and also a password, then we test if we
-# can login with the keypair and also the password.
-#
-function testCreateThroughRpc()
-{
-    local newUserName="rpc_user"
-    local userId
-    local myself
-
-    print_title "Testing User Creation Through RPC"
-
-    #
-    # Here we pass the --cmon-user and --password options when creating the new
-    # user, so the client will try to send the createUser request to RPC v2
-    # through the network and not through the named pipe.
-    #
-    mys9s user \
-        --create \
-        --cmon-user="system" \
-        --password="secret" \
-        --group="rpc_group" \
-        --create-group \
-        --email-address="rpc@email.com" \
-        --generate-key \
-        --new-password="p" \
-        "$newUserName" 
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
-        return 1
-    fi
-
-    #
-    # Checking some properties.
-    #
-    userId=$(s9s user --list --user-format="%I" $newUserName)
-    if [ "$userId" -gt 0 ]; then
-        printVerbose "  user_id : $userId"
-    else
-        failure "The user ID is invalid while creating user through RPC"
-        return 1
-    fi
-    
-    group=$(get_user_group $newUserName)
-    if [ "$group" == "rpc_group" ]; then
-        printVerbose "    group : '$group'"
-    else
-        failure "The group is '$group' while creating user through RPC."
-        return 1
-    fi
-    
-    email=$(s9s user --list --user-format="%M" $newUserName)
-    if [ "$email" == "rpc@email.com" ]; then
-        printVerbose "    email : '$email'"
-    else
-        failure "The email is '$email' while creating user through RPC"
-        return 1
-    fi
-
-    #
-    # Testing if we can log in with the shiny new password.
-    #
-    myself=$(s9s user --whoami --cmon-user=rpc_user --password=p)
-    if [ "$myself" != "rpc_user" ]; then
-        failure "Failed to log in with password ($myself)"
-        return 1
-    else
-        printVerbose "   myself : '$myself'"
-    fi
-
-    #
-    # Then we check if the key files are created and will try to log in using
-    # the RSA key. Well, we are not passing the --password option so the s9s
-    # client will try to log in with the key.
-    #
-    file="$HOME/.s9s/rpc_user.key"
-    if [ ! -f "$file" ]; then
-        failure "File '$file' was not created"
-        return 1
-    fi
-    
-    file="$HOME/.s9s/rpc_user.pub"
-    if [ ! -f "$file" ]; then
-        failure "File '$file' was not created"
-        return 1
-    fi
-    
-    myself=$(s9s user --whoami --cmon-user=rpc_user)
-    if [ "$myself" != "rpc_user" ]; then
-        failure "Failed to log in with password ($myself)"
-        return 1
-    else
-        printVerbose "   myself : '$myself'"
-    fi
-
-    #
-    # Checking that we can see the keys.
-    #
-    if ! s9s user --list-keys --cmon-user=rpc_user | grep -q "Total: 1"; then
-        failure "Could not read keys for 'rpc_user'"
-        return 1
-    fi
-}
-
-#
 # This test will try to change the password for a user. First a user changes the
 # password for an other user, then this other user uses the new password for
 # changing his own password again. Classic... :)
@@ -913,7 +809,6 @@ else
     runFunctionalTest testFailNoGroup
     runFunctionalTest testFailWrongPassword
     runFunctionalTest testCreateUsers
-    runFunctionalTest testCreateThroughRpc
     runFunctionalTest testChangePassword
     runFunctionalTest testPrivateKey
     runFunctionalTest testSetGroup
