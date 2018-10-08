@@ -229,7 +229,7 @@ function testSystemUsers()
     local column
     local required
 
-    print_title "Testing system users"
+    print_title "Testing System Users"
     # This command 
     #$S9S user --list --long 
     text=$($S9S user --list --long --batch --color=never)
@@ -240,6 +240,7 @@ function testSystemUsers()
     required="1"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
+        mys9s user --list --long --batch
         return 1
     fi
 
@@ -249,6 +250,7 @@ function testSystemUsers()
     required="system"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
+        mys9s user --list --long --batch
         return 1
     fi
     
@@ -267,6 +269,7 @@ function testSystemUsers()
     required="2"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
+        mys9s user --list --long --batch
         return 1
     fi
     
@@ -276,6 +279,7 @@ function testSystemUsers()
     required="nobody"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
+        mys9s user --list --long --batch
         return 1
     fi
     
@@ -285,6 +289,7 @@ function testSystemUsers()
     required="nobody"
     if [ "$cell" != "$required" ]; then
         failure "The cell at $row,$column should be '$required', it is '$cell'"
+        mys9s user --list --long --batch
         return 1
     fi
 
@@ -315,36 +320,51 @@ function testFailWrongPassword()
     local output
     local exitCode
 
-    print_title "Testing wrong password response"
-
     #
     # Using the wrong password.
     #
+    print_title "Trying a Wrong Password"
     output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
-        failure "The exit code is ${exitCode} using a wrong password"
+        failure "The exit code is ${exitCode} using a wrong password."
+    else
+        success "  o exit code is $exitCode, ok"
     fi
 
-    #if [ "$output" != "Wrong username or password." ]; then
-    #    failure "Wrong error message when using the wrong password"
-    #    echo "  output: '$output'"
-    #fi
+    if [ "$output" != "Access denied." ]; then
+        failure "Wrong error message when using the wrong password"
+        failure "  output: '$output'"
+    else
+        success "  o output is '$output', ok"
+    fi
+
+    #mys9s user --stat system
+    output=$(s9s user --stat system | grep Failure | awk '{print $2}')
+    if [ "$output" == "-" ]; then
+        failure "Failed login is not indicated."
+    else
+        success "  o failed login at '$output', ok"
+    fi
     
     #
     # Using the wrong username.
     #
+    print_title "Trying a Wrong Username"
     output=$(s9s user --whoami --cmon-user=sys --password=secret 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
-        failure "The exit code is ${exitCode} using a wrong username"
-        return 1
+        failure "The exit code is ${exitCode} using a wrong username."
+    else
+        success "  o exit code is $exitCode, ok"
     fi
 
-    #if [ "$output" != "Wrong username or password." ]; then
-    #    failure "Wrong error message when using the wrong username"
-    #    echo "  output: '$output'"
-    #fi
+    if [ "$output" != "User 'sys' is not found." ]; then
+        failure "Wrong error message when using the wrong password"
+        failure "  output: '$output'"
+    else
+        success "  o output is '$output', ok"
+    fi
 }
 
 #
@@ -374,7 +394,7 @@ function testFailNoGroup()
         failure "User created when the group was invalid."
         return 1
     else
-        echo "  o user was not created, ok"
+        success "  o user was not created, ok"
     fi
 
     #
@@ -859,7 +879,7 @@ function testAcl()
     if [ "$acl" != "rwxr--r--+" ]; then
         failure "ACL is '$acl' instead of 'rwxr--r--+'."
     else
-        echo "  o ACL in short is '$acl', ok"
+        success "  o ACL in short is '$acl', ok"
     fi
 }
 
@@ -903,7 +923,7 @@ EOF
     if [ "$tmp" != "ds9,admins" ]; then
         failure "The group is '$tmp' instead of 'ds9,admins'."
     else
-        echo "  o group is now 'ds9,admins', ok"
+        success "  o group is now 'ds9,admins', ok"
     fi
 
     #
@@ -938,7 +958,7 @@ EOF
     elif [ $return_code -ne 2 ]; then
         failure "Adding to the same group should give 2 as exit code."
     else
-        echo "  o adding to the same group failed, ok"
+        success "  o adding to the same group failed, ok"
     fi
 
     #
@@ -959,14 +979,14 @@ EOF
     if [ $? -eq 0 ]; then
         failure "The user sisko has full access to the directory."
     else
-        echo "  o user lost access, ok"
+        success "  o user lost access, ok"
     fi
     
     tmp=$(get_user_group "$user_name")
     if [ "$tmp" != "ds9" ]; then
         failure "The group is '$tmp' instead of 'ds9'."
     else
-        echo "  o group is now 'ds9', ok"
+        success "  o group is now 'ds9', ok"
     fi
 }
 

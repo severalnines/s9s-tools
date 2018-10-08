@@ -8997,19 +8997,25 @@ S9sRpcReply::printGroupListLong()
     S9sVariantList  groupList = operator[]("groups").toVariantList();
 
     S9sFormat       idFormat;
-    //S9sFormat       ownerFormat;
-    //S9sFormat       groupOwnerFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       groupOwnerFormat;
     S9sFormat       nameFormat;
     int             nLines = 0;
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
     
     for (uint idx = 0; idx < groupList.size(); ++idx)
     {
         S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
         S9sGroup       group         = groupList[idx].toVariantMap();
         S9sString      groupName     = group.groupName();
+        S9sString      ownerName     = group.ownerName();
+        S9sString      groupOwner    = group.groupOwnerName();
         int            groupId       = group.groupId();
 
         idFormat.widen(groupId);
+        ownerFormat.widen(ownerName);
+        groupOwnerFormat.widen(groupOwner);
         nameFormat.widen(groupName);
         nLines++;
     }
@@ -9021,9 +9027,13 @@ S9sRpcReply::printGroupListLong()
     {
         idFormat.widen("ID");
         nameFormat.widen("NAME");
+        ownerFormat.widen("OWNER");
+        groupOwnerFormat.widen("GOWNER");
 
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        ownerFormat.printf("OWNER");
+        groupOwnerFormat.printf("GOWNER");
         nameFormat.printf("NAME");
         printf("%s", headerColorEnd());
 
@@ -9036,16 +9046,28 @@ S9sRpcReply::printGroupListLong()
         S9sGroup       group         = groupList[idx].toVariantMap();
         S9sString      groupName     = group.groupName();
         int            groupId       = group.groupId();
+        S9sString      ownerName     = group.ownerName();
+        S9sString      groupOwner    = group.groupOwnerName();
         const char    *groupColorBegin = "";
         const char    *groupColorEnd   = "";
 
         if (syntaxHighlight)
         {
+            colorBegin      = XTERM_COLOR_ORANGE;
+            colorEnd        = TERM_NORMAL;
             groupColorBegin = XTERM_COLOR_CYAN;
             groupColorEnd   = TERM_NORMAL;
         }
         
         idFormat.printf(groupId);
+
+        printf("%s", colorBegin);
+        ownerFormat.printf(ownerName);
+        printf("%s", colorEnd);
+        
+        printf("%s", groupColorBegin);
+        groupOwnerFormat.printf(groupOwner);
+        printf("%s", groupColorEnd);
 
         printf("%s", groupColorBegin);
         nameFormat.printf(groupName);
@@ -9451,14 +9473,14 @@ S9sRpcReply::printUserListLong()
     {
         idFormat.widen("ID");
         userNameFormat.widen("UNAME");
-        groupNamesFormat.widen("GNAME");
+        groupNamesFormat.widen("GROUPS");
         emailFormat.widen("EMAIL");
 
         printf("%s", headerColorBegin());
         printf("A ");
         idFormat.printf("ID");
         userNameFormat.printf("UNAME");
-        groupNamesFormat.printf("GNAME");
+        groupNamesFormat.printf("GROUPS");
         emailFormat.printf("EMAIL");
         printf("REALNAME");
         printf("%s", headerColorEnd());

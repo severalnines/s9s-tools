@@ -23,6 +23,21 @@
 
 /**
  * A class that represents a group on the controller. 
+ *
+ * Here is how the group looks like now:
+ * \code{.js}
+ * {
+ *     "acl": "user::rwx,group::rw-,other::---",
+ *     "cdt_path": "/groups",
+ *     "class_name": "CmonGroup",
+ *     "group_id": 5,
+ *     "group_name": "ds9",
+ *     "owner_group_id": 1,
+ *     "owner_group_name": "admins",
+ *     "owner_user_id": 1,
+ *     "owner_user_name": "system"
+ * }
+ * \endcode
  */
 class S9sGroup : public S9sObject
 {
@@ -34,14 +49,7 @@ class S9sGroup : public S9sObject
         virtual ~S9sGroup();
 
         S9sGroup &operator=(const S9sVariantMap &rhs);
-#if 0
-        bool hasProperty(const S9sString &key) const;
-        S9sVariant property(const S9sString &name) const;
-        void setProperty(const S9sString &name, const S9sString &value);
-
-        const S9sVariantMap &toVariantMap() const;
-        void setProperties(const S9sVariantMap &properties);
-#endif
+        
         S9sString groupName() const;
         int groupId() const;
 };

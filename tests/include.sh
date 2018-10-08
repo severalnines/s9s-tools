@@ -301,6 +301,15 @@ function failure
 }
 
 #
+# Prints a message about the failure and sets the test failed state.
+#
+function success()
+{
+    echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
+}
+
+
+#
 # This will check the exit code passed as an argument and print the logs
 # of the last failed job if the exit code is not 0.
 #
@@ -1198,6 +1207,7 @@ function check_user()
         esac
     done
 
+    echo "" 
     echo "Checking user $user_name:"
     if [ -z "$user_name" ]; then
         failure "check_user(): No username provided."
@@ -1212,7 +1222,7 @@ function check_user()
         if [ "$tmp" != "$group" ]; then
             failure "The group of $user_name should be $group and not $tmp."
         else
-            echo "  o group is $group, ok"
+            success "  o group is $group, ok"
         fi
     fi
 
@@ -1224,7 +1234,7 @@ function check_user()
         if [ "$tmp" != "$user_name" ]; then
             failure "User $user_name can not log in with password."
         else
-            echo "  o login with password ok"
+            success "  o login with password ok"
         fi
     fi
 
@@ -1236,21 +1246,21 @@ function check_user()
         if [ "$tmp" != "$user_name" ]; then
             failure "User $user_name can not log in with key."
         else
-            echo "  o login with key ok"
+            success "  o login with key ok"
         fi
 
         tmp="$HOME/.s9s/${user_name}.key"
         if [ ! -f "$tmp" ]; then
             failure "File $tmp does not exist."
         else
-            echo "  o file '$tmp' exists, ok"
+            success "  o file '$tmp' exists, ok"
         fi
         
         tmp="$HOME/.s9s/${user_name}.pub"
         if [ ! -f "$tmp" ]; then
             failure "File $tmp does not exist."
         else
-            echo "  o file '$tmp' exists, ok"
+            success "  o file '$tmp' exists, ok"
         fi
 
         #mys9s user --list-keys --cmon-user=$user_name
@@ -1264,7 +1274,7 @@ function check_user()
         if [ "$tmp" != "$email" ]; then
             failure "The email of $user_name should be $email and not $tmp."
         else
-            echo "  o email address is $email, ok"
+            success "  o email address is $email, ok"
         fi
     fi
 }
