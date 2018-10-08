@@ -19,12 +19,12 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "S9sObject"
 
 /**
  * A class that represents a group on the controller. 
  */
-class S9sGroup
+class S9sGroup : public S9sObject
 {
     public:
         S9sGroup();
@@ -34,18 +34,15 @@ class S9sGroup
         virtual ~S9sGroup();
 
         S9sGroup &operator=(const S9sVariantMap &rhs);
-
+#if 0
         bool hasProperty(const S9sString &key) const;
         S9sVariant property(const S9sString &name) const;
         void setProperty(const S9sString &name, const S9sString &value);
 
         const S9sVariantMap &toVariantMap() const;
         void setProperties(const S9sVariantMap &properties);
-
+#endif
         S9sString groupName() const;
         int groupId() const;
-
-    private:
-        S9sVariantMap    m_properties;
 };
 

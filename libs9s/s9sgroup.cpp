@@ -23,16 +23,18 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-S9sGroup::S9sGroup()
+S9sGroup::S9sGroup() : 
+    S9sObject()
 {
     m_properties["class_name"] = "CmonGroup";
 }
 
 S9sGroup::S9sGroup(
         const S9sVariantMap &properties) :
-    m_properties(properties)
+        S9sObject(properties)
 {
-    m_properties["class_name"] = "CmonGroup";
+    if (!m_properties.contains("class_name"))
+        m_properties["class_name"] = "CmonGroup";
 }
 
 S9sGroup::~S9sGroup()
@@ -48,7 +50,7 @@ S9sGroup::operator=(
     return *this;
 }
 
-
+#if 0
 /**
  * \returns The S9sGroup converted to a variant map.
  *
@@ -133,6 +135,7 @@ S9sGroup::setProperties(
 {
     m_properties = properties;
 }
+#endif
 
 /**
  * \returns The groupname of the group.
