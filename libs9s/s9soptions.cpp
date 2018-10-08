@@ -83,6 +83,7 @@ enum S9sOptionType
     OptionDisable,
     OptionSetGroup,
     OptionAddToGroup,
+    OptionRemoveFromGroup,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -3321,6 +3322,16 @@ S9sOptions::isAddToGroupRequested() const
     return getBool("add_to_group");
 }
 
+/**
+ * \returns True if the --remove-from-group command line option is provided at 
+ *   startup.
+ */
+bool
+S9sOptions::isRemoveFromGroupRequested() const
+{
+    return getBool("remove_from_group");
+}
+
 bool
 S9sOptions::isDisableRequested() const
 {
@@ -4501,6 +4512,7 @@ S9sOptions::printHelpUser()
 "  --list-groups              List user groups.\n"
 "  --list-keys                List the public keys of a user.\n"
 "  --list                     List the users.\n"
+"  --remove-from-group        Remove the user from a group.\n"
 "  --set                      Change the properties of a user.\n"
 "  --set-group                Set the primary group for an existing user.\n"
 "  --stat                     Print the details of a user.\n"
@@ -7034,6 +7046,9 @@ S9sOptions::checkOptionsUser()
     
     if (isAddToGroupRequested())
         countOptions++;
+    
+    if (isRemoveFromGroupRequested())
+        countOptions++;
 
     if (isDisableRequested())
         countOptions++;
@@ -7398,7 +7413,7 @@ S9sOptions::readOptionsUser(
         // Main Options
         { "add-key",          no_argument,       0, OptionAddKey          },
         { "add-to-group",     no_argument,       0, OptionAddToGroup      },
-        { "add-to-group",     no_argument,       0, OptionAddToGroup      },
+        { "remove-from-group", no_argument,      0, OptionRemoveFromGroup },
         { "change-password",  no_argument,       0, OptionChangePassword  },
         { "create",           no_argument,       0, OptionCreate          },
         { "disable",          no_argument,       0, OptionDisable         },
@@ -7594,7 +7609,15 @@ S9sOptions::readOptionsUser(
                 // --change-password
                 m_options["change_password"] = true;
                 break;
+            
+            case OptionRemoveFromGroup:
+                // --remove-from-group
+                m_options["remove_from_group"] = true;
+                break;
 
+            /*
+             * Other options.
+             */
             case OptionGroup:
                 // --group=GROUPNAME
                 m_options["group"] = optarg;

@@ -6002,7 +6002,6 @@ S9sRpcClient::setGroup()
 {
     S9sOptions    *options  = S9sOptions::instance();
     S9sUser        user;
-    S9sString      groupName;
 
     if (options->nExtraArguments() != 1)
     {
@@ -6018,6 +6017,34 @@ S9sRpcClient::setGroup()
     return addToGroup(user, options->group(), true);
 }
 
+bool
+S9sRpcClient::removeFromGroup()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sUser        user;
+    S9sVariantMap  request;
+    S9sString      groupName;
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when changing the group for a user.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    user.setProperty("user_name", options->extraArgument(0));
+    groupName = options->group();
+    
+    request["operation"]    = "removeFromGroup";
+    request["user"]         = user.toVariantMap();
+    request["group_name"]   = groupName;
+    
+    return executeRequest(uri, request);
+}
 
 /**
  * \returns true if the request sent and a return is received (even if the reply

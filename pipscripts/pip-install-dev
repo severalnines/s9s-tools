@@ -26,6 +26,7 @@ Usage:
   
   --all              Check everything, install everything.
   --install-mongodb  Checks and installs the mongodb driver and mongo-c.
+  --update-packages  Updates packages of the server.
 
 EOF
     exit 0
@@ -34,7 +35,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,all,install-mongodb" \
+        -l "help,verbose,version,log-file:,all,\
+install-mongodb,update-packages" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -73,6 +75,11 @@ while true; do
         --install-mongodb)
             shift
             OPTION_INSTALL_MONGODB="true"
+            ;;
+
+        --update-packages)
+            shift
+            OPTION_INSTALL_PACKAGES="true"
             ;;
 
         --)
@@ -333,6 +340,26 @@ function install_mongoc()
     popd
     rm -rvf "$tmp_dir"
 }
+
+function update_packages()
+{
+    local tmp
+
+    sudo apt update
+    sudo apt -y --force-yes upgrade
+    sudo apt -y --force-yes autoremove
+
+    tmp=$(which purge-old-kernels)
+    if [ -z "$tmp" ]; then
+        sudo apt -y --force-yes install byobu
+    fi
+
+    sudo purge-old-kernels
+}
+
+if [ -n "$OPTION_INSTALL_PACKAGES" ]; then
+    update_packages
+fi
 
 if [ -n "$OPTION_ALL" ]; then
     install_packages
