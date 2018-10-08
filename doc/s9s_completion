@@ -454,6 +454,7 @@ function _s9s()
             main_opt+="--add-key --add-to-group --change-password --create "
             main_opt+="--disable "
             main_opt+="--enable --list-groups --list-keys --list "
+            main_opt+="--remove-from-group "
             main_opt+="--set --set-group --stat --whoami "
             
             if ! _s9s_has_options $main_opt; then

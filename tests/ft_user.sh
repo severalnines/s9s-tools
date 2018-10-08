@@ -867,7 +867,7 @@ EOF
     mys9s tree \
         --access \
         --privileges="rwx" \
-        --cmon-user=sisko \
+        --cmon-user="$user_name" \
         /groups
 
     if [ $? -ne 0 ]; then
@@ -894,6 +894,34 @@ EOF
         failure "Adding to the same group should give 2 as exit code."
     else
         echo "  o adding to the same group failed, ok"
+    fi
+
+    #
+    # Removing the user from the group.
+    #
+    print_title "Removing the User from the Group"
+    mys9s user \
+        --remove-from-group \
+        --group=admins \
+        "$user_name"
+    
+    mys9s tree \
+        --access \
+        --privileges="rwx" \
+        --cmon-user="$user_name" \
+        /groups
+
+    if [ $? -eq 0 ]; then
+        failure "The user sisko has full access to the directory."
+    else
+        echo "  o user lost access, ok"
+    fi
+    
+    tmp=$(get_user_group "$user_name")
+    if [ "$tmp" != "ds9" ]; then
+        failure "The group is '$tmp' instead of 'ds9'."
+    else
+        echo "  o group is now 'ds9', ok"
     fi
 }
 
