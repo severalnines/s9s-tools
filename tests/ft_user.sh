@@ -287,6 +287,23 @@ function testSystemUsers()
         failure "The cell at $row,$column should be '$required', it is '$cell'"
         return 1
     fi
+
+    #
+    #
+    #
+    check_user \
+        --user-name  "system" \
+        --group      "admins" \
+        --password   "secret" \
+        --email      "system@mynewdomain.com" 
+    
+    check_user \
+        --user-name  "nobody" \
+        --group      "nobody" 
+    
+    check_user \
+        --user-name  "admin" \
+        --group      "admins" 
 }
 
 #
