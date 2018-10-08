@@ -338,7 +338,7 @@ function testFailNoGroup()
 {
     local user_name
 
-    print_title "Testing missing group response"
+    print_title "Creating User without Group"
 
     #
     # Yes, this is a problem, we can't get an error message back from the pipe.
@@ -350,15 +350,43 @@ function testFailNoGroup()
         --title="Captain" \
         --generate-key \
         --group=nosuchgroup \
-        --batch \
         "kirk"
 
     user_name=$(s9s user --list kirk 2>/dev/null)
     if [ "$user_name" ]; then
         failure "User created when the group was invalid."
         return 1
+    else
+        echo "  o user was not created, ok"
     fi
 
+    #
+    # Creating the user with no group. The user will end up in the "users"
+    # group.
+    #
+    mys9s user \
+        --create \
+        --title="Captain" \
+        --generate-key \
+        --create-group \
+        --first-name="James" \
+        --last-name="Kirk"   \
+        --email-address="kirk@enterprise.com" \
+        --new-password="secret" \
+        --cmon-user=system \
+        --password=secret \
+        "kirk"
+    
+    check_exit_code_no_job $?
+   
+    check_user \
+        --group        "users" \
+        --user-name    "kirk"  \
+        --password     "secret" \
+        --email        "kirk@enterprise.com"
+
+    #mys9s user --list --long
+    
     return 0
 }
 
