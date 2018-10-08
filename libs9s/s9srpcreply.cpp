@@ -1577,19 +1577,15 @@ S9sRpcReply::printGroupList()
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
-        return;
-    }
-
-    if (!isOk())
+    } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
-        return;
-    }
-
-    if (options->isLongRequested())
+    } else if (options->isLongRequested())
+    {
         printGroupListLong();
-    else
+    } else {
         printGroupListBrief();
+    }
 
 }
 
@@ -8999,11 +8995,47 @@ S9sRpcReply::printGroupListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  groupList = operator[]("groups").toVariantList();
+
+    S9sFormat       idFormat;
+    //S9sFormat       ownerFormat;
+    //S9sFormat       groupOwnerFormat;
+    S9sFormat       nameFormat;
+    int             nLines = 0;
     
     for (uint idx = 0; idx < groupList.size(); ++idx)
     {
         S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
-        S9sString      groupName     = groupMap["group_name"].toString();
+        S9sGroup       group         = groupList[idx].toVariantMap();
+        S9sString      groupName     = group.groupName();
+        int            groupId       = group.groupId();
+
+        idFormat.widen(groupId);
+        nameFormat.widen(groupName);
+        nLines++;
+    }
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        nameFormat.widen("NAME");
+
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        nameFormat.printf("NAME");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    for (uint idx = 0; idx < groupList.size(); ++idx)
+    {
+        S9sVariantMap  groupMap      = groupList[idx].toVariantMap();
+        S9sGroup       group         = groupList[idx].toVariantMap();
+        S9sString      groupName     = group.groupName();
+        int            groupId       = group.groupId();
         const char    *groupColorBegin = "";
         const char    *groupColorEnd   = "";
 
@@ -9013,7 +9045,21 @@ S9sRpcReply::printGroupListLong()
             groupColorEnd   = TERM_NORMAL;
         }
         
-        printf("%s%s%s\n", groupColorBegin, STR(groupName), groupColorEnd);
+        idFormat.printf(groupId);
+
+        printf("%s", groupColorBegin);
+        nameFormat.printf(groupName);
+        printf("%s", groupColorEnd);
+
+        ::printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s%d%s group(s).\n", 
+                numberColorBegin(), 
+                operator[]("total").toInt(),
+                numberColorEnd());
     }
 }
 
