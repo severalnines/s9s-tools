@@ -838,7 +838,7 @@ EOF
         success "  o the user does not see the server, ok"
     fi
 
-    if $(s9s node --list --long --cmon-user=system --password=secret | grep -q "$CONTAINER_SERVER"); then
+    if $(s9s server --list --long --cmon-user=system --password=secret | grep -q "$CONTAINER_SERVER"); then
         success "  o the server is visible for the system user, ok"
     else
         failure "The server should be visible for the system user."
