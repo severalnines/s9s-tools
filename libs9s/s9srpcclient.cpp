@@ -2008,6 +2008,28 @@ S9sRpcClient::rollingRestart()
 }
 
 bool
+S9sRpcClient::saveCluster()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobSpec["command"]    = "save_cluster";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Save Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+
+bool
 S9sRpcClient::setupAuditLogging(
         const int clusterId)
 {

@@ -148,14 +148,11 @@ function testMoveUser()
     mys9s tree --list --long
 }
 
-#####
-# Registering second server.
+#
+# 
 #
 function testRegisterServer()
 {
-    #
-    #
-    #
     print_title "Registering a Server in Chroot"
     mys9s server \
         --register \

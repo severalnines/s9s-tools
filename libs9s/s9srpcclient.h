@@ -264,6 +264,7 @@ class S9sRpcClient
         bool deleteReport(const int reportId);
         bool getReports();
         bool rollingRestart();
+        bool saveCluster();
         bool setupAuditLogging(const int clusterId);
 
         bool createReport(const int clusterId);

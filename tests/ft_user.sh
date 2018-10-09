@@ -126,6 +126,9 @@ function index_table()
 function testPing()
 {
     print_title "Pinging controller."
+    cat <<EOF
+Checking if the controller is on-line and can be connected.
+EOF
 
     #
     # Pinging. 
@@ -157,13 +160,17 @@ function testUser()
     # 
     #
     print_title "Testing --whoami"
+    cat <<EOF
+Checking that the authenticated user is what it is expected and it can reach
+information about itself. Checking if the keys are ok.
+EOF
 
     mys9s user --whoami
     myself=$(s9s user --whoami)
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with public key ($myself)"
     else
-        printVerbose "   myself : '$myself'"
+        success "  o returned '$myself', ok"
     fi
 
     #
@@ -173,6 +180,8 @@ function testUser()
         failure "Could not read keys for '$userName'"
         mys9s user --list-keys
         return 1
+    else
+        success "  o the keys are there, ok"
     fi
 }
 
@@ -218,6 +227,75 @@ function testStat()
     fi
 }
 
+function testCmonGroup()
+{
+    local old_ifs="$IFS"
+    local found_names=0
+
+    print_title "Testing CmonGroup Class"
+    cat <<EOF
+This test will list the properties of the CmonGroup class and check that the
+property list is indeed the same as we expect.
+EOF
+
+    mys9s metatype --list-properties --type=CmonGroup --long
+
+    IFS=$'\n'
+    for line in $(s9s metatype --list-properties --type=CmonGroup --long --batch)
+    do
+        name=$(echo "$line" | awk '{print $2}')
+        mode=$(echo "$line" | awk '{print $1}')
+
+        case "$name" in 
+            acl)
+                let found_names+=1
+                ;;
+
+            cdt_path)
+                let found_names+=1
+                ;;
+
+            created)
+                let found_names+=1
+                ;;
+
+            group_id)
+                let found_names+=1
+                ;;
+
+            group_name)
+                let found_names+=1
+                ;;
+
+            owner_group_id)
+                let found_names+=1
+                ;;
+
+            owner_group_name)
+                let found_names+=1
+                ;;
+
+            owner_user_id)
+                let found_names+=1
+                ;;
+
+            owner_user_name)
+                let found_names+=1
+                ;;
+
+            *)
+                failure "Unidentified property '$name'."
+        esac
+    done
+    IFS=$old_ifs
+
+    if [ "$found_names" -lt 9 ]; then
+        failure "Some property names were not found."
+    else
+        success "  o found $found_names properties, ok"
+    fi
+}
+
 #
 # This test will check the system users, users that should be available on every
 # system.
@@ -230,6 +308,11 @@ function testSystemUsers()
     local required
 
     print_title "Testing System Users"
+    cat <<EOF
+This test will go through the users that are always present (system users) and
+check that their properties are as they are expected.
+EOF
+
     # This command 
     #$S9S user --list --long 
     text=$($S9S user --list --long --batch --color=never)
@@ -866,6 +949,11 @@ function testAcl()
     local acl
 
     print_title "Testing ACL on a User"
+    cat <<EOF
+This test will add an ACL entry to a user (changing the accessibility of the 
+given user) and check if the ACL is properly printed in the stat page of the
+user object.
+EOF
 
     mys9s tree --add-acl --acl="user:${USER}:rwx" /sisko
     check_exit_code_no_job $?
@@ -945,7 +1033,11 @@ EOF
     # Adding the user again should fail.
     #
     print_title "Trying to Add to the Group Again"
-    
+    cat <<EOF
+Checking if adding the user to a group it already belongs to will result in 
+an error.
+EOF
+
     mys9s user \
         --add-to-group \
         --group=admins \
@@ -965,6 +1057,11 @@ EOF
     # Removing the user from the group.
     #
     print_title "Removing the User from the Group"
+    cat <<EOF
+Here we remove the user $user_name from the admins group and check if the user
+was indeed removed and the special privileges are revoked.
+EOF
+
     mys9s user \
         --remove-from-group \
         --group=admins \
@@ -1004,8 +1101,10 @@ if [ "$1" ]; then
     
     mys9s user --list --long
 else
+    runFunctionalTest testPing
     runFunctionalTest testUser
     runFunctionalTest testStat
+    runFunctionalTest testCmonGroup
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
     runFunctionalTest testSystemUsers

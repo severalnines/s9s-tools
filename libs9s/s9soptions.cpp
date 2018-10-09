@@ -93,6 +93,7 @@ enum S9sOptionType
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
+    OptionSave,
     OptionRestore,
     OptionVerify,
     OptionDeleteOld,
@@ -3365,7 +3366,6 @@ S9sOptions::isDemoteNodeRequested() const
     return getBool("demote_node");
 }
 
-
 /**
  * \returns true if the --restore command line option was provided when the
  *   program was started.
@@ -3374,6 +3374,16 @@ bool
 S9sOptions::isRestoreRequested() const
 {
     return getBool("restore");
+}
+
+/**
+ * \returns true if the --save command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isSaveRequested() const
+{
+    return getBool("save");
 }
 
 /**
@@ -4567,9 +4577,9 @@ S9sOptions::printHelpCluster()
 "  --create                   Create and install a new cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
 "  --create-report            Starts a job that will create an error report.\n"
-"  --deploy-agents            Starts a job that will deploy agents to the nodes.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --demote-node              Demote a node to slave.\n"
+"  --deploy-agents            Starts a job to deploy agents to the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
@@ -4578,6 +4588,7 @@ S9sOptions::printHelpCluster()
 "  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
+"  --save                     Saves the entire cluster into a file/directory.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
@@ -6745,6 +6756,9 @@ S9sOptions::checkOptionsCluster()
     if (isRollingRestartRequested())
         countOptions++;
     
+    if (isSaveRequested())
+        countOptions++;
+    
     if (isSetupAuditLoggingRequested())
         countOptions++;
     
@@ -8461,6 +8475,7 @@ S9sOptions::readOptionsCluster(
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
+        { "save",             no_argument,       0, OptionSave            },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
@@ -8600,6 +8615,11 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
+                break;
+            
+            case OptionSave:
+                // --save
+                m_options["save"] = true;
                 break;
             
             case OptionSetupAudit:
