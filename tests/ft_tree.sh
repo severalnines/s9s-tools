@@ -183,6 +183,12 @@ function testCreateUser()
 function testCreateSuperuser()
 {
     print_title "Creating a Superuser"
+    cat <<EOF
+This test will create a user with superuser privileges under the name
+"superuser" and checks if the exit code is 0.
+
+EOF
+
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -196,7 +202,7 @@ function testCreateSuperuser()
         "superuser"
 
     check_exit_code_no_job $?
-    mys9s tree --list --long
+    #mys9s tree --list --long
 }
 
 #####
@@ -212,7 +218,13 @@ function testRegisterServer()
     local owner
     local group
 
-    print_title "Registering a container server."
+    print_title "Registering a Container Server"
+    cat <<EOF
+This test will register a container server and check if it properly shows in the
+tree.
+
+EOF
+
     mys9s server \
         --register \
         --servers="lxc://$CONTAINER_SERVER"
@@ -226,7 +238,7 @@ function testRegisterServer()
     
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch); do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
         mode=$(echo "$line" | awk '{print $1}')
@@ -267,6 +279,12 @@ function testCreateContainer()
     #
     #
     print_title "Creating a Container"
+    cat <<EOF
+This test will create a container outside of the Cmon Controller (manually, 
+by executing a few commands on the server) then it will check if the container
+appears in the list the controller maintains about the containers.
+EOF
+
     #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
     #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
 
@@ -293,12 +311,15 @@ function testCreateContainer()
         failure "Container IP is invalid."
         exit 1
     fi
-    
+   
+    #
+    #
+    #
     mys9s tree --list --long $CONTAINER_SERVER/containers
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch $CONTAINER_SERVER/containers)
     do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
         mode=$(echo "$line" | awk '{print $1}')
@@ -318,6 +339,8 @@ function testCreateContainer()
 
     if [ -z "$object_found" ]; then
         failure "Object was not found."
+    else
+        success "  o the new container is found, ok"
     fi
 }
 
@@ -505,11 +528,12 @@ function testMoveObjects()
     #
     #
     #
-    print_title "Moving objects into subfolder"
+    print_title "Moving Objects into Subfolder"
     cat <<EOF
 In this scenario the user moves some objects into a subfolder, then moves the
 user object itself. All the objects should remain visible in a chroot
 environment.
+
 EOF
 
     mys9s tree --mkdir "$TEST_PATH"
@@ -527,7 +551,7 @@ EOF
     IFS=$'\n'
     for line in $(s9s tree --list --long --recursive --full-path --batch)
     do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         line=$(echo "$line" | sed 's/3, 1/   -/g')
         name=$(echo "$line" | awk '{print $5}')
@@ -566,7 +590,7 @@ EOF
         esac
     done
 
-    echo "n_object_found: $n_object_found"
+    #echo "n_object_found: $n_object_found"
     mys9s tree --list --long --recursive --full-path --cmon-user=system --password=secret
 
     #
@@ -579,7 +603,7 @@ EOF
         --list --long --recursive --full-path --batch \
         --cmon-user=system --password=secret)
     do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         line=$(echo "$line" | sed 's/3, 1/   -/g')
         name=$(echo "$line" | awk '{print $5}')
@@ -620,7 +644,23 @@ EOF
     
     if [ "$n_object_found" -lt 4 ]; then
         failure "Some objects were not found."
+    else
+        success "  o all objects were found"
     fi
+}
+
+function testStats()
+{
+    print_title "Checking CDT Path of Objects"
+
+    mys9s user --stat "$USER"
+    
+    mys9s server --stat
+    mys9s server --list --long
+    
+    mys9s cluster --stat
+
+    mys9s server --list --long
 }
 
 #
@@ -735,7 +775,7 @@ function testTree()
     local name
     local n_object_found=0
 
-    print_title "Printing tree and ending test"
+    print_title "Printing and Checking Tree"
 
     mys9s tree --list 
     mys9s tree --list --long
@@ -904,6 +944,7 @@ else
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount
     runFunctionalTest testMoveObjects
+    runFunctionalTest testStats
     runFunctionalTest testAclChroot
     runFunctionalTest testCreateFolder
     runFunctionalTest testManipulate
