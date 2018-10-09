@@ -182,7 +182,7 @@ function testCreateUser()
 #
 function testCreateSuperuser()
 {
-    print_title "Creating a user with superuser privileges."
+    print_title "Creating a Superuser"
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -336,7 +336,11 @@ function testCreateCluster()
     #
     #
     #
-    print_title "Creating a cluster."
+    print_title "Creating a Cluster"
+    cat <<EOF 
+In this test we create a cluster and check various properties of it (e.g. the
+owner and the group owner). 
+EOF
     mys9s cluster \
         --create \
         --cluster-type=galera \
@@ -351,19 +355,28 @@ function testCreateCluster()
     #
     #
     #
-    mys9s tree --list --long "$CLUSTER_NAME"
+    #mys9s tree --list --long "$CLUSTER_NAME"
     
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME"); do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
         mode=$(echo "$line" | awk '{print $1}')
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
 
-        [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-        [ "$group" != "users" ] && failure "Group is '$group'."
+        if [ "$owner" != "pipas" ]; then
+            failure "Owner of '$name' is '$owner'."
+        else
+            success "  o owner of '$name' is '$owner', ok"
+        fi
+
+        if [ "$group" != "users" ]; then
+            failure "Group is '$group'."
+        else
+            success "  o group of '$name' is '$group', ok"
+        fi
     done
     IFS=$old_ifs    
 }
@@ -493,11 +506,16 @@ function testMoveObjects()
     #
     #
     print_title "Moving objects into subfolder"
+    cat <<EOF
+In this scenario the user moves some objects into a subfolder, then moves the
+user object itself. All the objects should remain visible in a chroot
+environment.
+EOF
 
     mys9s tree --mkdir "$TEST_PATH"
-    mys9s tree --move /$CONTAINER_SERVER "$TEST_PATH"
-    mys9s tree --move /galera_001 "$TEST_PATH"
-    mys9s tree --move /pipas "$TEST_PATH"
+    mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
+    mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
+    mys9s tree --move "/pipas" "$TEST_PATH"
 
     mys9s tree --tree 
     
@@ -748,6 +766,89 @@ function testTree()
     fi
 }
 
+function testMoveBack()
+{
+    print_title "Moving Objects from Chroot"
+    cat <<EOF
+Here the superuser moves the objects back into the root directory out from the
+chroot environment of the other user. The other user should not see the 
+objects.
+EOF
+    mys9s tree --tree --all --cmon-user=system --password=secret
+
+    mys9s tree \
+        --cmon-user=system \
+        --password=secret \
+        --move "$TEST_PATH/$CONTAINER_SERVER" "/"
+
+    check_exit_code_no_job $?
+ 
+    mys9s tree \
+        --cmon-user=system \
+        --password=secret \
+        --move "$TEST_PATH/$CLUSTER_NAME" "/"
+
+    check_exit_code_no_job $?
+
+    mys9s tree --tree --all --cmon-user=system --password=secret
+    mys9s tree --tree --all
+   
+    #
+    # Checking if the superuser see the cluster while the user do not (because
+    # the user is in a chroot environment).
+    #
+    if $(s9s cluster --list --long --cmon-user=system --password=secret | grep -q "$CLUSTER_NAME"); then
+        success "  o the superuser sees the cluster, ok"
+    else
+        failure "The superuser does not see the cluster."
+        mys9s cluster --list --long --cmon-user=system --password=secret
+    fi
+
+    if $(s9s cluster --list --long | grep -q "$CLUSTER_NAME"); then
+        failure "The user should not see the cluster."
+        mys9s cluster --list --long
+    else
+        success "  o the user does not see the cluster, ok"
+    fi
+
+    #
+    # Checking the visibility of the nodes.
+    #
+    if $(s9s node --list --long | grep -q "$CLUSTER_NAME"); then
+        failure "The user should not see the nodes."
+        mys9s node --list --long 
+    else
+        success "  o the user does not see the nodes, ok"
+    fi
+
+    if $(s9s node --list --long --cmon-user=system --password=secret | grep -q "$CLUSTER_NAME"); then
+        success "  o the nodes are visible for the system user, ok"
+    else
+        failure "The nodes should be visible for the system user."
+        mys9s node --list --long --cmon-user=system --password=secret
+    fi
+
+    #
+    # Checking the visibility of the server.
+    #
+    if $(s9s server --list --long | grep -q "$CONTAINER_SERVER"); then
+        failure "The user should not see the server."
+        mys9s server --list --long 
+    else
+        success "  o the user does not see the server, ok"
+    fi
+
+    if $(s9s node --list --long --cmon-user=system --password=secret | grep -q "$CONTAINER_SERVER"); then
+        success "  o the server is visible for the system user, ok"
+    else
+        failure "The server should be visible for the system user."
+        mys9s server --list --long --cmon-user=system --password=secret
+    fi
+
+    #mys9s server --list --long
+    #mys9s server --list --long --cmon-user=system --password=secret
+}
+
 #
 # This will delete the containers we created before.
 #
@@ -807,6 +908,7 @@ else
     runFunctionalTest testCreateFolder
     runFunctionalTest testManipulate
     runFunctionalTest testTree
+    runFunctionalTest testMoveBack
     runFunctionalTest deleteContainers
 fi
 
