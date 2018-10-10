@@ -328,9 +328,24 @@ EOF
 
         case $name in 
             $container_name)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner is '$owner'."
+                else
+                    success "  o owner is '$owner', ok"
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group is '$group'."
+                else
+                    success "  o group is '$group', ok"
+                fi
+
+                if [ "$mode"  != "crwxrw----" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o mode is '$mode', ok" 
+                fi
+
                 object_found="yes"
                 ;;
         esac
@@ -357,7 +372,7 @@ function testCreateCluster()
     local group
 
     #
-    #
+    # Creating the cluster...
     #
     print_title "Creating a Cluster"
     cat <<EOF 
@@ -376,10 +391,8 @@ EOF
     check_exit_code $?
     
     #
+    # Checking...
     #
-    #
-    #mys9s tree --list --long "$CLUSTER_NAME"
-    
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME"); do
         #echo "  checking line: $line"
@@ -421,6 +434,12 @@ function testCreateDatabase()
     #
     #
     print_title "Creating Databases"
+    cat <<EOF
+This test will create a few databases then it checks that the databases will
+appear in the tree with the right properties.
+
+EOF
+
     mys9s cluster \
         --create-database \
         --cluster-name="$CLUSTER_NAME" \
@@ -445,11 +464,7 @@ function testCreateDatabase()
     
     check_exit_code_no_job $?
 
-    #for n in 1 2 3 4 5 6 7 8 9 10; do
-    #    mys9s tree --tree 
-    #    sleep 10
-    #done
-    # FIXME: I am not sure why we need this.
+    # FIXME: We wait here, we should not need to.
     sleep 15
 
     mys9s tree --list --long "$CLUSTER_NAME/databases"
@@ -457,7 +472,7 @@ function testCreateDatabase()
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME/databases")
     do
-        echo "  checking line: $line"
+        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
         mode=$(echo "$line" | awk '{print $1}')
@@ -466,31 +481,84 @@ function testCreateDatabase()
 
         case "$name" in 
             domain_names_diff)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                success "  o database $name found, ok"
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner is '$owner'."
+                else
+                    success "  o owner is $owner, ok"
+                fi
+                
+                if [ "$group" != "users" ]; then
+                    failure "Group is '$group'."
+                else
+                    success "  o group is $group, ok"
+                fi
+
+                if [ "$mode"  != "brwxrw----" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o mode is $mode, ok"
+                fi
+
                 let n_object_found+=1
                 ;;
 
             domain_names_ngtlds_diff)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                success "  o database $name found, ok"
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner is '$owner'."
+                else
+                    success "  o owner is $owner, ok"
+                fi
+                
+                if [ "$group" != "users" ]; then
+                    failure "Group is '$group'."
+                else
+                    success "  o group is $group, ok"
+                fi
+
+                if [ "$mode"  != "brwxrw----" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o mode is $mode, ok"
+                fi
+
                 let n_object_found+=1
                 ;;
 
             whois_records_delta)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                success "  o database $name found, ok"
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner is '$owner'."
+                else
+                    success "  o owner is $owner, ok"
+                fi
+                
+                if [ "$group" != "users" ]; then
+                    failure "Group is '$group'."
+                else
+                    success "  o group is $group, ok"
+                fi
+                
+                if [ "$mode"  != "brwxrw----" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o mode is $mode, ok"
+                fi
+
                 let n_object_found+=1
                 ;;
+
+            *)
+                failure "Database '$name' is unexpected."
         esac
     done
     IFS=$old_ifs    
 
     if [ "$n_object_found" -lt 3 ]; then
         failure "Some databases were not found."
+    else
+        success "  o all $n_objects_found databases found, ok"
     fi
 }
 
@@ -668,19 +736,22 @@ function testStats()
 #
 function testAclChroot()
 {
+    print_title "Checking getAcl replies"
+
     THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
-
     if [ "$THE_PATH" != '"/"' ]; then
         s9s tree --get-acl --print-json / | jq .
         failure "The path should be '/' in getAcl reply not '$THE_PATH'."
-        exit 1
+    else
+        success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '""' ]; then
         s9s tree --get-acl --print-json / | jq .
         failure "The object name should be empty in getAcl reply."
-        exit 1
+    else
+        success "The name is '$THE_NAME', ok"
     fi
 
     THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
@@ -688,13 +759,15 @@ function testAclChroot()
     if [ "$THE_PATH" != '"/"' ]; then
         s9s tree --get-acl --print-json /galera_001 | jq .
         failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
-        exit 1
+    else
+        success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"galera_001"' ]; then
         s9s tree --get-acl --print-json /galera_001 | jq .
         failure "The object name should be 'galera_001' in getAcl reply."
-        exit 1
+    else
+        success "The name is '$THE_NAME', ok"
     fi
 
     THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
@@ -702,13 +775,15 @@ function testAclChroot()
     if [ "$THE_PATH" != '"/galera_001"' ]; then
         s9s tree --get-acl --print-json /galera_001/databases | jq .
         failure "The path should be '/galera_001' in getAcl reply."
-        exit 1
+    else
+        success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"databases"' ]; then
         s9s tree --get-acl --print-json /galera_001/databases | jq .
         failure "The object name should be 'databases' in getAcl reply."
-        exit 1
+    else
+        success "The name is '$THE_NAME', ok"
     fi
 }
 
@@ -722,11 +797,7 @@ function testCreateFolder()
         --mkdir \
         /tmp
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating account."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 }
 
 #####
@@ -734,36 +805,31 @@ function testCreateFolder()
 #
 function testManipulate()
 {
-    print_title "Adding an ACL entry"
-    mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating account."
-        exit 1
-    fi
+    print_title "Adding an ACL Entry"
 
-    #####
+    mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
+    check_exit_code_no_job $?
+
+    #
     # Changing the owner
     #
-    print_title "Changing the owner"
+    print_title "Changing the Owner"
     mys9s tree --chown --owner=admin:admins /tmp
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating account."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
     mys9s tree --list --directory --long /tmp
     OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
     GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
     if [ "$OWNER" != 'admin' ]; then
         failure "The owner should be 'admin' not '$OWNER'."
-        exit 1
+    else 
+        success "  o the owner is $OWNER, ok"
     fi
 
     if [ "$GROUP" != 'admins' ]; then
         failure "The group should be 'admins' not '$GROUP'."
-        exit 1
+    else
+        success "  o the group is $GROUP, ok"
     fi
 }
 
