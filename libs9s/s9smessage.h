@@ -37,6 +37,11 @@ class S9sMessage
         bool hasFileName() const;
         S9sString fileName() const;
 
+#ifdef LOG_FUNCNAMES_TO_JOBLOG
+        bool hasFunctionName() const;
+        S9sString functionName() const;
+#endif
+
         bool hasLineNumber() const;
         int lineNumber() const;
 
