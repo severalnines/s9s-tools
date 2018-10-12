@@ -80,6 +80,36 @@ S9sMessage::fileName() const
     return S9sString();
 }
 
+#ifdef LOG_FUNCNAMES_TO_JOBLOG
+bool
+S9sMessage::hasFunctionName() const
+{
+    return 
+        m_properties.contains("functionName") || 
+        m_properties.contains("function_name");
+}
+
+S9sString 
+S9sMessage::functionName() const
+{
+    S9sString str, retval;
+
+    if (m_properties.contains("functionName"))
+    {
+        str = m_properties.at("functionName").toString();
+    } else if (m_properties.contains("function_name"))
+    {
+        str = m_properties.at("function_name").toString();
+    }
+
+    // a HACK for now to shorten the function name for the console output
+    if (!str.regMatch("::(.*)\\(", retval))
+        retval = str;
+
+    return retval;
+}
+#endif
+
 bool
 S9sMessage::hasLineNumber() const
 {
@@ -444,6 +474,21 @@ S9sMessage::toString(
                     if (syntaxHighlight)
                         retval += TERM_NORMAL;
                     break;
+
+#ifdef LOG_FUNCNAMES_TO_JOBLOG
+                case 'P':
+                    // The function (procedure) name in color.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(functionName()));
+
+                    retval += XTERM_COLOR_BLUE;
+                    retval += tmp;
+
+                    retval += TERM_NORMAL;
+                    break;
+#endif
 
                 case '%':
                     retval += '%';
