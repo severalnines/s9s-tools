@@ -2007,6 +2007,31 @@ S9sRpcClient::rollingRestart()
     return executeRequest(uri, request);
 }
 
+/**
+ * This is the method that initiated a saveCluster job.
+ *
+ * \code{.js}
+ * {
+ *     "cluster_id": 1,
+ *     "job": 
+ *     {
+ *         "class_name": "CmonJobInstance",
+ *         "job_spec": 
+ *         {
+ *             "command": "save_cluster",
+ *             "job_data": 
+ *             {
+ *                 "backupdir": "/tmp/cmon-saved-clusters"
+ *             }
+ *         },
+ *         "title": "Save Cluster"
+ *     },
+ *     "operation": "createJobInstance",
+ *     "request_created": "2018-10-12T06:44:39.634Z",
+ *     "request_id": 3
+ * }
+ * \endcode
+ */
 bool
 S9sRpcClient::saveCluster()
 {
@@ -2035,6 +2060,33 @@ S9sRpcClient::saveCluster()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::restoreCluster()
+{
+    S9sOptions     *options       = S9sOptions::instance();
+    S9sString       inputFileName = options->inputFile();
+    S9sVariantMap   request       = composeRequest();
+    S9sVariantMap   job           = composeJob();
+    S9sVariantMap   jobSpec;
+    S9sVariantMap   jobData       = composeJobData();
+    S9sString       uri           = "/v2/jobs/";
+
+    jobSpec["command"]    = "restore_cluster";
+    jobSpec["job_data"]   = jobData;
+    
+    if (!inputFileName.empty())
+        jobData["input_file"] = inputFileName;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Restore Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
 
 bool
 S9sRpcClient::setupAuditLogging(

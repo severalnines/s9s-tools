@@ -694,7 +694,11 @@ S9sBusinessLogic::execute()
             // s9s backup --save-cluster --cluster-id=1
             success = client.saveCluster();
             maybeJobRegistered(client, clusterId, success);
-            // FICME: isRestoreClusterRequested() not handled...
+        } else if (options->isRestoreClusterRequested())
+        {
+            // s9s backup --restore-cluster --input-file=/ak.tgz
+            success = client.restoreCluster();
+            maybeJobRegistered(client, clusterId, success);
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }

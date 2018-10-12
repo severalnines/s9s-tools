@@ -5326,6 +5326,11 @@ S9sOptions::readOptionsBackup(
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
+
+        // For save cluster and restore cluster...
+        { "output-file",      required_argument, 0, OptionOutputFile      },
+        { "input-file",       required_argument, 0, OptionInputFile       },
+        
         { 0, 0, 0, 0 }
     };
 
@@ -5656,6 +5661,16 @@ S9sOptions::readOptionsBackup(
             case OptionTestServer:
                 // --test-server=HOSTNAME
                 m_options["test_server"] = optarg;
+                break;
+            
+            case OptionOutputFile:
+                // --output-file=FILE
+                m_options["output_file"] = optarg;
+                break;
+            
+            case OptionInputFile:
+                // --input-file=FILE
+                m_options["input_file"] = optarg;
                 break;
 
             case '?':
