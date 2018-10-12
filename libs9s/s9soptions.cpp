@@ -93,7 +93,8 @@ enum S9sOptionType
     OptionHelp,
     OptionTimeStyle,
     OptionWait,
-    OptionSave,
+    OptionSaveCluster,
+    OptionRestoreCluster,
     OptionRestore,
     OptionVerify,
     OptionDeleteOld,
@@ -2321,6 +2322,10 @@ S9sOptions::dbName() const
     return getString("db_name");
 }
 
+/**
+ * \returns The argument for the --backup-directory option or the
+ *   backup_directory config value.
+ */
 S9sString
 S9sOptions::backupDir() const
 {
@@ -3377,13 +3382,23 @@ S9sOptions::isRestoreRequested() const
 }
 
 /**
- * \returns true if the --save command line option was provided when the
+ * \returns true if the --save-cluster command line option was provided when the
  *   program was started.
  */
 bool
-S9sOptions::isSaveRequested() const
+S9sOptions::isSaveClusterRequested() const
 {
-    return getBool("save");
+    return getBool("save_cluster");
+}
+
+/**
+ * \returns true if the --restore-cluster command line option was provided when
+ * the program was started.
+ */
+bool
+S9sOptions::isRestoreClusterRequested() const
+{
+    return getBool("restore_cluster");
 }
 
 /**
@@ -4431,7 +4446,9 @@ S9sOptions::printHelpBackup()
 "  --list-databases           List the backups in database format.\n"
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
+"  --restore-cluster          Restores a saved cluster.\n"
 "  --restore                  Restore an existing backup.\n"
+"  --save-cluster             Saves the entire cluster into a file/directory.\n"
 "  --verify                   Verify an existing backup on a test server.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
@@ -4588,7 +4605,6 @@ S9sOptions::printHelpCluster()
 "  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
-"  --save                     Saves the entire cluster into a file/directory.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
@@ -5260,14 +5276,16 @@ S9sOptions::readOptionsBackup(
         { "version",          no_argument,       0, 'V'                   },
 
         // Main Option
-        { "create",           no_argument,       0,  OptionCreate         },
-        { "delete",           no_argument,       0,  OptionDelete         },
-        { "delete-old",       no_argument,       0,  OptionDeleteOld      },
-        { "list-databases",   no_argument,       0,  OptionListDatabases  },
-        { "list-files",       no_argument,       0,  OptionListFiles      },
+        { "create",           no_argument,       0, OptionCreate          },
+        { "delete",           no_argument,       0, OptionDelete          },
+        { "delete-old",       no_argument,       0, OptionDeleteOld       },
+        { "list-databases",   no_argument,       0, OptionListDatabases   },
+        { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
-        { "restore",          no_argument,       0,  OptionRestore        },
-        { "verify",           no_argument,       0,  OptionVerify         },
+        { "restore-cluster",  no_argument,       0, OptionRestoreCluster  },
+        { "restore",          no_argument,       0, OptionRestore         },
+        { "save-cluster",     no_argument,       0, OptionSaveCluster     },
+        { "verify",           no_argument,       0, OptionVerify          },
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -5424,10 +5442,20 @@ S9sOptions::readOptionsBackup(
                 // --create
                 m_options["create"] = true;
                 break;
+ 
+            case OptionRestoreCluster:
+                // --restore-cluster
+                m_options["restore_cluster"] = true;
+                break;
 
             case OptionRestore:
                 // --restore
                 m_options["restore"] = true;
+                break;
+            
+            case OptionSaveCluster:
+                // --save-cluster
+                m_options["save_cluster"] = true;
                 break;
             
             case OptionVerify:
@@ -6619,6 +6647,12 @@ S9sOptions::checkOptionsBackup()
     
     if (isDeleteRequested())
         countOptions++;
+    
+    if (isSaveClusterRequested())
+        countOptions++;
+    
+    if (isRestoreClusterRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -6754,9 +6788,6 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
 
     if (isRollingRestartRequested())
-        countOptions++;
-    
-    if (isSaveRequested())
         countOptions++;
     
     if (isSetupAuditLoggingRequested())
@@ -8475,7 +8506,6 @@ S9sOptions::readOptionsCluster(
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
-        { "save",             no_argument,       0, OptionSave            },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
@@ -8615,11 +8645,6 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
-                break;
-            
-            case OptionSave:
-                // --save
-                m_options["save"] = true;
                 break;
             
             case OptionSetupAudit:

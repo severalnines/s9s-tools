@@ -119,10 +119,6 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
-        } else if (options->isSaveRequested())
-        {
-            success = client.saveCluster();
-            maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetupAuditLoggingRequested())
         {
             success = client.setupAuditLogging(clusterId);
@@ -693,6 +689,12 @@ S9sBusinessLogic::execute()
             success = client.deleteBackupRecord();
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+        } else if (options->isSaveClusterRequested())
+        {
+            // s9s backup --save-cluster --cluster-id=1
+            success = client.saveCluster();
+            maybeJobRegistered(client, clusterId, success);
+            // FICME: isRestoreClusterRequested() not handled...
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }

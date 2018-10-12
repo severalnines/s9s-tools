@@ -386,7 +386,8 @@ class S9sOptions
         bool isPromoteSlaveRequested() const;
         bool isDemoteNodeRequested() const;
         bool isRestoreRequested() const;
-        bool isSaveRequested() const;
+        bool isSaveClusterRequested() const;
+        bool isRestoreClusterRequested() const;
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;
         bool isRollingRestartRequested() const;

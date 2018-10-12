@@ -2010,12 +2010,19 @@ S9sRpcClient::rollingRestart()
 bool
 S9sRpcClient::saveCluster()
 {
-    S9sVariantMap  request = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobSpec;
-    S9sString      uri = "/v2/jobs/";
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sString       backupDir    = options->backupDir();
+    S9sVariantMap   request = composeRequest();
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobSpec;
+    S9sVariantMap   jobData = composeJobData();
+    S9sString       uri = "/v2/jobs/";
 
+    if (!backupDir.empty())
+        jobData["backupdir"]     = backupDir;
+    
     jobSpec["command"]    = "save_cluster";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Save Cluster";
@@ -5309,6 +5316,7 @@ S9sRpcClient::createBackup()
 
     if (options->onNode())
         jobData["cc_storage"]    = false;
+
     // or just else branch of onNode ?
     if (options->onController())
         jobData["cc_storage"]    = true;
