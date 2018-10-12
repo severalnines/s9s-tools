@@ -2070,13 +2070,13 @@ S9sRpcClient::restoreCluster()
     S9sVariantMap   jobSpec;
     S9sVariantMap   jobData       = composeJobData();
     S9sString       uri           = "/v2/jobs/";
-
-    jobSpec["command"]    = "restore_cluster";
-    jobSpec["job_data"]   = jobData;
     
     if (!inputFileName.empty())
         jobData["input_file"] = inputFileName;
 
+    jobSpec["command"]    = "restore_cluster";
+    jobSpec["job_data"]   = jobData;
+    
     // The job instance describing how the job will be executed.
     job["title"]          = "Restore Cluster";
     job["job_spec"]       = jobSpec;
