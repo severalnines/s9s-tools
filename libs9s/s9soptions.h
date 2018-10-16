@@ -170,6 +170,9 @@ class S9sOptions
         int clusterId() const;
         bool hasClusterIdOption() const;
         
+        bool forceOption() const;
+        bool hasForceOption() const;
+
         int alarmId() const;
         bool hasAlarmIdOption() const;
         

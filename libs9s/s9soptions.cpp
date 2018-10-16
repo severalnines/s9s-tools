@@ -1708,6 +1708,18 @@ S9sOptions::hasClusterIdOption() const
 }
 
 bool
+S9sOptions::forceOption() const
+{
+    return m_options.at("force").toBoolean();
+}
+
+bool
+S9sOptions::hasForceOption() const
+{
+    return m_options.contains("force");
+}
+
+bool
 S9sOptions::hasAlarmIdOption() const
 {
     return m_options.contains("alarm_id");
@@ -8501,6 +8513,7 @@ S9sOptions::readOptionsCluster(
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "force",            no_argument,       0, OptionForce           },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -8740,6 +8753,11 @@ S9sOptions::readOptionsCluster(
             case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config_file"] = optarg;
+                break;
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
                 break;
 
             case OptionColor:
