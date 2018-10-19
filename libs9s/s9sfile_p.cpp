@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016  Severalnines AB
+ * Copyright (C) 2016-present  Severalnines AB
  *
  * This file is part of s9s-tools.
  *

@@ -26,6 +26,7 @@ Usage:
   
   --all              Check everything, install everything.
   --install-mongodb  Checks and installs the mongodb driver and mongo-c.
+  --install-mysql    Installs the mysql server with root password.
   --update-packages  Updates packages of the server.
 
 EOF
@@ -36,7 +37,7 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,all,\
-install-mongodb,update-packages" \
+install-mongodb,install-mysql,update-packages" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -75,6 +76,11 @@ while true; do
         --install-mongodb)
             shift
             OPTION_INSTALL_MONGODB="true"
+            ;;
+
+        --install-mysql)
+            shift
+            OPTION_INSTALL_MYSQL="true"
             ;;
 
         --update-packages)
@@ -117,6 +123,19 @@ function install_package()
     return $retcode
 }
 
+function install_mysql_server()
+{
+    #
+    # Installing mysql-server with a root password.
+    #
+    echo "mysql-server-5.5 mysql-server/root_password password p" |\
+        sudo debconf-set-selections
+    echo "mysql-server-5.5 mysql-server/root_password_again password p" |\
+        sudo debconf-set-selections
+
+    install_package mysql-server
+}
+
 function install_packages()
 {
     pip-host-control --status="Installing packages..."
@@ -134,16 +153,7 @@ function install_packages()
 
     #install_package vagrant
     #install_package virtualbox
-
-    #
-    # Installing mysql-server with a root password.
-    #
-    echo "mysql-server-5.5 mysql-server/root_password password p" |\
-        sudo debconf-set-selections
-    echo "mysql-server-5.5 mysql-server/root_password_again password p" |\
-        sudo debconf-set-selections
-
-    install_package mysql-server
+    install_mysql_server
 }
 
 #
@@ -356,6 +366,11 @@ function update_packages()
 
     sudo purge-old-kernels
 }
+
+if [ -n "$OPTION_INSTALL_MYSQL" ]; then
+    install_mysql_server
+    exit $?
+fi
 
 if [ -n "$OPTION_INSTALL_PACKAGES" ]; then
     update_packages
