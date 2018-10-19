@@ -4077,6 +4077,8 @@ S9sRpcClient::removeNode()
     jobData["host"]       = hostName;
     if (host.hasPort())
         jobData["port"]   = host.port();
+    if (options->hasForceOption())
+        jobData["force"] = options->force();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
