@@ -2285,7 +2285,9 @@ S9sRpcClient::createCluster()
                 hosts, osUserName, vendor, dbVersion, uninstall);
     } else if (options->clusterType() == "postgresql")
     {
-        success = createPostgreSql(hosts, osUserName, dbVersion, uninstall);
+        success = createPostgreSql(
+                hosts, osUserName, osSudoPassword,
+                dbVersion, uninstall);
 	} else if (options->clusterType() == "mongodb")
 	{
 		success = createMongoCluster(
@@ -3085,6 +3087,7 @@ bool
 S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
+        const S9sString      &osSudoPassword,
         const S9sString      &psqlVersion,
         bool                  uninstall)
 {
@@ -3109,9 +3112,12 @@ S9sRpcClient::createPostgreSql(
     jobData["nodes"]            = nodesField(hosts);
     jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
+    jobData["sudo_password"]    = osSudoPassword;
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
+    if (options->hasBackupId())
+        jobData["backup_id"]        = options->backupId();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();

@@ -8549,6 +8549,7 @@ S9sOptions::readOptionsCluster(
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
+        { "backup-id",        required_argument, 0, OptionBackupId        },
 
 
         // Cluster information.
@@ -8753,6 +8754,11 @@ S9sOptions::readOptionsCluster(
             case OptionConfigFile:
                 // --config-file=FILE
                 m_options["config_file"] = optarg;
+                break;
+
+            case OptionBackupId:
+                // --backup-id=NUMBER
+                m_options["backup_id"] = optarg;
                 break;
 
             case OptionForce:
