@@ -29,6 +29,8 @@ Usage:
   --install-mysql    Installs the mysql server with root password.
   --update-packages  Updates packages of the server.
 
+  --no-containers    Do not install container virtualization technology.
+
 EOF
     exit 0
 }
@@ -37,7 +39,8 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,all,\
-install-mongodb,install-mysql,update-packages" \
+install-mongodb,install-mysql,update-packages,\
+no-containers" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -86,6 +89,11 @@ while true; do
         --update-packages)
             shift
             OPTION_INSTALL_PACKAGES="true"
+            ;;
+
+        --no-containers)
+            shift
+            NO_CONTAINERS_OPTION="--no-containers"
             ;;
 
         --)
@@ -152,10 +160,17 @@ function install_mysql_server()
     install_package mysql-server
 }
 
+#
+# Installs basic packages that we might use during development. This is a pretty
+# subjective list but proven to be handy.
+#
 function install_packages()
 {
     pip-host-control --status="Installing packages..."
-    install_package lxc1
+    if [ -z "$NO_CONTAINERS_OPTION" ]; then
+        install_package lxc1
+    fi
+
     install_package jq
     install_package tree
     install_package iotop

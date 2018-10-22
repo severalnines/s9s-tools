@@ -927,12 +927,18 @@ function create_node()
     local verbose_option=""
     local option_autodestroy=""
     local container_list_file="/tmp/${MYNAME}.containers"
+    local template_option=""
 
     while [ "$1" ]; do
         case "$1" in 
             --autodestroy)
                 shift
                 option_autodestroy="true"
+                ;;
+
+            --template)
+                template_option="--template=$2"
+                shift 2
                 ;;
 
             *)
@@ -952,7 +958,11 @@ function create_node()
     fi
 
     echo -n "Creating container..." >&2
-    ip=$(pip-container-create $verbose_option --server=$CONTAINER_SERVER $1)
+    ip=$(pip-container-create \
+        $template_option \
+        $verbose_option \
+        --server=$CONTAINER_SERVER $1)
+
     retval=$?
     if [ "$retval" -ne 0 ]; then
         printError "pip-container-create returned ${retval}."
