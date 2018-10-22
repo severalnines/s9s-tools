@@ -123,6 +123,22 @@ function install_package()
     return $retcode
 }
 
+function check_install_libssh_ppa()
+{
+    echo -ne "Checking for libssh 0.7.x ... "
+    if dpkg -l | grep "libssh-4.*0.7" > /dev/null 2>&1; then
+        echo "OK (0.7)" # installed
+    elif dpkg -l | grep "libssh-4.*0.8" > /dev/null 2>&1; then
+        echo "OK (0.8)" # installed
+    else
+        echo "Not installed, installing"
+        sudo apt-get -y --force-yes install software-properties-common $1
+        sudo apt-add-repository -y -u ppa:kedazo/libssh-0.7.x
+        sudo apt-get -y -q update
+        sudo apt-get -y --force-yes install libssh-dev libssh-4 libssh-dbg
+    fi
+}
+
 function install_mysql_server()
 {
     #
@@ -155,6 +171,40 @@ function install_packages()
     #install_package virtualbox
     install_mysql_server
 }
+
+#
+# Install dependencies
+#
+function install_dependencies()
+{
+    pip-host-control --status="Installing dependencies..."
+
+    install_package git
+    install_package wget
+    install_package xz-utils
+    install_package make
+    install_package g++
+    install_package flex
+    install_package bison
+    install_package rpm
+    install_package dpkg-dev
+    install_package cmake
+    install_package libssl-dev
+    check_install_libssh_ppa
+
+    # for mongodb
+    install_package libboost-dev
+
+    #check_install_dep libboost-all-dev
+    install_package libboost-filesystem-dev
+    install_package libboost-program-options-dev
+    install_package libboost-regex-dev
+    install_package libboost-system-dev
+    install_package libboost-test-dev
+    install_package libboost-thread-dev
+    install_package scons
+}
+
 
 #
 # Downloading clustercontrol source
@@ -378,6 +428,9 @@ fi
 
 if [ -n "$OPTION_ALL" ]; then
     install_packages
+    [ $? -ne 0 ] && exit 1
+    
+    install_dependencies
     [ $? -ne 0 ] && exit 1
     
     install_mongodb
