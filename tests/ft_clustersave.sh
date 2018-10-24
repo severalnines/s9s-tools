@@ -16,7 +16,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 OPTION_INSTALL=""
-OPTION_NUMBER_OF_NODES="3"
+OPTION_NUMBER_OF_NODES="1"
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
@@ -242,6 +242,70 @@ function createController()
     done
 }
 
+#
+# This test will allocate a few nodes and install a new cluster.
+#
+function testCreateCluster()
+{
+    local nodes
+    local node_ip
+    local exitCode
+    local node_serial=1
+    local node_name
+
+    print_title "Creating a Galera Cluster"
+    
+    while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
+        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+
+        echo "Creating node #$node_serial"
+        node_ip=$(create_node --autodestroy "$node_name")
+
+        if [ -n "$nodes" ]; then
+            nodes+=";"
+        fi
+
+        nodes+="$node_ip"
+
+        if [ -z "$FIRST_ADDED_NODE" ]; then
+            FIRST_ADDED_NODE="$node_ip"
+        fi
+
+        let node_serial+=1
+    done
+     
+    #
+    # Creating a Galera cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=$PROVIDER_VERSION \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating cluster."
+        mys9s job --list
+        mys9s job --log --job-id=1
+        exit 1
+    fi
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
+}
+
+
 function cleanup()
 {
     print_title "Cleaning Up"
@@ -277,6 +341,8 @@ elif [ "$1" ]; then
 else
     #runFunctionalTest testPing
     runFunctionalTest createController
+    runFunctionalTest testCreateCluster
+    runFunctionalTest cleanup
 fi
 
 endTests
