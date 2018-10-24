@@ -2022,6 +2022,7 @@ S9sRpcClient::rollingRestart()
  *             "job_data": 
  *             {
  *                 "backupdir": "/tmp/cmon-saved-clusters"
+ *                 "output_file": "ak.tar.gz"
  *             }
  *         },
  *         "title": "Save Cluster"
@@ -2037,14 +2038,18 @@ S9sRpcClient::saveCluster()
 {
     S9sOptions     *options      = S9sOptions::instance();
     S9sString       backupDir    = options->backupDir();
-    S9sVariantMap   request = composeRequest();
-    S9sVariantMap   job = composeJob();
+    S9sString       outputFile   = options->outputFile();
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
+    S9sString       uri          = "/v2/jobs/";
     S9sVariantMap   jobSpec;
-    S9sVariantMap   jobData = composeJobData();
-    S9sString       uri = "/v2/jobs/";
 
     if (!backupDir.empty())
         jobData["backupdir"]     = backupDir;
+
+    if (!outputFile.empty())
+        jobData["output_file"]   = outputFile;
     
     jobSpec["command"]    = "save_cluster";
     jobSpec["job_data"]   = jobData;
