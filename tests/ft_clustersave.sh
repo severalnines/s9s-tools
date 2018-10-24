@@ -24,7 +24,10 @@ OPTION_VENDOR="percona"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 SECONDARY_CONTROLLER_IP=""
+SECONDARY_CONTROLLER_URL=""
 SSH_PID=""
+OUTPUT_DIR="${HOME}/cmon-saved-clusters"
+OUTPUT_FILE="${MYBASENAME}_$$.tgz"
 
 cd $MYDIR
 source ./include.sh
@@ -38,7 +41,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check Galera clusters.
+  $MYNAME - Test script for s9s to check cluster save/restore features. 
 
   -h, --help       Print this help and exit.
   --verbose        Print more messages.
@@ -54,7 +57,11 @@ Usage:
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
-  o testPing             Pings the controller.
+  o createController     Creates a second controller in a container.
+  o testCreateCluster    Creates a cluster to be saved.
+  o testSaveCluster      Saves the cluster on the local controller.
+  o testRestoreCluster   Loads the cluster on the remote controller.
+  o cleanup              Cleans up previously allocated resources.
 
 EXAMPLE
  ./$MYNAME --print-commands --server=core1 --reset-config --install
@@ -165,12 +172,13 @@ function testPing()
 
 function ssh_to_controller()
 {
-            ssh -o ConnectTimeout=1 \
-                -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no \
-                -o LogLevel=quiet \
-                "$SECONDARY_CONTROLLER_IP" \
-                -- "$*"
+    echo "Executing ssh \"$SECONDARY_CONTROLLER_IP\" bash --login -c \"$*\""
+    ssh -o ConnectTimeout=1 \
+        -o UserKnownHostsFile=/dev/null \
+        -o StrictHostKeyChecking=no \
+        -o LogLevel=quiet \
+        "$SECONDARY_CONTROLLER_IP" \
+        -- "bash --login -c \"$*\""
 }
 
 function createController()
@@ -182,15 +190,29 @@ function createController()
     print_title "Creating Secondary Controller"
     node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
     SECONDARY_CONTROLLER_IP="$node_ip"
-    url="https://$SECONDARY_CONTROLLER_IP:9556"
+    SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9556"
 
-    ssh_to_controller "cd $sdir; git pull"
+    print_title "Pulling Source on $SECONDARY_CONTROLLER_IP"
+    ssh_to_controller "cd $sdir && git pull"
     if [ $? -ne 0 ]; then
         failure "Failed to git pull."
         return 1
     fi
+    
+    print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
+    ssh_to_controller "cd $sdir && env | grep PATH"
+    ssh_to_controller "cd $sdir && ./autogen.sh"
+    if [ $? -ne 0 ]; then
+        failure "Failed to configure."
+        while true; do 
+            sleep 1000
+        done
 
-    ssh_to_controller "cd $sdir; make -j15"
+        return 1
+    fi
+
+    print_title "Compiling Source"
+    ssh_to_controller "cd $sdir && make -j15"
     if [ $? -ne 0 ]; then
         failure "Failed to compile."
         return 1
@@ -201,6 +223,7 @@ function createController()
     #
     # Starting the secondary controller.
     #
+    print_title "Starting Secondary Controller"
     rm -f nohup.out
 
     nohup ssh \
@@ -230,9 +253,10 @@ function createController()
     print_title "Testing Connection to the New Controller"
     mys9s user \
         --list --long \
-        --controller=$url \
+        --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
         --password=secret
+    
     check_exit_code_no_job $?
 
     return 0
@@ -305,6 +329,66 @@ function testCreateCluster()
     wait_for_cluster_started "$CLUSTER_NAME"
 }
 
+function testSaveCluster()
+{
+    local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
+
+    print_title "Saving Cluster"
+    mys9s backup \
+        --save-cluster \
+        --cluster-id=1 \
+        --backup-directory=$OUTPUT_DIR \
+        --output-file=$OUTPUT_FILE \
+        --log
+    
+    check_exit_code $?
+
+    if [ ! -f "$tgz_file" ]; then
+        failure "File '$tgz_file' was not created."
+    else
+        success "  o File '$tgz_file' was created, ok"
+    fi
+}
+
+function testRestoreCluster()
+{
+    local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local remote_file="/tmp/ft_clustersave_$$.tar.gz"
+
+    print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
+
+    # Copying the tar.gz file to the secondary controller.
+    scp "$local_file" "$SECONDARY_CONTROLLER_IP:$remote_file"
+    check_exit_code_no_job $?
+    
+    # Restoring the cluster on the remote controller.
+    s9s backup \
+        --restore-cluster \
+        --input-file=$remote_file \
+        --controller=$SECONDARY_CONTROLLER_URL \
+        --cmon-user=system \
+        --password=secret \
+        --log
+
+    check_exit_code $?
+
+    for n in 1 2; do
+        s9s cluster \
+            --stat \
+            --controller=$SECONDARY_CONTROLLER_URL \
+            --cmon-user=system \
+            --password=secret 
+        
+        s9s node \
+            --list \
+            --long \
+            --controller=$SECONDARY_CONTROLLER_URL \
+            --cmon-user=system \
+            --password=secret 
+
+        sleep 10
+    done
+}
 
 function cleanup()
 {
@@ -315,6 +399,10 @@ function cleanup()
         kill $SSH_PID
         sleep 3
         kill -9 $SSH_PID
+    fi
+
+    if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
+        rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
 }
 
@@ -339,9 +427,10 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    #runFunctionalTest testPing
     runFunctionalTest createController
     runFunctionalTest testCreateCluster
+    runFunctionalTest testSaveCluster
+    runFunctionalTest testRestoreCluster
     runFunctionalTest cleanup
 fi
 
