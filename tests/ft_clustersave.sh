@@ -372,22 +372,25 @@ function testRestoreCluster()
 
     check_exit_code $?
 
-    for n in 1 2; do
-        s9s cluster \
-            --stat \
-            --controller=$SECONDARY_CONTROLLER_URL \
-            --cmon-user=system \
-            --password=secret 
-        
-        s9s node \
-            --list \
-            --long \
-            --controller=$SECONDARY_CONTROLLER_URL \
-            --cmon-user=system \
-            --password=secret 
 
-        sleep 10
-    done
+    #
+    #
+    #
+    print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    wait_for_cluster_started "$CLUSTER_NAME"
+    
+    s9s cluster \
+        --stat \
+        --controller=$SECONDARY_CONTROLLER_URL \
+        --cmon-user=system \
+        --password=secret 
+    
+    s9s node \
+        --list \
+        --long \
+        --controller=$SECONDARY_CONTROLLER_URL \
+        --cmon-user=system \
+        --password=secret 
 }
 
 function cleanup()
