@@ -138,6 +138,7 @@ enum S9sOptionType
     OptionSafetyCopies,
     OptionKeep,
     OptionFullPath,
+    OptionMemory,
     OptionStat,
     OptionWatch,
     OptionEdit,
@@ -1918,6 +1919,24 @@ S9sString
 S9sOptions::backupFormat() const
 {
     return getString("backup_format");
+}
+
+/**
+ * \returns True if the --memory= command line option was provided.
+ */
+bool
+S9sOptions::hasMemory() const
+{
+    return m_options.contains("memory");
+}
+
+/**
+ * \returns The argument of the command line option --memory=
+ */
+S9sString
+S9sOptions::memory() const
+{
+    return getString("memory");
 }
 
 /**
@@ -5322,17 +5341,18 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-password",  required_argument, 0, OptionBackupPassword  },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
-        { "cloud-retention",  required_argument, 0, OptionCloudRetention  },
-        { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "backup-user",      required_argument, 0, OptionBackupUser      },
+        { "cloud-retention",  required_argument, 0, OptionCloudRetention  },
         { "databases",        required_argument, 0, OptionDatabases       },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
+        { "memory",           required_argument, 0, OptionMemory          },
         { "no-compression",   no_argument,       0, OptionNoCompression   },
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "pitr-compatible",  no_argument,       0, OptionPitrCompatible  },
+        { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
@@ -5651,8 +5671,13 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case OptionFullPath:
-                // full-path
+                // --full-path
                 m_options["full_path"] = true;
+                break;
+
+            case OptionMemory:
+                // --memory=1024
+                m_options["memory"] = optarg;
                 break;
 
             case OptionBackupFormat:
@@ -6684,15 +6709,12 @@ S9sOptions::checkOptionsBackup()
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
-
         m_exitStatus = BadOptions;
         return false;
     } else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
-
         m_exitStatus = BadOptions;
-
         return false;
     }
 
@@ -6708,6 +6730,22 @@ S9sOptions::checkOptionsBackup()
                 "The --databases option can only be used while creating "
                 "backups.";
         
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    /*
+     * The --memory= should has an integer argument other than 0.
+     */
+    if (hasMemory())
+    {
+        if (memory().toInt() <= 0)
+        {
+            m_errorMessage = 
+                "The argument for the --memory option should be "
+                "a positive integer.";
+
             m_exitStatus = BadOptions;
             return false;
         }

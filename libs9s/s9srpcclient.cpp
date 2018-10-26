@@ -6768,6 +6768,9 @@ S9sRpcClient::composeJobData(
     if (options->hasTimeout())
         jobData["timeout"] = options->timeout();
 
+    if (options->hasMemory())
+        jobData["xtrabackup_use_memory"] = options->memory().toInt();
+
     return jobData;
 }
 

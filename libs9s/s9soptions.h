@@ -216,6 +216,9 @@ class S9sOptions
         bool hasBackupFormat() const;
         S9sString backupFormat() const;
 
+        bool hasMemory() const;
+        S9sString memory() const;
+
         bool hasContainerFormat() const;
         S9sString containerFormat() const;
         
