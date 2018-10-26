@@ -503,7 +503,6 @@ function testCreateBackup05()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        --memory=1024 \
         $LOG_OPTION
     
     check_exit_code $?
