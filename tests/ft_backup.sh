@@ -494,7 +494,7 @@ function testCreateBackup05()
 
     #
     # Creating the backup.
-    # Using thid time.
+    # Using xtrabackup this time.
     #
     mys9s backup \
         --create \
@@ -503,6 +503,7 @@ function testCreateBackup05()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
+        --memory=1024 \
         $LOG_OPTION
     
     check_exit_code $?
@@ -511,7 +512,7 @@ function testCreateBackup05()
 
     #
     # Creating the backup.
-    # Using thid time.
+    # Using xtrabackup inceremental this time.
     #
     mys9s backup \
         --create \
