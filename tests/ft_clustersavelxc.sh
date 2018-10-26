@@ -255,6 +255,27 @@ function testSaveCluster()
     fi
 }
 
+function testDropCluster()
+{
+    print_title "Dropping Original Cluster"
+    cat <<EOF
+Dropping the original cluster from the controller so that we can restore it from
+the saved file.
+EOF
+
+    mys9s cluster \
+        --drop \
+        --cluster-id=1 \
+        --log
+
+    check_exit_code $?
+
+    ls -lha /tmp/cmon_keys
+    tree /tmp/cmon_keys
+
+    rm -rvf /tmp/cmon_keys
+}
+
 function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
@@ -265,18 +286,18 @@ function testRestoreCluster()
     s9s backup \
         --restore-cluster \
         --input-file=$local_file \
-        --cmon-user=system \
-        --password=secret \
+        --debug \
         --log
 
     check_exit_code $?
 
 
     #
+    # The cluster is now restored and should be soon in started state.
     #
-    #
-    print_title "Waiting until Cluster $CLUSTER_NAME(1) is Started"
-    wait_for_cluster_started "$CLUSTER_NAME(1)"
+    print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    wait_for_cluster_started "$CLUSTER_NAME"
+    check_exit_code_no_job $?
     
     mys9s cluster \
         --stat \
@@ -288,6 +309,9 @@ function testRestoreCluster()
         --long \
         --cmon-user=system \
         --password=secret 
+    
+    ls -lha /tmp/cmon_keys
+    tree /tmp/cmon_keys
 }
 
 function cleanup()
@@ -295,13 +319,31 @@ function cleanup()
     local node
 
     print_title "Cleaning Up"
+    cat <<EOF
+Freeing previously allocated resources at the end of the test. Most importantly
+deleting created virtual machines.
+EOF
 
+    #
+    # Dropping the cluster.
+    #
+    mys9s cluster \
+        --drop \
+        --cluster-id=2 \
+        --log
+
+    #
+    # Deleting the output file.
+    #
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
 
+    #
+    # Deleting the containers.
+    #
     for node in $(echo $CLUSTER_NODES | tr ';' ' '); do
-        mys9s container --drop --wait $node
+        mys9s container --delete --wait $node
     done
 }
 
@@ -332,6 +374,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest testCreateCluster
     runFunctionalTest testSaveCluster
+    runFunctionalTest testDropCluster
     runFunctionalTest testRestoreCluster
     runFunctionalTest cleanup
 fi
