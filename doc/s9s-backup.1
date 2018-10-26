@@ -536,6 +536,11 @@ and stored in cluster configuration file).
 Print the full path of the files.
 
 .TP
+.BI \-\^\-memory= MEGABYTES
+Controls how many memory the archiver process should use while creaing an
+archive. Currently only the \fBxtrabackup\fP uses this option.
+
+.TP
 .BI \-\^\-databases= LIST
 A comma separated list of database names. This argument controls which databases
 are going to be archived into the backup file. By default all the databases are
