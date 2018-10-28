@@ -196,9 +196,9 @@ else
 
     echo "Creating archive..."
     if [ "$OPTION_GZIP" ]; then
-        sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
-    else
         sudo tar --numeric-owner -czf "$tar_file_name" "$source_dir" 2>/dev/null
+    else
+        sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
     fi
 
     #lxc-start --name $CONTAINER
