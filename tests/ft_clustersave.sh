@@ -16,7 +16,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 OPTION_INSTALL=""
-OPTION_NUMBER_OF_NODES="1"
+OPTION_NUMBER_OF_NODES="3"
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
@@ -43,7 +43,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test  to check cluster save/restore on secondary controller. 
+  $MYNAME - Test to check cluster save/restore on secondary controller. 
 
   -h, --help       Print this help and exit.
   --verbose        Print more messages.
@@ -204,6 +204,12 @@ function createController()
     local tdir="$sdir/tests"
 
     print_title "Creating Secondary Controller"
+    cat <<EOF
+Creating a secondary controller in a container. For this we need to pull and
+compile the controller source. This may take some time.
+
+EOF
+
     node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
     SECONDARY_CONTROLLER_IP="$node_ip"
     SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9556"
@@ -298,6 +304,11 @@ function testCreateGalera()
     fi
 
     print_title "Creating a Galera Cluster"
+    cat <<EOF
+Creating a cluster that we will save and restore in the next steps. Creating
+$OPTION_NUMBER_OF_NODES node(s).
+
+EOF
     
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -365,6 +376,12 @@ function testCreatePostgre()
     #
     #
     print_title "Creating a PostgreSQL Cluster"
+    cat <<EOF
+Creating a cluster that we will save and restore in the next steps. Creating
+$OPTION_NUMBER_OF_NODES node(s).
+
+EOF
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -422,6 +439,12 @@ function testSaveCluster()
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Cluster"
+    cat <<EOF
+Saving the cluster on the local controller into a tarball. Checking if the
+output file was created.
+
+EOF
+
     mys9s backup \
         --save-cluster \
         --cluster-id=1 \
@@ -438,6 +461,9 @@ function testSaveCluster()
     fi
 }
 
+#
+# Restoring and checking.
+#
 function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
@@ -445,6 +471,11 @@ function testRestoreCluster()
     local retcode
 
     print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
+    cat <<EOF
+This test will restore the saved cluster on a different controller (the
+secondary controller on $SECONDARY_CONTROLLER_IP. 
+
+EOF
 
     # Copying the tar.gz file to the secondary controller.
     scp "$local_file" "$SECONDARY_CONTROLLER_IP:$remote_file"
@@ -466,6 +497,12 @@ function testRestoreCluster()
     #
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    cat <<EOF
+Checking that the socondary controller ($SECONDARY_CONTROLLER_IP) is able to 
+manage the cluster. If so the cluster should be in STARTED state.
+
+EOF
+
     wait_for_cluster_started --system "$CLUSTER_NAME"
     retcode=$?
 
@@ -492,10 +529,13 @@ function testRestoreCluster()
 function cleanup()
 {
     print_title "Cleaning Up"
+    cat <<EOF
+Releasing previously allocated resources, deleting files, killing processes.
+EOF
 
     echo "PID for ssh: $SSH_PID"
     if [ -n "$SSH_PID" ]; then
-        kill $SSH_PID
+        kill $SSH_PID 2>/dev/null >/dev/null
         sleep 3
         kill -9 $SSH_PID
     fi
