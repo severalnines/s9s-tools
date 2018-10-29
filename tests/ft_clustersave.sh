@@ -263,8 +263,8 @@ EOF
         return 1
     fi
 
-    for n in $(seq 1 120); do
-        if grep --quiet testWait "nohup.out"; then
+    for n in $(seq 1 60); do
+        if grep --quiet testWait "nohup.out" 2>/dev/null; then
             break
         fi
         sleep 1

@@ -326,6 +326,7 @@ function testSaveCluster()
 function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local retcode
 
     print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
 
@@ -341,11 +342,14 @@ function testRestoreCluster()
 
 
     #
-    #
+    # Checking the cluster state after it is restored.
     #
     print_title "Waiting until Cluster $CLUSTER_NAME(1) is Started"
-    wait_for_cluster_started "$CLUSTER_NAME(1)"
-    
+
+    sleep 10
+    wait_for_cluster_started --system "$CLUSTER_NAME(1)"
+    retcode=$?
+
     mys9s cluster \
         --stat \
         --cmon-user=system \
@@ -356,6 +360,12 @@ function testRestoreCluster()
         --long \
         --cmon-user=system \
         --password=secret 
+
+    if [ "$retcode" -ne 0 ]; then
+        failure "Cluster is not is started state."
+    else
+        success "  o The cluster is in started state, ok"
+    fi
 }
 
 function cleanup()
