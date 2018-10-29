@@ -442,6 +442,7 @@ function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
     local remote_file="/tmp/ft_clustersave_$$.tar.gz"
+    local retcode
 
     print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
 
@@ -465,8 +466,9 @@ function testRestoreCluster()
     #
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
-    wait_for_cluster_started "$CLUSTER_NAME"
-    
+    wait_for_cluster_started --system "$CLUSTER_NAME"
+    retcode=$?
+
     s9s cluster \
         --stat \
         --controller=$SECONDARY_CONTROLLER_URL \
@@ -478,7 +480,13 @@ function testRestoreCluster()
         --long \
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
-        --password=secret 
+        --password=secret
+
+    if [ "$retcode" -ne 0 ]; then
+        failure "Cluster is not is started state."
+    else
+        success "  o The cluster is in started state, ok"
+    fi
 }
 
 function cleanup()

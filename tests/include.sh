@@ -749,11 +749,30 @@ function wait_for_node_failed()
 
 function wait_for_cluster_state()
 {
-    local clusterName="$1"
-    local expectedState="$2"
+    local clusterName
+    local expectedState
     local state
     local waited=0
     local stayed=0
+    local user_option
+    local password_option
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --system)
+                shift
+                user_option="--cmon-user=system"
+                password_option="--password=secret"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    clusterName="$1"
+    expectedState="$2"
 
     if [ -z "$clusterName" ]; then
         printError "Expected a cluster name."
@@ -769,7 +788,9 @@ function wait_for_cluster_state()
         state=$(s9s cluster \
             --list \
             --cluster-format="%S" \
-            --cluster-name="$clusterName")
+            --cluster-name="$clusterName" \
+            $user_option \
+            $password_option)
 
         if [ "$state" == $expectedState ]; then
             let stayed+=1
@@ -798,7 +819,7 @@ function wait_for_cluster_state()
 
 function wait_for_cluster_started()
 {
-    wait_for_cluster_state "$1" "STARTED"
+    wait_for_cluster_state $* "STARTED"
     return $?
 }
 
