@@ -28,6 +28,8 @@ SECONDARY_CONTROLLER_URL=""
 SSH_PID=""
 OUTPUT_DIR="${HOME}/cmon-saved-clusters"
 OUTPUT_FILE="${MYBASENAME}_$$.tgz"
+CLUSTER_TYPE="galera"
+#CLUSTER_TYPE="postgresql"
 
 cd $MYDIR
 source ./include.sh
@@ -41,7 +43,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check cluster save/restore features. 
+  $MYNAME - Test  to check cluster save/restore on secondary controller. 
 
   -h, --help       Print this help and exit.
   --verbose        Print more messages.
@@ -52,13 +54,16 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --vendor=STRING  Use the given Galera vendor.
   --leave-nodes    Do not destroy the nodes at exit.
-  
+  --galera         The test cluster should be a galera cluster (default).
+  --postgres       The test cluster should be a postgresql cluster.
+
   --provider-version=VERSION The SQL server provider version.
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
   o createController     Creates a second controller in a container.
-  o testCreateCluster    Creates a cluster to be saved.
+  o testCreateGalera     Creates a Galera cluster if requested.
+  o testCreatePostgre    Creates a PostgreSQL cluster if requested.
   o testSaveCluster      Saves the cluster on the local controller.
   o testRestoreCluster   Loads the cluster on the remote controller.
   o cleanup              Cleans up previously allocated resources.
@@ -73,6 +78,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
+galera,postgres,\
 provider-version:,number-of-nodes:,vendor:,leave-nodes" \
         -- "$@")
 
@@ -119,6 +125,16 @@ while true; do
         --reset-config)
             shift
             OPTION_RESET_CONFIG="true"
+            ;;
+
+        --galera)
+            shift
+            CLUSTER_TYPE="galera"
+            ;;
+
+        --postgres)
+            shift
+            CLUSTER_TYPE="postgresql"
             ;;
 
         --provider-version)
@@ -269,13 +285,17 @@ function createController()
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster()
+function testCreateGalera()
 {
     local nodes
     local node_ip
     local exitCode
     local node_serial=1
     local node_name
+
+    if [ "$CLUSTER_TYPE" != "galera" ]; then
+        return 0
+    fi
 
     print_title "Creating a Galera Cluster"
     
@@ -311,6 +331,74 @@ function testCreateCluster()
         $LOG_OPTION \
         $DEBUG_OPTION
 
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating cluster."
+        mys9s job --list
+        mys9s job --log --job-id=1
+        exit 1
+    fi
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
+}
+
+function testCreatePostgre()
+{
+    local nodes
+    local node_ip
+    local exitCode
+    local node_serial=1
+    local node_name
+
+    if [ "$CLUSTER_TYPE" != "postgresql" ]; then
+        return 0
+    fi
+
+    #
+    #
+    #
+    print_title "Creating a PostgreSQL Cluster"
+    while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
+        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+
+        echo "Creating node #$node_serial"
+        node_ip=$(create_node --autodestroy "$node_name")
+
+        if [ -n "$nodes" ]; then
+            nodes+=";"
+        fi
+
+        nodes+="$node_ip"
+
+        if [ -z "$FIRST_ADDED_NODE" ]; then
+            FIRST_ADDED_NODE="$node_ip"
+        fi
+
+        let node_serial+=1
+    done
+
+    #
+    # Creating a PostgreSql cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=postgresql \
+        --nodes="$nodes" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version="9.3" \
+        --db-admin="postmaster" \
+        --db-admin-passwd="passwd12" \
+        --generate-key \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating cluster."
@@ -423,7 +511,8 @@ if [ "$OPTION_INSTALL" ]; then
             runFunctionalTest "$testName"
         done
     else
-        runFunctionalTest testCreateCluster
+        runFunctionalTest testCreateGalera
+        runFunctionalTest testCreatePostgre
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -431,7 +520,8 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest createController
-    runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateGalera
+    runFunctionalTest testCreatePostgre
     runFunctionalTest testSaveCluster
     runFunctionalTest testRestoreCluster
     runFunctionalTest cleanup
