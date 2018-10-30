@@ -261,6 +261,7 @@ function testDropCluster()
     cat <<EOF
 Dropping the original cluster from the controller so that we can restore it from
 the saved file.
+
 EOF
 
     mys9s cluster \

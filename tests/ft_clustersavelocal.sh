@@ -61,6 +61,7 @@ SUPPORTED TESTS:
   o testCreateGalera     Creates a Galera cluster to be saved.
   o testCreatePostgre    Creates a PostgreSQL cluster as an alternaive.
   o testSaveCluster      Saves the cluster on the local controller.
+  o testDropCluster      Drops the original cluster from the controller.
   o testRestoreCluster   Loads the cluster on the remote controller.
   o cleanup              Cleans up previously allocated resources.
 
@@ -323,12 +324,29 @@ function testSaveCluster()
     fi
 }
 
+function testDropCluster()
+{
+    print_title "Dropping Original Cluster"
+    cat <<EOF
+Dropping the original cluster from the controller so that we can restore it from
+the saved file.
+
+EOF
+
+    mys9s cluster \
+        --drop \
+        --cluster-id=1 \
+        $LOG_OPTION
+
+    check_exit_code $?
+}
+
 function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
     local retcode
 
-    print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
+    print_title "Restoring Cluster"
 
     # Restoring the cluster on the remote controller.
     s9s backup \
@@ -344,10 +362,10 @@ function testRestoreCluster()
     #
     # Checking the cluster state after it is restored.
     #
-    print_title "Waiting until Cluster $CLUSTER_NAME(1) is Started"
+    print_title "Waiting until Cluster $CLUSTER_NAME is Started"
 
     sleep 10
-    wait_for_cluster_started --system "$CLUSTER_NAME(1)"
+    wait_for_cluster_started --system "$CLUSTER_NAME"
     retcode=$?
 
     mys9s cluster \
@@ -394,6 +412,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateGalera
         runFunctionalTest testCreatePostgre
         runFunctionalTest testSaveCluster
+        runFunctionalTest testDropCluster
         runFunctionalTest testRestoreCluster
     fi
 elif [ "$1" ]; then
@@ -404,6 +423,7 @@ else
     runFunctionalTest testCreateGalera
     runFunctionalTest testCreatePostgre
     runFunctionalTest testSaveCluster
+    runFunctionalTest testDropCluster
     runFunctionalTest testRestoreCluster
     runFunctionalTest cleanup
 fi
