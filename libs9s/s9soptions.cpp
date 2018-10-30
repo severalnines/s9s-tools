@@ -3413,8 +3413,8 @@ S9sOptions::isRestoreRequested() const
 }
 
 /**
- * \returns true if the --save-cluster command line option was provided when the
- *   program was started.
+ * \returns true if the --save-cluster-info command line option was provided
+ *    when the program was started.
  */
 bool
 S9sOptions::isSaveClusterRequested() const
@@ -3423,8 +3423,8 @@ S9sOptions::isSaveClusterRequested() const
 }
 
 /**
- * \returns true if the --restore-cluster command line option was provided when
- * the program was started.
+ * \returns true if the --restore-cluster-info command line option was provided
+ *   when the program was started.
  */
 bool
 S9sOptions::isRestoreClusterRequested() const
@@ -4477,9 +4477,9 @@ S9sOptions::printHelpBackup()
 "  --list-databases           List the backups in database format.\n"
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
-"  --restore-cluster          Restores a saved cluster.\n"
+"  --restore-cluster-info     Restores a saved cluster.\n"
 "  --restore                  Restore an existing backup.\n"
-"  --save-cluster             Saves the entire cluster into a file/directory.\n"
+"  --save-cluster-info        Saves the entire cluster into a file/directory.\n"
 "  --verify                   Verify an existing backup on a test server.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
@@ -5313,9 +5313,9 @@ S9sOptions::readOptionsBackup(
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
-        { "restore-cluster",  no_argument,       0, OptionRestoreCluster  },
+        { "restore-cluster-info", no_argument,   0, OptionRestoreCluster  },
         { "restore",          no_argument,       0, OptionRestore         },
-        { "save-cluster",     no_argument,       0, OptionSaveCluster     },
+        { "save-cluster-info", no_argument,      0, OptionSaveCluster     },
         { "verify",           no_argument,       0, OptionVerify          },
         
         // Job Related Options
@@ -5481,7 +5481,7 @@ S9sOptions::readOptionsBackup(
                 break;
  
             case OptionRestoreCluster:
-                // --restore-cluster
+                // --restore-cluster-info
                 m_options["restore_cluster"] = true;
                 break;
 
@@ -5491,7 +5491,7 @@ S9sOptions::readOptionsBackup(
                 break;
             
             case OptionSaveCluster:
-                // --save-cluster
+                // --save-cluster-info
                 m_options["save_cluster"] = true;
                 break;
             

@@ -240,7 +240,7 @@ function testSaveCluster()
 
     print_title "Saving Cluster"
     mys9s backup \
-        --save-cluster \
+        --save-cluster-info \
         --cluster-id=1 \
         --backup-directory=$OUTPUT_DIR \
         --output-file=$OUTPUT_FILE \
@@ -285,7 +285,7 @@ function testRestoreCluster()
 
     # Restoring the cluster on the remote controller.
     s9s backup \
-        --restore-cluster \
+        --restore-cluster-info \
         --input-file=$local_file \
         --debug \
         --log

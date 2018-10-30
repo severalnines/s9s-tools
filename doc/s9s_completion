@@ -113,7 +113,7 @@ function _s9s()
         elif [[ ${COMP_WORDS[i]} == "backup" ]]; then
             main_opt+="--help "
             main_opt+="--create --delete --list-databases --list-files --list "
-            main_opt+="--restore "
+            main_opt+="--restore --save-cluster-info --restore-cluster-info "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt

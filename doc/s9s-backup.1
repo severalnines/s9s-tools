@@ -161,17 +161,44 @@ identify the backup.
 .\" End of the list.
 .\"
 
+.TP
+.B \-\^\-restore\-cluster\-info 
+Restores the information the controller has about a cluster from a previously 
+created archive file.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --restore-cluster-info \\
+    --input-file=$HOME/mycluster.tar.gz \\
+    --log
+.fi
 
 .TP
 .B \-\^\-restore
 Restore a backup.
 
-.B
+.B EXAMPLE
 .nf
 s9s backup \\
     --restore \\
     --cluster-id=1 \\
     --backup-id=10 \\
+    --log
+.fi
+
+
+.TP
+.B \-\^\-save\-cluster\-info
+Saves the information the controller has about one cluster.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --save-cluster-info \\
+    --cluster-id=1 \\
+    --backup-directory=$HOME/cmon-saved-clusters \\
+    --output-file=mycluster.tar.gz \\
     --log
 .fi
 

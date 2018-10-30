@@ -446,7 +446,7 @@ output file was created.
 EOF
 
     mys9s backup \
-        --save-cluster \
+        --save-cluster-info \
         --cluster-id=1 \
         --backup-directory=$OUTPUT_DIR \
         --output-file=$OUTPUT_FILE \
@@ -483,7 +483,7 @@ EOF
     
     # Restoring the cluster on the remote controller.
     s9s backup \
-        --restore-cluster \
+        --restore-cluster-info \
         --input-file=$remote_file \
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
