@@ -95,6 +95,8 @@ enum S9sOptionType
     OptionWait,
     OptionSaveCluster,
     OptionRestoreCluster,
+    OptionSaveController,
+    OptionRestoreController,
     OptionRestore,
     OptionVerify,
     OptionDeleteOld,
@@ -1731,8 +1733,6 @@ S9sOptions::alarmId() const
 {
     return getInt("alarm_id");
 }
-
-
 
 /**
  * \returns True if the --backup-id command line option was provided.
@@ -3433,6 +3433,26 @@ S9sOptions::isRestoreClusterRequested() const
 }
 
 /**
+ * \returns true if the --save-controller command line option was provided
+ *    when the program was started.
+ */
+bool
+S9sOptions::isSaveControllerRequested() const
+{
+    return getBool("save_controller");
+}
+
+/**
+ * \returns true if the --restore-controller command line option was provided
+ *   when the program was started.
+ */
+bool
+S9sOptions::isRestoreControllerRequested() const
+{
+    return getBool("restore_controller");
+}
+
+/**
  * \returns true if the --verify command line option was provided when the
  *   program was started.
  */
@@ -4478,8 +4498,10 @@ S9sOptions::printHelpBackup()
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
 "  --restore-cluster-info     Restores a saved cluster.\n"
+"  --restore-cluster          Restores the controller from a tarball.\n"
 "  --restore                  Restore an existing backup.\n"
-"  --save-cluster-info        Saves the entire cluster into a file/directory.\n"
+"  --save-cluster-info        Saves the information about one cluster.\n"
+"  --save-controller          Saves the entire controller into a file.\n"
 "  --verify                   Verify an existing backup on a test server.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
@@ -5314,8 +5336,10 @@ S9sOptions::readOptionsBackup(
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
         { "restore-cluster-info", no_argument,   0, OptionRestoreCluster  },
+        { "restore-controller", no_argument,     0, OptionRestoreController },
         { "restore",          no_argument,       0, OptionRestore         },
         { "save-cluster-info", no_argument,      0, OptionSaveCluster     },
+        { "save-controller",  no_argument,       0, OptionSaveController  },
         { "verify",           no_argument,       0, OptionVerify          },
         
         // Job Related Options
@@ -5484,6 +5508,11 @@ S9sOptions::readOptionsBackup(
                 // --restore-cluster-info
                 m_options["restore_cluster"] = true;
                 break;
+            
+            case OptionRestoreController:
+                // --restore-controller
+                m_options["restore_controller"] = true;
+                break;
 
             case OptionRestore:
                 // --restore
@@ -5493,6 +5522,11 @@ S9sOptions::readOptionsBackup(
             case OptionSaveCluster:
                 // --save-cluster-info
                 m_options["save_cluster"] = true;
+                break;
+            
+            case OptionSaveController:
+                // --save-controller
+                m_options["save_controller"] = true;
                 break;
             
             case OptionVerify:
@@ -6704,6 +6738,12 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isRestoreClusterRequested())
+        countOptions++;
+    
+    if (isSaveControllerRequested())
+        countOptions++;
+    
+    if (isRestoreControllerRequested())
         countOptions++;
 
     if (countOptions > 1)

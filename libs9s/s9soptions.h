@@ -394,6 +394,8 @@ class S9sOptions
         bool isRestoreRequested() const;
         bool isSaveClusterRequested() const;
         bool isRestoreClusterRequested() const;
+        bool isSaveControllerRequested() const;
+        bool isRestoreControllerRequested() const;
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;
         bool isRollingRestartRequested() const;

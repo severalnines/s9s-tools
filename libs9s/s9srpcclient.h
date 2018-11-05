@@ -266,6 +266,8 @@ class S9sRpcClient
         bool rollingRestart();
         bool saveCluster();
         bool restoreCluster();
+        bool saveController();
+        bool restoreController();
         bool setupAuditLogging(const int clusterId);
 
         bool createReport(const int clusterId);

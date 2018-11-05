@@ -2094,6 +2094,66 @@ S9sRpcClient::restoreCluster()
 }
 
 bool
+S9sRpcClient::saveController()
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sString       backupDir    = options->backupDir();
+    S9sString       outputFile   = options->outputFile();
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
+    S9sString       uri          = "/v2/jobs/";
+    S9sVariantMap   jobSpec;
+
+    if (!backupDir.empty())
+        jobData["backupdir"]     = backupDir;
+
+    if (!outputFile.empty())
+        jobData["output_file"]   = outputFile;
+    
+    jobSpec["command"]    = "save_controller";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Save Controller";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::restoreController()
+{
+    S9sOptions     *options       = S9sOptions::instance();
+    S9sString       inputFileName = options->inputFile();
+    S9sVariantMap   request       = composeRequest();
+    S9sVariantMap   job           = composeJob();
+    S9sVariantMap   jobSpec;
+    S9sVariantMap   jobData       = composeJobData();
+    S9sString       uri           = "/v2/jobs/";
+    
+    if (!inputFileName.empty())
+        jobData["input_file"] = inputFileName;
+
+    jobSpec["command"]    = "restore_controller";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Restore Controller";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::setupAuditLogging(
         const int clusterId)
 {

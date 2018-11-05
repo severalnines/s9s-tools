@@ -699,6 +699,16 @@ S9sBusinessLogic::execute()
             // s9s backup --restore-cluster --input-file=/ak.tgz
             success = client.restoreCluster();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isSaveControllerRequested())
+        {
+            // s9s backup --save-controller 
+            success = client.saveController();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isRestoreClusterRequested())
+        {
+            // s9s backup --restore-controller --input-file=/ak.tgz
+            success = client.restoreController();
+            maybeJobRegistered(client, clusterId, success);
         } else {
             PRINT_ERROR("Unknown backup operation.");
         }
