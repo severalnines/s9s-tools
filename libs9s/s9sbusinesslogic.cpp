@@ -704,7 +704,7 @@ S9sBusinessLogic::execute()
             // s9s backup --save-controller 
             success = client.saveController();
             maybeJobRegistered(client, clusterId, success);
-        } else if (options->isRestoreClusterRequested())
+        } else if (options->isRestoreControllerRequested())
         {
             // s9s backup --restore-controller --input-file=/ak.tgz
             success = client.restoreController();
