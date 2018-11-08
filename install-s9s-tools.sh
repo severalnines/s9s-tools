@@ -116,6 +116,24 @@ install_s9s_commandline() {
     [[ $? -ne 0 ]] && log_msg "Unable to install s9s-tools"
 }
 
+revive_user() {
+    # a method to create a new temporary admin user to revive
+    # an existing suspended user (due to previus bugs we had)
+
+    echo "=> Checking user $1."
+    s9s user --whoami
+    if (( $? == 3 )); then
+        unset S9S_IGNORE_CONFIG
+        export S9S_USER_CONFIG="/dev/null"
+        echo -ne "=> Re-enabling suspended user $1. "
+        s9s user --enable $1
+        unset S9S_USER_CONFIG
+    fi
+
+    unset S9S_SYSTEM_CONFIG
+    unset S9S_USER_CONFIG
+}
+
 create_local_s9s_user() {
     # clean up the environment
     unset S9S_IGNORE_CONFIG
@@ -140,7 +158,10 @@ create_local_s9s_user() {
 
     # verify if the specified user works
     if [ -n "$cmon_user" ]; then
-        s9s user --whoami
+        # in case of suspended user, lets try to re-enable it
+        revive_user $cmon_user
+
+        s9s user --whoami >/dev/null 2>/dev/null
         if (( $? == 3 )); then
             # access denied, backup the ~/.s9s directory and create a new user
             mv ~/.s9s ~/.s9s_bak_`date +%F_%H%M`
@@ -163,6 +184,7 @@ create_local_s9s_user() {
             cmon_user=$SUDO_USER
         fi
 
+        echo "=> Creating user ${cmon_user}."
         # new s9s CLI requires the username defined alone without --cmon-user
         # only the new one has build info in --version:
         if s9s --version | grep -i build >/dev/null; then
@@ -170,6 +192,9 @@ create_local_s9s_user() {
         else
             s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
         fi
+
+        # in case of suspended user, lets try to re-enable it
+        revive_user $cmon_user
 
         chown -R $cmon_user ~/.s9s
     fi
