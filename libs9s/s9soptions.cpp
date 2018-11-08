@@ -395,8 +395,8 @@ S9sOptions::uninit()
 void
 S9sOptions::createConfigFiles()
 {
-    S9sDir   userDir("~/.s9s");
-    S9sFile  userFile("~/.s9s/s9s.conf");
+    S9sFile  userFile(defaultUserConfigFileName());
+    S9sDir   userDir(S9sFile::dirname(userFile.path()));
 
     if (!userDir.exists())
         userDir.mkdir();
@@ -408,12 +408,9 @@ S9sOptions::createConfigFiles()
         return;
 
     userFile.fprintf("[global]\n");
-    userFile.fprintf("# controller_host_name = localhost\n");
-    userFile.fprintf("# controller_port      = 9500\n");
-    userFile.fprintf("# rpc_tls              = false\n");
+    userFile.fprintf("# controller=https://localhost:9501\n");
     userFile.fprintf("\n");
 
-    userFile.fprintf("\n");
     userFile.fprintf("#\n");
     userFile.fprintf("# Information about the user for the controller to \n");
     userFile.fprintf("# access the nodes.\n");
