@@ -347,6 +347,7 @@ function testSave()
 function testRestore()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local remote_file="/tmp/$OUTPUT_FILE"
     local retcode
 
     print_title "Restoring Controller"

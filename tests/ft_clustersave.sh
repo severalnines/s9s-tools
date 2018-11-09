@@ -377,7 +377,7 @@ EOF
 function testRestore()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
-    local remote_file="/tmp/ft_clustersave_$$.tar.gz"
+    local remote_file="/tmp/$OUTPUT_FILE"
     local retcode
 
     print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
