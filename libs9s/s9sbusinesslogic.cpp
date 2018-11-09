@@ -2090,7 +2090,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
      * Now make sure that we save the specified username/controller into the 
      * user config file if there is no username/controller.
      */
-    config.setFileName("~/.s9s/s9s.conf");
+    config.setFileName(options->defaultUserConfigFileName());
     PRINT_VERBOSE(
             "Saving Cmon user '%s' into config file at %s.",
             STR(userName), 
@@ -2336,7 +2336,7 @@ S9sBusinessLogic::executeCreateUserThroughRpc(
      * Now make sure that we save the specified username/controller into the 
      * user config file if there is no username/controller.
      */
-    config.setFileName("~/.s9s/s9s.conf");
+    config.setFileName(options->defaultUserConfigFileName());
     PRINT_VERBOSE(
             "Saving Cmon user '%s' into config file at %s.",
             STR(userName), 

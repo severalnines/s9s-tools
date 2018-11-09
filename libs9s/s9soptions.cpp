@@ -395,8 +395,8 @@ S9sOptions::uninit()
 void
 S9sOptions::createConfigFiles()
 {
-    S9sDir   userDir("~/.s9s");
-    S9sFile  userFile("~/.s9s/s9s.conf");
+    S9sFile  userFile(defaultUserConfigFileName());
+    S9sDir   userDir(S9sFile::dirname(userFile.path()));
 
     if (!userDir.exists())
         userDir.mkdir();
@@ -408,12 +408,9 @@ S9sOptions::createConfigFiles()
         return;
 
     userFile.fprintf("[global]\n");
-    userFile.fprintf("# controller_host_name = localhost\n");
-    userFile.fprintf("# controller_port      = 9500\n");
-    userFile.fprintf("# rpc_tls              = false\n");
+    userFile.fprintf("# controller=https://localhost:9501\n");
     userFile.fprintf("\n");
 
-    userFile.fprintf("\n");
     userFile.fprintf("#\n");
     userFile.fprintf("# Information about the user for the controller to \n");
     userFile.fprintf("# access the nodes.\n");
@@ -2030,11 +2027,19 @@ S9sOptions::password() const
     if (m_options.contains("password"))
     {
         retval = m_options.at("password").toString();
-    } else {
+    } else if (!m_userConfig.variableValue("cmon_user").empty())
+    {
+        /*
+         * A username is defined in user config the we must
+         * use the password from the user config
+         */
         retval = m_userConfig.variableValue("cmon_password");
-
-        if (retval.empty())
-            retval = m_systemConfig.variableValue("cmon_password");
+    } else {
+        /*
+         * Username is not defined in the user config, so
+         * we can safely return the system's config password here
+         */
+        retval = m_systemConfig.variableValue("cmon_password");
     }
 
     return retval;

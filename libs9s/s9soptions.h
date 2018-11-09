@@ -469,8 +469,6 @@ class S9sOptions
         int getInt(const char *key) const;        
         S9sVariantMap getVariantMap(const char *key) const;
 
-
-    protected:
         S9sString defaultUserConfigFileName() const;
         S9sString defaultSystemConfigFileName() const;
 
