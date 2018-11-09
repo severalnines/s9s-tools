@@ -756,6 +756,7 @@ function wait_for_cluster_state()
     local stayed=0
     local user_option
     local password_option
+    local controller_option
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -763,6 +764,11 @@ function wait_for_cluster_state()
                 shift
                 user_option="--cmon-user=system"
                 password_option="--password=secret"
+                ;;
+
+            --controller)
+                controller_option="--controller=$2"
+                shift 2
                 ;;
 
             *)
@@ -790,6 +796,7 @@ function wait_for_cluster_state()
             --cluster-format="%S" \
             --cluster-name="$clusterName" \
             $user_option \
+            $controller_option \
             $password_option)
 
         if [ "$state" == $expectedState ]; then
