@@ -358,7 +358,7 @@ function testRestore()
     # Restoring the cluster on the remote controller.
     mys9s backup \
         --restore-controller \
-        --input-file=$local_file \
+        --input-file=$remote_file \
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
         --password=secret \
