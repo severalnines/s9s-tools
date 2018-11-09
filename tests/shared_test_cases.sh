@@ -1,5 +1,3 @@
-#! /bin/bash
-
 #
 # Creates a secondary controller on which we can test the controller change
 # use-case.

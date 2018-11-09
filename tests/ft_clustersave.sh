@@ -388,6 +388,7 @@ secondary controller on $SECONDARY_CONTROLLER_IP.
 EOF
 
     # Copying the tar.gz file to the secondary controller.
+    echo "scp \"$local_file\" \"$SECONDARY_CONTROLLER_IP:$remote_file\""
     scp "$local_file" "$SECONDARY_CONTROLLER_IP:$remote_file"
     check_exit_code_no_job $?
     

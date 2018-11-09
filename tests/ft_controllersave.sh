@@ -1,4 +1,4 @@
-! /bin/bash
+#! /bin/bash
 MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
@@ -32,8 +32,11 @@ CLUSTER_TYPE="galera"
 #CLUSTER_TYPE="postgresql"
 
 cd $MYDIR
+echo "loading include.sh"
 source ./include.sh
+echo "loading shared_test_cases.sh"
 source ./shared_test_cases.sh
+echo "loaded includes"
 
 #
 # Prints usage information and exits.
@@ -347,6 +350,10 @@ function testRestore()
     local retcode
 
     print_title "Restoring Controller"
+    
+    # Copying the tar.gz file to the secondary controller.
+    scp "$local_file" "$SECONDARY_CONTROLLER_IP:$remote_file"
+    check_exit_code_no_job $?
 
     # Restoring the cluster on the remote controller.
     mys9s backup \
