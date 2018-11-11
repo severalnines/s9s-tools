@@ -237,7 +237,7 @@ function testInstall()
     local line
     local image
     local counter=0
-    local images="ubuntu_artful ubuntu_bionic ubuntu_xenial \
+    local images="ubuntu_bionic ubuntu_xenial \
       debian_buster debian_sid debian_stretch debian_jessie \
       centos_7 oracle_7"
 
