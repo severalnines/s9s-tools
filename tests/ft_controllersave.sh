@@ -367,17 +367,20 @@ function testRestore()
         --log
 
     check_exit_code $?
+#    while true; do
+#        sleep 60
+#        mys9s cluster \
+#            --stat \
+#            --controller=$SECONDARY_CONTROLLER_URL \
+#            --cmon-user=system \
+#            --password=secret 
+#    done
 
     #
     # Checking the cluster state after it is restored.
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
-
-    sleep 10
-    wait_for_cluster_started \
-        --system "$CLUSTER_NAME" \
-        --controller=$SECONDARY_CONTROLLER_URL        
-    retcode=$?
+    sleep 20
 
     mys9s cluster \
         --stat \
@@ -392,8 +395,18 @@ function testRestore()
         --cmon-user=system \
         --password=secret 
 
+    wait_for_cluster_started \
+        --system "$CLUSTER_NAME" \
+        --controller=$SECONDARY_CONTROLLER_URL        
+    retcode=$?
+
     if [ "$retcode" -ne 0 ]; then
-        failure "Cluster is not is started state."
+        failure "Cluster is not in started state."
+        mys9s cluster \
+            --stat \
+            --controller=$SECONDARY_CONTROLLER_URL \
+            --cmon-user=system \
+            --password=secret 
     else
         success "  o The cluster is in started state, ok"
     fi

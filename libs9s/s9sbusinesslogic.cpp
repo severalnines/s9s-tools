@@ -1910,8 +1910,27 @@ S9sBusinessLogic::waitForJobWithLog(
         { 
             nFailures = 0;
         } else {
-            PRINT_ERROR("%s", STR(reply.errorString()));
-            printf("\n\n%s\n", STR(reply.toString()));
+            bool messagePrinted = false;
+
+            if (!reply.errorString().empty())
+            {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+                messagePrinted = true;
+            }
+
+            if (!client.errorString().empty())
+            {
+                PRINT_ERROR("%s", STR(client.errorString()));
+                messagePrinted = true;
+            }
+
+            if (!messagePrinted)
+            {
+                PRINT_ERROR("Error while getting job log.");
+            }
+
+
+            //printf("\n\n%s\n", STR(reply.toString()));
             ++nFailures;
             if (nFailures > 3)
                 break;
