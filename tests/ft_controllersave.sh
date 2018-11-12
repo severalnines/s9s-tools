@@ -397,7 +397,7 @@ function testRestore()
 
     wait_for_cluster_started \
         --system "$CLUSTER_NAME" \
-        --controller=$SECONDARY_CONTROLLER_URL        
+        --controller "$SECONDARY_CONTROLLER_URL"
     retcode=$?
 
     if [ "$retcode" -ne 0 ]; then
