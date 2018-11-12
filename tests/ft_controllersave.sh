@@ -396,8 +396,10 @@ function testRestore()
         --password=secret 
 
     wait_for_cluster_started \
-        --system "$CLUSTER_NAME" \
-        --controller "$SECONDARY_CONTROLLER_URL"
+        --system \
+        --controller "$SECONDARY_CONTROLLER_URL" \
+        "$CLUSTER_NAME"
+
     retcode=$?
 
     if [ "$retcode" -ne 0 ]; then
