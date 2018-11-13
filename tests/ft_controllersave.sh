@@ -9,7 +9,8 @@ VERSION="1.0.0"
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
 
-CLUSTER_NAME="${MYBASENAME}_$$"
+CLUSTER_NAME_GALERA="galera_$$"
+CLUSTER_NAME_POSTGRESQL="postgresql_$$"
 CLUSTER_ID=""
 
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -28,15 +29,13 @@ SECONDARY_CONTROLLER_URL=""
 SSH_PID=""
 OUTPUT_DIR="${HOME}/cmon-saved-clusters"
 OUTPUT_FILE="${MYBASENAME}_$$.tgz"
-CLUSTER_TYPE="galera"
-#CLUSTER_TYPE="postgresql"
+
+WITH_CLUSTER_GALERA=""
+WITH_CLUSTER_POSTGRE="true"
 
 cd $MYDIR
-echo "loading include.sh"
 source ./include.sh
-echo "loading shared_test_cases.sh"
 source ./shared_test_cases.sh
-echo "loaded includes"
 
 #
 # Prints usage information and exits.
@@ -133,12 +132,12 @@ while true; do
 
         --galera)
             shift
-            CLUSTER_TYPE="galera"
+            WITH_CLUSTER_GALERA="true"
             ;;
 
         --postgres)
             shift
-            CLUSTER_TYPE="postgresql"
+            WITH_CLUSTER_POSTGRE="true"
             ;;
 
         --provider-version)
@@ -193,7 +192,7 @@ function testCreateGalera()
     local node_serial=1
     local node_name
 
-    if [ "$CLUSTER_TYPE" != "galera" ]; then
+    if [ -n "$WITH_CLUSTER_GALERA" ]; then
         return 0
     fi
 
@@ -228,7 +227,7 @@ function testCreateGalera()
         --cluster-type=galera \
         --nodes="$nodes" \
         --vendor="$OPTION_VENDOR" \
-        --cluster-name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME_GALERA" \
         --provider-version=$PROVIDER_VERSION \
         --generate-key \
         $LOG_OPTION \
@@ -242,14 +241,14 @@ function testCreateGalera()
         exit 1
     fi
 
-    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_GALERA)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    wait_for_cluster_started "$CLUSTER_NAME"
+    wait_for_cluster_started "$CLUSTER_NAME_GALERA"
 }
 
 
@@ -261,7 +260,7 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
-    if [ "$CLUSTER_TYPE" != "postgresql" ]; then
+    if [ -n "$WITH_CLUSTER_POSTGRE" ]; then
         return 0
     fi
 
@@ -295,7 +294,7 @@ function testCreatePostgre()
         --create \
         --cluster-type=postgresql \
         --nodes="$nodes" \
-        --cluster-name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME_POSTGRESQL" \
         --provider-version="9.3" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
@@ -311,14 +310,14 @@ function testCreatePostgre()
         exit 1
     fi
 
-    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_POSTGRESQL)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    wait_for_cluster_started "$CLUSTER_NAME"
+    wait_for_cluster_started "$CLUSTER_NAME_POSTGRESQL"
 }
 
 function testSave()
@@ -379,39 +378,51 @@ function testRestore()
     #
     # Checking the cluster state after it is restored.
     #
-    print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    print_title "Waiting until Cluster(s) Started"
     sleep 20
 
-    mys9s cluster \
+    if [ -n "$WITH_CLUSTER_GALERA" ]; then
+        wait_for_cluster_started \
+            --system \
+            --controller "$SECONDARY_CONTROLLER_URL" \
+            "$CLUSTER_NAME_GALERA"
+
+        retcode=$?
+
+        if [ "$retcode" -ne 0 ]; then
+            failure "Cluster $CLUSTER_NAME_GALERA is not in started state."
+        else
+            success "  o The cluster $CLUSTER_NAME_GALERA is started, ok"
+        fi
+    fi
+    
+    if [ -n "$WITH_CLUSTER_POSTGRE" ]; then
+        wait_for_cluster_started \
+            --system \
+            --controller "$SECONDARY_CONTROLLER_URL" \
+            "$CLUSTER_NAME_POSTGRESQL"
+
+        retcode=$?
+
+        if [ "$retcode" -ne 0 ]; then
+            failure "Cluster $CLUSTER_NAME_POSTGRESQL is not in started state."
+        else
+            success "  o The cluster $CLUSTER_NAME_POSTGRESQL is started, ok"
+        fi
+    fi
+
+    s9s cluster \
         --stat \
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
         --password=secret 
-    
-    mys9s node \
+        
+    s9s cluster \
         --list \
         --long \
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
-        --password=secret 
-
-    wait_for_cluster_started \
-        --system \
-        --controller "$SECONDARY_CONTROLLER_URL" \
-        "$CLUSTER_NAME"
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        failure "Cluster is not in started state."
-        mys9s cluster \
-            --stat \
-            --controller=$SECONDARY_CONTROLLER_URL \
-            --cmon-user=system \
-            --password=secret 
-    else
-        success "  o The cluster is in started state, ok"
-    fi
+        --password=secret
 }
 
 function cleanup()
