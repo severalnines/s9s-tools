@@ -415,8 +415,9 @@ manage the cluster. If so the cluster should be in STARTED state.
 EOF
 
     wait_for_cluster_started \
-        --system "$CLUSTER_NAME" \
-        --controller $SECONDARY_CONTROLLER_URL
+        --system \
+        --controller $SECONDARY_CONTROLLER_URL \
+        "$CLUSTER_NAME"
 
     retcode=$?
 
