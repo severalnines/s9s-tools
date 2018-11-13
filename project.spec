@@ -40,7 +40,9 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
-* Tue Nov  8 2018 David Kedves <kedazo@severalnines.com> 1.7.20181108
+* Tue Nov 13 2018 David Kedves <kedazo@severalnines.com> 1.7.20181113
+- Bugfixes
+* Thu Nov  8 2018 David Kedves <kedazo@severalnines.com> 1.7.20181108
 - Bugfixes
 * Mon Sep 24 2018 David Kedves <kedazo@severalnines.com> 1.7.20180924
 - New clustercontrol release
