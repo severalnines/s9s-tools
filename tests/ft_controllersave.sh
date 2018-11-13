@@ -325,6 +325,8 @@ function testSave()
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Controller"
+    mys9s cluster --list --long
+
     mys9s backup \
         --save-controller \
         --backup-directory=$OUTPUT_DIR \
@@ -380,6 +382,12 @@ function testRestore()
     #
     print_title "Waiting until Cluster(s) Started"
     sleep 20
+    s9s cluster \
+        --list \
+        --long \
+        --controller=$SECONDARY_CONTROLLER_URL \
+        --cmon-user=system \
+        --password=secret
 
     if [ -n "$WITH_CLUSTER_GALERA" ]; then
         wait_for_cluster_started \
