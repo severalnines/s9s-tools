@@ -2680,6 +2680,8 @@ S9sRpcClient::registerGaleraCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
     jobData["ssh_user"]         = osUserName;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
     
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"]  = options->osKeyFile();
@@ -2687,8 +2689,6 @@ S9sRpcClient::registerGaleraCluster(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
-    jobData["db_user"]          = options->dbAdminUserName();
-    jobData["db_password"]      = options->dbAdminPassword();
 
     // 
     // The jobspec describing the command.
@@ -2817,6 +2817,8 @@ S9sRpcClient::registerMySqlReplication(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
     jobData["ssh_user"]         = osUserName;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
     
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"]  = options->osKeyFile();
@@ -2951,6 +2953,8 @@ S9sRpcClient::registerGroupReplication(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
     jobData["ssh_user"]         = osUserName;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
     
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"]  = options->osKeyFile();
@@ -3114,12 +3118,15 @@ S9sRpcClient::registerNdbCluster(
     jobData["mgmd_hostnames"]   = mgmdHostNames;
     jobData["ndbd_hostnames"]   = ndbdHostNames;
     jobData["ssh_user"]         = osUserName;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+    
+    if (!options->osKeyFile().empty())
+        jobData["ssh_keyfile"] = options->osKeyFile();
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "add_cluster";
