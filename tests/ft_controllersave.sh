@@ -201,7 +201,7 @@ function testCreateGalera()
     #
     print_title "Creating a Galera Cluster"
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
-        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+        node_name=$(printf "${MYBASENAME}_gnode%03d_$$" "$node_serial")
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node --autodestroy "$node_name")
@@ -269,7 +269,7 @@ function testCreatePostgre()
     #
     print_title "Creating a PostgreSQL Cluster"
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
-        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+        node_name=$(printf "${MYBASENAME}_pnode%03d_$$" "$node_serial")
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node --autodestroy "$node_name")
