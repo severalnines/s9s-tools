@@ -175,6 +175,22 @@ s9s backup \\
 .fi
 
 .TP
+.B \-\^\-restore\-controller
+Restores the entire controller from a previously created tarball (created by
+using the \-\^\-save\-controller option).
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --restore-controller \\
+    --input-file=/home/pipas/ft_controllersavelocal_6441.tgz \\
+    --debug \\
+    --log 
+.fi
+
+
+
+.TP
 .B \-\^\-restore
 Restore a backup.
 
@@ -200,6 +216,19 @@ s9s backup \\
     --backup-directory=$HOME/cmon-saved-clusters \\
     --output-file=mycluster.tar.gz \\
     --log
+.fi
+
+.TP
+.B \-\^\-save\-controller
+Saves the state of the controller into a tarball.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --save-controller \\
+    --backup-directory=/home/pipas \\
+    --output-file=ft_controllersavelocal_6441.tgz \\
+    --log 
 .fi
 
 .TP
