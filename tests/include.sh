@@ -791,6 +791,16 @@ function wait_for_cluster_state()
     fi
 
     while true; do
+        cat >&2 <<EOF
+        state=\$(s9s cluster \\
+            --list \\
+            --cluster-format="%S" \\
+            --cluster-name="$clusterName" \\
+            $user_option \\
+            $controller_option \\
+            $password_option)
+EOF
+
         state=$(s9s cluster \
             --list \
             --cluster-format="%S" \
@@ -799,8 +809,8 @@ function wait_for_cluster_state()
             $controller_option \
             $password_option)
 
-        #echo "***         state: '$state'" >&2
-        #echo "*** expectedState: '$expectedState'" >&2
+        echo "***         state: '$state'" >&2
+        echo "*** expectedState: '$expectedState'" >&2
         if [ "$state" == $expectedState ]; then
             let stayed+=1
         else
