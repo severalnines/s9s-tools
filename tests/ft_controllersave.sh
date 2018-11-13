@@ -192,7 +192,7 @@ function testCreateGalera()
     local node_serial=1
     local node_name
 
-    if [ -n "$WITH_CLUSTER_GALERA" ]; then
+    if [ -z "$WITH_CLUSTER_GALERA" ]; then
         return 0
     fi
 
@@ -260,7 +260,7 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
-    if [ -n "$WITH_CLUSTER_POSTGRE" ]; then
+    if [ -z "$WITH_CLUSTER_POSTGRE" ]; then
         return 0
     fi
 
