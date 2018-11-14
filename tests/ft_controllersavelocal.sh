@@ -306,15 +306,27 @@ function testCreatePostgre()
     wait_for_cluster_started "$CLUSTER_NAME_POSTGRESQL"
 }
 
+#
+# Here is where we save the entire cluster.
+#
 function testSave()
 {
+    local temp_dir="/tmp/cmon-temp-$$"
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Controller"
+    cat <<EOF
+Here we save the entire controller into one binary file. The output file will be
+${OUTPUT_DIR}/${OUTPUT_FILE}.
+
+EOF
+
     mys9s cluster --list --long
 
     mys9s backup \
         --save-controller \
+        --temp-dir-path="$temp_dir" \
+        --keep-temp-dir \
         --backup-directory=$OUTPUT_DIR \
         --output-file=$OUTPUT_FILE \
         --log
@@ -328,6 +340,9 @@ function testSave()
     fi
 }
 
+#
+#
+#
 function testDropCluster()
 {
     print_title "Dropping Original Cluster"

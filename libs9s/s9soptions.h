@@ -267,6 +267,9 @@ class S9sOptions
         bool dry() const;
 
         bool useInternalRepos() const;
+
+        S9sString tempDirPath() const;
+        bool keepTempDir() const;
         
         S9sString subDirectory() const;
         S9sString backupDir() const;

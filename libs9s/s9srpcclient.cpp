@@ -2051,6 +2051,12 @@ S9sRpcClient::saveCluster()
     if (!outputFile.empty())
         jobData["output_file"]   = outputFile;
     
+    if (options->keepTempDir())
+        jobData["keep_temp_dir"] = true;
+    
+    if (!options->tempDirPath().empty())
+        jobData["temp_dir_path"] = options->tempDirPath();
+    
     jobSpec["command"]    = "save_cluster";
     jobSpec["job_data"]   = jobData;
 
@@ -2078,6 +2084,12 @@ S9sRpcClient::restoreCluster()
     
     if (!inputFileName.empty())
         jobData["input_file"] = inputFileName;
+    
+    if (options->keepTempDir())
+        jobData["keep_temp_dir"] = true;
+    
+    if (!options->tempDirPath().empty())
+        jobData["temp_dir_path"] = options->tempDirPath();
 
     jobSpec["command"]    = "restore_cluster";
     jobSpec["job_data"]   = jobData;
@@ -2110,6 +2122,12 @@ S9sRpcClient::saveController()
 
     if (!outputFile.empty())
         jobData["output_file"]   = outputFile;
+
+    if (options->keepTempDir())
+        jobData["keep_temp_dir"] = true;
+    
+    if (!options->tempDirPath().empty())
+        jobData["temp_dir_path"] = options->tempDirPath();
     
     jobSpec["command"]    = "save_controller";
     jobSpec["job_data"]   = jobData;
@@ -2138,6 +2156,12 @@ S9sRpcClient::restoreController()
     
     if (!inputFileName.empty())
         jobData["input_file"] = inputFileName;
+    
+    if (options->keepTempDir())
+        jobData["keep_temp_dir"] = true;
+    
+    if (!options->tempDirPath().empty())
+        jobData["temp_dir_path"] = options->tempDirPath();
 
     jobSpec["command"]    = "restore_controller";
     jobSpec["job_data"]   = jobData;

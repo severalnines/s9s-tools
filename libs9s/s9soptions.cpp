@@ -103,6 +103,8 @@ enum S9sOptionType
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
+    OptionKeepTempDir,
+    OptionTempDirPath,
     OptionSubDirectory,
     OptionBackupEncryption,
     OptionBackupUser,
@@ -2385,6 +2387,17 @@ S9sOptions::subDirectory() const
     return getString("subdirectory");
 }
 
+S9sString
+S9sOptions::tempDirPath() const
+{
+    return getString("temp_dir_path");
+}
+
+bool
+S9sOptions::keepTempDir() const
+{
+    return getBool("keep_temp_dir");
+}
 
 /**
  * \returns true if the --encrypt-backup command line option was provided.
@@ -5382,6 +5395,8 @@ S9sOptions::readOptionsBackup(
         { "parallellism",     required_argument, 0, OptionParallellism    },
         { "pitr-compatible",  no_argument,       0, OptionPitrCompatible  },
         { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
+        { "temp-dir-path",    required_argument, 0, OptionTempDirPath     },
+        { "keep-temp-dir",    no_argument,       0, OptionKeepTempDir     },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
@@ -5702,6 +5717,16 @@ S9sOptions::readOptionsBackup(
             case OptionPitrCompatible:
                 // --pitr-compatible
                 m_options["pitr_compatible"] = true;
+                break;
+
+            case OptionKeepTempDir:
+                // --keep-temp-dir
+                m_options["keep_temp_dir"] = true;
+                break;
+
+            case OptionTempDirPath:
+                // --temp-dir-path
+                m_options["temp_dir_path"] = optarg;
                 break;
 
             case OptionSubDirectory:
