@@ -313,6 +313,7 @@ function testSave()
 {
     local temp_dir="/tmp/cmon-temp-$$"
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local file
 
     print_title "Saving Controller"
     cat <<EOF
@@ -333,11 +334,23 @@ EOF
     
     check_exit_code $?
 
-    if [ ! -f "$tgz_file" ]; then
-        failure "File '$tgz_file' was not created."
-    else
-        success "  o File '$tgz_file' was created, ok"
-    fi
+    for file in \
+        $tgz_file \
+        $temp_dir/archive/archive.json \
+        $temp_dir/archive/cmondb.sql \
+        $temp_dir/archive/controllerconfig.json \
+        $temp_dir/archive/cluster_1/cluster.json \
+        $temp_dir/archive/cluster_1/clusterconfig.json \
+        $temp_dir/archive/cluster_1/ssh-key.json
+    do
+        if [ ! -f "$file" ]; then
+            failure "File '$file' was not created."
+        else
+            success "  o File '$file' was created, ok"
+        fi
+    done
+
+    rm -fr "$temp_dir"
 }
 
 #
