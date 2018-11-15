@@ -114,6 +114,7 @@ function _s9s()
             main_opt+="--help "
             main_opt+="--create --delete --list-databases --list-files --list "
             main_opt+="--restore --save-cluster-info --restore-cluster-info "
+            main_opt+="--save-controller --restore-controller "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt

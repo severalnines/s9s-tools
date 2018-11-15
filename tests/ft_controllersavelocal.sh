@@ -9,7 +9,8 @@ VERSION="1.0.0"
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
 
-CLUSTER_NAME="${MYBASENAME}_$$"
+CLUSTER_NAME_GALERA="galera_$$"
+CLUSTER_NAME_POSTGRESQL="postgresql_$$"
 CLUSTER_ID=""
 
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -25,11 +26,13 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 OUTPUT_DIR="${HOME}/cmon-saved-clusters"
 OUTPUT_FILE="${MYBASENAME}_$$.tgz"
-CLUSTER_TYPE="galera"
-#CLUSTER_TYPE="postgresql"
+
+WITH_CLUSTER_GALERA=""
+WITH_CLUSTER_POSTGRE="true"
 
 cd $MYDIR
 source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -60,9 +63,9 @@ Usage:
 SUPPORTED TESTS:
   o testCreateGalera     Creates a Galera cluster to be saved.
   o testCreatePostgre    Creates a PostgreSQL cluster as an alternaive.
-  o testSaveController   Saves the controller.
+  o testSave             Saves the controller.
   o testDropCluster      Drops the original cluster from the controller.
-  o testRestoreCluster   Restores controller.
+  o testRestore          Restores controller.
   o cleanup              Cleans up previously allocated resources.
 
 EXAMPLE
@@ -126,12 +129,12 @@ while true; do
 
         --galera)
             shift
-            CLUSTER_TYPE="galera"
+            WITH_CLUSTER_GALERA="true"
             ;;
 
         --postgres)
             shift
-            CLUSTER_TYPE="postgresql"
+            WITH_CLUSTER_POSTGRE="true"
             ;;
 
         --provider-version)
@@ -175,7 +178,7 @@ function testCreateGalera()
     local node_serial=1
     local node_name
 
-    if [ "$CLUSTER_TYPE" != "galera" ]; then
+    if [ -z "$WITH_CLUSTER_GALERA" ]; then
         return 0
     fi
 
@@ -184,7 +187,7 @@ function testCreateGalera()
     #
     print_title "Creating a Galera Cluster"
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
-        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+        node_name=$(printf "${MYBASENAME}_gnode%03d_$$" "$node_serial")
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node --autodestroy "$node_name")
@@ -210,7 +213,7 @@ function testCreateGalera()
         --cluster-type=galera \
         --nodes="$nodes" \
         --vendor="$OPTION_VENDOR" \
-        --cluster-name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME_GALERA" \
         --provider-version=$PROVIDER_VERSION \
         --generate-key \
         $LOG_OPTION \
@@ -224,14 +227,14 @@ function testCreateGalera()
         exit 1
     fi
 
-    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_GALERA)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    wait_for_cluster_started "$CLUSTER_NAME"
+    wait_for_cluster_started "$CLUSTER_NAME_GALERA"
 }
 
 
@@ -243,7 +246,7 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
-    if [ "$CLUSTER_TYPE" != "postgresql" ]; then
+    if [ -z "$WITH_CLUSTER_POSTGRE" ]; then
         return 0
     fi
 
@@ -252,7 +255,7 @@ function testCreatePostgre()
     #
     print_title "Creating a PostgreSQL Cluster"
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
-        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+        node_name=$(printf "${MYBASENAME}_pnode%03d_$$" "$node_serial")
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node --autodestroy "$node_name")
@@ -277,7 +280,7 @@ function testCreatePostgre()
         --create \
         --cluster-type=postgresql \
         --nodes="$nodes" \
-        --cluster-name="$CLUSTER_NAME" \
+        --cluster-name="$CLUSTER_NAME_POSTGRESQL" \
         --provider-version="9.3" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
@@ -293,36 +296,66 @@ function testCreatePostgre()
         exit 1
     fi
 
-    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_POSTGRESQL)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    wait_for_cluster_started "$CLUSTER_NAME"
+    wait_for_cluster_started "$CLUSTER_NAME_POSTGRESQL"
 }
 
-function testSaveController()
+#
+# Here is where we save the entire cluster.
+#
+function testSave()
 {
+    local temp_dir="/tmp/cmon-temp-$$"
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local file
 
     print_title "Saving Controller"
+    cat <<EOF
+Here we save the entire controller into one binary file. The output file will be
+${OUTPUT_DIR}/${OUTPUT_FILE}.
+
+EOF
+
+    mys9s cluster --list --long
+
     mys9s backup \
         --save-controller \
+        --temp-dir-path="$temp_dir" \
+        --keep-temp-dir \
         --backup-directory=$OUTPUT_DIR \
         --output-file=$OUTPUT_FILE \
         --log
     
     check_exit_code $?
 
-    if [ ! -f "$tgz_file" ]; then
-        failure "File '$tgz_file' was not created."
-    else
-        success "  o File '$tgz_file' was created, ok"
-    fi
+    for file in \
+        $tgz_file \
+        $temp_dir/archive/archive.json \
+        $temp_dir/archive/cmondb.sql \
+        $temp_dir/archive/controllerconfig.json \
+        $temp_dir/archive/cluster_1/cluster.json \
+        $temp_dir/archive/cluster_1/clusterconfig.json \
+        $temp_dir/archive/cluster_1/ssh-key.json
+    do
+        if [ ! -f "$file" ]; then
+            failure "File '$file' was not created."
+        else
+            success "  o File '$file' was created, ok"
+        fi
+    done
+
+    rm -fr "$temp_dir"
 }
 
+#
+#
+#
 function testDropCluster()
 {
     print_title "Dropping Original Cluster"
@@ -338,9 +371,14 @@ EOF
         $LOG_OPTION
 
     check_exit_code $?
+    
+    mys9s cluster \
+        --drop \
+        --cluster-id=2 \
+        $LOG_OPTION
 }
 
-function testRestoreCluster()
+function testRestore()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
     local retcode
@@ -359,28 +397,52 @@ function testRestoreCluster()
     #
     # Checking the cluster state after it is restored.
     #
-    print_title "Waiting until Cluster $CLUSTER_NAME is Started"
-
-    sleep 10
-    wait_for_cluster_started --system "$CLUSTER_NAME"
-    retcode=$?
-
-    mys9s cluster \
-        --stat \
-        --cmon-user=system \
-        --password=secret 
-    
-    mys9s node \
+    print_title "Waiting until Cluster(s) Started"
+    sleep 20
+    s9s cluster \
         --list \
         --long \
         --cmon-user=system \
-        --password=secret 
+        --password=secret
 
-    if [ "$retcode" -ne 0 ]; then
-        failure "Cluster is not is started state."
-    else
-        success "  o The cluster is in started state, ok"
+    if [ -n "$WITH_CLUSTER_GALERA" ]; then
+        wait_for_cluster_started \
+            --system \
+            "$CLUSTER_NAME_GALERA"
+
+        retcode=$?
+
+        if [ "$retcode" -ne 0 ]; then
+            failure "Cluster $CLUSTER_NAME_GALERA is not in started state."
+        else
+            success "  o The cluster $CLUSTER_NAME_GALERA is started, ok"
+        fi
     fi
+    
+    if [ -n "$WITH_CLUSTER_POSTGRE" ]; then
+        wait_for_cluster_started \
+            --system \
+            "$CLUSTER_NAME_POSTGRESQL"
+
+        retcode=$?
+
+        if [ "$retcode" -ne 0 ]; then
+            failure "Cluster $CLUSTER_NAME_POSTGRESQL is not in started state."
+        else
+            success "  o The cluster $CLUSTER_NAME_POSTGRESQL is started, ok"
+        fi
+    fi
+
+    s9s cluster \
+        --stat \
+        --cmon-user=system \
+        --password=secret 
+        
+    s9s cluster \
+        --list \
+        --long \
+        --cmon-user=system \
+        --password=secret
 }
 
 function cleanup()
@@ -408,9 +470,9 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testCreateGalera
         runFunctionalTest testCreatePostgre
-        runFunctionalTest testSaveController
+        runFunctionalTest testSave
         runFunctionalTest testDropCluster
-        runFunctionalTest testRestoreCluster
+        runFunctionalTest testRestore
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -419,9 +481,9 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateGalera
     runFunctionalTest testCreatePostgre
-    runFunctionalTest testSaveController
+    runFunctionalTest testSave
     runFunctionalTest testDropCluster
-    runFunctionalTest testRestoreCluster
+    runFunctionalTest testRestore
     runFunctionalTest cleanup
 fi
 

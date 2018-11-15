@@ -28,7 +28,7 @@ EOF
     
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
     ssh_to_controller "cd $sdir && env | grep PATH"
-    ssh_to_controller "cd $sdir && ./autogen.sh"
+    ssh_to_controller "cd $sdir && ./autogen.sh >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to configure."
         while true; do 
@@ -39,7 +39,7 @@ EOF
     fi
 
     print_title "Compiling Source"
-    ssh_to_controller "cd $sdir && make -j15"
+    ssh_to_controller "cd $sdir && make -j15 >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to compile."
         return 1
