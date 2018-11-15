@@ -265,6 +265,7 @@ class S9sOptions
 
         bool force() const;
         bool dry() const;
+        bool extended() const;
 
         bool useInternalRepos() const;
 
