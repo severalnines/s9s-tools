@@ -4075,15 +4075,20 @@ S9sRpcReply::printSheetsLong()
     S9sVariantList  theList = operator[]("spreadsheets").toVariantList();
     S9sFormat       idFormat;
     S9sFormat       nameFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       groupFormat;
     int             nLines = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sSpreadsheet sheet    = theMap;
         int            id       = theMap["id"].toInt();
         S9sString      name     = theMap["name"].toString();
 
         idFormat.widen(id);
+        ownerFormat.widen(sheet.ownerName());
+        groupFormat.widen(sheet.groupOwnerName()),
         nameFormat.widen(name);
         ++nLines;
     }
@@ -4094,10 +4099,14 @@ S9sRpcReply::printSheetsLong()
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
         idFormat.widen("ID");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
         nameFormat.widen("NAME");
         
         printf("%s", headerColorBegin());
         idFormat.printf("ID");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
         nameFormat.printf("NAME");
         printf("%s\n", headerColorEnd());
     }
@@ -4105,10 +4114,19 @@ S9sRpcReply::printSheetsLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sSpreadsheet sheet    = theMap;
         int            id       = theMap["id"].toInt();
         S9sString      name     = theMap["name"].toString();
 
         idFormat.printf(id);
+        printf("%s", userColorBegin());
+        ownerFormat.printf(sheet.ownerName());
+        printf("%s", userColorEnd());
+        
+        printf("%s", groupColorBegin());
+        groupFormat.printf(sheet.groupOwnerName());
+        printf("%s", groupColorEnd());
+
         nameFormat.printf(name);
         printf("\n");
     }

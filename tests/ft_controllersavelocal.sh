@@ -458,6 +458,18 @@ function cleanup()
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
+
+    mys9s cluster \
+        --drop \
+        --cluster-id=1 \
+        $LOG_OPTION
+
+    check_exit_code $?
+    
+    mys9s cluster \
+        --drop \
+        --cluster-id=2 \
+        $LOG_OPTION
 }
 
 #
@@ -490,7 +502,6 @@ else
     runFunctionalTest testSave
     runFunctionalTest testDropCluster
     runFunctionalTest testRestore
-    runFunctionalTest testDropCluster
     runFunctionalTest cleanup
 fi
 
