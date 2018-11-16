@@ -117,6 +117,7 @@ class S9sRpcReply : public S9sVariantMap
         void printRegionsBrief();
         void printSheets();
         void printSheetsLong();
+        void printSheetsBrief();
         void printSheet();
         void printSheetStat();
 

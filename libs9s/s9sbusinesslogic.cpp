@@ -195,10 +195,6 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isSheetOperation())
     {
-        PRINT_ERROR("1");
-        PRINT_ERROR("isListRequested: %s", 
-                options->isListRequested() ? "true" : "false");
-
         if (options->isListRequested())
         {
             S9sRpcReply reply;

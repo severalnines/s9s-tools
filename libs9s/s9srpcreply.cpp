@@ -4040,32 +4040,41 @@ S9sRpcReply::printSheets()
     {
         printSheetsLong();
     } else {
-        printf("%s\n", STR(toString()));
+        printSheetsBrief();
     }
 }
 
-void 
-S9sRpcReply::printSheet()
+void
+S9sRpcReply::printSheetsBrief()
 {
-    S9sOptions *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("spreadsheets").toVariantList();
+    int             nLines = 0;
+    bool            hasSpace = false;
 
-    if (options->isJsonRequested())
+    for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        printf("%s\n", STR(toString()));
-    } else if (!isOk())
-    {
-        PRINT_ERROR("%s", STR(errorString()));
-    } else if (options->isLongRequested()) 
-    {
-        //printImagesLong();
-        printf("%s\n", STR(toString()));
-    } else if (options->isStatRequested())
-    {
-        printSheetStat();
-    } else {
-        //printImagesBrief();
-        printf("%s\n", STR(toString()));
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sString      name     = theMap["name"].toString();
+
+        if (name.contains(" "))
+            hasSpace = true;
+        
+        ++nLines;
     }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sString      name     = theMap["name"].toString();
+
+        if (hasSpace)
+            ::printf("\"%s\" ", STR(name));
+        else
+            ::printf("%s ", STR(name));
+    }
+
+    if (nLines > 0)
+        ::printf("\n");
 }
 
 void
@@ -4132,11 +4141,36 @@ S9sRpcReply::printSheetsLong()
     }
 }
 
+void 
+S9sRpcReply::printSheet()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested()) 
+    {
+        //printImagesLong();
+        printf("%s\n", STR(toString()));
+    } else if (options->isStatRequested())
+    {
+        printSheetStat();
+    } else {
+        //printImagesBrief();
+        printf("%s\n", STR(toString()));
+    }
+}
+
 void
 S9sRpcReply::printSheetStat()
 {
     S9sSpreadsheet  spreadsheet = operator[]("spreadsheet").toVariantMap();
 
+    spreadsheet.setScreenSize(80, 8);
     spreadsheet.print();
 }
 

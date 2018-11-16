@@ -4409,7 +4409,7 @@ S9sOptions::printHelpGeneric()
 "\n"
 "Where COMMAND is:\n"
 "  account - to manage accounts on clusters.\n"
-"    alarm - to manage alarms."
+"    alarm - to manage alarms.\n"
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -4419,6 +4419,7 @@ S9sOptions::printHelpGeneric()
 "  process - to view processes running on nodes.\n"
 "   script - to manage and execute scripts.\n"
 "   server - to manage hardware resources.\n"
+"    sheet - to manage spreadsheets.\n"
 "     user - to manage users.\n"
 "\n"
 "Generic options:\n"
@@ -4812,6 +4813,7 @@ S9sOptions::printHelpSheet()
 
     printf(
 "Options for the \"sheet\" command:\n"
+"  --create                   Create a new spreadsheet.\n"
 "  --edit                     Edit a spreadsheet.\n"
 "  --list                     List the spreadsheets on the controller.\n"
 "  --stat                     Print the details of a spreadsheet.\n"
