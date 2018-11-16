@@ -2221,7 +2221,9 @@ S9sRpcClient::createReport(
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
-    
+
+    jobData["extended"] = options->extended();
+
     if (!outputDir.empty())
         jobData["report_dir"] = outputDir;
 

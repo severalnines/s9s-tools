@@ -173,6 +173,7 @@ enum S9sOptionType
     OptionFrom,
     OptionUntil,
     OptionForce,
+    OptionExtended,
     OptionDry,
     OptionDebug,
     OptionClusterFormat,
@@ -1719,6 +1720,12 @@ bool
 S9sOptions::hasForceOption() const
 {
     return m_options.contains("force");
+}
+
+bool
+S9sOptions::extended() const
+{
+    return getBool("extended");
 }
 
 bool
@@ -8622,6 +8629,7 @@ S9sOptions::readOptionsCluster(
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "force",            no_argument,       0, OptionForce           },
+        { "extended",         no_argument,       0, OptionExtended        },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -9981,6 +9989,11 @@ S9sOptions::readOptionsScript(
                 // --nodes=LIST
                 if (!setNodes(optarg))
                     return false;
+                break;
+
+            case OptionExtended:
+                // --extended
+                m_options["extended"] = true;
                 break;
 
             /*

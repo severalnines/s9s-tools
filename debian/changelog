@@ -1,3 +1,9 @@
+s9s-tools (1.7.20181113-release1) UNRELEASED; urgency=medium
+
+  * Bugfixes
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 13 Nov 2018 12:37:03 +0100
+
 s9s-tools (1.7.20181108-release1) UNRELEASED; urgency=medium
 
   * Release with bugfixes regarding to the auhentication
