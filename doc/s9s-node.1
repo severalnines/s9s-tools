@@ -540,6 +540,10 @@ server.
 The PID file on the node.
 
 .TP
+.B G
+The name of the group owner of the node.
+
+.TP
 .B g
 The log file on the node.
 
@@ -590,6 +594,15 @@ address is the name.
 The total number of monitored network interfaces in the host.
 
 .TP
+.B O
+The user name of the owner of the node.
+
+.TP
+.B o
+The name and version of the operating system together with the codename.
+
+
+.TP
 .B P
 The port on which the most important service is awaiting for requests.
 
@@ -597,14 +610,6 @@ The port on which the most important service is awaiting for requests.
 .B p
 The PID (process ID) on the node that presents the service (e.g. the PID of the
 MySQL daemon on a Galera node).
-
-.TP
-.B O
-The user name of the owner of the cluster that holds the node.
-
-.TP
-.B o
-The name and version of the operating system together with the codename.
 
 .TP
 .B R 

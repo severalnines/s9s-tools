@@ -342,6 +342,12 @@ function testConfigFail()
     local value
 
     print_title "Checking Configuration with Failed Settings"
+    cat <<EOF
+This test will check some use-cases where the --change-config should fail. We
+send a string instead of an integer and we also check what happens when an 
+invalid/non-existing hostname is send (we had a crash).
+
+EOF
 
     mys9s node \
         --change-config \
@@ -351,7 +357,28 @@ function testConfigFail()
     
     exitCode=$?
     if [ "$exitCode" -eq 0 ]; then
-        failure "Changing 'max_connections' to non-integer should fail"
+        failure "Changing 'max_connections' to non-integer should fail."
+        mys9s node \
+            --list-config \
+            --nodes=$FIRST_ADDED_NODE 
+    else
+        success "  o Request failed, ok."
+    fi
+    
+    mys9s node \
+        --change-config \
+        --nodes=10.10.1.100 \
+        --opt-name=max_connections \
+        --opt-value="500"
+    
+    exitCode=$?
+    if [ "$exitCode" -eq 0 ]; then
+        failure "Request with non-existing node should have failed."
+        mys9s node \
+            --list-config \
+            --nodes=$FIRST_ADDED_NODE 
+    else
+        success "  o Request failed, ok."
     fi
 }
 

@@ -306,6 +306,23 @@ S9sNode::toString(
                     retval += tmp;
                     break; 
 
+                case 'G':
+                    // The name of the group owner.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat),
+                            STR(groupOwnerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorEnd();
+
+                    break;
+
                 case 'g':
                     // The log file. 
                     partFormat += 's';
@@ -399,7 +416,7 @@ S9sNode::toString(
                 case 'O':
                     // The name of the owner.
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(m_cluster.ownerName()));
+                    tmp.sprintf(STR(partFormat), STR(ownerName()));
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::userColorBegin();
