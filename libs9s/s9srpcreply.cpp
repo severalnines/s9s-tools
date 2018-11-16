@@ -4038,10 +4038,8 @@ S9sRpcReply::printSheets()
         PRINT_ERROR("%s", STR(errorString()));
     } else if (options->isLongRequested()) 
     {
-        //printImagesLong();
-        printf("%s\n", STR(toString()));
+        printSheetsLong();
     } else {
-        printImagesBrief();
         printf("%s\n", STR(toString()));
     }
 }
@@ -4065,8 +4063,54 @@ S9sRpcReply::printSheet()
     {
         printSheetStat();
     } else {
-        printImagesBrief();
+        //printImagesBrief();
         printf("%s\n", STR(toString()));
+    }
+}
+
+void
+S9sRpcReply::printSheetsLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("spreadsheets").toVariantList();
+    S9sFormat       idFormat;
+    S9sFormat       nameFormat;
+    int             nLines = 0;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        int            id       = theMap["id"].toInt();
+        S9sString      name     = theMap["name"].toString();
+
+        idFormat.widen(id);
+        nameFormat.widen(name);
+        ++nLines;
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        nameFormat.widen("NAME");
+        
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        nameFormat.printf("NAME");
+        printf("%s\n", headerColorEnd());
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        int            id       = theMap["id"].toInt();
+        S9sString      name     = theMap["name"].toString();
+
+        idFormat.printf(id);
+        nameFormat.printf(name);
+        printf("\n");
     }
 }
 
@@ -7334,6 +7378,10 @@ S9sRpcReply::printJobListBrief()
             } else if (status == "FINISHED")
             {
                 stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "ABORTED")
+            {
+                stateColorStart = XTERM_COLOR_YELLOW;
                 stateColorEnd   = TERM_NORMAL;
             } else if (status == "FAILED")
             {

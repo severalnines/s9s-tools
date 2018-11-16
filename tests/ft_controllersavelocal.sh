@@ -384,6 +384,10 @@ function testRestore()
     local retcode
 
     print_title "Restoring Controller"
+    cat <<EOF
+Here we restore the saved controller from the previously created file.
+
+EOF
 
     # Restoring the cluster on the remote controller.
     mys9s backup \
@@ -393,6 +397,8 @@ function testRestore()
         --log
 
     check_exit_code $?
+
+    mys9s job --list
 
     #
     # Checking the cluster state after it is restored.
@@ -484,6 +490,7 @@ else
     runFunctionalTest testSave
     runFunctionalTest testDropCluster
     runFunctionalTest testRestore
+    runFunctionalTest testDropCluster
     runFunctionalTest cleanup
 fi
 
