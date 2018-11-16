@@ -1979,7 +1979,6 @@ S9sRpcClient::executeSystemCommand(
 }
 
 /**
- * \param clusterId the ID of the cluster that will be restarted
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *
@@ -1990,7 +1989,7 @@ bool
 S9sRpcClient::rollingRestart()
 {
     S9sVariantMap  request = composeRequest();
-    S9sVariantMap  job = composeJob();
+    S9sVariantMap  job     = composeJob();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
 
@@ -2003,6 +2002,62 @@ S9sRpcClient::rollingRestart()
     // The request describing we want to register a job instance.    
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::enableSsl()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    // JobData...
+    jobData["action"]      = "enable";
+    jobData["expire_days"] = 1000;
+
+    // JobSpec...
+    jobSpec["command"]     = "setup_ssl";
+    jobSpec["job_data"]    = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]           = "Enable SSL";
+    job["job_spec"]        = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]   = "createJobInstance";
+    request["job"]         = job;
+    
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::disableSsl()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    // JobData...
+    jobData["action"]      = "disable";
+    jobData["expire_days"] = 1000;
+
+    // JobSpec...
+    jobSpec["command"]     = "setup_ssl";
+    jobSpec["job_data"]    = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]           = "Disable SSL";
+    job["job_spec"]        = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]   = "createJobInstance";
+    request["job"]         = job;
     
     return executeRequest(uri, request);
 }

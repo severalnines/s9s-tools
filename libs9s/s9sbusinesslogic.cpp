@@ -119,6 +119,14 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isEnableSslRequested())
+        {
+            success = client.enableSsl();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDisableSslRequested())
+        {
+            success = client.disableSsl();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetupAuditLoggingRequested())
         {
             success = client.setupAuditLogging(clusterId);
