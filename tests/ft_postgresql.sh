@@ -195,50 +195,11 @@ function testCreateCluster()
     #
     # Checking the controller
     #
-    owner=$(\
-        s9s node --list --node-format "%R %O\n" | \
-        grep "controller" | \
-        awk '{print $2}')
-
-    if [ "$owner" == "pipas" ]; then
-        success "  o The owner of the controller is $owner, ok."
-    else
-        failure "The owner of the controller should not be '$owner'."
-    fi
-    
-    group=$(\
-        s9s node --list --node-format "%R %G\n" | \
-        grep "controller" | \
-        awk '{print $2}')
-
-    if [ "$group" == "testgroup" ]; then
-        success "  o The group of the controller is $group, ok."
-    else
-        failure "The group of the controller should not be '$group'."
-    fi
-
-    #
-    # Checking the node. 
-    #
-    owner=$(\
-        s9s node --list --node-format "%R %O\n" "$node1" | \
-        awk '{print $2}')
-
-    if [ "$owner" == "pipas" ]; then
-        success "  o The owner is $owner, ok."
-    else
-        failure "The owner should not be '$owner'."
-    fi
-    
-    group=$(\
-        s9s node --list --node-format "%R %G\n" "$node1" | \
-        awk '{print $2}')
-
-    if [ "$group" == "testgroup" ]; then
-        success "  o The group is $group, ok."
-    else
-        failure "The group should not be '$group'."
-    fi
+    check_controller \
+        --owner    "pipas" \
+        --group    "testgroup" \
+        --cdt-path "/$CLUSTER_NAME" \
+        --status   "CmonHostOnline"
 
 }
 

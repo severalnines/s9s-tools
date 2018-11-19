@@ -1205,6 +1205,97 @@ function get_user_email()
     s9s user --list --user-format="%M" $user_name
 }
 
+function check_controller()
+{
+    local owner
+    local group
+    local cdt_path
+    local status
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --owner)
+                owner="$2"
+                shift 2
+                ;;
+
+            --group)
+                group="$2"
+                shift 2
+                ;;
+
+            --cdt-path)
+                cdt_path="$2"
+                shift 2
+                ;;
+
+            --status)
+                status="$2"
+                shift 2
+                ;;
+        esac
+    done
+
+    echo ""
+    echo "Checking controller..."
+
+    if [ -n "$owner" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %O\n" | \
+            grep "controller" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$owner" ]; then
+            success "  o The owner of the controller is $tmp, ok."
+        else
+            failure "The owner of the controller should not be '$tmp'."
+        fi
+    fi
+
+    if [ -n "$group" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %G\n" | \
+            grep "controller" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$group" ]; then
+            success "  o The group of the controller is $tmp, ok."
+        else
+            failure "The group of the controller should not be '$tmp'."
+        fi
+    fi
+
+    if [ -n "$cdt_path" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %h\n" | \
+            grep "controller" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$cdt_path" ]; then
+            success "  o The CDT path of the controller is $tmp, ok."
+        else
+            failure "The CDT path of the controller should not be '$tmp'."
+        fi
+
+    fi
+
+    if [ -n "$status" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %S\n" | \
+            grep "controller" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$status" ]; then
+            success "  o The status of the controller is $tmp, ok."
+        else
+            failure "The status of the controller should not be '$tmp'."
+        fi
+
+    fi
+
+}
+
 function check_user()
 {
     local user_name
