@@ -153,18 +153,18 @@ function testCreateCluster()
     #
     # Check the nodes before creating a cluster.
     #
-    mys9s cluster \
-        --check-hosts \
-        --nodes="$nodes" 
-
-    check_exit_code_no_job $?
-    
-    mys9s cluster \
-        --check-hosts \
-        --nodes="$nodes" \
-        --print-json
-    
-    check_exit_code_no_job $?
+#    mys9s cluster \
+#        --check-hosts \
+#        --nodes="$nodes" 
+#
+#    check_exit_code_no_job $?
+#    
+#    mys9s cluster \
+#        --check-hosts \
+#        --nodes="$nodes" \
+#        --print-json
+#    
+#    check_exit_code_no_job $?
 
     #
     # Creating a PostgreSQL cluster.
@@ -188,6 +188,58 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
         exit 1
     fi
+
+    mys9s cluster --stat
+    mys9s node    --stat
+
+    #
+    # Checking the controller
+    #
+    owner=$(\
+        s9s node --list --node-format "%R %O\n" | \
+        grep "controller" | \
+        awk '{print $2}')
+
+    if [ "$owner" == "pipas" ]; then
+        success "  o The owner of the controller is $owner, ok."
+    else
+        failure "The owner of the controller should not be '$owner'."
+    fi
+    
+    group=$(\
+        s9s node --list --node-format "%R %G\n" | \
+        grep "controller" | \
+        awk '{print $2}')
+
+    if [ "$group" == "testgroup" ]; then
+        success "  o The group of the controller is $group, ok."
+    else
+        failure "The group of the controller should not be '$group'."
+    fi
+
+    #
+    # Checking the node. 
+    #
+    owner=$(\
+        s9s node --list --node-format "%R %O\n" "$node1" | \
+        awk '{print $2}')
+
+    if [ "$owner" == "pipas" ]; then
+        success "  o The owner is $owner, ok."
+    else
+        failure "The owner should not be '$owner'."
+    fi
+    
+    group=$(\
+        s9s node --list --node-format "%R %G\n" "$node1" | \
+        awk '{print $2}')
+
+    if [ "$group" == "testgroup" ]; then
+        success "  o The group is $group, ok."
+    else
+        failure "The group should not be '$group'."
+    fi
+
 }
 
 #

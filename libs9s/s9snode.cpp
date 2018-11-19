@@ -163,6 +163,7 @@ S9sNode::toString(
         const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
+    S9sFormatter formatter;
     S9sString    retval;
     S9sString    tmp;
     char         c;
@@ -335,6 +336,17 @@ S9sNode::toString(
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+                
+                case 'h':
+                    // The CDT path 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cdtPath()));
+
+                    retval += formatter.directoryColorBegin();
+                    retval += tmp;
+                    retval += formatter.directoryColorEnd();
 
                     break;
 
