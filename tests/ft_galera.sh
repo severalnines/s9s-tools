@@ -268,6 +268,39 @@ function testCreateCluster()
     else
         failure "The group should not be '$group'."
     fi
+
+    #
+    # Checking the controller, the nodes and the cluster.
+    #
+    check_controller \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline"
+    
+    for node in $(echo "$nodes" | tr ';' ' '); do
+        check_node \
+            --node       "$node" \
+            --ip-address "$node" \
+            --port       "3306" \
+            --config     "/etc/mysql/my.cnf" \
+            --owner      "pipas" \
+            --group      "testgroup" \
+            --cdt-path   "/$CLUSTER_NAME" \
+            --status     "CmonHostOnline" \
+            --no-maint
+    done
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "GALERA" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
+
 }
 
 function testSetupAudit()

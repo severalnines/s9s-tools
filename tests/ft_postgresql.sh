@@ -200,7 +200,7 @@ function testCreateCluster()
     mys9s node    --stat
 
     #
-    # Checking the controller
+    # Checking the controller, the node and the cluster.
     #
     check_controller \
         --owner      "pipas" \
@@ -236,6 +236,11 @@ function testCreateCluster()
 function testAddNode()
 {
     print_title "Adding a New Node"
+    cat <<EOF
+This test will add a new node as slave to the cluster created in the previous
+test as a single node postgresql cluster.
+
+EOF
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
 
@@ -248,7 +253,18 @@ function testAddNode()
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
     
-    check_exit_code $?    
+    check_exit_code $? 
+
+    check_node \
+        --node       "$LAST_ADDED_NODE" \
+        --ip-address "$LAST_ADDED_NODE" \
+        --port       "5432" \
+        --config     "/etc/postgresql/9.3/main/postgresql.conf" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline" \
+        --no-maint
 }
 
 #
