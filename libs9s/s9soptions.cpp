@@ -186,6 +186,8 @@ enum S9sOptionType
     OptionOnlyAscii,
     OptionDensity,
     OptionRollingRestart,
+    OptionEnableSsl,
+    OptionDisableSsl,
     OptionCreateReport,
     OptionDeployAgents,
     OptionLimit,
@@ -3507,6 +3509,18 @@ S9sOptions::isRollingRestartRequested() const
     return getBool("rolling_restart");
 }
 
+bool
+S9sOptions::isEnableSslRequested() const
+{
+    return getBool("enable_ssl");
+}
+
+bool
+S9sOptions::isDisableSslRequested() const
+{
+    return getBool("disable_ssl");
+}
+
 /**
  * \returns true if the --setup-audit-logging command line option provided.
  */
@@ -4409,7 +4423,7 @@ S9sOptions::printHelpGeneric()
 "\n"
 "Where COMMAND is:\n"
 "  account - to manage accounts on clusters.\n"
-"    alarm - to manage alarms."
+"    alarm - to manage alarms.\n"
 "   backup - to view, create and restore database backups.\n"
 "  cluster - to list and manipulate clusters.\n"
 "      job - to view jobs.\n"
@@ -4419,6 +4433,7 @@ S9sOptions::printHelpGeneric()
 "  process - to view processes running on nodes.\n"
 "   script - to manage and execute scripts.\n"
 "   server - to manage hardware resources.\n"
+"    sheet - to manage spreadsheets.\n"
 "     user - to manage users.\n"
 "\n"
 "Generic options:\n"
@@ -4675,7 +4690,9 @@ S9sOptions::printHelpCluster()
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --demote-node              Demote a node to slave.\n"
 "  --deploy-agents            Starts a job to deploy agents to the nodes.\n"
+"  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
@@ -4812,6 +4829,7 @@ S9sOptions::printHelpSheet()
 
     printf(
 "Options for the \"sheet\" command:\n"
+"  --create                   Create a new spreadsheet.\n"
 "  --edit                     Edit a spreadsheet.\n"
 "  --list                     List the spreadsheets on the controller.\n"
 "  --stat                     Print the details of a spreadsheet.\n"
@@ -6932,6 +6950,12 @@ S9sOptions::checkOptionsCluster()
     if (isRollingRestartRequested())
         countOptions++;
     
+    if (isEnableSslRequested())
+        countOptions++;
+    
+    if (isDisableSslRequested())
+        countOptions++;
+    
     if (isSetupAuditLoggingRequested())
         countOptions++;
     
@@ -8650,6 +8674,8 @@ S9sOptions::readOptionsCluster(
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
+        { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
+        { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
@@ -8790,6 +8816,16 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
+                break;
+            
+            case OptionEnableSsl:
+                // --enable-ssl
+                m_options["enable_ssl"] = true;
+                break;
+            
+            case OptionDisableSsl:
+                // --disable-ssl
+                m_options["disable_ssl"] = true;
                 break;
             
             case OptionSetupAudit:

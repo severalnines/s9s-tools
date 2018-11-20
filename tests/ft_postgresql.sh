@@ -153,18 +153,18 @@ function testCreateCluster()
     #
     # Check the nodes before creating a cluster.
     #
-    mys9s cluster \
-        --check-hosts \
-        --nodes="$nodes" 
-
-    check_exit_code_no_job $?
-    
-    mys9s cluster \
-        --check-hosts \
-        --nodes="$nodes" \
-        --print-json
-    
-    check_exit_code_no_job $?
+#    mys9s cluster \
+#        --check-hosts \
+#        --nodes="$nodes" 
+#
+#    check_exit_code_no_job $?
+#    
+#    mys9s cluster \
+#        --check-hosts \
+#        --nodes="$nodes" \
+#        --print-json
+#    
+#    check_exit_code_no_job $?
 
     #
     # Creating a PostgreSQL cluster.
@@ -179,7 +179,14 @@ function testCreateCluster()
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
-    check_exit_code $?    
+    check_exit_code $?
+    
+    #
+    #
+    #
+    wait_for_cluster_started "$CLUSTER_NAME"
+    check_exit_code $?
+
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -188,6 +195,39 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
         exit 1
     fi
+
+    mys9s cluster --stat
+    mys9s node    --stat
+
+    #
+    # Checking the controller
+    #
+    check_controller \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline"
+    
+    check_node \
+        --node       "$FIRST_ADDED_NODE" \
+        --ip-address "$FIRST_ADDED_NODE" \
+        --port       "8089" \
+        --config     "/etc/postgresql/9.3/main/postgresql.conf" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline" \
+        --no-maint
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "POSTGRESQL_SINGLE" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
 }
 
 #
@@ -342,6 +382,12 @@ function testConfigFail()
     local value
 
     print_title "Checking Configuration with Failed Settings"
+    cat <<EOF
+This test will check some use-cases where the --change-config should fail. We
+send a string instead of an integer and we also check what happens when an 
+invalid/non-existing hostname is send (we had a crash).
+
+EOF
 
     mys9s node \
         --change-config \
@@ -351,7 +397,28 @@ function testConfigFail()
     
     exitCode=$?
     if [ "$exitCode" -eq 0 ]; then
-        failure "Changing 'max_connections' to non-integer should fail"
+        failure "Changing 'max_connections' to non-integer should fail."
+        mys9s node \
+            --list-config \
+            --nodes=$FIRST_ADDED_NODE 
+    else
+        success "  o Request failed, ok."
+    fi
+    
+    mys9s node \
+        --change-config \
+        --nodes=10.10.1.100 \
+        --opt-name=max_connections \
+        --opt-value="500"
+    
+    exitCode=$?
+    if [ "$exitCode" -eq 0 ]; then
+        failure "Request with non-existing node should have failed."
+        mys9s node \
+            --list-config \
+            --nodes=$FIRST_ADDED_NODE 
+    else
+        success "  o Request failed, ok."
     fi
 }
 

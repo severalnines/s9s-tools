@@ -25,8 +25,8 @@
 
 S9sSpreadsheet::S9sSpreadsheet() :
     S9sObject(),
-    m_screenRows(-1),
-    m_screenColumns(-1),
+    m_screenRows(25),
+    m_screenColumns(80),
     m_selectedCellRow(0),
     m_selectedCellColumn(0),
     m_firstVisibleRow(0),
@@ -40,7 +40,12 @@ S9sSpreadsheet::S9sSpreadsheet(
         const S9sVariantMap &properties) :
     S9sObject(properties),
     m_screenRows(25),
-    m_screenColumns(80)
+    m_screenColumns(80),
+    m_selectedCellRow(0),
+    m_selectedCellColumn(0),
+    m_firstVisibleRow(0),
+    m_firstVisibleColumn(0),
+    m_defaultColumnWidth(15)
 {
     if (!m_properties.contains("class_name"))
         m_properties["class_name"] = "CmonSpreadsheet";
@@ -291,13 +296,13 @@ S9sSpreadsheet::print() const
     /*
      *
      */
-    for (uint row = m_firstVisibleRow; (int)row <= lastVisibleRow(); ++row)
+    for (uint row = m_firstVisibleRow; row <= (uint)lastVisibleRow(); ++row)
     {
         ::printf("%s", headerColorBegin());
         ::printf(" %3u ", row + 1);
         ::printf("%s", headerColorEnd());
 
-        for (uint col = m_firstVisibleColumn; col < 32; ++col)
+        for (uint col = m_firstVisibleColumn; col <= (uint)lastVisibleColumn(); ++col)
         {
             int       theWidth = columnWidth(col);
             S9sString theValue = value(0, col, row);

@@ -116,6 +116,8 @@ class S9sRpcReply : public S9sVariantMap
         void printTemplates();
         void printRegionsBrief();
         void printSheets();
+        void printSheetsLong();
+        void printSheetsBrief();
         void printSheet();
         void printSheetStat();
 
@@ -334,9 +336,6 @@ class S9sRpcReply : public S9sVariantMap
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
         
-        const char *folderColorBegin() const;
-        const char *folderColorEnd() const;
-
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
         

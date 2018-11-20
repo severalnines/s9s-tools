@@ -4038,11 +4038,106 @@ S9sRpcReply::printSheets()
         PRINT_ERROR("%s", STR(errorString()));
     } else if (options->isLongRequested()) 
     {
-        //printImagesLong();
-        printf("%s\n", STR(toString()));
+        printSheetsLong();
     } else {
-        printImagesBrief();
-        printf("%s\n", STR(toString()));
+        printSheetsBrief();
+    }
+}
+
+void
+S9sRpcReply::printSheetsBrief()
+{
+    S9sVariantList  theList = operator[]("spreadsheets").toVariantList();
+    int             nLines = 0;
+    bool            hasSpace = false;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sString      name     = theMap["name"].toString();
+
+        if (name.contains(" "))
+            hasSpace = true;
+        
+        ++nLines;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sString      name     = theMap["name"].toString();
+
+        if (hasSpace)
+            ::printf("\"%s\" ", STR(name));
+        else
+            ::printf("%s ", STR(name));
+    }
+
+    if (nLines > 0)
+        ::printf("\n");
+}
+
+void
+S9sRpcReply::printSheetsLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = operator[]("spreadsheets").toVariantList();
+    S9sFormat       idFormat;
+    S9sFormat       nameFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       groupFormat;
+    int             nLines = 0;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sSpreadsheet sheet    = theMap;
+        int            id       = theMap["id"].toInt();
+        S9sString      name     = theMap["name"].toString();
+
+        idFormat.widen(id);
+        ownerFormat.widen(sheet.ownerName());
+        groupFormat.widen(sheet.groupOwnerName()),
+        nameFormat.widen(name);
+        ++nLines;
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        nameFormat.widen("NAME");
+        
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
+        nameFormat.printf("NAME");
+        printf("%s\n", headerColorEnd());
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sSpreadsheet sheet    = theMap;
+        int            id       = theMap["id"].toInt();
+        S9sString      name     = theMap["name"].toString();
+
+        idFormat.printf(id);
+        printf("%s", userColorBegin());
+        ownerFormat.printf(sheet.ownerName());
+        printf("%s", userColorEnd());
+        
+        printf("%s", groupColorBegin());
+        groupFormat.printf(sheet.groupOwnerName());
+        printf("%s", groupColorEnd());
+
+        nameFormat.printf(name);
+        printf("\n");
     }
 }
 
@@ -4065,7 +4160,7 @@ S9sRpcReply::printSheet()
     {
         printSheetStat();
     } else {
-        printImagesBrief();
+        //printImagesBrief();
         printf("%s\n", STR(toString()));
     }
 }
@@ -4075,6 +4170,7 @@ S9sRpcReply::printSheetStat()
 {
     S9sSpreadsheet  spreadsheet = operator[]("spreadsheet").toVariantMap();
 
+    spreadsheet.setScreenSize(80, 8);
     spreadsheet.print();
 }
 
@@ -5162,13 +5258,15 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                folderColorBegin(), STR(name), folderColorEnd());
+                m_formatter.folderColorBegin(), 
+                STR(name), 
+                m_formatter.folderColorEnd());
     } else if (isFile)
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 fileColorBegin(name), 
-                STR(name), folderColorEnd());
+                STR(name), fileColorEnd());
     } else if (isContainer)
     {
         printf("%s%s%s%s", 
@@ -5422,15 +5520,15 @@ S9sRpcReply::printObjectListLong(
     if (type == "Folder")
     {
         printf("%s%s%s", 
-                folderColorBegin(), 
+                m_formatter.folderColorBegin(), 
                 STR(name), 
-                folderColorEnd());
+                m_formatter.folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
                 STR(name), 
-                folderColorEnd());
+                fileColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
@@ -5562,15 +5660,15 @@ S9sRpcReply::printObjectListBrief(
     if (type == "Folder")
     {
         printf("%s%s%s", 
-                folderColorBegin(), 
+                m_formatter.folderColorBegin(), 
                 STR(name), 
-                folderColorEnd());
+                m_formatter.folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
                 STR(node.name()), 
-                folderColorEnd());
+                fileColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
@@ -6032,6 +6130,15 @@ S9sRpcReply::printClusterStat(
             groupColorEnd());
 
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", m_formatter.folderColorBegin());
+    printf("%-32s ", STR(cluster.cdtPath()));
+    printf("%s", m_formatter.folderColorEnd());
+    printf("\n");
 
     //
     // "      ID: 1                                   State: STARTED"
@@ -6364,6 +6471,15 @@ S9sRpcReply::printNodeStat(
             clusterColorEnd(),
             cluster.clusterId());
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", m_formatter.folderColorBegin());
+    printf("%-32s ", STR(node.cdtPath()));
+    printf("%s", m_formatter.folderColorEnd());
+    printf("\n");
    
     //
     //
@@ -6670,9 +6786,9 @@ S9sRpcReply::printObjectStat(
     //
     //
     printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", folderColorBegin());
+    printf("%s", m_formatter.folderColorBegin());
     printf("%-32s ", STR(object.cdtPath()));
-    printf("%s", clusterColorEnd());
+    printf("%s", m_formatter.folderColorEnd());
     printf("\n");
     
     //
@@ -7334,6 +7450,10 @@ S9sRpcReply::printJobListBrief()
             } else if (status == "FINISHED")
             {
                 stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
+            } else if (status == "ABORTED")
+            {
+                stateColorStart = XTERM_COLOR_YELLOW;
                 stateColorEnd   = TERM_NORMAL;
             } else if (status == "FAILED")
             {
@@ -10113,24 +10233,6 @@ S9sRpcReply::headerColorBegin() const
 
 const char *
 S9sRpcReply::headerColorEnd() const
-{
-    if (useSyntaxHighLight())
-        return TERM_NORMAL;
-
-    return "";
-}
-
-const char *
-S9sRpcReply::folderColorBegin() const
-{
-    if (useSyntaxHighLight())
-        return XTERM_COLOR_YELLOW;
-
-    return "";
-}
-
-const char *
-S9sRpcReply::folderColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

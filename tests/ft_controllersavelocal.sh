@@ -384,6 +384,10 @@ function testRestore()
     local retcode
 
     print_title "Restoring Controller"
+    cat <<EOF
+Here we restore the saved controller from the previously created file.
+
+EOF
 
     # Restoring the cluster on the remote controller.
     mys9s backup \
@@ -393,6 +397,8 @@ function testRestore()
         --log
 
     check_exit_code $?
+
+    mys9s job --list
 
     #
     # Checking the cluster state after it is restored.
@@ -452,6 +458,18 @@ function cleanup()
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
+
+    mys9s cluster \
+        --drop \
+        --cluster-id=1 \
+        $LOG_OPTION
+
+    check_exit_code $?
+    
+    mys9s cluster \
+        --drop \
+        --cluster-id=2 \
+        $LOG_OPTION
 }
 
 #

@@ -403,6 +403,8 @@ class S9sOptions
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;
         bool isRollingRestartRequested() const;
+        bool isEnableSslRequested() const;
+        bool isDisableSslRequested() const;
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
         bool isDeployAgentsRequested() const;

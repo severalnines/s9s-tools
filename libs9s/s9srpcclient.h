@@ -264,6 +264,8 @@ class S9sRpcClient
         bool deleteReport(const int reportId);
         bool getReports();
         bool rollingRestart();
+        bool enableSsl();
+        bool disableSsl();
         bool saveCluster();
         bool restoreCluster();
         bool saveController();

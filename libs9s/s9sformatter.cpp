@@ -96,6 +96,24 @@ S9sFormatter::directoryColorEnd() const
 }
 
 const char *
+S9sFormatter::folderColorBegin() const
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_FOLDER;
+
+    return "";
+}
+
+const char *
+S9sFormatter::folderColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::clusterStateColorBegin(
         const S9sString &state)
 {

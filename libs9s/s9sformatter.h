@@ -21,6 +21,9 @@ class S9sFormatter
 
         const char *directoryColorBegin() const;
         const char *directoryColorEnd() const;
+        
+        const char *folderColorBegin() const;
+        const char *folderColorEnd() const;
 
         const char *clusterStateColorBegin(const S9sString &state);
         const char *clusterStateColorEnd() const;

@@ -111,7 +111,7 @@ fi
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -137,7 +137,8 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create MySQL replication cluster is starting now."
+    print_title "Creating MySQL Replication Cluster"
+
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -160,16 +161,10 @@ function testCreateCluster()
         --provider-version=5.7 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-        return 1
-    fi
-
+    check_exit_code $?
+    
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     printVerbose "CLUSTER_ID: '$CLUSTER_ID'"
-
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
@@ -184,7 +179,7 @@ function testConfig()
 {
     local exitCode
     
-    pip-say "The test to check configuration is starting now."
+    print_title "Checking Configuration"
 
     #
     # Listing the configuration values.
@@ -209,7 +204,8 @@ function testAddNode()
     local nodes
     local exitCode
 
-    pip-say "The test to add node is starting now."
+    print_title "Adding Node"
+
     printVerbose "Creating node..."
     nodeName=$(create_node --autodestroy)
     LAST_ADDED_NODE="$nodeName"
@@ -244,7 +240,7 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    pip-say "The test to remove node is starting now."
+    print_title "Removing Node"
     
     #
     # Removing the last added node.
@@ -269,7 +265,7 @@ function testRollingRestart()
 {
     local exitCode
     
-    pip-say "The test of rolling restart is starting now."
+    print_title "Rolling Restart"
 
     #
     # Calling for a rolling restart.
@@ -293,7 +289,7 @@ function testStop()
 {
     local exitCode
 
-    pip-say "The test to stop cluster is starting now."
+    print_title "Stopping Cluster"
 
     #
     # Stopping the cluster.
@@ -358,12 +354,6 @@ else
     #runFunctionalTest testRollingRestart
     #runFunctionalTest testStop
     runFunctionalTest testDrop
-fi
-
-if [ "$FAILED" == "no" ]; then
-    pip-say "The test script is now finished. No errors were detected."
-else
-    pip-say "The test script is now finished. Some failures were detected."
 fi
 
 endTests

@@ -55,7 +55,7 @@ function _s9s_no_command()
 {
     if ! _s9s_has_options "account" "backup" "cluster" "job" "maintenance" \
         "node" "process" "user" "script" "metatype" "log" "server" \
-        "container" "tree" "event" "alarm"; 
+        "container" "tree" "event" "alarm" "sheet"; 
     then
         return 0
     fi
@@ -84,7 +84,7 @@ function _s9s()
     #
     if _s9s_no_command; then
         opts+="account backup cluster job maintenance node process user script "
-        opts+="metatype log server container tree event alarm"
+        opts+="metatype log server container tree event alarm sheet"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -503,16 +503,30 @@ function _s9s()
                 opts+="--cmon-user= --password= "
                 opts+="--type= "
             fi
+        elif [[ ${COMP_WORDS[i]} == "sheet" ]]; then
+            main_opt+="--help "
+            main_opt+="--list --stat --edit "
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--cmon-user= --password= "
+                opts+="--cluster-id= --cluster-name= "
+                # This is bogus, this has cluster id
+                opts+=$(s9s sheet --list --cluster-id=1)
+            fi
         fi
     done
  
-            isEqualOptions=$(elementExists "${cur}")
-            if [ "${isEqualOptions:-0}" -eq 1 ]; then
-                COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
-            else
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            fi
+    isEqualOptions=$(elementExists "${cur}")
+    if [ "${isEqualOptions:-0}" -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "${opts}" -S '=' -- "${cur}") )
+    else
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+    fi
 
-            return 0
+    return 0
 }
 complete -o nospace -F _s9s s9s
