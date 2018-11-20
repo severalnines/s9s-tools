@@ -200,6 +200,13 @@ function testCreateCluster()
         --group    "testgroup" \
         --cdt-path "/$CLUSTER_NAME" \
         --status   "CmonHostOnline"
+    
+    check_node \
+        --node     "$FIRST_ADDED_NODE"
+        --owner    "pipas" \
+        --group    "testgroup" \
+        --cdt-path "/$CLUSTER_NAME" \
+        --status   "CmonHostOnline"
 
 }
 

@@ -1293,9 +1293,103 @@ function check_controller()
         fi
 
     fi
-
 }
 
+function check_node()
+{
+    local hostname
+    local owner
+    local group
+    local cdt_path
+    local status
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --node|--host)
+                hostname=$2
+                shift 2
+                ;;
+
+            --owner)
+                owner="$2"
+                shift 2
+                ;;
+
+            --group)
+                group="$2"
+                shift 2
+                ;;
+
+            --cdt-path)
+                cdt_path="$2"
+                shift 2
+                ;;
+
+            --status)
+                status="$2"
+                shift 2
+                ;;
+        esac
+    done
+
+    if [ -z "$hostname" ]; then
+        failure "Hostname is not provided while checking node."
+        return 1
+    fi
+
+    echo ""
+    echo "Checking node '$hostname'..."
+
+    if [ -n "$owner" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %O\n" "$hostname" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$owner" ]; then
+            success "  o The owner of the node is $tmp, ok."
+        else
+            failure "The owner of the node should not be '$tmp'."
+        fi
+    fi
+
+    if [ -n "$group" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %G\n" "$hostname" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$group" ]; then
+            success "  o The group of the node is $tmp, ok."
+        else
+            failure "The group of the node should not be '$tmp'."
+        fi
+    fi
+
+    if [ -n "$cdt_path" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %h\n" "$hostname" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$cdt_path" ]; then
+            success "  o The CDT path of the node is $tmp, ok."
+        else
+            failure "The CDT path of the node should not be '$tmp'."
+        fi
+
+    fi
+
+    if [ -n "$status" ]; then
+        tmp=$(\
+            s9s node --list --node-format "%R %S\n" "$hostname" | \
+            awk '{print $2}')
+
+        if [ "$tmp" == "$status" ]; then
+            success "  o The status of the node is $tmp, ok."
+        else
+            failure "The status of the node should not be '$tmp'."
+        fi
+    fi
+}
 function check_user()
 {
     local user_name
