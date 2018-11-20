@@ -6113,40 +6113,13 @@ S9sRpcReply::printClusterStat(
 
     ::printf("\n");
     ::printf("%s", TERM_NORMAL);
-    
-    //
-    // "    Name: galera_001                          Owner: pipas/users"
-    //
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%s", clusterColorBegin());
-    printf("%-32s ", STR(cluster.name()));
-    printf("%s", clusterColorEnd());
-    
-    printf("%s   Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(cluster.ownerName()), userColorEnd(),
-            groupColorBegin(cluster.groupOwnerName()), 
-            STR(cluster.groupOwnerName()), 
-            groupColorEnd());
-
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", m_formatter.folderColorBegin());
-    printf("%-32s ", STR(cluster.cdtPath()));
-    printf("%s", m_formatter.folderColorEnd());
-    printf("\n");
+   
+    printObjectStat(cluster);
 
     //
-    // "      ID: 1                                   State: STARTED"
+    // 
     //
-    printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-32d ", cluster.clusterId());
-    
-    printf("%s   State:%s ", greyBegin, greyEnd);
+    printf("%s  Status:%s ", greyBegin, greyEnd);
     printf("%s%s%s ", 
             clusterStateColorBegin(cluster.state()), 
             STR(cluster.state()),
@@ -6156,7 +6129,7 @@ S9sRpcReply::printClusterStat(
     printf("%s    Type:%s ", greyBegin, greyEnd);
     printf("%-32s ", STR(cluster.clusterType()));
     
-    printf("%s  Vendor:%s ", greyBegin, greyEnd);
+    printf("%s   Vendor:%s ", greyBegin, greyEnd);
     printf("%s", STR(cluster.vendorAndVersion()));
     printf("\n");
     

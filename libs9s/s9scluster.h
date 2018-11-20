@@ -43,8 +43,13 @@ class S9sCluster : public S9sObject
 
         virtual S9sString id(const S9sString &defaultValue) const;
 
-        virtual S9sString ownerName() const;
-        virtual S9sString groupOwnerName() const;
+        virtual S9sString 
+            ownerName(
+                    const S9sString defaultValue = "-") const;
+
+        virtual S9sString 
+            groupOwnerName(
+                    const S9sString defaultValue = "-") const;
 
         int clusterId() const;
         S9sString clusterType() const;

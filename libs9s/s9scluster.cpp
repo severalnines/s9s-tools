@@ -101,9 +101,10 @@ S9sCluster::fullCdtPath() const
  * \returns The name of the user that owns the cluster.
  */
 S9sString
-S9sCluster::ownerName() const
+S9sCluster::ownerName(
+        const S9sString defaultValue) const
 {
-    S9sString retval;
+    S9sString retval = defaultValue;
 
     if (m_properties.contains("owner"))
     {
@@ -124,9 +125,10 @@ S9sCluster::ownerName() const
  * \returns The name of the group that owns the cluster.
  */
 S9sString
-S9sCluster::groupOwnerName() const
+S9sCluster::groupOwnerName(
+        const S9sString defaultValue) const
 {
-    S9sString retval;
+    S9sString retval = defaultValue;
 
     if (m_properties.contains("group_owner"))
     {
