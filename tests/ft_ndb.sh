@@ -135,19 +135,24 @@ function testCreateCluster()
     local nodes
     local nodeName
     local exitCode
+    local node_names
 
     print_title "Creating an NDB Cluster."
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_node001_$$")
+    node_names+="$nodeName "
     FIRST_ADDED_NODE="$nodeName"
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_node002_$$")
+    node_names+="$nodeName "
     nodes+="mysql://$nodeName;ndb_mgmd://$nodeName;"
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_node003_$$")
+    node_names+="$nodeName "
     nodes+="ndbd://$nodeName;"
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_node004_$$")
+    node_names+="$nodeName "
     nodes+="ndbd://$nodeName"
 
     #
@@ -170,6 +175,42 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    wait_for_cluster_started "$CLUSTER_NAME" 
+
+    #
+    # Checking the controller, the nodes and the cluster.
+    #
+    check_controller \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline"
+ 
+    # FIXME: Here is the thing: the nodes are different from each other, so it
+    # is hard to check.
+#    for node in $(echo "$node_names" | tr ';' ' '); do
+#        check_node \
+#            --node       "$node" \
+#            --ip-address "$node" \
+#            --port       "3306" \
+#            --config     "/etc/mysql/my.cnf" \
+#            --owner      "pipas" \
+#            --group      "testgroup" \
+#            --cdt-path   "/$CLUSTER_NAME" \
+#            --status     "CmonHostOnline" \
+#            --no-maint
+#    done
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "MYSQLCLUSTER" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
 }
 
 function testCreateBackup()
