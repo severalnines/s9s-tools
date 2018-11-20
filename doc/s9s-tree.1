@@ -31,7 +31,16 @@ s9s tree \\
 
 .TP
 .B \-\^\-add\-acl
-Add an ACL entry to an object in the tree.
+Add an ACL entry to an object in the tree. Overwrites the ACL if the given type
+of ACL already exists.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --add-acl \\
+    --acl="group:users:rw-" \\
+    galera_001
+.fi
 
 .TP
 .B \-\^\-cat
@@ -51,6 +60,13 @@ Remove CDT entries.
 .B \-\^\-get\-acl
 Print the ACL of a CDT entry.
 
+.B EXAMPLE
+.nf
+s9s tree \\
+    --get-acl \\
+    galera_001
+.fi
+
 .TP
 .B \-\^\-list
 Print the Cmon Directory Tree in list format.
@@ -66,6 +82,14 @@ Move an object to a new location in the tree.
 .TP
 .B \-\^\-remove\-acl
 Remove an ACL entry from the ACL of an object.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --remove-acl \\
+    --acl="group:users:rw-" \\
+    galera_001
+.fi
 
 .TP
 .B \-\^\-rmdir
