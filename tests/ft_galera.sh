@@ -242,32 +242,7 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    wait_for_cluster_started "$CLUSTER_NAME"
-
-    #
-    # Checking the controller
-    #
-    owner=$(\
-        s9s node --list --node-format "%R %O\n" | \
-        grep "controller" | \
-        awk '{print $2}')
-
-    if [ "$owner" == "pipas" ]; then
-        success "  o The owner is $owner, ok."
-    else
-        failure "The owner should not be '$owner'."
-    fi
-    
-    group=$(\
-        s9s node --list --node-format "%R %G\n" | \
-        grep "controller" | \
-        awk '{print $2}')
-
-    if [ "$group" == "testgroup" ]; then
-        success "  o The group is $group, ok."
-    else
-        failure "The group should not be '$group'."
-    fi
+    wait_for_cluster_started "$CLUSTER_NAME" 
 
     #
     # Checking the controller, the nodes and the cluster.
