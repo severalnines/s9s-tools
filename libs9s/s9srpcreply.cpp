@@ -6460,6 +6460,15 @@ S9sRpcReply::printNodeStat(
             clusterColorEnd(),
             cluster.clusterId());
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", folderColorBegin());
+    printf("%-32s ", STR(node.cdtPath()));
+    printf("%s", clusterColorEnd());
+    printf("\n");
    
     //
     //

@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
-
+OPTION_INSTALL=""
 CLUSTER_NAME="galera_001"
 
 cd $MYDIR
@@ -27,6 +27,7 @@ Usage:
  --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
+ --install           Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
@@ -36,7 +37,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
+server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -71,6 +73,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -995,6 +1002,10 @@ if [ "$OPTION_INSTALL" ]; then
             runFunctionalTest "$testName"
         done
     else
+        runFunctionalTest testCreateUser
+        runFunctionalTest testCreateSuperuser
+        runFunctionalTest testRegisterServer
+        runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
     fi
 elif [ "$1" ]; then
