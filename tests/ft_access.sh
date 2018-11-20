@@ -202,7 +202,7 @@ function testCreateCluster()
 
 function testOtherUser()
 {
-    print_title "Creating Another User, Checking ACL"
+    print_title "Creating Another User"
     cat <<EOF
 We create a new user. Then we check that this user do not see the already
 created cluster because it is not the owner and is in a completely different
@@ -231,6 +231,7 @@ EOF
     #
     #
     #
+    print_title "Adding ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the group 'users', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -254,6 +255,7 @@ EOF
     #
     #
     #
+    print_title "Removing ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
