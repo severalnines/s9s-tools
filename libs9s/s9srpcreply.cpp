@@ -5258,13 +5258,15 @@ S9sRpcReply::printObjectTreeBrief(
     {
         printf("%s%s%s%s", 
                 STR(indent), 
-                folderColorBegin(), STR(name), folderColorEnd());
+                m_formatter.folderColorBegin(), 
+                STR(name), 
+                m_formatter.folderColorEnd());
     } else if (isFile)
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 fileColorBegin(name), 
-                STR(name), folderColorEnd());
+                STR(name), fileColorEnd());
     } else if (isContainer)
     {
         printf("%s%s%s%s", 
@@ -5518,15 +5520,15 @@ S9sRpcReply::printObjectListLong(
     if (type == "Folder")
     {
         printf("%s%s%s", 
-                folderColorBegin(), 
+                m_formatter.folderColorBegin(), 
                 STR(name), 
-                folderColorEnd());
+                m_formatter.folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
                 STR(name), 
-                folderColorEnd());
+                fileColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
@@ -5658,15 +5660,15 @@ S9sRpcReply::printObjectListBrief(
     if (type == "Folder")
     {
         printf("%s%s%s", 
-                folderColorBegin(), 
+                m_formatter.folderColorBegin(), 
                 STR(name), 
-                folderColorEnd());
+                m_formatter.folderColorEnd());
     } else if (type == "File")
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
                 STR(node.name()), 
-                folderColorEnd());
+                fileColorEnd());
     } else if (type == "Cluster")
     {
         printf("%s%s%s", 
@@ -6128,6 +6130,15 @@ S9sRpcReply::printClusterStat(
             groupColorEnd());
 
     printf("\n");
+    
+    //
+    //
+    //
+    printf("%sCDT path:%s ", greyBegin, greyEnd);
+    printf("%s", m_formatter.folderColorBegin());
+    printf("%-32s ", STR(cluster.cdtPath()));
+    printf("%s", m_formatter.folderColorEnd());
+    printf("\n");
 
     //
     // "      ID: 1                                   State: STARTED"
@@ -6465,9 +6476,9 @@ S9sRpcReply::printNodeStat(
     //
     //
     printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", folderColorBegin());
+    printf("%s", m_formatter.folderColorBegin());
     printf("%-32s ", STR(node.cdtPath()));
-    printf("%s", clusterColorEnd());
+    printf("%s", m_formatter.folderColorEnd());
     printf("\n");
    
     //
@@ -6775,9 +6786,9 @@ S9sRpcReply::printObjectStat(
     //
     //
     printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", folderColorBegin());
+    printf("%s", m_formatter.folderColorBegin());
     printf("%-32s ", STR(object.cdtPath()));
-    printf("%s", clusterColorEnd());
+    printf("%s", m_formatter.folderColorEnd());
     printf("\n");
     
     //
@@ -10222,24 +10233,6 @@ S9sRpcReply::headerColorBegin() const
 
 const char *
 S9sRpcReply::headerColorEnd() const
-{
-    if (useSyntaxHighLight())
-        return TERM_NORMAL;
-
-    return "";
-}
-
-const char *
-S9sRpcReply::folderColorBegin() const
-{
-    if (useSyntaxHighLight())
-        return XTERM_COLOR_YELLOW;
-
-    return "";
-}
-
-const char *
-S9sRpcReply::folderColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;

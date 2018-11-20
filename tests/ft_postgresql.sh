@@ -179,7 +179,14 @@ function testCreateCluster()
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
-    check_exit_code $?    
+    check_exit_code $?
+    
+    #
+    #
+    #
+    wait_for_cluster_started "$CLUSTER_NAME"
+    check_exit_code $?
+
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -196,18 +203,31 @@ function testCreateCluster()
     # Checking the controller
     #
     check_controller \
-        --owner    "pipas" \
-        --group    "testgroup" \
-        --cdt-path "/$CLUSTER_NAME" \
-        --status   "CmonHostOnline"
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline"
     
     check_node \
-        --node     "$FIRST_ADDED_NODE"
-        --owner    "pipas" \
-        --group    "testgroup" \
-        --cdt-path "/$CLUSTER_NAME" \
-        --status   "CmonHostOnline"
+        --node       "$FIRST_ADDED_NODE" \
+        --ip-address "$FIRST_ADDED_NODE" \
+        --port       "8089" \
+        --config     "/etc/postgresql/9.3/main/postgresql.conf" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline" \
+        --no-maint
 
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "POSTGRESQL_SINGLE" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
 }
 
 #

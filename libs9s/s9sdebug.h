@@ -172,6 +172,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_NIC_UP       "\033[1;2m\033[38;5;40m"
 #define XTERM_COLOR_NIC_NOLINK   "\033[1;2m\033[38;5;184m"
 #define XTERM_COLOR_DIR          "\033[1;2m\033[38;5;27m"
+#define XTERM_COLOR_FOLDER       "\033[93m"
 #define XTERM_COLOR_FILESYSTEM   "\033[1;2m\033[38;5;13m"
 #define XTERM_COLOR_BDEV         "\033[38;5;11m"
 #define XTERM_COLOR_NUMBER       "\033[1m"

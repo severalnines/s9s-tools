@@ -926,6 +926,7 @@ S9sCluster::toString(
         const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
+    S9sFormatter formatter;    
     S9sString    retval;
     S9sString    tmp;
     char         c;
@@ -1172,6 +1173,17 @@ S9sCluster::toString(
 
                     if (syntaxHighlight)
                         retval += S9sRpcReply::userColorEnd();
+
+                    break;
+
+                case 'P':
+                    // The CDT path 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cdtPath()));
+
+                    retval += formatter.folderColorBegin();
+                    retval += tmp;
+                    retval += formatter.folderColorEnd();
 
                     break;
 

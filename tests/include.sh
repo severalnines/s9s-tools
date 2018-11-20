@@ -1298,16 +1298,30 @@ function check_controller()
 function check_node()
 {
     local hostname
+    local ipaddress
+    local port
     local owner
     local group
     local cdt_path
     local status
+    local config
+    local no_maintenance
     local tmp
 
     while [ -n "$1" ]; do
         case "$1" in 
             --node|--host)
-                hostname=$2
+                hostname="$2"
+                shift 2
+                ;;
+
+            --ip-address)
+                ipaddress="$2"
+                shift 2
+                ;;
+
+            --port)
+                port="$2"
                 shift 2
                 ;;
 
@@ -1330,6 +1344,16 @@ function check_node()
                 status="$2"
                 shift 2
                 ;;
+
+            --config)
+                config="$2"
+                shift 2
+                ;;
+
+            --no-maint|--no-maintenance)
+                no_maintenance="true"
+                shift
+                ;;
         esac
     done
 
@@ -1341,10 +1365,28 @@ function check_node()
     echo ""
     echo "Checking node '$hostname'..."
 
+    if [ -n "$ipaddress" ]; then
+        tmp=$(s9s node --list --node-format "%A\n" "$hostname")
+
+        if [ "$tmp" == "$ipaddress" ]; then
+            success "  o The IP of the node is $tmp, ok."
+        else
+            failure "The IP of the node should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$port" ]; then
+        tmp=$(s9s node --list --node-format "%P\n" "$hostname")
+
+        if [ "$tmp" == "$port" ]; then
+            success "  o The port of the node is $tmp, ok."
+        else
+            failure "The port of the node should not be '$tmp'."
+        fi
+    fi
+
     if [ -n "$owner" ]; then
-        tmp=$(\
-            s9s node --list --node-format "%R %O\n" "$hostname" | \
-            awk '{print $2}')
+        tmp=$(s9s node --list --node-format "%O\n" "$hostname")
 
         if [ "$tmp" == "$owner" ]; then
             success "  o The owner of the node is $tmp, ok."
@@ -1354,9 +1396,7 @@ function check_node()
     fi
 
     if [ -n "$group" ]; then
-        tmp=$(\
-            s9s node --list --node-format "%R %G\n" "$hostname" | \
-            awk '{print $2}')
+        tmp=$(s9s node --list --node-format "%G\n" "$hostname")
 
         if [ "$tmp" == "$group" ]; then
             success "  o The group of the node is $tmp, ok."
@@ -1366,9 +1406,7 @@ function check_node()
     fi
 
     if [ -n "$cdt_path" ]; then
-        tmp=$(\
-            s9s node --list --node-format "%R %h\n" "$hostname" | \
-            awk '{print $2}')
+        tmp=$(s9s node --list --node-format "%h\n" "$hostname")
 
         if [ "$tmp" == "$cdt_path" ]; then
             success "  o The CDT path of the node is $tmp, ok."
@@ -1379,9 +1417,7 @@ function check_node()
     fi
 
     if [ -n "$status" ]; then
-        tmp=$(\
-            s9s node --list --node-format "%R %S\n" "$hostname" | \
-            awk '{print $2}')
+        tmp=$(s9s node --list --node-format "%S\n" "$hostname")
 
         if [ "$tmp" == "$status" ]; then
             success "  o The status of the node is $tmp, ok."
@@ -1389,7 +1425,164 @@ function check_node()
             failure "The status of the node should not be '$tmp'."
         fi
     fi
+    
+    if [ -n "$config" ]; then
+        tmp=$(s9s node --list --node-format "%C\n" "$hostname")
+
+        if [ "$tmp" == "$config" ]; then
+            success "  o The config file of the node is $tmp, ok."
+        else
+            failure "The config file of the node should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$no_maintenance" ]; then
+        tmp=$(s9s node --list --node-format "%a\n" "$hostname")
+
+        if [ "$tmp" == "-" ]; then
+            success "  o The maintenance of the node is '$tmp', ok."
+        else
+            failure "The maintenance of the node should not be '$tmp'."
+        fi
+    fi
 }
+
+function check_cluster()
+{
+    local config_file
+    local log_file
+    local owner
+    local group
+    local cdt_path
+    local cluster_type
+    local cluster_name
+    local cluster_state
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster|--cluster-name)
+                cluster_name="$2"
+                shift 2
+                ;;
+
+            --config)
+                config_file="$2"
+                shift 2
+                ;;
+
+            --log)
+                log_file="$2"
+                shift 2
+                ;;
+                
+            --owner)
+                owner="$2"
+                shift 2
+                ;;
+
+            --group)
+                group="$2"
+                shift 2
+                ;;
+
+            --cdt-path)
+                cdt_path="$2"
+                shift 2
+                ;;
+
+            --type|--cluster-type)
+                cluster_type="$2"
+                shift 2
+                ;;
+
+            --state|--cluster-state)
+                cluster_state="$2"
+                shift 2
+                ;;
+        esac
+    done
+
+    if [ -z "$cluster_name" ]; then
+        failure "No cluster name provided while checking cluster."
+        return 1
+    fi
+
+    echo ""
+    echo "Checking cluster '$cluster_name'..."
+
+    if [ -n "$config_file" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%C\n" "$cluster_name")
+
+        if [ "$tmp" == "$config_file" ]; then
+            success "  o The config file of the cluster is $tmp, ok."
+        else
+            failure "The config file of the cluster should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$log_file" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%L\n" "$cluster_name")
+
+        if [ "$tmp" == "$log_file" ]; then
+            success "  o The log file of the cluster is $tmp, ok."
+        else
+            failure "The log file of the cluster should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$owner" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%O\n" "$cluster_name")
+
+        if [ "$tmp" == "$owner" ]; then
+            success "  o The owner of the cluster is $tmp, ok."
+        else
+            failure "The owner of the cluster should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$group" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%G\n" "$cluster_name")
+
+        if [ "$tmp" == "$group" ]; then
+            success "  o The group of the cluster is $tmp, ok."
+        else
+            failure "The group of the cluster should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$cdt_path" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%P\n" "$cluster_name")
+
+        if [ "$tmp" == "$cdt_path" ]; then
+            success "  o The CDT path of the cluster is $tmp, ok."
+        else
+            failure "The CDT path of the cluster should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$cluster_type" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%T\n" "$cluster_name")
+
+        if [ "$tmp" == "$cluster_type" ]; then
+            success "  o The type of the cluster is $tmp, ok."
+        else
+            failure "The type of the cluster should not be '$tmp'."
+        fi
+    fi
+
+    if [ -n "$cluster_state" ]; then
+        tmp=$(s9s cluster --list --cluster-format "%S\n" "$cluster_name")
+
+        if [ "$tmp" == "$cluster_state" ]; then
+            success "  o The state of the cluster is $tmp, ok."
+        else
+            failure "The state of the cluster should not be '$tmp'."
+        fi
+    fi
+
+}
+
 function check_user()
 {
     local user_name

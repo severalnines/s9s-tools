@@ -336,9 +336,6 @@ class S9sRpcReply : public S9sVariantMap
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
         
-        const char *folderColorBegin() const;
-        const char *folderColorEnd() const;
-
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
         
