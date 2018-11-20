@@ -5,9 +5,10 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
-CLUSTER_NAME="ft_$$"
+CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
+OPTION_NUMBER_OF_NODES="3"
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
@@ -41,7 +42,9 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
   --vendor=STRING  Use the given Galera vendor.
-  --provider-version=STRING The SQL server provider version.
+
+  --provider-version=STRING  The SQL server provider version.
+  --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
   o testPing
@@ -61,7 +64,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,print-commands,install,reset-config,
-server:,vendor:,provider-version:" \
+server:,number-of-nodes:,vendor:,provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -119,6 +122,12 @@ while true; do
             shift
             ;;
 
+        --number-of-nodes)
+            shift
+            OPTION_NUMBER_OF_NODES="$1"
+            shift
+            ;;
+
         --vendor)
             shift
             OPTION_VENDOR="$1"
@@ -158,20 +167,30 @@ function testPing()
 function testCreateCluster()
 {
     local nodes
-    local nodeName
+    local node_ip
     local exitCode
+    local node_serial=1
+    local node_name
 
     print_title "Creating MySQL Replication Cluster"
-    nodeName=$(create_node --autodestroy "${MYNAME}_01_$$")
-    nodes+="$nodeName;"
-    FIRST_ADDED_NODE=$nodeName
-    
-    #nodeName=$(create_node --autodestroy "${MYNAME}_02_$$")
-    #SECOND_ADDED_NODE=$nodeName
-    #nodes+="$nodeName;"
-    
-    #nodeName=$(create_node --autodestroy "${MYNAME}_03_$$")
-    #nodes+="$nodeName"
+    while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
+        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+
+        echo "Creating node #$node_serial"
+        node_ip=$(create_node --autodestroy "$node_name")
+
+        if [ -n "$nodes" ]; then
+            nodes+=";"
+        fi
+
+        nodes+="$node_ip"
+
+        if [ -z "$FIRST_ADDED_NODE" ]; then
+            FIRST_ADDED_NODE="$node_ip"
+        fi
+
+        let node_serial+=1
+    done
     
     #
     # Creating a MySQL replication cluster.
@@ -185,8 +204,7 @@ function testCreateCluster()
         --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
-    exitCode=$?
-    check_exit_code $exitCode
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -194,6 +212,43 @@ function testCreateCluster()
     else
         failure "Cluster was not created"
     fi
+
+    wait_for_cluster_started "$CLUSTER_NAME" 
+
+    mys9s cluster --stat
+    mys9s node    --stat
+
+    #
+    # Checking the controller, the nodes and the cluster.
+    #
+    check_controller \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline"
+    
+    for node in $(echo "$nodes" | tr ';' ' '); do
+        check_node \
+            --node       "$node" \
+            --ip-address "$node" \
+            --port       "3306" \
+            --config     "/etc/mysql/my.cnf" \
+            --owner      "pipas" \
+            --group      "testgroup" \
+            --cdt-path   "/$CLUSTER_NAME" \
+            --status     "CmonHostOnline" \
+            --no-maint
+    done
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "REPLICATION" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
 }
 
 #
@@ -430,7 +485,7 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        --log
+        $LOG_OPTION
    
     check_exit_code $?
 
