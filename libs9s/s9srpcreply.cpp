@@ -6430,35 +6430,13 @@ S9sRpcReply::printNodeStat(
     printf("%s", TERM_NORMAL /*headerColorEnd()*/);
     printf("\n");
 
-    //
-    // "    Name: 192.168.1.127           Cluster: galera_001 (1)"
-    //
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR(node.name()));
-    //printf("\n");
+    printObjectStat(node);
     
-    printf("%s       Cluster:%s ", greyBegin, greyEnd);
-    printf("%s%s%s (%d) ", 
-            clusterColorBegin(), 
-            STR(cluster.name()), 
-            clusterColorEnd(),
-            cluster.clusterId());
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", m_formatter.folderColorBegin());
-    printf("%-32s ", STR(node.cdtPath()));
-    printf("%s", m_formatter.folderColorEnd());
-    printf("\n");
-   
     //
     //
     //
     printf("%s      IP:%s ", greyBegin, greyEnd);
-    printf("%-16s ", STR(node.ipAddress()));
+    printf("%-27s ", STR(node.ipAddress()));
     //printf("\n");
     
     printf("          %sPort:%s ", greyBegin, greyEnd);
@@ -6467,25 +6445,25 @@ S9sRpcReply::printNodeStat(
     printf("\n");
     
     // 
-    // Line 
+    // 
     //
     printf("%s   Alias:%s ", greyBegin, greyEnd);
-    printf("%-25s", STR(node.alias("-")));
+    printf("%-34s", STR(node.alias("-")));
     //printf("\n");
     
-    printf("%s Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(node.ownerName()), userColorEnd(),
-            groupColorBegin(node.groupOwnerName()), 
-            STR(node.groupOwnerName()), 
-            groupColorEnd());
+    printf("%s Cluster:%s ", greyBegin, greyEnd);
+    printf("%s%s%s (%d) ", 
+            clusterColorBegin(), 
+            STR(cluster.name()), 
+            clusterColorEnd(),
+            cluster.clusterId());
     printf("\n");
-   
+      
     //
     // "   Class: CmonPostgreSqlHost         Type: postgres"
     //
     printf("%s   Class:%s ", greyBegin, greyEnd);
-    printf("%s%-24s%s ", 
+    printf("%s%-35s%s ", 
             typeColorBegin(), 
             STR(node.className()), 
             typeColorEnd());
@@ -6498,16 +6476,18 @@ S9sRpcReply::printNodeStat(
     //
     //
     printf("%s  Status:%s ", greyBegin, greyEnd);
-    printf("%-24s", STR(node.hostStatus()));
+    printf("%-35s", STR(node.hostStatus()));
     //printf("\n");
     
     printf("   %sRole:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.role()));
     printf("\n");
     
-    
+    //
+    //
+    //
     printf("%s      OS:%s ", greyBegin, greyEnd);
-    printf("%-24s", STR(node.osVersionString()));
+    printf("%-35s", STR(node.osVersionString()));
 
     printf("%s Access:%s ", greyBegin, greyEnd);
     printf("%s", node.readOnly() ? "read-only" : "read-write");
@@ -6545,7 +6525,7 @@ S9sRpcReply::printNodeStat(
      * Last seen time and SSH fail count.
      */
     printf("%sLastSeen:%s ", greyBegin, greyEnd);
-    printf("%-27s", STR(S9sString::pastTime(node.lastSeen())));
+    printf("%-38s", STR(S9sString::pastTime(node.lastSeen())));
     //printf("\n");
     
     printf("%s SSH:%s ", greyBegin, greyEnd);

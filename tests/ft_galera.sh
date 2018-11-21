@@ -706,7 +706,6 @@ function testAddNode()
 
     print_title "Adding a node"
 
-    printVerbose "Creating node..."
     LAST_ADDED_NODE=$(create_node --autodestroy)
     nodes+="$LAST_ADDED_NODE"
 
