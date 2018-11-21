@@ -9,6 +9,8 @@
 #include "S9sUser"
 #include "S9sCluster"
 #include "S9sNode"
+#include "S9sServer"
+#include "S9sContainer"
 
 //#define DEBUG
 #define WARNING
@@ -301,8 +303,37 @@ S9sFormatter::serverColorEnd()
 }
 
 const char *
+S9sFormatter::hostStateColorBegin(
+        const S9sString status) const
+{
+    if (useSyntaxHighLight())
+    {
+        if (status == "CmonHostRecovery" || status == "CmonHostShutDown")
+        {
+            return XTERM_COLOR_YELLOW;
+        } else if (status == "CmonHostUnknown" || status == "CmonHostOffLine")
+        {
+            return XTERM_COLOR_RED;
+        } else {
+            return XTERM_COLOR_GREEN;
+        }
+    }
+
+    return "";
+}
+
+const char *
+S9sFormatter::hostStateColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
 S9sFormatter::containerColorBegin(
-        int stateAsChar)
+        int stateAsChar) const
 {
     if (useSyntaxHighLight())
     {
@@ -322,7 +353,7 @@ S9sFormatter::containerColorBegin(
 }
 
 const char *
-S9sFormatter::containerColorEnd() 
+S9sFormatter::containerColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
@@ -400,7 +431,7 @@ S9sFormatter::percent(
 
 void 
 S9sFormatter::printObjectStat(
-        S9sObject    &object) const
+        const S9sObject    &object) const
 {
     //S9sOptions *options = S9sOptions::instance();
     //int         terminalWidth = options->terminalWidth();
@@ -459,7 +490,7 @@ S9sFormatter::printObjectStat(
 
 void 
 S9sFormatter::printUserStat(
-        S9sUser &user) const
+        const S9sUser &user) const
 {
     S9sOptions *options = S9sOptions::instance();
     int         terminalWidth = options->terminalWidth();
@@ -552,8 +583,8 @@ S9sFormatter::printUserStat(
  */
 void
 S9sFormatter::printNodeStat(
-        S9sCluster &cluster,
-        S9sNode    &node) const
+        const S9sCluster &cluster,
+        const S9sNode    &node) const
 {
     S9sOptions *options = S9sOptions::instance();
     int         terminalWidth = options->terminalWidth();
@@ -765,6 +796,187 @@ S9sFormatter::printNodeStat(
     printBackendServersSubList(node);
 }
 
+/**
+ * \param server The server to print.
+ *
+ * Prints one server in stat format, a format we use when the --stat command
+ * line option is provided.
+ */
+void
+S9sFormatter::printServerStat(
+        const S9sServer &server) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
+    const char    *greyBegin = greyColorBegin();
+    const char    *greyEnd   = greyColorEnd();
+    S9sString      title;
+    S9sVariantList processorNames = server.processorNames();
+    S9sVariantList nicNames       = server.nicNames();
+    S9sVariantList bankNames      = server.memoryBankNames();
+    S9sVariantList diskNames      = server.diskNames();
+    S9sVariantList containers;
+
+    //
+    // The title line that is in inverse. 
+    //
+    if (server.hostName() == server.ipAddress())
+    {
+        title = server.hostName();
+    } else {
+        title.sprintf("%s (%s)", 
+                STR(server.hostName()), STR(server.ipAddress()));
+    }
+
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    printf("\n");
+
+    printObjectStat(server);
+
+    //
+    // "      IP: 192.168.1.4"
+    //
+    printf("%s      IP:%s ", greyBegin, greyEnd);
+    printf("%s%-33s%s ", 
+            ipColorBegin(server.ipAddress()),
+            STR(server.ipAddress()),
+            ipColorEnd());
+
+    printf("%sProtocol:%s ", greyBegin, greyEnd);
+    printf("%-25s ", STR(server.protocol()));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s%-24s%s ", 
+            hostStateColorBegin(server.hostStatus()),
+            STR(server.hostStatus()),
+            hostStateColorEnd());
+
+    printf("\n");
+    
+    //
+    // ""
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-24s", STR(server.osVersionString("-")));
+    printf("\n");
+    
+
+    // 
+    // "   Alias: ''                        Owner: pipas/users" 
+    //
+    printf("%s   Alias:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(server.alias("-")));
+    //printf("\n");
+    
+    printf("\n");
+    
+    //
+    // "   Model: SUN FIRE X4170 SERVER (4583256-1)"
+    //
+    printf("%s   Model:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(server.model("-")));
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s Summary:%s ", greyBegin, greyEnd);
+    printf("%2d VMs", server.nContainers());
+    printf(", %.0fGB RAM", server.totalMemoryGBytes());
+    printf(", %d CPUs", server.nCpus());
+    printf(", %d cores", server.nCores());
+    printf(", %d threads", server.nThreads());
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%s  Limits:%s ", greyBegin, greyEnd);
+    printf("%s/%s VMs", 
+            STR(server.nContainersMaxString()),
+            STR(server.nRunningContainersMaxString()));
+    printf("\n");
+
+    //
+    // "  CPU(s): 2 x Intel(R) Xeon(R) CPU L5520 @ 2.27GHz"
+    //
+    for (uint idx = 0u; idx < processorNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s  CPU(s):%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(processorNames[idx].toString()));
+    }
+
+    //
+    // "  NIC(s): 4 x 82575EB Gigabit Network Connection"
+    //
+    for (uint idx = 0u; idx < nicNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s  NIC(s):%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(nicNames[idx].toString()));
+    }
+    
+    //
+    // "   Banks: 16 x DIMM 800 MHz (1.2 ns)"
+    //
+    for (uint idx = 0u; idx < bankNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s   Banks:%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(bankNames[idx].toString()));
+    }
+
+    //
+    // "   Disks:  4 x FUJITSU MBE2147RC"
+    //
+    for (uint idx = 0u; idx < diskNames.size(); ++idx)
+    {
+        if (idx == 0u)
+        {
+            printf("%s   Disks:%s ", greyBegin, greyEnd);
+        } else {
+            printf("          ");
+        }
+
+        printf("%s\n", STR(diskNames[idx].toString()));
+    }
+        
+    //
+    //
+    //
+    printf("\n");
+    containers = server.containers();
+    printContainersCompact(containers);
+
+    printf("\n");
+}
+
+
 void
 S9sFormatter::printBackendServersSubList(
         const S9sNode &node) const
@@ -835,6 +1047,75 @@ S9sFormatter::printBackendServersSubList(
             printf("\n");
         }
             
+        printf("\n");
+    }
+}
+
+void
+S9sFormatter::printContainersCompact(
+        const S9sVariantList &containers) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9s::AddressType addressType = options->addressType();
+    int            terminalWidth = options->terminalWidth();
+    S9sFormat      aliasFormat(containerColorBegin(), containerColorEnd());
+    S9sFormat      ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat      userFormat(userColorBegin(), userColorEnd());
+    S9sFormat      groupFormat(groupColorBegin(), groupColorEnd());
+    S9sString      indent;
+    int            tableWidth;
+
+    if (containers.empty())
+        return;
+
+    for (uint idx = 0u; idx < containers.size(); ++idx)
+    {
+        const S9sContainer container = containers[idx].toContainer();
+        S9sString          user      = container.ownerName();
+        S9sString          group     = container.groupOwnerName();
+        S9sString          alias     = container.alias();
+        S9sString          ipAddress = container.ipAddress(addressType, "-");
+
+        userFormat.widen(user);
+        groupFormat.widen(group);
+        aliasFormat.widen(alias);
+        ipFormat.widen(ipAddress);
+    }
+    
+    tableWidth = 
+        3 +
+        aliasFormat.realWidth()  + ipFormat.realWidth() +
+        userFormat.realWidth()   + groupFormat.realWidth();
+    
+    if (terminalWidth - tableWidth > 0)
+        indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+
+    printf("%s", headerColorBegin());
+    printf("%s", STR(indent));
+    printf("S ");
+    userFormat.printf("OWNER", false);
+    groupFormat.printf("GROUP", false);
+    ipFormat.printf("IP ADDRESS", false);
+    aliasFormat.printf("NAME", false);
+    printf("%s", headerColorEnd());
+    printf("\n");
+
+
+    for (uint idx = 0u; idx < containers.size(); ++idx)
+    {
+        const S9sContainer container = containers[idx].toContainer();
+        S9sString          user      = container.ownerName();
+        S9sString          group     = container.groupOwnerName();
+        S9sString          alias     = container.alias();
+        S9sString          ipAddress = container.ipAddress(addressType, "-");
+        
+        printf("%s", STR(indent));
+        printf("%c ", container.stateAsChar());
+
+        userFormat.printf(user);
+        groupFormat.printf(group);
+        ipFormat.printf(ipAddress);
+        aliasFormat.printf(alias);
         printf("\n");
     }
 }

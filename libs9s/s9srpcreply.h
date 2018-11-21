@@ -136,7 +136,6 @@ class S9sRpcReply : public S9sVariantMap
         void printContainers();
         void printContainersLong();
         void printContainersBrief();
-        void printContainersCompact(const S9sVariantList &containers);
         void printContainerStat();
 
         void printContainerStat(S9sContainer &container);
@@ -240,7 +239,6 @@ class S9sRpcReply : public S9sVariantMap
         S9sVariantMap clusterMap(const int clusterId);
         
     private:
-        void printServerStat(S9sServer server);
         void printServersStat();
 
         void printJobLogBrief();

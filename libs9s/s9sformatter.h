@@ -9,6 +9,7 @@ class S9sObject;
 class S9sUser;
 class S9sCluster;
 class S9sNode;
+class S9sServer;
 
 class S9sFormatter
 {
@@ -48,8 +49,11 @@ class S9sFormatter
         const char *serverColorBegin();
         const char *serverColorEnd();
 
-        const char *containerColorBegin(int stateAsChar);
-        const char *containerColorEnd();
+        const char *hostStateColorBegin(const S9sString status) const;
+        const char *hostStateColorEnd() const;
+
+        const char *containerColorBegin(int stateAsChar = '\0') const;
+        const char *containerColorEnd() const;
 
         const char *typeColorBegin() const;
         const char *typeColorEnd() const;
@@ -63,9 +67,16 @@ class S9sFormatter
 
         S9sString percent(const ulonglong total, const ulonglong part) const;
 
-        void printObjectStat(S9sObject &object) const;
-        void printUserStat(S9sUser &user) const;
-        void printNodeStat(S9sCluster &cluster, S9sNode &node) const;
+        void printObjectStat(const S9sObject &object) const;
+        void printUserStat(const S9sUser &user) const;
+        
+        void printNodeStat(
+                const S9sCluster &cluster, 
+                const S9sNode    &node) const;
+
+        void printServerStat(const S9sServer &server) const;
 
         void printBackendServersSubList(const S9sNode &node) const;
+        void printContainersCompact(const S9sVariantList &containers) const;
+
 };
