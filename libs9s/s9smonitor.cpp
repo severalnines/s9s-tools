@@ -996,7 +996,7 @@ S9sMonitor::printNodes()
             pathFormat.printf(node.fullCdtPath());
         } else {
             ::printf("%c", node.nodeTypeFlag());
-            ::printf("%c", node.hostStatusFlag());
+            ::printf("%c", node.stateAsChar());
             ::printf("%c", node.roleFlag());
             ::printf("%c ", node.maintenanceFlag());
 

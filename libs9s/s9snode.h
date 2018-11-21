@@ -82,7 +82,8 @@ class S9sNode : public S9sObject
         S9sString fullErrorString() const;
 
         S9sString hostStatus() const;
-        char hostStatusFlag() const;
+        virtual int stateAsChar() const;
+
         S9sString nodeType() const;
         char nodeTypeFlag() const;
         S9sString version() const;

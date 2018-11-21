@@ -617,7 +617,7 @@ S9sCluster::hostIds() const
  */
 S9sString 
 S9sCluster::hostName(
-        const int hostId)
+        const int hostId) const
 {
     S9sString key;
 

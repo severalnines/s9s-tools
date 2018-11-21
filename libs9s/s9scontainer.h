@@ -62,13 +62,13 @@ class S9sContainer : public S9sObject
 
         S9sString ipv4Addresses(
                 const S9sString &separator = ", ",
-                const S9sString &defaultValue = "-");
+                const S9sString &defaultValue = "-") const;
 
         S9sString parentServerName() const;
         void setParentServerName(const S9sString &value);
 
         S9sString state() const;
-        int stateAsChar() const;
+        virtual int stateAsChar() const;
         bool autoStart() const;
 
         S9sVariantMap subNet() const;

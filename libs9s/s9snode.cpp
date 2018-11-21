@@ -921,8 +921,8 @@ S9sNode::hostStatus() const
 /**
  * \returns The host status encoded into one character.
  */
-char 
-S9sNode::hostStatusFlag() const
+int
+S9sNode::stateAsChar() const
 {
     S9sString theHostStatus = hostStatus();
 

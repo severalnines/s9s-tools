@@ -10,6 +10,7 @@ class S9sUser;
 class S9sCluster;
 class S9sNode;
 class S9sServer;
+class S9sContainer;
 
 class S9sFormatter
 {
@@ -31,7 +32,7 @@ class S9sFormatter
         const char *folderColorBegin() const;
         const char *folderColorEnd() const;
 
-        const char *clusterStateColorBegin(const S9sString &state);
+        const char *clusterStateColorBegin(const S9sString &state) const;
         const char *clusterStateColorEnd() const;
 
         const char *jobStateColorBegin(const S9sString &state);
@@ -46,8 +47,8 @@ class S9sFormatter
         const char *fileColorBegin(const S9sString &fileName) const;
         const char *fileColorEnd() const;
 
-        const char *serverColorBegin();
-        const char *serverColorEnd();
+        const char *serverColorBegin(int stateAsChar = '\0') const;
+        const char *serverColorEnd() const;
 
         const char *hostStateColorBegin(const S9sString status) const;
         const char *hostStateColorEnd() const;
@@ -60,6 +61,9 @@ class S9sFormatter
 
         const char *greyColorBegin() const;
         const char *greyColorEnd() const;
+
+        const char *objectColorBegin(const S9sObject &object) const;
+        const char *objectColorEnd() const;
 
         S9sString bytesToHuman(ulonglong bytes) const;
         S9sString mBytesToHuman(ulonglong mBytes) const;
@@ -75,8 +79,10 @@ class S9sFormatter
                 const S9sNode    &node) const;
 
         void printServerStat(const S9sServer &server) const;
+        void printClusterStat(const S9sCluster &cluster) const;
+        void printContainerStat(const S9sContainer &container) const;
 
         void printBackendServersSubList(const S9sNode &node) const;
         void printContainersCompact(const S9sVariantList &containers) const;
-
+        void printHostTable(const S9sCluster &cluster) const;
 };

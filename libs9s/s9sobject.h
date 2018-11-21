@@ -62,6 +62,8 @@ class S9sObject
             groupOwnerName(
                     const S9sString defaultValue = "-") const;
 
+        virtual int stateAsChar() const;
+
     protected:
         S9sVariantMap    m_properties;
 };

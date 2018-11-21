@@ -98,7 +98,7 @@ class S9sCluster : public S9sObject
         S9sVariant swapFree() const;
 
         S9sVariantList hostIds() const;
-        S9sString hostName(const int hostId);
+        S9sString hostName(const int hostId) const;
         S9sString cpuModel(const int hostId) const;
         S9sVariant nNics(const int hostId) const;
         S9sVariant nDevices(const int hostId) const;

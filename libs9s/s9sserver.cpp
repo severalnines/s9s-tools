@@ -165,6 +165,30 @@ S9sServer::hostStatus() const
     return S9sString();
 }
 
+/**
+ * \returns The host status encoded into one character.
+ */
+int
+S9sServer::stateAsChar() const
+{
+    S9sString theHostStatus = hostStatus();
+
+    if (theHostStatus == "CmonHostUnknown")
+        return '?';
+    else if (theHostStatus == "CmonHostOnline")
+        return 'o';
+    else if (theHostStatus == "CmonHostOffLine")
+        return 'l';
+    else if (theHostStatus == "CmonHostFailed")
+        return 'f';
+    else if (theHostStatus == "CmonHostRecovery")
+        return 'r';
+    else if (theHostStatus == "CmonHostShutDown")
+        return '-';
+
+    return '?';
+}
+
 S9sVariantList 
 S9sServer::subnets() const
 {

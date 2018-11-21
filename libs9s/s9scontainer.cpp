@@ -558,7 +558,7 @@ S9sContainer::ipAddress(
 S9sString 
 S9sContainer::ipv4Addresses(
         const S9sString &separator,
-        const S9sString &defaultValue)
+        const S9sString &defaultValue) const
 {
     S9sString      retval;
 

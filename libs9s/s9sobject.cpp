@@ -278,3 +278,10 @@ S9sObject::groupOwnerName(
 
     return retval;
 }
+
+int
+S9sObject::stateAsChar() const
+{
+    return '\0';
+}
+

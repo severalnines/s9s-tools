@@ -125,11 +125,11 @@ S9sFormatter::folderColorEnd() const
 
 const char *
 S9sFormatter::clusterStateColorBegin(
-        const S9sString &state)
+        const S9sString &state) const
 {
     if (useSyntaxHighLight())
     {
-        if (state == "STARTED")
+        if (state == "STARTED" || state == "RUNNING")
             return XTERM_COLOR_GREEN;
        else if (state == "FAILED" || state == "FAILURE")
             return XTERM_COLOR_RED;
@@ -285,16 +285,33 @@ S9sFormatter::fileColorEnd() const
 
 
 const char *
-S9sFormatter::serverColorBegin() 
+S9sFormatter::serverColorBegin(
+        int stateAsChar) const
 {
     if (useSyntaxHighLight())
-        return XTERM_COLOR_SERVER;
+    {
+        switch (stateAsChar)
+        {
+            case '?':
+            case 'r':
+                return XTERM_COLOR_YELLOW;
+
+            case 'l':
+            case 'f':
+            case '-':
+                return XTERM_COLOR_RED;
+
+            case 'o':
+            default:
+                return XTERM_COLOR_SERVER;
+        }
+    }
 
     return "";
 }
 
 const char *
-S9sFormatter::serverColorEnd() 
+S9sFormatter::serverColorEnd() const
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
@@ -397,6 +414,38 @@ S9sFormatter::greyColorEnd() const
     return "";
 }
 
+const char *
+S9sFormatter::objectColorBegin(
+        const S9sObject    &object) const
+{
+    if (useSyntaxHighLight())
+    {
+        S9sString className = object.className();
+
+        if (className == "CmonContainer")
+        {
+            return containerColorBegin(object.stateAsChar());
+        } else if (className == "CmonLxcServer" || 
+                className == "CmonCloudServer")
+        {
+            return serverColorBegin(object.stateAsChar());
+        }
+    } else {
+        return "";
+    }
+
+    return "";
+}
+
+const char *
+S9sFormatter::objectColorEnd() const
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
 
 S9sString 
 S9sFormatter::mBytesToHuman(
@@ -443,9 +492,9 @@ S9sFormatter::printObjectStat(
     //
     printf("%s    Name:%s ", greyBegin, greyEnd);
     // FIXME: the color should depend on the class
-    printf("%s", clusterColorBegin());
+    printf("%s", objectColorBegin(object));
     printf("%-32s ", STR(object.name()));
-    printf("%s", clusterColorEnd());
+    printf("%s", objectColorEnd());
     
     printf("\n");
    
@@ -976,6 +1025,297 @@ S9sFormatter::printServerStat(
     printf("\n");
 }
 
+/**
+ * Prints one cluster in "stat" format, a very detailed format that is
+ * used when the --stat command line option is provided.
+ */
+void
+S9sFormatter::printClusterStat(
+        const S9sCluster &cluster) const
+{
+    S9sOptions *options = S9sOptions::instance();
+    int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    S9sString   title;
+
+    //
+    // The title that is in inverse. 
+    //
+    title.sprintf(" %s ", STR(cluster.name()));
+
+    ::printf("%s", TERM_INVERSE);
+    ::printf("%s", STR(title));
+    
+    for (int n = title.length(); n < terminalWidth; ++n)
+        ::printf(" ");
+
+    ::printf("\n");
+    ::printf("%s", TERM_NORMAL);
+   
+    printObjectStat(cluster);
+
+    //
+    // 
+    //
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s%s%s ", 
+            clusterStateColorBegin(cluster.state()), 
+            STR(cluster.state()),
+            clusterStateColorEnd());
+    printf("\n");
+    
+    printf("%s    Type:%s ", greyBegin, greyEnd);
+    printf("%-32s ", STR(cluster.clusterType()));
+    
+    printf("%s   Vendor:%s ", greyBegin, greyEnd);
+    printf("%s", STR(cluster.vendorAndVersion()));
+    printf("\n");
+    
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s", STR(cluster.statusText()));
+    printf("\n");
+
+    //
+    // Counting the alarms.
+    //
+    printf("%s  Alarms:%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.alarmsCritical());
+    printf("%scrit %s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.alarmsWarning());
+    printf("%swarn %s ", greyBegin, greyEnd);
+    printf("\n");
+
+    //
+    // Counting the jobs.
+    //
+    printf("%s    Jobs:%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsAborted());
+    printf("%sabort%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsDefined());
+    printf("%sdefnd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsDequeued());
+    printf("%sdequd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsFailed());
+    printf("%sfaild%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsFinished());
+    printf("%sfinsd%s ", greyBegin, greyEnd);
+    printf("%2d ", cluster.jobsRunning());
+    printf("%srunng%s ", greyBegin, greyEnd);
+    printf("\n");
+    
+    //
+    // Lines of various files.
+    //
+    printf("%s  Config:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(cluster.configFile()),
+            STR(cluster.configFile()),
+            fileColorEnd());
+
+    printf("\n");
+
+    printf("%s LogFile:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(cluster.logFile()),
+            STR(cluster.logFile()),
+            fileColorEnd());
+    printf("\n");
+    printf("\n");
+
+    printHostTable(cluster);
+}
+
+void 
+S9sFormatter::printContainerStat(
+        const S9sContainer &container) const
+{
+    S9sOptions *options = S9sOptions::instance();
+    S9s::AddressType addressType = options->addressType();
+    int         terminalWidth = options->terminalWidth();
+    const char *greyBegin = greyColorBegin();
+    const char *greyEnd   = greyColorEnd();
+    S9sString   title;
+    S9sString   tmpString;
+    S9sString   tmp;
+
+    //
+    // The title that is in inverse. 
+    //
+    if (container.ipAddress(addressType).empty())
+    {
+        title.sprintf(" %s ", STR(container.alias()));
+    } else {
+        title.sprintf(" %s (%s)", 
+                STR(container.alias()), 
+                STR(container.ipAddress(addressType)));
+    }
+
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    
+    printObjectStat(container);
+
+
+    //
+    // "    IPv4: 54.93.99.244                          Type: cmon-cloud"
+    //
+    printf("%s    IPv4:%s ", greyBegin, greyEnd);
+    printf("%-37s", STR(container.ipv4Addresses()));
+
+    printf("%s Type:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.type()));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    tmp = container.ipAddress(S9s::PublicIpv4Address, "-");
+    printf("%sPublicIp:%s ", greyBegin, greyEnd);
+    printf("%s%-33s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
+
+    tmp = container.ipAddress(S9s::PrivateIpv4Address, "-");
+    printf("%sPrivateIp:%s ", greyBegin, greyEnd);
+    printf("%s%s%s", ipColorBegin(tmp), STR(tmp), ipColorEnd(tmp));
+
+    printf("\n");
+    
+    //
+    // "  Server: core1                                State: RUNNING"
+    //
+    printf("%s  Server:%s ", greyBegin, greyEnd);
+    printf("%s", serverColorBegin());
+    printf("%-33s ", STR(container.parentServerName()));
+    printf("%s", serverColorEnd());
+    
+    printf("%s   State:%s ", greyBegin, greyEnd);
+    printf("%s%s%s ", 
+            clusterStateColorBegin(container.state()), 
+            STR(container.state()),
+            clusterStateColorEnd());
+
+    printf("\n");
+
+     
+    //
+    // "   Cloud: az                                  Region: Southeast Asia"
+    //
+    printf("%s   Cloud:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.provider("-")));
+
+    printf("%s  Region:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.region("-")));
+
+    printf("\n");
+
+    //
+    // "  Subnet: subnet-6a1d1c12                       CIDR: 172.31.0.0/20"
+    //
+    printf("%s  Subnet:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.subnetId("-")));
+    
+    printf("%s    CIDR:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.subnetCidr("-")));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s  VPC ID:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.subnetVpcId("-")));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%sFirewall:%s ", greyBegin, greyEnd);
+    printf("%-34s", STR(container.firewalls("-")));
+
+    printf("\n");
+
+    //
+    //
+    //
+    printf("%sTemplate:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.templateName("-")));
+
+    printf("%s Image:%s ", greyBegin, greyEnd);
+    printf("%s", STR(container.image("-")));
+
+    printf("\n");
+
+    //
+    // "      OS: ubuntu 16.04 xenial                  Arch: x86_64"
+    //
+    printf("%s      OS:%s ", greyBegin, greyEnd);
+    printf("%-36s", STR(container.osVersionString()));
+    
+    printf("%s  Arch:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(container.architecture()));
+
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s   Start:%s ", greyBegin, greyEnd);
+    printf("%s",  container.autoStart() ? "y" : "n");
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s  Limits:%s ", greyBegin, greyEnd);
+
+    tmpString = "";
+    if (container.memoryLimitGBytes() > 0)
+        tmpString.aprintf("%.0fGB RAM",  container.memoryLimitGBytes());
+
+    for (uint idx = 0u; idx < container.nVolumes(); ++idx)
+    {
+        if (!tmpString.empty())
+            printf(", ");
+        
+        ::printf("%dGB %s", 
+                container.volumeGigaBytes(idx), 
+                STR(container.volumeType(idx).toUpper()));
+    }
+
+    ::printf("%s", STR(tmpString));
+    ::printf("\n");
+
+
+    //
+    // "  Config: '/var/lib/lxc/www/config'"
+    //
+    printf("%s  Config:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(container.configFile()),
+            STR(container.configFile()),
+            fileColorEnd());
+    
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s Root FS:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            XTERM_COLOR_BLUE,
+            STR(container.rootFsPath()),
+            TERM_NORMAL);
+
+    printf("\n");
+    printf("\n");
+    printf("\n");
+}
+
 
 void
 S9sFormatter::printBackendServersSubList(
@@ -1058,7 +1398,7 @@ S9sFormatter::printContainersCompact(
     S9sOptions    *options = S9sOptions::instance();
     S9s::AddressType addressType = options->addressType();
     int            terminalWidth = options->terminalWidth();
-    S9sFormat      aliasFormat(containerColorBegin(), containerColorEnd());
+    S9sFormat      aliasFormat;
     S9sFormat      ipFormat(ipColorBegin(), ipColorEnd());
     S9sFormat      userFormat(userColorBegin(), userColorEnd());
     S9sFormat      groupFormat(groupColorBegin(), groupColorEnd());
@@ -1115,8 +1455,152 @@ S9sFormatter::printContainersCompact(
         userFormat.printf(user);
         groupFormat.printf(group);
         ipFormat.printf(ipAddress);
+
+        ::printf("%s", containerColorBegin(container.stateAsChar()));
         aliasFormat.printf(alias);
+        ::printf("%s", containerColorEnd());
+
         printf("\n");
     }
+}
+
+void 
+S9sFormatter::printHostTable(
+        const S9sCluster &cluster) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
+    S9sVariantList hostIds = cluster.hostIds();
+    S9sFormat      hostNameFormat;
+    S9sFormat      coresFormat;
+    S9sFormat      memTotalFormat;
+    S9sFormat      memUsedFormat;
+    S9sFormat      cpuUsageFormat;
+    S9sFormat      totalDiskFormat;
+    S9sFormat      freeDiskFormat;
+    S9sFormat      labelFormat;
+    S9sFormat      swapTotalFormat;
+    S9sFormat      swapFreeFormat;
+    S9sFormat      rxSpeedFormat;
+    S9sFormat      txSpeedFormat;
+    int            tableWidth;
+    S9sString      indent;
+
+    memUsedFormat.setRightJustify();
+    cpuUsageFormat.setRightJustify();
+    rxSpeedFormat.setRightJustify();
+    txSpeedFormat.setRightJustify();
+
+    for (uint idx = 0u; idx < hostIds.size(); ++idx)
+    {
+        int        hostId    = hostIds[idx].toInt();
+        S9sString  hostName  = cluster.hostName(hostId);
+        S9sVariant nCores    = cluster.nCpuCores(hostId);
+        S9sVariant memTotal  = cluster.memTotal(hostId);
+        S9sVariant memUsed   = cluster.memUsed(hostId);
+        S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
+        S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
+        S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
+        S9sVariant swapTotal = cluster.swapTotal(hostId);
+        S9sVariant swapFree  = cluster.swapFree(hostId);
+        S9sVariant rxSpeed   = cluster.rxBytesPerSecond(hostId);
+        S9sVariant txSpeed   = cluster.txBytesPerSecond(hostId);
+        
+
+        hostNameFormat.widen(hostName);
+
+        coresFormat.widen(nCores.toInt());
+        cpuUsageFormat.widen(cpuUsage.toString(S9sVariant::IntegerNumber)+"%");
+
+        memTotalFormat.widen(memTotal.toString(S9sVariant::BytesShort));
+        memUsedFormat.widen(memUsed.toString(S9sVariant::BytesShort));
+
+        totalDiskFormat.widen(totalDisk.toString(S9sVariant::BytesShort));
+        freeDiskFormat.widen(freeDisk.toString(S9sVariant::BytesShort));
+
+        swapTotalFormat.widen(swapTotal.toString(S9sVariant::BytesShort));
+        swapFreeFormat.widen(swapFree.toString(S9sVariant::BytesShort));
+
+        rxSpeedFormat.widen(rxSpeed.toString(S9sVariant::BytesPerSecShort));
+        txSpeedFormat.widen(txSpeed.toString(S9sVariant::BytesPerSecShort));
+    }
+    
+    tableWidth = 
+        hostNameFormat.realWidth() + coresFormat.realWidth() +
+        memTotalFormat.realWidth() + memUsedFormat.realWidth() +
+        cpuUsageFormat.realWidth() + totalDiskFormat.realWidth() +
+        freeDiskFormat.realWidth() + labelFormat.realWidth() +
+        rxSpeedFormat.realWidth()  + txSpeedFormat.realWidth();
+
+    if (terminalWidth - tableWidth > 0)
+        indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+
+    hostNameFormat.widen("HOSTNAME");
+
+    printf("%s", headerColorBegin());
+    printf("%s", STR(indent));
+
+    hostNameFormat.printf("HOSTNAME");
+    
+    labelFormat = coresFormat + cpuUsageFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("CPU");
+
+    labelFormat = memTotalFormat + memUsedFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("MEMORY");
+    
+    labelFormat = swapTotalFormat + swapFreeFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("SWAP"); 
+
+    labelFormat = totalDiskFormat + freeDiskFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("DISK"); 
+    
+    labelFormat = rxSpeedFormat + txSpeedFormat;
+    labelFormat.setCenterJustify();
+    labelFormat.printf("NICs"); 
+
+    printf("%s", headerColorEnd());
+    printf("\n");
+
+        
+    for (uint idx = 0u; idx < hostIds.size(); ++idx)
+    {
+        int        hostId    = hostIds[idx].toInt();
+        S9sString  hostName  = cluster.hostName(hostId);
+        S9sVariant nCores    = cluster.nCpuCores(hostId);
+        S9sVariant memTotal  = cluster.memTotal(hostId);
+        S9sVariant memUsed   = cluster.memUsed(hostId);
+        S9sVariant cpuUsage  = cluster.cpuUsagePercent(hostId);
+        S9sVariant totalDisk = cluster.totalDiskBytes(hostId);
+        S9sVariant freeDisk  = cluster.freeDiskBytes(hostId);
+        S9sVariant swapTotal = cluster.swapTotal(hostId);
+        S9sVariant swapFree  = cluster.swapFree(hostId);
+        S9sVariant rxSpeed   = cluster.rxBytesPerSecond(hostId);
+        S9sVariant txSpeed   = cluster.txBytesPerSecond(hostId);
+
+        printf("%s", STR(indent));
+        hostNameFormat.printf(hostName);
+        coresFormat.printf(nCores.toInt());
+        cpuUsageFormat.printf(
+                cpuUsage.toString(S9sVariant::IntegerNumber) + "%");
+
+        memTotalFormat.printf(memTotal.toString(S9sVariant::BytesShort));
+        memUsedFormat.printf(memUsed.toString(S9sVariant::BytesShort));
+        
+        swapTotalFormat.printf(swapTotal.toString(S9sVariant::BytesShort));
+        swapFreeFormat.printf(swapFree.toString(S9sVariant::BytesShort));
+        
+        totalDiskFormat.printf(totalDisk.toString(S9sVariant::BytesShort));
+        freeDiskFormat.printf(freeDisk.toString(S9sVariant::BytesShort));
+        
+        rxSpeedFormat.printf(rxSpeed.toString(S9sVariant::BytesPerSecShort));
+        txSpeedFormat.printf(txSpeed.toString(S9sVariant::BytesPerSecShort));
+        printf("\n");
+    }
+
+    printf("\n");
 }
 
