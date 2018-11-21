@@ -5,6 +5,9 @@
 
 #include "S9sString"
 
+class S9sObject;
+class S9sUser;
+
 class S9sFormatter
 {
     public:
@@ -13,11 +16,11 @@ class S9sFormatter
         const char *headerColorBegin() const;
         const char *headerColorEnd() const;
 
-        const char *userColorBegin() ;
-        const char *userColorEnd();
+        const char *userColorBegin() const;
+        const char *userColorEnd() const;
 
-        const char *groupColorBegin(const S9sString &groupName = "");
-        const char *groupColorEnd();
+        const char *groupColorBegin(const S9sString &groupName = "") const;
+        const char *groupColorEnd() const;
 
         const char *directoryColorBegin() const;
         const char *directoryColorEnd() const;
@@ -43,9 +46,19 @@ class S9sFormatter
         const char *containerColorBegin(int stateAsChar);
         const char *containerColorEnd();
 
+        const char *typeColorBegin() const;
+        const char *typeColorEnd() const;
+
+        const char *greyColorBegin() const;
+        const char *greyColorEnd() const;
+
         S9sString bytesToHuman(ulonglong bytes) const;
         S9sString mBytesToHuman(ulonglong mBytes) const;
         S9sString kiloBytesToHuman(ulonglong kBytes) const;
 
         S9sString percent(const ulonglong total, const ulonglong part) const;
+
+        void printObjectStat(S9sObject &object) const;
+        void printUserStat(S9sUser &user) const;
+
 };

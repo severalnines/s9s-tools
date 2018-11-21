@@ -4432,7 +4432,7 @@ S9sRpcReply::printServerStat(
     printf("%s", TERM_NORMAL);
     printf("\n");
 
-    printObjectStat(server);
+    m_formatter.printObjectStat(server);
 
     //
     // "      IP: 192.168.1.4"
@@ -6114,7 +6114,7 @@ S9sRpcReply::printClusterStat(
     ::printf("\n");
     ::printf("%s", TERM_NORMAL);
    
-    printObjectStat(cluster);
+    m_formatter.printObjectStat(cluster);
 
     //
     // 
@@ -6430,7 +6430,7 @@ S9sRpcReply::printNodeStat(
     printf("%s", TERM_NORMAL /*headerColorEnd()*/);
     printf("\n");
 
-    printObjectStat(node);
+    m_formatter.printObjectStat(node);
     
     //
     //
@@ -6717,70 +6717,6 @@ S9sRpcReply::printNodeListStat()
 }
 
 void 
-S9sRpcReply::printObjectStat(
-        S9sObject    &object)
-{
-    //S9sOptions *options = S9sOptions::instance();
-    //int         terminalWidth = options->terminalWidth();
-    const char *greyBegin = greyColorBegin();
-    const char *greyEnd   = greyColorEnd();
-    
-    //
-    // "   Name: www"
-    //
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%s", clusterColorBegin());
-    printf("%-32s ", STR(object.name()));
-    printf("%s", clusterColorEnd());
-    
-    printf("\n");
-   
-    //
-    //
-    //
-    printf("%sCDT path:%s ", greyBegin, greyEnd);
-    printf("%s", m_formatter.folderColorBegin());
-    printf("%-32s ", STR(object.cdtPath()));
-    printf("%s", m_formatter.folderColorEnd());
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%s   Class:%s ", greyBegin, greyEnd);
-    printf("%s%-33s%s ", 
-            typeColorBegin(), 
-            STR(object.className()), 
-            typeColorEnd());
-    
-    printf("%s   Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(object.ownerName()), userColorEnd(),
-            groupColorBegin(object.groupOwnerName()), 
-            STR(object.groupOwnerName()), 
-            groupColorEnd());
-    
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-38s", STR(object.id("-")));
-
-    printf("%s ACL:%s ", greyBegin, greyEnd);
-    printf("%s", STR(object.aclShortString()));
-
-#if 0
-    printf("\n");
-    printf(
-        "--------------------------------------------------------------------"
-        "------------");
-#endif
-    printf("\n");
-}
-
-void 
 S9sRpcReply::printContainerStat(
         S9sContainer &container)
 {
@@ -6811,7 +6747,7 @@ S9sRpcReply::printContainerStat(
         printf(" ");
     printf("%s", TERM_NORMAL);
     
-    printObjectStat(container);
+    m_formatter.printObjectStat(container);
 
 
     //
@@ -9239,129 +9175,10 @@ S9sRpcReply::printUserListStat()
         if (!groupFilter.empty() && !user.isMemberOf(groupFilter))
             continue;
 
-        printUserStat(user);
+        m_formatter.printUserStat(user);
     }
 }
 
-void 
-S9sRpcReply::printUserStat(
-        S9sUser &user)
-{
-    S9sOptions *options = S9sOptions::instance();
-    int         terminalWidth = options->terminalWidth();
-    const char *greyBegin = greyColorBegin();
-    const char *greyEnd   = greyColorEnd();
-    S9sString   title;
-    
-    //
-    // The title that is in inverse. 
-    //
-#if 1
-    if (!user.fullName().empty())
-        title.sprintf("%s", STR(user.fullName()));
-    else
-#endif
-        title.sprintf("%s", STR(user.userName()));
-
-    printf("%s", TERM_INVERSE);
-    printf("%s", STR(title));
-    for (int n = title.length(); n < terminalWidth; ++n)
-        printf(" ");
-    printf("%s", TERM_NORMAL);
-   
-    printObjectStat(user);
-    
-    //
-    // "    Name: galera_001                          Owner: pipas/users"
-    //
-#if 0
-    printf("%s    Name:%s ", greyBegin, greyEnd);
-    printf("%s", userColorBegin());
-    printf("%-25s ", STR(user.userName()));
-    printf("%s", userColorEnd());
-    
-    printf("%s   Owner:%s ", greyBegin, greyEnd);
-    printf("%s%s%s/%s%s%s ", 
-            userColorBegin(), STR(user.ownerName()), userColorEnd(),
-            groupColorBegin(user.groupOwnerName()), 
-            STR(user.groupOwnerName()), 
-            groupColorEnd());
-    
-    printf("\n");
-
-    //
-    // "      ID: 3                         Disabled: no"
-    //
-    printf("%s      ID:%s ", greyBegin, greyEnd);
-    printf("%-5d ", user.userId());
-
-    printf("                    %sDisabled:%s ", greyBegin, greyEnd);
-    printf("%s", user.isDisabled() ? "yes" : "no");
-    printf("\n");
-#endif
-    
-    //
-    // "Fullname: László Pere                  Email: laszlo@severalnines.com"
-    //
-    printf("%sFullname:%s ", greyBegin, greyEnd);
-    printf("%-28s ", STR(user.fullName("-")));
-    printf("\n");
-   
-    //
-    //
-    //
-    printf("%s   Email:%s ", greyBegin, greyEnd);
-    printf("%s ", STR(user.emailAddress("-")));
-    printf("\n");
-    
-    //
-    //
-    //
-    printf("%sDisabled:%s ", greyBegin, greyEnd);
-    printf("%s", user.isDisabled() ? "yes" : "no");
-    printf("\n");
-
-    
-    //
-    // " Suspend: no                   Failed logins: 0"
-    //
-    printf("%s Suspend:%s ", greyBegin, greyEnd);
-    printf("%-19s ", user.isSuspended() ? "yes" : "no");
-    
-    printf("%s         Failed logins:%s ", greyBegin, greyEnd);
-    printf("%d", user.nFailedLogins());
-    printf("\n");
-    
-    //
-    // "  Groups: users"
-    //
-    printf("%s  Groups:%s ", greyBegin, greyEnd);
-    printf("%-30s ", STR(user.groupNames(", ")));
-    printf("\n");
-
-    //
-    // " Created: 2017-10-26T12:08:55.945Z"
-    //
-    printf("%s Created:%s ", greyBegin, greyEnd);
-    printf("%-30s ", STR(user.createdString("-")));
-    printf("\n");
-
-    //
-    // "   Login: 2017-10-26T12:10:37.762Z"
-    //
-    printf("%s   Login:%s ", greyBegin, greyEnd);
-    printf("%-30s ", STR(user.lastLoginString("-")));
-    printf("\n");
-    
-    //
-    // 
-    //
-    printf("%s Failure:%s ", greyBegin, greyEnd);
-    printf("%-24s ", STR(user.failedLoginString("-")));
-    
-    
-    printf("\n\n");
-}
 
 /**
  * Prints the user list in short format.

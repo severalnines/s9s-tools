@@ -93,7 +93,6 @@ class S9sRpcReply : public S9sVariantMap
         // Methods handling users.
         void printUserList();
         void printUserListStat();
-        void printUserStat(S9sUser &user);
 
         S9sUser getUser(const S9sString &userName);
 
@@ -133,8 +132,6 @@ class S9sRpcReply : public S9sVariantMap
         S9sContainer container(
                 const S9sString &serverName, 
                 const S9sString &containerName);
-
-        void printObjectStat(S9sObject &object);
 
         void printContainers();
         void printContainersLong();
