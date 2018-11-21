@@ -7,6 +7,8 @@
 
 class S9sObject;
 class S9sUser;
+class S9sCluster;
+class S9sNode;
 
 class S9sFormatter
 {
@@ -37,8 +39,11 @@ class S9sFormatter
         const char *clusterColorBegin() const;
         const char *clusterColorEnd() const;
 
-        const char *ipColorBegin(const S9sString &ip = "");
-        const char *ipColorEnd(const S9sString &ip = "");
+        const char *ipColorBegin(const S9sString &ip = "") const;
+        const char *ipColorEnd(const S9sString &ip = "") const;
+
+        const char *fileColorBegin(const S9sString &fileName) const;
+        const char *fileColorEnd() const;
 
         const char *serverColorBegin();
         const char *serverColorEnd();
@@ -60,5 +65,7 @@ class S9sFormatter
 
         void printObjectStat(S9sObject &object) const;
         void printUserStat(S9sUser &user) const;
+        void printNodeStat(S9sCluster &cluster, S9sNode &node) const;
 
+        void printBackendServersSubList(const S9sNode &node) const;
 };
