@@ -92,7 +92,7 @@ class S9sRpcReply : public S9sVariantMap
         
         // Methods handling users.
         void printUserList();
-        void printUserListStat();
+        void printUsersStat();
 
         S9sUser getUser(const S9sString &userName);
 
@@ -266,14 +266,14 @@ class S9sRpcReply : public S9sVariantMap
 
         void printClusterListBrief();
         void printClusterListLong();
-        void printClusterListStat();
+        void printClustersStat();
         
         void printAlarmListLong();
         
         void printHostTable(S9sCluster &cluster);
         void printClusterStat(S9sCluster &cluster);
         
-        void printNodeListStat();
+        void printNodesStat();
         void printNodeListBrief();
         void printNodeListLong();
 

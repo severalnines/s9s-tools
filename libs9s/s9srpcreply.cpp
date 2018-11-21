@@ -373,7 +373,7 @@ S9sRpcReply::printClusterList()
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
-        printClusterListStat();
+        printClustersStat();
     else if (options->isLongRequested())
         printClusterListLong();
     else
@@ -1615,7 +1615,7 @@ S9sRpcReply::printNodeList()
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
-        printNodeListStat();
+        printNodesStat();
     else if (options->isLongRequested())
         printNodeListLong();
     else
@@ -2573,8 +2573,6 @@ S9sRpcReply::printAlarmList()
         printf("%s\n", STR(toString()));
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-    //else if (options->isStatRequested())
-    //    printClusterListStat();
     else if (options->isLongRequested())
         printAlarmListLong();
     //else
@@ -5909,9 +5907,8 @@ S9sRpcReply::printGraph()
     return success;
 }
 
-
 void 
-S9sRpcReply::printNodeListStat()
+S9sRpcReply::printNodesStat()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = clusters();
@@ -5967,7 +5964,7 @@ S9sRpcReply::printContainersStat()
 }
 
 void 
-S9sRpcReply::printClusterListStat()
+S9sRpcReply::printClustersStat()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = clusters();
@@ -6718,8 +6715,6 @@ S9sRpcReply::printJobListLong()
 }
 
 /**
- * Prints the job log in its short format. In this format only the messages are
- * printed.
  *
 
 {
@@ -8169,7 +8164,7 @@ S9sRpcReply::printUserList()
     }
 
     if (options->isStatRequested())
-        printUserListStat();
+        printUsersStat();
     else if (options->isLongRequested())
         printUserListLong();
     else
@@ -8177,7 +8172,7 @@ S9sRpcReply::printUserList()
 }
 
 void 
-S9sRpcReply::printUserListStat()
+S9sRpcReply::printUsersStat()
 {
     S9sVariantList  userList    = operator[]("users").toVariantList();
     S9sOptions     *options     = S9sOptions::instance();
