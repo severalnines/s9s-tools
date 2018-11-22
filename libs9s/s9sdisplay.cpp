@@ -288,19 +288,11 @@ S9sDisplay::startScreen()
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-    if (m_refreshCounter == 0 || 
-            columns() == w.ws_col ||
-            rows()    == w.ws_row)
-    {
-        //::printf("%s", TERM_CLEAR_SCREEN);
-        ::printf("%s", TERM_HOME);
-    } else {
-        ::printf("%s", TERM_HOME);
-    }
-    
     m_columns = w.ws_col;
     m_rows    = w.ws_row;
     m_lineCounter = 0;
+        
+    ::printf("%s", TERM_HOME);
 }
 
 /**
