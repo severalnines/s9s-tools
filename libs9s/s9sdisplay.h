@@ -49,7 +49,7 @@
 class S9sDisplay : public S9sThread
 {
     public:
-        S9sDisplay(bool interactive = true);
+        S9sDisplay(bool interactive = true, bool rawTerminal = true);
         virtual ~S9sDisplay();
 
         bool setOutputFileName(const S9sString &fileName);
@@ -81,10 +81,15 @@ class S9sDisplay : public S9sThread
         char rotatingCharacter() const;
 
     private:
-        void setConioTerminalMode(bool interactive);
+        void setConioTerminalMode(
+                bool interactive,
+                bool rawTerminal);
+
         int kbhit();
 
     protected:
+        bool                         m_rawTerminal;
+        bool                         m_interactive;
         S9sMutex                     m_mutex;
         int                          m_refreshCounter;
         

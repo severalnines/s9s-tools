@@ -111,11 +111,16 @@ class S9sMonitor :
         int                          m_leftKeyPresses;
         int                          m_rightKeyPresses;
 
+        S9sDisplayList               m_nodeListWidget;
+        S9sDisplayList               m_nodeViewWidget;
+
         S9sDisplayList               m_containerListWidget;
         S9sDisplayList               m_serverListWidget;
+        
 
         S9sDisplayList               m_eventListWidget;
         S9sDisplayList               m_eventViewWidget;
+
         S9sEvent                     m_selectedEvent;
 };
 

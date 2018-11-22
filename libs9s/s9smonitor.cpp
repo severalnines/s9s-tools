@@ -49,8 +49,12 @@ S9sMonitor::S9sMonitor(
     m_leftKeyPresses(0),
     m_rightKeyPresses(0)
 {
+    m_nodeListWidget.setSelectionEnabled(false);
+    m_nodeViewWidget.setActive(true);
+
     m_eventListWidget.setSelectionEnabled(false);
     m_eventViewWidget.setActive(false);
+
     setDisplayMode(mode);
 }
 
@@ -67,6 +71,7 @@ S9sMonitor::setDisplayMode(
     switch (m_displayMode)
     {
         case PrintEvents:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
@@ -75,6 +80,7 @@ S9sMonitor::setDisplayMode(
             break;
 
         case WatchEvents:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(true);
@@ -83,7 +89,16 @@ S9sMonitor::setDisplayMode(
             break;
 
         case WatchNodes:
+            m_nodeListWidget.setVisible(true);
+            m_containerListWidget.setVisible(false);
+            m_serverListWidget.setVisible(false);
+            m_eventListWidget.setVisible(false);
+            
+            m_eventViewWidget.setVisible(false);
+            break;
+
         case WatchClusters:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
@@ -92,6 +107,7 @@ S9sMonitor::setDisplayMode(
             break;
 
         case WatchJobs:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
@@ -100,6 +116,7 @@ S9sMonitor::setDisplayMode(
             break;
 
         case WatchServers:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(false);
             m_serverListWidget.setVisible(true);
             m_eventListWidget.setVisible(false);
@@ -108,14 +125,14 @@ S9sMonitor::setDisplayMode(
             break;
 
         case WatchContainers:
+            m_nodeListWidget.setVisible(false);
             m_containerListWidget.setVisible(true);
             m_serverListWidget.setVisible(false);
             m_eventListWidget.setVisible(false);
             
             m_eventViewWidget.setVisible(false);
             break;
-    }
-    
+    } 
 }
 
 /**
@@ -1047,7 +1064,9 @@ S9sMonitor::printEventList()
 
     if (m_eventListWidget.selectionIndex() < (int) m_events.size() &&
             m_eventListWidget.selectionIndex() >= 0)
+    {
         m_selectedEvent = m_events[m_eventListWidget.selectionIndex()];
+    }
 
     /*
      * Layout.
@@ -1456,8 +1475,7 @@ S9sMonitor::processKey(
             exit(0);
             break;
 
-        case 0x0d: 
-            // The enter key...
+        case S9S_KEY_ENTER: 
             if (m_displayMode == WatchEvents)
             {
                 if (!m_eventListWidget.isSelectionEnabled())

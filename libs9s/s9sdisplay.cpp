@@ -56,8 +56,11 @@ void reset_terminal_mode()
  *   UI will be provided.
  */
 S9sDisplay::S9sDisplay(
-        bool interactive) :
+        bool interactive,
+        bool rawTerminal) :
     S9sThread(),
+    m_rawTerminal(rawTerminal),
+    m_interactive(interactive),
     m_refreshCounter(0),
     m_columns(0),
     m_rows(0),
@@ -68,12 +71,13 @@ S9sDisplay::S9sDisplay(
     m_lastX      = 0;
     m_lastY      = 0;
 
-    setConioTerminalMode(interactive);
+    setConioTerminalMode(interactive, rawTerminal);
 }
 
 S9sDisplay::~S9sDisplay()
 {
-    reset_terminal_mode();
+    if (m_rawTerminal || m_interactive)
+        reset_terminal_mode();
 }
 
 bool
@@ -328,9 +332,15 @@ S9sDisplay::printMiddle(
 void
 S9sDisplay::printNewLine()
 {
-    ::printf("%s", TERM_ERASE_EOL);
-    ::printf("\n\r");
-    ::printf("%s", TERM_NORMAL);
+    if (m_rawTerminal)
+    {
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ::printf("%s", TERM_NORMAL);
+    } else {
+        ::printf("\n");
+    }
+
     ++m_lineCounter;
 }
 
@@ -339,19 +349,23 @@ S9sDisplay::printNewLine()
  */
 void 
 S9sDisplay::setConioTerminalMode(
-        bool interactive)
+        bool interactive,
+        bool rawTerminal)
 {
     struct termios new_termios;
 
-    /* take two copies - one for now, one for later */
-    tcgetattr(0, &orig_termios1);
-    memcpy(&new_termios, &orig_termios1, sizeof(new_termios));
+    if (rawTerminal)
+    {
+        /* take two copies - one for now, one for later */
+        tcgetattr(0, &orig_termios1);
+        memcpy(&new_termios, &orig_termios1, sizeof(new_termios));
 
-    /* register cleanup handler, and set the new terminal mode */
-    atexit(reset_terminal_mode);
-    cfmakeraw(&new_termios);
-    tcsetattr(0, TCSANOW, &new_termios);
-    
+        /* register cleanup handler, and set the new terminal mode */
+        atexit(reset_terminal_mode);
+        cfmakeraw(&new_termios);
+        tcsetattr(0, TCSANOW, &new_termios);
+    }
+
     if (interactive)
     {
         ::printf("%s", TERM_CURSOR_OFF);
