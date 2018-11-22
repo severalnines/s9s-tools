@@ -22,6 +22,7 @@ OPTION_VENDOR="percona"
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
+TEST_USER_NAME="laszlo"
 
 cd $MYDIR
 source include.sh
@@ -116,6 +117,11 @@ done
 function testCreateUser()
 {
     print_title "Creating a User"
+    cat <<EOF
+Creating a user with superuser privileges (member of the 'admins' group) that 
+will perform most of the steps in these tests.
+
+EOF
 
     mys9s user \
         --create \
@@ -149,7 +155,11 @@ function testCreateCluster()
     local node_name
 
     print_title "Creating a Galera Cluster"
-    
+    cat <<EOF
+This test will create a Galera cluster with $OPTION_NUMBER_OF_NODES node(s).
+
+EOF
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -198,6 +208,12 @@ function testCreateCluster()
     fi
 
     mys9s cluster --list --long
+
+    check_cluster \
+        --cluster         "$CLUSTER_NAME" \
+        --owner           "pipas" \
+        --group           "admins" \
+        --cdt-path        "/"
 }
 
 function testOtherUser()
@@ -209,23 +225,32 @@ created cluster because it is not the owner and is in a completely different
 user group.
 
 EOF
-    mys9s user --create --group=users --new-password=secret fabian
+
+    mys9s user \
+        --create \
+        --group=users \
+        --new-password=secret \
+        --email-address="laszlo@severalnines.com" \
+        --first-name="Laszlo" \
+        --last-name="Pere"   \
+        "$TEST_USER_NAME"
+
     check_exit_code_no_job $?
 
     mys9s user --list --long
-    if s9s user --list | grep --quiet fabian; then
-        success "  o User 'fabian' exists, ok."
+    if s9s user --list | grep --quiet $TEST_USER_NAME; then
+        success "  o User '$TEST_USER_NAME' exists, ok."
     else
-        failure "User 'fabian' is not among the users."
+        failure "User '$TEST_USER_NAME' is not among the users."
     fi
 
-    mys9s cluster --list --long --cmon-user=fabian --password=secret
-    if s9s cluster --list --cmon-user=fabian --password=secret | \
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
         grep --quiet "$CLUSTER_NAME"; 
     then
-        failure "The user 'fabian' should not see the cluster."
+        failure "The user '$TEST_USER_NAME' should not see the cluster."
     else
-        success "  o User 'fabian' can't see the cluster, ok."
+        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
     fi
 
     #
@@ -241,19 +266,19 @@ EOF
     mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
 
-    mys9s cluster --list --long --cmon-user=fabian --password=secret
-    if s9s cluster --list --cmon-user=fabian --password=secret | \
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
         grep --quiet "$CLUSTER_NAME"; 
     then
-        success "  o User 'fabian' can see the cluster, ok."
+        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
     else
-        failure "The user 'fabian' should see the cluster."
+        failure "The user '$TEST_USER_NAME' should see the cluster."
     fi
    
     #
     #
     #
-    print_title "Removing ACL Entry"
+    print_title "Removing Group ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
@@ -263,13 +288,13 @@ EOF
     mys9s tree --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     
-    mys9s cluster --list --long --cmon-user=fabian --password=secret
-    if s9s cluster --list --cmon-user=fabian --password=secret | \
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
         grep --quiet "$CLUSTER_NAME"; 
     then
-        failure "The user 'fabian' should not see the cluster."
+        failure "The user '$TEST_USER_NAME' should not see the cluster."
     else
-        success "  o User 'fabian' can't see the cluster, ok."
+        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
     fi
     
     #
@@ -277,21 +302,105 @@ EOF
     #
     print_title "Adding User ACL Entry"
     cat <<EOF
-We add an ACL entry to the cluster for the user 'fabian', then we check that the
+We add an ACL entry to the cluster for the user '$TEST_USER_NAME', then we check that the
 user previously created can see the cluster because of this ACL entry.
 
 EOF
 
-    mys9s tree --add-acl --acl="user:fabian:rw-" "$CLUSTER_NAME"
+    mys9s tree --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
 
-    mys9s cluster --list --long --cmon-user=fabian --password=secret
-    if s9s cluster --list --cmon-user=fabian --password=secret | \
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
         grep --quiet "$CLUSTER_NAME"; 
     then
-        success "  o User 'fabian' can see the cluster, ok."
+        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
     else
-        failure "The user 'fabian' should see the cluster."
+        failure "The user '$TEST_USER_NAME' should see the cluster."
+    fi
+    
+    #
+    #
+    #
+    print_title "Removing User ACL Entry"
+    cat <<EOF
+We remove the ACL entry and then check the everything is back, the user do not
+see the cluster at all.
+
+EOF
+
+    mys9s tree --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
+    check_exit_code_no_job $?
+    
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        failure "The user '$TEST_USER_NAME' should not see the cluster."
+    else
+        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
+    fi
+}
+
+function testAddGroup()
+{
+    local tmp
+
+    print_title "Adding User to Second Group"
+    cat <<EOF
+This test will add the user to the 'admins' group as secondary group while the
+primary group remains the 'users' group. Then the access to the cluster is 
+checked.
+
+EOF
+
+    mys9s user \
+        --add-to-group \
+        --group=admins \
+        "$TEST_USER_NAME"
+
+    check_exit_code_no_job $?
+
+    mys9s user --stat "$TEST_USER_NAME"
+    tmp=$(s9s user --list laszlo --user-format="%G")
+    if [ "$tmp" == "users,admins" ]; then
+        success "  o User is a member of the admins group, ok."
+    else
+        failure "The user's groups should not be '$tmp'."
+    fi
+
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
+    else
+        failure "The user '$TEST_USER_NAME' should see the cluster."
+    fi
+
+    #
+    #
+    #
+    print_title "Removing User from Group"
+    cat <<EOF
+Removing user from the 'admins' group, checking the access rights.
+
+EOF
+
+    mys9s user \
+        --remove-from-group \
+        --group=admins \
+        "$TEST_USER_NAME"
+
+    check_exit_code_no_job $?
+    
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        failure "The user '$TEST_USER_NAME' should not see the cluster."
+    else
+        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
     fi
 }
 
@@ -311,6 +420,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateUser
         runFunctionalTest testCreateCluster
         runFunctionalTest testOtherUser
+        runFunctionalTest testAddGroup
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -320,6 +430,7 @@ else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateCluster
     runFunctionalTest testOtherUser
+    runFunctionalTest testAddGroup
 fi
 
 endTests

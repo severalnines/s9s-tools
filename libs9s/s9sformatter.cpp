@@ -429,6 +429,9 @@ S9sFormatter::objectColorBegin(
                 className == "CmonCloudServer")
         {
             return serverColorBegin(object.stateAsChar());
+        } else if (className == "CmonUser")
+        {
+            return userColorBegin();
         }
     } else {
         return "";
