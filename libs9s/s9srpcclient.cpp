@@ -4998,7 +4998,7 @@ S9sRpcClient::removeAcl()
 }
 
 /**
- * Sends a request to add an ACL.
+ * Sends a request to change the owner of a CDT entry. 
  */
 bool
 S9sRpcClient::chOwn()
@@ -5025,6 +5025,7 @@ S9sRpcClient::chOwn()
    
     request["operation"]        = "chown";
     request["path"]             = options->extraArgument(0u);
+    request["recursive"]        = options->isRecursiveRequested();
     request["owner_user_name"]  = options->ownerUserName();
     request["owner_group_name"] = options->ownerGroupName();
 

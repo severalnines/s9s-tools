@@ -3258,6 +3258,9 @@ S9sOptions::isAllRequested() const
     return getBool("all");
 }
 
+/**
+ * \returns True if the --recursive command line option was provided.
+ */
 bool
 S9sOptions::isRecursiveRequested() const
 {
@@ -4899,6 +4902,8 @@ S9sOptions::printHelpTree()
 "  --acl=ACL                  One ACL entry to be added or removed.\n"
 "  --all                      Print also the hidden entries.\n"
 "  --owner=USER[:GROUP]       Owner and group of the CDT entry.\n"
+"  --recursive                Print/process also the tree sub-entries.\n"
+"  --refresh                  Recollect the data.\n"
 "\n"
     );
 }

@@ -52,6 +52,15 @@ cat(1) standard utility is used to print normal files.
 Change the ownership of an object. The new owner (and optionally the group
 owner) should be passed through the \fB\-\^\-owner\fP command line option.
 
+.B EXAMPLE
+.nf
+mys9s tree \\
+    --chown \\
+    --owner=admin:admins \\
+    --recursive \\
+    /tmp
+.fi
+
 .TP 
 .B \-\^\-delete
 Remove CDT entries.
@@ -202,9 +211,19 @@ provided.
 The user name and group name of the owner.
 
 .TP
+.BI \-\^\-recursive
+Print also the sub-items of the tree. The \fB\-\^\-chown\fP will change the
+ownership for sub-items too. 
+
+Please note that the \fB\-\^\-tree\fP is always recursive, no need for this
+command line option there.
+
+.TP
 .BI \-\^\-refresh
 If this command line option is provided the controller will collect the data, 
 refresh the information before sending it back. 
+
+
 
 .\" 
 .\" The examples. The are very helpful for people just started to use the

@@ -36,14 +36,14 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]...
 
-  $MYNAME - Tests moving objects in the Cmon Directory Tree.
+  $MYNAME - Test to check who sees the cluster and who won't.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
  --print-json     Print the JSON messages sent and received.
  --log            Print the logs while waiting for the job to be ended.
  --print-commands Do not print unit test info, print the executed commands.
- --install           Just install the cluster and exit.
+ --install        Just install the cluster and exit.
  --reset-config   Remove and re-generate the ~/.s9s directory.
  --server=SERVER  Use the given server to create containers.
 
@@ -113,6 +113,30 @@ while true; do
             ;;
     esac
 done
+
+function user_should_see_the_cluster()
+{
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
+    else
+        failure "The user '$TEST_USER_NAME' should see the cluster."
+    fi
+}
+
+function user_should_not_see_the_cluster()
+{
+    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
+    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        failure "The user '$TEST_USER_NAME' should not see the cluster."
+    else
+        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
+    fi
+}
 
 function testCreateUser()
 {
@@ -244,14 +268,7 @@ EOF
         failure "User '$TEST_USER_NAME' is not among the users."
     fi
 
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        failure "The user '$TEST_USER_NAME' should not see the cluster."
-    else
-        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
-    fi
+    user_should_not_see_the_cluster
 
     #
     #
@@ -265,16 +282,8 @@ EOF
 
     mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
+    user_should_see_the_cluster
 
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
-    else
-        failure "The user '$TEST_USER_NAME' should see the cluster."
-    fi
-   
     #
     #
     #
@@ -287,15 +296,7 @@ EOF
 
     mys9s tree --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
-    
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        failure "The user '$TEST_USER_NAME' should not see the cluster."
-    else
-        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
-    fi
+    user_should_not_see_the_cluster
     
     #
     #
@@ -309,15 +310,7 @@ EOF
 
     mys9s tree --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
-
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
-    else
-        failure "The user '$TEST_USER_NAME' should see the cluster."
-    fi
+    user_should_see_the_cluster
     
     #
     #
@@ -331,15 +324,7 @@ EOF
 
     mys9s tree --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
-    
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        failure "The user '$TEST_USER_NAME' should not see the cluster."
-    else
-        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
-    fi
+    user_should_not_see_the_cluster
 }
 
 function testAddGroup()
@@ -369,14 +354,7 @@ EOF
         failure "The user's groups should not be '$tmp'."
     fi
 
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        success "  o User '$TEST_USER_NAME' can see the cluster, ok."
-    else
-        failure "The user '$TEST_USER_NAME' should see the cluster."
-    fi
+    user_should_see_the_cluster
 
     #
     #
@@ -393,16 +371,33 @@ EOF
         "$TEST_USER_NAME"
 
     check_exit_code_no_job $?
-    
-    mys9s cluster --list --long --cmon-user=$TEST_USER_NAME --password=secret
-    if s9s cluster --list --cmon-user=$TEST_USER_NAME --password=secret | \
-        grep --quiet "$CLUSTER_NAME"; 
-    then
-        failure "The user '$TEST_USER_NAME' should not see the cluster."
-    else
-        success "  o User '$TEST_USER_NAME' can't see the cluster, ok."
-    fi
+    user_should_not_see_the_cluster
 }
+
+function testChOwn()
+{
+
+    print_title "Changing the Ownership"
+
+    s9s tree \
+        --chown \
+        --recursive \
+        --owner=$TEST_USER_NAME:users \
+        "/$CLUSTER_NAME"
+
+    check_exit_code_no_job $?
+    user_should_see_the_cluster
+
+    s9s tree \
+        --chown \
+        --recursive \
+        --owner=pipas:admins \
+        "/$CLUSTER_NAME"
+
+    check_exit_code_no_job $?
+    user_should_not_see_the_cluster
+}
+
 
 #
 # Running the requested tests.
@@ -421,6 +416,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateCluster
         runFunctionalTest testOtherUser
         runFunctionalTest testAddGroup
+        runFunctionalTest testChOwn
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -431,6 +427,7 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testOtherUser
     runFunctionalTest testAddGroup
+    runFunctionalTest testChOwn
 fi
 
 endTests
