@@ -38,23 +38,24 @@ Usage:
  --print-commands    Do not print unit test info, print the executed commands.
  --install           Just install the cluster and exit.
  --reset-config      Remove and re-generate the ~/.s9s directory.
+ 
  --provider-version=STRING The SQL server provider version.
 
 SUPPORTED TESTS:
   o testCreateCluster    Creating a PostgreSql cluster.
-  o testAddNode
-  o testStopStartNode
+  o testAddNode          Adds a slave to the cluster.
+  o testStopStartNode    Stopping then starting a node.
   o testConfig           Reading and changing the configuration.
   o testConfigFail       Testing configuration changes that should fail.
   o testCreateAccount01  Create an account on the cluster.
   o testCreateAccount02  Create more accounts on the cluster.
-  o testCreateDatabase
-  o testCreateBackup
-  o testRestoreBackup
-  o testRemoveBackup
-  o testRunScript
-  o testRollingRestart
-  o testDrop
+  o testCreateDatabase   Creates database and account.
+  o testCreateBackup     Creates a backup.
+  o testRestoreBackup    Restores a backup.
+  o testRemoveBackup     Removes a backup.
+  o testRunScript        Runs a JS script on the cluster.
+  o testRollingRestart   Rolling restart test.
+  o testDrop             Drops the previously created cluster.
 
 EOF
     exit 1
@@ -505,14 +506,9 @@ function testCreateDatabase()
     mys9s cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
-        --db-name="testCreateDatabase" \
-        --batch
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating a database."
-    fi
+        --db-name="testCreateDatabase"
+   
+    check_exit_code_no_job $?
     
     #
     # This command will create a new account on the cluster and grant some
@@ -522,14 +518,9 @@ function testCreateDatabase()
         --create \
         --cluster-id=$CLUSTER_ID \
         --account="pipas:password" \
-        --privileges="testCreateDatabase.*:INSERT,UPDATE" \
-        --batch
+        --privileges="testCreateDatabase.*:INSERT,UPDATE"
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating account."
-    fi
+    check_exit_code_no_job $?
     
     #
     # This command will create a new account on the cluster and grant some
@@ -542,11 +533,7 @@ function testCreateDatabase()
         --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
         --batch 
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting privileges."
-    fi
+    check_exit_code_no_job $?
 }
 
 #
@@ -645,7 +632,7 @@ function testRemoveBackup()
 }
 
 #
-# This will remove a backup. 
+# 
 #
 function testRunScript()
 {
@@ -711,7 +698,7 @@ function testDrop()
     print_title "Dropping the Cluster"
 
     #
-    # Starting the cluster.
+    # 
     #
     mys9s cluster \
         --drop \
