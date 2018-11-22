@@ -663,8 +663,10 @@ S9sFormatter::printNodeStat(
     //
     //
     //
-    printf("%s      IP:%s ", greyBegin, greyEnd);
-    printf("%-27s ", STR(node.ipAddress()));
+    ::printf("%s      IP:%s ", greyBegin, greyEnd);
+    ::printf("%s", ipColorBegin(node.ipAddress()));
+    ::printf("%-27s ", STR(node.ipAddress()));
+    ::printf("%s", ipColorEnd());
     //printf("\n");
     
     printf("          %sPort:%s ", greyBegin, greyEnd);
@@ -686,7 +688,8 @@ S9sFormatter::printNodeStat(
             clusterColorEnd(),
             cluster.clusterId());
     printf("\n");
-      
+     
+    #if 0
     //
     // "   Class: CmonPostgreSqlHost         Type: postgres"
     //
@@ -699,7 +702,8 @@ S9sFormatter::printNodeStat(
     printf("%s  Type:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.nodeType()));
     printf("\n");
-   
+    #endif
+
     //
     //
     //
