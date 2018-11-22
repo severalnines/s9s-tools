@@ -20,6 +20,7 @@
 #include "s9sserver.h"
 #include "S9sContainer"
 #include "S9sRegExp"
+#include "S9sFormatter"
 
 //#define DEBUG
 //#define WARNING
@@ -682,10 +683,21 @@ S9sServer::diskNames() const
     {
         S9sVariantMap disk   = diskList[idx1].toVariantMap();
         S9sString     model  = disk["model"].toString();
+        //ulonglong     sizeMb = disk["total_mb"].toULongLong();
         bool          isHw   = disk["is_hardware_storage"].toBoolean();
 
         if (!isHw)
             continue;
+
+        #if 0
+        // These sizes are bogus, lshw reports wrong values.
+        if (sizeMb > 0ull)
+        {
+            model.sprintf("%s (%s)",
+                    STR(model),
+                    STR(S9sFormatter::mBytesToHuman(sizeMb)));
+        }
+        #endif
 
         diskModels[model] += 1;
     }

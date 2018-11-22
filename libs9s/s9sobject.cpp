@@ -223,6 +223,9 @@ S9sObject::id(
 {
     S9sString retval = property("id").toString();
 
+    if (hasProperty("hostId"))
+        retval = property("hostId").toString();
+
     if (retval.empty())
         retval = defaultValue;
 

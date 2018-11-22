@@ -199,7 +199,7 @@ S9sFormatter::clusterColorEnd() const
 
 S9sString 
 S9sFormatter::bytesToHuman(
-        ulonglong bytes) const
+        ulonglong bytes)
 {
     S9sOptions *options = S9sOptions::instance();
     S9sString   retval;
@@ -449,14 +449,14 @@ S9sFormatter::objectColorEnd() const
 
 S9sString 
 S9sFormatter::mBytesToHuman(
-        ulonglong mBytes) const
+        ulonglong mBytes)
 {
     return bytesToHuman(mBytes * (1024ull * 1024ull));
 }
 
 S9sString 
 S9sFormatter::kiloBytesToHuman(
-        ulonglong kBytes) const
+        ulonglong kBytes)
 {
     return bytesToHuman(kBytes * 1024ull);
 }
@@ -707,9 +707,10 @@ S9sFormatter::printNodeStat(
     //
     //
     //
-    printf("%s  Status:%s ", greyBegin, greyEnd);
-    printf("%-35s", STR(node.hostStatus()));
-    //printf("\n");
+    ::printf("%s  Status:%s ", greyBegin, greyEnd);
+    ::printf("%s", hostStateColorBegin(node.hostStatus()));
+    ::printf("%-35s", STR(node.hostStatus()));
+    ::printf("%s", hostStateColorEnd());
     
     printf("   %sRole:%s ", greyBegin, greyEnd);
     printf("%s", STR(node.role()));
@@ -1402,6 +1403,7 @@ S9sFormatter::printContainersCompact(
     S9sOptions    *options = S9sOptions::instance();
     S9s::AddressType addressType = options->addressType();
     int            terminalWidth = options->terminalWidth();
+    S9sFormat      providerFormat;
     S9sFormat      aliasFormat;
     S9sFormat      ipFormat(ipColorBegin(), ipColorEnd());
     S9sFormat      userFormat(userColorBegin(), userColorEnd());
@@ -1415,11 +1417,13 @@ S9sFormatter::printContainersCompact(
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
         const S9sContainer container = containers[idx].toContainer();
+        S9sString          provider  = container.provider("-");
         S9sString          user      = container.ownerName();
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
         S9sString          ipAddress = container.ipAddress(addressType, "-");
 
+        providerFormat.widen(provider);
         userFormat.widen(user);
         groupFormat.widen(group);
         aliasFormat.widen(alias);
@@ -1433,10 +1437,17 @@ S9sFormatter::printContainersCompact(
     
     if (terminalWidth - tableWidth > 0)
         indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+    
+    providerFormat.widen("CLOUD");
+    userFormat.widen("OWNER");
+    groupFormat.widen("GROUP");
+    ipFormat.widen("IP ADDRESS");
+    aliasFormat.widen("NAME");
 
     printf("%s", headerColorBegin());
     printf("%s", STR(indent));
     printf("S ");
+    providerFormat.printf("CLOUD", false);
     userFormat.printf("OWNER", false);
     groupFormat.printf("GROUP", false);
     ipFormat.printf("IP ADDRESS", false);
@@ -1448,6 +1459,7 @@ S9sFormatter::printContainersCompact(
     for (uint idx = 0u; idx < containers.size(); ++idx)
     {
         const S9sContainer container = containers[idx].toContainer();
+        S9sString          provider  = container.provider("-");
         S9sString          user      = container.ownerName();
         S9sString          group     = container.groupOwnerName();
         S9sString          alias     = container.alias();
@@ -1456,6 +1468,7 @@ S9sFormatter::printContainersCompact(
         printf("%s", STR(indent));
         printf("%c ", container.stateAsChar());
 
+        providerFormat.printf(provider);
         userFormat.printf(user);
         groupFormat.printf(group);
         ipFormat.printf(ipAddress);

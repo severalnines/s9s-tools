@@ -65,9 +65,9 @@ class S9sFormatter
         const char *objectColorBegin(const S9sObject &object) const;
         const char *objectColorEnd() const;
 
-        S9sString bytesToHuman(ulonglong bytes) const;
-        S9sString mBytesToHuman(ulonglong mBytes) const;
-        S9sString kiloBytesToHuman(ulonglong kBytes) const;
+        static S9sString bytesToHuman(ulonglong bytes);
+        static S9sString mBytesToHuman(ulonglong mBytes);
+        static S9sString kiloBytesToHuman(ulonglong kBytes);
 
         S9sString percent(const ulonglong total, const ulonglong part) const;
 
