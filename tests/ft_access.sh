@@ -231,7 +231,7 @@ EOF
     #
     #
     #
-    print_title "Adding ACL Entry"
+    print_title "Adding Group ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the group 'users', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -240,8 +240,6 @@ EOF
 
     mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
-
-    #mys9s tree --get-acl "$CLUSTER_NAME"
 
     mys9s cluster --list --long --cmon-user=fabian --password=secret
     if s9s cluster --list --cmon-user=fabian --password=secret | \
@@ -272,6 +270,28 @@ EOF
         failure "The user 'fabian' should not see the cluster."
     else
         success "  o User 'fabian' can't see the cluster, ok."
+    fi
+    
+    #
+    #
+    #
+    print_title "Adding User ACL Entry"
+    cat <<EOF
+We add an ACL entry to the cluster for the user 'fabian', then we check that the
+user previously created can see the cluster because of this ACL entry.
+
+EOF
+
+    mys9s tree --add-acl --acl="user:fabian:rw-" "$CLUSTER_NAME"
+    check_exit_code_no_job $?
+
+    mys9s cluster --list --long --cmon-user=fabian --password=secret
+    if s9s cluster --list --cmon-user=fabian --password=secret | \
+        grep --quiet "$CLUSTER_NAME"; 
+    then
+        success "  o User 'fabian' can see the cluster, ok."
+    else
+        failure "The user 'fabian' should see the cluster."
     fi
 }
 
