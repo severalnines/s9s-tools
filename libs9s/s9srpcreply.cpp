@@ -4962,7 +4962,7 @@ S9sRpcReply::printObjectTreeBrief(
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
     S9sString       linkTarget = entry["link_target"].toString();
-    bool            isDir     = type == "Folder";
+    bool            isFolder  = type == "Folder";
     bool            isFile    = type == "File";
     bool            isCluster = type == "Cluster";
     bool            isNode    = type == "Node";
@@ -5004,7 +5004,7 @@ S9sRpcReply::printObjectTreeBrief(
             indent = onlyAscii ? "+-- " : "├── ";
     }
 
-    if (isDir)
+    if (isFolder)
     {
         printf("%s%s%s%s", 
                 STR(indent), 
@@ -5185,11 +5185,7 @@ S9sRpcReply::printObjectListLong(
     S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
-    S9sString       owner     = entry["owner_user_name"].toString();
-    S9sString       group     = entry["owner_group_name"].toString();
     S9sString       acl       = entry["item_acl"].toString();
-    S9sString       linkTarget = entry["link_target"].toString();
-    S9sString       fullPath;
     S9sString       name;
     S9sString       sizeString;
 
@@ -5203,25 +5199,10 @@ S9sRpcReply::printObjectListLong(
     
     if (!recursive && directory && recursionLevel > 0)
         return;
-
-    //printf("%3d ", recursionLevel);
-
-    if (owner.empty())
-        owner.sprintf("%d", entry["owner_user_id"].toInt());
-    
-    if (group.empty())
-        group.sprintf("%d", entry["owner_group_id"].toInt());
-
-    fullPath = path;
-    if (!fullPath.endsWith("/"))
-        fullPath += "/";
-
-    fullPath += node.name();
-
+ 
     if (options->fullPathRequested())
     {
-        name = fullPath;
-        S9S_WARNING("Full path: %s", STR(name));
+        name = node.fullPath();
     } else {
         name = node.name();
     }
@@ -5272,11 +5253,11 @@ S9sRpcReply::printObjectListLong(
      * The owner and the group owner.
      */
     ::printf("%s", userColorBegin());
-    m_ownerFormat.printf(owner);
+    m_ownerFormat.printf(node.ownerUserName());
     ::printf("%s", userColorEnd());
 
-    ::printf("%s", groupColorBegin(group));
-    m_groupFormat.printf(group);
+    ::printf("%s", groupColorBegin(node.ownerGroupName()));
+    m_groupFormat.printf(node.ownerGroupName());
     ::printf("%s", groupColorEnd());
 
     /*
@@ -5340,8 +5321,8 @@ S9sRpcReply::printObjectListLong(
         printf("%s", STR(name));
     }
 
-    if (!linkTarget.empty())
-        printf(" -> %s", STR(linkTarget));
+    if (!node.linkTarget().empty())
+        printf(" -> %s", STR(node.linkTarget()));
 
     printf("\n");
 

@@ -97,8 +97,85 @@ S9sTreeNode::name() const
     return retval;
 }
 
+S9sString
+S9sTreeNode::path() const
+{
+    return property("item_path").toString();
+}
+
+S9sString
+S9sTreeNode::fullPath() const
+{
+    S9sString retval;
+
+    retval = path();
+
+    if (!retval.endsWith("/"))
+        retval += "/";
+
+    retval += name();
+    return retval;
+}
+
+S9sString
+S9sTreeNode::spec() const
+{
+    return property("item_spec").toString();
+}
+
+S9sString
+S9sTreeNode::linkTarget() const
+{
+    return property("link_target").toString();
+}
+
+S9sString
+S9sTreeNode::ownerUserName() const
+{
+    S9sString retval;
+
+    retval = property("owner_user_name").toString();
+    if (retval.empty())
+    {
+        if (hasProperty("owner_user_id"))
+            retval.sprintf("%d", property("owner_user_id").toInt());
+    }
+
+    return retval;
+}
+
+S9sString
+S9sTreeNode::ownerGroupName() const
+{
+    S9sString retval;
+
+    retval = property("owner_group_name").toString();
+    if (retval.empty())
+    {
+        if (hasProperty("owner_group_id"))
+            retval.sprintf("%d", property("owner_group_id").toInt());
+    }
+
+    return retval;
+}
+
+S9sString
+S9sTreeNode::acl() const
+{
+    return property("item_acl").toString();
+}
+
+
+S9sString
+S9sTreeNode::type() const
+{
+    return property("item_type").toString().toLower();
+}
+
 bool
 S9sTreeNode::isFolder() const
 {
-    return property("item_type").toString().toLower() == "folder";
+    return type() == "folder";
 }
+
+

@@ -41,6 +41,15 @@ class S9sTreeNode
         void setProperties(const S9sVariantMap &properties);
 
         S9sString name() const;
+        S9sString path() const;
+        S9sString fullPath() const;
+        S9sString spec() const;
+        S9sString linkTarget() const;
+        S9sString ownerUserName() const;
+        S9sString ownerGroupName() const;
+        S9sString acl() const;
+
+        S9sString type() const;
         bool isFolder() const;
 
     private:
