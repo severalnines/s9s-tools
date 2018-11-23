@@ -171,7 +171,7 @@ class S9sRpcReply : public S9sVariantMap
                 bool                 isLast);
 
         void printObjectTreeBrief(
-                S9sVariantMap        entry,
+                S9sTreeNode          node,
                 int                  recursionLevel,
                 S9sString            indentString,
                 bool                 isLast);

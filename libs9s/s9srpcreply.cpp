@@ -4949,16 +4949,16 @@ S9sRpcReply::printObjectTree()
  */
 void 
 S9sRpcReply::printObjectTreeBrief(
-        S9sVariantMap        entry,
+        S9sTreeNode          node,
         int                  recursionLevel,
         S9sString            indentString,
         bool                 isLast)
 {
     S9sOptions     *options   = S9sOptions::instance();
-    S9sTreeNode     node(entry);
     bool            onlyAscii = options->onlyAscii();
     S9sString       name;
-    S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    S9sVector<S9sTreeNode> childNodes = node.childNodes();
+
     S9sString       indent;
 
     // It looks better if we print the full path on the first item when the
@@ -5043,21 +5043,18 @@ S9sRpcReply::printObjectTreeBrief(
 
     printf("\n");
 
-    for (uint idx = 0; idx < entries.size(); ++idx)
+    for (uint idx = 0; idx < childNodes.size(); ++idx)
     {
-        S9sVariantMap child = entries[idx].toVariantMap();
-        S9sTreeNode   childNode(entries[idx].toVariantMap());
+        S9sTreeNode  &childNode = childNodes[idx];
         bool          last  = true;
     
         // Checking if this will be the last child we print.
-        for (uint idx1 = idx + 1; idx1 < entries.size(); ++idx1)
+        for (uint idx1 = idx + 1; idx1 < childNodes.size(); ++idx1)
         {
-            S9sTreeNode nextChild = S9sTreeNode(entries[idx1].toVariantMap());
+            S9sTreeNode &nextChild = childNodes[idx1];
 
             if (nextChild.name().startsWith(".") && !options->isAllRequested())
-            {
                 continue;
-            }
 
             last = false;
             break;
@@ -5077,7 +5074,7 @@ S9sRpcReply::printObjectTreeBrief(
         }
 
         printObjectTreeBrief(
-                child, recursionLevel + 1, 
+                childNode, recursionLevel + 1, 
                 indentString + indent, last);
     }
 }
@@ -5401,7 +5398,8 @@ void
 S9sRpcReply::printObjectTreeBrief()
 {
     S9sVariantMap entry =  operator[]("cdt").toVariantMap();
-    printObjectTreeBrief(entry, 0, "", false);
+    S9sTreeNode   node(entry);
+    printObjectTreeBrief(node, 0, "", false);
 }
 
 /**
