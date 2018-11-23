@@ -5066,8 +5066,23 @@ S9sRpcReply::printObjectTreeBrief(
     for (uint idx = 0; idx < entries.size(); ++idx)
     {
         S9sVariantMap child = entries[idx].toVariantMap();
-        bool          last = idx + 1 >= entries.size();
-     
+        bool          last  = true;
+    
+        // Checking if this will be the last child we print.
+        for (uint idx1 = idx + 1; idx1 < entries.size(); ++idx1)
+        {
+            S9sVariantMap nextChild = entries[idx1].toVariantMap();
+
+            if (nextChild["item_name"].toString().startsWith(".") &&
+                !options->isAllRequested())
+            {
+                continue;
+            }
+
+            last = false;
+            break;
+        }
+
         // Hidden entries are printed only if the --all command line option is
         // provided.
         if (child["item_name"].toString().startsWith(".") &&
