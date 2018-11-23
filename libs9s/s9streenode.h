@@ -51,6 +51,8 @@ class S9sTreeNode
         S9sString sizeString() const;
 
         S9sString type() const;
+        int typeAsChar() const;
+
         bool isFolder() const;
 
         S9sVector<S9sTreeNode> childNodes() const;

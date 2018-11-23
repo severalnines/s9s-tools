@@ -179,8 +179,7 @@ class S9sRpcReply : public S9sVariantMap
         void printObjectListLong(
                 S9sTreeNode          node,
                 int                  recursionLevel,
-                S9sString            indentString,
-                bool                 isLast);
+                S9sString            indentString);
         
         void printObjectListBrief(
                 S9sVariantMap        entry,

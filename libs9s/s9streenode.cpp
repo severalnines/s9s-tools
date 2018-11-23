@@ -195,6 +195,31 @@ S9sTreeNode::type() const
     return property("item_type").toString().toLower();
 }
 
+int
+S9sTreeNode::typeAsChar() const
+{
+    if (type() == "folder")
+        return 'd';
+    else if (type() == "file")
+        return '-';
+    else if (type() == "cluster")
+        return 'c';
+    else if (type() == "node")
+        return 'n';
+    else if (type() == "server")
+        return 's';
+    else if (type() == "user")
+        return 'u';
+    else if (type() == "group")
+        return 'g';
+    else if (type() == "container")
+        return 'c';
+    else if (type() == "database")
+        return 'b';
+
+    return '?';
+}
+
 bool
 S9sTreeNode::isFolder() const
 {

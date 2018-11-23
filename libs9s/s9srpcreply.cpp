@@ -5107,36 +5107,17 @@ S9sRpcReply::printObjectTreeBrief(
 
 void
 S9sRpcReply::walkObjectTree(
-        S9sVariantMap       &node)
+        S9sVariantMap       &theMap)
 {
     S9sOptions     *options   = S9sOptions::instance();
-    S9sString       name      = node["item_name"].toString();
-    S9sString       owner     = node["owner_user_name"].toString();
-    S9sString       group     = node["owner_group_name"].toString();
-    S9sVariantList  entries   = node["sub_items"].toVariantList();
-    S9sString       type      = node["item_type"].toString();
-    S9sString       sizeString;
+    S9sTreeNode     node(theMap);
+    S9sVariantList  entries   = theMap["sub_items"].toVariantList();
 
-    if (node.contains("major_device_number") && 
-            node.contains("minor_devide_number"))
-    {
-        int major = node["major_device_number"].toInt();
-        int minor = node["minor_devide_number"].toInt();
+    m_ownerFormat.widen(node.ownerUserName());
+    m_groupFormat.widen(node.ownerGroupName());
+    m_sizeFormat.widen(node.sizeString());
 
-        sizeString.sprintf("%d, %d", major, minor);
-    } else if (node.contains("size"))
-    {
-        ulonglong size = node["size"].toULongLong();
-        sizeString.sprintf("%'llu", size);
-    } else {
-        sizeString = "-";
-    }
-
-    m_ownerFormat.widen(owner);
-    m_groupFormat.widen(group);
-    m_sizeFormat.widen(sizeString);
-
-    if (type == "Folder")
+    if (node.type() == "folder")
         m_numberOfFolders++;
     else
         m_numberOfObjects++;
@@ -5145,8 +5126,7 @@ S9sRpcReply::walkObjectTree(
     {
         S9sVariantMap child = entries[idx].toVariantMap();
         
-        if (child["item_name"].toString().startsWith(".") && 
-                !options->isAllRequested())
+        if (node.name().startsWith(".") && !options->isAllRequested())
         {
             continue;
         }
@@ -5174,8 +5154,7 @@ void
 S9sRpcReply::printObjectListLong(
         S9sTreeNode          node,
         int                  recursionLevel,
-        S9sString            indentString,
-        bool                 isLast)
+        S9sString            indentString)
 {
     S9sOptions     *options    = S9sOptions::instance();
     bool            recursive  = options->isRecursiveRequested();
@@ -5204,25 +5183,7 @@ S9sRpcReply::printObjectListLong(
     /*
      * The type and then the acl string.
      */
-    if (node.type() == "folder")
-        printf("d");
-    if (node.type() == "file")
-        printf("-");
-    else if (node.type() == "cluster")
-        printf("c");
-    else if (node.type() == "node")
-        printf("n");
-    else if (node.type() == "server")
-        printf("s");
-    else if (node.type() == "user")
-        printf("u");
-    else if (node.type() == "group")
-        printf("g");
-    else if (node.type() == "container")
-        printf("c");
-    else if (node.type() == "database")
-        printf("b");
-   
+    ::printf("%c", node.typeAsChar());
     ::printf("%s", STR(aclStringToUiString(node.acl())));
     ::printf(" ");
 
@@ -5311,12 +5272,11 @@ recursive_print:
         for (uint idx = 0; idx < childNodes.size(); ++idx)
         {
             S9sTreeNode &child = childNodes[idx];
-            bool         last = idx + 1 >= childNodes.size();
-       
+            
             if (child.name().startsWith(".") && !options->isAllRequested())
                 continue;
 
-            printObjectListLong(child, recursionLevel + 1, "", last);
+            printObjectListLong(child, recursionLevel + 1, "");
         }
     }
 }
@@ -5547,7 +5507,7 @@ S9sRpcReply::printObjectListLong()
 
     }
 
-    printObjectListLong(node, 0, "", false);
+    printObjectListLong(node, 0, "");
         
     if (!options->isBatchRequested())
     {
