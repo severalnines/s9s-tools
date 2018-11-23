@@ -21,7 +21,7 @@
 #include "S9sDisplay"
 
 S9sDisplayList::S9sDisplayList() :
-    m_isVisible(false),
+    S9sWidget(), 
     m_selectionEnabled(true),
     m_selectionIndex(0),
     m_startIndex(0),
@@ -33,6 +33,9 @@ S9sDisplayList::~S9sDisplayList()
 {
 }
 
+/**
+ * \param nSteps Shows how many steps the selection will be moved upwards.
+ */
 void
 S9sDisplayList::selectionUp(
         int nSteps)
@@ -43,6 +46,9 @@ S9sDisplayList::selectionUp(
         m_startIndex -= nSteps;
 }
 
+/**
+ * param nSteps Shows how many steps the selection will be moved downwards.
+ */
 void 
 S9sDisplayList::selectionDown(
         int nSteps)
@@ -61,7 +67,7 @@ S9sDisplayList::isSelected(
 }
 
 bool
-S9sDisplayList::isVisible(
+S9sDisplayList::isIndexVisible(
         const int index) const
 {
     if (index < m_startIndex)
@@ -71,13 +77,6 @@ S9sDisplayList::isVisible(
         return false;
 
     return true;
-}
-
-void
-S9sDisplayList::setVisible(
-        bool value)
-{
-    m_isVisible = value;
 }
 
 int 
@@ -97,12 +96,6 @@ S9sDisplayList::lastVisibleIndex() const
     return retval;
 }
 
-bool
-S9sDisplayList::isVisible() const
-{
-    return m_isVisible;
-}
-
 /**
  * \returns True if the mouse event is processed and should not considered by
  *   other widgets.
@@ -115,7 +108,7 @@ S9sDisplayList::processButton(
 {
     if (!isVisible())
         return false;
-    else if (!isActive())
+    else if (!hasFocus())
         return false;
 
     if (!contains(x, y))

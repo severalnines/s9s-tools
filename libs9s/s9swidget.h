@@ -27,23 +27,30 @@ class S9sWidget
         S9sWidget();
         virtual ~S9sWidget();
 
-        void setLocation(int x, int y);
-        void setSize(int nColumns, int nRows);
+        virtual void setLocation(int x, int y);
+        virtual void setSize(int nColumns, int nRows);
+        virtual void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);
+
         bool contains(int x, int y) const;
         int y() const;
         int x() const;
         int height() const;
         int width() const;
 
-        bool isActive() const;
-        void setActive(bool active);
+        bool hasFocus() const;
+        void setHasFocus(bool active);
+
+        bool isVisible() const;
+        void setVisible(bool value);
 
     protected:
         int  m_x;
         int  m_y;
         int  m_width;
         int  m_height;
-        bool m_isActive;
+        bool m_isVisible;        
+        bool m_hasFocus;
         
 };
 

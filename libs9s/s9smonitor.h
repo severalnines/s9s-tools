@@ -49,6 +49,9 @@ class S9sMonitor :
                 S9sMonitor::DisplayMode  mode = S9sMonitor::PrintEvents);
         virtual ~S9sMonitor();
 
+        virtual void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);
+
         static void eventHandler(
                 const S9sVariantMap &jsonMessage,
                 void                *userData);
@@ -64,8 +67,6 @@ class S9sMonitor :
         void replyCallback(S9sRpcReply &reply);
         void eventCallback(S9sEvent &event);
 
-        virtual void processKey(int key);
-        virtual void processButton(uint button, uint x, uint y);
 
         virtual bool refreshScreen();
         virtual void printHeader();

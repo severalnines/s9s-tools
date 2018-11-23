@@ -28,6 +28,7 @@
 #include "S9sJob"
 #include "S9sMutex"
 #include "S9sThread"
+#include "S9sWidget"
 #include "S9sFile"
 
 #define S9S_KEY_DOWN      0x425b1b
@@ -46,11 +47,15 @@
  * A UI screen that can be used as a parent class for views continuously
  * refreshed on the terminal screen.
  */
-class S9sDisplay : public S9sThread
+class S9sDisplay : 
+    public S9sThread,
+    public S9sWidget
 {
     public:
         S9sDisplay(bool interactive = true, bool rawTerminal = true);
         virtual ~S9sDisplay();
+        
+        virtual bool processButton(uint button, uint x, uint y);
 
         bool setOutputFileName(const S9sString &fileName);
         bool setInputFileName(const S9sString &fileName);
@@ -58,16 +63,12 @@ class S9sDisplay : public S9sThread
 
         int lastKeyCode() const;
 
-        int columns() const;
-        int rows() const;
         void gotoXy(int x, int y);
 
     protected:
         virtual int exec();
         
     protected:
-        virtual void processKey(int key) = 0;
-        virtual void processButton(uint button, uint x, uint y);
         virtual bool refreshScreen() = 0;
 
         void startScreen();
@@ -98,8 +99,6 @@ class S9sDisplay : public S9sThread
             int   lastKeyCode;
         } m_lastKeyCode;
 
-        int                          m_columns;
-        int                          m_rows;
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;

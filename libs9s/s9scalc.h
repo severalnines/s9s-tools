@@ -34,11 +34,12 @@ class S9sCalc :
         void setSpreadsheetName(const S9sString &name);
         S9sString spreadsheetName() const;
 
+        virtual void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);
+
         void main();
 
     protected:
-        virtual void processKey(int key);
-        virtual void processButton(uint button, uint x, uint y);
         virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();

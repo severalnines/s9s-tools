@@ -50,10 +50,10 @@ S9sMonitor::S9sMonitor(
     m_rightKeyPresses(0)
 {
     m_nodeListWidget.setSelectionEnabled(false);
-    m_nodeViewWidget.setActive(true);
+    m_nodeViewWidget.setHasFocus(true);
 
     m_eventListWidget.setSelectionEnabled(false);
-    m_eventViewWidget.setActive(false);
+    m_eventViewWidget.setHasFocus(false);
 
     setDisplayMode(mode);
 }
@@ -370,7 +370,7 @@ S9sMonitor::printHelp()
         "└─────────────────────────────────────────────────────────────────┘";
         ;
 
-    indent = (columns() - 65) / 2;
+    indent = (width() - 65) / 2;
     if (indent < 2) 
         indent = 2;
 
@@ -448,7 +448,7 @@ S9sMonitor::printContainers()
      * Printing the list.
      */
     m_containerListWidget.setLocation(1, 3);
-    m_containerListWidget.setSize(columns(), rows() - 3);
+    m_containerListWidget.setSize(width(), height() - 3);
     m_containerListWidget.setNumberOfItems(nContainers());
     m_containerListWidget.ensureSelectionVisible();
 
@@ -466,7 +466,7 @@ S9sMonitor::printContainers()
             int          stateAsChar = container.stateAsChar();
             bool         selected;
            
-            if (!m_containerListWidget.isVisible(totalIndex))
+            if (!m_containerListWidget.isIndexVisible(totalIndex))
             {
                 ++totalIndex;
                 continue;
@@ -507,11 +507,11 @@ S9sMonitor::printContainers()
             ++totalIndex;
             printNewLine();
             
-            if (m_lineCounter >= rows() - 1)
+            if (m_lineCounter >= height() - 1)
                 break;
         }   
             
-        if (m_lineCounter >= rows() - 1)
+        if (m_lineCounter >= height() - 1)
             break;
     }
     
@@ -608,7 +608,7 @@ S9sMonitor::printServers()
      * Printing the list.
      */
     m_serverListWidget.setLocation(1, 3);
-    m_serverListWidget.setSize(columns(), rows() - 3);
+    m_serverListWidget.setSize(width(), height() - 3);
     m_serverListWidget.setNumberOfItems(theServers.size());
     m_serverListWidget.ensureSelectionVisible();
     for (uint idx1 = 0u; idx1 < theServers.size(); ++idx1)
@@ -617,7 +617,7 @@ S9sMonitor::printServers()
         S9sEvent        event = m_serverEvents[server.id()];
         bool            isSelected;
 
-        if (!m_serverListWidget.isVisible(idx1))
+        if (!m_serverListWidget.isIndexVisible(idx1))
             continue;
 
         isSelected = 
@@ -671,7 +671,7 @@ S9sMonitor::printServers()
 
         printNewLine();
             
-        if (m_lineCounter >= rows() - 1)
+        if (m_lineCounter >= height() - 1)
             break;
     }
     
@@ -783,7 +783,7 @@ S9sMonitor::printClusters()
 
         printNewLine();
         
-        if (m_lineCounter >= rows() - 1)
+        if (m_lineCounter >= height() - 1)
             break;
     }
 
@@ -885,7 +885,7 @@ S9sMonitor::printJobs()
 
         printNewLine();
         
-        if (m_lineCounter >= rows() - 1)
+        if (m_lineCounter >= height() - 1)
             break;
     }
 
@@ -1062,6 +1062,9 @@ S9sMonitor::printEventList()
     int firstIndex, lastIndex;
     int viewHeight;
 
+    /*
+     * Find the selected item.
+     */
     if (m_eventListWidget.selectionIndex() < (int) m_events.size() &&
             m_eventListWidget.selectionIndex() >= 0)
     {
@@ -1072,15 +1075,15 @@ S9sMonitor::printEventList()
      * Layout.
      */
     viewHeight = 
-        m_eventViewWidget.isActive() ? (rows() - 2) / 2 : rows() - 2;
+        m_eventViewWidget.hasFocus() ? (height() - 2) / 2 : height() - 2;
 
     m_eventListWidget.setLocation(1, 2);
-    m_eventListWidget.setSize(columns(), viewHeight);
+    m_eventListWidget.setSize(width(), viewHeight);
     m_eventListWidget.setNumberOfItems(m_events.size());
     m_eventListWidget.ensureSelectionVisible();
 
     m_eventViewWidget.setLocation(1, viewHeight + 1);
-    m_eventViewWidget.setSize(columns(), viewHeight);
+    m_eventViewWidget.setSize(width(), viewHeight);
     m_eventViewWidget.setSelectionEnabled(false);
 
     /*
@@ -1120,10 +1123,6 @@ S9sMonitor::printEventList()
     while (m_lineCounter < 
             m_eventListWidget.y() + m_eventListWidget.height() - 1)
     {
-        #if 0
-        ::printf("%3d %3d %3d", m_lineCounter, m_eventListWidget.y(), 
-                m_eventListWidget.height());
-        #endif
         printNewLine();
     }
 }
@@ -1131,7 +1130,7 @@ S9sMonitor::printEventList()
 void
 S9sMonitor::printEventView()
 {
-    if (!m_eventViewWidget.isActive())
+    if (!m_eventViewWidget.hasFocus())
         return;
 
     S9sString title = " Event JSon";
@@ -1141,7 +1140,7 @@ S9sMonitor::printEventView()
     ::printf("%s", STR(title));
 
 #if 1
-    for (int n = title.length(); n < columns() - 2; ++n)
+    for (int n = title.length(); n < width() - 2; ++n)
         ::printf(" ");
 
     ::printf("x ");
@@ -1411,7 +1410,7 @@ S9sMonitor::printHeader()
     if (m_viewDebug)
     {
         ::printf("0x%08x ",      lastKeyCode());
-        ::printf("%02dx%02d ",   columns(), rows());
+        ::printf("%02dx%02d ",   width(), height());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
 
@@ -1428,7 +1427,7 @@ S9sMonitor::printFooter()
     const char *normal = TERM_SCREEN_TITLE;
 
     //::printf("%s", TERM_ERASE_EOL);
-    for (;m_lineCounter < rows() - 1; ++m_lineCounter)
+    for (;m_lineCounter < height() - 1; ++m_lineCounter)
     {
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\n\r");
@@ -1481,13 +1480,13 @@ S9sMonitor::processKey(
                 if (!m_eventListWidget.isSelectionEnabled())
                     m_eventListWidget.setSelectionEnabled(true);
                 else
-                    m_eventViewWidget.setActive(true);
+                    m_eventViewWidget.setHasFocus(true);
             }
             break;
 
         case 'x': 
             if (m_displayMode == WatchEvents)
-                m_eventViewWidget.setActive(false);
+                m_eventViewWidget.setHasFocus(false);
             break;
             
         case 0x1b:
@@ -1497,8 +1496,8 @@ S9sMonitor::processKey(
                 m_viewHelp = false;
             } else if (m_displayMode == WatchEvents)
             {
-                if (m_eventViewWidget.isActive())
-                    m_eventViewWidget.setActive(false);
+                if (m_eventViewWidget.hasFocus())
+                    m_eventViewWidget.setHasFocus(false);
                 else if (m_eventListWidget.isSelectionEnabled())
                     m_eventListWidget.setSelectionEnabled(false);
                 else
@@ -1586,10 +1585,12 @@ S9sMonitor::processKey(
  * \param button The mouse button code.
  * \param x The x coordinate measured in characters.
  * \param y The y coordinate measured in characters.
+ * \returns True if the mouse event is processed and should not considered by
+ *   other widgets.
  *
  * Virtual function that is called when the user pressed a mouse button.
  */
-void 
+bool
 S9sMonitor::processButton(
         uint button, 
         uint x, 
@@ -1600,15 +1601,15 @@ S9sMonitor::processButton(
     m_eventViewWidget.processButton(button, x, y);
 
     if (m_containerListWidget.processButton(button, x, y))
-        return;
+        return true;
     else if (m_serverListWidget.processButton(button, x, y))
-        return;
+        return true;
     else if (m_eventListWidget.processButton(button, x, y))
-        return;
+        return true;
     //else if (m_eventViewWidget.processButton(button, x, y))
     //    return;
 
-    if ((int) y == rows())
+    if ((int) y == height())
     {
         if (x >= 2 && x <= 8)
         {
@@ -1635,7 +1636,11 @@ S9sMonitor::processButton(
         {
             exit(0);
         }
+
+        return true;
     }
+
+    return false;
 }
 
 void

@@ -53,7 +53,7 @@ void
 S9sDisplayEntry::processKey(
         int key)
 {
-    if (!isActive())
+    if (!hasFocus())
         return;
 
     switch (key)
@@ -139,7 +139,7 @@ S9sDisplayEntry::showCursor()
     int   row = y();
     S9sString sequence;
 
-    if (!isActive())
+    if (!hasFocus())
         return;
 
     sequence.sprintf("\033[%d;%dH", row, col);

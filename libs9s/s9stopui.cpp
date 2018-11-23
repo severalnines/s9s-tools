@@ -88,13 +88,19 @@ S9sTopUi::processKey(
     }
 }
 
-void 
+/**
+ * \param button The mouse button code.
+ * \param x The x coordinate measured in characters.
+ * \param y The y coordinate measured in characters.
+ * \returns True if the mouse event is processed and should not considered by
+ *   other widgets.
+ */
+bool 
 S9sTopUi::processButton(
         uint button, 
         uint x, 
         uint y)
 {
-    S9sDisplay::processButton(button, x, y);
 
     if (y == 1)
     {
@@ -107,20 +113,26 @@ S9sTopUi::processButton(
             } else {
                 m_reloadRequested = true;
             }
+
+            return true;
         }
-    } else if ((int) y == rows())
+    } else if ((int) y == height())
     {
         if (x >= 2 && x <= 12)
         {
             m_sortOrder = CpuUsage;
+            return true;
         } else if (x >= 14 && x <= 27)
         {
             m_sortOrder = MemUsage;
+            return true;
         } else if (x >= 29 && x <= 34)
         {
             exit(0);
         }
     }
+    
+    return S9sDisplay::processButton(button, x, y);
 }
 
 bool
@@ -169,7 +181,7 @@ S9sTopUi::printHeader()
     if (m_viewDebug)
     {
         //::printf("0x%02x ",      lastKeyCode());
-        ::printf("%02dx%02d ",   columns(), rows());
+        ::printf("%02dx%02d ",   width(), height());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
         
@@ -187,7 +199,7 @@ S9sTopUi::printHeader()
         m_memoryStatsReply.printMemoryStatLine2();
         printNewLine();
         
-        printProcessList(rows() - 6);
+        printProcessList(height() - 6);
     }
 }
 
@@ -373,7 +385,7 @@ S9sTopUi::printFooter()
     const char *normal = TERM_SCREEN_TITLE;
 
     // Goint to the last line.
-    for (;m_lineCounter < rows() - 1; ++m_lineCounter)
+    for (;m_lineCounter < height() - 1; ++m_lineCounter)
     {
         ::printf("\n\r");
         ::printf("%s", TERM_ERASE_EOL);

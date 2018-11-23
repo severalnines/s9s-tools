@@ -27,14 +27,11 @@ class S9sDisplayList : public S9sWidget
         S9sDisplayList();
         virtual ~S9sDisplayList();
 
-        void setVisible(bool value);
-        bool isVisible() const;
-
         int firstVisibleIndex() const;
         int lastVisibleIndex() const;
 
-        bool processButton(uint button, uint x, uint y);
-        void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);
+        virtual void processKey(int key);
 
         void setSelectionEnabled(const bool value);
         bool isSelectionEnabled() const;
@@ -45,12 +42,11 @@ class S9sDisplayList : public S9sWidget
         void selectionUp(int nSteps = 1);
         void selectionDown(int nSteps = 1);
         bool isSelected(const int index) const;
-        bool isVisible(const int index) const;
+        bool isIndexVisible(const int index) const;
 
         void ensureSelectionVisible();
 
     private:
-        bool m_isVisible;
         int  m_selectionEnabled;
         int  m_selectionIndex;
         int  m_startIndex;

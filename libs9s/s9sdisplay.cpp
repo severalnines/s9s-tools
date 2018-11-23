@@ -62,8 +62,6 @@ S9sDisplay::S9sDisplay(
     m_rawTerminal(rawTerminal),
     m_interactive(interactive),
     m_refreshCounter(0),
-    m_columns(0),
-    m_rows(0),
     m_isStopped(0)
 {
     m_lastKeyCode.lastKeyCode = 0;
@@ -157,24 +155,6 @@ S9sDisplay::rotatingCharacter() const
     return charset[m_refreshCounter % 3];
 }
 
-/**
- * \returns How many columns the terminal has.
- */
-int
-S9sDisplay::columns() const
-{
-    return m_columns;
-}
-
-/**
- * \returns How many rows the terminal has.
- */
-int 
-S9sDisplay::rows() const
-{
-    return m_rows;
-}
-
 void 
 S9sDisplay::gotoXy(
         int x,
@@ -265,7 +245,7 @@ S9sDisplay::exec()
  * default implementation simply stores the mouse press event so that debug
  * methods can print it.
  */
-void 
+bool 
 S9sDisplay::processButton(
         uint button, 
         uint x, 
@@ -274,6 +254,8 @@ S9sDisplay::processButton(
     m_lastButton = button;
     m_lastX      = x;
     m_lastY      = y;
+
+    return S9sWidget::processButton(button, x, y);
 }
 
 /**
@@ -288,8 +270,9 @@ S9sDisplay::startScreen()
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-    m_columns = w.ws_col;
-    m_rows    = w.ws_row;
+    setLocation(0, 0);
+    setSize(w.ws_col, w.ws_row);
+
     m_lineCounter = 0;
         
     ::printf("%s", TERM_HOME);
@@ -304,14 +287,14 @@ S9sDisplay::printMiddle(
 {
     int nSpaces;
 
-    for (;m_lineCounter < rows() / 2;)
+    for (;m_lineCounter < height() / 2;)
     {
         ::printf("%s", TERM_ERASE_EOL);
         ::printf("\r\n");
         ++m_lineCounter;
     }
 
-    nSpaces = (m_columns - text.length()) / 2;
+    nSpaces = (width() - text.length()) / 2;
     for (;nSpaces > 0; --nSpaces)
         ::printf(" ");
 

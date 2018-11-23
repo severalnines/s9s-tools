@@ -40,6 +40,9 @@ class S9sTopUi :
         S9sTopUi(S9sRpcClient &client);
         virtual ~S9sTopUi();
 
+        virtual void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);        
+
         void executeTop();
 
         enum  SortOrder
@@ -49,8 +52,6 @@ class S9sTopUi :
             MemUsage,
         };
     protected:
-        virtual void processKey(int key);
-        virtual void processButton(uint button, uint x, uint y);        
         virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();

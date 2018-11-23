@@ -35,7 +35,7 @@ S9sCalc::S9sCalc(
     m_lastRefreshTime(0)
 {
     m_formulaEntry.setLocation(1, 2);
-    m_formulaEntry.setActive(false);
+    m_formulaEntry.setHasFocus(false);
 }
 
 S9sCalc::~S9sCalc()
@@ -104,7 +104,7 @@ void
 S9sCalc::processKey(
         int key)
 {
-    if (m_formulaEntry.isActive())
+    if (m_formulaEntry.hasFocus())
     {
         if (key == S9S_KEY_ENTER)
         {
@@ -114,7 +114,7 @@ S9sCalc::processKey(
             int          row    = m_spreadsheet.selectedCellRow();
 
             updateCell(sheetIndex, column, row, content);
-            m_formulaEntry.setActive(false);
+            m_formulaEntry.setHasFocus(false);
             m_spreadsheet.selectedCellDown();
             updateEntryText();
         } else {
@@ -133,25 +133,25 @@ S9sCalc::processKey(
 
         case S9S_KEY_DOWN:
             m_spreadsheet.selectedCellDown();
-            m_formulaEntry.setActive(false);
+            m_formulaEntry.setHasFocus(false);
             updateEntryText();
             break;
 
         case S9S_KEY_UP:
             m_spreadsheet.selectedCellUp();
-            m_formulaEntry.setActive(false);
+            m_formulaEntry.setHasFocus(false);
             updateEntryText();
             break;
 
         case S9S_KEY_RIGHT:
             m_spreadsheet.selectedCellRight();
-            m_formulaEntry.setActive(false);
+            m_formulaEntry.setHasFocus(false);
             updateEntryText();
             break;
 
         case S9S_KEY_LEFT:
             m_spreadsheet.selectedCellLeft();
-            m_formulaEntry.setActive(false);
+            m_formulaEntry.setHasFocus(false);
             updateEntryText();
             break;
 
@@ -164,9 +164,9 @@ S9sCalc::processKey(
             break;
 
         case S9S_KEY_ENTER:
-            if (!m_formulaEntry.isActive())
+            if (!m_formulaEntry.hasFocus())
             {
-                m_formulaEntry.setActive(true);
+                m_formulaEntry.setHasFocus(true);
             }
             break;
 
@@ -182,13 +182,14 @@ S9sCalc::processKey(
     }
 }
 
-void 
+bool 
 S9sCalc::processButton(
         uint button, 
         uint x, 
         uint y)
 {
-    S9sDisplay::processButton(button, x, y);
+    // We don't have meaning for button presses here.
+    return S9sDisplay::processButton(button, x, y);
 }
 
 /**
@@ -210,7 +211,7 @@ S9sCalc::refreshScreen()
     m_formulaEntry.print();
     printNewLine();
     
-    m_spreadsheet.setScreenSize(columns(), rows() - 4);
+    m_spreadsheet.setScreenSize(width(), height() - 4);
     m_spreadsheet.print();
     //printMiddle();
 
@@ -237,7 +238,7 @@ S9sCalc::printHeader()
     ::printf("%s%s%s ", bold, STR(title), normal);
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
     ::printf("0x%08x ",      lastKeyCode());
-    ::printf("%02dx%02d ",   columns(), rows());
+    ::printf("%02dx%02d ",   width(), height());
 
     printNewLine();
     

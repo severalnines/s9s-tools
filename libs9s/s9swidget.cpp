@@ -24,7 +24,8 @@ S9sWidget::S9sWidget() :
     m_y(0),
     m_width(0),
     m_height(0),
-    m_isActive(true)
+    m_isVisible(false),    
+    m_hasFocus(true)
 {
 }
  
@@ -49,6 +50,25 @@ S9sWidget::setSize(
 {
     m_width  = nColumns;
     m_height = nRows;
+}
+
+void 
+S9sWidget::processKey(
+        int key)
+{
+}
+
+/**
+ * \returns True if the mouse event is processed and should not considered by
+ *   other widgets.
+ */
+bool
+S9sWidget::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+    return false;
 }
 
 /**
@@ -76,12 +96,19 @@ S9sWidget::x() const
     return m_x;
 }
 
+/**
+ * \returns The height of the widget in character (how many lines the widget
+ *   has).
+ */
 int
 S9sWidget::height() const
 {
     return m_height;
 }
 
+/**
+ * \returns The width of the widget in characters.
+ */
 int
 S9sWidget::width() const
 {
@@ -93,14 +120,28 @@ S9sWidget::width() const
  * \returns True if the widget accepts key press events.
  */
 bool
-S9sWidget::isActive() const
+S9sWidget::hasFocus() const
 {
-    return m_isActive;
+    return m_hasFocus;
 }
 
 void
-S9sWidget::setActive(
+S9sWidget::setHasFocus(
         bool active)
 {
-    m_isActive = active;
+    m_hasFocus = active;
+}
+
+
+bool
+S9sWidget::isVisible() const
+{
+    return m_isVisible;
+}
+
+void
+S9sWidget::setVisible(
+        bool value)
+{
+    m_isVisible = value;
 }
