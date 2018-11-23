@@ -201,4 +201,14 @@ S9sTreeNode::isFolder() const
     return type() == "folder";
 }
 
+S9sVector<S9sTreeNode>
+S9sTreeNode::childNodes() const
+{
+    S9sVariantList         variantList = property("sub_items").toVariantList();
+    S9sVector<S9sTreeNode> retval;
+        
+    for (uint idx = 0; idx < variantList.size(); ++idx)
+        retval << S9sTreeNode(variantList[idx].toVariantMap());
 
+    return retval;
+}

@@ -5172,19 +5172,15 @@ S9sRpcReply::walkObjectTree(
  */
 void 
 S9sRpcReply::printObjectListLong(
-        S9sVariantMap        entry,
+        S9sTreeNode          node,
         int                  recursionLevel,
         S9sString            indentString,
         bool                 isLast)
 {
-    S9sTreeNode     node      = entry;
-    S9sOptions     *options   = S9sOptions::instance();
-    bool            recursive = options->isRecursiveRequested();
-    bool            directory = options->isDirectoryRequested();
-    S9sString       path      = entry["item_path"].toString();
-    S9sString       spec      = entry["item_spec"].toString();
-    S9sString       type      = entry["item_type"].toString();
-    S9sVariantList  entries   = entry["sub_items"].toVariantList();
+    S9sOptions     *options    = S9sOptions::instance();
+    bool            recursive  = options->isRecursiveRequested();
+    bool            directory  = options->isDirectoryRequested();
+    S9sVector<S9sTreeNode> childNodes = node.childNodes();
     S9sString       name;
 
     // If the first level is the directory, we skip it if we are not requested
@@ -5208,23 +5204,23 @@ S9sRpcReply::printObjectListLong(
     /*
      * The type and then the acl string.
      */
-    if (type == "Folder")
+    if (node.type() == "folder")
         printf("d");
-    if (type == "File")
+    if (node.type() == "file")
         printf("-");
-    else if (type == "Cluster")
+    else if (node.type() == "cluster")
         printf("c");
-    else if (type == "Node")
+    else if (node.type() == "node")
         printf("n");
-    else if (type == "Server")
+    else if (node.type() == "server")
         printf("s");
-    else if (type == "User")
+    else if (node.type() == "user")
         printf("u");
-    else if (type == "Group")
+    else if (node.type() == "group")
         printf("g");
-    else if (type == "Container")
+    else if (node.type() == "container")
         printf("c");
-    else if (type == "Database")
+    else if (node.type() == "database")
         printf("b");
    
     ::printf("%s", STR(aclStringToUiString(node.acl())));
@@ -5246,55 +5242,55 @@ S9sRpcReply::printObjectListLong(
     /*
      * The name.
      */
-    if (type == "Folder")
+    if (node.type() == "folder")
     {
         printf("%s%s%s", 
                 m_formatter.folderColorBegin(), 
                 STR(name), 
                 m_formatter.folderColorEnd());
-    } else if (type == "File")
+    } else if (node.type() == "file")
     {
         printf("%s%s%s", 
                 fileColorBegin(name), 
                 STR(name), 
                 fileColorEnd());
-    } else if (type == "Cluster")
+    } else if (node.type() == "cluster")
     {
         printf("%s%s%s", 
                 clusterColorBegin(), 
                 STR(name), 
                 clusterColorEnd());
-    } else if (type == "Node")
+    } else if (node.type() == "node")
     {
         printf("%s%s%s", 
                 ipColorBegin(), 
                 STR(name), 
                 ipColorEnd());
-    } else if (type == "Server")
+    } else if (node.type() == "server")
     {
         printf("%s%s%s", 
                 serverColorBegin(), 
                 STR(name), 
                 serverColorEnd());
-    } else if (type == "User")
+    } else if (node.type() == "user")
     {
         printf("%s%s%s", 
                 userColorBegin(), 
                 STR(name), 
                 userColorEnd());
-    } else if (type == "Group")
+    } else if (node.type() == "group")
     {
         printf("%s%s%s", 
                 groupColorBegin(), 
                 STR(name), 
                 groupColorEnd());
-    } else if (type == "Container")
+    } else if (node.type() == "container")
     {
         printf("%s%s%s", 
                 containerColorBegin(), 
                 STR(name), 
                 containerColorEnd());
-    } else if (type == "Database")
+    } else if (node.type() == "database")
     {
         printf("%s%s%s", 
                 databaseColorBegin(),
@@ -5312,20 +5308,15 @@ S9sRpcReply::printObjectListLong(
 recursive_print:
 
     {
-        for (uint idx = 0; idx < entries.size(); ++idx)
+        for (uint idx = 0; idx < childNodes.size(); ++idx)
         {
-            S9sVariantMap child = entries[idx].toVariantMap();
-            bool          last = idx + 1 >= entries.size();
+            S9sTreeNode &child = childNodes[idx];
+            bool         last = idx + 1 >= childNodes.size();
        
-            if (child["item_name"].toString().startsWith(".") && 
-                    !options->isAllRequested())
-            {
+            if (child.name().startsWith(".") && !options->isAllRequested())
                 continue;
-            }
 
-            printObjectListLong(
-                    child, recursionLevel + 1, 
-                    "", last);
+            printObjectListLong(child, recursionLevel + 1, "", last);
         }
     }
 }
@@ -5518,8 +5509,8 @@ void
 S9sRpcReply::printObjectListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-
     S9sVariantMap   entry   =  operator[]("cdt").toVariantMap();
+    S9sTreeNode     node(entry);
 
     if (options->isJsonRequested())
     {
@@ -5556,7 +5547,7 @@ S9sRpcReply::printObjectListLong()
 
     }
 
-    printObjectListLong(entry, 0, "", false);
+    printObjectListLong(node, 0, "", false);
         
     if (!options->isBatchRequested())
     {

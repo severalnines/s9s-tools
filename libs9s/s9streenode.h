@@ -53,6 +53,8 @@ class S9sTreeNode
         S9sString type() const;
         bool isFolder() const;
 
+        S9sVector<S9sTreeNode> childNodes() const;
+
     private:
         S9sVariantMap    m_properties;
 };

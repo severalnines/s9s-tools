@@ -30,6 +30,7 @@ class S9sFormat;
 class S9sCmonGraph;
 class S9sUser;
 class S9sServer;
+class S9sTreeNode;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -176,7 +177,7 @@ class S9sRpcReply : public S9sVariantMap
                 bool                 isLast);
         
         void printObjectListLong(
-                S9sVariantMap        entry,
+                S9sTreeNode          node,
                 int                  recursionLevel,
                 S9sString            indentString,
                 bool                 isLast);
