@@ -338,7 +338,7 @@ class S9sRpcReply : public S9sVariantMap
         const char *greyColorEnd() const;
 
     private:
-        void walkObjectTree(S9sVariantMap &node);
+        void walkObjectTree(S9sTreeNode node);
 
     private:
         S9sFormat     m_ownerFormat;

@@ -226,6 +226,54 @@ S9sTreeNode::isFolder() const
     return type() == "folder";
 }
 
+bool
+S9sTreeNode::isFile() const
+{
+    return type() == "file";
+}
+
+bool
+S9sTreeNode::isCluster() const
+{
+    return type() == "cluster";
+}
+
+bool
+S9sTreeNode::isNode() const
+{
+    return type() == "node";
+}
+
+bool
+S9sTreeNode::isServer() const
+{
+    return type() == "server";
+}
+
+bool
+S9sTreeNode::isUser() const
+{
+    return type() == "user";
+}
+
+bool
+S9sTreeNode::isGroup() const
+{
+    return type() == "group";
+}
+
+bool
+S9sTreeNode::isContainer() const
+{
+    return type() == "container";
+}
+
+bool
+S9sTreeNode::isDatabase() const
+{
+    return type() == "database";
+}
+
 S9sVector<S9sTreeNode>
 S9sTreeNode::childNodes() const
 {

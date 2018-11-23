@@ -54,6 +54,14 @@ class S9sTreeNode
         int typeAsChar() const;
 
         bool isFolder() const;
+        bool isFile() const;
+        bool isCluster() const;
+        bool isNode() const;
+        bool isServer() const;
+        bool isUser() const;
+        bool isGroup() const;
+        bool isContainer() const;
+        bool isDatabase() const;
 
         S9sVector<S9sTreeNode> childNodes() const;
 

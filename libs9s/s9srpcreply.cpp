@@ -4955,44 +4955,21 @@ S9sRpcReply::printObjectTreeBrief(
         bool                 isLast)
 {
     S9sOptions     *options   = S9sOptions::instance();
+    S9sTreeNode     node(entry);
     bool            onlyAscii = options->onlyAscii();
-    S9sString       name      = entry["item_name"].toString();
-    S9sString       path      = entry["item_path"].toString();
-    S9sString       spec      = entry["item_spec"].toString();
-    S9sString       type      = entry["item_type"].toString();
+    S9sString       name;
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
-    S9sString       linkTarget = entry["link_target"].toString();
-    bool            isFolder  = type == "Folder";
-    bool            isFile    = type == "File";
-    bool            isCluster = type == "Cluster";
-    bool            isNode    = type == "Node";
-    bool            isServer  = type == "Server";
-    bool            isUser    = type == "User";
-    bool            isGroup   = type == "Group";
-    bool            isContainer = type == "Container";
-    bool            isDatabase = type == "Database";
     S9sString       indent;
 
     // It looks better if we print the full path on the first item when the
     // first item is not the root folder. The user will know where the tree
     // starts.
+    name = node.name();
     if (recursionLevel == 0 && name != "/")
-    {
-        S9sString tmp;
-
-        tmp  = path;
-        if (!tmp.endsWith("/"))
-            tmp += "/";
-
-        tmp += name;
-
-        name = tmp;
-    }
+        name = node.fullPath();
 
     if (options->fullPathRequested())
-    {
-        name = S9sString::buildPath(path, name);
-    }
+        name = node.fullPath();
 
     printf("%s", STR(indentString));
 
@@ -5004,50 +4981,50 @@ S9sRpcReply::printObjectTreeBrief(
             indent = onlyAscii ? "+-- " : "├── ";
     }
 
-    if (isFolder)
+    if (node.isFolder())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 m_formatter.folderColorBegin(), 
                 STR(name), 
                 m_formatter.folderColorEnd());
-    } else if (isFile)
+    } else if (node.isFile())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 fileColorBegin(name), 
                 STR(name), fileColorEnd());
-    } else if (isContainer)
+    } else if (node.isContainer())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 containerColorBegin(), STR(name), containerColorEnd());
-    } else if (isCluster)
+    } else if (node.isCluster())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 clusterColorBegin(), STR(name), clusterColorEnd());
-    } else if (isNode)
+    } else if (node.isNode())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 ipColorBegin(), STR(name), ipColorEnd());
-    } else if (isServer)
+    } else if (node.isServer())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 serverColorBegin(), STR(name), serverColorEnd());
-    } else if (isUser)
+    } else if (node.isUser())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 userColorBegin(), STR(name), userColorEnd());
-    } else if (isGroup)
+    } else if (node.isGroup())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
                 groupColorBegin(), STR(name), groupColorEnd());
-    } else if (isDatabase)
+    } else if (node.isDatabase())
     {
         printf("%s%s%s%s", 
                 STR(indent), 
@@ -5056,25 +5033,28 @@ S9sRpcReply::printObjectTreeBrief(
         printf("%s%s", STR(indent), STR(name));
     }
 
-    if (!linkTarget.empty())
-        printf(" -> %s", STR(linkTarget));
-    else if (!spec.empty())
-        printf(" (%s)", STR(spec));
+    if (options->isLongRequested())
+    {
+        if (!node.linkTarget().empty())
+            printf(" -> %s", STR(node.linkTarget()));
+        else if (!node.spec().empty())
+            printf(" (%s)", STR(node.spec()));
+    }
 
     printf("\n");
 
     for (uint idx = 0; idx < entries.size(); ++idx)
     {
         S9sVariantMap child = entries[idx].toVariantMap();
+        S9sTreeNode   childNode(entries[idx].toVariantMap());
         bool          last  = true;
     
         // Checking if this will be the last child we print.
         for (uint idx1 = idx + 1; idx1 < entries.size(); ++idx1)
         {
-            S9sVariantMap nextChild = entries[idx1].toVariantMap();
+            S9sTreeNode nextChild = S9sTreeNode(entries[idx1].toVariantMap());
 
-            if (nextChild["item_name"].toString().startsWith(".") &&
-                !options->isAllRequested())
+            if (nextChild.name().startsWith(".") && !options->isAllRequested())
             {
                 continue;
             }
@@ -5085,11 +5065,8 @@ S9sRpcReply::printObjectTreeBrief(
 
         // Hidden entries are printed only if the --all command line option is
         // provided.
-        if (child["item_name"].toString().startsWith(".") &&
-                !options->isAllRequested())
-        {
+        if (childNode.name().startsWith(".") && !options->isAllRequested())
             continue;
-        }
 
         if (recursionLevel)
         {
@@ -5107,29 +5084,26 @@ S9sRpcReply::printObjectTreeBrief(
 
 void
 S9sRpcReply::walkObjectTree(
-        S9sVariantMap       &theMap)
+        S9sTreeNode     node)
 {
-    S9sOptions     *options   = S9sOptions::instance();
-    S9sTreeNode     node(theMap);
-    S9sVariantList  entries   = theMap["sub_items"].toVariantList();
+    S9sOptions             *options   = S9sOptions::instance();
+    S9sVector<S9sTreeNode>  childNodes = node.childNodes();
 
     m_ownerFormat.widen(node.ownerUserName());
     m_groupFormat.widen(node.ownerGroupName());
     m_sizeFormat.widen(node.sizeString());
 
-    if (node.type() == "folder")
+    if (node.isFolder())
         m_numberOfFolders++;
     else
         m_numberOfObjects++;
 
-    for (uint idx = 0; idx < entries.size(); ++idx)
+    for (uint idx = 0; idx < childNodes.size(); ++idx)
     {
-        S9sVariantMap child = entries[idx].toVariantMap();
+        S9sTreeNode &child = childNodes[idx];
         
-        if (node.name().startsWith(".") && !options->isAllRequested())
-        {
+        if (child.name().startsWith(".") && !options->isAllRequested())
             continue;
-        }
 
         walkObjectTree(child);
     }
@@ -5486,7 +5460,7 @@ S9sRpcReply::printObjectListLong()
     m_numberOfObjects = 0;
     m_numberOfFolders = 0;
 
-    walkObjectTree(entry);
+    walkObjectTree(node);
 
     /*
      * Printing the header.
