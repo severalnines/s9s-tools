@@ -5185,9 +5185,7 @@ S9sRpcReply::printObjectListLong(
     S9sString       spec      = entry["item_spec"].toString();
     S9sString       type      = entry["item_type"].toString();
     S9sVariantList  entries   = entry["sub_items"].toVariantList();
-    S9sString       acl       = entry["item_acl"].toString();
     S9sString       name;
-    S9sString       sizeString;
 
     // If the first level is the directory, we skip it if we are not requested
     // to print the directory itself.
@@ -5229,25 +5227,10 @@ S9sRpcReply::printObjectListLong(
     else if (type == "Database")
         printf("b");
    
-    ::printf("%s", STR(aclStringToUiString(acl)));
+    ::printf("%s", STR(aclStringToUiString(node.acl())));
     ::printf(" ");
 
-    if (entry.contains("major_device_number") && 
-            entry.contains("minor_devide_number"))
-    {
-        int major = entry["major_device_number"].toInt();
-        int minor = entry["minor_devide_number"].toInt();
-
-        sizeString.sprintf("%d, %d", major, minor);
-    } else if (entry.contains("size")) 
-    {
-        ulonglong size = entry["size"].toULongLong();
-        sizeString.sprintf("%'llu", size);
-    } else {
-        sizeString = "-";
-    }
-
-    m_sizeFormat.printf(sizeString);
+    m_sizeFormat.printf(node.sizeString());
 
     /*
      * The owner and the group owner.

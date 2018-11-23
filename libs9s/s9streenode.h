@@ -48,6 +48,7 @@ class S9sTreeNode
         S9sString ownerUserName() const;
         S9sString ownerGroupName() const;
         S9sString acl() const;
+        S9sString sizeString() const;
 
         S9sString type() const;
         bool isFolder() const;

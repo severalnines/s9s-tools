@@ -165,6 +165,29 @@ S9sTreeNode::acl() const
     return property("item_acl").toString();
 }
 
+S9sString 
+S9sTreeNode::sizeString() const
+{
+    S9sString retval;
+
+    if (hasProperty("major_device_number") && 
+            hasProperty("minor_devide_number"))
+    {
+        int major = property("major_device_number").toInt();
+        int minor = property("minor_devide_number").toInt();
+
+        retval.sprintf("%d, %d", major, minor);
+    } else if (hasProperty("size")) 
+    {
+        ulonglong size = property("size").toULongLong();
+
+        retval.sprintf("%'llu", size);
+    } else {
+        retval = "-";
+    }
+
+    return retval;
+}
 
 S9sString
 S9sTreeNode::type() const
