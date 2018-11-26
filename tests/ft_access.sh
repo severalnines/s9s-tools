@@ -398,6 +398,45 @@ function testChOwn()
     user_should_not_see_the_cluster
 }
 
+function testDeleteUser()
+{
+    print_title "Deleting User"
+    
+    mys9s tree \
+        --chown \
+        --recursive \
+        --owner=$TEST_USER_NAME:users \
+        "/$CLUSTER_NAME"
+
+    mys9s tree --list --long --recursive --all
+
+    #
+    # Deleting the user, printing the tree.
+    #
+    mys9s user --delete "$TEST_USER_NAME"
+    check_exit_code_no_job $?
+
+    mys9s tree --list --long --recursive --all 
+
+    #
+    # Checking if the tree changed, the owner is system for the objects owned by
+    # the deleted user.
+    #
+    check_controller \
+        --owner      "system" \
+        --group      "users" 
+
+    check_node \
+        --node       "$FIRST_ADDED_NODE" \
+        --owner      "system" \
+        --group      "users" 
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "system" \
+        --group      "users" 
+}
+
 
 #
 # Running the requested tests.
@@ -417,6 +456,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testOtherUser
         runFunctionalTest testAddGroup
         runFunctionalTest testChOwn
+        runFunctionalTest testDeleteUser
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -428,6 +468,7 @@ else
     runFunctionalTest testOtherUser
     runFunctionalTest testAddGroup
     runFunctionalTest testChOwn
+    runFunctionalTest testDeleteUser
 fi
 
 endTests

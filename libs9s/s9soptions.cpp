@@ -4630,6 +4630,7 @@ S9sOptions::printHelpUser()
 "  --add-to-group             Add the user to a group.\n"
 "  --change-password          Change the password for an existing user.\n"
 "  --create                   Create a new Cmon user.\n"
+"  --delete                   Delete existing user.\n"
 "  --disable                  Preventing users to log in.\n"
 "  --enable                   Enable disabled/suspended users.\n"
 "  --list-groups              List user groups.\n"
