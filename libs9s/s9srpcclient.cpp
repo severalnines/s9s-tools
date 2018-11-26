@@ -6262,6 +6262,31 @@ S9sRpcClient::setGroup()
 }
 
 bool
+S9sRpcClient::deleteUser()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sUser        user;
+    S9sVariantMap  request;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One username should be passed as command line argument "
+                "when deleting a user.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    user.setProperty("user_name", options->extraArgument(0));
+    request["operation"]    = "deleteUser";
+    request["user"]         = user.toVariantMap();
+
+    return executeRequest(uri, request);    
+}
+
+bool
 S9sRpcClient::removeFromGroup()
 {
     S9sOptions    *options  = S9sOptions::instance();

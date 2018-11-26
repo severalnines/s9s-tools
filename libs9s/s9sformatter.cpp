@@ -626,7 +626,7 @@ S9sFormatter::printUserStat(
     printf("%-24s ", STR(user.failedLoginString("-")));
     
     
-    printf("\n\n");
+    printf("\n");
 }
 
 /**

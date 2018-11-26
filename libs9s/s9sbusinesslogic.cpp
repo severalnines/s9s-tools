@@ -762,6 +762,11 @@ S9sBusinessLogic::execute()
             success = client.setUser();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteUser();
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else if (options->isDisableRequested())
         {
             success = client.disableUser();

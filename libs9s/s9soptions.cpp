@@ -7236,6 +7236,9 @@ S9sOptions::checkOptionsUser()
     if (isCreateRequested())
         countOptions++;
     
+    if (isDeleteRequested())
+        countOptions++;
+    
     if (isSetRequested())
         countOptions++;
     
@@ -7629,14 +7632,15 @@ S9sOptions::readOptionsUser(
         // Main Options
         { "add-key",          no_argument,       0, OptionAddKey          },
         { "add-to-group",     no_argument,       0, OptionAddToGroup      },
-        { "remove-from-group", no_argument,      0, OptionRemoveFromGroup },
         { "change-password",  no_argument,       0, OptionChangePassword  },
         { "create",           no_argument,       0, OptionCreate          },
+        { "delete",           no_argument,       0, OptionDelete          },
         { "disable",          no_argument,       0, OptionDisable         },
         { "enable",           no_argument,       0, OptionEnable          },
         { "list-groups",      no_argument,       0, OptionListGroups      },
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "list",             no_argument,       0, 'L'                   },
+        { "remove-from-group", no_argument,      0, OptionRemoveFromGroup },
         { "set-group",        no_argument,       0, OptionSetGroup        },
         { "set",              no_argument,       0, OptionSet             },
         { "stat",             no_argument,       0, OptionStat            },
@@ -7764,6 +7768,11 @@ S9sOptions::readOptionsUser(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+            
+            case OptionDelete:
+                // --delete
+                m_options["delete"] = true;
                 break;
  
             case 'L': 

@@ -141,9 +141,8 @@ EOF
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
     else
-        pip-say "The controller is on line."
+        success "  o The controller is on line, ok."
     fi
 }
 
@@ -732,7 +731,7 @@ function testSetOtherUser()
     local emailAddress
     local exitCode
 
-    print_title "Testing --set on other user"
+    print_title "Testing --set on Other User"
 
     #
     # Setting the email address for a user and checking if it set.
@@ -741,20 +740,16 @@ function testSetOtherUser()
         --set \
         --cmon-user=system \
         --password=secret \
-        --batch \
         --email-address=nobody@mydomain.com \
         "$userName"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while changing user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     emailAddress=$(s9s user --list --user-format="%M" $userName)
     if [ "$emailAddress" != "nobody@mydomain.com" ]; then
         failure "The email is ${emailAddress} instead of 'nobody@mydomain.com'."
-        return 1
+    else
+        success "  o The email address has been changed, ok."
     fi
 
     #
@@ -764,20 +759,34 @@ function testSetOtherUser()
         --set \
         --cmon-user=system \
         --password=secret \
-        --batch \
         --email-address=nobody@mynewdomain.com \
         "$userName"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while changing user"
-        return 1
-    fi
+    check_exit_code_no_job $?
 
     emailAddress=$(s9s user --list --user-format="%M" $userName)
     if [ "$emailAddress" != "nobody@mynewdomain.com" ]; then
         failure "The email is ${emailAddress} and not 'nobody@mynewdomain.com'."
-        return 1
+    else
+        success "  o The email is  ${emailAddress}, ok."
+    fi
+
+    #
+    # Setting an email address for a user that does not exist.
+    #
+    mys9s user \
+        --set \
+        --cmon-user=system \
+        --password=secret \
+        --batch \
+        --email-address=nobody@mynewdomain.com \
+        "nonexistinguser"
+
+    exitCode=$?
+    if [ "$exitCode" == 0 ]; then
+        failure "The exit code should not be 0 for a non existing user."
+    else
+        success "  o Exit code is $exitCode, ok."
     fi
 
     return 0
@@ -793,7 +802,7 @@ function testChangePassword()
     local userName="nobody"
     local myself
 
-    print_title "Testing changing of password"
+    print_title "Testing the Changing of the Password"
 
     #
     # The 'system' user changes the password for nobody.
@@ -816,31 +825,30 @@ function testChangePassword()
         failure "Failed to log in with password ($myself)"
         return 1
     else
-        printVerbose "   myself : '$myself'"
+        success "  o The new password works, ok."
     fi
     
     #
-    # Nobody uses this new password to change the password again.
+    # User 'nobody' uses this new password to change the password again.
     #
     mys9s user \
         --change-password \
         --cmon-user="$userName" \
         --password="p" \
-        --new-password="pp" \
-        >/dev/null
+        --new-password="pp" 
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
-        return 1
+        failure "The exit code is ${exitCode} while changing the password."
+    else
+        success "  o The new password works, ok."
     fi
 
     myself=$(s9s user --whoami --cmon-user=$userName --password=pp)
     if [ "$myself" != "$userName" ]; then
-        failure "Failed to log in with password ($myself)"
-        return 1
+        failure "Failed to log in with password ($myself)."
     else
-        printVerbose "   myself : '$myself'"
+        success "  o The second password works, ok."
     fi
 }
 
