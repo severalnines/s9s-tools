@@ -59,6 +59,9 @@ S9sWidget::processKey(
 }
 
 /**
+ * \param button The mouse button code.
+ * \param x The x coordinate measured in characters.
+ * \param y The y coordinate measured in characters.
  * \returns True if the mouse event is processed and should not considered by
  *   other widgets.
  */
