@@ -46,6 +46,7 @@ class S9sFormat
 
         int realWidth() const;
 
+        void setWidth(int width);
         void widen(const S9sString &value);
         void widen(const int value);
         void widen(const ulonglong value);

@@ -5391,6 +5391,15 @@ recursive_print:
     }
 }
 
+S9sTreeNode
+S9sRpcReply::tree()
+{
+    S9sVariantMap entry =  operator[]("cdt").toVariantMap();
+    S9sTreeNode   node(entry);
+
+    return node;
+}
+
 /**
  * Prints the CDT in its tree format.
  */

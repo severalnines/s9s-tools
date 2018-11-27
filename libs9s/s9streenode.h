@@ -63,9 +63,25 @@ class S9sTreeNode
         bool isContainer() const;
         bool isDatabase() const;
 
-        S9sVector<S9sTreeNode> childNodes() const;
+        int nChildren() const;
+        bool hasChild(const S9sString &name);
+
+
+        S9sTreeNode childNode(int idx) const;
+
+        const S9sVector<S9sTreeNode> &childNodes() const;
+
+        bool pathExists(const S9sString &path);
+        bool subTree(const S9sString &path, S9sTreeNode &retval) const;
 
     private:
-        S9sVariantMap    m_properties;
+        bool subTree(
+                const S9sVariantList  &pathList,
+                S9sTreeNode           &retval) const;
+
+    private:
+        S9sVariantMap                    m_properties;
+        mutable S9sVector<S9sTreeNode>   m_childNodes;
+        mutable bool                     m_childNodesParsed;
 };
 

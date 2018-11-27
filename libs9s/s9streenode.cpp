@@ -23,14 +23,16 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-S9sTreeNode::S9sTreeNode()
+S9sTreeNode::S9sTreeNode() :
+    m_childNodesParsed(false)
 {
     m_properties["class_name"] = "CmonTreeNode";
 }
  
 S9sTreeNode::S9sTreeNode(
         const S9sVariantMap &properties) :
-    m_properties(properties)
+    m_properties(properties),
+    m_childNodesParsed(false)
 {
     m_properties["class_name"] = "CmonTreeNode";
 }
@@ -274,14 +276,131 @@ S9sTreeNode::isDatabase() const
     return type() == "database";
 }
 
-S9sVector<S9sTreeNode>
+bool
+S9sTreeNode::hasChild(
+        const S9sString &name)
+{
+    S9sVector<S9sTreeNode> nodes = childNodes();
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        if (nodes[idx].name() == name)
+            return true;
+    }
+
+    return false;
+}
+
+const S9sVector<S9sTreeNode> &
 S9sTreeNode::childNodes() const
 {
-    S9sVariantList         variantList = property("sub_items").toVariantList();
-    S9sVector<S9sTreeNode> retval;
+    if (!m_childNodesParsed)
+    {
+        S9sVariantList  variantList = property("sub_items").toVariantList();
         
-    for (uint idx = 0; idx < variantList.size(); ++idx)
-        retval << S9sTreeNode(variantList[idx].toVariantMap());
+        for (uint idx = 0; idx < variantList.size(); ++idx)
+            m_childNodes << S9sTreeNode(variantList[idx].toVariantMap());
 
-    return retval;
+        m_childNodesParsed = true;
+    }
+
+    return m_childNodes;
+}
+
+int
+S9sTreeNode::nChildren() const
+{
+    return (int) childNodes().size();
+}
+
+S9sTreeNode
+S9sTreeNode::childNode(
+        int idx) const
+{
+    const S9sVector<S9sTreeNode> &children = S9sTreeNode::childNodes();
+
+    if (idx >= 0 && idx < (int) children.size())
+        return children[idx];
+
+    return S9sTreeNode();
+}
+
+/**
+ * \returns True if the given path exists in the tree.
+ */
+bool
+S9sTreeNode::pathExists(
+        const S9sString   &path)
+{
+    S9sTreeNode  tmp;
+
+    return subTree(path, tmp);
+}
+
+/**
+ * \param path The starting point of the sub-tree to return.
+ * \param retval The place where the function returns the sub-tree.
+ * \returns True if the sub-tree found.
+ */
+bool
+S9sTreeNode::subTree(
+        const S9sString   &path,
+        S9sTreeNode       &retval) const
+{
+    S9sVariantList pathList = path.split("/");
+
+    if (pathList.size() > 0u)
+    {
+        if (pathList[0u].toString() == "/")
+            pathList.takeFirst();
+    }
+
+    if (pathList.size() == 0u)
+    {
+        retval = *this;
+        return true;
+    }
+
+    return subTree(pathList, retval);
+}
+
+/**
+ * Overloaded private method for the recursive call.
+ */
+bool
+S9sTreeNode::subTree(
+        const S9sVariantList  &pathList,
+        S9sTreeNode           &retval) const 
+{
+    // This can never happen, this is just a check against takeFirst() crash.
+    if (pathList.empty())
+        return false;
+
+    /*
+     * We take the first element on the path.
+     */
+    S9sVariantList reducedList = pathList;
+    S9sString      nextName    = reducedList.takeFirst().toString();
+    const S9sVector<S9sTreeNode> &children = childNodes();
+       
+    for (uint idx = 0u; idx < children.size(); ++idx)
+    {
+        const S9sTreeNode &child = children[idx];
+
+        if (child.name() == nextName)
+        {
+            // We found the next level belonging to the next element in the 
+            // path.
+            if (reducedList.empty())
+            {
+                retval = child;
+                return true;
+            }
+            
+            return child.subTree(reducedList, retval);
+        }
+    }
+
+    // The next item was not found.
+    return false;
 }

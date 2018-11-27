@@ -633,7 +633,8 @@ S9sRpcClient::getDatabases()
  * This method id used to get the Cmon Directory Tree from the controller.
  */
 bool
-S9sRpcClient::getTree()
+S9sRpcClient::getTree(
+        bool withDotDot)
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/tree";
@@ -646,6 +647,9 @@ S9sRpcClient::getTree()
 
     if (options->isRefreshRequested())
         request["refresh_now"] = true;
+
+    if (withDotDot)
+        request["with_dot_dot"] = true;
 
     return executeRequest(uri, request);
 }

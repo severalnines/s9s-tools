@@ -19,33 +19,25 @@
  */
 #pragma once
 
-#include "S9sDisplay"
-#include "S9sRpcClient"
-#include "S9sBrowser"
+#include "S9sDisplayList"
 #include "S9sTreeNode"
 
-class S9sCommander :
-    public S9sDisplay
+class S9sBrowser :
+    public S9sDisplayList
 {
     public:
-        S9sCommander(S9sRpcClient &client);
-        virtual ~S9sCommander();
-        
-        virtual void main();
+        S9sBrowser();
+        virtual ~S9sBrowser();
+
         virtual void processKey(int key);
 
-    protected:
-        virtual bool refreshScreen();
-
-        void updateTree();
+        void printLine(int lineIndex);
+        void setCdt(const S9sTreeNode &node);
+        S9sTreeNode selectedNode() const;
 
     private:
-        S9sRpcClient                &m_client;
-        
-        S9sBrowser                   m_leftPanel;
-        S9sBrowser                   m_rightPanel;
-
         S9sTreeNode                  m_rootNode;
-        time_t                       m_rootNodeRecevied;
+        S9sTreeNode                  m_subTree;
+        S9sString                    m_path;
+        bool                         m_isDebug;
 };
-

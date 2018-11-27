@@ -36,8 +36,14 @@ class S9sDisplayList : public S9sWidget
         void setSelectionEnabled(const bool value);
         bool isSelectionEnabled() const;
         int selectionIndex() const;
+        void setSelectionIndex(int index);
 
         void setNumberOfItems(int n);
+        int numberOfItems() const;
+
+        void setHeaderHeight(int height);
+        void setFooterHeight(int height);
+        int listHeight() const;
 
         void selectionUp(int nSteps = 1);
         void selectionDown(int nSteps = 1);
@@ -51,4 +57,6 @@ class S9sDisplayList : public S9sWidget
         int  m_selectionIndex;
         int  m_startIndex;
         int  m_numberOfItems;
+        int  m_headerHeight;
+        int  m_footerHeight;
 };

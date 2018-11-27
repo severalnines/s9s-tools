@@ -73,7 +73,7 @@ S9sDisplayList::isIndexVisible(
     if (index < m_startIndex)
         return false;
 
-    if (index - m_startIndex > m_height)
+    if (index - m_startIndex > listHeight())
         return false;
 
     return true;
@@ -88,7 +88,7 @@ S9sDisplayList::firstVisibleIndex() const
 int
 S9sDisplayList::lastVisibleIndex() const
 {
-    int retval = m_startIndex + m_height - 1;
+    int retval = m_startIndex + listHeight() - 1;
 #if 0
     if (retval >= m_numberOfItems)
         retval = m_numberOfItems - 1;
@@ -146,11 +146,11 @@ S9sDisplayList::processKey(
             break;
 
         case S9S_KEY_PGUP:
-            selectionUp(m_height);
+            selectionUp(listHeight());
             break;
 
         case S9S_KEY_PGDN:
-            selectionDown(m_height);
+            selectionDown(listHeight());
             break;
 
         default:
@@ -167,6 +167,12 @@ S9sDisplayList::setNumberOfItems(
 
     if (m_selectionIndex >= m_numberOfItems)
         m_selectionIndex = m_numberOfItems - 1;
+}
+
+int
+S9sDisplayList::numberOfItems() const
+{
+    return m_numberOfItems;
 }
 
 void
@@ -188,6 +194,33 @@ S9sDisplayList::selectionIndex() const
     return m_selectionIndex;
 }
 
+void
+S9sDisplayList::setSelectionIndex(
+        int index)
+{
+    m_selectionIndex = index;
+}
+
+void
+S9sDisplayList::setHeaderHeight(
+        int height)
+{
+    m_headerHeight = height;
+}
+
+void
+S9sDisplayList::setFooterHeight(
+        int height)
+{
+    m_footerHeight = height;
+}
+
+int
+S9sDisplayList::listHeight() const
+{
+    return height() - m_headerHeight - m_footerHeight;
+}
+
 // startindex + height = selectionIndex
 void
 S9sDisplayList::ensureSelectionVisible()
@@ -198,20 +231,20 @@ S9sDisplayList::ensureSelectionVisible()
             m_selectionIndex = 0;
 
         if (m_selectionIndex >= m_numberOfItems)
-            m_numberOfItems = m_numberOfItems - 1;
+            m_selectionIndex = m_numberOfItems - 1;
 
-        if (m_selectionIndex - m_startIndex + 1 > m_height)
+        if (m_selectionIndex - m_startIndex + 1 > listHeight())
         {
             // The selection is below the last visible line, need to scroll.
-            m_startIndex = m_selectionIndex - m_height + 1;
-        } else if (m_startIndex > m_selectionIndex)
+            m_startIndex = m_selectionIndex - listHeight() + 1;
+        } else if (m_startIndex > m_selectionIndex && m_selectionIndex >= 0)
         {
             // The selection is above the first visible line, need to scroll.
             m_startIndex = m_selectionIndex;
         }
     } else {
-        if (m_startIndex + m_height > m_numberOfItems)
-            m_startIndex = m_numberOfItems - m_height;
+        if (m_startIndex + listHeight() > m_numberOfItems)
+            m_startIndex = m_numberOfItems - listHeight();
         
         if (m_startIndex < 0)
             m_startIndex = 0;

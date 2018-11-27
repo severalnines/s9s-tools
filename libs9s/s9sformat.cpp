@@ -111,6 +111,14 @@ S9sFormat::realWidth() const
     return retval;
 }
 
+void
+S9sFormat::setWidth(
+        int width)
+{
+    m_width = width;
+    m_withFieldSeparator = false;
+}
+
 /**
  * If necessary makes the format wider to accomodate the given value.
  */

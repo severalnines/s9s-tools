@@ -73,7 +73,7 @@ class S9sRpcClient
          */
         bool getClusters();
         bool getCluster(const S9sString &clusterName, const int clusterId);
-        bool getTree();
+        bool getTree(bool withDotDot = false);
         bool getDatabases();
 
         
