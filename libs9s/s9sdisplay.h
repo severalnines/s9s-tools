@@ -54,7 +54,9 @@ class S9sDisplay :
     public:
         S9sDisplay(bool interactive = true, bool rawTerminal = true);
         virtual ~S9sDisplay();
-        
+       
+        virtual void main();
+        virtual void processKey(int key);
         virtual bool processButton(uint button, uint x, uint y);
 
         bool setOutputFileName(const S9sString &fileName);
@@ -67,15 +69,13 @@ class S9sDisplay :
 
     protected:
         virtual int exec();
-        
-    protected:
-        virtual bool refreshScreen() = 0;
+                
+        virtual bool refreshScreen();
+        virtual void printHeader();
+        virtual void printFooter();
 
         void startScreen();
         
-        virtual void printHeader() = 0;
-        virtual void printFooter() = 0;
-
         void printMiddle(const S9sString text);
         void printNewLine();
         

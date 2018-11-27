@@ -34,6 +34,7 @@
 #include "S9sEvent"
 #include "S9sMonitor"
 #include "S9sCalc"
+#include "S9sCommander"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -348,14 +349,6 @@ S9sBusinessLogic::execute()
             }
         } else if (options->isAccessRequested())
         {
-#if 0
-            S9sRpcReply reply;
-
-            success = client.checkAccess();
-            reply = client.reply();
-            reply.printAcl();
-            client.setExitStatus();
-#endif
             success = client.checkAccess();
             client.printMessages("Ok", success);
             client.setExitStatus();
@@ -368,6 +361,11 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printCat();
             client.setExitStatus();
+        } else if (options->isWatchRequested())
+        {
+            //s9s event --watch
+            S9sCommander commander(client);
+            commander.main();
         } else if (options->isGetAclRequested())
         {
             S9sRpcReply reply;

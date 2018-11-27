@@ -10821,8 +10821,8 @@ S9sOptions::readOptionsTree(
 
         // Main Option
         { "access",           no_argument,       0, OptionAccess          },
-        { "cat",              no_argument,       0, OptionCat             },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "cat",              no_argument,       0, OptionCat             },
         { "chown",            no_argument,       0, OptionChOwn           },
         { "delete",           no_argument,       0, OptionDelete          },
         { "get-acl",          no_argument,       0, OptionGetAcl          },
@@ -10832,6 +10832,7 @@ S9sOptions::readOptionsTree(
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "tree",             no_argument,       0, OptionTree            },
+        { "watch",            no_argument,       0, OptionWatch           },
         
         { "acl",              required_argument, 0, OptionAcl             },
         { "all",              no_argument,       0, OptionAll             },
@@ -10959,7 +10960,12 @@ S9sOptions::readOptionsTree(
                 // --tree
                 m_options["tree"] = true;
                 break;
- 
+
+             case OptionWatch:
+                // --watch
+                m_options["watch"] = true;
+                break;
+
             case OptionMove:
                 // --move
                 m_options["move"] = true;
@@ -11335,6 +11341,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isDeleteRequested())
+        countOptions++;
+    
+    if (isWatchRequested())
         countOptions++;
     
     if (countOptions > 1)

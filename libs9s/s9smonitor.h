@@ -61,12 +61,11 @@ class S9sMonitor :
 
         void setDisplayMode(const S9sMonitor::DisplayMode mode);
 
-        void main();
+        virtual void main();
 
     protected:
         void replyCallback(S9sRpcReply &reply);
         void eventCallback(S9sEvent &event);
-
 
         virtual bool refreshScreen();
         virtual void printHeader();

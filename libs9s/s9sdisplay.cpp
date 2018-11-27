@@ -237,6 +237,83 @@ S9sDisplay::exec()
 }
 
 /**
+ * \returns True if the program should continue refreshing the screen, false to
+ *   exit.
+ */
+bool 
+S9sDisplay::refreshScreen()
+{
+    startScreen();
+    printHeader();
+    //printMiddle(message);
+    printFooter();
+
+    return true;
+}
+
+void
+S9sDisplay::printHeader()
+{
+    S9sDateTime dt = S9sDateTime::currentDateTime();
+    S9sString   title;
+    const char *bold = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
+
+    title = "S9S                ";
+
+    ::printf("%s%s%s ", bold, STR(title), normal);
+    ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
+    printNewLine();
+}
+
+/**
+ * Printing the bottom part of the screen.
+ */
+void
+S9sDisplay::printFooter()
+{
+    const char *bold   = TERM_SCREEN_TITLE_BOLD;
+    const char *normal = TERM_SCREEN_TITLE;
+
+    for (;m_lineCounter < height() - 1; ++m_lineCounter)
+    {
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ::printf("%s", TERM_ERASE_EOL);
+    } 
+
+    ::printf("%sQ%s-Quit ", bold, normal);
+
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    ::fflush(stdout);
+}
+
+void
+S9sDisplay::main()
+{
+    start();
+
+        while (true)
+        {
+#if 0
+            while (!m_client.isAuthenticated())
+            {
+                m_client.maybeAuthenticate();
+
+                if (!m_client.isAuthenticated())
+                    usleep(3000000);
+            }
+
+            m_lastReply = S9sRpcReply();
+            m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
+            m_lastReply = m_client.reply();
+#endif
+            sleep(1);
+        }    
+}
+
+/**
  * \param button The mouse button code.
  * \param x The x coordinate measured in characters.
  * \param y The y coordinate measured in characters.
@@ -256,6 +333,23 @@ S9sDisplay::processButton(
     m_lastY      = y;
 
     return S9sWidget::processButton(button, x, y);
+}
+
+/**
+ * Virtual function that called when the user pressed a key on the keyboard.
+ */
+void
+S9sDisplay::processKey(
+        int key)
+{
+    switch (key)
+    {
+        case 'q':
+        case 'Q':
+            exit(0);
+            break;
+
+    }
 }
 
 /**
