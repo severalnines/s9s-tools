@@ -78,7 +78,7 @@ S9sRpcClient::S9sRpcClient (
 	m_priv = orig.m_priv;
 
 	if (m_priv) 
-		m_priv->ref ();
+		m_priv->ref();
 }
 
 /**
@@ -116,6 +116,24 @@ S9sRpcClient::operator= (
 	}
 
 	return *this;
+}
+
+S9sString
+S9sRpcClient::hostName() const
+{
+    return m_priv->m_hostName;
+}
+
+bool
+S9sRpcClient::useTls() const
+{
+    return m_priv->m_useTls;
+}
+
+int
+S9sRpcClient::port() const
+{
+    return m_priv->m_port;
 }
 
 bool

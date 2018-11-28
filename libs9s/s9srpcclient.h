@@ -44,6 +44,10 @@ class S9sRpcClient
 
         S9sRpcClient &operator=(const S9sRpcClient &rhs);
 
+        S9sString hostName() const;
+        int port() const;
+        bool useTls() const;
+
         bool hasPrivateKey() const;
         bool canAuthenticate(S9sString &reason) const;
         bool needToAuthenticate() const;

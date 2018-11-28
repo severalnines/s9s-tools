@@ -21,8 +21,9 @@
 
 #include "S9sDisplay"
 #include "S9sRpcClient"
-#include "S9sBrowser"
 #include "S9sTreeNode"
+#include "S9sBrowser"
+#include "S9sInfoPanel"
 
 class S9sCommander :
     public S9sDisplay
@@ -45,8 +46,10 @@ class S9sCommander :
         S9sRpcClient    &m_client;
         S9sMutex         m_networkMutex;        
         
-        S9sBrowser       m_leftPanel;
-        S9sBrowser       m_rightPanel;
+        S9sBrowser       m_leftBrowser;
+        S9sInfoPanel     m_leftInfo;
+        S9sBrowser       m_rightBrowser;
+        S9sInfoPanel     m_rightInfo;
 
         S9sTreeNode      m_rootNode;
         time_t           m_rootNodeRecevied;

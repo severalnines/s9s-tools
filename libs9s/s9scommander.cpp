@@ -35,15 +35,26 @@ S9sCommander::S9sCommander(
     m_communicating(false),
     m_reloadRequested(false)
 {
-    m_leftPanel.setVisible(true);
-    m_leftPanel.setSelectionIndex(0);
-    m_leftPanel.setHasFocus(true);
-    m_leftPanel.setSelectionEnabled(true);
+    m_leftBrowser.setVisible(true);
+    m_leftBrowser.setSelectionIndex(0);
+    m_leftBrowser.setHasFocus(true);
+    m_leftBrowser.setSelectionEnabled(true);
 
-    m_rightPanel.setVisible(true);
-    m_rightPanel.setSelectionIndex(0);
-    m_rightPanel.setHasFocus(false);
-    m_rightPanel.setSelectionEnabled(true);
+    m_rightBrowser.setVisible(false);
+    m_rightBrowser.setSelectionIndex(0);
+    m_rightBrowser.setHasFocus(false);
+    m_rightBrowser.setSelectionEnabled(true);
+    
+    m_rightInfo.setVisible(true);
+    m_rightInfo.setHasFocus(false);
+    m_rightInfo.setInfoController(
+            client.hostName(), client.port(), client.useTls());
+    
+    
+    m_leftInfo.setVisible(true);
+    m_leftInfo.setHasFocus(false);
+    m_leftInfo.setInfoController(
+            client.hostName(), client.port(), client.useTls());
 }
 
 S9sCommander::~S9sCommander()
@@ -91,16 +102,26 @@ S9sCommander::updateTree()
     S9sMutexLocker   locker(m_networkMutex);    
     S9sRpcReply      getTreeReply;
 
+    // Updating the screen.
+    m_mutex.lock();
+    m_rightInfo.setInfoRequestName("getTree");
+    m_leftInfo.setInfoRequestName("getTree");
+    m_mutex.unlock();
+
     m_communicating   = true;
     m_reloadRequested = false;
 
     m_client.getTree(true);
     getTreeReply = m_client.reply();
+    
+    // Updatng the screen.
+    m_mutex.lock();
+    m_rightInfo.setInfoRequestName("");
+    m_leftInfo.setInfoRequestName("");
 
-    m_mutex.lock();     
     m_rootNode = getTreeReply.tree();
-    m_leftPanel.setCdt(m_rootNode);
-    m_rightPanel.setCdt(m_rootNode);
+    m_leftBrowser.setCdt(m_rootNode);
+    m_rightBrowser.setCdt(m_rootNode);
     m_rootNodeRecevied = time(NULL);
     m_communicating = false;    
     m_mutex.unlock(); 
@@ -113,16 +134,26 @@ S9sCommander::updateTree()
 bool 
 S9sCommander::refreshScreen()
 {
+    //S9sMutexLocker   locker(m_mutex);    
     startScreen();
     printHeader();
 
-    m_leftPanel.setSize(width() / 2, height() - 2);
-    m_rightPanel.setSize(width() / 2, height() - 2);
+    m_leftBrowser.setSize(width() / 2, height() - 2);
+    m_rightBrowser.setSize(width() / 2, height() - 2);
+    
+    m_leftInfo.setSize(width() / 2, height() - 2);
+    m_rightInfo.setSize(width() / 2, height() - 2);
 
     for (int idx = 0u; idx < height() - 2; ++idx)
     {
-        m_leftPanel.printLine(idx);
-        m_rightPanel.printLine(idx);
+        if (m_leftBrowser.isVisible())
+            m_leftBrowser.printLine(idx);
+
+        if (m_rightBrowser.isVisible())
+            m_rightBrowser.printLine(idx);
+        else if (m_rightInfo.isVisible())
+            m_rightInfo.printLine(idx);
+
         printNewLine();
     }
 
@@ -147,15 +178,28 @@ S9sCommander::processKey(
 
         case '\t':
             // Tab switches the focus between the left and right panel.
-            if (m_leftPanel.hasFocus())
+            if (m_leftBrowser.hasFocus())
             {
-                m_leftPanel.setHasFocus(false);
-                m_rightPanel.setHasFocus(true);
+                m_leftBrowser.setHasFocus(false);
+                m_rightBrowser.setHasFocus(true);
             } else {
-                m_leftPanel.setHasFocus(true);
-                m_rightPanel.setHasFocus(false);
+                m_leftBrowser.setHasFocus(true);
+                m_rightBrowser.setHasFocus(false);
             }
             return;
+
+        case 'l':
+        case 'L':
+            if (m_rightInfo.isVisible())
+            {
+                m_rightBrowser.setVisible(true);
+                m_rightInfo.setVisible(false);
+            } else {
+                m_rightBrowser.setVisible(false);
+                m_rightInfo.setVisible(true);
+            }
+
+            break;
 
         case 'd':
         case 'D':
@@ -164,11 +208,11 @@ S9sCommander::processKey(
             break;
     }
 
-    if (m_leftPanel.hasFocus())
-        m_leftPanel.processKey(key);
+    if (m_leftBrowser.hasFocus())
+        m_leftBrowser.processKey(key);
     
-    if (m_rightPanel.hasFocus())
-        m_rightPanel.processKey(key);
+    if (m_rightBrowser.hasFocus())
+        m_rightBrowser.processKey(key);
 }
 
 /**
