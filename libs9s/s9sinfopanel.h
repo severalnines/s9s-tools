@@ -21,6 +21,7 @@
 
 #include "S9sWidget"
 #include "S9sTreeNode"
+#include "S9sRpcReply"
 
 class S9sInfoPanel :
     public S9sWidget
@@ -39,11 +40,32 @@ class S9sInfoPanel :
         void setInfoRequestName(
                 const S9sString  requestName);
 
+        void setInfoLastReply(
+                const S9sRpcReply &reply);
+
+        void setInfoNode(
+                const S9sTreeNode &node);
+
         S9sString controllerUrl() const;
 
     private:
-        S9sString   m_hostName;
-        int         m_port;
-        bool        m_useTls;
-        S9sString   m_requestName;
+        void printString(const S9sString &theString);
+
+        void printNameValue(
+                const S9sString &name,
+                const S9sString &value);
+
+        void printChar(int c);
+        void printChar(const char *c);
+        void printChar(const char *c, const int lastColumn);
+
+    private:
+        S9sString    m_hostName;
+        int          m_port;
+        bool         m_useTls;
+        S9sString    m_requestName;
+        S9sRpcReply  m_lastReply;
+        S9sTreeNode  m_node;
+        /** Transient value shows the position in the line. */
+        int          m_nChars;
 };

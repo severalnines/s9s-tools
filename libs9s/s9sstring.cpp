@@ -1196,6 +1196,29 @@ S9sString::buildPath(
 }
 
 S9sString 
+S9sString::stretch(
+        int width) const
+{
+    S9sString retval;
+    int       nChars = 0;
+
+    if (length() < 3)
+        return retval;
+
+    retval += at(0);
+    nChars += 1;
+
+    while (nChars < width - 1)
+    {
+        retval += at(1);
+        nChars += 1;
+    }
+
+    retval += at(2);
+    return retval;
+}
+
+S9sString 
 aclStringToUiString(
         S9sString aclString)
 {

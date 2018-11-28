@@ -66,102 +66,178 @@ S9sInfoPanel::controllerUrl() const
 }
 
 void
+S9sInfoPanel::setInfoLastReply(
+        const S9sRpcReply &reply)
+{
+    m_lastReply = reply;
+}
+
+void
+S9sInfoPanel::setInfoNode(
+        const S9sTreeNode &node)
+{
+    m_node = node;
+}
+
+void
 S9sInfoPanel::printLine(
         int lineIndex)
 {
     const char *normal = "\033[48;5;19m" "\033[1m\033[38;5;33m";
-    const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
+    //const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
     //const char *selection = "\033[1m\033[48;5;51m" "\033[2m\033[38;5;237m";
-    int         nChars = 0;
 
+    m_nChars = 0;
     ::printf("%s", normal);
     if (lineIndex == 0)
     {
-        ::printf("╔");
-        ++nChars;
+        printChar("╔");
         
-        while (nChars < width() - 1)
-        {
-            ::printf("═");
-            ++nChars;
-        }
+        while (m_nChars < width() - 1)
+            printChar("═");
 
-        ::printf("╗");
+        printChar("╗");
     } else if (lineIndex == height() - 1)
     {
         // Last line, frame.
-        ::printf("╚");
-        ++nChars;
+        printChar("╚");
         
-        while (nChars < width() - 1)
-        {
-            ::printf("═");
-            ++nChars;
-        }
+        while (m_nChars < width() - 1)
+            printChar("═");
 
-        ::printf("╝");
+        printChar("╝");
     } else if (lineIndex == 1) 
     {
         S9sString tmp;
 
-        ::printf("║");
-        ++nChars;
-        
-        tmp = "  Controller: ";
-        ::printf("%s", STR(tmp));
-        nChars += tmp.length();
-   
-        tmp = controllerUrl();
-        ::printf("%s", header);
-        ::printf("%s", STR(tmp));
-        ::printf("%s", normal);
-        nChars += tmp.length();
-
-        while (nChars < width() - 1)
-        {
-            ::printf(" ");
-            ++nChars;
-        }
-
-        ::printf("║");
+        printChar("║");
+        printNameValue("Controller", controllerUrl());
+        printChar(" ", width() - 1);
+        printChar("║");
     } else if (lineIndex == 2) 
     {
         S9sString tmp;
 
-        ::printf("║");
-        ++nChars;
+        printChar("║");
         
         if (!m_requestName.empty())
         {
-            tmp = "     Request: ";
-            ::printf("%s", STR(tmp));
-            nChars += tmp.length();
-   
-            tmp = m_requestName;
-            ::printf("%s", header);
-            ::printf("%s", STR(tmp));
-            ::printf("%s", normal);
-            nChars += tmp.length();
+            printNameValue("Request", m_requestName);
+        } else if (!m_lastReply.requestStatusAsString().empty())
+        {
+            printNameValue("Reply", m_lastReply.requestStatusAsString());
         }
          
-        while (nChars < width() - 1)
-        {
-            ::printf(" ");
-            ++nChars;
-        }
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (lineIndex == 3)
+    {
+        printChar("╟");
+        printChar("─", width() - 1);
+        printChar("╢");
+    } else if (lineIndex == 4) 
+    {
+        S9sString tmp;
 
-        ::printf("║");
+        printChar("║");
+        
+        if (!m_node.name().empty())
+            printNameValue("Name", m_node.name());
+        
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (lineIndex == 5) 
+    {
+        S9sString tmp;
+
+        printChar("║");
+        
+        if (!m_node.name().empty())
+            printNameValue("Type", m_node.typeName());
+        
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (lineIndex == 6) 
+    {
+        S9sString tmp;
+
+        printChar("║");
+        
+        if (!m_node.spec().empty())
+            printNameValue("Spec", m_node.spec());
+        
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (lineIndex == 7)
+    {
+        printChar("╟");
+        printChar("─", width() - 1);
+        printChar("╢");
+    } else if (lineIndex == 9)
+    {
+        printChar("║");
+        printString("  No preview available.");
+        printChar(" ", width() - 1);
+        printChar("║");
     } else {
-        ::printf("║");
-        ++nChars;
+        printChar("║");
+        printChar(" ", width() - 1);
+        printChar("║");
+    }
+}
+
+void
+S9sInfoPanel::printString(
+        const S9sString &theString)
+{
+    ::printf("%s", STR(theString));
+    m_nChars += theString.length();
+}
+
+void
+S9sInfoPanel::printNameValue(
+        const S9sString &name,
+        const S9sString &value)
+{
+    const char *normal = "\033[48;5;19m" "\033[1m\033[38;5;33m";
+    const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
+    S9sString   tmp;
+
+    tmp = "        Name: ";
+    tmp.sprintf("%12s: ", STR(name));
+    ::printf("%s", STR(tmp));
+    m_nChars += tmp.length();
    
-        while (nChars < width() - 1)
-        {
-            ::printf(" ");
-            ++nChars;
-        }
+    ::printf("%s", header);
+    ::printf("%s", STR(value));
+    ::printf("%s", normal);
+    m_nChars += value.length();
+}
 
-        ::printf("║");
+void
+S9sInfoPanel::printChar(
+        int c)
+{
+    ::printf("%c", c);
+    ++m_nChars;
+}
 
+void
+S9sInfoPanel::printChar(
+        const char *c)
+{
+    ::printf("%s", c);
+    ++m_nChars;
+}
+
+void
+S9sInfoPanel::printChar(
+        const char *c,
+        const int   lastColumn)
+{
+    while (m_nChars < lastColumn)
+    {
+        ::printf("%s", c);
+        ++m_nChars;
     }
 }

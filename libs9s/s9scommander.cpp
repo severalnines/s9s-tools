@@ -51,7 +51,7 @@ S9sCommander::S9sCommander(
             client.hostName(), client.port(), client.useTls());
     
     
-    m_leftInfo.setVisible(true);
+    m_leftInfo.setVisible(false);
     m_leftInfo.setHasFocus(false);
     m_leftInfo.setInfoController(
             client.hostName(), client.port(), client.useTls());
@@ -118,6 +118,8 @@ S9sCommander::updateTree()
     m_mutex.lock();
     m_rightInfo.setInfoRequestName("");
     m_leftInfo.setInfoRequestName("");
+    m_rightInfo.setInfoLastReply(getTreeReply);
+    m_leftInfo.setInfoLastReply(getTreeReply);
 
     m_rootNode = getTreeReply.tree();
     m_leftBrowser.setCdt(m_rootNode);
@@ -144,10 +146,15 @@ S9sCommander::refreshScreen()
     m_leftInfo.setSize(width() / 2, height() - 2);
     m_rightInfo.setSize(width() / 2, height() - 2);
 
+    m_rightInfo.setInfoNode(m_leftBrowser.selectedNode());
+    m_leftInfo.setInfoNode(m_rightBrowser.selectedNode());
+
     for (int idx = 0u; idx < height() - 2; ++idx)
     {
         if (m_leftBrowser.isVisible())
             m_leftBrowser.printLine(idx);
+        else if (m_leftInfo.isVisible())
+            m_leftInfo.printLine(idx);
 
         if (m_rightBrowser.isVisible())
             m_rightBrowser.printLine(idx);
@@ -188,8 +195,8 @@ S9sCommander::processKey(
             }
             return;
 
-        case 'l':
-        case 'L':
+        case 'r':
+        case 'R':
             if (m_rightInfo.isVisible())
             {
                 m_rightBrowser.setVisible(true);
@@ -198,7 +205,18 @@ S9sCommander::processKey(
                 m_rightBrowser.setVisible(false);
                 m_rightInfo.setVisible(true);
             }
-
+            break;
+        
+        case 'l':
+        case 'L':
+            if (m_leftInfo.isVisible())
+            {
+                m_leftBrowser.setVisible(true);
+                m_leftInfo.setVisible(false);
+            } else {
+                m_leftBrowser.setVisible(false);
+                m_leftInfo.setVisible(true);
+            }
             break;
 
         case 'd':

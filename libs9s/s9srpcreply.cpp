@@ -91,7 +91,7 @@ S9sRpcReply::requestStatus() const
 S9sString
 S9sRpcReply::requestStatusAsString() const
 {
-    S9sString errorCodeString = "???";
+    S9sString errorCodeString = "";
 
     if (contains("requestStatus"))
         errorCodeString = at("requestStatus").toString().toLower();

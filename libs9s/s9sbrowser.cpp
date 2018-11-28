@@ -62,6 +62,17 @@ S9sBrowser::selectedNode() const
     return m_subTree.childNode(selectionIndex());
 }
 
+S9sString
+S9sBrowser::selectedNodeFullPath() const
+{
+    S9sString retval;
+
+    if (m_path.empty() || m_name.empty())
+        return retval;
+
+    return S9sFile::buildPath(m_path, m_name);
+}
+
 void
 S9sBrowser::processKey(
         int key)
@@ -117,7 +128,6 @@ S9sBrowser::printLine(
     int         column1;
     int         column2;
     int         column3;
-    int         nChars = 0;
     S9sFormat   header1Format(header, normal);
     S9sFormat   header2Format(header, normal);
     S9sFormat   header3Format(header, normal);
@@ -149,23 +159,23 @@ S9sBrowser::printLine(
     column2 = column1 + 10;
     column3 = column2 + 10;
 
+    m_nChars = 0;
     ::printf("%s", normal);
     if (lineIndex == 0)
     {
-        ::printf("╔");
-        ++nChars;
+        printChar("╔");
         
-        while (nChars < width() - 1)
+        while (m_nChars < width() - 1)
         {
-            if (nChars == column1 || nChars == column2 || nChars == column3)
+            if (m_nChars == column1 || m_nChars == column2 || m_nChars == column3)
                 ::printf("╤"); 
             else
                 ::printf("═");
 
-            ++nChars;
+            ++m_nChars;
         }
 
-        ::printf("╗");
+        printChar("╗");
     } else if (lineIndex == 1) 
     {
         ::printf("║");
@@ -184,47 +194,34 @@ S9sBrowser::printLine(
         ::printf("║");
     } else if (lineIndex == height() - 1)
     {
-        ::printf("╚");
-        ++nChars;
-        
-        while (nChars < width() - 1)
-        {
-            ::printf("═");
-            ++nChars;
-        }
-
-        ::printf("╝");
+        // Last line, frame.
+        printChar("╚");
+        printChar("═", width() - 1);
+        printChar("╝");
     } else if (lineIndex == height() - 3)
     {
-        ::printf("╟");
-        ++nChars;
+        printChar("╟");
         
-        while (nChars < width() - 1)
+        while (m_nChars < width() - 1)
         {
-            if (nChars == column1 || nChars == column2 || nChars == column3)
+            if (m_nChars == column1 || m_nChars == column2 || m_nChars == column3)
                 ::printf("┴"); 
             else
                 ::printf("─");
 
-            ++nChars;
+            ++m_nChars;
         }
 
-        ::printf("╢");
+        printChar("╢");
     } else if (lineIndex == height() - 2)
     {
-        ::printf("║");
-        ++nChars;
+        printChar("║");
        
         ::printf("%s", STR(m_path));
-        nChars += m_path.length();
+        m_nChars += m_path.length();
 
-        while (nChars < width() - 1)
-        {
-            ::printf(" ");
-            ++nChars;
-        }
-
-        ::printf("║");
+        printChar(" ", width() - 1);
+        printChar("║");
     } else {
         /*
          * The normal lines. 
@@ -237,11 +234,16 @@ S9sBrowser::printLine(
         bool      selected;
 
         ensureSelectionVisible();
+        
+        selected = isSelected(listIndex) && hasFocus();
 
         if (listIndex < m_subTree.nChildren())
         {
             S9sTreeNode node = m_subTree.childNode(listIndex);
             
+            if (selected)
+                m_name = node.name();
+
             if (m_isDebug)
             {
                 name.sprintf("%d %d %s", 
@@ -260,7 +262,6 @@ S9sBrowser::printLine(
             }
         }
 
-        selected = isSelected(listIndex) && hasFocus();
 
         ::printf("║");
 
@@ -282,5 +283,33 @@ S9sBrowser::printLine(
             ::printf("%s%s", TERM_NORMAL, normal);
 
         ::printf("║");
+    }
+}
+
+void
+S9sBrowser::printChar(
+        int c)
+{
+    ::printf("%c", c);
+    ++m_nChars;
+}
+
+void
+S9sBrowser::printChar(
+        const char *c)
+{
+    ::printf("%s", c);
+    ++m_nChars;
+}
+
+void
+S9sBrowser::printChar(
+        const char *c,
+        const int   lastColumn)
+{
+    while (m_nChars < lastColumn)
+    {
+        ::printf("%s", c);
+        ++m_nChars;
     }
 }

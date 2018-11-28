@@ -41,9 +41,14 @@ S9sDisplayList::selectionUp(
         int nSteps)
 {
     if (m_selectionEnabled)
+    {
         m_selectionIndex -= nSteps;
-    else
+
+        if (m_selectionIndex < 0)
+            m_selectionIndex = 0;
+    } else {
         m_startIndex -= nSteps;
+    }
 }
 
 /**
@@ -54,9 +59,14 @@ S9sDisplayList::selectionDown(
         int nSteps)
 {
     if (m_selectionEnabled)
+    {
         m_selectionIndex += nSteps;
-    else 
+
+        if (m_selectionIndex >= m_numberOfItems)
+            m_selectionIndex = m_numberOfItems - 1;
+    } else {
         m_startIndex += nSteps;
+    }
 }
 
 bool
@@ -145,12 +155,12 @@ S9sDisplayList::processKey(
             selectionUp();
             break;
 
-        case S9S_KEY_PGUP:
-            selectionUp(listHeight());
-            break;
-
         case S9S_KEY_PGDN:
             selectionDown(listHeight());
+            break;
+
+        case S9S_KEY_PGUP:
+            selectionUp(listHeight());
             break;
 
         default:

@@ -197,6 +197,12 @@ S9sTreeNode::type() const
     return property("item_type").toString().toLower();
 }
 
+S9sString
+S9sTreeNode::typeName() const
+{
+    return property("item_type").toString();
+}
+
 int
 S9sTreeNode::typeAsChar() const
 {

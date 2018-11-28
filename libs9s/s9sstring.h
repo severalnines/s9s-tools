@@ -143,6 +143,8 @@ class S9sString : public std::string
                     const std::string &path2,
                     const std::string &path3);
 
+        S9sString stretch(int width) const;
+
         static const S9sString space;
         static const S9sString dash;
 };

@@ -33,11 +33,23 @@ class S9sBrowser :
 
         void printLine(int lineIndex);
         void setCdt(const S9sTreeNode &node);
+
         S9sTreeNode selectedNode() const;
+        S9sString selectedNodeFullPath() const;
+
+    private:
+        void printChar(int c);
+        void printChar(const char *c);
+        void printChar(const char *c, const int lastColumn);
 
     private:
         S9sTreeNode                  m_rootNode;
         S9sTreeNode                  m_subTree;
+        /** The path shown in the list. */
         S9sString                    m_path;
+        /** The name of the selected item. */
+        S9sString                    m_name;
         bool                         m_isDebug;
+        /** Transient value shows the position in the line. */
+        int          m_nChars;
 };
