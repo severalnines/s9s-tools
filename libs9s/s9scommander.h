@@ -33,19 +33,26 @@ class S9sCommander :
         
         virtual void main();
         virtual void processKey(int key);
+        virtual bool processButton(uint button, uint x, uint y);        
 
     protected:
         virtual bool refreshScreen();
+        virtual void printHeader();
 
         void updateTree();
 
     private:
-        S9sRpcClient                &m_client;
+        S9sRpcClient    &m_client;
+        S9sMutex         m_networkMutex;        
         
-        S9sBrowser                   m_leftPanel;
-        S9sBrowser                   m_rightPanel;
+        S9sBrowser       m_leftPanel;
+        S9sBrowser       m_rightPanel;
 
-        S9sTreeNode                  m_rootNode;
-        time_t                       m_rootNodeRecevied;
+        S9sTreeNode      m_rootNode;
+        time_t           m_rootNodeRecevied;
+        bool             m_communicating;
+        bool             m_reloadRequested;
+        bool             m_viewDebug;
+
 };
 

@@ -52,6 +52,11 @@ S9sTopUi::~S9sTopUi()
 {
 }
 
+/**
+ * \param key The code of the pressed key.
+ *
+ * This function is called when the user pressed a key on the keyboard.
+ */
 void
 S9sTopUi::processKey(
         int key)
@@ -151,7 +156,7 @@ void
 S9sTopUi::printHeader()
 {
     S9sDateTime dt = S9sDateTime::currentDateTime();
-    S9sString   title = "S9S TOP";
+    S9sString   title;
 
     if (!m_clusterName.empty())
     {
@@ -164,6 +169,7 @@ S9sTopUi::printHeader()
     ::printf("%c ", rotatingCharacter());
     ::printf("%s ", STR(dt.toString(S9sDateTime::LongTimeFormat)));
 
+    // Printing the network activity character.
     if (m_communicating || m_reloadRequested)
         ::printf("❌ ");
     else
@@ -177,10 +183,12 @@ S9sTopUi::printHeader()
     } else {
         ::printf("            ");
     }
-    
+   
+    // If we are in debug mode we print a few internals that help us in
+    // development.
     if (m_viewDebug)
     {
-        //::printf("0x%02x ",      lastKeyCode());
+        ::printf("0x%02x ",      lastKeyCode());
         ::printf("%02dx%02d ",   width(), height());
         ::printf("%02d:%03d,%03d ", m_lastButton, m_lastX, m_lastY);
     }
