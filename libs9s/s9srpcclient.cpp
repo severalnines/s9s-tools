@@ -7326,6 +7326,9 @@ S9sRpcClient::doExecuteRequest(
     } else {
         m_priv->m_reply["reply_received"] = 
             replyReceived.toString(S9sDateTime::TzDateTimeFormat);
+
+        if (m_priv->m_reply.requestStatus() == S9sRpcReply::AuthRequired)
+            m_priv->m_authenticated = false;
     }
 
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));

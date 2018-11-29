@@ -78,7 +78,7 @@ S9sRpcReply::requestStatus() const
         retval = UnknownError;
     else if (errorCodeString == "accessdenied")
         retval = AccessDenied;
-    else if (errorCodeString == "authrequeired")
+    else if (errorCodeString == "authrequired")
         retval = AuthRequired;
     else if (errorCodeString == "connecterror")
         retval = ConnectError;

@@ -213,7 +213,7 @@ function testCreateCluster()
         --node       "$FIRST_ADDED_NODE" \
         --ip-address "$FIRST_ADDED_NODE" \
         --port       "8089" \
-        --config     "/etc/postgresql/9.3/main/postgresql.conf" \
+        --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
         --owner      "pipas" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
