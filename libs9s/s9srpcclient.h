@@ -95,6 +95,8 @@ class S9sRpcClient
 
         bool checkAccess();
         bool cat();
+        bool getObject();
+        bool getObject(const S9sString &path);
         bool getAcl();
         bool addAcl();
         bool removeAcl();

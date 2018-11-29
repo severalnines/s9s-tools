@@ -141,6 +141,7 @@ S9sBrowser::printLine(
     header1Format.setCenterJustify();
     header1Format.setWidth(width() - 2 - 31);
     column1Format.setWidth(width() - 2 - 31);
+    column1Format.setEllipsize();
     
     header2Format.setCenterJustify();
     header2Format.setWidth(9);

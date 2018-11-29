@@ -24,7 +24,9 @@
 #include "s9sdebug.h"
 
 S9sInfoPanel::S9sInfoPanel() :
-    S9sWidget()
+    S9sWidget(),
+    m_showJson(false),
+    m_objectSetTime(0)
 {
 }
 
@@ -49,6 +51,22 @@ S9sInfoPanel::setInfoRequestName(
         const S9sString  requestName)
 {
     m_requestName = requestName;
+}
+
+void
+S9sInfoPanel::setInfoObject(
+        const S9sString     &path,
+        const S9sVariantMap &theMap)
+{
+    m_objectPath    = path;
+    m_object        = theMap;
+    m_objectSetTime = time(NULL);
+}
+
+S9sString
+S9sInfoPanel::objectPath() const
+{
+    return m_objectPath;
 }
 
 S9sString
@@ -77,6 +95,25 @@ S9sInfoPanel::setInfoNode(
         const S9sTreeNode &node)
 {
     m_node = node;
+}
+
+time_t
+S9sInfoPanel::objectSetTime() const
+{
+    return m_objectSetTime;
+}
+
+void
+S9sInfoPanel::setShowJson(
+        bool showJson)
+{
+    m_showJson = showJson;
+}
+
+bool
+S9sInfoPanel::showJson() const
+{
+    return m_showJson;
 }
 
 void
@@ -173,10 +210,85 @@ S9sInfoPanel::printLine(
         printChar("╟");
         printChar("─", width() - 1);
         printChar("╢");
-    } else if (lineIndex == 9)
+    } else if (lineIndex >= 8 && lineIndex < height() - 1)
     {
+        printLinePreview(lineIndex - 8);
+        #if 0
         printChar("║");
         printString("  No preview available.");
+        printChar(" ", width() - 1);
+        printChar("║");
+        #endif
+    } else {
+        printChar("║");
+        printChar(" ", width() - 1);
+        printChar("║");
+    }
+}
+
+void
+S9sInfoPanel::printLinePreview(
+        int lineIndex)
+{
+    if (m_node.name() == "..")
+    {
+        S9sString      text  = m_node.toVariantMap().toString();
+        S9sVariantList lines = text.split("\n");
+
+        printChar("║");
+
+        if (lineIndex >= 0 && lineIndex < (int)lines.size())
+            printString(lines[lineIndex].toString());
+
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (m_node.name().empty())
+    {
+        printChar("║");
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (m_objectPath != m_node.fullPath())
+    {
+        if (lineIndex == 0)
+        {
+            printChar("║");
+            printString(" Waiting for preview.");
+            printChar(" ", width() - 1);
+            printChar("║");
+        } else {
+            printChar("║");
+            printChar(" ", width() - 1);
+            printChar("║");
+        }
+    } else if (showJson())
+    {
+        printLinePreviewJson(lineIndex);
+    } else if (m_object.contains("request_status"))
+    {
+        printLinePreviewReply(lineIndex);
+    } else if (
+            m_object.contains("type") &&
+            m_object.at("type") == "CmonCdtFile")
+    {
+        printLinePreviewFile(lineIndex);
+    } else {
+        // Not handled cases, we print JSon.
+        printLinePreviewJson(lineIndex);
+    }
+}
+
+void
+S9sInfoPanel::printLinePreviewReply(
+        int lineIndex)
+{
+    if (lineIndex == 0)
+    {
+        printChar("║");
+        printChar(" ");
+
+        if (m_object.contains("error_string"))
+            printString(m_object.at("error_string").toString());
+
         printChar(" ", width() - 1);
         printChar("║");
     } else {
@@ -187,11 +299,53 @@ S9sInfoPanel::printLine(
 }
 
 void
+S9sInfoPanel::printLinePreviewFile(
+        int lineIndex)
+{
+    S9sString text = m_object["content"].toString();
+    S9sVariantList lines = text.split("\n");
+
+        printChar("║");
+
+        if (lineIndex >= 0 && lineIndex < (int)lines.size())
+            printString(lines[lineIndex].toString());
+
+        printChar(" ", width() - 1);
+        printChar("║");
+}
+
+void
+S9sInfoPanel::printLinePreviewJson(
+        int lineIndex)
+{
+        S9sString      text  = m_object.toString();
+        S9sVariantList lines = text.split("\n");
+
+        printChar("║");
+
+        if (lineIndex >= 0 && lineIndex < (int)lines.size())
+            printString(lines[lineIndex].toString());
+
+        printChar(" ", width() - 1);
+        printChar("║");
+}
+
+
+void
 S9sInfoPanel::printString(
         const S9sString &theString)
 {
-    ::printf("%s", STR(theString));
-    m_nChars += theString.length();
+    S9sString  myString = theString;
+    int        availableChars = width() - m_nChars - 1;
+    
+    if (availableChars <= 0)
+        return;
+
+    if ((int)theString.length() > availableChars)
+        myString.resize(availableChars);
+
+    ::printf("%s", STR(myString));
+    m_nChars += myString.length();
 }
 
 void

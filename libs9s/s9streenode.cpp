@@ -50,6 +50,12 @@ S9sTreeNode::operator=(
     return *this;
 }
 
+S9sVariantMap
+S9sTreeNode::toVariantMap() const
+{
+    return m_properties;
+}
+
 /**
  * \returns True if a property with the given key exists.
  */

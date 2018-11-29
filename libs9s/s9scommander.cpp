@@ -70,7 +70,7 @@ S9sCommander::main()
 
         while (true)
         {
-#if 0
+            #if 1
             while (!m_client.isAuthenticated())
             {
                 m_client.maybeAuthenticate();
@@ -79,16 +79,17 @@ S9sCommander::main()
                     usleep(3000000);
             }
 
-            m_lastReply = S9sRpcReply();
-            m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
-            m_lastReply = m_client.reply();
-#endif
+            //m_lastReply = S9sRpcReply();
+            //m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
+            //m_lastReply = m_client.reply();
+            #endif
             if (time(NULL) - m_rootNodeRecevied > updateFreq || 
                     m_reloadRequested)
             {
                 updateTree();
             }
 
+            updateObject();
             usleep(100000);
         }    
 }
@@ -127,6 +128,75 @@ S9sCommander::updateTree()
     m_rootNodeRecevied = time(NULL);
     m_communicating = false;    
     m_mutex.unlock(); 
+}
+
+void
+S9sCommander::updateObject()
+{
+    S9sString path;
+    bool      needToRefresh;
+
+    if (m_rightInfo.isVisible())
+    {
+        path = m_leftBrowser.selectedNodeFullPath();
+
+        needToRefresh = path != m_rightInfo.objectPath();
+        if (time(NULL) - m_rightInfo.objectSetTime() > 15)
+            needToRefresh = true;
+
+        if (needToRefresh)
+            updateObject(path, m_rightInfo);
+    }
+    
+    if (m_leftInfo.isVisible())
+    {
+        path = m_rightBrowser.selectedNodeFullPath();
+
+        needToRefresh = path != m_leftInfo.objectPath();
+        if (time(NULL) - m_leftInfo.objectSetTime() > 15)
+            needToRefresh = true;
+
+        if (needToRefresh)
+            updateObject(path, m_leftInfo);
+    }
+}
+
+void
+S9sCommander::updateObject(
+        const S9sString &path,
+        S9sInfoPanel    &target)
+{
+    S9sMutexLocker locker(m_networkMutex);    
+    S9sVariantMap  theMap;
+    S9sRpcReply    getObjectReply;
+    
+    /*
+     *
+     */
+    m_mutex.lock();
+    target.setInfoRequestName("getObject");
+    m_mutex.unlock();
+
+    /*
+     *
+     */
+    m_client.getObject(path);
+    getObjectReply = m_client.reply();
+    theMap = getObjectReply.getObject();
+   
+    /*
+     *
+     */
+    m_mutex.lock();
+    target.setInfoRequestName("");
+    target.setInfoLastReply(getObjectReply);
+
+    if (getObjectReply.isOk())
+        target.setInfoObject(path, theMap);
+    else
+        target.setInfoObject(path, getObjectReply);
+    
+    m_mutex.unlock();
 }
 
 /**
@@ -217,6 +287,12 @@ S9sCommander::processKey(
                 m_leftBrowser.setVisible(false);
                 m_leftInfo.setVisible(true);
             }
+            break;
+
+        case 'j':
+        case 'J':
+            m_leftInfo.setShowJson(!m_leftInfo.showJson());
+            m_rightInfo.setShowJson(!m_rightInfo.showJson());
             break;
 
         case 'd':

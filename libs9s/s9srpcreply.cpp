@@ -8029,6 +8029,15 @@ S9sRpcReply::printGroupListLong()
     }
 }
 
+S9sVariantMap
+S9sRpcReply::getObject() const
+{
+    if (contains("object"))
+        return at("object").toVariantMap();
+
+    return S9sVariantMap();
+}
+
 /**
  * \param userName The name of the user to return.
  * \returns The user object from the reply.

@@ -10831,6 +10831,7 @@ S9sOptions::readOptionsTree(
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
+        { "stat",             no_argument,       0, OptionStat            },
         { "tree",             no_argument,       0, OptionTree            },
         { "watch",            no_argument,       0, OptionWatch           },
         
@@ -10956,6 +10957,11 @@ S9sOptions::readOptionsTree(
             /*
              * Main options.
              */
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
+                break;
+
             case OptionTree:
                 // --tree
                 m_options["tree"] = true;
@@ -11344,6 +11350,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isWatchRequested())
+        countOptions++;
+    
+    if (isStatRequested())
         countOptions++;
     
     if (countOptions > 1)

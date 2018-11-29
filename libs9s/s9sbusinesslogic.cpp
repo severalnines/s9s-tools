@@ -361,6 +361,15 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printCat();
             client.setExitStatus();
+        } else if (options->isStatRequested())
+        {
+            // s9s tree --stat PATH
+            S9sRpcReply reply;
+
+            success = client.getObject();
+            reply = client.reply();
+            printf("%s\n", STR(reply.toString()));
+            client.setExitStatus();
         } else if (options->isWatchRequested())
         {
             //s9s event --watch

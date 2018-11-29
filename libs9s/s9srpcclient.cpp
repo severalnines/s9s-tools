@@ -4808,6 +4808,9 @@ S9sRpcClient::moveInTree()
     return executeRequest(uri, request);
 }
 
+/**
+ * Executes the cat command, gets a content of a node in the CDT tree.
+ */
 bool
 S9sRpcClient::cat()
 {
@@ -4830,6 +4833,33 @@ S9sRpcClient::cat()
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::getObject()
+{
+    S9sOptions      *options = S9sOptions::instance();
+
+    if (options->nExtraArguments() == 1)
+        return getObject(options->extraArgument(0u));
+
+    PRINT_ERROR("The path is not provided.");
+    return false;
+}
+
+
+bool
+S9sRpcClient::getObject(
+        const S9sString &path)
+{
+    S9sString        uri = "/v2/tree/";
+    S9sVariantMap    request;
+
+    request["path"] = path;
+    request["operation"]      = "getObject";
+    
+    return executeRequest(uri, request);
+}
+
 
 /**
  * Sends the getAcl request to the controller.

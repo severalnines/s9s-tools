@@ -37,7 +37,8 @@ S9sFormat::S9sFormat() :
     m_withFieldSeparator(true),
     m_colorStart(0),
     m_colorEnd(0),
-    m_alignment(AlignLeft)
+    m_alignment(AlignLeft),
+    m_ellipsize(false)
 {
 }
 
@@ -48,7 +49,8 @@ S9sFormat::S9sFormat(
     m_withFieldSeparator(true),
     m_colorStart(colorStart),
     m_colorEnd(colorEnd),
-    m_alignment(AlignLeft)
+    m_alignment(AlignLeft),
+    m_ellipsize(false)
 {
 }
 
@@ -119,6 +121,13 @@ S9sFormat::setWidth(
     m_withFieldSeparator = false;
 }
 
+void
+S9sFormat::setEllipsize(
+        bool ellipsize)
+{
+    m_ellipsize = ellipsize;
+}
+
 /**
  * If necessary makes the format wider to accomodate the given value.
  */
@@ -166,9 +175,11 @@ S9sFormat::printf(
     S9sString formatString;
 
     if (m_width > 0)
+    {
         formatString.sprintf("%%%dd", m_width);
-    else
+    } else {
         formatString.sprintf("%%d", m_width);
+    }
 
     if (m_withFieldSeparator)
         formatString += " ";
@@ -209,6 +220,15 @@ S9sFormat::printf(
 
     if (m_width > 0)
     {
+        if (m_ellipsize)
+        {
+            if ((int) myValue.length() > m_width)
+            {
+                myValue.resize(m_width - 1);
+                myValue += "…";
+            }
+        }
+
         switch (m_alignment)
         {
             case AlignRight:
@@ -223,11 +243,11 @@ S9sFormat::printf(
                 {
                     S9sString alignString;
 
-                    if (m_width > (int) value.terminalLength())
+                    if (m_width > (int) myValue.terminalLength())
                     {
                         alignString = 
                             S9sString(" ") * 
-                            ((m_width - value.terminalLength()) / 2);
+                            ((m_width - myValue.terminalLength()) / 2);
                     }
                
                     myValue = alignString + myValue;

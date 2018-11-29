@@ -47,6 +47,8 @@ class S9sFormat
         int realWidth() const;
 
         void setWidth(int width);
+        void setEllipsize(bool ellipsize = true);
+
         void widen(const S9sString &value);
         void widen(const int value);
         void widen(const ulonglong value);
@@ -63,4 +65,5 @@ class S9sFormat
         const char *m_colorStart;
         const char *m_colorEnd;
         Alignment   m_alignment;
+        bool        m_ellipsize;
 };

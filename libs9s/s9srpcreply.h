@@ -98,6 +98,7 @@ class S9sRpcReply : public S9sVariantMap
         void printUsersStat();
 
         S9sUser getUser(const S9sString &userName);
+        S9sVariantMap getObject() const;
 
         void printGroupList();
         void printAccountList();
