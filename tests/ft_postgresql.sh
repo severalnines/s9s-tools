@@ -260,7 +260,7 @@ EOF
         --node       "$LAST_ADDED_NODE" \
         --ip-address "$LAST_ADDED_NODE" \
         --port       "5432" \
-        --config     "/etc/postgresql/9.3/main/postgresql.conf" \
+        --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
         --owner      "pipas" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
