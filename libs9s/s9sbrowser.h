@@ -30,6 +30,7 @@ class S9sBrowser :
         virtual ~S9sBrowser();
 
         virtual void processKey(int key);
+        //virtual bool processButton(uint button, uint x, uint y);        
 
         void printLine(int lineIndex);
         void setCdt(const S9sTreeNode &node);

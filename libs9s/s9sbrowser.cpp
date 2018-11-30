@@ -115,6 +115,16 @@ S9sBrowser::processKey(
     S9sDisplayList::processKey(key);
 }
 
+#if 0
+bool 
+S9sBrowser::processButton(
+        uint button, 
+        uint x, 
+        uint y)
+{
+}
+#endif
+
 /*
  * http://xahlee.info/comp/unicode_drawing_shapes.html
  */
@@ -146,15 +156,18 @@ S9sBrowser::printLine(
     header2Format.setCenterJustify();
     header2Format.setWidth(9);
     column2Format.setWidth(9);
+    column2Format.setEllipsize();
 
     
     header3Format.setCenterJustify();
     header3Format.setWidth(9);
     column3Format.setWidth(9);
+    column3Format.setEllipsize();
     
     header4Format.setCenterJustify();
     header4Format.setWidth(10);
     column4Format.setWidth(10);
+    column4Format.setEllipsize();
 
     column1 = width() - 2 - 30;
     column2 = column1 + 10;
