@@ -185,6 +185,8 @@ function createServer()
     mys9s server --list --long
     check_exit_code_no_job $?
 
+    mys9s container --list --long
+
     #
     # 
     #
