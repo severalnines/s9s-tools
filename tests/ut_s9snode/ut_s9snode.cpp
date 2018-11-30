@@ -250,7 +250,7 @@ UtS9sNode::testToString()
     S9S_COMPARE(theNode.toString(false, "%I"), "3");
     S9S_COMPARE(theNode.toString(false, "%N"), "192.168.1.189");
     S9S_COMPARE(theNode.toString(false, "%M"), "Up and running.");
-    S9S_COMPARE(theNode.toString(false, "%O"), "");
+    S9S_COMPARE(theNode.toString(false, "%O"), "-");
     S9S_COMPARE(theNode.toString(false, "%o"), "ubuntu 16.04 xenial");
     S9S_COMPARE(theNode.toString(false, "%L"), "");
     S9S_COMPARE(theNode.toString(false, "%l"), "");
