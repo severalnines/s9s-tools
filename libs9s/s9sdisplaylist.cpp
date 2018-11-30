@@ -118,8 +118,16 @@ S9sDisplayList::processButton(
 {
     if (!isVisible())
         return false;
-    else if (!hasFocus())
+    else if (!hasFocus() && contains(x, y))
+    {
+        if (button == 0 || button == 1 || button == 2)
+        {
+            setHasFocus(true);
+            return true;
+        }
+
         return false;
+    }
 
     if (!contains(x, y))
         return false;

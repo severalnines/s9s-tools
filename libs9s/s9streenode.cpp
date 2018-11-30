@@ -197,6 +197,14 @@ S9sTreeNode::sizeString() const
     return retval;
 }
 
+bool
+S9sTreeNode::isDevice() const
+{
+    return 
+        hasProperty("major_device_number") &&
+        hasProperty("minor_devide_number");
+}
+
 S9sString
 S9sTreeNode::type() const
 {

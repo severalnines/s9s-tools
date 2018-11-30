@@ -35,6 +35,9 @@ S9sCommander::S9sCommander(
     m_communicating(false),
     m_reloadRequested(false)
 {
+    m_leftPanel  = &m_leftBrowser;
+    m_rightPanel = &m_rightInfo;
+
     m_leftBrowser.setVisible(true);
     m_leftBrowser.setSelectionIndex(0);
     m_leftBrowser.setHasFocus(true);
@@ -169,7 +172,10 @@ S9sCommander::updateObject(
     S9sMutexLocker locker(m_networkMutex);    
     S9sVariantMap  theMap;
     S9sRpcReply    getObjectReply;
-    
+   
+    if (path.empty())
+        return;
+
     /*
      *
      */
@@ -211,7 +217,10 @@ S9sCommander::refreshScreen()
     printHeader();
 
     m_leftBrowser.setSize(width() / 2, height() - 2);
+    m_leftBrowser.setLocation(0, 2);
+
     m_rightBrowser.setSize(width() / 2, height() - 2);
+    m_rightBrowser.setLocation(width() / 2 + 1, 2);
     
     m_leftInfo.setSize(width() / 2, height() - 2);
     m_rightInfo.setSize(width() / 2, height() - 2);
@@ -258,10 +267,14 @@ S9sCommander::processKey(
             if (m_leftBrowser.hasFocus())
             {
                 m_leftBrowser.setHasFocus(false);
+                m_leftInfo.setHasFocus(false);
                 m_rightBrowser.setHasFocus(true);
+                m_rightInfo.setHasFocus(true);
             } else {
                 m_leftBrowser.setHasFocus(true);
+                m_leftInfo.setHasFocus(true);
                 m_rightBrowser.setHasFocus(false);
+                m_rightInfo.setHasFocus(false);
             }
             return;
 
@@ -337,6 +350,27 @@ S9sCommander::processButton(
             return true;
         }
     }
+
+    if (m_leftBrowser.processButton(button, x, y))
+    {
+        if (m_leftBrowser.hasFocus())
+        {
+            m_rightBrowser.setHasFocus(false);
+            m_rightInfo.setHasFocus(false);
+            m_leftInfo.setHasFocus(true);
+        }
+        return true;
+    } else if (m_rightBrowser.processButton(button, x, y))
+    {
+        if (m_rightBrowser.hasFocus())
+        {
+            m_leftBrowser.setHasFocus(false);
+            m_leftInfo.setHasFocus(false);
+            m_rightInfo.setHasFocus(true);
+        }
+        return true;
+    }
+
     return S9sDisplay::processButton(button, x, y);
 }
 

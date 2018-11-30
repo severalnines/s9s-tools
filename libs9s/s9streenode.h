@@ -51,6 +51,8 @@ class S9sTreeNode
         S9sString ownerGroupName() const;
         S9sString acl() const;
         S9sString sizeString() const;
+        bool isDevice() const;
+
 
         S9sString type() const;
         S9sString typeName() const;

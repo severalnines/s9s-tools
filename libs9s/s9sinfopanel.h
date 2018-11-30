@@ -63,6 +63,8 @@ class S9sInfoPanel :
         void printLinePreviewFile(int lineIndex);
         void printLinePreviewJson(int lineIndex);
 
+        void printLinePreviewJson(int lineIndex, S9sRpcReply &reply);
+
         void printString(const S9sString &theString);
 
         void printNameValue(
@@ -77,8 +79,10 @@ class S9sInfoPanel :
         S9sString      m_hostName;
         int            m_port;
         bool           m_useTls;
+        
         S9sString      m_requestName;
         S9sRpcReply    m_lastReply;
+
         S9sTreeNode    m_node;
         /** If true the JSon strings should be shown. */
         bool           m_showJson;

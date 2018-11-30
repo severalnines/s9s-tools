@@ -38,6 +38,7 @@ class S9sBrowser :
         S9sString selectedNodeFullPath() const;
 
     private:
+        void printString(const S9sString &theString);
         void printChar(int c);
         void printChar(const char *c);
         void printChar(const char *c, const int lastColumn);

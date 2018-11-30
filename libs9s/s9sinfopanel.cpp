@@ -122,17 +122,15 @@ S9sInfoPanel::printLine(
 {
     const char *normal = "\033[48;5;19m" "\033[1m\033[38;5;33m";
     //const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
-    //const char *selection = "\033[1m\033[48;5;51m" "\033[2m\033[38;5;237m";
+    const char *selection = "\033[1m\033[48;5;51m" "\033[2m\033[38;5;237m";
 
     m_nChars = 0;
     ::printf("%s", normal);
     if (lineIndex == 0)
     {
+        // The top frame line.
         printChar("╔");
-        
-        while (m_nChars < width() - 1)
-            printChar("═");
-
+        printChar("═", width() - 1);
         printChar("╗");
     } else if (lineIndex == height() - 1)
     {
@@ -201,13 +199,39 @@ S9sInfoPanel::printLine(
         printChar("║");
         
         if (!m_node.spec().empty())
+        {
             printNameValue("Spec", m_node.spec());
+        } else if (m_node.isDevice())
+        {
+            printNameValue("Device", m_node.sizeString());
+        }
         
         printChar(" ", width() - 1);
         printChar("║");
     } else if (lineIndex == 7)
     {
+        S9sString  title = " Preview ";
+        int        titleStart;
+
+        //
+        // The separator on the top of the title area.
+        //
         printChar("╟");
+
+        titleStart = (width() - 2 - title.length()) / 2;
+        if (titleStart >= 0)
+        {
+            printChar("─", titleStart);
+            
+            if (hasFocus())
+                ::printf("%s", selection);
+
+            printString(title);
+            
+            if (hasFocus())
+                ::printf("%s%s", TERM_NORMAL, normal);
+        }
+
         printChar("─", width() - 1);
         printChar("╢");
     } else if (lineIndex >= 8 && lineIndex < height() - 1)
@@ -230,6 +254,14 @@ void
 S9sInfoPanel::printLinePreview(
         int lineIndex)
 {
+    #if 0
+    if (!m_lastReply.requestStatusAsString().empty() &&
+            !m_lastReply.isOk())
+    {
+        printLinePreviewJson(lineIndex, m_lastReply);
+    }
+    #endif
+
     if (m_node.name() == "..")
     {
         S9sString      text  = m_node.toVariantMap().toString();
@@ -330,6 +362,22 @@ S9sInfoPanel::printLinePreviewJson(
         printChar("║");
 }
 
+void
+S9sInfoPanel::printLinePreviewJson(
+        int lineIndex,
+        S9sRpcReply &reply)
+{
+        S9sString      text  = reply.toString();
+        S9sVariantList lines = text.split("\n");
+
+        printChar("║");
+
+        if (lineIndex >= 0 && lineIndex < (int)lines.size())
+            printString(lines[lineIndex].toString());
+
+        printChar(" ", width() - 1);
+        printChar("║");
+}
 
 void
 S9sInfoPanel::printString(

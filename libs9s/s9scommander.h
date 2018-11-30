@@ -48,6 +48,8 @@ class S9sCommander :
         S9sRpcClient    &m_client;
         S9sMutex         m_networkMutex;        
         
+        S9sWidget       *m_leftPanel;
+        S9sWidget       *m_rightPanel;
         S9sBrowser       m_leftBrowser;
         S9sInfoPanel     m_leftInfo;
         S9sBrowser       m_rightBrowser;

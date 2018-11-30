@@ -165,10 +165,13 @@ S9sBrowser::printLine(
     if (lineIndex == 0)
     {
         printChar("╔");
-        
+
+        printString(" " + m_path + " ");
+
         while (m_nChars < width() - 1)
         {
-            if (m_nChars == column1 || m_nChars == column2 || m_nChars == column3)
+            if (m_nChars == column1 || 
+                    m_nChars == column2 || m_nChars == column3)
                 ::printf("╤"); 
             else
                 ::printf("═");
@@ -216,11 +219,12 @@ S9sBrowser::printLine(
         printChar("╢");
     } else if (lineIndex == height() - 2)
     {
+        //
+        // The single line text on the bottom of the panel.
+        //
         printChar("║");
-       
-        ::printf("%s", STR(m_path));
-        m_nChars += m_path.length();
-
+        printString(" ");
+        printString(m_name);
         printChar(" ", width() - 1);
         printChar("║");
     } else {
@@ -285,6 +289,23 @@ S9sBrowser::printLine(
 
         ::printf("║");
     }
+}
+
+void
+S9sBrowser::printString(
+        const S9sString &theString)
+{
+    S9sString  myString = theString;
+    int        availableChars = width() - m_nChars - 1;
+    
+    if (availableChars <= 0)
+        return;
+
+    if ((int)theString.length() > availableChars)
+        myString.resize(availableChars);
+
+    ::printf("%s", STR(myString));
+    m_nChars += myString.length();
 }
 
 void
