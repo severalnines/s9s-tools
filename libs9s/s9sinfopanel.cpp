@@ -354,7 +354,7 @@ S9sInfoPanel::printLinePreviewCached(
                 m_object["type"] == "CmonCdtFile")
         {
             S9sString text = m_object["content"].toString();
-            m_previewLines = text.split("\n");
+            m_previewLines = text.split("\n", true);
         } else if (
                 m_object.contains("class_name") &&
                 m_object["class_name"] == "CmonClusterInfo")
