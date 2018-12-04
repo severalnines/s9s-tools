@@ -132,8 +132,15 @@ void
 S9sBrowser::printLine(
         int lineIndex)
 {
-    const char *normal = "\033[48;5;19m" "\033[1m\033[38;5;33m";
-    const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
+    const char *normal     = TERM_NORMAL "\033[48;5;19m" "\033[38;5;33m";
+    const char *folder     = TERM_NORMAL "\033[48;5;19m" XTERM_COLOR_FOLDER;
+    const char *user       = TERM_NORMAL "\033[48;5;19m" XTERM_COLOR_USER;
+    const char *groupColor = TERM_NORMAL "\033[48;5;19m" "\033[2m\033[38;5;3m";
+    const char *file       = TERM_NORMAL "\033[48;5;19m" "\033[38;5;199m";
+    const char *cluster    = TERM_NORMAL "\033[48;5;19m" "\033[2m\033[38;5;197m";
+    const char *hostColor  = TERM_NORMAL "\033[48;5;19m" "\033[38;5;46m";
+    const char *header     = "\033[48;5;19m" "\033[1m\033[38;5;11m";
+
     const char *selection = "\033[1m\033[48;5;51m" "\033[2m\033[38;5;237m";
     int         column1;
     int         column2;
@@ -242,14 +249,15 @@ S9sBrowser::printLine(
         printChar("║");
     } else {
         /*
-         * The normal lines. 
+         * The normal lines, showing data.
          */
-        int       listIndex = lineIndex - 2 + firstVisibleIndex();
-        S9sString name;
-        S9sString owner;
-        S9sString group;
-        S9sString mode;
-        bool      selected;
+        S9sTreeNode node;
+        int         listIndex = lineIndex - 2 + firstVisibleIndex();
+        S9sString   name;
+        S9sString   owner;
+        S9sString   group;
+        S9sString   mode;
+        bool        selected;
 
         ensureSelectionVisible();
         
@@ -257,7 +265,7 @@ S9sBrowser::printLine(
 
         if (listIndex < m_subTree.nChildren())
         {
-            S9sTreeNode node = m_subTree.childNode(listIndex);
+            node = m_subTree.childNode(listIndex);
             
             if (selected)
                 m_name = node.name();
@@ -285,8 +293,26 @@ S9sBrowser::printLine(
 
         if (selected)
             ::printf("%s", selection);
+        else if (node.isFolder())
+            ::printf("%s", folder);
+        else if (node.isUser())
+            ::printf("%s", user);
+        else if (node.isGroup())
+            ::printf("%s", groupColor);
+        else if (node.isFile())
+            ::printf("%s", file);
+        else if (node.isCluster())
+            ::printf("%s", cluster);
+        else if (node.isNode())
+            ::printf("%s", hostColor);
 
         column1Format.printf(name);
+        
+        if (selected)
+            ::printf("%s%s", TERM_NORMAL, selection);
+        else
+            ::printf("%s%s", TERM_NORMAL, normal);
+
         ::printf("│"); 
         
         column2Format.printf(owner);
@@ -297,8 +323,8 @@ S9sBrowser::printLine(
         
         column4Format.printf(mode);
         
-        if (selected)
-            ::printf("%s%s", TERM_NORMAL, normal);
+        //if (selected)
+        ::printf("%s%s", TERM_NORMAL, normal);
 
         ::printf("║");
     }

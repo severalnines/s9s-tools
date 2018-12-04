@@ -6610,6 +6610,10 @@ S9sRpcReply::printJobListLong()
         printf("%sTags      :%s %s\n", 
                 XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                 STR(job.tags(syntaxHighlight, "-")));
+        
+        printf("%sRPC       :%s %s\n", 
+                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                STR(job.rpcVersion("-")));
 
         S9S_UNUSED(jobId);
         S9S_UNUSED(stateColorEnd);

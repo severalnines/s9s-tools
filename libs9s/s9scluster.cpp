@@ -1121,7 +1121,7 @@ S9sCluster::toString(
                     break;
 
                 case 'M':
-                    // The ID of the cluster.
+                    // The status text of the cluster.
                     partFormat += 's';
                     
                     tmp.sprintf(STR(partFormat), STR(statusText()));
@@ -1183,9 +1183,13 @@ S9sCluster::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(cdtPath()));
 
-                    retval += formatter.folderColorBegin();
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorBegin();
+
                     retval += tmp;
-                    retval += formatter.folderColorEnd();
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorEnd();
 
                     break;
 
@@ -1221,7 +1225,7 @@ S9sCluster::toString(
                     break;
 
                 case 'V':
-                    // The vendor and version of the node.
+                    // The vendor and version of the cluster.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(vendorAndVersion()));
                     retval += tmp;

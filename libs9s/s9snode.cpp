@@ -344,9 +344,13 @@ S9sNode::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(cdtPath()));
 
-                    retval += formatter.folderColorBegin();
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorBegin();
+
                     retval += tmp;
-                    retval += formatter.folderColorEnd();
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorEnd();
 
                     break;
 

@@ -50,6 +50,7 @@ class S9sJob : public S9sObject
         S9sString scheduledString() const;
         bool hasProgressPercent() const;
         double progressPercent() const;
+        S9sString rpcVersion(const S9sString &defaultValue) const;
 
         S9sVariantList tags() const;
 

@@ -19,6 +19,8 @@
  */
 #include "s9suser.h"
 
+#include "S9sFormatter"
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
@@ -430,6 +432,7 @@ S9sUser::toString(
         const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
+    S9sFormatter formatter;
     S9sString    retval;
     S9sString    tmp;
     char         c;
@@ -537,7 +540,7 @@ S9sUser::toString(
                 case 'M':
                     // The email address. 
                     partFormat += 's';
-                    tmp.sprintf(STR(partFormat), STR(emailAddress()));
+                    tmp.sprintf(STR(partFormat), STR(emailAddress("-")));
                     retval += tmp;
                     break;
                 
@@ -554,7 +557,22 @@ S9sUser::toString(
                     tmp.sprintf(STR(partFormat), STR(userName()));
                     retval += tmp;
                     break;
-                
+
+                case 'P':
+                    // The CDT path 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cdtPath()));
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorEnd();
+
+                    break;
+
                 case 't':
                     // The title of the user.
                     partFormat += 's';

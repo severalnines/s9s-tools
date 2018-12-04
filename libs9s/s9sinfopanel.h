@@ -60,9 +60,8 @@ class S9sInfoPanel :
     private:
         void printLinePreview(int lineIndex);
         void printLinePreviewReply(int lineIndex);
-        void printLinePreviewFile(int lineIndex);
+        void printLinePreviewCached(int lineIndex);
         void printLinePreviewJson(int lineIndex);
-
         void printLinePreviewJson(int lineIndex, S9sRpcReply &reply);
 
         void printString(const S9sString &theString);
@@ -76,22 +75,23 @@ class S9sInfoPanel :
         void printChar(const char *c, const int lastColumn);
 
     private:
-        S9sString      m_hostName;
-        int            m_port;
-        bool           m_useTls;
+        S9sString        m_hostName;
+        int              m_port;
+        bool             m_useTls;
         
-        S9sString      m_requestName;
-        S9sRpcReply    m_lastReply;
+        S9sString        m_requestName;
+        S9sRpcReply      m_lastReply;
 
-        S9sTreeNode    m_node;
+        S9sTreeNode      m_node;
         /** If true the JSon strings should be shown. */
-        bool           m_showJson;
+        bool             m_showJson;
 
         /** Transient value shows the position in the line. */
-        int            m_nChars;
+        int              m_nChars;
 
-        /** */
-        S9sString      m_objectPath;
-        S9sVariantMap  m_object;
-        time_t         m_objectSetTime;
+        /** Information about the object we show in preview. */
+        S9sString        m_objectPath;
+        S9sVariantMap    m_object;
+        time_t           m_objectSetTime;
+        S9sVariantList   m_previewLines;
 };

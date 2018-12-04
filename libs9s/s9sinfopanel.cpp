@@ -18,6 +18,11 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sinfopanel.h"
+#include "S9sUser"
+#include "S9sCluster"
+#include "S9sContainer"
+#include "S9sNode"
+#include "S9sServer"
 
 //#define DEBUG
 //#define WARNING
@@ -61,6 +66,8 @@ S9sInfoPanel::setInfoObject(
     m_objectPath    = path;
     m_object        = theMap;
     m_objectSetTime = time(NULL);
+
+    m_previewLines.clear();
 }
 
 S9sString
@@ -107,7 +114,11 @@ void
 S9sInfoPanel::setShowJson(
         bool showJson)
 {
+    if (m_showJson == showJson)
+        return;
+
     m_showJson = showJson;
+    m_previewLines.clear();
 }
 
 bool
@@ -264,6 +275,7 @@ S9sInfoPanel::printLinePreview(
 
     if (m_node.name() == "..")
     {
+        // This is the "up-dir". We don't have this on the controller.
         S9sString      text  = m_node.toVariantMap().toString();
         S9sVariantList lines = text.split("\n");
 
@@ -276,11 +288,14 @@ S9sInfoPanel::printLinePreview(
         printChar("║");
     } else if (m_node.name().empty())
     {
+        // No node set.
         printChar("║");
         printChar(" ", width() - 1);
         printChar("║");
     } else if (m_objectPath != m_node.fullPath())
     {
+        // The node is set, but this is an old one, we are waiting for the
+        // information about the node.
         if (lineIndex == 0)
         {
             printChar("║");
@@ -292,20 +307,12 @@ S9sInfoPanel::printLinePreview(
             printChar(" ", width() - 1);
             printChar("║");
         }
-    } else if (showJson())
-    {
-        printLinePreviewJson(lineIndex);
     } else if (m_object.contains("request_status"))
     {
         printLinePreviewReply(lineIndex);
-    } else if (
-            m_object.contains("type") &&
-            m_object.at("type") == "CmonCdtFile")
-    {
-        printLinePreviewFile(lineIndex);
     } else {
         // Not handled cases, we print JSon.
-        printLinePreviewJson(lineIndex);
+        printLinePreviewCached(lineIndex);
     }
 }
 
@@ -331,19 +338,140 @@ S9sInfoPanel::printLinePreviewReply(
 }
 
 void
-S9sInfoPanel::printLinePreviewFile(
+S9sInfoPanel::printLinePreviewCached(
         int lineIndex)
 {
-    S9sString text = m_object["content"].toString();
-    S9sVariantList lines = text.split("\n");
+    if (m_previewLines.empty())
+    {
+        if (showJson())
+        {
+            S9sString      text  = m_object.toString();
+            m_previewLines = text.split("\n");
+        } else if (
+                m_object.contains("class_name") &&
+                m_object.contains("type") &&
+                m_object["class_name"] == "CmonCdtEntry" &&
+                m_object["type"] == "CmonCdtFile")
+        {
+            S9sString text = m_object["content"].toString();
+            m_previewLines = text.split("\n");
+        } else if (
+                m_object.contains("class_name") &&
+                m_object["class_name"] == "CmonClusterInfo")
+        {
+            S9sCluster cluster(m_object);
+            S9sString  text;
 
-        printChar("║");
+            text = cluster.toString(false,
+                    "       Name: <b>%N</b>\n"
+                    "   CDT path: <b>%P</b>\n"
+                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
+                    "      State: <b>%S\n"
+                    "     Status: <b>%M\n"
+                    "         ID: <b>%I\n"
+                    "     Config: '<b>%C</b>'\n"
+                    );
+            m_previewLines = text.split("\n");
+        } else if (
+                m_object.contains("class_name") &&
+                (m_object["class_name"] == "CmonHost" ||
+                 m_object["class_name"].toString().contains("Host") ||
+                 m_object["class_name"].toString().contains("Server")
+                 ))
+        {
+            S9sNode    node(m_object);
+            S9sString  text;
 
-        if (lineIndex >= 0 && lineIndex < (int)lines.size())
-            printString(lines[lineIndex].toString());
+            text = node.toString(false,
+                    "       Name: <b>%-20N</b>   Port: <b>%P</b>\n"
+                    "   CDT path: <b>%h</b>\n"
+                    "      Class: <b>%z</b>\n"
+                    "         IP: <b>%A</b>\n"
+                    "     Status: <b>%-20S</b>   Role: <b>%R</b>\n"
+                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
+                    "      State: <b>%S\n"
+                    "     Status: <b>%M\n"
+                    "         ID: <b>%I\n"
+                    "     Config: '<b>%C</b>'\n"
+                    );
+            m_previewLines = text.split("\n");
+#if 0
+        } else if (
+                m_object.contains("class_name") &&
+                (m_object["class_name"] == "CmonLxcServer" ||
+                 m_object["class_name"].toString().contains("Server")))
+        {
+            S9sServer  server(m_object);
+            S9sString  text;
 
-        printChar(" ", width() - 1);
-        printChar("║");
+            text = server.toString(false,
+                    "       Name: <b>%-20N</b>   Port: <b>%P</b>\n"
+                    "   CDT path: <b>%h</b>\n"
+                    "      Class: <b>%z</b>\n"
+                    "         IP: <b>%A</b>\n"
+                    "     Status: <b>%-20S</b>   Role: <b>%R</b>\n"
+                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
+                    "      State: <b>%S\n"
+                    "     Status: <b>%M\n"
+                    "         ID: <b>%I\n"
+                    "     Config: '<b>%C</b>'\n"
+                    );
+            m_previewLines = text.split("\n");
+#endif
+        } else if (
+                m_object.contains("class_name") &&
+                m_object["class_name"] == "CmonContainer")
+        {
+            S9sContainer container(m_object);
+            S9sString    text;
+
+            text = container.toString(false,
+                    "       Name: <b>%N</b>\n"
+                    "      Class: <b>%z</b>\n"
+                    "      Cloud: <b>%c</b>\n"
+                    "       IpV4: <b>%-20A</b>  PrivateIp: <b>%a</b>\n"
+                    "       Type: <b>%-20T</b>\n"
+                    "      State: <b>%S</b>\n"
+                    "         ID: <b>%I</b>\n"
+                    "     Subnet: <b>%U</b>\n"
+                    "     Server: <b>%P</b>\n"
+                    "     Config: '<b>%C</b>'\n"
+                    );
+            m_previewLines = text.split("\n");
+        } else if (
+                m_object.contains("class_name") &&
+                m_object["class_name"] == "CmonUser")
+        {
+            S9sUser   user(m_object);
+            S9sString text;
+
+            text = user.toString(false,
+                    "       Name: <b>%N</b>\n"
+                    "   CDT path: <b>%P</b>\n"
+                    "         ID: <b>%I</b>\n"
+                    "   Fullname: <b>%F</b>\n"
+                    "      Email: <b>%M</b>\n"
+                    "     Groups: <b>%G</b>\n"
+                    );
+            m_previewLines = text.split("\n");
+        } else {
+            S9sString      text  = m_object.toString();
+
+            m_previewLines = text.split("\n");
+        }
+    }
+
+    /*
+     * Printing the line of the preview we are supposed to print.
+     */
+    printChar("║");
+
+    if (lineIndex >= 0 && lineIndex < (int)m_previewLines.size())
+        printString(m_previewLines[lineIndex].toString());
+
+    printChar(" ", width() - 1);
+    printChar("║");
+
 }
 
 void
@@ -383,17 +511,31 @@ void
 S9sInfoPanel::printString(
         const S9sString &theString)
 {
-    S9sString  myString = theString;
-    int        availableChars = width() - m_nChars - 1;
+    const char *normal = TERM_NORMAL "\033[48;5;19m" "\033[1m\033[38;5;33m";
+    const char *bold = "\033[48;5;19m" "\033[1m\033[38;5;11m";
+    S9sString   asciiString = theString;
+    S9sString   colorString = theString;
+    int         availableChars = width() - m_nChars - 1;
     
     if (availableChars <= 0)
         return;
 
-    if ((int)theString.length() > availableChars)
-        myString.resize(availableChars);
+    asciiString.replace("<b>",  "");
+    asciiString.replace("</b>", "");
+    
+    colorString.replace("<b>",  bold);
+    colorString.replace("</b>", normal);
 
-    ::printf("%s", STR(myString));
-    m_nChars += myString.length();
+    if ((int)asciiString.length() > availableChars)
+    {
+        asciiString.resize(availableChars);
+        ::printf("%s", STR(asciiString));
+    } else {
+        ::printf("%s", STR(colorString));
+        ::printf("%s", normal);
+    }
+
+    m_nChars += asciiString.length();
 }
 
 void
@@ -405,8 +547,7 @@ S9sInfoPanel::printNameValue(
     const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
     S9sString   tmp;
 
-    tmp = "        Name: ";
-    tmp.sprintf("%12s: ", STR(name));
+    tmp.sprintf("%11s: ", STR(name));
     ::printf("%s", STR(tmp));
     m_nChars += tmp.length();
    

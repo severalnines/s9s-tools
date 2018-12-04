@@ -273,9 +273,13 @@ S9sContainer::toString(
 
                     tmp.sprintf(STR(partFormat), STR(value));
 
-                    retval += S9sRpcReply::ipColorBegin(value);
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::ipColorBegin(value);
+
                     retval += tmp;
-                    retval += S9sRpcReply::ipColorEnd();
+                    
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::ipColorEnd();
                     break;
                 
                 case 'a':
@@ -285,9 +289,13 @@ S9sContainer::toString(
 
                     tmp.sprintf(STR(partFormat), STR(value));
 
-                    retval += S9sRpcReply::ipColorBegin(value);
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::ipColorBegin(value);
+
                     retval += tmp;
-                    retval += S9sRpcReply::ipColorEnd();
+                    
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::ipColorEnd();
                     break;
 
                 case 'C':
@@ -306,7 +314,7 @@ S9sContainer::toString(
                     break;
                 
                 case 'c':
-                    // 
+                    // The cloud/provider.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(provider()));
                     retval += tmp;
@@ -327,7 +335,7 @@ S9sContainer::toString(
                     break;
                 
                 case 'i':
-                    // 
+                    // The Image.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(image("-")));
                     retval += tmp;
@@ -338,9 +346,14 @@ S9sContainer::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(alias()));
 
-                    retval += S9sRpcReply::containerColorBegin(stateAsChar());
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::containerColorBegin(
+                                stateAsChar());
+
                     retval += tmp;
-                    retval += S9sRpcReply::containerColorEnd();
+                    
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::containerColorEnd();
                     
                     break;
 
@@ -367,14 +380,14 @@ S9sContainer::toString(
                     break;
                 
                 case 'R':
-                    // 
+                    // Region.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(region("-")));
                     retval += tmp;
                     break;
                 
                 case 'r':
-                    // 
+                    // Subnet CIDR.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(subnetCidr("-")));
                     retval += tmp;
@@ -406,14 +419,14 @@ S9sContainer::toString(
                     break;
                 
                 case 't':
-                    // 
+                    // Template.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(templateName("-")));
                     retval += tmp;
                     break;
                 
                 case 'U':
-                    // The type of the container.
+                    // Subnet ID.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(subnetId()));
                     retval += tmp;

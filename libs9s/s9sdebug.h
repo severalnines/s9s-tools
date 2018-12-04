@@ -166,6 +166,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_LIGHT_CYAN   "\033[1;36m"
 #define XTERM_COLOR_WHITE        "\033[1;37m"
 
+#define XTERM_COLOR_USER         "\033[38;5;166m"
 #define XTERM_COLOR_SERVER       "\033[92m"
 #define XTERM_COLOR_NODE         "\033[2m\033[33m"
 #define XTERM_COLOR_IP           "\033[1;2m\033[38;5;176m"

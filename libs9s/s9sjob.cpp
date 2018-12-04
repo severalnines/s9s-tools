@@ -199,6 +199,18 @@ S9sJob::progressPercent() const
     return property("progress_percent").toDouble();
 }
 
+S9sString
+S9sJob::rpcVersion(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("rpc_version").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 /**
  * \returns A list with all the tags associated with the job. 
  */
