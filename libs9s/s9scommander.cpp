@@ -315,11 +315,14 @@ S9sCommander::processKey(
             break;
     }
 
-    if (m_leftBrowser.hasFocus())
-        m_leftBrowser.processKey(key);
-    
-    if (m_rightBrowser.hasFocus())
+    if (m_leftBrowser.hasFocus() && m_leftBrowser.isVisible())
+        m_leftBrowser.processKey(key); 
+    else if (m_rightBrowser.hasFocus() && m_rightBrowser.isVisible())
         m_rightBrowser.processKey(key);
+    else if (m_leftInfo.hasFocus() && m_leftInfo.isVisible())
+        m_leftInfo.processKey(key); 
+    else if (m_rightInfo.hasFocus() && m_rightInfo.isVisible())
+        m_rightInfo.processKey(key);
 }
 
 /**

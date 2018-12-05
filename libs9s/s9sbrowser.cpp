@@ -295,15 +295,15 @@ S9sBrowser::printLine(
             ::printf("%s", selection);
         else if (node.isFolder())
             ::printf("%s", folder);
-        else if (node.isUser())
+        else if (false && node.isUser())
             ::printf("%s", user);
-        else if (node.isGroup())
+        else if (false && node.isGroup())
             ::printf("%s", groupColor);
-        else if (node.isFile())
+        else if (false && node.isFile())
             ::printf("%s", file);
-        else if (node.isCluster())
+        else if (false && node.isCluster())
             ::printf("%s", cluster);
-        else if (node.isNode())
+        else if (false && node.isNode())
             ::printf("%s", hostColor);
 
         column1Format.printf(name);

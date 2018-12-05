@@ -30,6 +30,8 @@ class S9sInfoPanel :
         S9sInfoPanel();
         virtual ~S9sInfoPanel();
 
+        virtual void processKey(int key);
+
         void printLine(int lineIndex);
 
         void setInfoController(
@@ -94,4 +96,5 @@ class S9sInfoPanel :
         S9sVariantMap    m_object;
         time_t           m_objectSetTime;
         S9sVariantList   m_previewLines;
+        int              m_previewLineOffset;
 };

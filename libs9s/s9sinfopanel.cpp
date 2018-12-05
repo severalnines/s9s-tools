@@ -18,6 +18,8 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sinfopanel.h"
+
+#include "S9sDisplay"
 #include "S9sUser"
 #include "S9sCluster"
 #include "S9sContainer"
@@ -31,7 +33,8 @@
 S9sInfoPanel::S9sInfoPanel() :
     S9sWidget(),
     m_showJson(false),
-    m_objectSetTime(0)
+    m_objectSetTime(0),
+    m_previewLineOffset(0)
 {
 }
 
@@ -39,6 +42,33 @@ S9sInfoPanel::~S9sInfoPanel()
 {
 }
 
+void 
+S9sInfoPanel::processKey(
+        int key)
+{
+    switch (key)
+    {
+        case S9S_KEY_DOWN:
+            ++m_previewLineOffset;
+            break;
+
+        case S9S_KEY_UP:
+            --m_previewLineOffset;
+            break;
+
+        case S9S_KEY_PGDN:
+            break;
+
+        case S9S_KEY_PGUP:
+            break;
+    }
+
+    if (m_previewLineOffset < 0)
+        m_previewLineOffset = 0;
+
+    if (m_previewLineOffset > (int) m_previewLines.size() - height() + 8)
+        m_previewLineOffset = (int) m_previewLines.size() - height() + 8;
+}
 
 void
 S9sInfoPanel::setInfoController(
@@ -66,6 +96,7 @@ S9sInfoPanel::setInfoObject(
     m_objectPath    = path;
     m_object        = theMap;
     m_objectSetTime = time(NULL);
+    m_previewLineOffset = 0;
 
     m_previewLines.clear();
 }
@@ -118,6 +149,8 @@ S9sInfoPanel::setShowJson(
         return;
 
     m_showJson = showJson;
+    m_previewLineOffset = 0;
+
     m_previewLines.clear();
 }
 
@@ -466,6 +499,7 @@ S9sInfoPanel::printLinePreviewCached(
      */
     printChar("║");
 
+    lineIndex += m_previewLineOffset;
     if (lineIndex >= 0 && lineIndex < (int)m_previewLines.size())
         printString(m_previewLines[lineIndex].toString());
 
