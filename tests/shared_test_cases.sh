@@ -26,6 +26,9 @@ EOF
         return 1
     fi
     
+    print_title "Installing Packages on $SECONDARY_CONTROLLER_IP"
+    ssh_to_controller "sudo apt install pkg-config"
+    
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
     ssh_to_controller "cd $sdir && env | grep PATH"
     ssh_to_controller "cd $sdir && ./autogen.sh >/dev/null"
