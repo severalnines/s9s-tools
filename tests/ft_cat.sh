@@ -236,7 +236,7 @@ function checkList()
                 let n_object_found+=1
                 ;;
             
-            /.runtime/job_manager)
+            /.runtime/jobs/job_manager)
                 [ "$owner" != "system" ] && failure "Owner is '$owner'."
                 [ "$group" != "admins" ] && failure "Group is '$group'."
                 [ "$mode"  != "-r--------" ] && failure "Mode is '$mode'."
