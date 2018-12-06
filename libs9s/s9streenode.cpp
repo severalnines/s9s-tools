@@ -205,6 +205,12 @@ S9sTreeNode::isDevice() const
         hasProperty("minor_devide_number");
 }
 
+bool
+S9sTreeNode::isExecutable() const
+{
+    return aclStringToUiString(acl()).contains("x");
+}
+
 S9sString
 S9sTreeNode::type() const
 {

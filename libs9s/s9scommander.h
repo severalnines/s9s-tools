@@ -41,7 +41,7 @@ class S9sCommander :
         virtual void printHeader();
 
         void updateTree();
-        void updateObject();
+        void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);
 
     private:

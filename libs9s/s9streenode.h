@@ -52,6 +52,7 @@ class S9sTreeNode
         S9sString acl() const;
         S9sString sizeString() const;
         bool isDevice() const;
+        bool isExecutable() const;
 
 
         S9sString type() const;

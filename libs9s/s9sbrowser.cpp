@@ -136,6 +136,8 @@ S9sBrowser::printLine(
     const char *folder     = TERM_NORMAL "\033[48;5;19m" XTERM_COLOR_FOLDER;
     const char *user       = TERM_NORMAL "\033[48;5;19m" XTERM_COLOR_USER;
     const char *groupColor = TERM_NORMAL "\033[48;5;19m" "\033[2m\033[38;5;3m";
+    const char *deviceColor = TERM_NORMAL "\033[48;5;19m" "\033[38;5;198m";
+    const char *execColor  = TERM_NORMAL "\033[48;5;19m" "\033[32m";
     const char *file       = TERM_NORMAL "\033[48;5;19m" "\033[38;5;199m";
     const char *cluster    = TERM_NORMAL "\033[48;5;19m" "\033[2m\033[38;5;197m";
     const char *hostColor  = TERM_NORMAL "\033[48;5;19m" "\033[38;5;46m";
@@ -295,6 +297,10 @@ S9sBrowser::printLine(
             ::printf("%s", selection);
         else if (node.isFolder())
             ::printf("%s", folder);
+        else if (node.isDevice())
+            ::printf("%s", deviceColor);
+        else if (node.isFile() && node.isExecutable())
+            ::printf("%s", execColor);
         else if (false && node.isUser())
             ::printf("%s", user);
         else if (false && node.isGroup())

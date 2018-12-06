@@ -73,6 +73,8 @@ S9sCommander::main()
 
         while (true)
         {
+            bool updateRequested;
+
             #if 1
             while (!m_client.isAuthenticated())
             {
@@ -86,13 +88,15 @@ S9sCommander::main()
             //m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
             //m_lastReply = m_client.reply();
             #endif
+            updateRequested = m_reloadRequested;
+
             if (time(NULL) - m_rootNodeRecevied > updateFreq || 
                     m_reloadRequested)
             {
                 updateTree();
             }
 
-            updateObject();
+            updateObject(updateRequested);
             usleep(100000);
         }    
 }
@@ -118,23 +122,28 @@ S9sCommander::updateTree()
     m_client.getTree(true);
     getTreeReply = m_client.reply();
     
-    // Updatng the screen.
+    // Updating the screen.
     m_mutex.lock();
     m_rightInfo.setInfoRequestName("");
     m_leftInfo.setInfoRequestName("");
     m_rightInfo.setInfoLastReply(getTreeReply);
     m_leftInfo.setInfoLastReply(getTreeReply);
 
-    m_rootNode = getTreeReply.tree();
-    m_leftBrowser.setCdt(m_rootNode);
-    m_rightBrowser.setCdt(m_rootNode);
-    m_rootNodeRecevied = time(NULL);
+    if (getTreeReply.isOk())
+    {
+        m_rootNode = getTreeReply.tree();
+        m_leftBrowser.setCdt(m_rootNode);
+        m_rightBrowser.setCdt(m_rootNode);
+        m_rootNodeRecevied = time(NULL);
+    }
+
     m_communicating = false;    
     m_mutex.unlock(); 
 }
 
 void
-S9sCommander::updateObject()
+S9sCommander::updateObject(
+        bool updateRequested)
 {
     S9sString path;
     bool      needToRefresh;
@@ -145,6 +154,9 @@ S9sCommander::updateObject()
 
         needToRefresh = path != m_rightInfo.objectPath();
         if (time(NULL) - m_rightInfo.objectSetTime() > 15)
+            needToRefresh = true;
+        
+        if (updateRequested)
             needToRefresh = true;
 
         if (needToRefresh)
@@ -157,6 +169,9 @@ S9sCommander::updateObject()
 
         needToRefresh = path != m_leftInfo.objectPath();
         if (time(NULL) - m_leftInfo.objectSetTime() > 15)
+            needToRefresh = true;
+
+        if (updateRequested)
             needToRefresh = true;
 
         if (needToRefresh)
