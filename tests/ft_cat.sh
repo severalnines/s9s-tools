@@ -144,7 +144,7 @@ function checkTreeAccess()
 
     files+="/.runtime/cluster_manager"
     files+=" /.runtime/host_manager"
-    files+=" /.runtime/job_manager"
+    files+=" /.runtime/jobs/job_manager"
     files+=" /.runtime/mutexes"
     files+=" /.runtime/server_manager"
     files+=" /.runtime/threads"
