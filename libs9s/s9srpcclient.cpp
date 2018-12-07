@@ -6388,6 +6388,22 @@ S9sRpcClient::getUsers()
 }
 
 bool
+S9sRpcClient::whoAmI()
+{
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]                = "whoAmI";
+    request["with_extended_privileges"] = true;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+bool
 S9sRpcClient::getGroups()
 {
     S9sString      uri = "/v2/users/";

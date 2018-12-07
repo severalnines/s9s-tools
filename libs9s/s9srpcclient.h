@@ -245,6 +245,7 @@ class S9sRpcClient
         bool removeFromGroup();
 
         bool getUsers();
+        bool whoAmI();
         bool getGroups();
         bool canCreateUser();
         bool setUser();

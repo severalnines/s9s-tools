@@ -326,6 +326,7 @@ function testSave()
 
     print_title "Saving Controller"
     mys9s cluster --list --long
+    mys9s user --list --long
 
     mys9s backup \
         --save-controller \

@@ -310,6 +310,22 @@ S9sRpcReply::alarms()
     return theList;
 }
 
+S9sVariantList
+S9sRpcReply::users()
+{
+    S9sVariantList  theList;
+    
+    if (contains("users"))
+        theList = operator[]("users").toVariantList();
+   
+    if (contains("user"))
+        theList << operator[]("user").toVariantMap();
+
+
+    return theList;
+}
+
+
 void
 S9sRpcReply::printCat()
 {
@@ -8050,9 +8066,10 @@ S9sUser
 S9sRpcReply::getUser(
         const S9sString &userName)
 {
-    if (contains("users"))
+    S9sVariantList  userList = users();
+
+    if (!userList.empty())
     {
-        S9sVariantList  userList = operator[]("users").toVariantList();
         
         for (uint idx = 0; idx < userList.size(); ++idx)
         {
@@ -8098,7 +8115,7 @@ S9sRpcReply::printUserList()
 void 
 S9sRpcReply::printUsersStat()
 {
-    S9sVariantList  userList    = operator[]("users").toVariantList();
+    S9sVariantList  userList    = users();
     S9sOptions     *options     = S9sOptions::instance();
     S9sString       groupFilter = options->group();
     bool            whoAmIRequested = options->isWhoAmIRequested();
@@ -8136,8 +8153,8 @@ S9sRpcReply::printUserListBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sString       formatString = options->longBackupFormat();
-    S9sVariantList  userList = operator[]("users").toVariantList();
-    int             authUserId = operator[]("request_user_id").toInt();
+    S9sVariantList  userList     = users();
+    int             authUserId   = operator[]("request_user_id").toInt();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       groupFilter     = options->group();
     bool            whoAmIRequested = options->isWhoAmIRequested();
@@ -8221,8 +8238,8 @@ S9sRpcReply::printUserListLong()
 {
     S9sOptions     *options  = S9sOptions::instance();
     S9sString       formatString = options->longBackupFormat();
-    S9sVariantList  userList = operator[]("users").toVariantList();
-    int             authUserId = operator[]("request_user_id").toInt();
+    S9sVariantList  userList     = users();
+    int             authUserId   = operator[]("request_user_id").toInt();
     bool            whoAmIRequested = options->isWhoAmIRequested();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       groupFilter     = options->group();

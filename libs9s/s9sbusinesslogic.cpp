@@ -757,8 +757,14 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isUserOperation())
     {
-        if (options->isListRequested() || options->isWhoAmIRequested() ||
-                options->isStatRequested())
+        if (options->isWhoAmIRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.whoAmI();
+            reply = client.reply();
+            reply.printUserList();
+        } else if (options->isListRequested() || options->isStatRequested())
         {
             executeUserList(client);
         } else if (options->isListGroupsRequested())

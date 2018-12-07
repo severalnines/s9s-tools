@@ -70,7 +70,7 @@ class S9sRpcReply : public S9sVariantMap
         // Methods handling clusters.
         S9sCluster cluster(const S9sString &clusterName);
         S9sVariantList clusters();
-        
+        S9sVariantList users();
         S9sVariantList alarms();
 
         S9sString clusterName(const int clusterId);
