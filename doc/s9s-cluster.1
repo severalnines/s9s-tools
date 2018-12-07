@@ -771,6 +771,23 @@ The password of the datanase administrator. Passing the password through the
 command line is a security risk, so I will add other ways to store the password
 soon.
 
+.TP
+.BI \-\^\-backup-id= NUMBER
+The id of a backup to be restored on the created cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=postgresql \\
+    --nodes="192.168.0.84?master;192.168.0.151?slave" \\
+    --vendor=postgre \\
+    --cluster-name=postgre_test \\
+    --provider-version=9.6 \\
+    --wait \\
+    --backup-id=214
+.fi
+
 .\"
 .\"
 .\"
