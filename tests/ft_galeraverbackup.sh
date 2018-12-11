@@ -149,7 +149,7 @@ function testCreateCluster()
 #
 # Dropping the cluster from the controller.
 #
-function testBackup()
+function testCreateBackup()
 {
     print_title "Taking backup of the Cluster"
 
@@ -279,7 +279,7 @@ else
     runFunctionalTest testCreateCluster
 
     runFunctionalTest testCreateBackup
-    runFunctionalTest testVerifyBackup
+    #runFunctionalTest testVerifyBackup
 
     runFunctionalTest testCreateClusterFromBackup
     runFunctionalTest testDropFromBackup

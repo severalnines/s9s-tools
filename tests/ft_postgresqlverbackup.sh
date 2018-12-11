@@ -136,7 +136,7 @@ function testCreateCluster()
 #
 # Dropping the cluster from the controller.
 #
-function testBackup()
+function testCreateBackup()
 {
     print_title "Taking backup of the Cluster"
 
