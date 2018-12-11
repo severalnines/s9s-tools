@@ -159,7 +159,7 @@ function testCreateBackup()
     mys9s backup \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
+        --nodes="${FIRST_ADDED_NODE}" \
         --backup-directory=/tmp \
         $LOG_OPTION
 
