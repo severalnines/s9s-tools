@@ -12,6 +12,8 @@ CLUSTER_ID_FROM_BACKUP=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
 
 VERIFY_BACKUP_NODE=""
 
@@ -31,14 +33,17 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - PostgreSQL backup test script.
+  $MYNAME - Galera backup test script.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --vendor=STRING  Use the given Galera vendor.
+
+  --provider-version=VERSION The SQL server provider version.
 
 EOF
     exit 1
@@ -88,6 +93,18 @@ while true; do
             shift
             OPTION_RESET_CONFIG="true"
             ;;
+        
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
 
         --)
             shift
@@ -105,22 +122,18 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    pip-say "The test to create Galera cluster is starting now."
     nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName:8089;"
+    nodes+="$nodeName"
     FIRST_ADDED_NODE=$nodeName
     
-    #
-    # Creating a PostgreSQL cluster.
-    #
     mys9s cluster \
         --create \
-        --cluster-type=postgresql \
+        --cluster-type=galera \
         --nodes="$nodes" \
         --cluster-name="$CLUSTER_NAME" \
-        --db-admin="postmaster" \
-        --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --vendor="$OPTION_VENDOR" \
+        --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
     check_exit_code $?
@@ -168,7 +181,7 @@ function testVerifyBackup()
         awk '{print $1}')
 
     nodeName=$(create_node --autodestroy)
-    VERIFY_BACKUP_NODE="$nodeName:5432;"
+    VERIFY_BACKUP_NODE="$nodeName"
 
     #
     # Verify the last backup.
@@ -191,7 +204,7 @@ function testCreateClusterFromBackup()
     local nodeName
     local exitCode
 
-    print_title "Creating PostgreSQL cluster from backup."
+    print_title "Creating Galera cluster from backup."
 
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
@@ -203,12 +216,11 @@ function testCreateClusterFromBackup()
     
     mys9s cluster \
         --create \
-        --cluster-type=postgresql \
+        --cluster-type=galera \
         --nodes="$nodes" \
         --cluster-name="${CLUSTER_NAME}-frombackup" \
-        --db-admin="postmaster" \
-        --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --vendor="$OPTION_VENDOR" \
+        --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
     check_exit_code $?
