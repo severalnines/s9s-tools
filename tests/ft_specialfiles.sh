@@ -247,8 +247,11 @@ function testTree()
 
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        failure "The file file content for '$file' is not ok."
-        exit 1
+        failure "The file content for '$file' is not ok."
+        mys9s tree --cat \
+            --cmon-user=system \
+            --password=secret \
+            "$file"
     fi
 }
 
