@@ -1997,13 +1997,13 @@ function clean_up_after_test()
             --cat \
             --cmon-user=system \
             --password=secret \
-            /.runtime/job_manager
+            /.runtime/jobs/job_manager
     
         mys9s tree \
             --cat \
             --cmon-user=system \
             --password=secret \
-            /.runtime/host_manager
+            /.runtime/jobs/host_manager
     fi
 
     # Reading the container list file.

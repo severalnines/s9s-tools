@@ -25,6 +25,110 @@ XTERM_COLOR_WHITE="\033[1;37m"
 
 stringContain() { [ -z "${2##*$1*}" ] && [ -z "$1" -o -n "$2" ]; }
 
+function epoch()
+{
+    echo $(date +%s)
+}
+
+function timedSwitch()
+{
+    local name
+    local operation
+    local timeout=60
+    local on_epoch_file
+    local on_epoch
+
+    while [ -n "$1" ]; do
+        case $1 in 
+            --name)
+                name=$2
+                on_epoch_file="/tmp/${name}.on"
+                shift 2
+                ;;
+
+            --check)
+                operation="check"
+                shift
+                ;;
+
+            --on)
+                operation="on"
+                shift
+                ;;
+
+            *)  
+                break
+                ;;
+        esac
+    done
+   
+    #printVerbose "***      name:  $name"
+    #printVerbose "*** operation: $operation"
+    #printVerbose "***      file: $on_epoch_file"
+    if [ -z "$name" ]; then
+        printError "Name is not provided in timedSwitch()."
+        return 6
+    fi
+    
+    if [ -z "$operation" ]; then
+        printError "Operation is not provided in timedSwitch()."
+        return 6
+    fi
+
+    case "$operation" in
+        check)
+            if [ -f "$on_epoch_file" ]; then
+                on_epoch=$(epoch)
+                let on_epoch-=$(cat "$on_epoch_file")
+                
+                if [ "$on_epoch" -gt "$timeout" ]; then
+                    printVerbose "TIMEOUT $name"
+                    pip-pdu-control --off "$name"
+                    rm -f "$on_epoch_file"
+                fi
+            fi
+            ;;
+
+        on)
+            printVerbose "TIME ON $name"
+            pip-pdu-control --on "$name"
+            epoch >"$on_epoch_file"
+            ;;
+    esac
+}
+
+function sensorActivated()
+{
+    local name
+
+    while [ -n "$1" ]; do
+        case $1 in 
+            --name)
+                name=$2
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+   
+    if [ -n "$name" ]; then
+        printVerbose "ACT $name"
+    fi
+
+    case "$name" in
+        PIR01)
+            timedSwitch --on --name sonoff11
+            ;;
+
+        PIR04)
+            timedSwitch --on --name sonoff11
+            ;;
+    esac
+}
+
 function printWarning()
 {
     local date_string=$(date "+%Y-%m-%d %H:%M:%S")
@@ -50,9 +154,9 @@ function printVerbose()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG $*" >&2
-    fi
+    #if [ "$VERBOSE" == "true" ]; then
+        echo -e "$datestring $*" >&2
+    #fi
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
@@ -102,61 +206,65 @@ function process_message()
 
     if [ "$message" == "OFF" ]; then
         # Topic: "stat/sonoffXX/POWER"
-        printVerbose "     OFF: $device"
+        printVerbose "OFF $device"
         #pip-pdu-control --off sonoff4ch01_02
     elif [ "$message" == "ON" ]; then
         # Topic: "stat/sonoffXX/POWER"
-        printVerbose "      ON: $device"
+        printVerbose "ON  $device"
         #pip-pdu-control --on sonoff4ch01_02
     elif [ "$topic" == "tele/sonoff_rf_bridge_01/RESULT" ]; then 
         #echo " device : sonoff_rf_bridge_01"
         
         case "$data" in 
             D2D49E)
-                echo "message : PIR01"
-                #pip-pdu-control --on tasmota02
-                #sleep 3
-                #pip-pdu-control --off tasmota02
+                sensorActivated --name "PIR01"
                 ;;
 
             D250DE)
-                echo "message : PIR03"
+                sensorActivated --name "PIR03"
                 ;;
 
+            D40BBE)
+                sensorActivated --name "PIR04"
+                ;;
+
+            D4102E)
+                sensorActivated --name "PIR05"
+                ;;
 
             7D5503)
-                echo "message : button 1"
+                printVerbose "message : button 1"
                 pip-pdu-control --on tasmota02
                 ;;
 
             7D5530)
-                echo "message : button 2"
+                printVerbose "message : button 2"
                 pip-pdu-control --off tasmota02
                 ;;
 
             7D550C)
-                echo "message : button 3"
+                printVerbose "message : button 3"
                 pip-pdu-control --off nightlight
                 ;;
 
             7D550F)
-                echo "message : button 4"
+                printVerbose "message : button 4"
                 pip-pdu-control --on nightlight
                 ;;
 
             7D5533)
-                echo "message : button 5"
+                printVerbose "message : button 5"
                 change_state "night"
                 ;;
 
 
             7D553C)
-                echo "message : button 6"
+                printVerbose "message : button 6"
                 change_state "party"
                 ;;
             
             7D553F)
-                echo "message : button 7"
+                printVerbose "message : button 7"
                 pip-pdu-control --off sonoff21
                 pip-pdu-control --off orvibo04
                 ;;
@@ -164,30 +272,30 @@ function process_message()
 
             BD5AD8)
                 # Light switch
-                echo "message : switch 01"
+                printVerbose "message : switch 01"
                 pip-pdu-control --off sonoff21
                 ;;
             #
             # Another remote controller.
             #
             592EB8)
-                echo "Button A"
+                printVerbose "Button A"
                 pip-pdu-control --on nightlight
                 pip-pdu-control --on sonoff19
                 ;;
 
             592EB4)
-                echo "Button B"
+                printVerbose "Button B"
                 pip-pdu-control --off nightlight
                 pip-pdu-control --off sonoff19
                 ;;
 
             592EB2)
-                echo "Button C"
+                printVerbose "Button C"
                 ;;
 
             592EB1)
-                echo "Button D"
+                printVerbose "Button D"
                 ;;
 
 
@@ -195,16 +303,16 @@ function process_message()
             # Door opening sensors.
             #
             7ECCE6)
-                echo "message : door open 01"
+                printVerbose "message : door open 01"
                 ;;
 
             C3CD19)
-                echo "message : door open 02"
+                printVerbose "message : door open 02"
                 ;;
 
             7CFEE1)
                 #3E7F70)
-                echo "message : door open 10"
+                printVerbose "message : door open 10"
                 pip-pdu-control --on sonoff21
                 ;;
 
@@ -249,6 +357,8 @@ function process_message()
             echo "    mac : '$mac'"
         fi
     fi
+
+    timedSwitch --check --name sonoff11
 }
 
 pip-say "Core system process is starting now." &
