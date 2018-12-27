@@ -122,6 +122,7 @@ class S9sOptions
 
         S9sString inputFile() const;
         S9sString outputFile() const;
+        S9sString logFile() const;
 
         S9sString briefJobLogFormat() const;
         S9sString briefLogFormat() const;

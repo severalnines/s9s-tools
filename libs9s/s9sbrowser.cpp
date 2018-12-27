@@ -74,6 +74,25 @@ S9sBrowser::selectedNodeFullPath() const
 }
 
 void
+S9sBrowser::setSelectionIndexByName(
+        const S9sString &name)
+{
+    const S9sVector<S9sTreeNode> &childNodes = m_subTree.childNodes();
+    int   index = 0;
+
+    for (uint idx = 0u; idx < childNodes.size(); ++idx)
+    {
+        if (childNodes[idx].name() != name)
+            continue;
+
+        index = idx;
+        break;
+    }
+
+    setSelectionIndex(index);
+}
+
+void
 S9sBrowser::processKey(
         int key)
 {
@@ -88,9 +107,20 @@ S9sBrowser::processKey(
 
                 if (node.name() == "..")
                 {
+                    S9sString parentBasename;
+
+                    s9s_log("Up dir...");
+
+                    parentBasename = S9sFile::basename(m_path);
                     m_path = S9sFile::dirname(m_path);
+
+                    //s9s_log("***         m_path: %s", STR(m_path));
+                    //s9s_log("*** parentBasename: %s", STR(parentBasename));
+
                     m_rootNode.subTree(m_path, m_subTree);
-                    setSelectionIndex(0);
+                    //setSelectionIndex(0);
+                    setSelectionIndexByName(parentBasename);
+
                     setNumberOfItems(m_subTree.nChildren());
                 } else if (node.nChildren() > 0)
                 {

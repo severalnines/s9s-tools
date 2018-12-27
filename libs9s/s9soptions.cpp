@@ -291,6 +291,7 @@ enum S9sOptionType
     OptionShellCommand,
 
     OptionAlarmId,
+    OptionLogFile,
 };
 
 /**
@@ -1173,6 +1174,12 @@ S9sString
 S9sOptions::outputFile() const
 {
     return getString("output_file");
+}
+
+S9sString
+S9sOptions::logFile() const 
+{
+    return getString("log_file");
 }
 
 /**
@@ -10887,6 +10894,8 @@ S9sOptions::readOptionsTree(
         { "refresh",          no_argument,       0, OptionRefresh         },
         { "full-path",        no_argument,       0, OptionFullPath        },
 
+        { "log-file",         required_argument, 0, OptionLogFile         },
+
         { 0, 0, 0, 0 }
     };
 
@@ -11112,6 +11121,11 @@ S9sOptions::readOptionsTree(
             case OptionFullPath:
                 // --full-path
                 m_options["full_path"] = true;
+                break;
+
+            case OptionLogFile:
+                // --log-file=FILE
+                m_options["log_file"] = optarg;
                 break;
 
             case '?':

@@ -192,6 +192,12 @@ s9s_print_message (
         const char       *formatstring,
         ...);
 
+void
+s9s_log(
+        const char        *formatstring,
+        ...);
+
+
 /**
  * A macro to print booleans.
  */

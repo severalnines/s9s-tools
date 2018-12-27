@@ -498,6 +498,9 @@ S9sFile::basename(
 {
     S9sFileName retval = filePath;
 
+    if (retval.endsWith("/") && !retval.empty())
+        retval.resize(retval.size() - 1);
+
     size_t lastsep = retval.find_last_of("/");
     if (lastsep != std::string::npos)
         retval = retval.substr(lastsep + 1);

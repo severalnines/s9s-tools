@@ -1,5 +1,6 @@
 #include "s9sdebug.h"
 
+#include "S9sOptions"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -41,5 +42,31 @@ s9s_print_message (
     va_end(args);
     fprintf(stream, "\n");
     fflush(stream);
+}
+
+void
+s9s_log(
+        const char        *formatstring,
+        ...)
+{
+    S9sOptions *options = S9sOptions::instance();
+    S9sString   fileName = options->logFile();
+
+    if (!fileName.empty())
+    {
+        FILE    *stream;
+        va_list  args;
+
+        stream = fopen(STR(fileName), "a");
+        if (stream == NULL)
+            return;
+
+        va_start(args, formatstring);
+        vfprintf(stream, formatstring, args);
+        fprintf(stream, "\n");
+        va_end(args);
+        
+        fclose(stream);
+    }
 }
 

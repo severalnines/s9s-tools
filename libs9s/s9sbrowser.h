@@ -37,6 +37,7 @@ class S9sBrowser :
 
         S9sTreeNode selectedNode() const;
         S9sString selectedNodeFullPath() const;
+        void setSelectionIndexByName(const S9sString &name);
 
     private:
         void printString(const S9sString &theString);
@@ -53,5 +54,5 @@ class S9sBrowser :
         S9sString                    m_name;
         bool                         m_isDebug;
         /** Transient value shows the position in the line. */
-        int          m_nChars;
+        int                          m_nChars;
 };
