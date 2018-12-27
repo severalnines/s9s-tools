@@ -573,15 +573,44 @@ function compile_clustercontrol_source()
     pip-host-control --log "Finished compiling source."
 }
 
-function compile_s9s_source()
+function compile_source_dir()
 {
-    local source_root=$(find_s9s_source_directory)
+    local source_root
+    local mysql_dir=$(find_mysql)    
+    local do_install
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --source-root)
+                source_root="$2"
+                shift 2
+                ;;
+
+            --install)
+                do_install="true"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    if [ -z "$source_root" ]; then
+        printError "The source root is not provided."
+        return 1
+    fi
+
+    if [ "$mysql_dir" ]; then
+        export PATH="$mysql_dir/bin:$PATH"
+    fi
 
     #
     # Finding the source and entering the directory.
     #
     if [ ! -d "$source_root" ]; then
-        pip-host-control --error "No directory '$source_root' found."
+        pip-host-control --error "Directory '$source_root' is not found."
         return 1
     fi
 
@@ -640,9 +669,11 @@ function compile_s9s_source()
         exit 6
     fi
 
-    printVerbose "Running 'make install'."
-    pip-host-control --log "Running 'make install'."
-    sudo make install >>"make.log" 2>>"make.log"
+    if [ -n "$do_install" ]; then
+        printVerbose "Running 'make install'."
+        pip-host-control --log "Running 'make install'."
+        sudo make install >>"make.log" 2>>"make.log"
+    fi
 
     return 1
 }
@@ -659,7 +690,10 @@ function compile_source()
     fi
 
     if [ "$S9S_OPTION" ]; then
-        compile_s9s_source
+        compile_source_dir \
+            --source-root "$(find_s9s_source_directory)" \
+            --install 
+
         retcode="$?"
     fi
 
@@ -964,13 +998,13 @@ function run_test()
         test_dir=$(find_clustercontrol_source_directory)
     fi
 
+    printVerbose "Entering '$test_dir'..."
     if [ ! -d "$test_dir" ]; then
         pip-host-control --error "Directory '$test_dir' does not exist."
         printError "Directory '$test_dir' does not exist."
         return 1
     else
         pip-host-control --log "Entering '$test_dir'..."
-        printVerbose "Entering '$test_dir'..."
         pushd "$test_dir" >/dev/null 2>/dev/null
     fi
     
@@ -1001,6 +1035,7 @@ function run_test()
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running 'ft_full'..."
+                printVerbose "Running 'ft_full'..."
 
                 echo "Starting controller: './ft_full/ft_full'" >ft_full.log
 
@@ -1210,6 +1245,7 @@ function main()
     #
     # Preparing the source, generating a file holding the test results.
     #
+    printVerbose "Entering directory '$source_root'..."
     pushd "$source_root" >/dev/null 2>/dev/null
 
     prepare_source
