@@ -446,13 +446,17 @@ function print_title()
 function prepare_source()
 {
     if [ -z "$NO_GIT_PULL" ]; then
+        printVerbose "Pulling source."
         pip-host-control --log "Pulling source."
+        
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
         pip-host-control --log "Pulled source."
     fi
 
     if [ "$DO_CLEAN" ]; then
+        printVerbose "Cleaning source dir."
+
         pip-host-control --log "Cleaning source dir."
         git clean -dfx >/dev/null 2>/dev/null
         pip-host-control --log "Cleaned source."
@@ -480,7 +484,8 @@ function compile_clustercontrol_source()
     local retcode
     local source_root=$(find_clustercontrol_source_directory)
     local mysql_dir=$(find_mysql)
-   
+  
+    printVerbose "Compiling clustercontrol source."
     #
     # Finding the source and entering the directory.
     #
@@ -489,6 +494,7 @@ function compile_clustercontrol_source()
         return 1
     fi
 
+    printVerbose "Entering directory '$source_root'..."
     pip-host-control --log "Entering directory '$source_root'..."
     pushd "$source_root" >/dev/null 2>/dev/null
     retcode="$?"
@@ -528,7 +534,7 @@ function compile_clustercontrol_source()
     #
     # Running autogen in the source root. 
     #
-    #print_title "Output of autogen.sh" >>$LOGFILE
+    printVerbose "Running 'autogen.sh'."
     pip-host-control --log "Running 'autogen.sh'."
     
     ./autogen.sh >>"/dev/null" 2>>"/dev/null"
@@ -545,6 +551,7 @@ function compile_clustercontrol_source()
     #
     # Running make in source root.
     #
+    printVerbose "Running make..."
     pip-host-control --log "Running 'make'."
     rm -f "make.log"
 
@@ -558,7 +565,6 @@ function compile_clustercontrol_source()
     fi
 
     cd tests
-
     pip-host-control --log "Finished compiling source."
 }
 
@@ -566,6 +572,7 @@ function compile_s9s_source()
 {
     local source_root=$(find_s9s_source_directory)
 
+    printVerbose "Compiling s9s source."
     #
     # Finding the source and entering the directory.
     #
@@ -574,6 +581,7 @@ function compile_s9s_source()
         return 1
     fi
 
+    printVerbose "Entering directory '$source_root'..."
     pip-host-control --log "Entering directory '$source_root'..."
     pushd "$source_root" >/dev/null 2>/dev/null
     retcode="$?"
@@ -597,6 +605,7 @@ function compile_s9s_source()
     #
     # Running autogen in the source root. 
     #
+    printVerbose "Running 'autogen.sh'."
     pip-host-control --log "Running 'autogen.sh'."
     rm -f autogen.log
 
@@ -612,6 +621,7 @@ function compile_s9s_source()
     #
     # Running make in source root.
     #
+    printVerbose "Running 'make'."
     pip-host-control --log "Running 'make'."
     rm -f "make.log"
 
@@ -624,6 +634,7 @@ function compile_s9s_source()
         exit 6
     fi
 
+    printVerbose "Running 'make install'."
     pip-host-control --log "Running 'make install'."
     sudo make install >>"make.log" 2>>"make.log"
 
