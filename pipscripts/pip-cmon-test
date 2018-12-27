@@ -301,8 +301,7 @@ function upload_slog_file()
 #
 function message()
 {
-    echo "$1"
-
+    printVerbose "$1"
     pip-host-control --status="$1"
 }
 
