@@ -282,7 +282,11 @@ function upload_slog_file()
     local localfile="$HOME/pip-cmon-test.log"
     local remotefile="$(script_log_file_name)"
 
-    cp "$localfile" "/tmp/$remotefile"
+    if [ -f "$localfile" ]; then
+        cp "$localfile" "/tmp/$remotefile"
+    else
+        touch "/tmp/$remotefile"
+    fi
         
     printVerbose "scp \"/tmp/$remotefile\" \"$TEST_REPORT_URL\""
     scp "/tmp/$remotefile" "$TEST_REPORT_URL"
