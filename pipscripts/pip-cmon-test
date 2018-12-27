@@ -577,6 +577,7 @@ function compile_s9s_source()
     local source_root=$(find_s9s_source_directory)
 
     printVerbose "Compiling s9s source."
+    
     #
     # Finding the source and entering the directory.
     #
@@ -595,7 +596,9 @@ function compile_s9s_source()
         return 1
     fi
     
+    upload_slog_file
     prepare_source
+    upload_slog_file
 
     #
     # Not gonna compile the source when the --no-compile command line option is
