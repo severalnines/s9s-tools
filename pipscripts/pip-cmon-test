@@ -788,7 +788,6 @@ function upload_result_file()
     daemon_log_file="$(basename "$log_file" .log).dlog"
     tmp_file="/var/tmp/$result_file"
 
-    current_test_name="$test_name"
 
     #
     # If we have a PID we do the uploading until that ends. If not, we just
@@ -935,6 +934,7 @@ function run_test()
     local logfile
     local scriptlogfile
 
+    current_test_name="$test_name"
     logfile=$(log_file_name "$test_name")
     if [ "$S9S_OPTION" ]; then
         test_dir=$(find_s9s_source_directory)
