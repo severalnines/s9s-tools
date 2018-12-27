@@ -264,6 +264,7 @@ while true; do
     esac
 done
 
+echo "" >$LOGFILE
 #
 # The basename of the pip-cmon-test log file on the server.
 #
