@@ -265,6 +265,10 @@ while true; do
 done
 
 echo "" >$LOGFILE
+printVerbose "Starting test runner script..."
+printVerbose "                MYNAME: $MYNAME"
+printVerbose "                 MYDIR: $MYDIR"
+printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
 
 #
 # The basename of the pip-cmon-test log file on the server.
@@ -960,17 +964,19 @@ function run_test()
 
     if [ ! -d "$test_dir" ]; then
         pip-host-control --error "Directory '$test_dir' does not exist."
+        printError "Directory '$test_dir' does not exist."
         return 1
     else
         pip-host-control --log "Entering '$test_dir'..."
+        printVerbose "Entering '$test_dir'..."
         pushd "$test_dir" >/dev/null 2>/dev/null
     fi
     
     #
     # Notifying the user about a test is starting.
     #
-    echo "----8<----8<----8<----8<----8<----8<----"
     message "Running '$test_name'."
+    printVerbose "Working directory is '$PWD'."
 
     upload_slog_file
 
@@ -989,9 +995,6 @@ function run_test()
                 >/dev/null 2>/dev/null
             
             # Cleaning up before.
-            #killall ft_full
-            #sleep 3
-            #killall -9 ft_full
             rm -rvf /tmp/cmon*
 
             if [ -x "./ft_full/ft_full" ]; then
