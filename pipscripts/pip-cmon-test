@@ -280,6 +280,8 @@ function upload_slog_file()
     local remotefile="$(script_log_file_name)"
 
     cp "$localfile" "/tmp/$remotefile"
+        
+    printVerbose "scp \"/tmp/$remotefile\" \"$TEST_REPORT_URL\""
     scp "/tmp/$remotefile" "$TEST_REPORT_URL"
     rm -f "/tmp/$remotefile"
 }
