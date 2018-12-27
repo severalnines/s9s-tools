@@ -265,6 +265,7 @@ while true; do
 done
 
 echo "" >$LOGFILE
+
 #
 # The basename of the pip-cmon-test log file on the server.
 #
@@ -524,10 +525,10 @@ function compile_clustercontrol_source()
     #
     # Running autogen in the source root. 
     #
-    print_title "Output of autogen.sh" >>$LOGFILE
+    #print_title "Output of autogen.sh" >>$LOGFILE
     pip-host-control --log "Running 'autogen.sh'."
     
-    ./autogen.sh >>"$LOGFILE" 2>>"$LOGFILE"
+    ./autogen.sh >>"/dev/null" 2>>"/dev/null"
     retcode $?
     if [ $retcode -ne 0 ]; then
         pip-host-control \
