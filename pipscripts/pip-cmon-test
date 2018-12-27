@@ -682,7 +682,10 @@ function compile_source()
 {
     local retcode
 
-    compile_clustercontrol_source
+    compile_source_dir \
+        --source-root "$(find_clustercontrol_source_directory)"
+
+    #compile_clustercontrol_source
 
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
@@ -1011,9 +1014,7 @@ function run_test()
     #
     # Notifying the user about a test is starting.
     #
-    message "Running '$test_name'."
-    #printVerbose "Working directory is '$PWD'."
-
+    message "Preparing to run '$test_name'."
     upload_slog_file
 
     #
