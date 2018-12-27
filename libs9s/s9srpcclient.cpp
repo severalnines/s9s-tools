@@ -2299,7 +2299,8 @@ S9sRpcClient::createReport(
     S9sString      uri = "/v2/jobs/";
     bool           retval;
 
-    jobData["extended"] = options->extended();
+    jobData["extended"]       = options->extended();
+    jobData["mask_passwords"] = options->maskPasswords();
 
     if (!outputDir.empty())
         jobData["report_dir"] = outputDir;

@@ -253,6 +253,7 @@ class S9sOptions
         S9sString optName() const;
         S9sString optValue() const;
         S9sString outputDir() const;
+        bool maskPasswords() const;
         S9sString donor() const;
         S9sString templateName() const;
         S9sString cloudName() const;

@@ -97,9 +97,13 @@ mys9s cluster \\
 
 .B \-\-create-report
 When this command line option is provided a new job will be started that will
-create a report. After the job is executed the report will be available on the 
-controller. If the \fB\-\-output-dir\fP command line option is provided the
-report will be created in the given directory on the controller host.
+create an error-report. After the job is executed the error-report will be
+available on the controller. If the \fB\-\-output-dir\fP command line option
+is provided the report will be created in the given directory on the
+controller host.
+To mask out all the passwords (with xxxxx) from the generated report, it is
+possible to specify \fB\-\-mask-passwords\fP command line option,
+or \fBmask_password\fP=true in the s9s configuration file.
 
 .TP
 .B \-\-delete-account

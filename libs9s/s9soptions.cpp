@@ -189,6 +189,7 @@ enum S9sOptionType
     OptionEnableSsl,
     OptionDisableSsl,
     OptionCreateReport,
+    OptionMaskPasswords,
     OptionDeployAgents,
     OptionLimit,
     OptionOffset,
@@ -2187,6 +2188,40 @@ S9sString
 S9sOptions::outputDir() const
 {
     return getString("output_dir");
+}
+
+/**
+ * \returns the presence of the command line option --mask-passwords.
+ */
+bool
+S9sOptions::maskPasswords() const
+{
+    char *variable;
+    const char *key = "mask_passwords";
+    S9sString   retval;
+
+    variable = getenv("S9S_MASK_PASSWORDS");
+    if (variable != NULL)
+    {
+        S9sString theString = variable;
+        if (theString.toInt() > 0)
+            return true;
+    }
+
+    /*
+     * Return true if any of the config files
+     * or command line defines mask_passwords
+     */
+    if (getBool(key))
+        return true;
+
+    if (m_userConfig.variableValue(key).toBoolean())
+        return true;
+
+    if (m_systemConfig.variableValue(key).toBoolean())
+        return true;
+
+    return false;
 }
 
 /**
@@ -8696,6 +8731,10 @@ S9sOptions::readOptionsCluster(
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
 
+        // Option(s) for error-report generation
+        { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
+        { "output-dir",       required_argument, 0, OptionOutputDir       },
+
         // Job Related Options
         { "batch",            no_argument,       0, OptionBatch           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
@@ -8731,7 +8770,6 @@ S9sOptions::readOptionsCluster(
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
-        { "output-dir",       required_argument, 0, OptionOutputDir       },
         { "donor",            required_argument, 0, OptionDonor           },
        
         // Options for containers.
@@ -8851,6 +8889,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateReport:
                 // --create-report
                 m_options["create_report"] = true;
+                break;
+
+            case OptionMaskPasswords:
+                // --mask-passwords
+                m_options["mask_passwords"] = true;
                 break;
 
             case OptionDeployAgents:
