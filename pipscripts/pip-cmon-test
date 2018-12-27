@@ -3,10 +3,11 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
-VERSION="0.0.6"
+VERSION="0.0.7"
 VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
+COMMAND_LINE_OPTIONS="$0 $*"
 
 GIT_HASH=""
 GIT_AUTHOR=""
@@ -261,6 +262,26 @@ while true; do
     esac
 done
 
+#
+# The basename of the pip-cmon-test log file on the server.
+#
+function script_log_file_name()
+{
+    local test_name=$1
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.slog"
+}
+
+#
+# Uploads the log file of this script to the web server.
+#
+function upload_slog_file()
+{
+    local localfile="$HOME/pip-cmon-test.log"
+    local remotefile="$(script_log_file_name)"
+
+    scp "$localfile" "$TEST_REPORT_URL/$remotefile"
+}
+
 #export PATH="$HOME/bin:$PATH"
 
 #
@@ -403,6 +424,11 @@ function find_s9s_source_directory()
     echo "$HOME/s9s-tools"
 }
 
+function print_title()
+{
+    echo "<h3>$*</h3>"
+}
+
 #
 # FIXME: This will be more complicated.
 # FIXME: This expects to be in the source directory.
@@ -478,7 +504,8 @@ function compile_clustercontrol_source()
         export PATH="$mysql_dir/bin:$PATH"
     fi
 
-    pip-host-control --testing \
+    pip-host-control \
+        --testing             \
         --status "Testing..." \
         --log    "Compiling."
 
@@ -486,13 +513,15 @@ function compile_clustercontrol_source()
     #pip-host-control --log " mysqlshow: $(which mysqlshow)"
     #pip-host-control --log " pwd: '$PWD'"
 
+    upload_slog_file
+
     #
     # Running autogen in the source root. 
     #
+    print_title "Output of autogen.sh" >>$LOGFILE
     pip-host-control --log "Running 'autogen.sh'."
-    rm -f autogen.log
-
-    ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+    
+    ./autogen.sh >>"$LOGFILE" 2>>"$LOGFILE"
     retcode $?
     if [ $retcode -ne 0 ]; then
         pip-host-control \
@@ -500,6 +529,8 @@ function compile_clustercontrol_source()
             --error "The ./autogen.sh returned an error ($retcode)."
         exit 6
     fi
+
+    upload_slog_file
 
     #
     # Running make in source root.
@@ -895,7 +926,7 @@ function run_test()
     local return_code
     local tmp_file
     local logfile
-
+    local scriptlogfile
 
     logfile=$(log_file_name "$test_name")
     if [ "$S9S_OPTION" ]; then
@@ -917,6 +948,8 @@ function run_test()
     #
     echo "----8<----8<----8<----8<----8<----8<----"
     message "Running '$test_name'."
+
+    upload_slog_file
 
     #
     # Running the actual test.
@@ -1100,6 +1133,7 @@ function run_test()
     fi
             
     message "Finished running '$test_name' ($return_code)."
+    upload_slog_file
 }
 
 #

@@ -2,6 +2,7 @@
 MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
+MYDIR=$(readlink -m $MYDIR)
 VERBOSE=""
 VERSION="0.0.3"
 LOG_OPTION="--wait"
@@ -11,6 +12,7 @@ CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
+COMMAND_LINE_OPTIONS="$0 $*"
 
 cd $MYDIR
 source include.sh

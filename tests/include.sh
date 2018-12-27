@@ -197,6 +197,13 @@ function startTests ()
         rm -f "$container_list_file"
     fi
 
+    if [ -d "$MYDIR/../pipscripts" ]; then
+        echo "Installing 'pipscripts'."
+        pushd "$MYDIR/../pipscripts"
+        sudo make install 
+        popd
+    fi
+
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
         echo ""
         echo "***********************"
@@ -2066,6 +2073,7 @@ function clean_up_after_test()
         rm -f "$container_list_file"
     fi
 
+    echo "Exiting test script now."
     return 0
 }
 
