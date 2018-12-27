@@ -152,12 +152,26 @@ function startTests ()
 
     TEST_SUITE_NAME=$(basename $0 .sh)
 
+    #
+    # Printing some info
+    #
     echo "Starting test $TEST_SUITE_NAME"
-    
+    if [ -n "$COMMAND_LINE_OPTIONS" ]; then
+        echo "  Command line: $COMMAND_LINE_OPTIONS"
+    fi
+
+    echo "      Testname: $TEST_SUITE_NAME"
+    echo "      Hostname: $(hostname)"
+    echo "        My Dir: $MYDIR"
+    echo "          User: $USER"
+
+    #
+    # Doing some checks
+    #
     echo -n "Checking if jq is installed..."
     if [ -z "$(which jq)" ]; then
         echo "[INSTALLING]"
-        sudo apt install jq
+        sudo apt-get install -y --force-yes jq
     else
         echo "[OK]"
     fi

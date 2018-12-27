@@ -119,12 +119,14 @@ function sensorActivated()
     fi
 
     case "$name" in
-        PIR01)
+        PIR01|PIR03)
             timedSwitch --on --name sonoff11
+            #timedSwitch --on --name nightlight
             ;;
 
         PIR04)
             timedSwitch --on --name sonoff11
+            #timedSwitch --on --name nightlight
             ;;
     esac
 }
@@ -359,6 +361,7 @@ function process_message()
     fi
 
     timedSwitch --check --name sonoff11
+    #timedSwitch --check --name nightlight
 }
 
 pip-say "Core system process is starting now." &

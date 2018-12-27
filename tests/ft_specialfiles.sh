@@ -2,6 +2,7 @@
 MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
+MYDIR=$(readlink -m $MYDIR)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait"
@@ -12,6 +13,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 DATABASE_USER="$USER"
 PROVIDER_VERSION="5.7"
+COMMAND_LINE_OPTIONS="$0 $*"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -177,19 +179,25 @@ function testTree()
     print_title "Checking Access Rights"
     mys9s tree --tree --all
 
-    if ! s9s tree --access --privileges="rwx" /; then
+    if ! mys9s tree --access --privileges="rwx" /; then
         failure "The user has no access to '/'"
         exit 1
+    else
+        success "  o The user has access to '/', ok."
     fi
     
-    if ! s9s tree --access --privileges="r" /groups; then
+    if ! mys9s tree --access --privileges="r" /groups; then
         failure "The user has no access to '/groups'"
         exit 1
+    else
+        success "  o The user has access to '/groups', ok."
     fi
     
-    if s9s tree --access --privileges="rwx" /groups; then
+    if mys9s tree --access --privileges="rwx" /groups; then
         failure "The user has write access to '/groups'"
         exit 1
+    else
+        success "  o The user has no write to '/groups', ok."
     fi
 
     files+="/.runtime/cluster_manager"
@@ -204,15 +212,17 @@ function testTree()
     # Normal user should not have access to some special files.
     #
     for file in $files; do
-        s9s tree \
+        mys9s tree \
             --access \
             --privileges="r" \
             "$file"
 
         retcode=$?
         if [ "$retcode" -eq 0 ]; then
-            failure "Normal user should not have access to '/.runtime' files"
+            failure "Normal user should not have access to '$file'."
             exit 1
+        else
+            success "  o Normal user has no access to $file, ok."
         fi
     done
 
@@ -220,7 +230,7 @@ function testTree()
     # Checking if the system user has access to some special files.
     #
     for file in $files; do
-        s9s tree \
+        mys9s tree \
             --access \
             --privileges="r" \
             --cmon-user=system \
@@ -231,6 +241,8 @@ function testTree()
         if [ "$retcode" -ne 0 ]; then
             failure "The system user should have access to '$file' file"
             exit 1
+        else
+            success "  o The system user has access to '$file', ok."
         fi
     done
 
@@ -238,12 +250,17 @@ function testTree()
     #
     #
     file="/$CLUSTER_NAME/.runtime/state"
+    mys9s tree --cat \
+        --cmon-user=system \
+        --password=secret \
+        "$file"
+
     s9s tree --cat \
         --cmon-user=system \
         --password=secret \
         "$file" \
     | \
-    grep --quiet CmonHostCollector
+    grep --quiet s9scluster_instance
 
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
@@ -252,6 +269,8 @@ function testTree()
             --cmon-user=system \
             --password=secret \
             "$file"
+    else 
+        success "  o Content of '$file' is ok."
     fi
 }
 
