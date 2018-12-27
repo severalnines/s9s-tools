@@ -292,7 +292,7 @@ function upload_slog_file()
         touch "/tmp/$remotefile"
     fi
         
-    printVerbose "scp \"/tmp/$remotefile\" \"$TEST_REPORT_URL\""
+    #printVerbose "scp \"/tmp/$remotefile\" \"$TEST_REPORT_URL\""
     scp "/tmp/$remotefile" "$TEST_REPORT_URL"
     rm -f "/tmp/$remotefile"
 }
@@ -489,7 +489,8 @@ function compile_clustercontrol_source()
     local source_root=$(find_clustercontrol_source_directory)
     local mysql_dir=$(find_mysql)
   
-    printVerbose "Compiling clustercontrol source."
+    #printVerbose "Compiling clustercontrol source."
+
     #
     # Finding the source and entering the directory.
     #
@@ -576,8 +577,6 @@ function compile_s9s_source()
 {
     local source_root=$(find_s9s_source_directory)
 
-    printVerbose "Compiling s9s source."
-    
     #
     # Finding the source and entering the directory.
     #
@@ -979,7 +978,7 @@ function run_test()
     # Notifying the user about a test is starting.
     #
     message "Running '$test_name'."
-    printVerbose "Working directory is '$PWD'."
+    #printVerbose "Working directory is '$PWD'."
 
     upload_slog_file
 
@@ -1156,7 +1155,7 @@ function run_test()
     # Uploading the output of the test program as log file.
     #
     if [ -f "$logfile" ]; then
-        printVerbose "scp \"$logfile\" \"$TEST_REPORT_URL\""
+        #printVerbose "scp \"$logfile\" \"$TEST_REPORT_URL\""
         scp "$logfile" "$TEST_REPORT_URL"
         rm -f "$logfile"
     fi
