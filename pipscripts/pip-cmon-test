@@ -29,6 +29,8 @@ OPTION_PID=""
 OPTION_USER="$USER"
 S9S_OPTION=""
 
+current_test_name=""
+
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -267,8 +269,7 @@ done
 #
 function script_log_file_name()
 {
-    local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.slog"
+    echo "${OPTION_USER}-$(hostname)-${current_test_name}-${GIT_HASH}.slog"
 }
 
 #
@@ -786,6 +787,8 @@ function upload_result_file()
     log_file=$(log_file_name "$test_name")
     daemon_log_file="$(basename "$log_file" .log).dlog"
     tmp_file="/var/tmp/$result_file"
+
+    current_test_name="$test_name"
 
     #
     # If we have a PID we do the uploading until that ends. If not, we just
