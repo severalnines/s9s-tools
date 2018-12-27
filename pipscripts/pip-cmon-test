@@ -479,100 +479,6 @@ function find_mysql()
     return 1
 }
 
-#
-# This is the function that finds the clustercontrol-enterprise directory and
-# compiles it.
-#
-function compile_clustercontrol_source()
-{
-    local retcode
-    local source_root=$(find_clustercontrol_source_directory)
-    local mysql_dir=$(find_mysql)
-  
-    #printVerbose "Compiling clustercontrol source."
-
-    #
-    # Finding the source and entering the directory.
-    #
-    if [ ! -d "$source_root" ]; then
-        pip-host-control --error "No directory '$source_root' found."
-        return 1
-    fi
-
-    printVerbose "Entering directory '$source_root'..."
-    pip-host-control --log "Entering directory '$source_root'..."
-    pushd "$source_root" >/dev/null 2>/dev/null
-    retcode="$?"
-
-    if [ "$retcode" -ne 0 ]; then
-        pip-host-control --error "Could not chdir to '$source_root'."
-        return 1
-    fi
-
-    #
-    # Not gonna compile the source when the --no-compile command line option is
-    # provided.
-    #
-    if [ "$OPTION_NO_COMPILE" ]; then
-        popd >/dev/null 2>/dev/null
-        return 0
-    fi
-   
-    ####
-    # Preparing to compile.
-    #
-    if [ "$mysql_dir" ]; then
-        export PATH="$mysql_dir/bin:$PATH"
-    fi
-
-    pip-host-control \
-        --testing             \
-        --status "Testing..." \
-        --log    "Compiling."
-
-    #pip-host-control --log " PATH: $PATH"
-    #pip-host-control --log " mysqlshow: $(which mysqlshow)"
-    #pip-host-control --log " pwd: '$PWD'"
-
-    upload_slog_file
-
-    #
-    # Running autogen in the source root. 
-    #
-    printVerbose "Running 'autogen.sh'."
-    pip-host-control --log "Running 'autogen.sh'."
-    
-    ./autogen.sh >>"/dev/null" 2>>"/dev/null"
-    retcode $?
-    if [ $retcode -ne 0 ]; then
-        pip-host-control \
-            --tail "$PWD/autogen.log" \
-            --error "The ./autogen.sh returned an error ($retcode)."
-        exit 6
-    fi
-
-    upload_slog_file
-
-    #
-    # Running make in source root.
-    #
-    printVerbose "Running make..."
-    pip-host-control --log "Running 'make'."
-    rm -f "make.log"
-
-    make -j10 >>"make.log" 2>>"make.log"
-    retcode=$?
-    if [ "$retcode" -ne 0 ]; then
-        pip-host-control \
-            --tail "$PWD/make.log" \
-            --error "The make -j10 returned an error ($retcode)."
-        exit 6
-    fi
-
-    cd tests
-    pip-host-control --log "Finished compiling source."
-}
-
 function compile_source_dir()
 {
     local source_root
@@ -684,8 +590,6 @@ function compile_source()
 
     compile_source_dir \
         --source-root "$(find_clustercontrol_source_directory)"
-
-    #compile_clustercontrol_source
 
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
@@ -1061,7 +965,8 @@ function run_test()
             # 
             # Running the test script itself.
             # 
-            pip-host-control --log "Running '$test_name'."
+            message "Running '$test_name'..."
+
             ./$test_name \
                 --print-commands \
                 --reset-config \
@@ -1127,6 +1032,7 @@ function run_test()
                 return 1
             fi
 
+            message "Running '$test_name/$test_name'..."
             ./$test_name/$test_name \
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
@@ -1168,6 +1074,7 @@ function run_test()
                 return 1
             fi
 
+            message "Running '$test_name/$test_name'..."
             $test_name/$test_name --color >>$logfile 2>>$logfile
             return_code=$?
 
