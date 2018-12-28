@@ -21,6 +21,8 @@
 #include "S9sDateTime"
 #include "S9sMutexLocker"
 #include "S9sDialog"
+#include "S9sEntryDialog"
+#include "S9sQuestionDialog"
 
 #include <unistd.h>
 
@@ -65,6 +67,39 @@ S9sCommander::S9sCommander(
 S9sCommander::~S9sCommander()
 {
 }
+
+S9sString 
+S9sCommander::sourcePath() const
+{
+    S9sString retval;
+
+    if (m_leftBrowser.hasFocus())
+    {
+        retval = m_leftBrowser.path();
+    } else if (m_rightBrowser.hasFocus())
+    {
+        retval = m_rightBrowser.path();
+    }
+
+    return retval;
+}
+
+S9sString 
+S9sCommander::sourceFullPath() const
+{
+    S9sString retval;
+
+    if (m_leftBrowser.hasFocus())
+    {
+        retval = m_leftBrowser.selectedNodeFullPath();
+    } else if (m_rightBrowser.hasFocus())
+    {
+        retval = m_rightBrowser.selectedNodeFullPath();
+    }
+
+    return retval;
+}
+
 
 void
 S9sCommander::main()
@@ -141,6 +176,18 @@ S9sCommander::updateTree()
 
     m_communicating = false;    
     m_mutex.unlock(); 
+}
+
+void
+S9sCommander::createFolder(
+        const S9sString fullPath)
+{
+    S9sMutexLocker   locker(m_networkMutex);
+       
+    m_communicating   = true;
+    m_client.mkdir(fullPath);
+    m_reloadRequested = true;
+
 }
 
 void
@@ -284,12 +331,26 @@ S9sCommander::processKey(
 
     if (m_dialog != NULL)
     {
-        if (key == S9S_KEY_ESC)
+        m_dialog->processKey(key);
+
+        if (m_dialog->isCancelPressed())
         {
             delete m_dialog;
             m_dialog = NULL;
-        } else {
-            m_dialog->processKey(key);
+        } else if (m_dialog->isOkPressed())
+        {
+            if (m_dialog->userData("type") == "createFolder")
+            {
+                S9sString folderName = m_dialog->text();
+                S9sString parentFolderName = sourcePath();
+
+                s9s_log("***       folderName: %s", STR(folderName));
+                s9s_log("*** parentFolderName: %s", STR(parentFolderName));
+                createFolder(parentFolderName + "/" + folderName);
+            }
+
+            delete m_dialog;
+            m_dialog = NULL;
         }
 
         return;
@@ -355,10 +416,29 @@ S9sCommander::processKey(
         case S9S_KEY_F7:
             if (m_dialog == NULL)
             {
-                s9s_log("Creating dialog.");
-                m_dialog = new S9sDialog(this);
+                s9s_log("Creating mkdir dialog.");
+
+                m_dialog = new S9sEntryDialog(this);
                 //m_dialog->setLocation(10, 4);
+                m_dialog->setUserData("type", "createFolder");
                 m_dialog->setSize(60, 6);
+            }
+            break;
+
+        case S9S_KEY_F8:
+            s9s_log("F8");
+            if (m_dialog == NULL)
+            {
+                S9sString fullPath = sourceFullPath();
+
+                s9s_log("Creating delete dialog.");
+                s9s_log("*** fullPath: %s", STR(fullPath));
+
+                m_dialog = new S9sQuestionDialog(this);
+                //m_dialog->setLocation(10, 4);
+                m_dialog->setUserData("type", "deleteEntry");
+                m_dialog->setUserData("objectPath", fullPath);
+                m_dialog->setSize(40, 6);
             }
             break;
 

@@ -35,6 +35,8 @@ class S9sBrowser :
         void printLine(int lineIndex);
         void setCdt(const S9sTreeNode &node);
 
+        S9sString path() const;
+
         S9sTreeNode selectedNode() const;
         S9sString selectedNodeFullPath() const;
         void setSelectionIndexByName(const S9sString &name);

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "s9sdialog.h"
+#include "s9sentrydialog.h"
 
 #include "S9sDisplay"
 
@@ -25,39 +25,48 @@
 //#define WARNING
 #include "s9sdebug.h"
 
-S9sDialog::S9sDialog(
+S9sEntryDialog::S9sEntryDialog(
         S9sDisplay *display) :
-    S9sWidget(),
-    m_display(display),
-    m_okPressed(false),
-    m_cancelPressed(false)
+    S9sDialog(display)
 {
 }
 
-S9sDialog::~S9sDialog()
+S9sEntryDialog::~S9sEntryDialog()
 {
-}
-
-bool
-S9sDialog::isOkPressed() const
-{
-    return m_okPressed;
-}
-
-bool
-S9sDialog::isCancelPressed() const
-{
-    return m_cancelPressed;
 }
 
 S9sString
-S9sDialog::text() const
+S9sEntryDialog::text() const
 {
-    return "";
+    return m_entry.text();
 }
 
 void
-S9sDialog::processKey(
+S9sEntryDialog::refreshScreen()
+{
+    #if 0
+    s9s_log("S9sDialog::refreshScreen()");
+    s9s_log("***      y(): %d", y());
+    s9s_log("*** height(): %d", height());
+    #endif
+
+    alignCenter();
+    m_entry.setLocation(x() + 1, y() + 2);
+    m_entry.setSize(width() - 2, 1);
+
+    for (int row = y(); row < y() + height(); ++row)
+    {
+        S9sDisplay::gotoXy(x(), row);
+        printLine(row - y());
+    }
+
+    m_entry.setHasFocus(true);
+    m_entry.showCursor();
+    fflush(stdout);
+}
+
+void
+S9sEntryDialog::processKey(
         int key)
 {
     switch (key)
@@ -69,25 +78,14 @@ S9sDialog::processKey(
         case S9S_KEY_ENTER:
             m_okPressed = true;
             break;
+
+        default:
+            m_entry.processKey(key);
     }
 }
 
 void
-S9sDialog::refreshScreen()
-{
-    alignCenter();
-
-    for (int row = y(); row < y() + height(); ++row)
-    {
-        S9sDisplay::gotoXy(x(), row);
-        printLine(row - y());
-    }
-
-    fflush(stdout);
-}
-
-void
-S9sDialog::printLine(
+S9sEntryDialog::printLine(
         int lineIndex)
 {
     const char *normal     = TERM_NORMAL "\033[47m" "\033[90m";
@@ -126,6 +124,12 @@ S9sDialog::printLine(
         printString("Enter folder name:");
         printChar(" ", width() - 1);
         printChar("║");
+    } else if (lineIndex == 2)
+    {
+        printChar("║");
+        m_entry.print();
+        ::printf("%s", normal);
+        printChar("║");
     } else if (lineIndex + 1 == height())
     {
         // Last line, frame.
@@ -148,51 +152,3 @@ S9sDialog::printLine(
     ::printf("%s", TERM_NORMAL);
 }
 
-void
-S9sDialog::printChar(
-        const char *c)
-{
-    ::printf("%s", c);
-    ++m_nChars;
-;}
-
-void
-S9sDialog::printChar(
-        const char *c,
-        const int   lastColumn)
-{
-    while (m_nChars < lastColumn)
-    {
-        ::printf("%s", c);
-        ++m_nChars;
-    }
-}
-
-void
-S9sDialog::printString(
-        const S9sString &theString)
-{
-    S9sString  myString = theString;
-    int        availableChars = width() - m_nChars - 1;
-    
-    if (availableChars <= 0)
-        return;
-
-    if ((int)theString.length() > availableChars)
-        myString.resize(availableChars);
-
-    ::printf("%s", STR(myString));
-    m_nChars += myString.length();
-}
-
-void
-S9sDialog::alignCenter()
-{
-    if (m_display != NULL)
-    {
-        int x = (m_display->width() - width()) / 2;
-        int y = (m_display->height() - height()) / 2;
-
-        setLocation(x, y);
-    }
-}

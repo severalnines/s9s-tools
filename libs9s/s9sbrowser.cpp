@@ -56,6 +56,12 @@ S9sBrowser::setCdt(
     setNumberOfItems(m_subTree.nChildren());
 }
 
+S9sString 
+S9sBrowser::path() const
+{
+    return m_path;
+}
+
 S9sTreeNode
 S9sBrowser::selectedNode() const
 {

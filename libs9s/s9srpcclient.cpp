@@ -5088,8 +5088,6 @@ S9sRpcClient::chOwn()
 bool
 S9sRpcClient::mkdir()
 {
-    S9sString      uri = "/v2/tree/";
-    S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     
     if (options->nExtraArguments() != 1)
@@ -5101,8 +5099,18 @@ S9sRpcClient::mkdir()
         return false;
     }
 
+    return mkdir(options->extraArgument(0u));
+}
+
+bool
+S9sRpcClient::mkdir(
+        const S9sString &fullPath)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+
     request["operation"]      = "mkdir";
-    request["path"]           = options->extraArgument(0u);
+    request["path"]           = fullPath;
     
     return executeRequest(uri, request);
 }

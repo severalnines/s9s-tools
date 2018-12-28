@@ -34,6 +34,9 @@ class S9sCommander :
         S9sCommander(S9sRpcClient &client);
         virtual ~S9sCommander();
         
+        S9sString sourcePath() const;
+        S9sString sourceFullPath() const;
+
         virtual void main();
         virtual void processKey(int key);
         virtual bool processButton(uint button, uint x, uint y);        
@@ -43,6 +46,8 @@ class S9sCommander :
         virtual void printHeader();
 
         void updateTree();
+        void createFolder(const S9sString fullPath);
+
         void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);
 

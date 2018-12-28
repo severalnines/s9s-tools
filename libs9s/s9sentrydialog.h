@@ -19,42 +19,21 @@
  */
 #pragma once
 
-#include "S9sWidget"
+#include "S9sDialog"
+#include "S9sDisplayEntry"
 
-class S9sDisplay;
-
-class S9sDialog : public S9sWidget
+class S9sEntryDialog : public S9sDialog
 {
     public:
-        S9sDialog(S9sDisplay *display);
-        virtual ~S9sDialog();
+        S9sEntryDialog(S9sDisplay *display);
+        virtual ~S9sEntryDialog();
 
-        virtual void processKey(int key);
-
-        bool isOkPressed() const;
-        bool isCancelPressed() const;
         virtual S9sString text() const;
 
+        virtual void processKey(int key);
         virtual void refreshScreen();
         virtual void printLine(int lineIndex);
 
-    protected:
-        void printChar(const char *c);
-
-        void printChar(
-                const char *c,
-                const int   lastColumn);
-        
-        void printString(
-                const S9sString &theString);
-
-        void alignCenter();
-
-    protected:
-        S9sDisplay      *m_display;
-        bool             m_okPressed;
-        bool             m_cancelPressed;
-    
-        /** Transient value shows the position in the line. */
-        int             m_nChars;        
+    private:
+        S9sDisplayEntry  m_entry;
 };

@@ -43,6 +43,7 @@
 #define S9S_KEY_HOME      0x00485b1b
 #define S9S_KEY_END       0x00465b1b
 #define S9S_KEY_F7        0x38315b1b
+#define S9S_KEY_F8        0x39315b1b
 #define S9S_KEY_ESC       0x1b
 
 /**

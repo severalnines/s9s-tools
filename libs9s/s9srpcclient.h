@@ -102,6 +102,7 @@ class S9sRpcClient
         bool removeAcl();
         bool chOwn();
         bool mkdir();
+        bool mkdir(const S9sString &fullPath);
         bool rmdir();
 
         bool startServers();

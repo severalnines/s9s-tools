@@ -148,3 +148,22 @@ S9sWidget::setVisible(
 {
     m_isVisible = value;
 }
+
+void
+S9sWidget::setUserData(
+        const S9sString  &key,
+        const S9sVariant &value)
+{
+    m_userData[key] = value;
+}
+
+S9sVariant
+S9sWidget::userData(
+        const S9sString  &key) const
+{
+    if (m_userData.contains(key))
+        return m_userData.at(key);
+
+    return S9sVariant();
+}
+

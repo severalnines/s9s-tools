@@ -20,6 +20,8 @@
 #pragma once
 
 #include "S9sString"
+#include "S9sVariant"
+#include "S9sVariantMap"
 
 class S9sWidget
 {
@@ -44,13 +46,20 @@ class S9sWidget
         bool isVisible() const;
         void setVisible(bool value);
 
+        void setUserData(
+                const S9sString  &key,
+                const S9sVariant &value);
+
+        S9sVariant userData(
+                const S9sString  &key) const;
+
     protected:
-        int  m_x;
-        int  m_y;
-        int  m_width;
-        int  m_height;
-        bool m_isVisible;        
-        bool m_hasFocus;
-        
+        int            m_x;
+        int            m_y;
+        int            m_width;
+        int            m_height;
+        bool           m_isVisible;        
+        bool           m_hasFocus;
+        S9sVariantMap  m_userData;
 };
 
