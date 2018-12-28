@@ -20,6 +20,7 @@
 #include "s9scommander.h"
 #include "S9sDateTime"
 #include "S9sMutexLocker"
+#include "S9sDialog"
 
 #include <unistd.h>
 
@@ -33,7 +34,8 @@ S9sCommander::S9sCommander(
     m_client(client),
     m_rootNodeRecevied(0),
     m_communicating(false),
-    m_reloadRequested(false)
+    m_reloadRequested(false),
+    m_dialog(0)
 {
     m_leftPanel  = &m_leftBrowser;
     m_rightPanel = &m_rightInfo;
@@ -260,6 +262,11 @@ S9sCommander::refreshScreen()
 
     printFooter();
 
+    if (m_dialog != NULL)
+    {
+        m_dialog->refreshScreen();
+    }
+
     return true;
 }
 
@@ -272,6 +279,22 @@ void
 S9sCommander::processKey(
         int key)
 {
+    s9s_log("S9sCommander::processKey():");
+    s9s_log("*** key: %0x", key);
+
+    if (m_dialog != NULL)
+    {
+        if (key == S9S_KEY_ESC)
+        {
+            delete m_dialog;
+            m_dialog = NULL;
+        } else {
+            m_dialog->processKey(key);
+        }
+
+        return;
+    }
+
     switch (key)
     {
         case 'q':
@@ -327,6 +350,24 @@ S9sCommander::processKey(
         case 'D':
             // Turning on and off the debug mode.
             m_viewDebug = !m_viewDebug;
+            break;
+
+        case S9S_KEY_F7:
+            if (m_dialog == NULL)
+            {
+                s9s_log("Creating dialog.");
+                m_dialog = new S9sDialog(this);
+                //m_dialog->setLocation(10, 4);
+                m_dialog->setSize(60, 6);
+            }
+            break;
+
+        case S9S_KEY_ESC:
+            if (m_dialog != NULL)
+            {
+                delete m_dialog;
+                m_dialog = NULL;
+            }
             break;
     }
 

@@ -129,7 +129,20 @@ S9sDisplayEntry::processKey(
 void
 S9sDisplayEntry::print() const
 {
-    printf("%s", STR(m_content));
+    const char *selection = "\033[1m\033[48;5;51m" "\033[2m\033[38;5;237m";
+    int nChars;
+
+    
+    nChars = m_content.size();
+
+    ::printf("%s", selection);
+    ::printf("%s", STR(m_content));
+
+    while (nChars < width())
+    {
+        ::printf(" ");
+        ++nChars;
+    }
 }
 
 void

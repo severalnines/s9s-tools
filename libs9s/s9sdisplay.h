@@ -42,6 +42,8 @@
 #define S9S_KEY_DELETE    0x7e335b1b
 #define S9S_KEY_HOME      0x00485b1b
 #define S9S_KEY_END       0x00465b1b
+#define S9S_KEY_F7        0x38315b1b
+#define S9S_KEY_ESC       0x1b
 
 /**
  * A UI screen that can be used as a parent class for views continuously
@@ -65,7 +67,7 @@ class S9sDisplay :
 
         int lastKeyCode() const;
 
-        void gotoXy(int x, int y);
+        static void gotoXy(int x, int y);
 
     protected:
         virtual int exec();

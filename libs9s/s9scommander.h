@@ -25,6 +25,8 @@
 #include "S9sBrowser"
 #include "S9sInfoPanel"
 
+class S9sDialog;
+
 class S9sCommander :
     public S9sDisplay
 {
@@ -60,6 +62,7 @@ class S9sCommander :
         bool             m_communicating;
         bool             m_reloadRequested;
         bool             m_viewDebug;
-
+        
+        S9sDialog       *m_dialog;
 };
 

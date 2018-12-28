@@ -177,6 +177,8 @@ libs9s_public_h_headers =     \
 	s9sdisplayentry.h         \
 	S9sDisplayList            \
 	s9sdisplaylist.h          \
+	S9sDialog                 \
+	s9sdialog.h               \
 	S9sBrowser                \
 	s9sbrowser.h              \
 	S9sInfoPanel              \
@@ -259,6 +261,7 @@ libs9s_a_SOURCES =            \
 	s9swidget.cpp             \
 	s9sdisplayentry.cpp       \
 	s9sdisplaylist.cpp        \
+	s9sdialog.cpp             \
 	s9sbrowser.cpp            \
 	s9sinfopanel.cpp          \
 	s9smonitor.cpp            \
