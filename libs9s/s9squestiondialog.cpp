@@ -27,69 +27,10 @@ S9sQuestionDialog::S9sQuestionDialog(
         S9sDisplay *display) :
     S9sDialog(display)
 {
+    m_normalColor     = TERM_NORMAL "\033[48;5;160m";
 }
 
 S9sQuestionDialog::~S9sQuestionDialog()
 {
 }
 
-void
-S9sQuestionDialog::printLine(
-        int lineIndex)
-{
-    const char *normal     = TERM_NORMAL "\033[48;5;160m";
-
-    m_nChars = 0;
-    ::printf("%s", normal);
-
-    if (lineIndex == 0)
-    {
-        S9sString title = "Delete";
-
-        if (title.empty())
-        {
-            printChar("╔");
-            printChar("═", width() - 1);
-            printChar("╗");
-        } else {
-            int titleStart;
-        
-            printChar("╔");
-
-            title = " " + title + " ";
-            titleStart = (width() - 2 - title.length()) / 2;
-            if (titleStart >= 0)
-            {
-                printChar("═", titleStart);
-            }
-            
-            printString(title);
-            printChar("═", width() - 1);
-            printChar("╗");
-        }
-    } else if (lineIndex == 1)
-    {
-        printChar("║");
-        printString("Delete CDT entry?");
-        printChar(" ", width() - 1);
-        printChar("║");
-    } else if (lineIndex + 2 == height())
-    {
-        printChar("║");
-        printString("[  OK  ] [Cancel]");
-        printChar(" ", width() - 1);
-        printChar("║");
-    } else if (lineIndex + 1 == height())
-    {
-        // Last line, frame.
-        printChar("╚");
-        printChar("═", width() - 1);
-        printChar("╝");
-    } else {
-        printChar("║");
-        printChar(" ", width() - 1);
-        printChar("║");
-    }
-
-    ::printf("%s", TERM_NORMAL);
-}

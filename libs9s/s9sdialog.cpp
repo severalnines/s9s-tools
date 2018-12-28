@@ -32,10 +32,37 @@ S9sDialog::S9sDialog(
     m_okPressed(false),
     m_cancelPressed(false)
 {
+    m_normalColor = TERM_NORMAL "\033[47m" "\033[90m";
 }
 
 S9sDialog::~S9sDialog()
 {
+}
+
+void
+S9sDialog::setTitle(
+        const S9sString &text)
+{
+    m_title = text;
+}
+
+S9sString
+S9sDialog::title() const
+{
+    return m_title;
+}
+
+void
+S9sDialog::setMessage(
+        const S9sString &text)
+{
+    m_message = text;
+}
+
+S9sString
+S9sDialog::message() const
+{
+    return m_message;
 }
 
 bool
@@ -60,6 +87,7 @@ void
 S9sDialog::processKey(
         int key)
 {
+    s9s_log("S9sDialog::processKey()");
     switch (key)
     {
         case S9S_KEY_ESC:
@@ -90,16 +118,16 @@ void
 S9sDialog::printLine(
         int lineIndex)
 {
-    const char *normal     = TERM_NORMAL "\033[47m" "\033[90m";
+    const char *normal     = m_normalColor; 
 
     m_nChars = 0;
     ::printf("%s", normal);
 
     if (lineIndex == 0)
     {
-        S9sString title = "Create Folder";
+        S9sString myTitle = title();
 
-        if (title.empty())
+        if (myTitle.empty())
         {
             printChar("╔");
             printChar("═", width() - 1);
@@ -109,21 +137,21 @@ S9sDialog::printLine(
         
             printChar("╔");
 
-            title = " " + title + " ";
-            titleStart = (width() - 2 - title.length()) / 2;
+            myTitle = " " + myTitle + " ";
+            titleStart = (width() - 2 - myTitle.length()) / 2;
             if (titleStart >= 0)
             {
                 printChar("═", titleStart);
             }
             
-            printString(title);
+            printString(myTitle);
             printChar("═", width() - 1);
             printChar("╗");
         }
     } else if (lineIndex == 1)
     {
         printChar("║");
-        printString("Enter folder name:");
+        printString(message());
         printChar(" ", width() - 1);
         printChar("║");
     } else if (lineIndex + 1 == height())

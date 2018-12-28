@@ -92,6 +92,7 @@ class S9sRpcClient
 
         bool moveInTree();
         bool deleteFromTree();
+        bool deleteFromTree(const S9sString &path);
 
         bool checkAccess();
         bool cat();

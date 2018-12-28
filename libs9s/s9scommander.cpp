@@ -187,8 +187,19 @@ S9sCommander::createFolder(
     m_communicating   = true;
     m_client.mkdir(fullPath);
     m_reloadRequested = true;
-
 }
+
+void
+S9sCommander::deleteEntry(
+        const S9sString fullPath)
+{
+    S9sMutexLocker   locker(m_networkMutex);
+       
+    m_communicating   = true;
+    m_client.deleteFromTree(fullPath);
+    m_reloadRequested = true;
+}
+
 
 void
 S9sCommander::updateObject(
@@ -347,6 +358,10 @@ S9sCommander::processKey(
                 s9s_log("***       folderName: %s", STR(folderName));
                 s9s_log("*** parentFolderName: %s", STR(parentFolderName));
                 createFolder(parentFolderName + "/" + folderName);
+            } else if (m_dialog->userData("type") == "deleteEntry")
+            {
+                S9sString path = m_dialog->userData("objectPath").toString();
+                deleteEntry(path);
             }
 
             delete m_dialog;
@@ -358,6 +373,7 @@ S9sCommander::processKey(
 
     switch (key)
     {
+        case S9S_KEY_F10:
         case 'q':
             exit(0);
 
@@ -419,7 +435,8 @@ S9sCommander::processKey(
                 s9s_log("Creating mkdir dialog.");
 
                 m_dialog = new S9sEntryDialog(this);
-                //m_dialog->setLocation(10, 4);
+                m_dialog->setTitle("Create Folder");
+                m_dialog->setMessage("Enter folder name:");
                 m_dialog->setUserData("type", "createFolder");
                 m_dialog->setSize(60, 6);
             }
@@ -435,7 +452,8 @@ S9sCommander::processKey(
                 s9s_log("*** fullPath: %s", STR(fullPath));
 
                 m_dialog = new S9sQuestionDialog(this);
-                //m_dialog->setLocation(10, 4);
+                m_dialog->setTitle("Delete");
+                m_dialog->setMessage("Delete CDT entry?");
                 m_dialog->setUserData("type", "deleteEntry");
                 m_dialog->setUserData("objectPath", fullPath);
                 m_dialog->setSize(40, 6);

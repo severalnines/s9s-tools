@@ -5140,8 +5140,6 @@ S9sRpcClient::rmdir()
 bool
 S9sRpcClient::deleteFromTree()
 {
-    S9sString      uri = "/v2/tree/";
-    S9sVariantMap  request;
     S9sOptions    *options   = S9sOptions::instance();
     
     if (options->nExtraArguments() != 1)
@@ -5153,8 +5151,18 @@ S9sRpcClient::deleteFromTree()
         return false;
     }
 
+    return deleteFromTree(options->extraArgument(0u));
+}
+
+bool
+S9sRpcClient::deleteFromTree(
+        const S9sString &path)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+
     request["operation"]      = "delete";
-    request["path"]           = options->extraArgument(0u);
+    request["path"]           = path;
     
     return executeRequest(uri, request);
 }

@@ -47,6 +47,7 @@ class S9sCommander :
 
         void updateTree();
         void createFolder(const S9sString fullPath);
+        void deleteEntry(const S9sString fullPath);
 
         void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);

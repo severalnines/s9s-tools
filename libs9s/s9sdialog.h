@@ -29,10 +29,16 @@ class S9sDialog : public S9sWidget
         S9sDialog(S9sDisplay *display);
         virtual ~S9sDialog();
 
+        void setTitle(const S9sString &text);
+        S9sString title() const;
+        void setMessage(const S9sString &text);
+        S9sString message() const;
+
         virtual void processKey(int key);
 
         bool isOkPressed() const;
         bool isCancelPressed() const;
+        
         virtual S9sString text() const;
 
         virtual void refreshScreen();
@@ -52,9 +58,13 @@ class S9sDialog : public S9sWidget
 
     protected:
         S9sDisplay      *m_display;
+        S9sString        m_title;
+        S9sString        m_message;
         bool             m_okPressed;
         bool             m_cancelPressed;
     
         /** Transient value shows the position in the line. */
-        int             m_nChars;        
+        int             m_nChars;
+
+        const char     *m_normalColor;
 };

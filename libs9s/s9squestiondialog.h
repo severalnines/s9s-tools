@@ -26,8 +26,5 @@ class S9sQuestionDialog : public S9sDialog
     public:
         S9sQuestionDialog(S9sDisplay *display);
         virtual ~S9sQuestionDialog();
-
-        virtual void printLine(int lineIndex);
-
 };
 

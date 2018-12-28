@@ -69,6 +69,7 @@ void
 S9sEntryDialog::processKey(
         int key)
 {
+    s9s_log("S9sEntryDialog::processKey()");
     switch (key)
     {
         case S9S_KEY_ESC:
@@ -88,65 +89,19 @@ void
 S9sEntryDialog::printLine(
         int lineIndex)
 {
-    const char *normal     = TERM_NORMAL "\033[47m" "\033[90m";
+    const char *normal     = m_normalColor; 
 
     m_nChars = 0;
     ::printf("%s", normal);
 
-    if (lineIndex == 0)
-    {
-        S9sString title = "Create Folder";
-
-        if (title.empty())
-        {
-            printChar("╔");
-            printChar("═", width() - 1);
-            printChar("╗");
-        } else {
-            int titleStart;
-        
-            printChar("╔");
-
-            title = " " + title + " ";
-            titleStart = (width() - 2 - title.length()) / 2;
-            if (titleStart >= 0)
-            {
-                printChar("═", titleStart);
-            }
-            
-            printString(title);
-            printChar("═", width() - 1);
-            printChar("╗");
-        }
-    } else if (lineIndex == 1)
-    {
-        printChar("║");
-        printString("Enter folder name:");
-        printChar(" ", width() - 1);
-        printChar("║");
-    } else if (lineIndex == 2)
+    if (lineIndex == 2)
     {
         printChar("║");
         m_entry.print();
         ::printf("%s", normal);
         printChar("║");
-    } else if (lineIndex + 1 == height())
-    {
-        // Last line, frame.
-        printChar("╚");
-        printChar("═", width() - 1);
-        printChar("╝");
-    } else if (lineIndex + 2 == height())
-    {
-        printChar("║");
-        printString("[  OK  ] [Cancel]");
-        printChar(" ", width() - 1);
-        printChar("║");
-
     } else {
-        printChar("║");
-        printChar(" ", width() - 1);
-        printChar("║");
+        S9sDialog::printLine(lineIndex);
     }
     
     ::printf("%s", TERM_NORMAL);
