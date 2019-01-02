@@ -125,8 +125,8 @@ revive_user() {
     if (( $? == 3 )); then
         unset S9S_IGNORE_CONFIG
         export S9S_USER_CONFIG="/dev/null"
-        echo -ne "=> Re-enabling suspended user $1. "
-        s9s user --enable $1
+        echo -ne "=> Re-enabling suspended user '$1'. "
+        s9s user --enable "$1"
         unset S9S_USER_CONFIG
     fi
 
@@ -159,7 +159,7 @@ create_local_s9s_user() {
     # verify if the specified user works
     if [ -n "$cmon_user" ]; then
         # in case of suspended user, lets try to re-enable it
-        revive_user $cmon_user
+        revive_user "$cmon_user"
 
         s9s user --whoami >/dev/null 2>/dev/null
         if (( $? == 3 )); then
@@ -179,24 +179,24 @@ create_local_s9s_user() {
     # check if s9s.conf doesn't have a user configured, then create one
     if [ -z "$cmon_user" ]; then
         if [ -z "$SUDO_USER" ]; then
-            cmon_user='root'
+            cmon_user="root"
         else
-            cmon_user=$SUDO_USER
+            cmon_user="$SUDO_USER"
         fi
 
         echo "=> Creating user ${cmon_user}."
         # new s9s CLI requires the username defined alone without --cmon-user
         # only the new one has build info in --version:
         if s9s --version | grep -i build >/dev/null; then
-            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" $cmon_user
+            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" "$cmon_user"
         else
             s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
         fi
 
         # in case of suspended user, lets try to re-enable it
-        revive_user $cmon_user
+        revive_user "$cmon_user"
 
-        chown -R $cmon_user ~/.s9s
+        chown -R "$cmon_user" ~/.s9s
     fi
 
     log_msg "=> s9s-tools user has been created."
