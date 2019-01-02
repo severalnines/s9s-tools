@@ -5280,8 +5280,8 @@ S9sRpcClient::createContainerWithJob()
     S9sString      vpcId        = options->vpcId();
     S9sVariantList volumes      = options->volumes();
     S9sVariantMap  request;
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData(true);
+    S9sVariantMap  job          = composeJob();
+    S9sVariantMap  jobData      = composeJobData(true);
     S9sVariantMap  jobSpec;
     S9sContainer   container;
     S9sString      uri = "/v2/jobs/";
@@ -5531,8 +5531,8 @@ S9sRpcClient::createBackup()
     S9sVariantMap   request      = composeRequest();
     S9sNode         backupHost;
     S9sString       title;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
@@ -7029,6 +7029,9 @@ S9sRpcClient::composeJobData(
 
     if (options->hasMemory())
         jobData["xtrabackup_use_memory"] = options->memory().toInt();
+
+    if (options->hasCredentialIdOption())
+        jobData["cloud_credentials_id"] = options->credentialId();
 
     return jobData;
 }

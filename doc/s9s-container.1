@@ -383,6 +383,13 @@ r- architecture    -    The processor architecture.
 .fi
 
 .TP
+.BI \-\^\-credential\-id= ID
+The cloud credential ID that should be used when creating a new container. This
+is an optional value, if not provided the controller will find the credential to
+be used by the cloud name and the chosen region.
+
+
+.TP
 .BI \-\^\-firewalls= LIST
 List of firewall (AKA security groups) IDs separated by ',' or ';' to be used
 for newly created containers.

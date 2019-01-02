@@ -292,6 +292,7 @@ enum S9sOptionType
 
     OptionAlarmId,
     OptionLogFile,
+    OptionCredentialId,
 };
 
 /**
@@ -1749,6 +1750,19 @@ S9sOptions::alarmId() const
 {
     return getInt("alarm_id");
 }
+
+bool
+S9sOptions::hasCredentialIdOption() const
+{
+    return m_options.contains("credential_id");
+}
+
+int
+S9sOptions::credentialId() const
+{
+    return getInt("credential_id");
+}
+
 
 /**
  * \returns True if the --backup-id command line option was provided.
@@ -4758,6 +4772,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
 "  --containers=LIST          List of containers to be created.\n"
+"  --credential-id=ID         The optional cloud credential ID.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
@@ -4803,6 +4818,7 @@ S9sOptions::printHelpContainer()
 "  --cloud=PROVIDER           The name of the cloud provider.\n"
 "  --container-format=FORMAT  Format string to print containers.\n"
 "  --containers=LIST          List of containers to be created.\n"
+"  --credential-id=ID         The optional cloud credential ID.\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -8782,6 +8798,7 @@ S9sOptions::readOptionsCluster(
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
+        { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
@@ -9186,6 +9203,11 @@ S9sOptions::readOptionsCluster(
                 // --containers=LIST
                 setContainers(optarg);
                 break;
+            
+            case OptionCredentialId:
+                // --credential-id=ID
+                m_options["credential_id"] = optarg;
+                break;
 
             case OptionFirewalls:
                 // --firewalls=LIST
@@ -9341,10 +9363,11 @@ S9sOptions::readOptionsContainer(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "container-format", required_argument, 0, OptionContainerFormat }, 
         { "containers",       required_argument, 0, OptionContainers      },
+        { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
-        { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
+        { "image",            required_argument, 0, OptionImage           },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
         { "os-password",      required_argument, 0, OptionOsPassword      },
         { "os-user",          required_argument, 0, OptionOsUser          },
@@ -9544,6 +9567,11 @@ S9sOptions::readOptionsContainer(
             case OptionContainers:
                 // --containers=LIST
                 setContainers(optarg);
+                break;
+
+            case OptionCredentialId:
+                // --credential-id=ID
+                m_options["credential_id"] = optarg;
                 break;
 
             case OptionFirewalls:

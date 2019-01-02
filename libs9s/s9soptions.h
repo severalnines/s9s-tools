@@ -176,6 +176,9 @@ class S9sOptions
 
         int alarmId() const;
         bool hasAlarmIdOption() const;
+
+        bool hasCredentialIdOption() const;
+        int credentialId() const;
         
         bool hasBackupId() const;
         int backupId() const;

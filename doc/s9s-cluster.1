@@ -428,6 +428,12 @@ clusters on them or just add them to an existing cluster as nodes. Please check
 s9s-container(1) for further details.
 
 .TP
+.BI \-\^\-credential\-id= ID
+The cloud credential ID that should be used when creating a new container. This
+is an optional value, if not provided the controller will find the credential to
+be used by the cloud name and the chosen region.
+
+.TP
 .BI \-\^\-firewalls= LIST
 List of firewall (AKA security groups) IDs separated by ',' or ';' to be used
 for newly created containers. Please check s9s-container(1) for further 
