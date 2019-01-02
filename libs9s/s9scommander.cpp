@@ -447,13 +447,20 @@ S9sCommander::processKey(
             if (m_dialog == NULL)
             {
                 S9sString fullPath = sourceFullPath();
+                S9sString baseName = S9sFile::basename(fullPath);
+                S9sString message;
 
                 s9s_log("Creating delete dialog.");
+                message.sprintf(
+                        "Delete CDT entry\n"
+                        "\"%s\"?",
+                        STR(baseName));
+
                 s9s_log("*** fullPath: %s", STR(fullPath));
 
                 m_dialog = new S9sQuestionDialog(this);
                 m_dialog->setTitle("Delete");
-                m_dialog->setMessage("Delete CDT entry?");
+                m_dialog->setMessage(message);
                 m_dialog->setUserData("type", "deleteEntry");
                 m_dialog->setUserData("objectPath", fullPath);
                 m_dialog->setSize(40, 6);

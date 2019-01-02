@@ -56,13 +56,23 @@ void
 S9sDialog::setMessage(
         const S9sString &text)
 {
-    m_message = text;
+    S9sVariantList lines = text.split("\n");
+
+    m_message1 = "";
+    m_message2 = "";
+
+    if (lines.size() > 0)
+        m_message1 = lines[0].toString();
+
+    if (lines.size() > 1)
+        m_message2 = lines[1].toString();
+
 }
 
 S9sString
 S9sDialog::message() const
 {
-    return m_message;
+    return m_message1;
 }
 
 bool
@@ -151,7 +161,13 @@ S9sDialog::printLine(
     } else if (lineIndex == 1)
     {
         printChar("║");
-        printString(message());
+        printString(m_message1);
+        printChar(" ", width() - 1);
+        printChar("║");
+    } else if (lineIndex == 2)
+    {
+        printChar("║");
+        printString(m_message2);
         printChar(" ", width() - 1);
         printChar("║");
     } else if (lineIndex + 1 == height())

@@ -59,7 +59,8 @@ class S9sDialog : public S9sWidget
     protected:
         S9sDisplay      *m_display;
         S9sString        m_title;
-        S9sString        m_message;
+        S9sString        m_message1;
+        S9sString        m_message2;
         bool             m_okPressed;
         bool             m_cancelPressed;
     

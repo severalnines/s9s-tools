@@ -116,6 +116,8 @@ function sensorActivated()
    
     if [ -n "$name" ]; then
         printVerbose "ACT $name"
+        #pip-say --beep
+        #pip-say "$name"
     fi
 
     case "$name" in
@@ -208,7 +210,9 @@ function process_message()
 
     if [ "$message" == "OFF" ]; then
         # Topic: "stat/sonoffXX/POWER"
-        printVerbose "OFF $device"
+        if [ "$device" != "sonoff21" ]; then
+            printVerbose "OFF $device"
+        fi
         #pip-pdu-control --off sonoff4ch01_02
     elif [ "$message" == "ON" ]; then
         # Topic: "stat/sonoffXX/POWER"
@@ -222,6 +226,10 @@ function process_message()
                 sensorActivated --name "PIR01"
                 ;;
 
+            D4500E)
+                sensorActivated --name "PIR02"
+                ;;
+
             D250DE)
                 sensorActivated --name "PIR03"
                 ;;
@@ -232,6 +240,10 @@ function process_message()
 
             D4102E)
                 sensorActivated --name "PIR05"
+                ;;
+
+            D3E00E)
+                sensorActivated --name "PIR06"
                 ;;
 
             7D5503)
