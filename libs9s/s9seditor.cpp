@@ -49,6 +49,7 @@ S9sEditor::processKey(
 {
     bool      doInsert = false;
     S9sString thisLine;
+    S9sString subString;
 
     s9s_log("S9sEditor::processKey()");
     switch (key)
@@ -97,14 +98,18 @@ S9sEditor::processKey(
             break;
 
         case S9S_KEY_ENTER:
+            thisLine = lineAt(m_cursorY);
+
+            subString = thisLine.substr(m_cursorX);
+            m_lines[m_cursorY] = thisLine.erase(m_cursorX);
+
             ++m_cursorY;
-            
             if ((int)m_lines.size() <= m_cursorY)
             {
-                m_lines << "";
+                m_lines << subString;
             } else {
                 m_lines.insert(
-                        m_lines.begin() + m_cursorY, "");
+                        m_lines.begin() + m_cursorY, subString);
             }
 
             m_cursorX = 0;
@@ -138,6 +143,12 @@ S9sEditor::processKey(
                     m_cursorX--;
                     m_lines[m_cursorY] = thisLine;
                 }
+            } else if (m_cursorY > 0) 
+            {
+                m_cursorY--;
+                m_cursorX = lineAt(m_cursorY).length();
+                m_lines[m_cursorY] = lineAt(m_cursorY) + lineAt(m_cursorY + 1);
+                m_lines.erase(m_lines.begin() + (m_cursorY + 1));
             }
 
             return;
@@ -168,6 +179,8 @@ S9sEditor::processKey(
     else if (key == '.' || key == ',')
         doInsert = true;
     else if (key == '\'' || key == '"')
+        doInsert = true;
+    else if (key == '_' || key == '{' || key == '}')
         doInsert = true;
 
     #if 0
@@ -308,35 +321,6 @@ S9sEditor::printLine(
     }
 }
 
-
-void
-S9sEditor::printLinePreviewReply(
-        int lineIndex)
-{
-    if (lineIndex == 0)
-    {
-        printChar("║");
-        printChar(" ");
-
-        if (m_object.contains("error_string"))
-            printString(m_object.at("error_string").toString());
-
-        printChar(" ", width() - 1);
-        printChar("║");
-    } else {
-        printChar("║");
-
-        lineIndex += m_previewLineOffset;
-            
-        if (lineIndex >= 0 && lineIndex < (int)m_lines.size())
-            printString(m_lines[lineIndex].toString());
-
-        printChar(" ", width() - 1);
-        printChar("║");
-    }
-}
-
-
 void
 S9sEditor::printString(
         const S9sString &theString)
@@ -366,25 +350,6 @@ S9sEditor::printString(
     }
 
     m_nChars += asciiString.length();
-}
-
-void
-S9sEditor::printNameValue(
-        const S9sString &name,
-        const S9sString &value)
-{
-    const char *normal = "\033[48;5;19m" "\033[1m\033[38;5;33m";
-    const char *header = "\033[48;5;19m" "\033[1m\033[38;5;11m";
-    S9sString   tmp;
-
-    tmp.sprintf("%11s: ", STR(name));
-    ::printf("%s", STR(tmp));
-    m_nChars += tmp.length();
-   
-    ::printf("%s", header);
-    ::printf("%s", STR(value));
-    ::printf("%s", normal);
-    m_nChars += value.length();
 }
 
 void

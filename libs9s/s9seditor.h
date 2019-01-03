@@ -59,17 +59,11 @@ class S9sEditor :
         void showCursor();
 
     private:
-        void printLinePreviewReply(int lineIndex);
-
         void printString(const S9sString &theString);
-
-        void printNameValue(
-                const S9sString &name,
-                const S9sString &value);
-
         void printChar(int c);
         void printChar(const char *c);
         void printChar(const char *c, const int lastColumn);
+
         S9sString lineAt(int index);
 
     private:
