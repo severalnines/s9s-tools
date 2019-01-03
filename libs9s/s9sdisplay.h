@@ -42,6 +42,7 @@
 #define S9S_KEY_DELETE    0x7e335b1b
 #define S9S_KEY_HOME      0x00485b1b
 #define S9S_KEY_END       0x00465b1b
+#define S9S_KEY_F4        0x00534f1b
 #define S9S_KEY_F7        0x38315b1b
 #define S9S_KEY_F8        0x39315b1b
 #define S9S_KEY_F10       0x31325b1b

@@ -7119,7 +7119,7 @@ S9sRpcClient::executeRequest(
 bool
 S9sRpcClient::doExecuteRequest(
         const S9sString     &uri,
-        S9sVariantMap &request)
+        S9sVariantMap       &request)
 {
     S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
@@ -7139,6 +7139,8 @@ S9sRpcClient::doExecuteRequest(
         myUri = m_priv->m_path + uri;
 
     PRINT_VERBOSE("URI is '%s'", STR(myUri));
+    s9s_log("     uri: %s\n", STR(myUri));
+    s9s_log(" request: \n%s\n", STR(payload));
 
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
@@ -7337,6 +7339,8 @@ S9sRpcClient::doExecuteRequest(
             {
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
             }
+
+            //s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
         m_priv->m_errorString.sprintf(

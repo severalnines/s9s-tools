@@ -24,6 +24,7 @@
 #include "S9sTreeNode"
 #include "S9sBrowser"
 #include "S9sInfoPanel"
+#include "S9sEditor"
 
 class S9sDialog;
 
@@ -58,6 +59,7 @@ class S9sCommander :
         
         S9sWidget       *m_leftPanel;
         S9sWidget       *m_rightPanel;
+
         S9sBrowser       m_leftBrowser;
         S9sInfoPanel     m_leftInfo;
         S9sBrowser       m_rightBrowser;
@@ -70,5 +72,6 @@ class S9sCommander :
         bool             m_viewDebug;
         
         S9sDialog       *m_dialog;
+        S9sEditor        m_editor;
 };
 

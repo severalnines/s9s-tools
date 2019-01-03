@@ -62,6 +62,9 @@ S9sCommander::S9sCommander(
     m_leftInfo.setHasFocus(false);
     m_leftInfo.setInfoController(
             client.hostName(), client.port(), client.useTls());
+    
+    m_editor.setVisible(false);
+    m_editor.setHasFocus(false);
 }
 
 S9sCommander::~S9sCommander()
@@ -251,6 +254,9 @@ S9sCommander::updateObject(
     if (path.empty())
         return;
 
+    if (m_editor.isVisible())
+        return;
+
     /*
      *
      */
@@ -291,6 +297,12 @@ S9sCommander::refreshScreen()
     startScreen();
     printHeader();
 
+    if (m_editor.isVisible())
+    {
+        m_editor.setSize(width(), height() - 2);
+        m_editor.setLocation(0, 2);
+    }
+
     m_leftBrowser.setSize(width() / 2, height() - 2);
     m_leftBrowser.setLocation(0, 2);
 
@@ -305,15 +317,20 @@ S9sCommander::refreshScreen()
 
     for (int idx = 0u; idx < height() - 2; ++idx)
     {
-        if (m_leftBrowser.isVisible())
-            m_leftBrowser.printLine(idx);
-        else if (m_leftInfo.isVisible())
-            m_leftInfo.printLine(idx);
+        if (m_editor.isVisible())
+        {
+            m_editor.printLine(idx);
+        } else {
+            if (m_leftBrowser.isVisible())
+                m_leftBrowser.printLine(idx);
+            else if (m_leftInfo.isVisible())
+                m_leftInfo.printLine(idx);
 
-        if (m_rightBrowser.isVisible())
-            m_rightBrowser.printLine(idx);
-        else if (m_rightInfo.isVisible())
-            m_rightInfo.printLine(idx);
+            if (m_rightBrowser.isVisible())
+                m_rightBrowser.printLine(idx);
+            else if (m_rightInfo.isVisible())
+                m_rightInfo.printLine(idx);
+        }
 
         printNewLine();
     }
@@ -324,6 +341,9 @@ S9sCommander::refreshScreen()
     {
         m_dialog->refreshScreen();
     }
+
+    if (m_editor.isVisible())
+        m_editor.showCursor();
 
     return true;
 }
@@ -368,6 +388,10 @@ S9sCommander::processKey(
             m_dialog = NULL;
         }
 
+        return;
+    } else if (m_editor.isVisible() && key != S9S_KEY_ESC)
+    {
+        m_editor.processKey(key);
         return;
     }
 
@@ -442,6 +466,11 @@ S9sCommander::processKey(
             }
             break;
 
+        case S9S_KEY_F4:
+            m_editor.setVisible(true);
+            m_editor.setHasFocus(true);
+            break;
+
         case S9S_KEY_F8:
             s9s_log("F8");
             if (m_dialog == NULL)
@@ -472,7 +501,12 @@ S9sCommander::processKey(
             {
                 delete m_dialog;
                 m_dialog = NULL;
+            } else if (m_editor.isVisible())
+            {
+                m_editor.setVisible(false);
+                m_editor.setHasFocus(false);
             }
+
             break;
     }
 
