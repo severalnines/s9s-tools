@@ -7133,7 +7133,7 @@ S9sRpcClient::doExecuteRequest(
     size_t       payloadSize = 0;
     bool         isJSonStream = false;
 
-    PRINT_VERBOSE("Preparing to send rquest.");
+    PRINT_VERBOSE("Preparing to send request.");
 
     if (!m_priv->m_path.empty())
         myUri = m_priv->m_path + uri;
@@ -7340,7 +7340,7 @@ S9sRpcClient::doExecuteRequest(
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
             }
 
-            //s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
+            s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
         m_priv->m_errorString.sprintf(

@@ -30,29 +30,22 @@ class S9sEditor :
         S9sEditor();
         virtual ~S9sEditor();
 
+        void setIsReadOnly(bool value);
+
+        bool isSaveRequested() const;
+        void setSaveRequested(bool value);
+
         virtual void processKey(int key);
 
         void printLine(int lineIndex);
-
-        void setInfoController(
-                const S9sString &hostName,
-                const int        port,
-                const bool       useTls);
-
-        void setInfoRequestName(
-                const S9sString  requestName);
-
-        void setInfoLastReply(
-                const S9sRpcReply &reply);
 
         void setInfoObject(
                 const S9sString     &path,
                 const S9sVariantMap &theMap);
 
         void setInfoNode(
-                const S9sTreeNode &node);
+                const S9sTreeNode   &node);
 
-        S9sString controllerUrl() const;
         S9sString objectPath() const;
         time_t objectSetTime() const;
 
@@ -67,13 +60,8 @@ class S9sEditor :
         S9sString lineAt(int index);
 
     private:
-        S9sString        m_hostName;
-        int              m_port;
-        bool             m_useTls;
-        
-        S9sString        m_requestName;
-        S9sRpcReply      m_lastReply;
-
+        bool             m_readOnly;
+        bool             m_saveRequested;
         S9sTreeNode      m_node;
 
         /** Transient value shows the position in the line. */
@@ -85,7 +73,7 @@ class S9sEditor :
         time_t           m_objectSetTime;
 
         S9sVariantList   m_lines;
-        int              m_previewLineOffset;
+        int              m_lineOffset;
         int              m_cursorX;
         int              m_cursorY;
 };

@@ -32,8 +32,10 @@
 
 S9sEditor::S9sEditor() :
     S9sWidget(),
+    m_readOnly(false),
+    m_saveRequested(false),
     m_objectSetTime(0),
-    m_previewLineOffset(0),
+    m_lineOffset(0),
     m_cursorX(0),
     m_cursorY(0)
 {
@@ -41,6 +43,26 @@ S9sEditor::S9sEditor() :
 
 S9sEditor::~S9sEditor()
 {
+}
+
+void
+S9sEditor::setIsReadOnly(
+        bool value)
+{
+    m_readOnly = value;
+}
+
+bool
+S9sEditor::isSaveRequested() const
+{
+    return m_saveRequested;
+}
+
+void
+S9sEditor::setSaveRequested(
+        bool value) 
+{
+    m_saveRequested = value;
 }
 
 void 
@@ -158,6 +180,11 @@ S9sEditor::processKey(
 
         case S9S_KEY_PGUP:
             break;
+
+        case S9S_KEY_F2:
+            s9s_log("Save requested.");
+            m_saveRequested = true;
+            break;
     }
 
     if (key >= 'a' && key <= 'z')
@@ -184,11 +211,11 @@ S9sEditor::processKey(
         doInsert = true;
 
     #if 0
-    if (m_previewLineOffset < 0)
-        m_previewLineOffset = 0;
+    if (m_lineOffset < 0)
+        m_lineOffset = 0;
 
-    if (m_previewLineOffset > (int) m_lines.size() - height() + 8)
-        m_previewLineOffset = (int) m_lines.size() - height() + 8;
+    if (m_lineOffset > (int) m_lines.size() - height() + 8)
+        m_lineOffset = (int) m_lines.size() - height() + 8;
     #endif
 
     if (doInsert)
@@ -213,24 +240,6 @@ S9sEditor::processKey(
 }
 
 void
-S9sEditor::setInfoController(
-        const S9sString &hostName,
-        const int        port,
-        const bool       useTls)
-{
-    m_hostName = hostName;
-    m_port     = port;
-    m_useTls   = useTls;
-}
-
-void
-S9sEditor::setInfoRequestName(
-        const S9sString  requestName)
-{
-    m_requestName = requestName;
-}
-
-void
 S9sEditor::setInfoObject(
         const S9sString     &path,
         const S9sVariantMap &theMap)
@@ -238,9 +247,16 @@ S9sEditor::setInfoObject(
     m_objectPath    = path;
     m_object        = theMap;
     m_objectSetTime = time(NULL);
-    m_previewLineOffset = 0;
+    m_lineOffset    = 0;
 
     m_lines.clear();
+
+    if (m_object.contains("content"))
+    {
+        S9sString text = m_object["content"].toString();
+        
+        m_lines = text.split("\n", true);
+    }
 }
 
 S9sString
@@ -249,26 +265,6 @@ S9sEditor::objectPath() const
     return m_objectPath;
 }
 
-S9sString
-S9sEditor::controllerUrl() const
-{
-    S9sString retval;
-
-    retval.sprintf(
-            "%s://%s:%d",
-            m_useTls ? "https" : "http",
-            STR(m_hostName),
-            m_port);
-
-    return retval;
-}
-
-void
-S9sEditor::setInfoLastReply(
-        const S9sRpcReply &reply)
-{
-    m_lastReply = reply;
-}
 
 void
 S9sEditor::setInfoNode(
@@ -309,7 +305,7 @@ S9sEditor::printLine(
         printChar("║");
 
         lineIndex -= 1;
-        lineIndex += m_previewLineOffset;
+        lineIndex += m_lineOffset;
             
         if (lineIndex >= 0 && lineIndex < (int)m_lines.size())
         {
@@ -397,7 +393,7 @@ S9sEditor::showCursor()
     int   row = y() + m_cursorY + 1;
     S9sString sequence;
 
-    if (!hasFocus())
+    if (!hasFocus() || m_readOnly)
         return;
 
     sequence.sprintf("\033[%d;%dH", row, col);
