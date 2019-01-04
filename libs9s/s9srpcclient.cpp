@@ -5102,6 +5102,9 @@ S9sRpcClient::mkdir()
     return mkdir(options->extraArgument(0u));
 }
 
+/**
+ * Makes a folder in the CDT tree.
+ */
 bool
 S9sRpcClient::mkdir(
         const S9sString &fullPath)
@@ -5136,6 +5139,24 @@ S9sRpcClient::rmdir()
     
     return executeRequest(uri, request);
 }
+
+/**
+ * Makes a file in the CDT tree.
+ */
+bool
+S9sRpcClient::mkfile(
+        const S9sString &fullPath)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "mkfile";
+    request["path"]           = fullPath;
+    
+    return executeRequest(uri, request);
+}
+
+
 
 bool
 S9sRpcClient::deleteFromTree()

@@ -48,11 +48,16 @@ class S9sCommander :
 
         void updateTree();
         void createFolder(const S9sString fullPath);
+        void createFile(const S9sString fullPath);
+
         void deleteEntry(const S9sString fullPath);
 
         void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);
 
+    protected:
+        void showErrorDialog(const S9sString &errorString);
+        
     private:
         S9sRpcClient    &m_client;
         S9sMutex         m_networkMutex;        
@@ -72,6 +77,7 @@ class S9sCommander :
         bool             m_viewDebug;
         
         S9sDialog       *m_dialog;
+        S9sDialog       *m_errorDialog;
         S9sEditor        m_editor;
 };
 

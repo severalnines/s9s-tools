@@ -37,7 +37,8 @@ S9sCommander::S9sCommander(
     m_rootNodeRecevied(0),
     m_communicating(false),
     m_reloadRequested(false),
-    m_dialog(0)
+    m_dialog(0),
+    m_errorDialog(0)
 {
     m_leftPanel  = &m_leftBrowser;
     m_rightPanel = &m_rightInfo;
@@ -193,23 +194,32 @@ S9sCommander::createFolder(
     m_client.mkdir(fullPath);
     mkdirReply = m_client.reply();
 
-    s9s_log(" reply is ok: %s", mkdirReply.isOk() ? "true" : "false");
     if (!mkdirReply.isOk())
     { 
-        //m_mutex.lock();
-
-        m_dialog = new S9sQuestionDialog(this);
-        m_dialog->setTitle("Error");
-        m_dialog->setMessage(mkdirReply.errorString());
-        m_dialog->setUserData("type", "errorDialog");
-        m_dialog->setSize(60, 6);
-
-        //m_mutex.unlock(); 
+        showErrorDialog(mkdirReply.errorString());
     } else {
-        //m_reloadRequested = true;
+        m_reloadRequested = true;
     }
+}
 
-    //exit(0);
+void
+S9sCommander::createFile(
+        const S9sString fullPath)
+{
+    S9sMutexLocker   locker(m_networkMutex);
+    S9sRpcReply      mkfileReply;
+   
+    s9s_log("Creating a folder.");
+    m_communicating   = true;
+    m_client.mkfile(fullPath);
+    mkfileReply = m_client.reply();
+
+    if (!mkfileReply.isOk())
+    { 
+        showErrorDialog(mkfileReply.errorString());
+    } else {
+        m_reloadRequested = true;
+    }
 }
 
 void
@@ -217,10 +227,18 @@ S9sCommander::deleteEntry(
         const S9sString fullPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
+    S9sRpcReply      deleteReply;
        
     m_communicating   = true;
     m_client.deleteFromTree(fullPath);
-    m_reloadRequested = true;
+    deleteReply = m_client.reply();
+
+    if (!deleteReply.isOk())
+    { 
+        showErrorDialog(deleteReply.errorString());
+    } else {
+        m_reloadRequested = true;
+    }
 }
 
 
@@ -360,9 +378,10 @@ S9sCommander::refreshScreen()
     printFooter();
 
     if (m_dialog != NULL)
-    {
         m_dialog->refreshScreen();
-    }
+
+    if (m_errorDialog != NULL)
+        m_errorDialog->refreshScreen();
 
     if (m_editor.isVisible())
         m_editor.showCursor();
@@ -382,6 +401,18 @@ S9sCommander::processKey(
     s9s_log("S9sCommander::processKey():");
     s9s_log("*** key: %0x", key);
 
+    if (m_errorDialog != NULL)
+    {
+        m_errorDialog->processKey(key);
+        if (m_errorDialog->isCancelPressed() || m_errorDialog->isOkPressed())
+        {
+            delete m_errorDialog;
+            m_errorDialog = NULL;
+        }
+    
+        return;
+    }
+
     if (m_dialog != NULL)
     {
         m_dialog->processKey(key);
@@ -397,18 +428,26 @@ S9sCommander::processKey(
                 S9sString folderName = m_dialog->text();
                 S9sString parentFolderName = sourcePath();
 
-                s9s_log("***       folderName: %s", STR(folderName));
-                s9s_log("*** parentFolderName: %s", STR(parentFolderName));
                 delete m_dialog;
                 m_dialog = NULL;
 
                 createFolder(parentFolderName + "/" + folderName);
+            } else if (m_dialog->userData("type") == "createFile")
+            {
+                S9sString folderName = m_dialog->text();
+                S9sString parentFolderName = sourcePath();
+
+                delete m_dialog;
+                m_dialog = NULL;
+
+                createFile(parentFolderName + "/" + folderName);
             } else if (m_dialog->userData("type") == "deleteEntry")
             {
                 S9sString path = m_dialog->userData("objectPath").toString();
 
                 delete m_dialog;
                 m_dialog = NULL;
+
                 deleteEntry(path);
             }
 
@@ -645,3 +684,18 @@ S9sCommander::printHeader()
 
     printNewLine();
 }
+
+void 
+S9sCommander::showErrorDialog(
+        const S9sString &errorString)
+{
+    if (m_errorDialog != NULL)
+        delete m_errorDialog;
+
+    m_errorDialog = new S9sQuestionDialog(this);
+    m_errorDialog->setTitle("Error");
+    m_errorDialog->setMessage(errorString);
+    m_errorDialog->setUserData("type", "errorDialog");
+    m_errorDialog->setSize(60, 6);
+}
+
