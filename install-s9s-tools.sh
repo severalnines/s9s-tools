@@ -125,7 +125,7 @@ revive_user() {
     if (( $? == 3 )); then
         unset S9S_IGNORE_CONFIG
         export S9S_USER_CONFIG="/dev/null"
-        echo -ne "=> Re-enabling suspended user '$1'. "
+        echo -n "=> Re-enabling suspended user '$1'. "
         s9s user --enable "$1"
         unset S9S_USER_CONFIG
     fi
