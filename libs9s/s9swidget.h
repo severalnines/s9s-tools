@@ -31,6 +31,9 @@ class S9sWidget
 
         virtual void setLocation(int x, int y);
         virtual void setSize(int nColumns, int nRows);
+        void setHeight(const int value);
+        void setWidth(const int value);
+
         virtual void processKey(int key);
         virtual bool processButton(uint button, uint x, uint y);
 

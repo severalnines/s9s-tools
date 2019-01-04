@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sWidget"
+#include "S9sButton"
 
 class S9sDisplay;
 
@@ -58,6 +59,8 @@ class S9sDialog : public S9sWidget
 
     protected:
         S9sDisplay      *m_display;
+        S9sButton        m_okButton;
+        S9sButton        m_cancelButton;
         S9sString        m_title;
         S9sString        m_message1;
         S9sString        m_message2;

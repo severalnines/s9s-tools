@@ -29,6 +29,8 @@ S9sDialog::S9sDialog(
         S9sDisplay *display) :
     S9sWidget(),
     m_display(display),
+    m_okButton("OK"),
+    m_cancelButton("Cancel"),
     m_okPressed(false),
     m_cancelPressed(false)
 {
@@ -178,8 +180,20 @@ S9sDialog::printLine(
         printChar("╝");
     } else if (lineIndex + 2 == height())
     {
+        int buttonWidth;
+
         printChar("║");
-        printString("[  OK  ] [Cancel]");
+
+        buttonWidth = m_okButton.width() + 1 + m_cancelButton.width();
+        printChar(" ", width() - 1 - buttonWidth);
+
+        m_okButton.print();
+        printChar(" ");
+        m_cancelButton.print();
+        m_nChars += buttonWidth;
+
+
+        //printString("[  OK  ] [Cancel]");
         printChar(" ", width() - 1);
         printChar("║");
 

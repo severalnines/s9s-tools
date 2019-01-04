@@ -52,6 +52,20 @@ S9sWidget::setSize(
     m_height = nRows;
 }
 
+void
+S9sWidget::setHeight(
+        const int value)
+{
+    m_height = value;
+}
+
+void 
+S9sWidget::setWidth(
+        const int value)
+{
+    m_width = value;
+}
+
 void 
 S9sWidget::processKey(
         int key)
