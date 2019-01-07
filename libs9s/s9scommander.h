@@ -38,6 +38,8 @@ class S9sCommander :
         S9sString sourcePath() const;
         S9sString sourceFullPath() const;
 
+        S9sString targetPath() const;
+
         virtual void main();
         virtual void processKey(int key);
         virtual bool processButton(uint button, uint x, uint y);        
@@ -45,6 +47,7 @@ class S9sCommander :
     protected:
         virtual bool refreshScreen();
         virtual void printHeader();
+        virtual void printFooter();
 
         void updateTree();
         void createFolder(const S9sString fullPath);

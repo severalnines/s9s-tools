@@ -42,6 +42,13 @@ S9sEntryDialog::text() const
 }
 
 void
+S9sEntryDialog::setText(
+        const S9sString &value)
+{
+    m_entry.setText(value);
+}
+
+void
 S9sEntryDialog::refreshScreen()
 {
     #if 0

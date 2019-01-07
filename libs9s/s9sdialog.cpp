@@ -94,6 +94,13 @@ S9sDialog::text() const
 {
     return "";
 }
+     
+void
+S9sDialog::setText(
+        const S9sString &value)
+{
+    // ignored
+}
 
 void
 S9sDialog::processKey(

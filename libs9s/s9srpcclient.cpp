@@ -4785,7 +4785,9 @@ S9sRpcClient::createServer()
     return executeRequest(uri, request);
 }
 
-
+/**
+ * Move a CDT entry into a new folder.
+ */
 bool
 S9sRpcClient::moveInTree()
 {

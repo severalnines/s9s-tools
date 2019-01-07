@@ -88,6 +88,22 @@ S9sCommander::sourcePath() const
     return retval;
 }
 
+S9sString
+S9sCommander::targetPath() const
+{
+    S9sString retval;
+
+    if (m_leftBrowser.hasFocus() && m_rightBrowser.isVisible())
+    {
+        retval = m_rightBrowser.path();
+    } else if (m_rightBrowser.hasFocus() && m_leftBrowser.isVisible())
+    {
+        retval = m_leftBrowser.path();
+    }
+
+    return retval;    
+}
+
 S9sString 
 S9sCommander::sourceFullPath() const
 {
@@ -450,6 +466,7 @@ S9sCommander::refreshScreen()
         }
 
         printNewLine();
+
     }
 
     printFooter();
@@ -531,7 +548,9 @@ S9sCommander::processKey(
         }
 
         return;
-    } else if (m_editor.isVisible() && key != S9S_KEY_ESC)
+    } else if (m_editor.isVisible() && 
+            key != S9S_KEY_ESC && 
+            key != S9S_KEY_F10)
     {
         m_editor.processKey(key);
         if (m_editor.isSaveRequested())
@@ -545,9 +564,6 @@ S9sCommander::processKey(
 
     switch (key)
     {
-        case S9S_KEY_F10:
-        case 'q':
-            exit(0);
 
         case '\t':
             // Tab switches the focus between the left and right panel.
@@ -643,6 +659,26 @@ S9sCommander::processKey(
                 m_dialog->setSize(60, 6);
             }
             break;
+        
+        case S9S_KEY_F6:
+            if (m_dialog == NULL)
+            {
+                S9sString      sourceFilePath = sourceFullPath();
+                S9sString      targetDirPath = targetPath();
+
+                s9s_log("Creating rename/move file dialog.");
+                s9s_log("  sourcePath: '%s'", STR(sourceFilePath));
+                s9s_log("  targetPath: '%s'", STR(targetDirPath));
+                
+                m_dialog = new S9sEntryDialog(this);
+                m_dialog->setTitle("Rename/move File");
+                m_dialog->setMessage("Enter file name or path:");
+                m_dialog->setUserData("type", "moveFile");
+                m_dialog->setUserData("sourcePath", sourceFilePath);
+                m_dialog->setText(targetDirPath);
+                m_dialog->setSize(60, 6);
+            }
+            break;
 
         case S9S_KEY_F7:
             if (m_dialog == NULL)
@@ -678,6 +714,17 @@ S9sCommander::processKey(
                 m_dialog->setUserData("type", "deleteEntry");
                 m_dialog->setUserData("objectPath", fullPath);
                 m_dialog->setSize(40, 6);
+            }
+            break;
+        
+        case S9S_KEY_F10:
+        case 'q':
+            if (m_editor.isVisible())
+            {
+                m_editor.setVisible(false);
+                m_editor.setHasFocus(false);
+            } else {
+                exit(0);
             }
             break;
 
@@ -785,6 +832,56 @@ S9sCommander::printHeader()
     }
 
     printNewLine();
+}
+
+void
+S9sCommander::printFooter()
+{
+    const char     *inverse = TERM_NORMAL "\033[46m" "\033[38;5;232m";
+    const char     *normal  = TERM_NORMAL;
+    S9sVariantList  labels;
+    S9sString       format;
+    int             fieldSize;
+
+    for (;m_lineCounter < height() - 1; ++m_lineCounter)
+    {
+        ::printf("%s", TERM_ERASE_EOL);
+        ::printf("\n\r");
+        ::printf("%s", TERM_ERASE_EOL);
+    } 
+
+    fieldSize = (width() / 10) - 2;
+    if (fieldSize < 6)
+        fieldSize = 6;
+
+    format.sprintf("%%s%%2u%%s%%-%ds%%s", fieldSize);
+    //s9s_log("format: %s", STR(format));
+
+    if (m_editor.isVisible())
+    {
+        labels << 
+            "" << "Save" << "" <<
+            "" << "" << "" <<
+            "" << "" << "" <<
+            "Quit";
+    } else {
+        labels << 
+            "" << "" << "View" <<
+            "Edit" << "" << "" <<
+            "MkDir" << "Delete" << "" <<
+            "Quit";
+    }
+
+    for (uint idx = 0u; idx < labels.size(); ++idx)
+    {
+        ::printf(STR(format), 
+                normal, idx + 1, inverse, 
+                STR(labels[idx].toString()), normal);
+    }
+
+    ::printf("%s", TERM_ERASE_EOL);
+    ::printf("%s", TERM_NORMAL);
+    ::fflush(stdout);
 }
 
 void 

@@ -41,6 +41,7 @@ class S9sDialog : public S9sWidget
         bool isCancelPressed() const;
         
         virtual S9sString text() const;
+        virtual void setText(const S9sString &value);
 
         virtual void refreshScreen();
         virtual void printLine(int lineIndex);

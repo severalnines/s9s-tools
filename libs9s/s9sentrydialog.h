@@ -29,6 +29,7 @@ class S9sEntryDialog : public S9sDialog
         virtual ~S9sEntryDialog();
 
         virtual S9sString text() const;
+        virtual void setText(const S9sString &value);
 
         virtual void processKey(int key);
         virtual void refreshScreen();
