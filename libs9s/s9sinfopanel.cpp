@@ -339,6 +339,8 @@ S9sInfoPanel::printLinePreview(
     {
         // The node is set, but this is an old one, we are waiting for the
         // information about the node.
+        //s9s_log("       m_objectPath: '%s'", STR(m_objectPath));
+        //s9s_log("  m_node.fullPath(): '%s'", STR(m_node.fullPath()));
         if (lineIndex == 0)
         {
             printChar("║");
