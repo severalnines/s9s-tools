@@ -4786,13 +4786,29 @@ S9sRpcClient::createServer()
 }
 
 /**
- * Move a CDT entry into a new folder.
+ * Moves a CDT entry into a new folder.
+ */
+bool
+S9sRpcClient::moveInTree(
+        const S9sString &sourcePath,
+        const S9sString &targetPath)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "move";
+    request["source_path"]    = sourcePath;
+    request["target_path"]    = targetPath;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * Moves a CDT entry into a new folder.
  */
 bool
 S9sRpcClient::moveInTree()
 {
-    S9sString      uri = "/v2/tree/";
-    S9sVariantMap  request;
     S9sOptions    *options = S9sOptions::instance();
     
     if (options->nExtraArguments() != 2)
@@ -4803,12 +4819,8 @@ S9sRpcClient::moveInTree()
 
         return false;
     }
-   
-    request["operation"]      = "move";
-    request["source_path"]    = options->extraArgument(0u);
-    request["target_path"]    = options->extraArgument(1u);
-    
-    return executeRequest(uri, request);
+  
+    return moveInTree(options->extraArgument(0u), options->extraArgument(1u));
 }
 
 /**

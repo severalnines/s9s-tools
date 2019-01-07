@@ -90,6 +90,10 @@ class S9sRpcClient
         bool unregisterServers();
         bool createServer();
 
+        bool moveInTree(
+                const S9sString &sourcePath, 
+                const S9sString &targetPath);
+
         bool moveInTree();
         bool deleteFromTree();
         bool deleteFromTree(const S9sString &path);
