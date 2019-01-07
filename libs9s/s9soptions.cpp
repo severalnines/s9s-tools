@@ -4342,7 +4342,7 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Virgo)\n",
+        printf("%s Version %s (Milky Way)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
 
         /*

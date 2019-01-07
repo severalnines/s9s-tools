@@ -1,3 +1,9 @@
+s9s-tools (1.7.20190104-release1) UNRELEASED; urgency=medium
+
+  * Just a new build with minor bugfixes
+
+ -- David Kedves <kedazo@severalnines.com>  Fri, 04 Jan 2019 11:10:48 +0100
+
 s9s-tools (1.7.20181224-release1) UNRELEASED; urgency=medium
 
   * Build for new clustercontrol release (1.7.1)

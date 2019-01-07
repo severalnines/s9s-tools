@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016-2018 Severalnines AB
+ * Copyright (C) 2016-2019 Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -18,6 +18,8 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9srsakey_p.h"
+#include "s9sstring.h"
+#include "s9sfile.h"
 
 #include <openssl/bn.h>
 #include <openssl/bio.h>
@@ -70,10 +72,19 @@ S9sRsaKeyPrivate::loadFromFile(
 {
     release();
 
-    BIO *bio = BIO_new_file(STR(path), "r");
+    S9sFile   file(path);
+    S9sString content;
+
+    if (!file.readTxtFile(content))
+    {
+        m_errorString.sprintf("Read error: %s", STR(file.errorString()));
+        return false;
+    }
+
+    BIO *bio = BIO_new_mem_buf((void*) content.c_str(), (int) content.size());
     if (bio == 0)
     {
-        m_errorString = "BIO_new_file failure, not enough memory?";
+        m_errorString = "BIO_new_mem_buf failure, not enough memory?";
         return false;
     }
 
@@ -135,7 +146,17 @@ S9sRsaKeyPrivate::saveKeys(
         const S9sString &privateKeyPath,
         const S9sString &publicKeyPath)
 {
-    BIO *bio = 0;
+    S9sFile privateKeyFile(privateKeyPath);
+    S9sFile publicKeyFile(publicKeyPath);
+    BIO *bio = BIO_new (BIO_s_mem ());
+    char *dataPtr  = 0;
+    long  dataSize = 0l;
+
+    if (!bio)
+    {
+        m_errorString = "BIO_new failure, not enough memory?";
+        return false;
+    }
 
     if (!isValid())
     {
@@ -143,35 +164,46 @@ S9sRsaKeyPrivate::saveKeys(
         return false;
     }
 
-    // Private key
-
-    bio = BIO_new_file(STR(privateKeyPath), "w");
-    if (!bio) 
+    // Private key (unencrypted/unprotected)
+    PEM_write_bio_RSAPrivateKey(bio, m_rsa, 0, 0, 0, 0, 0);
+    dataSize = BIO_get_mem_data(bio, &dataPtr);
+    if (dataPtr == 0)
     {
-        m_errorString.sprintf ("'%s' can't be opened for writing.",
-                STR(privateKeyPath));
+        BIO_free_all(bio);
+        m_errorString = "Failed to allocate memory for private key.";
         return false;
     }
 
-    // just save it unencrypted/unprotected
-    PEM_write_bio_RSAPrivateKey(bio, m_rsa, 0, 0, 0, 0, 0);
-
-    (void) BIO_flush(bio);
-    BIO_free_all(bio);
+    if (!privateKeyFile.writeTxtFile(std::string(dataPtr, dataSize)))
+    {
+        BIO_free_all(bio);
+        m_errorString.sprintf(
+                "Private key write failure: %s",
+                STR(privateKeyFile.errorString()));
+        return false;
+    }
 
     // Public key
+    (void) BIO_reset(bio);
 
-    bio = BIO_new_file(STR(publicKeyPath), "w");
-    if (!bio)
+    PEM_write_bio_RSAPublicKey(bio, m_rsa);
+    dataSize = BIO_get_mem_data(bio, &dataPtr);
+    if (dataPtr == 0)
     {
-        m_errorString.sprintf ("'%s' can't be opened for writing.",
-                STR(publicKeyPath));
+        BIO_free_all(bio);
+        m_errorString = "Failed to allocate memory for public key.";
         return false;
     }
 
-    PEM_write_bio_RSAPublicKey(bio, m_rsa);
+    if (!publicKeyFile.writeTxtFile(std::string(dataPtr, dataSize)))
+    {
+        BIO_free_all(bio);
+        m_errorString.sprintf(
+                "Public key write failure: %s",
+                STR(publicKeyFile.errorString()));
+        return false;
+    }
 
-    (void) BIO_flush(bio);
     BIO_free_all(bio);
 
     return true;
