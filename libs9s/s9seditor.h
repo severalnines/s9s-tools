@@ -35,6 +35,8 @@ class S9sEditor :
         void setIsReadOnly(bool value);
         bool isReadonly() const;
 
+        int numberOfLines() const;
+
         bool isSaveRequested() const;
         void setSaveRequested(bool value);
 

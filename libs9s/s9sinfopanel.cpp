@@ -88,15 +88,25 @@ S9sInfoPanel::setInfoRequestName(
     m_requestName = requestName;
 }
 
+/**
+ * \param path The full CDT path of the object.
+ * \param object The object itself in serialized format.
+ *
+ * Sets the object that is shown in the view.
+ */
 void
 S9sInfoPanel::setInfoObject(
         const S9sString     &path,
-        const S9sVariantMap &theMap)
+        const S9sVariantMap &object)
 {
+    bool isObjectChanged = path != m_objectPath;
+
     m_objectPath    = path;
-    m_object        = theMap;
+    m_object        = object;
     m_objectSetTime = time(NULL);
-    m_previewLineOffset = 0;
+
+    if (isObjectChanged)
+        m_previewLineOffset = 0;
 
     m_previewLines.clear();
 }

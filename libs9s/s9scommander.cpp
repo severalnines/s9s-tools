@@ -933,10 +933,17 @@ S9sCommander::printFooter()
     format.sprintf("%%s%%2u%%s%%-%ds%%s", fieldSize);
     //s9s_log("format: %s", STR(format));
 
-    if (m_editor.isVisible())
+    if (m_editor.isVisible() && !m_editor.isReadonly())
     {
         labels << 
             "" << "Save" << "" <<
+            "" << "" << "" <<
+            "" << "" << "" <<
+            "Quit";
+    } else if (m_editor.isVisible())
+    {
+        labels << 
+            "" << "" << "" <<
             "" << "" << "" <<
             "" << "" << "" <<
             "Quit";

@@ -65,7 +65,6 @@ S9sEditor::content() const
     return retval;
 }
 
-
 void
 S9sEditor::setIsReadOnly(
         bool value)
@@ -77,6 +76,12 @@ bool
 S9sEditor::isReadonly() const
 {
     return m_readOnly;
+}
+
+int
+S9sEditor::numberOfLines() const
+{
+    return (int) m_lines.size();
 }
 
 bool
@@ -103,28 +108,43 @@ S9sEditor::processKey(
     s9s_log("S9sEditor::processKey()");
 
     // FIXME: We should still be able to scroll.
-    if (isReadonly())
-        return;
+    //if (isReadonly())
+    //    return;
 
     switch (key)
     {
         case S9S_KEY_DOWN:
-            ++m_cursorY;
-            if (m_cursorY >= 0 && m_cursorY > (int)m_lines.size() - 1)
-                m_cursorY = m_lines.size() - 1;
+            s9s_log(" isReadOnly: %s", isReadonly() ? "true" : "false");
+            if (isReadonly())
+            {
+                if (m_lineOffset <= numberOfLines() - height())
+                    m_lineOffset++;
+
+                s9s_log("numberOfLines: %d", numberOfLines());
+                s9s_log(" m_lineOffset: %d", m_lineOffset);
+            } else {
+                ++m_cursorY;
+                if (m_cursorY >= 0 && m_cursorY > (int)m_lines.size() - 1)
+                    m_cursorY = m_lines.size() - 1;
             
-            if (m_cursorX > (int) lineAt(m_cursorY).length())
-                m_cursorX = lineAt(m_cursorY).length();
+                if (m_cursorX > (int) lineAt(m_cursorY).length())
+                    m_cursorX = lineAt(m_cursorY).length();
+            }
             break;
 
         case S9S_KEY_UP:
-            --m_cursorY;
-            if (m_cursorY < 0)
-                m_cursorY = 0;
+            if (isReadonly())
+            {
+                if (m_lineOffset > 0)
+                    m_lineOffset--;
+            } else {
+                --m_cursorY;
+                if (m_cursorY < 0)
+                    m_cursorY = 0;
             
-            if (m_cursorX > (int) lineAt(m_cursorY).length())
-                m_cursorX = lineAt(m_cursorY).length();
-
+                if (m_cursorX > (int) lineAt(m_cursorY).length())
+                    m_cursorX = lineAt(m_cursorY).length();
+            }
             break;
 
         case S9S_KEY_LEFT:
@@ -219,28 +239,31 @@ S9sEditor::processKey(
             break;
     }
 
-    if (key >= 'a' && key <= 'z')
-        doInsert = true;
-    else if (key >= 'A' && key <= 'Z')
-        doInsert = true;
-    else if (key >= '0' && key <= '9')
-        doInsert = true;
-    else if (key == ' ' || key == '/' || key == '*')
-        doInsert = true;
-    else if (key == ' ' || key == '+' || key == '-')
-        doInsert = true;
-    else if (key == '(' || key == ')' || key == '[' || key == ']')
-        doInsert = true;
-    else if (key == '!' || key == '&' || key == '[' || key == '|')
-        doInsert = true;
-    else if (key == '#' || key == ':' || key == ';' || key == '=')
-        doInsert = true;
-    else if (key == '.' || key == ',')
-        doInsert = true;
-    else if (key == '\'' || key == '"')
-        doInsert = true;
-    else if (key == '_' || key == '{' || key == '}')
-        doInsert = true;
+    if (!isReadonly())
+    {
+        if (key >= 'a' && key <= 'z')
+            doInsert = true;
+        else if (key >= 'A' && key <= 'Z')
+            doInsert = true;
+        else if (key >= '0' && key <= '9')
+            doInsert = true;
+        else if (key == ' ' || key == '/' || key == '*')
+            doInsert = true;
+        else if (key == ' ' || key == '+' || key == '-')
+            doInsert = true;
+        else if (key == '(' || key == ')' || key == '[' || key == ']')
+            doInsert = true;
+        else if (key == '!' || key == '&' || key == '[' || key == '|')
+            doInsert = true;
+        else if (key == '#' || key == ':' || key == ';' || key == '=')
+            doInsert = true;
+        else if (key == '.' || key == ',')
+            doInsert = true;
+        else if (key == '\'' || key == '"')
+            doInsert = true;
+        else if (key == '_' || key == '{' || key == '}')
+            doInsert = true;
+    }
 
     #if 0
     if (m_lineOffset < 0)
@@ -283,10 +306,14 @@ S9sEditor::setObject(
         const S9sString     &path,
         const S9sVariantMap &object)
 {
+    bool isNewObject = path != m_objectPath;
+
     m_objectPath    = path;
     m_object        = object;
     m_objectSetTime = time(NULL);
-    m_lineOffset    = 0;
+
+    if (isNewObject)
+        m_lineOffset    = 0;
 
     m_lines.clear();
 
@@ -297,7 +324,6 @@ S9sEditor::setObject(
         m_lines = text.split("\n", true);
         m_cursorX = 0;
         m_cursorY = 0;
-        m_lineOffset = 0;
     }
 }
 
@@ -338,6 +364,7 @@ S9sEditor::printLine(
     } else {
         printChar("║");
 
+        //s9s_log("m_lineOffset: %d", m_lineOffset);
         lineIndex -= 1;
         lineIndex += m_lineOffset;
             
