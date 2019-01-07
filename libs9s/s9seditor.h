@@ -20,7 +20,6 @@
 #pragma once
 
 #include "S9sWidget"
-#include "S9sTreeNode"
 #include "S9sRpcReply"
 
 class S9sEditor :
@@ -30,7 +29,11 @@ class S9sEditor :
         S9sEditor();
         virtual ~S9sEditor();
 
+        S9sString path() const;
+        S9sString content() const;
+
         void setIsReadOnly(bool value);
+        bool isReadonly() const;
 
         bool isSaveRequested() const;
         void setSaveRequested(bool value);
@@ -39,12 +42,9 @@ class S9sEditor :
 
         void printLine(int lineIndex);
 
-        void setInfoObject(
+        void setObject(
                 const S9sString     &path,
-                const S9sVariantMap &theMap);
-
-        void setInfoNode(
-                const S9sTreeNode   &node);
+                const S9sVariantMap &object);
 
         S9sString objectPath() const;
         time_t objectSetTime() const;
@@ -62,7 +62,6 @@ class S9sEditor :
     private:
         bool             m_readOnly;
         bool             m_saveRequested;
-        S9sTreeNode      m_node;
 
         /** Transient value shows the position in the line. */
         int              m_nChars;

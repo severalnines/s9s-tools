@@ -5156,7 +5156,20 @@ S9sRpcClient::mkfile(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::setContent(
+        const S9sString &fullPath,
+        const S9sString &content)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
 
+    request["operation"]      = "setcontent";
+    request["path"]           = fullPath;
+    request["content"]        = content;
+    
+    return executeRequest(uri, request);
+}
 
 bool
 S9sRpcClient::deleteFromTree()

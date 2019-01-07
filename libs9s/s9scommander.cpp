@@ -227,20 +227,61 @@ S9sCommander::deleteEntry(
         const S9sString fullPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
-    S9sRpcReply      deleteReply;
+    S9sRpcReply      reply;
        
     m_communicating   = true;
     m_client.deleteFromTree(fullPath);
-    deleteReply = m_client.reply();
+    reply = m_client.reply();
 
-    if (!deleteReply.isOk())
+    if (!reply.isOk())
     { 
-        showErrorDialog(deleteReply.errorString());
+        showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
 }
 
+void
+S9sCommander::saveContent(
+        const S9sString fullPath, 
+        const S9sString content)
+{
+    S9sMutexLocker   locker(m_networkMutex);
+    S9sRpcReply      reply;
+      
+    s9s_log("Saving CDT file '%s'.", STR(fullPath));
+    m_communicating   = true;
+    m_client.setContent(fullPath, content);
+    reply = m_client.reply();
+
+    if (!reply.isOk())
+    { 
+        showErrorDialog(reply.errorString());
+    } else {
+        m_reloadRequested = true;
+    }
+}
+
+bool
+S9sCommander::loadObject(
+        const S9sString &path,
+        S9sVariantMap   &object)
+{
+    S9sMutexLocker locker(m_networkMutex);    
+    S9sRpcReply    reply;
+
+    object.clear();
+    m_client.getObject(path);
+    
+    reply = m_client.reply();    
+    if (reply.isOk())
+    {
+        object = reply.getObject();
+        return true;
+    }
+
+    return false;
+}
 
 void
 S9sCommander::updateObject(
@@ -278,6 +319,9 @@ S9sCommander::updateObject(
         if (needToRefresh)
             updateObject(path, m_leftInfo);
     }
+    
+    if (m_editor.isVisible() && m_editor.isReadonly())
+        updateObject(path, m_editor);
 }
 
 void
@@ -287,7 +331,7 @@ S9sCommander::updateObject(
 {
     S9sMutexLocker locker(m_networkMutex);    
     S9sVariantMap  theMap;
-    S9sRpcReply    getObjectReply;
+    S9sRpcReply    reply;
    
     if (path.empty())
         return;
@@ -306,24 +350,57 @@ S9sCommander::updateObject(
      *
      */
     m_client.getObject(path);
-    getObjectReply = m_client.reply();
-    theMap = getObjectReply.getObject();
+    reply = m_client.reply();
+    theMap = reply.getObject();
    
     /*
      *
      */
     m_mutex.lock();
     target.setInfoRequestName("");
-    target.setInfoLastReply(getObjectReply);
+    target.setInfoLastReply(reply);
 
-    if (getObjectReply.isOk())
+    if (reply.isOk())
         target.setInfoObject(path, theMap);
     else
-        target.setInfoObject(path, getObjectReply);
+        target.setInfoObject(path, reply);
    
-    m_editor.setInfoObject(path, theMap);
-
     m_mutex.unlock();
+}
+
+void
+S9sCommander::updateObject(
+        const S9sString &path,
+        S9sEditor       &target)
+{
+    S9sMutexLocker locker(m_networkMutex);    
+    S9sMutexLocker locker1(m_mutex);
+
+    S9sVariantMap  theMap;
+    S9sRpcReply    reply;
+   
+    if (path.empty())
+        return;
+
+    if (target.isVisible() && target.isReadonly())
+    {
+        int timePassed = time(NULL) - target.objectSetTime();
+
+        if (timePassed > 2)
+        {
+            S9sString path = target.objectPath();
+            
+            m_client.getObject(path);
+            reply = m_client.reply();
+
+            if (reply.isOk())
+            {
+                target.setObject(path, reply.getObject());
+            }
+        }
+
+        return;
+    }    
 }
 
 /**
@@ -457,6 +534,12 @@ S9sCommander::processKey(
     } else if (m_editor.isVisible() && key != S9S_KEY_ESC)
     {
         m_editor.processKey(key);
+        if (m_editor.isSaveRequested())
+        {
+            saveContent(m_editor.path(), m_editor.content());
+            m_editor.setSaveRequested(false);
+        }
+
         return;
     }
 
@@ -519,15 +602,34 @@ S9sCommander::processKey(
             break;
 
         case S9S_KEY_F3:
-            m_editor.setVisible(true);
-            m_editor.setHasFocus(true);
-            m_editor.setIsReadOnly(true);
+            if (!sourceFullPath().empty())
+            {
+                S9sString      path = sourceFullPath();
+                S9sVariantMap  object;
+               
+                loadObject(path, object);
+
+                m_editor.setObject(path, object);
+                m_editor.setVisible(true);
+                m_editor.setHasFocus(true);
+                m_editor.setIsReadOnly(true);
+            }
             break;
 
         case S9S_KEY_F4:
-            m_editor.setVisible(true);
-            m_editor.setHasFocus(true);
-            m_editor.setIsReadOnly(false);
+            if (!sourceFullPath().empty())
+            {
+                S9sString      path = sourceFullPath();
+                S9sVariantMap  object;
+               
+                loadObject(path, object);
+
+                m_editor.setObject(path, object);
+                m_editor.setVisible(true);
+                m_editor.setHasFocus(true);
+                m_editor.setIsReadOnly(false);
+            }
+
             break;
         
         case S9S_KEY_SHIFT_F4:

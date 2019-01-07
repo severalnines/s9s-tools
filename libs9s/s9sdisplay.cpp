@@ -45,7 +45,10 @@ void reset_terminal_mode()
     ::printf("%s", TERM_CURSOR_ON);
     ::printf("%s", TERM_AUTOWRAP_ON);
 
+    // Disabling mouse tracking.
     ::printf("%s", "\e[?9l");
+
+    // Switch to the original buffer screen.
     ::printf("%s", "\e[?47l");
 }
 

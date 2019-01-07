@@ -51,9 +51,15 @@ class S9sCommander :
         void createFile(const S9sString fullPath);
 
         void deleteEntry(const S9sString fullPath);
+        
+        void saveContent(const S9sString fullPath, const S9sString content);
+        bool loadObject(const S9sString &fullPath, S9sVariantMap &object);
+
 
         void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);
+        void updateObject(const S9sString &path, S9sEditor &target);
+
 
     protected:
         void showErrorDialog(const S9sString &errorString);

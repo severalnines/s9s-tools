@@ -108,7 +108,7 @@ class S9sRpcClient
         bool rmdir();
 
         bool mkfile(const S9sString &fullPath);
-
+        bool setContent(const S9sString &fullPath, const S9sString &content);
 
         bool startServers();
         bool stopServers();

@@ -45,11 +45,38 @@ S9sEditor::~S9sEditor()
 {
 }
 
+S9sString
+S9sEditor::path() const
+{
+    return m_objectPath;
+}
+
+S9sString 
+S9sEditor::content() const
+{
+    S9sString retval;
+
+    for (uint idx = 0u; idx < m_lines.size(); ++idx)
+    {
+        retval += m_lines[idx].toString();
+        retval += "\n";
+    }
+
+    return retval;
+}
+
+
 void
 S9sEditor::setIsReadOnly(
         bool value)
 {
     m_readOnly = value;
+}
+
+bool
+S9sEditor::isReadonly() const
+{
+    return m_readOnly;
 }
 
 bool
@@ -74,6 +101,11 @@ S9sEditor::processKey(
     S9sString subString;
 
     s9s_log("S9sEditor::processKey()");
+
+    // FIXME: We should still be able to scroll.
+    if (isReadonly())
+        return;
+
     switch (key)
     {
         case S9S_KEY_DOWN:
@@ -239,13 +271,20 @@ S9sEditor::processKey(
     }
 }
 
+/**
+ * \param path The CDT path where the object is found.
+ * \param object The serialized version of the object that is set.
+ *
+ * This method sets the object that is either viewed (read-only mode) or 
+ * edited in the widget.
+ */
 void
-S9sEditor::setInfoObject(
+S9sEditor::setObject(
         const S9sString     &path,
-        const S9sVariantMap &theMap)
+        const S9sVariantMap &object)
 {
     m_objectPath    = path;
-    m_object        = theMap;
+    m_object        = object;
     m_objectSetTime = time(NULL);
     m_lineOffset    = 0;
 
@@ -256,6 +295,9 @@ S9sEditor::setInfoObject(
         S9sString text = m_object["content"].toString();
         
         m_lines = text.split("\n", true);
+        m_cursorX = 0;
+        m_cursorY = 0;
+        m_lineOffset = 0;
     }
 }
 
@@ -263,14 +305,6 @@ S9sString
 S9sEditor::objectPath() const
 {
     return m_objectPath;
-}
-
-
-void
-S9sEditor::setInfoNode(
-        const S9sTreeNode &node)
-{
-    m_node = node;
 }
 
 time_t
