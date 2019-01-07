@@ -50,6 +50,11 @@ class S9sCommander :
         virtual void printFooter();
 
         void updateTree();
+
+        void renameMove(
+                const S9sString sourcePath,
+                const S9sString targetPath);
+
         void createFolder(const S9sString fullPath);
         void createFile(const S9sString fullPath);
 

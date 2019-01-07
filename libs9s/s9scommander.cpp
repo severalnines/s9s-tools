@@ -199,6 +199,30 @@ S9sCommander::updateTree()
 }
 
 void
+S9sCommander::renameMove(
+        const S9sString sourcePath,
+        const S9sString targetPath)
+{
+    S9sMutexLocker   locker(m_networkMutex);
+    S9sRpcReply      reply;
+   
+    s9s_log("Renaming/moving an entry.");
+    s9s_log(" sourcePath: %s", STR(sourcePath));
+    s9s_log(" targetPath: %s", STR(targetPath));
+
+    m_communicating   = true;
+    m_client.moveInTree(sourcePath, targetPath);
+    reply = m_client.reply();
+
+    if (!reply.isOk())
+    { 
+        showErrorDialog(reply.errorString());
+    } else {
+        m_reloadRequested = true;
+    }
+}
+
+void
 S9sCommander::createFolder(
         const S9sString fullPath)
 {
@@ -511,13 +535,28 @@ S9sCommander::processKey(
     {
         m_dialog->processKey(key);
 
+        s9s_log(" isOkPressed: %s", 
+                m_dialog->isOkPressed() ? "yes" : "no");
+
         if (m_dialog->isCancelPressed())
         {
             delete m_dialog;
             m_dialog = NULL;
         } else if (m_dialog->isOkPressed())
         {
-            if (m_dialog->userData("type") == "createFolder")
+            if (m_dialog->userData("type") == "moveFile")
+            {
+                S9sString sourcePath;
+                S9sString targetPath;
+
+                sourcePath = m_dialog->userData("sourcePath").toString();
+                targetPath = m_dialog->text();
+                
+                delete m_dialog;
+                m_dialog = NULL;
+
+                renameMove(sourcePath, targetPath); 
+            } else if (m_dialog->userData("type") == "createFolder")
             {
                 S9sString folderName = m_dialog->text();
                 S9sString parentFolderName = sourcePath();
@@ -543,8 +582,11 @@ S9sCommander::processKey(
                 m_dialog = NULL;
 
                 deleteEntry(path);
+            } else {
+                s9s_log("Unhandled dialog type.");
+                s9s_log(" type: '%s'", 
+                        STR(m_dialog->userData("type").toString()));
             }
-
         }
 
         return;
