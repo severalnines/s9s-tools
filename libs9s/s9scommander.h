@@ -51,16 +51,14 @@ class S9sCommander :
 
         void updateTree();
 
-        void renameMove(
+        bool renameMove(
                 const S9sString sourcePath,
                 const S9sString targetPath);
 
-        void createFolder(const S9sString fullPath);
-        void createFile(const S9sString fullPath);
-
-        void deleteEntry(const S9sString fullPath);
-        
-        void saveContent(const S9sString fullPath, const S9sString content);
+        bool createFolder(const S9sString fullPath);
+        bool createFile(const S9sString fullPath);
+        bool deleteEntry(const S9sString fullPath);
+        bool saveContent(const S9sString fullPath, const S9sString content);
         bool loadObject(const S9sString &fullPath, S9sVariantMap &object);
 
 

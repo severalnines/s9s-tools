@@ -194,18 +194,29 @@ S9sCommander::updateTree()
         m_rootNodeRecevied = time(NULL);
     }
 
-    m_communicating = false;    
+    m_communicating = false;
+
+    if (m_dialog != NULL)
+    {
+        if (m_dialog->userData("delayedClose").toBoolean())
+        {
+            delete m_dialog;
+            m_dialog = NULL;
+        }
+    }
+
     m_mutex.unlock(); 
 }
 
-void
+bool
 S9sCommander::renameMove(
         const S9sString sourcePath,
         const S9sString targetPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
     S9sRpcReply      reply;
-   
+    bool             success;
+
     s9s_log("Renaming/moving an entry.");
     s9s_log(" sourcePath: %s", STR(sourcePath));
     s9s_log(" targetPath: %s", STR(targetPath));
@@ -214,92 +225,112 @@ S9sCommander::renameMove(
     m_client.moveInTree(sourcePath, targetPath);
     reply = m_client.reply();
 
-    if (!reply.isOk())
+    success = reply.isOk();
+    if (!success)
     { 
         showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
+
+    return success;
 }
 
-void
+bool
 S9sCommander::createFolder(
         const S9sString fullPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
-    S9sRpcReply      mkdirReply;
+    S9sRpcReply      reply;
+    bool             success;
    
     s9s_log("Creating a folder.");
+
     m_communicating   = true;
     m_client.mkdir(fullPath);
-    mkdirReply = m_client.reply();
+    reply = m_client.reply();
 
-    if (!mkdirReply.isOk())
+    success = reply.isOk();
+    if (!success)
     { 
-        showErrorDialog(mkdirReply.errorString());
+        showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
+
+    return success;
 }
 
-void
+bool
 S9sCommander::createFile(
         const S9sString fullPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
-    S9sRpcReply      mkfileReply;
-   
+    S9sRpcReply      reply;
+    bool             success;
+
     s9s_log("Creating a folder.");
     m_communicating   = true;
     m_client.mkfile(fullPath);
-    mkfileReply = m_client.reply();
+    reply = m_client.reply();
 
-    if (!mkfileReply.isOk())
+    success = reply.isOk();
+    if (!success)
     { 
-        showErrorDialog(mkfileReply.errorString());
+        showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
+
+    return success;
 }
 
-void
+bool
 S9sCommander::deleteEntry(
         const S9sString fullPath)
 {
     S9sMutexLocker   locker(m_networkMutex);
     S9sRpcReply      reply;
+    bool             success;
        
     m_communicating   = true;
     m_client.deleteFromTree(fullPath);
     reply = m_client.reply();
 
-    if (!reply.isOk())
+    success = reply.isOk();
+    if (!success)
     { 
         showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
+
+    return success;
 }
 
-void
+bool
 S9sCommander::saveContent(
         const S9sString fullPath, 
         const S9sString content)
 {
     S9sMutexLocker   locker(m_networkMutex);
     S9sRpcReply      reply;
-      
+    bool             success;
+
     s9s_log("Saving CDT file '%s'.", STR(fullPath));
     m_communicating   = true;
     m_client.setContent(fullPath, content);
     reply = m_client.reply();
 
-    if (!reply.isOk())
+    success = reply.isOk();
+    if (!success)
     { 
         showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
     }
+
+    return success;
 }
 
 bool
@@ -544,6 +575,8 @@ S9sCommander::processKey(
             m_dialog = NULL;
         } else if (m_dialog->isOkPressed())
         {
+            bool success = false;
+
             if (m_dialog->userData("type") == "moveFile")
             {
                 S9sString sourcePath;
@@ -552,40 +585,41 @@ S9sCommander::processKey(
                 sourcePath = m_dialog->userData("sourcePath").toString();
                 targetPath = m_dialog->text();
                 
-                delete m_dialog;
-                m_dialog = NULL;
-
-                renameMove(sourcePath, targetPath); 
+                success = renameMove(sourcePath, targetPath); 
             } else if (m_dialog->userData("type") == "createFolder")
             {
                 S9sString folderName = m_dialog->text();
                 S9sString parentFolderName = sourcePath();
 
-                delete m_dialog;
-                m_dialog = NULL;
-
-                createFolder(parentFolderName + "/" + folderName);
+                success = createFolder(parentFolderName + "/" + folderName);
             } else if (m_dialog->userData("type") == "createFile")
             {
                 S9sString folderName = m_dialog->text();
                 S9sString parentFolderName = sourcePath();
 
-                delete m_dialog;
-                m_dialog = NULL;
-
-                createFile(parentFolderName + "/" + folderName);
+                success = createFile(parentFolderName + "/" + folderName);
             } else if (m_dialog->userData("type") == "deleteEntry")
             {
                 S9sString path = m_dialog->userData("objectPath").toString();
 
-                delete m_dialog;
-                m_dialog = NULL;
-
-                deleteEntry(path);
+                success = deleteEntry(path);
             } else {
                 s9s_log("Unhandled dialog type.");
                 s9s_log(" type: '%s'", 
                         STR(m_dialog->userData("type").toString()));
+            }
+
+            if (success)
+            {
+                if (m_dialog)
+                {
+                    #if 1
+                    delete m_dialog;
+                    m_dialog = NULL;
+                    #else
+                    m_dialog->setUserData("delayedClose", true);
+                    #endif
+                }
             }
         }
 
