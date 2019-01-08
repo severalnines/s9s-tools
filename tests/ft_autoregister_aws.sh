@@ -127,6 +127,7 @@ function installCmonCloud()
 {
     local binaryFile="/usr/sbin/cmon-cloud"
     local doUpdate
+    local DOWNLOAD_URL='http://www.severalnines.com/downloads/cmon'
 
     print_title "Installing cmon-cloud"
     if [ -f "$binaryFile" ]; then
@@ -141,6 +142,14 @@ function installCmonCloud()
         doUpdate="true"
     fi
 
+    wget $DOWNLOAD_URL/s9s-repo.list -P /etc/apt/sources.list.d/
+
+    wget http://repo.severalnines.com/severalnines-repos.asc
+    sudo apt-key add severalnines-repos.asc
+    rm -f severalnines-repos.asc
+    doUpdate=true
+
+
     if [ -n "$doUpdate" ]; then
         sudo apt -y update
     fi
@@ -148,7 +157,6 @@ function installCmonCloud()
     sudo apt -y --force-yes install clustercontrol-cloud
     if [ $? -ne 0 ]; then
         failure "Failed to install 'clustercontrol-cloud'"
-        keep_system_clean
         return 1
     fi
 
