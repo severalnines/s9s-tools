@@ -215,6 +215,7 @@ enum S9sOptionType
     OptionChOwn,
     OptionMkdir,
     OptionRmdir,
+    OptionMkfile,
     OptionAcl,
     OptionOwner,
     OptionListNics,
@@ -3022,6 +3023,16 @@ S9sOptions::isMkdirRequested() const
 }
 
 /**
+ * \returns True if the --touch command line option is provided.
+ */
+bool
+S9sOptions::isMkfileRequested() const
+{
+    return getBool("mkfile");
+}
+
+
+/**
  * \returns True if the --rmdir command line option is provided.
  */
 bool
@@ -4956,6 +4967,7 @@ S9sOptions::printHelpTree()
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
 "  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
+"  --touch                    Create a file in the Cmon Directory Tree.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
 "  --acl=ACL                  One ACL entry to be added or removed.\n"
@@ -10910,6 +10922,7 @@ S9sOptions::readOptionsTree(
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "stat",             no_argument,       0, OptionStat            },
+        { "touch",            no_argument,       0, OptionMkfile          }, 
         { "tree",             no_argument,       0, OptionTree            },
         { "watch",            no_argument,       0, OptionWatch           },
         
@@ -11040,6 +11053,11 @@ S9sOptions::readOptionsTree(
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
+                break;
+            
+            case OptionMkfile:
+                // --touch
+                m_options["mkfile"] = true;
                 break;
 
             case OptionTree:
@@ -11420,6 +11438,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isMkdirRequested())
+        countOptions++;
+    
+    if (isMkfileRequested())
         countOptions++;
     
     if (isRmdirRequested())

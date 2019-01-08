@@ -5171,6 +5171,23 @@ S9sRpcClient::mkfile(
 }
 
 bool
+S9sRpcClient::mkfile()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --create option requires one command line argument: "
+                "the full path of the file to be created.");
+
+        return false;
+    }
+
+    return mkfile(options->extraArgument(0u));    
+}
+
+bool
 S9sRpcClient::setContent(
         const S9sString &fullPath,
         const S9sString &content)

@@ -111,6 +111,7 @@ class S9sRpcClient
         bool mkdir(const S9sString &fullPath);
         bool rmdir();
 
+        bool mkfile();
         bool mkfile(const S9sString &fullPath);
         bool setContent(const S9sString &fullPath, const S9sString &content);
 
