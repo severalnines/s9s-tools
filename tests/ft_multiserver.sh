@@ -233,7 +233,7 @@ function createContainer()
     mys9s container \
         --create \
         --servers=$TESTED_CONTAINER_SERVER \
-        --volumes="vol1:5:hdd" \
+        --volumes="vol1:10:hdd" \
         $LOG_OPTION \
         "$container_name"
     
