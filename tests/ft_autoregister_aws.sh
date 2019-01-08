@@ -167,7 +167,8 @@ function installCmonCloud()
 
     print_title "Starting cmon-cloud"
     sudo /etc/init.d/cmon-cloud start
-    sleep 5
+    #sleep 5
+    sudo /etc/init.d/cmon-cloud status
 }
 
 function removeCmonCloud()
