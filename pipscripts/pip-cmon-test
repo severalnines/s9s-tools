@@ -553,6 +553,7 @@ function compile_source_dir()
     ./autogen.sh >>"autogen.log" 2>>"autogen.log"
     retcode $?
     if [ $retcode -ne 0 ]; then
+        printVerbose "Script autogen.sh failed."
         pip-host-control \
             --tail "$PWD/autogen.log" \
             --error "The ./autogen.sh returned an error ($retcode)."
@@ -569,6 +570,7 @@ function compile_source_dir()
     make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
+        printVerbose "Program 'make' failed."
         pip-host-control \
             --tail "$PWD/make.log" \
             --error "The make -j10 returned an error ($retcode)."
@@ -579,24 +581,31 @@ function compile_source_dir()
         printVerbose "Running 'make install'."
         pip-host-control --log "Running 'make install'."
         sudo make install >>"make.log" 2>>"make.log"
+
+        if [ $? -ne 0 ]; then
+            printVerbose "Installing with 'make install' failed."
+            return 1
+        fi
     fi
 
-    return 1
+    return 0
 }
 
 function compile_source()
 {
     local retcode
 
+    printVerbose "Preparing clustercontrol"
     compile_source_dir \
         --source-root "$(find_clustercontrol_source_directory)"
 
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
+        printVerbose "The return code is $retcode..."
         return "$retcode"
     fi
 
-    if [ "$S9S_OPTION" ]; then
+    if [ -n "$S9S_OPTION" ]; then
         compile_source_dir \
             --source-root "$(find_s9s_source_directory)" \
             --install 
@@ -1176,6 +1185,15 @@ function main()
     scp "$tmp_file" "$TEST_REPORT_URL"
 
     compile_source
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to compile source"
+        pip-host-control \
+            --idle \
+            --log    "Failed to compile, idle." \
+            --status "Idle"
+
+        return 1
+    fi
 
     #
     # Running the test.
