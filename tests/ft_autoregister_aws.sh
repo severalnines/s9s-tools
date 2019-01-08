@@ -164,6 +164,10 @@ function installCmonCloud()
         failure "File '$binaryFile' does not exist."
         return 1
     fi
+
+    print_title "Starting cmon-cloud"
+    sudo /etc/init.d/cmon-cloud start
+    sleep 5
 }
 
 function removeCmonCloud()
