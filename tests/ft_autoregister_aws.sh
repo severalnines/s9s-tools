@@ -136,7 +136,7 @@ function installCmonCloud()
 
     if [ ! -f "/etc/apt/sources.list.d/s9s-repo-nightly.list" ]; then
         echo "deb [arch=amd64] http://repo.severalnines.com/repos-nightly/deb ubuntu main" \
-            > "/etc/apt/sources.list.d/s9s-repo-nightly.list"
+            | sudo tee "/etc/apt/sources.list.d/s9s-repo-nightly.list"
 
         doUpdate="true"
     fi
