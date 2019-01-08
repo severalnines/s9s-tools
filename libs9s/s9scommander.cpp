@@ -613,6 +613,9 @@ S9sCommander::processKey(
                         STR(m_dialog->userData("type").toString()));
             }
 
+            if (m_dialog)
+                m_dialog->setIsOkPressed(false);
+
             if (success)
             {
                 if (m_dialog)

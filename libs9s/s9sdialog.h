@@ -38,6 +38,8 @@ class S9sDialog : public S9sWidget
         virtual void processKey(int key);
 
         bool isOkPressed() const;
+        void setIsOkPressed(bool value);
+
         bool isCancelPressed() const;
         
         virtual S9sString text() const;

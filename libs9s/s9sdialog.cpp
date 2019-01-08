@@ -83,6 +83,13 @@ S9sDialog::isOkPressed() const
     return m_okPressed;
 }
 
+void 
+S9sDialog::setIsOkPressed(
+        bool value)
+{
+    m_okPressed = value;
+}
+
 bool
 S9sDialog::isCancelPressed() const
 {
