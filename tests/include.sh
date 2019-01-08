@@ -2073,6 +2073,10 @@ function clean_up_after_test()
         rm -f "$container_list_file"
     fi
 
+    echo "Removing cmon-cloud if installed."
+    sudo /etc/init.d/cmon-cloud stop
+    sudo apt -y --force-yes remove clustercontrol-cloud
+
     echo "Exiting test script now."
     return 0
 }
