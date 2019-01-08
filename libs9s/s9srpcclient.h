@@ -95,6 +95,12 @@ class S9sRpcClient
                 const S9sString &targetPath);
 
         bool moveInTree();
+
+        bool rename(
+                const S9sString &sourcePath,
+                const S9sString &targetName);
+
+        
         bool deleteFromTree();
         bool deleteFromTree(const S9sString &path);
 

@@ -222,7 +222,11 @@ S9sCommander::renameMove(
     s9s_log(" targetPath: %s", STR(targetPath));
 
     m_communicating   = true;
-    m_client.moveInTree(sourcePath, targetPath);
+    if (targetPath.contains("/"))
+        m_client.moveInTree(sourcePath, targetPath);
+    else
+        m_client.rename(sourcePath, targetPath);
+
     reply = m_client.reply();
 
     success = reply.isOk();

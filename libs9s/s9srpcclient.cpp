@@ -4823,6 +4823,21 @@ S9sRpcClient::moveInTree()
     return moveInTree(options->extraArgument(0u), options->extraArgument(1u));
 }
 
+bool
+S9sRpcClient::rename(
+        const S9sString &sourcePath,
+        const S9sString &targetName)
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+
+    request["operation"]      = "rename";
+    request["source_path"]    = sourcePath;
+    request["target_name"]    = targetName;
+    
+    return executeRequest(uri, request);
+}
+
 /**
  * Executes the cat command, gets a content of a node in the CDT tree.
  */
@@ -5170,6 +5185,9 @@ S9sRpcClient::mkfile(
     return executeRequest(uri, request);
 }
 
+/**
+ * Makes a file in the CDT tree.
+ */
 bool
 S9sRpcClient::mkfile()
 {
