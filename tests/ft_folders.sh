@@ -110,20 +110,32 @@ function testMkdir1()
     local expected
 
     print_title "Creating Folders"
+    cat <<EOF
+  This test will create a nested folder structure in one step. Then it will
+check if the folders are there and the hidden entries are indeed not shown
+without the --all command line option.
+
+EOF
 
     mys9s tree --mkdir /home/pipas/.config
 
     check_exit_code_no_job $?
+    check_entry \
+        --user         "$USER"      \
+        --group        "testgroup"  \
+        --acl          "drwxrwxrwx" \
+        "/home"
+    
+    check_entry \
+        --user         "$USER"      \
+        --group        "testgroup"  \
+        --acl          "drwxrwxrwx" \
+        "/home/pipas"
 
-    mys9s tree --tree
-    mys9s tree --list
+    #mys9s tree --tree
+    #mys9s tree --list
 
     lines=$(s9s tree --list)
-    expected="home$"
-    if ! echo "$lines" | grep --quiet "$expected"; then
-        failure "Expected line not found: '$expected'"
-        exit 1
-    fi
 
     lines=$(s9s tree --list --recursive --full-path --all)
     expected="/home/pipas$"
@@ -137,49 +149,99 @@ function testMkdir1()
         failure "Hidden entries should not be seen ('$expected')"
         exit 1
     fi
+
+    mys9s tree --rmdir "/home/pipas/.config"
+    check_exit_code_no_job $?
 }
 
 function testMkdir2()
 {
-    local lines
-    local owner
-    local group
-    local name
+    local folder_name="testMkdir2"
+    local retcode
 
     print_title "Creating Folders with Failures"
 
-    mys9s tree --mkdir /testMkdir2
+    mys9s tree --mkdir "/$folder_name"
     check_exit_code_no_job $?
-    
-    lines=$(s9s tree --list --long | grep testMkdir2)
-    owner=$(echo "$lines" | awk '{print $3}')
-    group=$(echo "$lines" | awk '{print $4}')
-    name=$(echo "$lines" | awk '{print $5}')
-    
-    if [ "$owner" != "pipas" ]; then
-        failure "Owner is '$owner', should be 'pipas'"
-        exit 1
-    fi
-    
-    if [ "$group" != "testgroup" ]; then
-        failure "Group is '$group', should be 'testgroup'"
-        exit 1
-    fi
-    
-    if [ "$name" != "testMkdir2" ]; then
-        failure "Name is '$name', should be 'testMkdir2'"
-        exit 1
-    fi
+   
+    check_entry \
+        --user         "$USER"      \
+        --group        "testgroup"  \
+        --acl          "drwxrwxrwx" \
+        "/$folder_name"
     
     # We should not be able to create a folder that already exists.
-    mys9s tree --mkdir /testMkdir2
+    mys9s tree --mkdir "/$folder_name"
+    retcode=$?
 
-    if [ $? -eq 0 ]; then
-        failure "Creating the same folder should have failed"
-        exit 1
+    if [ $retcode -eq 0 ]; then
+        failure "Creating the same folder should have failed."
+    else
+        success "  o Creating the same folder again failed, ok ($retcode)."
     fi
 
+    mys9s tree --rmdir "/$folder_name"
+    mys9s tree --tree --all
+
     return 0
+}
+
+function testTouch()
+{
+    local path="/home/pipas/test.text"
+    local new_name="testfile.txt";
+    local new_path="/home/pipas/testfile.txt"
+    local invalid_path1="/.runtime/ak.txt"
+    local invalid_path2="/no_such_folder/ak.txt"
+    local retcode 
+
+    print_title "Creating a File"
+
+    mys9s tree --touch "$path"
+    check_exit_code_no_job $?
+
+    check_entry \
+        --user         "$USER"      \
+        --group        "testgroup"  \
+        --acl          "-rwxrwxrwx" \
+        --size         "0"          \
+        "$path"
+
+    mys9s tree --move "$path" "$new_name"
+    check_exit_code_no_job $?
+    
+    check_entry \
+        --user         "$USER"      \
+        --group        "testgroup"  \
+        --acl          "-rwxrwxrwx" \
+        --size         "0"          \
+        "$new_path"
+
+    #
+    # Trying to create a file where the user has no write access.
+    #
+    mys9s tree --touch "$invalid_path1"
+    retcode="$?"
+
+    if [ "$retcode" -eq 0 ]; then
+        failure "Creating a file here should've failed."
+    else
+        success "  o Failed to create file with $retcode, ok."
+    fi
+   
+    #
+    # Trying to create a file in a folder that does not exist.
+    #
+    mys9s tree --touch "$invalid_path2"
+    retcode="$?"
+
+    if [ "$retcode" -eq 0 ]; then
+        failure "Creating a file here should've failed."
+    else
+        success "  o Failed to create file with $retcode, ok."
+    fi
+
+    mys9s tree --tree --all
 }
 
 #
@@ -196,6 +258,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testMkdir1
     runFunctionalTest testMkdir2
+    runFunctionalTest testTouch
 fi
 
 endTests

@@ -4804,13 +4804,15 @@ S9sRpcClient::moveInTree(
 }
 
 /**
- * Moves a CDT entry into a new folder.
+ * Calls the "move" or "rename" on the tree. If the second argument has a "/" it
+ * is move, if it has no "/" it is rename.
  */
 bool
-S9sRpcClient::moveInTree()
+S9sRpcClient::renameOrMove()
 {
     S9sOptions    *options = S9sOptions::instance();
-    
+    S9sString      source, target;
+
     if (options->nExtraArguments() != 2)
     {
         PRINT_ERROR(
@@ -4820,7 +4822,13 @@ S9sRpcClient::moveInTree()
         return false;
     }
   
-    return moveInTree(options->extraArgument(0u), options->extraArgument(1u));
+    source = options->extraArgument(0u);
+    target = options->extraArgument(1u);
+
+    if (target.contains("/"))
+        return moveInTree(source, target);
+
+    return rename(source, target);
 }
 
 bool

@@ -2105,6 +2105,98 @@ function check_container_server()
     fi
 }
 
+function check_entry()
+{
+    local line
+    local full_path
+    local path
+    local owner
+    local expected_owner
+    local group
+    local expected_group
+    local acl
+    local expected_acl
+    local size
+    local expected_size
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --owner|--user)
+                expected_owner="$2"
+                shift 2
+                ;;
+
+            --group)
+                expected_group="$2"
+                shift 2
+                ;;
+            
+            --acl)
+                expected_acl="$2"
+                shift 2
+                ;;
+
+            --size)
+                expected_size="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+
+        esac
+    done
+
+    full_path="$1"
+    
+    #mys9s tree --list --long --full-path --recursive --directory --all \
+    #    $full_path
+
+    line=$(s9s tree \
+        --list --long --full-path --recursive --directory --batch --all \
+        $full_path)
+
+    path=$(echo $line | awk '{print $5}')
+    group=$(echo $line | awk '{print $4}')
+    owner=$(echo $line | awk '{print $3}')
+    size=$(echo $line | awk '{print $2}')
+    acl=$(echo $line | awk '{print $1}')
+
+
+    if [ "$path" != "$full_path" ]; then
+        failure "Entry '$full_path' was not found."
+        return 1
+    else
+        success "  o Entry '$full_path' was found, ok."
+    fi
+
+    if [ -n "$expected_group" -a "$group" != "$expected_group" ]; then
+        failure "Group is '$group' instead of '$expected_group'."
+    else
+        success "  o Group is '$group', ok."
+    fi
+    
+    if [ -n "$expected_owner" -a "$owner" != "$expected_owner" ]; then
+        failure "Owner is '$owner' instead of '$expected_owner'."
+    else
+        success "  o Owner is '$owner', ok."
+    fi
+    
+    if [ -n "$expected_acl" -a "$acl" != "$expected_acl" ]; then
+        failure "Acl is '$acl' instead of '$expected_acl'."
+    else
+        success "  o Acl is '$acl', ok."
+    fi
+
+    if [ -n "$expected_size" -a "$size" != "$expected_size" ]; then
+        failure "Size is '$size' instead of '$expected_size'."
+    else
+        success "  o Size is '$size', ok."
+    fi
+
+}
+
 #
 # This will destroy the containers we created. This method is automatically
 # called by this:

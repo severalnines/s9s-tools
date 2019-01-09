@@ -423,7 +423,7 @@ S9sBusinessLogic::execute()
             /* 
              * s9s tree --move "/Hungary" "/"
              */
-            success = client.moveInTree();
+            success = client.renameOrMove();
             client.printMessages("Moved.", success);
             client.setExitStatus();
         } else {

@@ -3031,7 +3031,6 @@ S9sOptions::isMkfileRequested() const
     return getBool("mkfile");
 }
 
-
 /**
  * \returns True if the --rmdir command line option is provided.
  */

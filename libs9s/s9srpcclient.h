@@ -90,11 +90,11 @@ class S9sRpcClient
         bool unregisterServers();
         bool createServer();
 
+        bool renameOrMove();
+
         bool moveInTree(
                 const S9sString &sourcePath, 
                 const S9sString &targetPath);
-
-        bool moveInTree();
 
         bool rename(
                 const S9sString &sourcePath,
