@@ -210,20 +210,17 @@ function createContainer()
     mys9s server    --list --long
 
     #
-    # Checking the ip and the owner.
+    # Checking the container and now we should already have an auto-registered
+    # container server.
     #
     CONTAINER_IP=$(get_container_ip "$container_name")
-    if [ -z "$CONTAINER_IP" ]; then
-        failure "The container was not created or got no IP."
-        s9s container --list --long
-    fi
-
-    if [ "$CONTAINER_IP" == "-" ]; then
-        failure "The container got no IP."
-        s9s container --list --long
-    fi
 
     check_container "$container_name"
+
+    check_container_server \
+        --class        CmonCloudServer \
+        --server-name  "localhost" \
+        --cloud        "aws"
 
     #
     # We will manipulate this container in other tests.
@@ -279,13 +276,6 @@ else
     runFunctionalTest createContainer
     runFunctionalTest deleteContainer
     runFunctionalTest removeCmonCloud
-    #runFunctionalTest createServer
-    #runFunctionalTest registerServer
-    #runFunctionalTest createContainer
-    #runFunctionalTest createFail
-    #runFunctionalTest createCluster
-    #runFunctionalTest dropCluster
-    #runFunctionalTest deleteContainer
 fi
 
 endTests

@@ -423,34 +423,40 @@ function check_container()
             --long  "$container_name" \
         | awk '{print $6}')
     
-    if [ -z "$container_ip" ]; then
+    if [ -z "$container_ip" -o "$container_ip" == "-" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        exit 1
+    else
+        success "  o Container $container_name has IP $container_ip, ok"
     fi
-
-    if [ "$container_ip" == "-" ]; then
-        failure "The container got no IP."
-        s9s container --list --long
-        exit 1
-    fi
-  
+ 
     owner=$(\
         s9s container --list --long --batch "$container_name" | \
         awk '{print $4}')
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner is '$owner', should be '$USER'"
-        exit 1
+    else
+        success "  o The owner of the container is '$owner', ok"
     fi
 
     if ! is_server_running_ssh "$container_ip" "$owner"; then
         failure "User $owner can not log in to $container_ip"
-        exit 1
     else
-        echo "check_container(): " \
-            "SSH access granted for user '$USER' on $container_ip."
+        success "  o SSH access granted for user '$USER' on $container_ip, ok."
     fi
+
+    cloud=$(s9s container --list --container-format="%c\n" "$container_name")
+    success "  o The cloud of the container is $cloud, ok"
+
+    state=$(s9s container --list --container-format="%S\n" "$container_name")
+    success "  o The state of the container is $state, ok"
+
+    parent=$(s9s container --list --container-format="%P\n" "$container_name")
+    success "  o The parent of the container is $parent, ok"
+
+    prot=$(s9s container --list --container-format="%T\n" "$container_name")
+    success "  o The type of the container is $prot, ok"
 }
 
 #
