@@ -182,7 +182,7 @@ function installCmonCloud()
         echo "The cmon-cloud says did not start?"
     fi
 
-    echo "ps axu | grep cmon-cloud"
+    echo "# ps axu | grep cmon-cloud"
     ps axu | grep cmon-cloud
 
 }
