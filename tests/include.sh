@@ -409,9 +409,74 @@ function check_exit_code_no_job()
 
 function check_container()
 {
-    local container_name="$1"
+    local container_name
     local container_ip
     local owner
+    local expected_owner="$USER"
+    local group
+    local expected_group
+    local cloud
+    local expected_cloud
+    local state
+    local expected_state
+    local parent 
+    local expected_parent
+    local prot
+    local expected_prot
+    local path
+    local expected_path
+    local acl
+    local expected_acl
+    
+    while [ -n "$1" ]; do
+        case "$1" in
+            --owner)
+                expected_owner="$2"
+                shift 2
+                ;;
+
+            --group)
+                expected_group="$2"
+                shift 2
+                ;;
+                
+            --cloud)
+                expected_cloud="$2"
+                shift 2
+                ;;
+
+            --state)
+                expected_state="$2"
+                shift 2
+                ;;
+
+            --parent|--server)
+                expected_parent="$2"
+                shift 2
+                ;;
+
+            --prot)
+                expected_prot="$2"
+                shift 2
+                ;;
+
+            --path)
+                expected_path="$2"
+                shift 2
+                ;;
+
+            --acl)
+                expected_acl="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    container_name="$1"
 
     #
     # Checking the container IP.
@@ -434,8 +499,8 @@ function check_container()
         s9s container --list --long --batch "$container_name" | \
         awk '{print $4}')
 
-    if [ "$owner" != "$USER" ]; then
-        failure "The owner is '$owner', should be '$USER'"
+    if [ "$owner" != "$expected_owner" ]; then
+        failure "The owner is '$owner', should be '$expected_owner'"
     else
         success "  o The owner of the container is '$owner', ok"
     fi
@@ -446,17 +511,54 @@ function check_container()
         success "  o SSH access granted for user '$USER' on $container_ip, ok."
     fi
 
+    group=$(s9s container --list --container-format="%G\n" "$container_name")
+    if [ -n "$expected_group" -a "$group" != "$expected_group" ]; then
+        failure "  o The group should be '$expected_group', not '$group'."
+    else
+        success "  o The group of the container is $group, ok"
+    fi
+
+    path=$(s9s container --list --container-format="%p\n" "$container_name")
+    if [ -n "$expected_path" -a "$path" != "$expected_path" ]; then
+        failure "  o The path should be '$expected_path', not '$path'."
+    else
+        success "  o The path of the container is $path, ok"
+    fi
+    
+    acl=$(s9s container --list --container-format="%l\n" "$container_name")
+    if [ -n "$expected_acl" -a "$acl" != "$expected_acl" ]; then
+        failure "  o The acl should be '$expected_acl', not '$acl'."
+    else
+        success "  o The acl of the container is '$acl', ok"
+    fi
+
     cloud=$(s9s container --list --container-format="%c\n" "$container_name")
-    success "  o The cloud of the container is $cloud, ok"
+    if [ -n "$expected_cloud" -a "$cloud" != "$expected_cloud" ]; then
+        failure "  o The cloud should be '$expected_cloud', not '$cloud'."
+    else
+        success "  o The cloud of the container is $cloud, ok"
+    fi
 
     state=$(s9s container --list --container-format="%S\n" "$container_name")
-    success "  o The state of the container is $state, ok"
+    if [ -n "$expected_state" -a "$state" != "$expected_state" ]; then
+        failure "  o The state should be '$expected_state', not '$state'."
+    else
+        success "  o The state of the container is $state, ok"
+    fi
 
     parent=$(s9s container --list --container-format="%P\n" "$container_name")
-    success "  o The parent of the container is $parent, ok"
+    if [ -n "$expected_parent" -a "$parent" != "$expected_parent" ]; then
+        failure "  o The parent should be '$expected_parent', not '$parent'."
+    else
+        success "  o The parent of the container is $parent, ok"
+    fi
 
     prot=$(s9s container --list --container-format="%T\n" "$container_name")
-    success "  o The type of the container is $prot, ok"
+    if [ -n "$expected_prot" -a "$prot" != "$expected_prot" ]; then
+        failure "  o The prot should be '$expected_prot', not '$prot'."
+    else
+        success "  o The prot of the container is $prot, ok"
+    fi
 }
 
 #
@@ -1770,8 +1872,8 @@ function check_container_server()
         return 1
     fi
 
-    mys9s server --list --long $container_server
-    mys9s server --stat        $container_server
+    #mys9s server --list --long $container_server
+    #mys9s server --stat        $container_server
 
     #
     # Checking the class is very important.
@@ -1935,7 +2037,7 @@ function check_container_server()
     #
     # Checking the regions.
     #
-    mys9s server --list-regions $cloud_option
+    #mys9s server --list-regions $cloud_option
 
     n_names_found=0
     IFS=$'\n'
@@ -1966,7 +2068,7 @@ function check_container_server()
     #
     # Checking the templates.
     #
-    mys9s server --list-templates --long $cloud_option
+    #mys9s server --list-templates --long $cloud_option
 
     n_names_found=0
     IFS=$'\n'
@@ -2079,9 +2181,25 @@ function clean_up_after_test()
         rm -f "$container_list_file"
     fi
 
-    echo "Removing cmon-cloud if installed."
-    sudo /etc/init.d/cmon-cloud stop
-    sudo apt -y --force-yes remove clustercontrol-cloud
+    #
+    # Uninstalling cmon-cloud.
+    #
+    if [ -f "/etc/init.d/cmon-cloud" ]; then
+        echo "Removing cmon-cloud if installed."
+
+        echo "# sudo /etc/init.d/cmon-cloud stop"
+        sudo /etc/init.d/cmon-cloud stop
+
+        echo "# killall cmon-cloud"
+        killall cmon-cloud
+
+        echo "# ps aux | grep cmon-cloud"
+        ps aux | grep cmon-cloud
+    
+        echo "# sudo apt -y --force-yes remove clustercontrol-cloud"
+        sudo apt -y --force-yes remove clustercontrol-cloud
+    fi
+
 
     echo "Exiting test script now."
     return 0

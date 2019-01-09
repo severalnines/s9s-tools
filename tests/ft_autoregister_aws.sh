@@ -154,6 +154,7 @@ function installCmonCloud()
         sudo apt -y update
     fi
 
+    echo "# sudo apt -y --force-yes install clustercontrol-cloud"
     sudo apt -y --force-yes install clustercontrol-cloud
     if [ $? -ne 0 ]; then
         failure "Failed to install 'clustercontrol-cloud'"
@@ -165,16 +166,50 @@ function installCmonCloud()
         return 1
     fi
 
+    #
+    #
+    #
     print_title "Starting cmon-cloud"
+    echo "# sudo /etc/init.d/cmon-cloud start"
     sudo /etc/init.d/cmon-cloud start
+
     #sleep 5
+    echo "# sudo /etc/init.d/cmon-cloud status"
     sudo /etc/init.d/cmon-cloud status
+
+    status_string=$(sudo /etc/init.d/cmon-cloud status)
+    if [ "$status_string" == "cmon-cloud is not running." ]; then
+        echo "The cmon-cloud says did not start?"
+    fi
+
+    echo "ps axu | grep cmon-cloud"
+    ps axu | grep cmon-cloud
+
 }
 
 function removeCmonCloud()
 {
     print_title "Removing cmon-cloud"
+
+    echo "# sudo /etc/init.d/cmon-cloud stop"
     sudo /etc/init.d/cmon-cloud stop
+    
+    echo "# sudo /etc/init.d/cmon-cloud status"
+    sudo /etc/init.d/cmon-cloud status
+
+    echo "# ps aux | grep cmon-cloud"
+    ps aux | grep cmon-cloud
+    
+    echo "# killall cmon-cloud"
+    killall cmon-cloud
+    
+    echo "# killall -9 cmon-cloud"
+    killall -9 cmon-cloud
+    
+    echo "# ps aux | grep cmon-cloud"
+    ps aux | grep cmon-cloud
+
+    echo "# sudo apt -y --force-yes remove clustercontrol-cloud"
     sudo apt -y --force-yes remove clustercontrol-cloud
 }
 
@@ -185,10 +220,18 @@ function removeCmonCloud()
 function createContainer()
 {
     local owner
-    local container_name="ft_autoregiszer_aws$$"
+    local container_name="ft_autoregister_aws_$$"
     local template
+    local retCode
 
     print_title "Creating Container"
+    cat <<EOF
+  This test will create a container before any container server is created or
+registered manually. The controller has an installed and started cmon-cloud 
+that should be automatically registered and so the creation of the container
+should be successful.
+
+EOF
 
     #
     # Creating a container.
@@ -199,15 +242,15 @@ function createContainer()
         --log \
         "$container_name"
    
-    #for i in 1 2 3 4; do
-    #    mys9s server    --list --long
-    #    sleep 15
-    #done
+    retCode=$?
+    if [ "$retCode" -ne 0 ]; then
+        mys9s server    --list --long
+        mys9s server    --stat
+    fi
 
     #check_exit_code $?
-    
-    mys9s container --list --long
-    mys9s server    --list --long
+    #mys9s container --list --long
+    #mys9s server    --list --long
 
     #
     # Checking the container and now we should already have an auto-registered
@@ -215,7 +258,15 @@ function createContainer()
     #
     CONTAINER_IP=$(get_container_ip "$container_name")
 
-    check_container "$container_name"
+    check_container \
+        --owner        "$USER"      \
+        --cloud        "aws"        \
+        --state        "RUNNING"    \
+        --server       "localhost"  \
+        --prot         "cmon-cloud" \
+        --group        "testgroup"  \
+        --acl          "rwxrw---- " \
+        "$container_name"
 
     check_container_server \
         --class        CmonCloudServer \

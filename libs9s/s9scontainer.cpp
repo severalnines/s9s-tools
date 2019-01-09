@@ -198,6 +198,7 @@ S9sContainer::toString(
         const bool       syntaxHighlight,
         const S9sString &formatString) const
 {
+    S9sFormatter   formatter;    
     S9sString      retval;
     S9sString      tmp, value;
     char           c;
@@ -327,6 +328,23 @@ S9sContainer::toString(
                     retval += tmp;
                     break;
 
+                case 'G':
+                    // The name of the group owner.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat),
+                            STR(groupOwnerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorEnd();
+
+                    break;
+
                 case 'I':
                     // The ID of the node.
                     partFormat += 's';
@@ -338,6 +356,13 @@ S9sContainer::toString(
                     // The Image.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(image("-")));
+                    retval += tmp;
+                    break;
+                
+                case 'l':
+                    // 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(aclShortString()));
                     retval += tmp;
                     break;
 
@@ -377,6 +402,21 @@ S9sContainer::toString(
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(parentServerName()));
                     retval += tmp;
+                    break;
+
+                case 'p':
+                    // The CDT path 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cdtPath()));
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorEnd();
+
                     break;
                 
                 case 'R':
