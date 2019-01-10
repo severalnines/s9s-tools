@@ -246,7 +246,13 @@ function testTouch()
 
 function testUser()
 {
-    print_title "Creating and Renaming a User"
+    print_title "Creating a User"
+    cat <<EOF
+  In this test we create a new user that we can rename with its group to test
+the effects of renaming users and groups.
+
+EOF
+
     mys9s user \
         --create \
         --group="tos" \
@@ -285,10 +291,16 @@ function testUser()
         "/home/kirk"
    
     #
-    #
+    # Renaming a group should have immediate effect all over the filesystem, the
+    # group owner of the files should follow the change.
     #
     print_title "Renaming a Group"
-    
+    cat <<EOF
+  Renaming a user group should have immediate effect in the whole filesystem.
+The group owner of the CDT entries should follow the change.
+
+EOF
+
     mys9s tree --move /groups/tos TOS
     check_exit_code_no_job $?    
     
@@ -305,9 +317,16 @@ function testUser()
         "/home/kirk"
 
     #
-    #
+    # Renaming a user should have immediate effect on the file onwers.
     #
     print_title "Renaming a User"
+    cat <<EOF
+  Renaming a user should have immediate effect on the file onwers. This test
+will rename a user and check if the CDT entries owned by the given user are 
+indeed showing the new name.
+
+EOF
+
     mys9s tree --move /kirk Kirk
 
     check_exit_code_no_job $?    
