@@ -244,6 +244,48 @@ function testTouch()
     mys9s tree --tree --all
 }
 
+function testUser()
+{
+    print_title "Creating and Renaming a User"
+    mys9s user \
+        --create \
+        --group="tos" \
+        --title="Captain" \
+        --generate-key \
+        --create-group \
+        --first-name="James" \
+        --last-name="Kirk"   \
+        --email-address="kirk@enterprise.com" \
+        --new-password="secret" \
+        --cmon-user=system \
+        --password=secret \
+        "kirk"
+
+    check_exit_code_no_job $?    
+
+    check_user \
+        --user-name     "kirk" \
+        --group         "tos" \
+        --email-address "kirk@enterprise.com" \
+        --password      "secret" \
+        --check-key
+
+    mys9s tree --mkdir "/home/kirk"
+              
+    mys9s tree \
+        --chown \
+        --owner=kirk:tos \
+        --recursive \
+        /home/kirk
+    
+    check_entry \
+        --user         "kirk"       \
+        --group        "tos"        \
+        --acl          "drwxrwxrwx" \
+        "/home/kirk"
+    
+}
+
 #
 # Running the requested tests.
 #
@@ -259,6 +301,7 @@ else
     runFunctionalTest testMkdir1
     runFunctionalTest testMkdir2
     runFunctionalTest testTouch
+    runFunctionalTest testUser
 fi
 
 endTests

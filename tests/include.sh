@@ -1814,7 +1814,7 @@ function check_user()
     fi
 
     #
-    #
+    # Checking the email address if we are requested to do so.
     #
     if [ -n "$email" ]; then
         tmp=$(get_user_email "$user_name")
