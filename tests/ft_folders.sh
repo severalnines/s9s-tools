@@ -283,7 +283,26 @@ function testUser()
         --group        "tos"        \
         --acl          "drwxrwxrwx" \
         "/home/kirk"
+   
+    #
+    #
+    #
+    print_title "Renaming a Group"
     
+    mys9s tree --move /groups/tos TOS
+    check_exit_code_no_job $?    
+    
+    check_entry \
+        --user         "system"     \
+        --group        "admins"     \
+        --acl          "grwxrw----" \
+        "/groups/TOS"
+
+    check_entry \
+        --user         "kirk"       \
+        --group        "TOS"        \
+        --acl          "drwxrwxrwx" \
+        "/home/kirk"
 }
 
 #
