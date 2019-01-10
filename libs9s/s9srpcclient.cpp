@@ -32,6 +32,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include <iostream> 
 
 //#define DEBUG
 //#define WARNING
@@ -5227,6 +5228,36 @@ S9sRpcClient::setContent(
     
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::setContent()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      fullPath;
+    S9sString      content;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --save option requires one command line argument: "
+                "the full path of the CDT entry to be saved.");
+
+        return false;
+    } else {
+        fullPath = options->extraArgument(0u);
+
+    	std::string s; 
+    	while(std::getline(std::cin, s))
+        {
+		    content += s;
+            content += "\n";
+    	}
+    }
+    
+
+    return setContent(fullPath, content);
+}
+
 
 bool
 S9sRpcClient::deleteFromTree()

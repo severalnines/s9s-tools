@@ -403,6 +403,11 @@ S9sBusinessLogic::execute()
             success = client.mkdir();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isSaveRequested())
+        {
+            success = client.setContent();
+            client.printMessages("Saved.", success);
+            client.setExitStatus();
         } else if (options->isRmdirRequested())
         {
             success = client.rmdir();

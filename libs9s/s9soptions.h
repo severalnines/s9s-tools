@@ -356,6 +356,8 @@ class S9sOptions
         bool isMkdirRequested() const;
         bool isRmdirRequested() const;
         bool isMkfileRequested() const;
+        bool isSaveRequested() const;
+
         S9sString acl() const;
 
         bool hasOwner() const;

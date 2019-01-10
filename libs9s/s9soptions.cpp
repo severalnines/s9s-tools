@@ -216,6 +216,7 @@ enum S9sOptionType
     OptionMkdir,
     OptionRmdir,
     OptionMkfile,
+    OptionSave,
     OptionAcl,
     OptionOwner,
     OptionListNics,
@@ -3023,6 +3024,16 @@ S9sOptions::isMkdirRequested() const
 }
 
 /**
+ * \returns True if the --save command line option is provided.
+ */
+bool
+S9sOptions::isSaveRequested() const
+{
+    return getBool("save");
+}
+
+
+/**
  * \returns True if the --touch command line option is provided.
  */
 bool
@@ -4966,6 +4977,7 @@ S9sOptions::printHelpTree()
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
 "  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
+"  --save                     Save a file in the CDT with content.\n"
 "  --touch                    Create a file in the Cmon Directory Tree.\n"
 "  --tree                     Print the object tree.\n"
 "\n"
@@ -10920,6 +10932,7 @@ S9sOptions::readOptionsTree(
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
+        { "save",             no_argument,       0, OptionSave            },
         { "stat",             no_argument,       0, OptionStat            },
         { "touch",            no_argument,       0, OptionMkfile          }, 
         { "tree",             no_argument,       0, OptionTree            },
@@ -11087,6 +11100,11 @@ S9sOptions::readOptionsTree(
             case OptionRmdir:
                 // --rmdir
                 m_options["rmdir"] = true;
+                break;
+            
+            case OptionSave:
+                // --save
+                m_options["save"] = true;
                 break;
 
             case OptionGetAcl:
@@ -11443,6 +11461,9 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isRmdirRequested())
+        countOptions++;
+    
+    if (isSaveRequested())
         countOptions++;
  
     if (isRemoveAclRequested())

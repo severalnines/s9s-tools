@@ -160,6 +160,11 @@ function testMkdir2()
     local retcode
 
     print_title "Creating Folders with Failures"
+    cat <<EOF
+  In this test we try to create a that already exists. Creating a folder that
+already exists should fail.
+
+EOF
 
     mys9s tree --mkdir "/$folder_name"
     check_exit_code_no_job $?
@@ -196,6 +201,13 @@ function testTouch()
     local retcode 
 
     print_title "Creating a File"
+    cat <<EOF
+  In this test we create a file and check its properties. Then we rename a file
+and check if the file name has been changed. Then we try if the creating of the
+file failes if the path is invalid or points to a folder where the user has no
+write access.
+
+EOF
 
     mys9s tree --touch "$path"
     check_exit_code_no_job $?
@@ -207,6 +219,10 @@ function testTouch()
         --size         "0"          \
         "$path"
 
+    echo -e "File content...\nSecond line." | s9s tree --save "$path"
+    mys9s tree --list --long "$path"
+    mys9s tree --cat "$path" 
+
     mys9s tree --move "$path" "$new_name"
     check_exit_code_no_job $?
     
@@ -214,7 +230,7 @@ function testTouch()
         --user         "$USER"      \
         --group        "testgroup"  \
         --acl          "-rwxrwxrwx" \
-        --size         "0"          \
+        --size         "29"         \
         "$new_path"
 
     #
