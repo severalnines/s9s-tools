@@ -303,6 +303,36 @@ function testUser()
         --group        "TOS"        \
         --acl          "drwxrwxrwx" \
         "/home/kirk"
+
+    #
+    #
+    #
+    print_title "Renaming a User"
+    mys9s tree --move /kirk Kirk
+
+    check_exit_code_no_job $?    
+    mv /home/pipas/.s9s/kirk.key /home/pipas/.s9s/Kirk.key
+    mv /home/pipas/.s9s/kirk.pub /home/pipas/.s9s/Kirk.pub
+
+    check_user \
+        --user-name     "Kirk" \
+        --group         "TOS" \
+        --email-address "kirk@enterprise.com" \
+        --password      "secret" \
+        --check-key
+
+    check_entry \
+        --user         "Kirk"       \
+        --group        "admins"     \
+        --acl          "urwxr--r--" \
+        "/Kirk"
+
+    check_entry \
+        --user         "Kirk"       \
+        --group        "TOS"        \
+        --acl          "drwxrwxrwx" \
+        "/home/kirk"
+
 }
 
 #

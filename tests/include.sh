@@ -2164,6 +2164,7 @@ function check_entry()
     acl=$(echo $line | awk '{print $1}')
 
 
+    echo "Checking CDT entry $full_path:"
     if [ "$path" != "$full_path" ]; then
         failure "Entry '$full_path' was not found."
         return 1
