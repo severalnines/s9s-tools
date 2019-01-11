@@ -1,4 +1,4 @@
-.TH S9S-TREE 1 "October 4, 2017"
+.TH S9S-TREE 1 "January 11, 2019"
 
 .SH NAME
 s9s-tree \- Command line client for the Severalnines Clustercontrol server.
@@ -295,47 +295,4 @@ command line option there.
 .BI \-\^\-refresh
 If this command line option is provided the controller will collect the data, 
 refresh the information before sending it back. 
-
-
-
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-Print the Cmon Directory tree in its tree format.
-
-.nf 
-# \fBs9s tree --tree\fR
-.fi
-
-Print the Access Control List for one particular object on the tree:
-
-.nf
-# \fBs9s tree \\
-    --get-acl \\
-    /servers/storage01\fR
-.fi
-
-Adding a new ACL entry to the ACL of the specified object. If the ACL entry for
-the same type already added, the permissions will be overwritten.
-
-.nf
-# \fBs9s tree \\
-    --add-acl \\
-    --acl="user:pipas:rw-" \\
-    /servers/storage01\fR
-.fi
-
-The following example shows how to change the owner and group for an object in
-the tree:
-
-.nf
-# \fBs9s tree \\
-    --chown \\
-    --owner=admin:admins \\
-    /galera_001/databases/database01\fR
-.fi
-
 
