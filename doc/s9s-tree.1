@@ -47,6 +47,13 @@ s9s tree \\
 This option can be used to print the content of a CDT file entry similar way the
 cat(1) standard utility is used to print normal files.
 
+.B EXAMPLE
+.nf
+s9s tree \\
+    --cat \\
+    /home/pipas/test.text
+.fi
+
 .TP
 .B \-\^\-chown 
 Change the ownership of an object. The new owner (and optionally the group
@@ -80,13 +87,43 @@ s9s tree \\
 .B \-\^\-list
 Print the Cmon Directory Tree in list format.
 
+.B EXAMPLE
+.nf
+s9s tree \\
+    --list \\
+    --long \\
+    --recursive \\
+    --all \\
+    --full-path \\
+    /home
+.fi
+
 .TP
 .B \-\^\-mkdir
 Create a new folder in the tree.
 
+.B EXAMPLE
+.nf
+s9s tree \\
+    --mkdir \\
+    /home/kirk
+.fi
+
 .TP 
 .B \-\^\-move 
-Move an object to a new location in the tree.
+Move an object to a new location in the tree or rename the entry. If the target
+contains the "/" character it is assumed to be a directory and the source entry
+will be moved to that directory with its name unchanged. If the target contains
+no "/" it is assumed to be a new name and the source entry will be renamed while
+kept in the same directory.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --move \\
+    /groups/tos \\
+    TOS
+.fi
 
 .TP
 .B \-\^\-remove\-acl
@@ -104,9 +141,45 @@ s9s tree \\
 .B \-\^\-rmdir
 Remove an empty folder from the tree.
 
+.B EXAMPLE
+.nf
+s9s tree \\
+    --rmdir \\
+    /home/pipas/
+.fi
+
+.TP
+.B \-\^\-save
+Saves data (text) into an existing CDT entry that has the proper type (the type
+is file).
+
+.B EXAMPLE
+.nf
+echo -e "File content...\\nSecond line." | \\
+s9s tree --save "/home/pipas/test.txt"
+.fi
+
+.TP
+.B \-\^\-touch
+Creates a CDT entry that is a file.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --touch \\
+    /home/pipas/test.txt
+.fi
+
 .TP
 .B \-\^\-tree
 Print the tree in its original tree format.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --tree \\
+    --all
+.fi
 
 .\"
 .\" The generic options that we have in all the modes.
