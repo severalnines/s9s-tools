@@ -245,7 +245,7 @@ EOF
     fi
 
     #check_exit_code $?
-    #mys9s container --list --long
+    mys9s container --list --long
     #mys9s server    --list --long
 
     #
