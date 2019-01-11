@@ -1099,20 +1099,25 @@ S9sRpcReply::printProcessListTop(
 }
 
 /**
- * Prints the job log in its short format. In this format only the messages are
- * printed.
+ * Prints the job log in its short format. 
  */
 void
-S9sRpcReply::printJobLogBrief()
+S9sRpcReply::printJobLogBrief(
+        const char *format)
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sString       formatString = options->briefJobLogFormat();
+    S9sString       formatString;
     bool            isDebug = options->isDebug();
     S9sVariantList  theList = operator[]("messages").toVariantList();
 
-    if (options->hasLogFormat())
+    if (format != NULL)
+        formatString = format;
+    else if (options->hasLogFormat())
         formatString = options->logFormat();
+    else 
+        formatString = options->briefJobLogFormat();
+
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {

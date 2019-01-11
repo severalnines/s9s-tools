@@ -39,7 +39,8 @@ S9sCommander::S9sCommander(
     m_communicating(false),
     m_reloadRequested(false),
     m_dialog(0),
-    m_errorDialog(0)
+    m_errorDialog(0),
+    m_waitingForKeyPress(false)
 {
     m_leftPanel  = &m_leftBrowser;
     m_rightPanel = &m_rightInfo;
@@ -486,7 +487,9 @@ S9sCommander::updateObject(
 bool 
 S9sCommander::refreshScreen()
 {
-    //S9sMutexLocker   locker(m_mutex);    
+    if (m_waitingForKeyPress)
+        return true;
+    
     startScreen();
     printHeader();
 
@@ -555,6 +558,13 @@ S9sCommander::processKey(
     s9s_log("S9sCommander::processKey():");
     s9s_log("*** key: %0x", key);
 
+    if (m_waitingForKeyPress)
+    {
+        setConioTerminalMode(true, true);
+        m_waitingForKeyPress = false;
+        return;
+    }
+    
     if (m_errorDialog != NULL)
     {
         m_errorDialog->processKey(key);
@@ -1033,11 +1043,13 @@ S9sCommander::entryActivated(
         success = reply.isOk();
 
         s9s_log("  success: %s\n", success ? "true" : "true");
-        ::printf("  success: %s\n", success ? "true" : "true");
+        
         waitForJobWithLog(0, reply.jobId(), m_client);
-        sleep(10);
-
-        setConioTerminalMode(true, true);
+        //sleep(10);
+        //setConioTerminalMode(true, true);
+        m_waitingForKeyPress = true;
+        ::printf("\n*** Press any key to continue. ***\n");
+        fflush(stdout);
     }
 }
 
@@ -1121,7 +1133,7 @@ S9sCommander::waitForJobWithLog(
          */
         nEntries = reply["messages"].toVariantList().size();
         if (nEntries > 0)
-            reply.printJobLog();
+            reply.printJobLogBrief("");
 
         nLogsPrinted += nEntries;
 

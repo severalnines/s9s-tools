@@ -170,17 +170,12 @@ function installCmonCloud()
     #
     #
     print_title "Starting cmon-cloud"
-    echo "# sudo /etc/init.d/cmon-cloud start"
-    sudo /etc/init.d/cmon-cloud start
+    echo "# sudo systemctl start cmon-cloud"
+    sudo systemctl start cmon-cloud
 
     #sleep 5
-    echo "# sudo /etc/init.d/cmon-cloud status"
-    sudo /etc/init.d/cmon-cloud status
-
-    status_string=$(sudo /etc/init.d/cmon-cloud status)
-    if [ "$status_string" == "cmon-cloud is not running." ]; then
-        echo "The cmon-cloud says did not start?"
-    fi
+    echo "# sudo systemctl status cmon-cloud"
+    sudo systemctl status cmon-cloud
 
     echo "# ps axu | grep cmon-cloud"
     ps axu | grep cmon-cloud
@@ -191,20 +186,21 @@ function removeCmonCloud()
 {
     print_title "Removing cmon-cloud"
 
-    echo "# sudo /etc/init.d/cmon-cloud stop"
-    sudo /etc/init.d/cmon-cloud stop
+    echo "# sudo systemctl stop cmon-cloud"
+    sudo systemctl stop cmon-cloud
+    sleep 5
     
-    echo "# sudo /etc/init.d/cmon-cloud status"
-    sudo /etc/init.d/cmon-cloud status
+    echo "# sudo systemctl status cmon-cloud"
+    sudo systemctl status cmon-cloud
 
     echo "# ps aux | grep cmon-cloud"
     ps aux | grep cmon-cloud
     
-    echo "# killall cmon-cloud"
-    killall cmon-cloud
+    #echo "# killall cmon-cloud"
+    #killall cmon-cloud
     
-    echo "# killall -9 cmon-cloud"
-    killall -9 cmon-cloud
+    #echo "# killall -9 cmon-cloud"
+    #killall -9 cmon-cloud
     
     echo "# ps aux | grep cmon-cloud"
     ps aux | grep cmon-cloud

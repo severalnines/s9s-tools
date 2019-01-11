@@ -2279,16 +2279,26 @@ function clean_up_after_test()
     #
     if [ -f "/etc/init.d/cmon-cloud" ]; then
         echo "Removing cmon-cloud if installed."
-
-        echo "# sudo /etc/init.d/cmon-cloud stop"
-        sudo /etc/init.d/cmon-cloud stop
-
-        echo "# killall cmon-cloud"
-        killall cmon-cloud
+    
+        echo "# sudo systemctl stop cmon-cloud"
+        sudo systemctl stop cmon-cloud
+        sleep 5
+    
+        echo "# sudo systemctl status cmon-cloud"
+        sudo systemctl status cmon-cloud
 
         echo "# ps aux | grep cmon-cloud"
         ps aux | grep cmon-cloud
     
+        #echo "# killall cmon-cloud"
+        #killall cmon-cloud
+    
+        #echo "# killall -9 cmon-cloud"
+        #killall -9 cmon-cloud
+    
+        echo "# ps aux | grep cmon-cloud"
+        ps aux | grep cmon-cloud
+
         echo "# sudo apt -y --force-yes remove clustercontrol-cloud"
         sudo apt -y --force-yes remove clustercontrol-cloud
     fi

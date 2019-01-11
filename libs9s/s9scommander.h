@@ -99,5 +99,7 @@ class S9sCommander :
         S9sDialog       *m_dialog;
         S9sDialog       *m_errorDialog;
         S9sEditor        m_editor;
+
+        bool             m_waitingForKeyPress;
 };
 
