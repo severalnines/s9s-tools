@@ -93,7 +93,7 @@ class S9sDisplay :
         
         char rotatingCharacter() const;
 
-    private:
+    protected:
         void setConioTerminalMode(
                 bool interactive,
                 bool rawTerminal);
@@ -120,5 +120,6 @@ class S9sDisplay :
         int                          m_lastX;
         int                          m_lastY;
         bool                         m_isStopped;
-
 };
+
+void reset_terminal_mode();

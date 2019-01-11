@@ -23,6 +23,7 @@
 #include "S9sDialog"
 #include "S9sEntryDialog"
 #include "S9sQuestionDialog"
+#include "S9sOptions"
 
 #include <unistd.h>
 
@@ -826,13 +827,34 @@ S9sCommander::processKey(
     }
 
     if (m_leftBrowser.hasFocus() && m_leftBrowser.isVisible())
+    {
         m_leftBrowser.processKey(key); 
-    else if (m_rightBrowser.hasFocus() && m_rightBrowser.isVisible())
+
+        if (!m_leftBrowser.activatedNodeFullPath().empty())
+        {
+            S9sString path = m_leftBrowser.activatedNodeFullPath();
+
+            entryActivated(path, m_leftBrowser.activatedNode());
+            m_leftBrowser.resetActivatedStatus();
+        }
+    } else if (m_rightBrowser.hasFocus() && m_rightBrowser.isVisible())
+    {
         m_rightBrowser.processKey(key);
-    else if (m_leftInfo.hasFocus() && m_leftInfo.isVisible())
+        
+        if (!m_rightBrowser.activatedNodeFullPath().empty())
+        {
+            S9sString path = m_rightBrowser.activatedNodeFullPath();
+
+            entryActivated(path, m_leftBrowser.activatedNode());
+            m_rightBrowser.resetActivatedStatus();
+        }
+    } else if (m_leftInfo.hasFocus() && m_leftInfo.isVisible())
+    {
         m_leftInfo.processKey(key); 
-    else if (m_rightInfo.hasFocus() && m_rightInfo.isVisible())
+    } else if (m_rightInfo.hasFocus() && m_rightInfo.isVisible())
+    {
         m_rightInfo.processKey(key);
+    }
 }
 
 /**
@@ -986,5 +1008,139 @@ S9sCommander::showErrorDialog(
     m_errorDialog->setMessage(errorString);
     m_errorDialog->setUserData("type", "errorDialog");
     m_errorDialog->setSize(60, 6);
+}
+
+        
+void
+S9sCommander::entryActivated(
+        const S9sString   &path,
+        const S9sTreeNode &node)
+{
+    s9s_log("Activated '%s'.", STR(path));
+    s9s_log("     isFile: %s", node.isFile() ? "true" : "false");
+    s9s_log(" executable: %s", node.isExecutable() ? "true" : "false");
+
+    if (node.isFile() && node.isExecutable())
+    {
+        S9sMutexLocker   locker(m_networkMutex);
+        S9sRpcReply      reply;
+        bool             success;
+
+        reset_terminal_mode();
+
+        m_client.executeCdtEntry(path);
+        reply   = m_client.reply();
+        success = reply.isOk();
+
+        s9s_log("  success: %s\n", success ? "true" : "true");
+        ::printf("  success: %s\n", success ? "true" : "true");
+        waitForJobWithLog(0, reply.jobId(), m_client);
+        sleep(10);
+
+        setConioTerminalMode(true, true);
+    }
+}
+
+void 
+S9sCommander::waitForJobWithLog(
+        const int     clusterId,
+        const int     jobId, 
+        S9sRpcClient &client)
+{
+    S9sOptions    *options         = S9sOptions::instance();
+    S9sVariantMap  job;
+    S9sRpcReply    reply;
+    bool           success, finished;
+    int            nLogsPrinted = 0;
+    int            nEntries;
+    int            nFailures = 0;
+    int            nAuthentications = 0;
+
+    for (;;)
+    {
+        /*
+         * Requested at most 300 log messages. If we have more we will print
+         * them later in the next round.
+         */
+        success = client.getJobLog(jobId, 300, nLogsPrinted);
+        if (success)
+        {
+            reply     = client.reply();
+            success   = reply.isOk();
+
+            if (reply.isAuthRequired())
+            {
+                if (nAuthentications > 3)
+                    break;
+
+                success = client.authenticate();
+                ++nAuthentications;
+            } else {
+                nAuthentications = 0;
+            }
+        }
+
+        /*
+         * If we have errors we count them, if we have more errors than we care
+         * to abide we exit.
+         */
+        if (success)
+        { 
+            nFailures = 0;
+        } else {
+            bool messagePrinted = false;
+
+            if (!reply.errorString().empty())
+            {
+                PRINT_ERROR("%s", STR(reply.errorString()));
+                messagePrinted = true;
+            }
+
+            if (!client.errorString().empty())
+            {
+                PRINT_ERROR("%s", STR(client.errorString()));
+                messagePrinted = true;
+            }
+
+            if (!messagePrinted)
+            {
+                PRINT_ERROR("Error while getting job log.");
+            }
+
+
+            //printf("\n\n%s\n", STR(reply.toString()));
+            ++nFailures;
+            if (nFailures > 3)
+                break;
+
+            continue;
+        }
+
+        /*
+         * Printing the log messages.
+         */
+        nEntries = reply["messages"].toVariantList().size();
+        if (nEntries > 0)
+            reply.printJobLog();
+
+        nLogsPrinted += nEntries;
+
+        job = reply["job"].toVariantMap();
+        if (job["status"] == "FAILED")
+            options->setExitStatus(S9sOptions::JobFailed);
+
+        finished = 
+            job["status"] == "ABORTED"   ||
+            job["status"] == "FINISHED"  ||
+            job["status"] == "FAILED";
+        
+        fflush(stdout);
+        if (finished)
+            break;
+        
+        sleep(1);
+    }
+
+    printf("\n");
 }
 

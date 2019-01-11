@@ -263,6 +263,8 @@ S9sEditor::processKey(
             doInsert = true;
         else if (key == '_' || key == '{' || key == '}')
             doInsert = true;
+        else if (key == '$')
+            doInsert = true;
     }
 
     #if 0

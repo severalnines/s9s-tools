@@ -51,6 +51,15 @@ class S9sCommander :
 
         void updateTree();
 
+        void entryActivated(
+                const S9sString   &path,
+                const S9sTreeNode &node);
+
+        void waitForJobWithLog(
+                const int     clusterId,
+                const int     jobId, 
+                S9sRpcClient &client);
+
         bool renameMove(
                 const S9sString sourcePath,
                 const S9sString targetPath);
@@ -60,7 +69,6 @@ class S9sCommander :
         bool deleteEntry(const S9sString fullPath);
         bool saveContent(const S9sString fullPath, const S9sString content);
         bool loadObject(const S9sString &fullPath, S9sVariantMap &object);
-
 
         void updateObject(bool updateRequested);
         void updateObject(const S9sString &path, S9sInfoPanel &target);

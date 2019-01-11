@@ -1911,6 +1911,9 @@ S9sRpcClient::createSuccessJob()
     return executeRequest(uri, request);
 }
 
+/**
+ * \param shellCommand The line(s) to execute.
+ */
 bool
 S9sRpcClient::executeSystemCommand(
         const S9sVariant shellCommand)
@@ -1955,6 +1958,40 @@ S9sRpcClient::executeSystemCommand(
     
     return executeRequest(uri, request);
 }
+
+/**
+ * \param cdtPath The full path of the CDT entry to execute.
+ */
+bool
+S9sRpcClient::executeCdtEntry(
+        const S9sString &cdtPath)
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList hosts       = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sVariantMap  jobData = composeJobData();    
+    S9sString      uri = "/v2/jobs/";
+
+    // JobData
+    jobData["path"]          = cdtPath;
+    
+    // JobSpec
+    jobSpec["command"]       = "execute";
+    jobSpec["job_data"]      = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]             = "Execute CDT Entry";
+    job["job_spec"]          = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]     = "createJobInstance";
+    request["job"]           = job;
+    
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::executeSystemCommand(

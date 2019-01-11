@@ -62,6 +62,9 @@ S9sBrowser::path() const
     return m_path;
 }
 
+/**
+ * \returns The node that is representing the entry highlighted on the screen.
+ */
 S9sTreeNode
 S9sBrowser::selectedNode() const
 {
@@ -77,6 +80,25 @@ S9sBrowser::selectedNodeFullPath() const
         return retval;
 
     return S9sFile::buildPath(m_path, m_name);
+}
+
+S9sTreeNode
+S9sBrowser::activatedNode() const
+{
+    return m_activatedNode;
+}
+
+S9sString
+S9sBrowser::activatedNodeFullPath() const
+{
+    return m_acivatedPath;
+}
+
+void
+S9sBrowser::resetActivatedStatus()
+{
+    m_acivatedPath  = "";
+    m_activatedNode = S9sTreeNode();
 }
 
 void
@@ -105,6 +127,8 @@ S9sBrowser::processKey(
     if (!hasFocus())
         return;
 
+    resetActivatedStatus();
+    
     switch (key)
     {
         case S9S_KEY_ENTER:
@@ -120,11 +144,7 @@ S9sBrowser::processKey(
                     parentBasename = S9sFile::basename(m_path);
                     m_path = S9sFile::dirname(m_path);
 
-                    //s9s_log("***         m_path: %s", STR(m_path));
-                    //s9s_log("*** parentBasename: %s", STR(parentBasename));
-
                     m_rootNode.subTree(m_path, m_subTree);
-                    //setSelectionIndex(0);
                     setSelectionIndexByName(parentBasename);
 
                     setNumberOfItems(m_subTree.nChildren());
@@ -138,7 +158,8 @@ S9sBrowser::processKey(
                     setSelectionIndex(0);
                     setNumberOfItems(m_subTree.nChildren());
                 } else {
-                    ::printf("\b");
+                    m_acivatedPath  = selectedNodeFullPath();
+                    m_activatedNode = selectedNode();
                 }
             }
             return;

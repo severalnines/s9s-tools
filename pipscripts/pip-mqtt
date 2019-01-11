@@ -246,6 +246,10 @@ function process_message()
                 sensorActivated --name "PIR06"
                 ;;
 
+            EA080E)
+                sensorActivated --name "PIR10"
+                ;;
+
             7D5503)
                 printVerbose "message : button 1"
                 pip-pdu-control --on tasmota02

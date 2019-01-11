@@ -39,6 +39,11 @@ class S9sBrowser :
 
         S9sTreeNode selectedNode() const;
         S9sString selectedNodeFullPath() const;
+
+        S9sTreeNode activatedNode() const;
+        S9sString activatedNodeFullPath() const;
+        void resetActivatedStatus();
+
         void setSelectionIndexByName(const S9sString &name);
 
     private:
@@ -49,11 +54,17 @@ class S9sBrowser :
 
     private:
         S9sTreeNode                  m_rootNode;
+
         S9sTreeNode                  m_subTree;
+        /** Valid if the enter key is pressed on the current item. */
+        S9sString                    m_acivatedPath;
+        /** Valid if the enter key is pressed on the current item. */
+        S9sTreeNode                  m_activatedNode;
         /** The path shown in the list. */
         S9sString                    m_path;
         /** The name of the selected item. */
         S9sString                    m_name;
+        /** In debug mode we show some debug on the screen. */
         bool                         m_isDebug;
         /** Transient value shows the position in the line. */
         int                          m_nChars;
