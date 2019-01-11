@@ -855,7 +855,7 @@ S9sCommander::processKey(
         {
             S9sString path = m_rightBrowser.activatedNodeFullPath();
 
-            entryActivated(path, m_leftBrowser.activatedNode());
+            entryActivated(path, m_rightBrowser.activatedNode());
             m_rightBrowser.resetActivatedStatus();
         }
     } else if (m_leftInfo.hasFocus() && m_leftInfo.isVisible())
@@ -1020,7 +1020,13 @@ S9sCommander::showErrorDialog(
     m_errorDialog->setSize(60, 6);
 }
 
-        
+/**
+ * \param path The full CDT of the entry.
+ * \param node The node representing the entry.
+ *
+ * This method is called when a user has pressed the enter key on an entry other
+ * than an entry with child nodes.
+ */
 void
 S9sCommander::entryActivated(
         const S9sString   &path,

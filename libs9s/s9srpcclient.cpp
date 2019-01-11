@@ -1968,11 +1968,14 @@ S9sRpcClient::executeCdtEntry(
 {
     S9sOptions    *options     = S9sOptions::instance();
     S9sVariantList hosts       = options->nodes();
+    S9sString      title;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobSpec;
     S9sVariantMap  jobData = composeJobData();    
     S9sString      uri = "/v2/jobs/";
+
+    title.sprintf("Execute %s", STR(S9sFile::basename(cdtPath)));
 
     // JobData
     jobData["path"]          = cdtPath;
@@ -1982,7 +1985,7 @@ S9sRpcClient::executeCdtEntry(
     jobSpec["job_data"]      = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]             = "Execute CDT Entry";
+    job["title"]             = title;
     job["job_spec"]          = jobSpec;
 
     // The request describing we want to register a job instance.    
