@@ -4980,6 +4980,7 @@ S9sOptions::printHelpTree()
 "  --save                     Save a file in the CDT with content.\n"
 "  --touch                    Create a file in the Cmon Directory Tree.\n"
 "  --tree                     Print the object tree.\n"
+"  --watch                    Opens an interactive UI.\n"
 "\n"
 "  --acl=ACL                  One ACL entry to be added or removed.\n"
 "  --all                      Print also the hidden entries.\n"
