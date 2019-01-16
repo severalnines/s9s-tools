@@ -1,7 +1,11 @@
-for (id = 1; id < 2; ++id)
+for (id = 1; id <= 20; ++id)
 {
     job = CmonJob::getJobInstance(id);
-    print("      id: ", id);
-    //print("job: ", job);
-    print("  status: ", job.status());
+    found = job.isValid();
+    if (!found)
+        continue;
+
+    print(job.id(), " ", job.clusterId(), " ", 
+            job.status(), " ", job.title());
 }
+

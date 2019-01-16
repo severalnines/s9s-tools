@@ -1,0 +1,77 @@
+.TH CIL 3  2019-01-16 CMON IMPERATIVE LANGUAGE
+.SH NAME
+CIL - Cmon Imperative Language
+
+.SS "Introduction"
+The Cmon Imperative Language (CIL) is provided for the users, to implement
+monitoring and maintaining code executed by the Cmon Controller. 
+
+The language is different from JavaScript in some ways. Here is a list of the
+most important differences:
+
+.RS 7
+.TP
+.B *
+Semicolons are mandatory like in C or C++. 
+
+.TP
+.B *
+Not all numbers are handled as double precision floating point values, we
+have integers and even usigned long long integers. We need those to handle
+disk sizes and network traffic measured in bytes.
+
+.TP
+.B *
+There are associative arrays with the data type `Map`.
+
+.TP
+.B *
+The arrays are two dimensional, but they can be used as one dimensional
+arrays (e.g. a[10, 11] and a[10] are also valid).
+
+.TP
+.B *
+We have a `List` type.
+
+.TP
+.B *
+JavaScript uses a period in function names like `JSON.parse(text)`, here we 
+use the C++ notation like `JSON::parse(text)`.
+
+.TP
+.B *
+New variables created on-the-fly in functions are local variables and not
+globals.
+
+.TP
+.B *
+The language implements a C like #include preprocessor directive.
+
+.RE
+
+\"
+\"
+\"
+.SS "CmonJobInstance Related Functions"
+The CmonJobInstance is representing an instantiated CmonJob that is either
+executed in the past, executed in the present or will be executed in the future.
+
+The following functions are related to the CmonJobInstance class.
+
+.TP
+.BR "CmonJobInstance CmonJob::getJobInstance(jobId)"
+Returns a job instance by its ID. The ID is an integer unique for the job
+instance.
+
+.TP
+.BR "Boolean CmonJob::deleteJobInstance(jobId)"
+This function will delete a job instance identified by the job ID. The method
+returns true if everything went well.
+
+.TP
+.BR "String jobInstance.status()"
+The status of the job instance as a string. 
+Possible values are "DEFINED", "DEQUEUED", "RUNNING", "RUNNING2", "RUNNING3",
+"SCHEDULED", "RUNNING_EXT", "ABORTED", "FINISHED", "FAILED".
+
+
