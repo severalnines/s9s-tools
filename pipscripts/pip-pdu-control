@@ -16,6 +16,19 @@ PDU_OPERATION="on"
 source "$MYDIR/utilityfunctions.sh"
 
 #
+# SonOTA: 
+#   source: https://github.com/mirko/SonOTA/
+#     blog: https://support.itead.cc/support/discussions/topics/11000017070/page/10?url_locale=
+# compatibility: https://github.com/mirko/SonOTA/wiki
+#
+# Hack without flash:
+#   https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
+#
+# Sonoff Tasmota commands: 
+#   https://github.com/arendst/Sonoff-Tasmota/wiki/Commands
+#
+
+#
 # Prints the software version and exits.
 #
 function printVersionAndExit()
