@@ -4329,6 +4329,7 @@ S9sRpcClient::removeNode()
 bool
 S9sRpcClient::stopCluster()
 {
+    S9sOptions    *options     = S9sOptions::instance();
     S9sVariantMap  request     = composeRequest();
     S9sVariantMap  job         = composeJob();
     S9sVariantMap  jobData     = composeJobData();
@@ -4341,6 +4342,8 @@ S9sRpcClient::stopCluster()
 
     // The job_data describing the cluster.
     jobData["force"]               = false;
+    if (options && options->hasForceOption())
+        jobData["force"]               = options->forceOption();
     jobData["stop_timeout"]        = 1800;
     jobData["maintenance_minutes"] = 0;
     jobData["reason"]              = "Cluster is stopped.";
