@@ -216,14 +216,21 @@ function testCreateCluster()
 
 function testScript01()
 {
-    local script=imperative_001.js
+    local script="scripts/test-scripts/imperative_001.js"
     local printout
     local name
     local value
     local n_values=0
-
+ 
     print_title "Running a Script"
-    mys9s script --execute --cluster-id=1 imperative_001.js
+    cat <<EOF
+  This test will run a local file as CJS script on an existing cluster without a
+job (immediate, short run). Then the test checks if the scripts output is as it
+is expected.
+
+EOF
+
+    mys9s script --execute --cluster-id=1 "$script"
 
     for printout in $(s9s script --execute --cluster-id=1 $script); do
         name=$(echo "$printout" | awk -F: '{print $1}')
