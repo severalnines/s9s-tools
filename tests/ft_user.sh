@@ -221,7 +221,7 @@ function testStat()
     fi
     
     if ! echo "$lines" | grep -q "Owner: pipas/admins"; then
-        failure "Owner is not right in --stat."
+        failure "Owner is not 'pipas/admin' in --stat."
         return 1
     fi
 }

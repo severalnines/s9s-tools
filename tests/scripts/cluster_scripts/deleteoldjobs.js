@@ -1,38 +1,40 @@
-var nDeletedJobs = 0;
-var limit        = 1;
-
-var now = CmonDateTime::currentDateTime();
-
-for (id = 1; id <= 20; ++id)
+function main()
 {
-    job = CmonJob::getJobInstance(id);
-    found = job.isValid();
-    if (!found)
-        continue;
+    var nDeletedJobs = 0;
+    var limit        = 1;
+    var now = CmonDateTime::currentDateTime();
 
-    if (job.status() != "FINISHED")
-        continue;
-
-    if ((now - job.ended()) / (60 * 60) < 12)
-        continue;
-
-    print("");
-    print("    title: ", job.title());
-    print("       id: ", id);
-    print("   status: ", job.status());
-    print("    ended: ", (now - job.ended()) / (60 * 60), "h");
-
-    print("Deleting...");
-    if (!CmonJob::deleteJobInstance(id))
+    for (id = 1; id <= 20; ++id)
     {
-        print("Failed to delete job.");
-        break;
-    }
+        job = CmonJob::getJobInstance(id);
+        found = job.isValid();
+        if (!found)
+            continue;
 
-    ++nDeletedJobs;
-    if (nDeletedJobs >= limit)
-    {
-        print("Reached limit, deleted ", nDeletedJobs, " job(s)");
-        break;
+        if (job.status() != "FINISHED")
+            continue;
+
+        if ((now - job.ended()) / (60 * 60) < 12)
+            continue;
+
+        print("");
+        print("    title: ", job.title());
+        print("       id: ", id);
+        print("   status: ", job.status());
+        print("    ended: ", (now - job.ended()) / (60 * 60), "h");
+
+        print("Deleting...");
+        if (!CmonJob::deleteJobInstance(id))
+        {
+            print("Failed to delete job.");
+            break;
+        }
+
+        ++nDeletedJobs;
+        if (nDeletedJobs >= limit)
+        {
+            print("Reached limit, deleted ", nDeletedJobs, " job(s)");
+            break;
+        }
     }
 }

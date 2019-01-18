@@ -120,10 +120,17 @@ function sensorActivated()
         #pip-say "$name"
     fi
 
+    text=$(echo $name | sed -e "s/PIR/Sensor /g")
+    pip-say "$text"
+
     case "$name" in
         PIR01|PIR03)
             timedSwitch --on --name sonoff11
             #timedSwitch --on --name nightlight
+            ;;
+        
+        PIR11)
+            timedSwitch --on --name sonoff11
             ;;
 
         PIR04)
@@ -207,6 +214,24 @@ function process_message()
     local data=$(echo "$message" | jq -r '."RfReceived"."Data"' 2>/dev/null)
     local mac=$(echo "$message" | jq -r '."Wifi"."ApMac"' 2>/dev/null)
     local device=$(echo "$topic" | awk -F/ '{print $2}')
+    local file
+    local name
+    local directory
+
+    #echo "-------------------------------------------------"
+    #echo "    topic: $topic"
+    #echo "  message: $message"
+    for file in $HOME/.pip/*.pdu; do
+        name=$(basename "$file" .pdu)
+        if [ "$topic" == "stat/$name/POWER" ]; then
+            directory="$HOME/.pip.measurements"
+
+            [ ! -d "$directory" ] && mkdir "$directory"
+            echo "$message" >"$directory/${name}.state"
+            break
+        fi
+    done
+
 
     if [ "$message" == "OFF" ]; then
         # Topic: "stat/sonoffXX/POWER"

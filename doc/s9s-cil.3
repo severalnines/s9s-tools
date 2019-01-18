@@ -61,12 +61,30 @@ The following functions are related to the CmonJobInstance class.
 .TP
 .BR "CmonJobInstance CmonJob::getJobInstance(jobId)"
 Returns a job instance by its ID. The ID is an integer unique for the job
-instance.
+instance. If the job ID is valid and the user has read access to the given
+object the returned object will be valid. This can be checked using the
+isValid() method.
 
 .TP
 .BR "Boolean CmonJob::deleteJobInstance(jobId)"
 This function will delete a job instance identified by the job ID. The method
 returns true if everything went well.
+
+.TP
+.BR "Int CmonJob::firstJobId()"
+Returns the ID of the first CmonJobInstance object on the system.
+
+.TP
+.BR "Int CmonJob::lastJobId()"
+Returns the ID of the last CmonJobInstance object on the system.
+
+.TP
+.BR "Boolean jobInstance.canBeDeleted()"
+Returns true if the job instance is in a state where it can be deleted.
+
+.TP
+.BR "CmonDateTime jobInstance.created()"
+Returns the timestamp showing when the job instance was created.
 
 .TP
 .BR "String jobInstance.status()"

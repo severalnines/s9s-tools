@@ -604,8 +604,7 @@ function testCreateDatabase()
         --grant \
         --cluster-id=$CLUSTER_ID \
         --account="pipas" \
-        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
-        --batch 
+        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" 
    
     check_exit_code_no_job $?
 

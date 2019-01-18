@@ -508,6 +508,18 @@ fi
 for OPTION_DEVICE in $OPTION_DEVICES; do
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
 
+    #
+    # If we are requested for state and we already received the state from MQTT
+    # we don't need to waste time checking it on the device.
+    #
+    if [ "$PDU_OPERATION" == "state" ]; then
+        STATE_DIR="$HOME/.pip.measurements"
+        if [ -f "$STATE_DIR/${OPTION_DEVICE}.state" ]; then
+            cat "$STATE_DIR/${OPTION_DEVICE}.state" | tr '[A-Z]' '[a-z]'
+            continue
+        fi
+    fi
+
     if [ ! -f "$CONFIG_FILE_PATH" ]; then
         printError "Config file '$CONFIG_FILE_PATH' does not exist."
         continue

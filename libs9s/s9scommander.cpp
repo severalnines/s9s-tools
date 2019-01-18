@@ -26,6 +26,7 @@
 #include "S9sOptions"
 
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 //#define DEBUG
 //#define WARNING
@@ -557,6 +558,20 @@ S9sCommander::processKey(
 {
     s9s_log("S9sCommander::processKey():");
     s9s_log("*** key: %0x", key);
+
+    #if 0
+    // 
+    // This is not working in a terminal emulator, not to mention on an apple
+    // computer.
+    //
+    char shift_state = 6;
+    if (ioctl(0, TIOCLINUX, &shift_state) < 0) 
+    {
+        s9s_log("ioctl TIOCLINUX 6 (get shift state) error: %m");
+    } else {
+        s9s_log("%02x", shift_state);
+    }
+    #endif
 
     if (m_waitingForKeyPress)
     {

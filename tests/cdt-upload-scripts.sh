@@ -13,16 +13,29 @@ function printError()
 
 CLUSTER_NAME="$1"
 
-if [ -z "$CLUSTER_NAME" ]; then
-    printError "Cluster name is not provided."
-    exit 6
+#if [ -z "$CLUSTER_NAME" ]; then
+#    printError "Cluster name is not provided."
+#    exit 6
+#fi
+
+if [ -n "$CLUSTER_NAME" ]; then
+    s9s tree --mkdir --batch /$CLUSTER_NAME/bin
+
+    for file in scripts/cluster_scripts/*.js; do
+        basename=$(basename $file)
+
+        s9s tree --touch --batch /$CLUSTER_NAME/bin/$basename
+        cat $file | s9s tree --save --batch /$CLUSTER_NAME/bin/$basename
+    done
 fi
 
-for file in scripts/cluster_scripts/*.js; do
+
+s9s tree --mkdir --batch /bin
+
+for file in scripts/bin/*.js; do
     basename=$(basename $file)
 
-    s9s tree --mkdir --batch /$CLUSTER_NAME/scripts
-    s9s tree --touch --batch /$CLUSTER_NAME/scripts/$basename
-    cat $file | s9s tree --save --batch /$CLUSTER_NAME/scripts/$basename
+    s9s tree --touch --batch /bin/$basename
+    cat $file | s9s tree --save --batch /bin/$basename
 done
 
