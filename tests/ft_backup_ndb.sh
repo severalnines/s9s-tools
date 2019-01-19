@@ -230,7 +230,7 @@ function testCreateDatabase()
         --grant \
         --cluster-id=$CLUSTER_ID \
         --account="$DATABASE_USER" \
-        --privileges="testCreateDatabase.*:DELETE,TRUNCATE" \
+        --privileges="testCreateDatabase.*:DELETE" \
         --batch 
     
     exitCode=$?
