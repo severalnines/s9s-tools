@@ -198,14 +198,14 @@ function testRunJob()
     local files
     local file
 
-    print_title "Running CDT Scripts"
-    cat <<EOF
-  This test will run some CDT JS scripts as jobs. The test will check if the
-scripts are finished successfully, the jobs are not failing.
-EOF
+    files="imperative_001.js imperative_002.js imperative_003.js"
 
-    files="imperative_001.js imperative_002.js"
     for file in $files; do
+        print_title "Running CDT Script $file"
+        cat <<EOF
+  This test will run a CDT JS scripts as job. The test will check if the
+script is finished successfully, the job is not failing.
+EOF
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
 
@@ -220,7 +220,7 @@ function testRunJobTimeout()
     local files
     local file
 
-    print_title "Running CDT Scripts"
+    print_title "Timeout in CDT Scripts"
     cat <<EOF
   Here we run some script(s) that should timeout while running. These jobs
 should fail.

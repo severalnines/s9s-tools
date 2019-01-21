@@ -1,5 +1,5 @@
 /*
- * A very simple test to check a few operators.
+ * A very simple test to check the exit() function.
  */
 function main()
 {
