@@ -167,6 +167,7 @@ enum S9sOptionType
     OptionPushConfig,
     OptionExecute,
     OptionRun,
+    OptionKill,
     OptionSystem,
     OptionTree,
     OptionOutputDir,
@@ -3392,6 +3393,16 @@ S9sOptions::isRunRequested() const
 }
 
 /**
+ * \returns true if the --kill command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isKillRequested() const
+{
+    return getBool("kill");
+}
+
+/**
  * \returns true if the --system command line option was provided when the
  *   program was started.
  */
@@ -4567,6 +4578,7 @@ S9sOptions::printHelpJob()
 "  --clone                    Clone and re-run a job.\n"
 "  --delete                   Delete the job referenced by the job ID.\n"
 "  --fail                     Create a job that does nothing and fails.\n"
+"  --kill                     Send a signal to the job.\n"
 "  --list                     List the jobs.\n"
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
@@ -6964,6 +6976,9 @@ S9sOptions::checkOptionsJob()
      * Checking if multiple operations are requested.
      */
     if (isListRequested())
+        countOptions++;
+    
+    if (isKillRequested())
         countOptions++;
     
     if (isFailRequested())
@@ -9741,6 +9756,7 @@ S9sOptions::readOptionsJob(
         { "clone",            no_argument,       0,  OptionClone          },
         { "delete",           no_argument,       0,  OptionDelete         },
         { "fail",             no_argument,       0,  OptionFail           },
+        { "kill",             no_argument,       0,  OptionKill           },
         { "list",             no_argument,       0, 'L'                   },
         { "log",              no_argument,       0, 'G'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
@@ -9856,6 +9872,11 @@ S9sOptions::readOptionsJob(
             case OptionFail:
                 // --fail
                 m_options["fail"] = true;
+                break;
+            
+            case OptionKill:
+                // --kill
+                m_options["kill"] = true;
                 break;
             
             case OptionSuccess:

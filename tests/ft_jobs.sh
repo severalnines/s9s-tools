@@ -97,12 +97,16 @@ function testSimpleJobs()
     local exit_code
     local n_lines
 
-    print_title "Warning"
-    echo "It seems that if we start and execute a job shortly after the "
-    echo "backend started the job will be aborted with 'backend restart.'"
-    echo ""
-    echo "So now we wait for a few seconds."
-    sleep 30
+    print_title "Delay..."
+    cat <<EOF
+It seems that if we start and execute a job shortly after the 
+backend started the job will be aborted with 'backend restart.'
+    
+So now we wait for a few seconds.
+
+EOF
+
+    sleep 20
 
     #
     #
@@ -158,6 +162,28 @@ function testSimpleJobs()
     return 0
 }
 
+function testAbortSuccess()
+{
+    local job_id=3
+    local state
+    print_title "Aborting Job"
+
+    mys9s job --success --timeout=120
+    sleep 5
+
+    mys9s job --list
+
+    mys9s job --kill --job-id=$job_id
+    sleep 3
+    mys9s job --list
+    state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
+    if [ "$state" == "ABORTED" ]; then
+        success "  o Job $job_id is $state, ok"
+    else
+        failure "Job $job_id state is $state, not ABORTED."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -172,6 +198,7 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest testSimpleJobs 
+    runFunctionalTest testAbortSuccess
 fi
 
 endTests

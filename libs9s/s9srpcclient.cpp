@@ -1317,6 +1317,23 @@ S9sRpcClient::deleteJobInstance(
     return retval;
 }
 
+bool
+S9sRpcClient::killJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "killJobInstance";
+    request["job_id"]    = jobId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
 /**
  * \param jobId the ID of the job
  * \returns true if the operation was successful, a reply is received from the

@@ -687,6 +687,11 @@ S9sBusinessLogic::execute()
             success = client.deleteJobInstance(options->jobId());
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+        } else if (options->isKillRequested())
+        {
+            success = client.killJobInstance(options->jobId());
+            client.printMessages("Signal sent.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Unknown job operation.");
         }

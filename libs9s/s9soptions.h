@@ -431,6 +431,7 @@ class S9sOptions
         bool isDropRequested() const;
         bool isExecuteRequested() const;
         bool isRunRequested() const;
+        bool isKillRequested() const;
         bool isSystemRequested() const;
         bool isTreeRequested() const;
 
