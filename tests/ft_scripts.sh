@@ -366,7 +366,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testRunJob
-    runFunctionalTest testRunFailure
+    runFunctionalTest testRunJobFailure
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi
