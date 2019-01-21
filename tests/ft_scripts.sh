@@ -194,7 +194,11 @@ function testRunJob()
     local file
 
     print_title "Running CDT Scripts"
-    
+    cat <<EOF
+  This test will run some CDT JS scripts as jobs. The test will check if the
+scripts are finished successfully, the jobs are not failing.
+EOF
+
     files="imperative_001.js"
     for file in $files; do
         mys9s tree --cat /tests/$file

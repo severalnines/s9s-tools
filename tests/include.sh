@@ -390,6 +390,8 @@ function check_exit_code()
         else
             exit $exitCode
         fi
+    else
+        success "  o The exit code is $exitCode, ok"
     fi
 
     return 0
