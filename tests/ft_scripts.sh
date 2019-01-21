@@ -187,8 +187,9 @@ function testUpload()
     done
 }
 
-function testRun()
+function testRunJob()
 {
+    local exit_code
     local files
     local file
 
@@ -196,8 +197,11 @@ function testRun()
     
     files="imperative_001.js"
     for file in $files; do
+        mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
-        check_exit_code_no_job $?
+
+        exit_code=$?
+        check_exit_code $exit_code
     done
 }
 
@@ -316,7 +320,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testUpload
-    runFunctionalTest testRun
+    runFunctionalTest testRunJob
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
