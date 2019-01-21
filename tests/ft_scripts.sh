@@ -199,7 +199,7 @@ function testRunJob()
 scripts are finished successfully, the jobs are not failing.
 EOF
 
-    files="imperative_001.js"
+    files="imperative_001.js imperative_002.js"
     for file in $files; do
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
@@ -331,6 +331,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testUpload
+    runFunctionalTest testRunJob
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi
