@@ -1,14 +1,8 @@
-function main()
+function main(arg1)
 {
-    for (id = CmonJob::firstJobId(); id <= CmonJob::lastJobId(); ++id)
-    {
-        job = CmonJob::getJobInstance(id);
-        found = job.isValid();
-        if (!found)
-            continue;
-
-        print(job.id(), " ", job.clusterId(), " ", 
-                job.status(), " ", job.title());
-    }
+    print("         rpc_version: ", arg1["rpc_version"]);
+    print("effective_cluster_id: ", arg1["effective_cluster_id"]);
+    print("                path: ", arg1["path"]);
+    print("                arg1: ", arg1);
+    return true;
 }
-

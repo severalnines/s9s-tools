@@ -198,7 +198,8 @@ function testRunJob()
     local files
     local file
 
-    files="imperative_001.js imperative_002.js imperative_003.js"
+    files="imperative_001.js imperative_002.js imperative_003.js "
+    files+="imperative_004.js "
 
     for file in $files; do
         print_title "Running CDT Script $file"
@@ -214,28 +215,28 @@ EOF
     done
 }
 
-function testRunJobTimeout()
+function testRunJobFailure()
 {
     local exit_code
     local files
     local file
 
-    print_title "Timeout in CDT Scripts"
-    cat <<EOF
-  Here we run some script(s) that should timeout while running. These jobs
-should fail.
+    files="imperative_002.js imperative_006.js imperative_007.js"
+    for file in $files; do
+        print_title "Failure in CDT Script $file"
+        cat <<EOF
+  Here we run a script that should fail. The test checks that The job also 
+fail at the end.
 EOF
 
-    files="imperative_002.js"
-    for file in $files; do
         mys9s tree --cat /tests/$file
         mys9s script --run --log --timeout=5 /tests/$file --log-format="%M\n"
 
         exit_code=$?
         if [ $exit_code -eq 0 ]; then
-            failure "The job should timout on the JS script."
+            failure "The job should fail on the JS script."
         else
-            success "  o Timeout, ok"
+            success "  o Job is failed, ok"
         fi
     done
 }
@@ -357,7 +358,7 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testUpload
     runFunctionalTest testRunJob
-    runFunctionalTest testRunJobTimeout
+    runFunctionalTest testRunJobFailure
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -365,7 +366,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testRunJob
-    runFunctionalTest testRunJobTimeout
+    runFunctionalTest testRunFailure
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi
