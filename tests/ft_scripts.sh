@@ -173,6 +173,11 @@ function testUpload()
     local file
 
     print_title "Uploading Scripts"
+    cat <<EOF
+  This test will upload some local file as CDT files so that we can run them in 
+the next tests.
+
+EOF
 
     mys9s tree --mkdir --batch /tests
 
@@ -208,6 +213,33 @@ EOF
         check_exit_code $exit_code
     done
 }
+
+function testRunJobTimeout()
+{
+    local exit_code
+    local files
+    local file
+
+    print_title "Running CDT Scripts"
+    cat <<EOF
+  Here we run some script(s) that should timeout while running. These jobs
+should fail.
+EOF
+
+    files="imperative_002.js"
+    for file in $files; do
+        mys9s tree --cat /tests/$file
+        mys9s script --run --log --timeout=5 /tests/$file --log-format="%M\n"
+
+        exit_code=$?
+        if [ $exit_code -eq 0 ]; then
+            failure "The job should timout on the JS script."
+        else
+            success "  o Timeout, ok"
+        fi
+    done
+}
+
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -325,6 +357,7 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testUpload
     runFunctionalTest testRunJob
+    runFunctionalTest testRunJobTimeout
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -332,6 +365,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testRunJob
+    runFunctionalTest testRunJobTimeout
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi

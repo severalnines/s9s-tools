@@ -1,13 +1,17 @@
 function main()
 {
-    for (id = CmonJob::firstJobId(); id <= CmonJob::lastJobId(); ++id)
-    {
-        job = CmonJob::getJobInstance(id);
-        found = job.isValid();
-        if (!found)
-            continue;
+    var start;
+    var now;
 
-        print(job.id(), " ", job.clusterId(), " ", 
-                job.status(), " ", job.title());
+    start = CmonDateTime::currentDateTime();
+    for (idx1 = 1; idx1 <= 100; ++idx1)
+    {
+        for (idx2 = 0; idx2 < 100000; ++idx2)
+            a = sin(idx1) + sin(idx2);
+
+        now = CmonDateTime::currentDateTime();
+        print(  "elapsed: ", now - start, "s ",
+                " idx1: ", idx1,
+                " percent: ", idx1);
     }
 }
