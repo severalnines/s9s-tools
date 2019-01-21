@@ -166,6 +166,7 @@ enum S9sOptionType
     OptionPullConfig,
     OptionPushConfig,
     OptionExecute,
+    OptionRun,
     OptionSystem,
     OptionTree,
     OptionOutputDir,
@@ -3381,6 +3382,16 @@ S9sOptions::isExecuteRequested() const
 }
 
 /**
+ * \returns true if the --run command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isRunRequested() const
+{
+    return getBool("run");
+}
+
+/**
  * \returns true if the --system command line option was provided when the
  *   program was started.
  */
@@ -4897,6 +4908,7 @@ S9sOptions::printHelpScript()
     printf(
 "Options for the \"script\" command:\n"
 "  --execute                  Execute a CJS imparetive program.\n"
+"  --run                      Run a CDT entry as a job.\n"
 "  --system                   Execute commands on nodes.\n"
 "  --tree                     Print the available programs on the controller.\n"
 "\n"
@@ -10027,6 +10039,7 @@ S9sOptions::readOptionsScript(
 
         // Main Option
         { "execute",          no_argument,       0, OptionExecute         },
+        { "run",              no_argument,       0, OptionRun             },
         { "system",           no_argument,       0, OptionSystem          },
         { "tree",             no_argument,       0, OptionTree            },
        
@@ -10198,6 +10211,11 @@ S9sOptions::readOptionsScript(
             case OptionExecute:
                 // --execute
                 m_options["execute"] = true;
+                break;
+            
+            case OptionRun:
+                // --run
+                m_options["run"] = true;
                 break;
            
             case OptionSystem:
@@ -11239,23 +11257,23 @@ S9sOptions::checkOptionsScript()
     if (isExecuteRequested())
         countOptions++;
     
+    if (isRunRequested())
+        countOptions++;
+    
     if (isSystemRequested())
         countOptions++;
 
     if (countOptions > 1)
     {
         m_errorMessage = 
-            "The --list, --execute and --delete options are mutually"
-            " exclusive.";
+            "The main options are mutually exclusive.";
 
         m_exitStatus = BadOptions;
 
         return false;
     } else if (countOptions == 0)
     {
-        m_errorMessage = 
-            "One of the --list, --execute and --delete options is mandatory.";
-
+        m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
 
         return false;

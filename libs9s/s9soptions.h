@@ -430,6 +430,7 @@ class S9sOptions
         bool isListFilesRequested() const; 
         bool isDropRequested() const;
         bool isExecuteRequested() const;
+        bool isRunRequested() const;
         bool isSystemRequested() const;
         bool isTreeRequested() const;
 

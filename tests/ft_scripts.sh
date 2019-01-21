@@ -168,6 +168,39 @@ function testPing()
     fi
 }
 
+function testUpload()
+{
+    local file
+
+    print_title "Uploading Scripts"
+
+    mys9s tree --mkdir --batch /tests
+
+    for file in scripts/test-scripts/*.js; do
+        basename=$(basename $file)
+
+        mys9s tree --touch --batch /tests/$basename
+        cat $file | s9s tree --save --batch /tests/$basename
+
+        mys9s tree --access --privileges="rwx" "/tests/$basename"
+        check_exit_code_no_job $?
+    done
+}
+
+function testRun()
+{
+    local files
+    local file
+
+    print_title "Running CDT Scripts"
+    
+    files="imperative_001.js"
+    for file in $files; do
+        mys9s script --run --log /tests/$file --log-format="%M\n"
+        check_exit_code_no_job $?
+    done
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -282,12 +315,14 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testCreateCluster
+    runFunctionalTest testUpload
+    runFunctionalTest testRun
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testUpload
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi

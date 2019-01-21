@@ -317,6 +317,10 @@ S9sBusinessLogic::execute()
         } else if (options->isExecuteRequested())
         {
             executeExecute(client);
+        } else if (options->isRunRequested())
+        {
+            success = client.executeCdtEntry();
+            maybeJobRegistered(client, 0, success);
         } else if (options->isSystemRequested())
         {
             executeSystemCommand(client);

@@ -227,6 +227,8 @@ class S9sRpcClient
 
         bool executeCdtEntry(
                 const S9sString &cdtPath);
+        
+        bool executeCdtEntry();
 
         bool executeScript(
                 S9sString remoteFileName,

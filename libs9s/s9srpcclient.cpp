@@ -1995,6 +1995,22 @@ S9sRpcClient::executeCdtEntry(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::executeCdtEntry()
+{
+    S9sOptions    *options = S9sOptions::instance();
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --run option requires ona command line arguments: "
+                "The CDT path of the entry to execute.");
+
+        return false;
+    }
+    
+    return executeCdtEntry(options->extraArgument(0u));
+}
 
 bool
 S9sRpcClient::executeSystemCommand(
