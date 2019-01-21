@@ -1,6 +1,7 @@
 function main()
 {
     // Getting the ID of the current job.
+    print("Information about the current job:");
     jobId = CmonJob::currentJobId();
     print("       jobId: ", jobId);
 
@@ -14,7 +15,6 @@ function main()
     }
 
     // Printing some info about the current job.
-    print("Information about the current job:");
     print("   clusterId: ", job.clusterId());
     print("      status: ", job.status());
     print("       title: ", job.title());
