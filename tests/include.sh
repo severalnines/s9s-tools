@@ -409,6 +409,41 @@ function check_exit_code_no_job()
     return 0
 }
 
+function check_job()
+{
+    local job_id
+    local state
+    local required_state
+
+    while true; do
+        case "$1" in 
+            --job-id)
+                shift
+                job_id="$1"
+                shift
+                ;;
+
+            --state)
+                shift
+                required_state="$1"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
+    if [ "$state" == "$required_state" ]; then
+        success "  o Job $job_id is $state, ok"
+    else
+        failure "Job $job_id state is $state, not $required_state."
+    fi
+}
+
+
 function check_container()
 {
     local container_name

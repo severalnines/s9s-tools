@@ -192,6 +192,23 @@ EOF
     done
 }
 
+function testAbortJs()
+{
+    local file="/tests/imperative_002.js"
+
+    print_title "Aborting a JS Script"
+    mys9s tree --cat "$file"
+    mys9s script --run "$file"
+    sleep 3
+
+    mys9s job --kill --job-id=1
+    sleep 2
+    mys9s job --list
+    
+    check_job --job-id 1 --state ABORTED
+
+}
+
 function testRunJob()
 {
     local exit_code
@@ -234,7 +251,7 @@ EOF
 
         exit_code=$?
         if [ $exit_code -eq 0 ]; then
-            failure "The job should fail on the JS script."
+            failure "The job should fail on the JS script ($exit_code)."
         else
             success "  o Job is failed, ok"
         fi
@@ -357,6 +374,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testUpload
+    runFunctionalTest testAbortJs
     runFunctionalTest testRunJob
     runFunctionalTest testRunJobFailure
 elif [ "$1" ]; then
@@ -365,6 +383,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testUpload
+    runFunctionalTest testAbortJs
     runFunctionalTest testRunJob
     runFunctionalTest testRunJobFailure
     runFunctionalTest testCreateCluster

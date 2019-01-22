@@ -1993,8 +1993,10 @@ S9sBusinessLogic::waitForJobWithLog(
         nLogsPrinted += nEntries;
 
         job = reply["job"].toVariantMap();
-        if (job["status"] == "FAILED")
+        if (job["status"] == "FAILED" || job["status"] == "ABORTED")
+        {
             options->setExitStatus(S9sOptions::JobFailed);
+        }
 
         finished = 
             job["status"] == "ABORTED"   ||
