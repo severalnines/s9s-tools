@@ -18,6 +18,7 @@ OPTION_VENDOR="percona"
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
+JOB_ID="0"
 
 cd $MYDIR
 source ./include.sh
@@ -181,7 +182,7 @@ EOF
 
     mys9s tree --mkdir --batch /tests
 
-    for file in scripts/test-scripts/*.js; do
+    for file in scripts/test-scripts/*.js scripts/test-scripts/*.sh; do
         basename=$(basename $file)
 
         mys9s tree --touch --batch /tests/$basename
@@ -199,17 +200,46 @@ function testAbortJs()
     print_title "Aborting a JS Script"
     mys9s tree --cat "$file"
     mys9s script --run "$file"
+    let JOB_ID+=1
     sleep 3
 
-    mys9s job --kill --job-id=1
+    mys9s job --kill --job-id=$JOB_ID
     sleep 2
     mys9s job --list
     
-    check_job --job-id 1 --state ABORTED
+    check_job --job-id $JOB_ID --state ABORTED
 
 }
 
-function testRunJob()
+function testAbortSh()
+{
+    local file="/tests/shell_script_003.sh"
+
+    print_title "Aborting a Shell Script"
+    cat <<EOF
+  This test will run a shell script as job and will try to kill the job while
+the script is running. Then the job ischecked, it should be aborted.
+
+EOF
+
+    mys9s tree --cat "$file"
+    mys9s script --run --timeout=15 "$file"
+    let JOB_ID+=1
+    sleep 3
+
+    mys9s job --kill --job-id=$JOB_ID
+    sleep 3
+    mys9s job --list
+    
+    check_job --job-id $JOB_ID --state ABORTED
+    mys9s job --log --job-id=$JOB_ID
+
+    echo "ps aux | grep bash"
+    ps aux | grep bash
+}
+
+
+function testRunJsJob()
 {
     local exit_code
     local files
@@ -223,6 +253,7 @@ function testRunJob()
         cat <<EOF
   This test will run a CDT JS scripts as job. The test will check if the
 script is finished successfully, the job is not failing.
+
 EOF
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
@@ -232,18 +263,43 @@ EOF
     done
 }
 
-function testRunJobFailure()
+function testRunShJob()
 {
     local exit_code
     local files
     local file
 
-    files="imperative_002.js imperative_006.js imperative_007.js"
+    files="shell_script_001.sh "
+
+    for file in $files; do
+        print_title "Running CDT Script $file"
+        cat <<EOF
+  This test will run a CDT shell scripts as job. The test will check if the
+script is finished successfully, the job is not failing.
+
+EOF
+        mys9s tree --cat /tests/$file
+        mys9s script --run --log /tests/$file --log-format="%M\n"
+
+        exit_code=$?
+        check_exit_code $exit_code
+    done
+}
+
+function testRunJsJobFailure()
+{
+    local exit_code
+    local files
+    local file
+
+    files="imperative_002.js imperative_006.js imperative_007.js "
+    files+="imperative_008.js"
+
     for file in $files; do
         print_title "Failure in CDT Script $file"
         cat <<EOF
   Here we run a script that should fail. The test checks that The job also 
-fail at the end.
+fail/abort at the end.
 EOF
 
         mys9s tree --cat /tests/$file
@@ -253,11 +309,36 @@ EOF
         if [ $exit_code -eq 0 ]; then
             failure "The job should fail on the JS script ($exit_code)."
         else
-            success "  o Job is failed, ok"
+            success "  o Job is failed/aborted, ok"
         fi
     done
 }
 
+function testRunShJobFailure()
+{
+    local exit_code
+    local files
+    local file
+
+    files="shell_script_002.sh shell_script_003.sh shell_script_004.sh "
+    for file in $files; do
+        print_title "Failure in CDT Script $file"
+        cat <<EOF
+  Here we run a script that should fail. The test checks that The job also 
+fail/abort at the end.
+EOF
+
+        mys9s tree --cat /tests/$file
+        mys9s script --run --log --timeout=15 /tests/$file --log-format="%M\n"
+
+        exit_code=$?
+#        if [ $exit_code -eq 0 ]; then
+#            failure "The job should fail on the JS script ($exit_code)."
+#        else
+#            success "  o Job is failed/aborted, ok"
+#        fi
+    done
+}
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -373,10 +454,18 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest testUpload
-    runFunctionalTest testAbortJs
-    runFunctionalTest testRunJob
-    runFunctionalTest testRunJobFailure
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testUpload
+        runFunctionalTest testAbortJs
+        runFunctionalTest testAbortSh
+        runFunctionalTest testRunJsJob
+        runFunctionalTest testRunShJob
+        runFunctionalTest testRunJsJobFailure
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -384,8 +473,10 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testAbortJs
-    runFunctionalTest testRunJob
-    runFunctionalTest testRunJobFailure
+    runFunctionalTest testAbortSh
+    runFunctionalTest testRunJsJob
+    runFunctionalTest testRunShJob
+    runFunctionalTest testRunJsJobFailure
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
 fi
