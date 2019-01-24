@@ -2,7 +2,8 @@ function main(jobData)
 {
     var cluster_id = jobData["effective_cluster_id"];
 
-    print("jobData: ", jobData);
+    print("   jobData: ", jobData);
+    print("cluster_id: ", cluster_id);
 
     /*
      * Checking if the script indeed knows which cluster it is executed on.
@@ -10,6 +11,8 @@ function main(jobData)
     if (cluster_id <= 0)
     {
         error("Cluster ID is ", cluster_id, ".");
-        return 0;
+        return false;
     }
+
+    return true;
 }
