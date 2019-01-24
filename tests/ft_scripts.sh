@@ -198,6 +198,12 @@ function testAbortJs()
     local file="/tests/imperative_002.js"
 
     print_title "Aborting a JS Script"
+    cat <<EOF
+  This test will run a JS script and abort the job while it is running. The
+script should be aborted, the job should be in ABORTED state.
+
+EOF
+
     mys9s tree --cat "$file"
     mys9s script --run "$file"
     let JOB_ID+=1
@@ -208,7 +214,6 @@ function testAbortJs()
     mys9s job --list
     
     check_job --job-id $JOB_ID --state ABORTED
-
 }
 
 function testAbortSh()
@@ -232,6 +237,7 @@ EOF
     mys9s job --list
     
     check_job --job-id $JOB_ID --state ABORTED
+
     mys9s job --log --job-id=$JOB_ID
 
     echo "ps aux | grep bash"
@@ -257,8 +263,9 @@ script is finished successfully, the job is not failing.
 EOF
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
-
         exit_code=$?
+        let JOB_ID+=1
+        
         check_exit_code $exit_code
     done
 }
@@ -280,8 +287,9 @@ script is finished successfully, the job is not failing.
 EOF
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
-
         exit_code=$?
+        let JOB_ID+=1
+        
         check_exit_code $exit_code
     done
 }
@@ -300,12 +308,14 @@ function testRunJsJobFailure()
         cat <<EOF
   Here we run a script that should fail. The test checks that The job also 
 fail/abort at the end.
+
 EOF
 
         mys9s tree --cat /tests/$file
         mys9s script --run --log --timeout=5 /tests/$file --log-format="%M\n"
-
         exit_code=$?
+        let JOB_ID+=1
+        
         if [ $exit_code -eq 0 ]; then
             failure "The job should fail on the JS script ($exit_code)."
         else
@@ -330,13 +340,14 @@ EOF
 
         mys9s tree --cat /tests/$file
         mys9s script --run --log --timeout=15 /tests/$file --log-format="%M\n"
-
         exit_code=$?
-#        if [ $exit_code -eq 0 ]; then
-#            failure "The job should fail on the JS script ($exit_code)."
-#        else
-#            success "  o Job is failed/aborted, ok"
-#        fi
+        let JOB_ID+=1
+
+        if [ $exit_code -eq 0 ]; then
+            failure "The job should fail on the shell script ($exit_code)."
+        else
+            success "  o Job is failed/aborted, ok"
+        fi
     done
 }
 
@@ -388,13 +399,13 @@ function testCreateCluster()
 
 function testScript01()
 {
-    local script="scripts/test-scripts/imperative_001.js"
+    local script="./scripts/test-scripts/imperative_001.js"
     local printout
     local name
     local value
     local n_values=0
  
-    print_title "Running a Script"
+    print_title "Running a Local File as Script"
     cat <<EOF
   This test will run a local file as CJS script on an existing cluster without a
 job (immediate, short run). Then the test checks if the scripts output is as it
@@ -405,8 +416,8 @@ EOF
     mys9s script --execute --cluster-id=1 "$script"
 
     for printout in $(s9s script --execute --cluster-id=1 $script); do
-        name=$(echo "$printout" | awk -F: '{print $1}')
-        value=$(echo "$printout" | awk -F: '{print $2}')
+        name=$(echo "$printout" | awk -F: '{print $3}')
+        value=$(echo "$printout" | awk -F: '{print $4}')
 
         case "$name" in 
             variable1)
@@ -445,6 +456,47 @@ EOF
     fi
 }
 
+function testUploadCluster()
+{
+    print_title "Uploading Scripts for Cluster $CLUSTER_NAME"
+
+    mys9s tree --mkdir --batch /$CLUSTER_NAME/tests
+    for file in scripts/test-scripts-cluster/*.js; do
+        basename=$(basename $file)
+
+        mys9s tree --touch --batch /$CLUSTER_NAME/tests/$basename
+        cat $file | s9s tree --save --batch /$CLUSTER_NAME/tests/$basename
+
+        mys9s tree --access --privileges="rwx" "/$CLUSTER_NAME/tests/$basename"
+        check_exit_code_no_job $?
+    done
+    
+}
+
+function testRunJsJobCluster()
+{
+    local exit_code
+    local files
+    local file
+
+    files="imperative_cluster_001.js "
+
+    for file in $files; do
+        print_title "Running CDT Script $file"
+        cat <<EOF
+  This test will run a CDT JS scripts as job under a cluster. The test will 
+  check if the script is finished successfully, the job is not failing.
+
+EOF
+        mys9s tree --cat /$CLUSTER_NAME/tests/$file
+        mys9s script --run --log /$CLUSTER_NAME/tests/$file --log-format="%M\n"
+        exit_code=$?
+        let JOB_ID+=1
+        
+        check_exit_code $exit_code
+    done
+}
+
 #
 # Running the requested tests.
 #
@@ -461,10 +513,14 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testUpload
         runFunctionalTest testAbortJs
-        runFunctionalTest testAbortSh
+        #runFunctionalTest testAbortSh
         runFunctionalTest testRunJsJob
         runFunctionalTest testRunShJob
         runFunctionalTest testRunJsJobFailure
+        runFunctionalTest testCreateCluster
+        runFunctionalTest testScript01
+        runFunctionalTest testUploadCluster
+        runFunctionalTest testRunJsJobCluster
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -473,12 +529,14 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testAbortJs
-    runFunctionalTest testAbortSh
+    #runFunctionalTest testAbortSh
     runFunctionalTest testRunJsJob
     runFunctionalTest testRunShJob
     runFunctionalTest testRunJsJobFailure
     runFunctionalTest testCreateCluster
     runFunctionalTest testScript01
+    runFunctionalTest testUploadCluster
+    runFunctionalTest testRunJsJobCluster
 fi
 
 endTests

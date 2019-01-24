@@ -59,6 +59,11 @@ executed in the past, executed in the present or will be executed in the future.
 The following functions are related to the CmonJobInstance class.
 
 .TP
+.BR "Int CmonJob::currentJobId()"
+Returns the job ID of the job that executes the script if the script is indeed
+executed by a job. Otherwise the return value is 0.
+
+.TP
 .BR "CmonJobInstance CmonJob::getJobInstance(jobId)"
 Returns a job instance by its ID. The ID is an integer unique for the job
 instance. If the job ID is valid and the user has read access to the given
@@ -85,6 +90,46 @@ Returns true if the job instance is in a state where it can be deleted.
 .TP
 .BR "CmonDateTime jobInstance.created()"
 Returns the timestamp showing when the job instance was created.
+
+.TP
+.BR "CmonDateTime jobInstance.ended()"
+Returns the timestamp showing when the job instance was ended.
+
+.TP
+.BR "CmonDateTime jobInstance.id()"
+Returns the numerical ID of the job or 0 if the job is invalid.
+
+.TP
+.BR "Boolean jobInstance.isValid()"
+Returns true if the job instance is a valid object. 
+
+.TP
+.BR "CmonDateTime jobInstance.scheduled()"
+Returns the time showing when the job is scheduled to run.
+
+.TP
+.BR "CmonDateTime jobInstance.started()"
+Returns the time showing when was the job started.
+
+.TP
+.BR "String jobInstance.status()"
+Returns the status of the job, the state as a keyword.
+Currently this can be "DEFINED", "DEQUEUED", "RUNNING", "RUNNING2", "RUNNING3",
+"SCHEDULED", "RUNNING_EXT", "ABORTED", "FINISHED" or "FAILED".
+
+.TP
+.BR "List jobInstance.tags()"
+Returns the tags of the job. Tags are short strings attached to the job by the
+user.
+
+.TP
+.BR "String jobInstance.statusText()"
+Returns the human readable status text, a short text showing what the job does
+in the given pont of time.
+
+.TP
+.BR "String jobInstance.title()"
+Returns the human readable title of the job.
 
 .TP
 .BR "String jobInstance.status()"
