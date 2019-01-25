@@ -1,3 +1,6 @@
+/*
+ * A test created to check the hosts. This obviously needs more checks.
+ */
 function main()
 {
     var hosts = cluster::hosts();
@@ -52,3 +55,4 @@ function main()
 
     return retval;
 }
+

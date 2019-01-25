@@ -363,7 +363,7 @@ function testCreateCluster()
     print_title "Creating a Galera Cluster"
 
     echo "Creating node #0"
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy ft_scripts_$$_node0)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     
@@ -473,13 +473,17 @@ function testUploadCluster()
     
 }
 
+#
+# Here we execute some scripts under the CDT path of the cluster, so the script
+# checks the given cluster.
+#
 function testRunJsJobCluster()
 {
     local exit_code
     local files
     local file
 
-    files="imperative_cluster_001.js "
+    files="imperative_cluster_001.js imperative_cluster_002.js "
 
     for file in $files; do
         print_title "Running CDT Script $file"
