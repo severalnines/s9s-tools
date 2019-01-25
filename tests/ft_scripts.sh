@@ -484,6 +484,7 @@ function testRunJsJobCluster()
     local file
 
     files="imperative_cluster_001.js imperative_cluster_002.js "
+    files+="imperative_cluster_003.js imperative_cluster_005.js "
 
     for file in $files; do
         print_title "Running CDT Script $file"
