@@ -187,16 +187,16 @@ EOF
 
     case "$name" in
         PIR01|PIR03)
-            timedSwitch --on --name sonoff11
+            timedSwitch --on --name sonoff23
             #timedSwitch --on --name nightlight
             ;;
         
         PIR11)
-            timedSwitch --on --name sonoff11
+            timedSwitch --on --name sonoff23
             ;;
 
         PIR04)
-            timedSwitch --on --name sonoff11
+            timedSwitch --on --name sonoff23
             #timedSwitch --on --name nightlight
             ;;
     esac
@@ -485,6 +485,7 @@ function process_message()
     fi
 
     timedSwitch --check --name sonoff11
+    timedSwitch --check --name sonoff23
     #timedSwitch --check --name nightlight
 }
 

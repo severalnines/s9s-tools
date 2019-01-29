@@ -1973,7 +1973,7 @@ function check_container_server()
                 let n_names_found+=1
                 ;;
 
-            number_of_processor_threads)
+            number_of_cpu_threads)
                 if [ "$expected_class_name" != "CmonCloudServer" ]; then
                     [ "$value" -lt 1 ] && \
                         failure "Value is less than 1."
