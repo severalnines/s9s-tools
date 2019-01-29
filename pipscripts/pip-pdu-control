@@ -13,6 +13,8 @@ PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
 
+MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
+
 source "$MYDIR/utilityfunctions.sh"
 
 #
@@ -329,6 +331,7 @@ function switch_tasmota()
     local output
     local url="http://$CONF_PDU_SERVER/cm?cmnd="
     local logfile="$LOGFILE"
+    local topic=""
 
     if [ -z "$logfile" ]; then
         logfile="/dev/null"
@@ -339,21 +342,54 @@ function switch_tasmota()
     #
     case "$PDU_OPERATION" in 
         on)
-            if [ -z "$CONF_PDU_OUTLET" ]; then
-                curl ${url}Power%20on \
+            if [ -n "$CONF_PDU_MQTT" -a -n "$MQTT_SERVER" ]; then
+                #
+                # Switching with mqtt.
+                # https://github.com/arendst/Sonoff-Tasmota/wiki/MQTT-Features
+                #
+                printVerbose "Switching '$CONF_PDU_DEVICE' on with MQTT..."
+                
+                topic="cmnd/$CONF_PDU_DEVICE/power"
+                [ -n "$CONF_PDU_OUTLET" ] && topic+=$CONF_PDU_OUTLET
+
+                mosquitto_pub \
+                    -u "$MQTT_USER" \
+                    -P "$MQTT_PASSWORD" \
+                    -h "$MQTT_SERVER" \
+                    -t "$topic" \
+                    -m 1
+            elif [ -n "$CONF_PDU_OUTLET" ]; then
+                curl ${url}Power${CONF_PDU_OUTLET}%20on \
                     2>/dev/null >/dev/null
             else
-                curl ${url}Power${CONF_PDU_OUTLET}%20on \
+                # Switching a specific outlet.
+                curl ${url}Power%20on \
                     2>/dev/null >/dev/null
             fi
             ;;
 
         off)
-            if [ -z "$CONF_PDU_OUTLET" ]; then            
-                curl ${url}Power%20off \
+            if [ -n "$CONF_PDU_MQTT" -a -n "$MQTT_SERVER" ]; then
+                #
+                # Switching with mqtt.
+                # https://github.com/arendst/Sonoff-Tasmota/wiki/MQTT-Features
+                #
+                printVerbose "Switching '$CONF_PDU_DEVICE' off with MQTT..."
+                
+                topic="cmnd/$CONF_PDU_DEVICE/power"
+                [ -n "$CONF_PDU_OUTLET" ] && topic+=$CONF_PDU_OUTLET
+
+                mosquitto_pub \
+                    -u "$MQTT_USER" \
+                    -P "$MQTT_PASSWORD" \
+                    -h "$MQTT_SERVER" \
+                    -t "$topic" \
+                    -m 0
+            elif [ -n "$CONF_PDU_OUTLET" ]; then            
+                curl ${url}Power${CONF_PDU_OUTLET}%20off \
                     2>/dev/null >/dev/null
             else
-                curl ${url}Power${CONF_PDU_OUTLET}%20off \
+                curl ${url}Power%20off \
                     2>/dev/null >/dev/null
             fi
             ;;
@@ -424,6 +460,7 @@ function print_device_list_long()
         CONF_PDU_MEASURES_TEMPERATURE=""
         CONF_PDU_STANDARD=""
         CONF_PDU_CATEGORY=""
+        CONF_PDU_MQTT=""
         source "$config_file"
     
         group="$CONF_PDU_CATEGORY"
@@ -484,6 +521,14 @@ function print_device_list_brief()
     done
 }
 
+if [ -f "$MQTT_CONFIG_FILE" ]; then
+    printVerbose "Loading '$MQTT_CONFIG_FILE'..."
+    source "$MQTT_CONFIG_FILE"
+fi
+
+#
+# Checking the command line options.
+#
 if [ "$LIST_OPTION" ]; then
     if [ "$OPTION_LONG" ]; then
         print_device_list_long
@@ -529,6 +574,13 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
     # Loading the config file.
     #
     CONF_PDU_OUTLET=""
+    CONF_PDU_MQTT=""
+    CONF_PDU_NAME=""
+    CONF_PDU_SERVER=""
+    CONF_PDU_URL=""
+    CONF_PDU_STANDARD=""
+    CONF_PDU_CATEGORY=""
+    CONF_PDU_DEVICE="$OPTION_DEVICE"
 
     source "$CONFIG_FILE_PATH"
 
@@ -540,9 +592,12 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
     #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
 
     printVerbose "      device : '$OPTION_DEVICE'"
+    printVerbose "               '$CONF_PDU_DEVICE'"
     printVerbose "      server : '$CONF_PDU_SERVER'"
     printVerbose "    standard : '$CONF_PDU_STANDARD'"
+    printVerbose "       isMqtt: '$CONF_PDU_MQTT'"
     printVerbose "   operation : '$PDU_OPERATION'"
+    printVerbose ""
 
 
     case "$CONF_PDU_STANDARD" in 

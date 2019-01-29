@@ -144,7 +144,7 @@ function emit_config_file()
 #
 #
 #
-#MQTT_SERVER="192.168.1.104"
+#MQTT_SERVER="192.168.0.5"
 #MQTT_TOPIC="tts/say"
 EOF
 }
@@ -174,10 +174,13 @@ EXTRA_OPTIONS=$*
 #
 # The configuration.
 #
-if [ ! -f "$HOME/.pip/say.conf" ]; then
+config_file="$HOME/.pip/say.conf"
+
+if [ ! -f "$config_file" ]; then
     emit_config_file
 else
-    source "$HOME/.pip/say.conf"
+    printVerbose "Loading '$config_file'..."
+    source "$config_file"
 fi
 
 if [ "$MQTT_SERVER" -a "$MQTT_TOPIC" ]; then
