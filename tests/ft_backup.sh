@@ -291,6 +291,7 @@ function testCreateBackup01()
         --use-pigz \
         --parallellism=5 \
         --encrypt-backup \
+        --debug \
         $LOG_OPTION
     
     check_exit_code $?
