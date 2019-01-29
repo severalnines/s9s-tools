@@ -233,6 +233,8 @@ function testStartSlave()
         failure "The exit code is ${exitCode}"
     fi
 
+    wait_for_cluster_started "$CLUSTER_NAME"
+
     state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
