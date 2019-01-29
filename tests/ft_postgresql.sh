@@ -185,8 +185,12 @@ function testCreateCluster()
     #
     #
     #
+    print_title "Waiting until the Cluster Started"
     wait_for_cluster_started "$CLUSTER_NAME"
-    check_exit_code $?
+    if [ $? -ne 0 ]; then
+        failure "The cluster failed to start."
+        mys9s cluster --stat
+    fi
 
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
