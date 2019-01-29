@@ -1,5 +1,5 @@
 /*
- * A test created to check the hosts. This obviously needs more checks.
+ * A test created to check the hosts. 
  */
 function main()
 {
@@ -26,13 +26,16 @@ function main()
         print("               role: ", role);
         print("               port: ", port);
         print("         hoststatus: ", hostStatus);
-        
+        print(""); 
+
         if (role == "controller")
         {
             if (port != 9555)
             {
                 error("The port is not ok.");
                 retval = false;
+            } else {
+                print("The port is ok.");
             }
         } else if (role == "none")
         {
@@ -40,6 +43,8 @@ function main()
             {
                 error("The port is not ok.");
                 retval = false;
+            } else {
+                print("The port is ok.");
             }
         } else {
             error("The role '", role, "' is invalid.");
@@ -50,9 +55,20 @@ function main()
         {
             error("Host status is not ok.");
             retval = false;
+        } else {
+            print("The host status is ok.");
+        }
+
+        if (!hosts[idx].connected())
+        {
+            error("Host is not connected.");
+            retval = false;
+        } else {
+            print("Host is connected, ok.");
         }
     }
 
     return retval;
 }
+
 

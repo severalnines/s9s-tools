@@ -58,6 +58,7 @@ function main()
     var jobInstance;
     var theMap;
     var retval = true;
+    var hosts = cluster::hosts();
 
     // Checking the CmonClusterInfo properties.
     clusterInfo = CmonClusterInfo::getClusterInfo();
@@ -73,6 +74,15 @@ function main()
 
     if (!checkMap(theMap))
         retval = false;
+
+    for (idx = 0; idx < hosts.size(); ++idx)
+    {
+        theMap = hosts[idx].toMap();
+   
+        // There is some mixup here.
+        //if (!checkMap(theMap))
+        //    retval = false;
+    }
 
     return retval;
 }

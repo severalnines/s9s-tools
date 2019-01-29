@@ -131,12 +131,15 @@ function timedSwitch()
 function sensorActivated()
 {
     local name
+    local location
     local device
+    local is_pir
 
     while [ -n "$1" ]; do
         case $1 in 
             --name)
-                name=$2
+                name="$2"
+                location="$2"
                 shift 2
                 ;;
 
@@ -145,20 +148,42 @@ function sensorActivated()
                 shift 2
                 ;;
 
+            --pir)
+                is_pir="true"
+                shift
+                ;;
+
             *)
                 break
                 ;;
         esac
     done
-   
-    if [ -n "$name" ]; then
-        printVerbose "ACT $name"
-        #pip-say --beep
-        #pip-say "$name"
+  
+    if [ -n "$is_pir" ]; then
+        config_file="$HOME/.pip/${device}.pir"
+        if [ ! -f "$config_file" ]; then
+            cat >$config_file <<EOF
+#
+# Configuration file for PIR sensor.
+#
+CONF_SENSOR_TYPE="PIR"
+CONF_SENSOR_NAME="$name"
+CONF_SENSOR_LOCATION="$name"
+CONF_SENSOR_DEVICE="$device"
+
+EOF
+        else 
+            source "$config_file"
+            name="$CONF_SENSOR_NAME"
+            location="$CONF_SENSOR_LOCATION"
+        fi
     fi
 
-    text=$(echo $name | sed -e "s/PIR/Sensor /g")
-    pip-say "$text"
+    if [ -n "$name" ]; then
+        printVerbose "ACT $name at $location."
+        #pip-say --beep
+        pip-say "Sensor $name at $location activated."
+    fi
 
     case "$name" in
         PIR01|PIR03)
@@ -290,47 +315,47 @@ function process_message()
         
         case "$data" in 
             D2D49E)
-                sensorActivated --name "PIR01" --device "$data"
+                sensorActivated --pir --name "PIR01" --device "$data"
                 ;;
 
             D4500E)
-                sensorActivated --name "PIR02" --device "$data"
+                sensorActivated --pir --name "PIR02" --device "$data"
                 ;;
 
             D250DE)
-                sensorActivated --name "PIR03" --device "$data"
+                sensorActivated --pir --name "PIR03" --device "$data"
                 ;;
 
             D40BBE)
-                sensorActivated --name "PIR04" --device "$data"
+                sensorActivated --pir --name "PIR04" --device "$data"
                 ;;
 
             D4102E)
-                sensorActivated --name "PIR05" --device "$data"
+                sensorActivated --pir --name "PIR05" --device "$data"
                 ;;
 
             D3E00E)
-                sensorActivated --name "PIR06" --device "$data"
+                sensorActivated --pir --name "PIR06" --device "$data"
                 ;;
 
             EA080E)
-                sensorActivated --name "PIR10" --device "$data"
+                sensorActivated --pir --name "PIR10" --device "$data"
                 ;;
 
             E885DE)
-                sensorActivated --name "PIR11" --device "$data"
+                sensorActivated --pir --name "PIR11" --device "$data"
                 ;;
             
             E591AE)
-                sensorActivated --name "PIR12" --device "$data"
+                sensorActivated --pir --name "PIR12" --device "$data"
                 ;;
 
             EB7E1E)
-                sensorActivated --name "PIR13" --device "$data"
+                sensorActivated --pir --name "PIR13" --device "$data"
                 ;;
 
             EC6DFE)
-                sensorActivated --name "PIR14" --device "$data"
+                sensorActivated --pir --name "PIR14" --device "$data"
                 ;;
 
             7D5503)

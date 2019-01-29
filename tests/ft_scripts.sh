@@ -502,6 +502,19 @@ EOF
     done
 }
 
+function testRegisterServer()
+{
+    print_title "Registering LXC Server"
+    cat <<EOF
+  Here we register a container server to check the scripts related to
+containers. 
+
+EOF
+
+    mys9s server --register --servers="lxc://$CONTAINER_SERVER"
+    check_exit_code_no_job $?
+}
+
 #
 # Running the requested tests.
 #
@@ -526,6 +539,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testScript01
         runFunctionalTest testUploadCluster
         runFunctionalTest testRunJsJobCluster
+        runFunctionalTest testRegisterServer
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -542,6 +556,7 @@ else
     runFunctionalTest testScript01
     runFunctionalTest testUploadCluster
     runFunctionalTest testRunJsJobCluster
+    runFunctionalTest testRegisterServer
 fi
 
 endTests

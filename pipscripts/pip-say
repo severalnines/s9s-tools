@@ -223,7 +223,7 @@ else
     #
     printVerbose "Executing on server '$SERVER'."
     ssh $SERVER -- \
-        sudo $MYNAME $OPTIONS &
+        sudo $MYNAME $OPTIONS 2>/dev/null &
 fi
 
 #
