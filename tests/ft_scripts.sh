@@ -301,7 +301,7 @@ function testRunJsJobFailure()
     local file
 
     files="imperative_002.js imperative_006.js imperative_007.js "
-    files+="imperative_008.js"
+    files+="imperative_008.js imperative_009.js "
 
     for file in $files; do
         print_title "Failure in CDT Script $file"
