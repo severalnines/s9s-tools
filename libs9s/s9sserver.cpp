@@ -21,6 +21,7 @@
 #include "S9sContainer"
 #include "S9sRegExp"
 #include "S9sFormatter"
+#include "S9sRpcReply"
 
 //#define DEBUG
 //#define WARNING
@@ -65,10 +66,526 @@ S9sServer::className() const
     return property("class_name").toString();
 }
 
+/**
+ * \param syntaxHighlight Controls if the string will have colors or not.
+ * \param formatString The formatstring with markup.
+ * \returns The string representation according to the format string.
+ *
+ * Converts the node to a string using a special format string that may
+ * contain field names of node properties.
+ */
+S9sString
+S9sServer::toString(
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sFormatter formatter;
+    S9sString    retval;
+    S9sString    tmp;
+    char         c;
+    S9sString    partFormat;
+    bool         percent      = false;
+    bool         escaped      = false;
+    //bool         modifierFree = false;
+
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+       
+        if (c == '%' && !percent)
+        {
+            percent    = true;
+            partFormat = "%";
+            continue;
+#if 0
+        } else if (percent && c == 'f')
+        {
+            modifierFree = true;
+            continue;
+#endif
+        } else if (c == '\\' && !escaped)
+        {
+            escaped = true;
+            continue;
+        }
+
+        if (escaped)
+        {
+            switch (c)
+            {
+                case '\"':
+                    retval += '\"';
+                    break;
+
+                case '\\':
+                    retval += '\\';
+                    break;
+       
+                case 'a':
+                    retval += '\a';
+                    break;
+
+                case 'b':
+                    retval += '\b';
+                    break;
+
+                case 'e':
+                    retval += '\027';
+                    break;
+
+                case 'n':
+                    retval += '\n';
+                    break;
+
+                case 'r':
+                    retval += '\r';
+                    break;
+
+                case 't':
+                    retval += '\t';
+                    break;
+            }
+        } else if (percent)
+        {
+            switch (c)
+            {
+                case 'A':
+                    // The ip address of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(ipAddress()));
+                    retval += tmp;
+                    break;
+#if 0                
+                case 'a':
+                    // Maintenance flag.
+                    partFormat += 's';
+                    
+                    tmp.sprintf(STR(partFormat), 
+                            isMaintenanceActive() ? "M" : "-");
+
+                    retval += tmp;
+                    break;
+#endif
+#if 0 
+                case 'C':
+                    // The configuration file. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(configFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(configFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+#endif
+#if 0
+                case 'c':
+                    // The total number of CPU cores in the cluster.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpuCores().toInt());
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'D':
+                    // The data directory.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(dataDir()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
+#endif
+#if 0                
+                case 'd':
+                    // The PID file.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(pidFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(pidFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+#endif
+#if 0                
+                case 'E':
+                    // The replication state.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(replicationState()));
+                    retval += tmp;
+                    break; 
+#endif
+                case 'G':
+                    // The name of the group owner.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat),
+                            STR(groupOwnerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::groupColorEnd();
+
+                    break;
+#if 0
+                case 'g':
+                    // The log file. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(logFile()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorBegin(logFile());
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::fileColorEnd();
+
+                    break;
+#endif                
+                case 'h':
+                    // The CDT path 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cdtPath()));
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += formatter.folderColorEnd();
+
+                    break;
+
+                case 'I':
+                    // The ID of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(id()));
+
+                    retval += tmp;
+                    break;
+#if 0
+                case 'i':
+                    // The total number of monitored disk devices.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nDevices().toInt());
+
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'k':
+                    // The total disk size found in the node.
+                    partFormat += 'f';
+
+                    if (modifierFree)
+                    {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                freeDiskBytes().toTBytes());
+                    } else {
+                        tmp.sprintf(
+                                STR(partFormat), 
+                                totalDiskBytes().toTBytes());
+                    }
+
+                    retval += tmp;
+                    break;
+#endif
+                case 'N':
+                    // The name of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(name()));
+
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+
+                    break;
+                
+                case 'M':
+                    // The message describing the node's status. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(message()));
+                    retval += tmp;
+                    break;
+
+                case 'm':
+                    // The model of the server. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(model("-")));
+                    retval += tmp;
+                    break;
+
+#if 0
+                case 'n':
+                    // The total number of monitored network interfaces.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nNics().toInt());
+
+                    retval += tmp;
+                    break;
+#endif
+                case 'O':
+                    // The name of the owner.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(ownerName()));
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorBegin();
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::userColorEnd();
+
+                    break;
+
+                case 'o':
+                    // The OS version string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(osVersionString()));
+                    retval += tmp;
+                    break;
+#if 0                
+                case 'L':
+                    // The replay location.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(replayLocation()));
+                    retval += tmp;
+                    break;
+#endif               
+#if 0
+                case 'l':
+                    // The received location.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(receivedLocation()));
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'P':
+                    // The Port.
+                    partFormat += "d";
+                    tmp.sprintf(STR(partFormat), port());
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'p':
+                    // The PID.
+                    partFormat += "d";
+                    tmp.sprintf(STR(partFormat), pid());
+                    retval += tmp;
+                    break;
+#endif
+#if 0                
+                case 'R':
+                    // The role.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(role()));
+                    retval += tmp;
+                    break;
+#endif
+#if 0                
+                case 'r':
+                    // A string 'read-only' or 'read-write'.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), 
+                            readOnly() ? "read-only" : "read-write");
+                    retval += tmp;
+                    break;
+#endif
+                case 'S':
+                    // The state of the node.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(hostStatus()));
+
+                    if (syntaxHighlight)
+                    {
+                        retval += 
+                            S9sRpcReply::hostStateColorBegin(hostStatus());
+                    }
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += S9sRpcReply::hostStateColorEnd();
+
+                    break;
+#if 0                
+                case 's':
+                    // The list of slaves in one string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(slavesAsString()));
+                    retval += tmp;
+                
+                    break;
+#endif
+#if 1
+                case 'T':
+                    // The type of the server.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(type()));
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 't':
+                    // The network traffic found in the cluster.
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), 
+                            netBytesPerSecond().toMBytes());
+
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'U':
+                    // The uptime.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), 
+                            STR(S9sString::uptime(uptime())));
+                    retval += tmp;
+                    break;
+#endif
+                case 'V':
+                    // The version.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(version()));
+                    retval += tmp;
+                    break;
+#if 0                
+                case 'v':
+                    // The container/vm ID.
+                    partFormat += "s";
+                    tmp.sprintf(STR(partFormat), STR(containerId("-")));
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'U':
+                    // The number of CPUs.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), nCpus().toInt());
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'u':
+                    // The cpu usage percent. 
+                    partFormat += 'f';
+                    tmp.sprintf(STR(partFormat), cpuUsagePercent().toDouble());
+                    retval += tmp;
+                    break;
+
+                case 'w':
+                    // The total swap space found in the host.
+                    partFormat += 'f';
+                    if (modifierFree)
+                        tmp.sprintf(STR(partFormat), swapTotal().toGBytes());
+                    else
+                        tmp.sprintf(STR(partFormat), swapFree().toGBytes());
+
+                    retval += tmp;
+                    break;
+#endif
+#if 0
+                case 'Z':
+                    // The CPU model.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(cpuModel()));
+                    retval += tmp;
+                    break;
+#endif                
+                case 'z':
+                    // The class name.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(className()));
+                    
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_GREEN;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+                    
+                    break;
+
+                case '%':
+                    retval += '%';
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                case '\'':
+                    partFormat += c;
+                    continue;
+            }
+        } else {
+            retval += c;
+        }
+
+        percent      = false;
+        escaped      = false;
+        //modifierFree = false;
+    }
+
+    return retval;
+}
+
+
 S9sString 
 S9sServer::name() const
 {
     return hostName();
+}
+
+S9sString 
+S9sServer::type() const
+{
+    if (className() == "CmonLxcServer")
+        return "lxc"; 
+    else if (className() == "CmonCloudServer")
+        return "cmon-cloud";
+
+    return "";
 }
 
 S9sString

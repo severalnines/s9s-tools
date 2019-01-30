@@ -419,10 +419,29 @@ S9sInfoPanel::printLinePreviewCached(
             m_previewLines = text.split("\n");
         } else if (
                 m_object.contains("class_name") &&
+                (m_object["class_name"] == "CmonLxcServer" ||
+                 m_object["class_name"] == "CmonCloudServer"))
+        {
+            S9sServer  server(m_object);
+            S9sString  text;
+
+            text = server.toString(false,
+                    "       Name: <b>%-20N</b>\n"
+                    "   CDT path: <b>%h</b>\n"
+                    "      Class: <b>%z</b>\n"
+                    "         IP: <b>%A</b>\n"
+                    "     Status: <b>%-20S</b>\n"
+                    "       Type: <b>%-20T</b> Version: <b>%V</b>\n"
+                    "      Model: <b>%m</b>\n"
+                    "      State: <b>%S\n"
+                    "     Status: <b>%M\n"
+                    "         ID: <b>%I\n"
+                    );
+            m_previewLines = text.split("\n");
+        } else if (
+                m_object.contains("class_name") &&
                 (m_object["class_name"] == "CmonHost" ||
-                 m_object["class_name"].toString().contains("Host") ||
-                 m_object["class_name"].toString().contains("Server")
-                 ))
+                 m_object["class_name"].toString().contains("Host")))
         {
             S9sNode    node(m_object);
             S9sString  text;
@@ -440,29 +459,6 @@ S9sInfoPanel::printLinePreviewCached(
                     "     Config: '<b>%C</b>'\n"
                     );
             m_previewLines = text.split("\n");
-#if 0
-        } else if (
-                m_object.contains("class_name") &&
-                (m_object["class_name"] == "CmonLxcServer" ||
-                 m_object["class_name"].toString().contains("Server")))
-        {
-            S9sServer  server(m_object);
-            S9sString  text;
-
-            text = server.toString(false,
-                    "       Name: <b>%-20N</b>   Port: <b>%P</b>\n"
-                    "   CDT path: <b>%h</b>\n"
-                    "      Class: <b>%z</b>\n"
-                    "         IP: <b>%A</b>\n"
-                    "     Status: <b>%-20S</b>   Role: <b>%R</b>\n"
-                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
-                    "      State: <b>%S\n"
-                    "     Status: <b>%M\n"
-                    "         ID: <b>%I\n"
-                    "     Config: '<b>%C</b>'\n"
-                    );
-            m_previewLines = text.split("\n");
-#endif
         } else if (
                 m_object.contains("class_name") &&
                 m_object["class_name"] == "CmonContainer")

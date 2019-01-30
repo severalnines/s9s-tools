@@ -36,8 +36,14 @@ class S9sServer : public S9sObject
         S9sServer &operator=(const S9sVariantMap &rhs);
         
         virtual S9sString className() const;
+        
+        S9sString 
+            toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
 
         virtual S9sString name() const;
+        S9sString type() const;
         virtual S9sString id(const S9sString &defaultValue = "") const;
         S9sString hostName() const;
         S9sString alias(const S9sString &defaultValue = "") const;
