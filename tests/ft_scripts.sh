@@ -475,7 +475,7 @@ function testUploadCluster()
 
 #
 # Here we execute some scripts under the CDT path of the cluster, so the script
-# checks the given cluster.
+# checks the given cluster and its elements.
 #
 function testRunJsJobCluster()
 {
@@ -484,7 +484,8 @@ function testRunJsJobCluster()
     local file
 
     files="imperative_cluster_001.js imperative_cluster_002.js "
-    files+="imperative_cluster_003.js imperative_cluster_005.js "
+    files+="imperative_cluster_003.js imperative_cluster_004.js "
+    files+="imperative_cluster_005.js "
 
     for file in $files; do
         print_title "Running CDT Script $file"
