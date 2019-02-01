@@ -185,7 +185,7 @@ EOF
     for file in scripts/test-scripts/*.js scripts/test-scripts/*.sh; do
         basename=$(basename $file)
 
-        mys9s tree --touch --batch /tests/$basename
+        #mys9s tree --touch --batch /tests/$basename
         cat $file | s9s tree --save --batch /tests/$basename
 
         mys9s tree --access --privileges="rwx" "/tests/$basename"
@@ -464,7 +464,7 @@ function testUploadCluster()
     for file in scripts/test-scripts-cluster/*.js; do
         basename=$(basename $file)
 
-        mys9s tree --touch --batch /$CLUSTER_NAME/tests/$basename
+        #mys9s tree --touch --batch /$CLUSTER_NAME/tests/$basename
         cat $file | s9s tree --save --batch /$CLUSTER_NAME/tests/$basename
 
         mys9s tree --access --privileges="rwx" "/$CLUSTER_NAME/tests/$basename"
@@ -516,6 +516,30 @@ EOF
     check_exit_code_no_job $?
 }
 
+function testRunJsJobContainers()
+{
+    local exit_code
+    local files
+    local file
+
+    files="imperative_010.js "
+
+    for file in $files; do
+        print_title "Running CDT Script $file"
+        cat <<EOF
+  This test will run a CDT JS scripts as job. The test will check if the script
+is finished successfully, the job is not failing.
+
+EOF
+        mys9s tree --cat /tests/$file
+        mys9s script --run --log /tests/$file --log-format="%M\n"
+        exit_code=$?
+        let JOB_ID+=1
+        
+        check_exit_code $exit_code
+    done
+}
+
 #
 # Running the requested tests.
 #
@@ -541,6 +565,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testUploadCluster
         runFunctionalTest testRunJsJobCluster
         runFunctionalTest testRegisterServer
+        runFunctionalTest testRunJsJobContainers
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -558,6 +583,7 @@ else
     runFunctionalTest testUploadCluster
     runFunctionalTest testRunJsJobCluster
     runFunctionalTest testRegisterServer
+    runFunctionalTest testRunJsJobContainers
 fi
 
 endTests
