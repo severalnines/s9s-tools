@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.4"
+VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
 CONTAINER=""
@@ -20,7 +20,7 @@ GZIP_OPTION=""
 #
 function printVersionAndExit()
 {
-    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+    echo "$MYNAME Version $VERSION on $(hostname)." >&2
 }
 
 #
@@ -33,10 +33,27 @@ function printError()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    echo -e "ERROR $(hostname) $*" >&2
+    echo -e "ERROR  $(hostname) $*" >&2
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $(hostname) $MYNAME $*" >>"$LOGFILE"
+        echo -e "$datestring ERROR  $(hostname) $MYNAME $*" >>"$LOGFILE"
+    fi
+}
+
+#
+# $*: the error message
+#
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printWarning()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "WARNING $(hostname) $*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring WARNING $(hostname) $MYNAME $*" >>"$LOGFILE"
     fi
 }
 
@@ -50,11 +67,11 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" ]; then
-        echo -e "DEBUG $(hostname) $*" >&2
+        echo -e "DEBUG   $(hostname) $*" >&2
     fi
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $(hostname) $MYNAME $*" >>"$LOGFILE"
+        echo -e "$datestring DEBUG   $(hostname) $MYNAME $*" >>"$LOGFILE"
     fi
 }
 
@@ -176,7 +193,7 @@ CONTAINER="$1"
 #
 # Checking the command line options.
 #
-if [ -z "$CONTAINER" ]; then
+if [ -z "$CONTAINER" -a -z "$VERSION_OPTION" ]; then
     printError "The first argument should be the name of the container."
     exit 6
 fi
@@ -249,8 +266,8 @@ function archive_one_container()
     state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
-            printError "Container '$container' is running (no --stop provided)."
-            retval=1
+            printWarning "Container '$container' is running (no --stop option)."
+            printWarning "Archiving on the fly."
         else
             printVerbose "Stopping container '$container'."
             lxc-stop -n "$container"
@@ -310,7 +327,7 @@ function archive_one_container()
     fi
 
     #
-    # If we stopped it, we restart it.
+    # If we stopped the container, we start it again.
     #
     if [ "$stopped" ]; then
         printVerbose "Starting container '$container'."
@@ -331,8 +348,8 @@ function check_one_container()
 
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
-            printError "Container '$container' is running (no --stop provided)."
-            retval=1
+            #printWarning "Container '$container' is running (no --stop option)."
+            retval=0
         fi
     elif [ "$state" == "STOPPED" ]; then
         printVerbose "Container '$container' is not running."
@@ -394,7 +411,7 @@ else
             $OWNER_OPTION $STORAGE_OPTION \
             "$EXTRA_OPTIONS"
 
-    if [ "$SERVER" ]; then
+    if [ -n "$SERVER" -a -z "$VERSION_OPTION" ]; then
         for container in $EXTRA_OPTIONS; do
             tar_file_name="$(archive_file_name "$container")"
             tar_basename="$(basename "$tar_file_name")"
