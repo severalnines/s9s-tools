@@ -5,9 +5,15 @@ function main()
 {
     var hosts = cluster::hosts();
     var retval = true;
-    var command = "echo $((41 + 1))";
+    var command;
     var result;
     var value;
+
+    command = 
+        "for f in $(seq 1 3); do" +
+        "  echo  $f;" +
+        "  sleep 1;" +
+        "done";
 
     for (idx = 0; idx < hosts.size(); ++idx)
     {
@@ -19,6 +25,7 @@ function main()
         print(" command: ", command);
         print("  result: ", result);
 
+        continue;
         if (result["errorMessage"] != "Success.")
         {
             error("Error message:", result["errorMessage"]);
@@ -41,4 +48,3 @@ function main()
 
     return retval;
 }
-

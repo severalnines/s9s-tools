@@ -185,7 +185,6 @@ EOF
     for file in scripts/test-scripts/*.js scripts/test-scripts/*.sh; do
         basename=$(basename $file)
 
-        #mys9s tree --touch --batch /tests/$basename
         cat $file | s9s tree --save --batch /tests/$basename
 
         mys9s tree --access --privileges="rwx" "/tests/$basename"
@@ -464,7 +463,6 @@ function testUploadCluster()
     for file in scripts/test-scripts-cluster/*.js; do
         basename=$(basename $file)
 
-        #mys9s tree --touch --batch /$CLUSTER_NAME/tests/$basename
         cat $file | s9s tree --save --batch /$CLUSTER_NAME/tests/$basename
 
         mys9s tree --access --privileges="rwx" "/$CLUSTER_NAME/tests/$basename"
@@ -486,6 +484,7 @@ function testRunJsJobCluster()
     files="imperative_cluster_001.js imperative_cluster_002.js "
     files+="imperative_cluster_003.js imperative_cluster_004.js "
     files+="imperative_cluster_005.js imperative_cluster_006.js "
+    files+="imperative_cluster_007.js "
 
     for file in $files; do
         print_title "Running CDT Script $file"
