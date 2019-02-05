@@ -825,7 +825,7 @@ S9sNode::configFile() const
                 retval += variant.toVariantList()[idx].toString();
             }
         } else {
-            variant = m_properties.at("configfile").toString();
+            retval = m_properties.at("configfile").toString();
         }
     }
 

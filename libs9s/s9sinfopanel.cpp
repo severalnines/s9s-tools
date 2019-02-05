@@ -441,6 +441,7 @@ S9sInfoPanel::printLinePreviewCached(
         } else if (
                 m_object.contains("class_name") &&
                 (m_object["class_name"] == "CmonHost" ||
+                 m_object["class_name"] == "CmonController" ||
                  m_object["class_name"].toString().contains("Host")))
         {
             S9sNode    node(m_object);
@@ -453,10 +454,12 @@ S9sInfoPanel::printLinePreviewCached(
                     "         IP: <b>%A</b>\n"
                     "     Status: <b>%-20S</b>   Role: <b>%R</b>\n"
                     "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
-                    "      State: <b>%S\n"
+                    "      State: <b>%-20S</b>    PID: <b>%p</b>\n"
                     "     Status: <b>%M\n"
                     "         ID: <b>%I\n"
                     "     Config: '<b>%C</b>'\n"
+                    "   Log File: '<b>%g</b>'\n"
+                    "   PID File: '<b>%d</b>'\n"
                     );
             m_previewLines = text.split("\n");
         } else if (

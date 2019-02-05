@@ -1,3 +1,9 @@
+function install_pkg() in bash
+{
+    cp $file /dir
+}
+
+
 /*
  * A executing shell commands on a host using the system() tag function.
  */
