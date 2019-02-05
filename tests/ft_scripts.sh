@@ -555,7 +555,7 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testUpload
         runFunctionalTest testAbortJs
-        #runFunctionalTest testAbortSh
+        runFunctionalTest testAbortSh
         runFunctionalTest testRunJsJob
         runFunctionalTest testRunShJob
         runFunctionalTest testRunJsJobFailure
@@ -573,7 +573,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testUpload
     runFunctionalTest testAbortJs
-    #runFunctionalTest testAbortSh
+    runFunctionalTest testAbortSh
     runFunctionalTest testRunJsJob
     runFunctionalTest testRunShJob
     runFunctionalTest testRunJsJobFailure
