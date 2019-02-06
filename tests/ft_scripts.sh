@@ -211,7 +211,8 @@ EOF
     mys9s job --kill --job-id=$JOB_ID
     sleep 2
     mys9s job --list
-    
+   
+    mys9s job --log --job-id=$JOB_ID --debug
     check_job --job-id $JOB_ID --state ABORTED
 }
 
@@ -235,12 +236,13 @@ EOF
     sleep 3
     mys9s job --list
     
-    check_job --job-id $JOB_ID --state ABORTED
 
     mys9s job --log --job-id=$JOB_ID
 
-    echo "ps aux | grep bash"
-    ps aux | grep bash
+    echo "ps aux | grep bash | grep s9s_tmp"
+    ps aux | grep bash | grep s9s_tmp
+    
+    check_job --job-id $JOB_ID --state ABORTED
 }
 
 
