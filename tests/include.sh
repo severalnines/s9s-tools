@@ -45,6 +45,16 @@ function prompt_string
     echo "$USER@$HOSTNAME:$dirname\$"
 }
 
+function mysleep()
+{
+    local prompt=$(prompt_string)
+        
+    echo -ne "$prompt ${XTERM_COLOR_YELLOW}sleep${TERM_NORMAL} "
+    echo -ne " ${XTERM_COLOR_ORANGE}$@${TERM_NORMAL}"
+    echo ""
+    sleep $@
+}
+
 function mys9s_singleline()
 {
     local prompt=$(prompt_string)

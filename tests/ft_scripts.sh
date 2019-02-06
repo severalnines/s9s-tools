@@ -206,10 +206,10 @@ EOF
     mys9s tree --cat "$file"
     mys9s script --run "$file"
     let JOB_ID+=1
-    sleep 3
+    mysleep 3
 
     mys9s job --kill --job-id=$JOB_ID
-    sleep 2
+    mysleep 2
     mys9s job --list
    
     mys9s job --log --job-id=$JOB_ID --debug
@@ -230,10 +230,10 @@ EOF
     mys9s tree --cat "$file"
     mys9s script --run --timeout=15 "$file"
     let JOB_ID+=1
-    sleep 3
+    mysleep 3
 
     mys9s job --kill --job-id=$JOB_ID
-    sleep 3
+    mysleep 3
     mys9s job --list
     
 
