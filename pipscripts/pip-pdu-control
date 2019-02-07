@@ -3,7 +3,7 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.1"
+VERSION="0.0.5"
 VERBOSE=""
 LOGDIR="$HOME/.pip.log"
 LOGFILE="$LOGDIR/${MYNAME}.log"
@@ -53,6 +53,7 @@ Usage:
   --list               List the power distribution units.
   --on                 Turn the socket on.
   --off                Turn the socket off.
+  --toggle             Toggle the socket.
   --state              Check the state of the socket.
   
   --power              Read the current power consumption in watts.
@@ -73,7 +74,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,list,on,off,state,\
+        -l "help,verbose,version,log-file:,list,on,off,toggle,state,\
 power,temperature,print-files,long,group:,all" \
         -- "$@")
 
@@ -124,6 +125,11 @@ while true; do
         --off)
             shift
             PDU_OPERATION="off"
+            ;;
+
+        --toggle)
+            shift
+            PDU_OPERATION="toggle"
             ;;
 
         --state)
@@ -552,6 +558,17 @@ fi
 
 for OPTION_DEVICE in $OPTION_DEVICES; do
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
+
+    if [ "$PDU_OPERATION" == "toggle" ]; then
+        state=$(pip-pdu-control --state $OPTION_DEVICE)
+        if [ "$state" == "on" ]; then
+            pip-pdu-control --off "$OPTION_DEVICE"
+        else
+            pip-pdu-control --on "$OPTION_DEVICE"
+        fi
+
+        continue
+    fi
 
     #
     # If we are requested for state and we already received the state from MQTT

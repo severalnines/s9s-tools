@@ -384,6 +384,16 @@ function process_message()
                 ;;
 
 
+            7D55FC)
+                printVerbose "message : button 14"
+                pip-pdu-control --toggle tasmota01
+                ;;
+
+            7D55FF)
+                printVerbose "message : button 15"
+                pip-pdu-control --toggle nightlight
+                ;;
+
             7D553C)
                 printVerbose "message : button 6"
                 change_state "party"
@@ -399,7 +409,8 @@ function process_message()
             BD5AD8)
                 # Light switch
                 printVerbose "message : switch 01"
-                pip-pdu-control --off sonoff21
+                #pip-pdu-control --off sonoff21
+                pip-pdu-control --toggle tasmota01
                 ;;
             #
             # Another remote controller.
