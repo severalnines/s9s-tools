@@ -4900,7 +4900,7 @@ S9sOptions::printHelpNode()
 "  --nodes=NODE_LIST          The nodes to list or manipulate.\n"
 "\n"
 "  --begin=TIMESTAMP          The start of the graph interval.\n"
-"  --end=TIMESTAMP            The end of teh graph interval.\n"
+"  --end=TIMESTAMP            The end of the graph interval.\n"
 "  --force                    Force to execute dangerous operations.\n"
 "  --graph=NAME               The name of the graph to show.\n"
 "  --node-format=FORMAT       The format string used to print nodes.\n"

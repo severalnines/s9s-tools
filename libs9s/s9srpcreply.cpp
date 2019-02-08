@@ -576,7 +576,7 @@ S9sRpcReply::printMessages(
 
         for (uint idx = 0u; idx < list.size(); ++idx)
         {
-            printf("%s\n", STR(list[idx].toString()));
+            printf("%s\n", STR(S9sString::html2ansi(list[idx].toString())));
         }
     }
     else if (errorString().empty())
@@ -597,7 +597,7 @@ S9sRpcReply::printMessages(
     {
         if (isOk())
         {
-            printf("%s\n", STR(errorString()));
+            printf("%s\n", STR(S9sString::html2ansi(errorString())));
         }
         else
         {
