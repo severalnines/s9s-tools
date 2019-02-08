@@ -864,6 +864,11 @@ do_again:
     s.replace("</em>",       TERM_NORMAL);
     s.replace("</strong>",   TERM_NORMAL);
 
+    // Also unescape HTML chars
+    s.replace("&amp;", "&");
+    s.replace("&lt;", "<");
+    s.replace("&gt;", ">");
+
     // Replacing all the other colors. This code is originally created to be
     // used with a palette, but I am not sure if we should modify the palette,
     // so it is kinda unfinished here.
