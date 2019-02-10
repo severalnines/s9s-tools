@@ -495,7 +495,7 @@ function process_message()
         fi
     fi
 
-    timedSwitch --check --name sonoff11
+    timedSwitch --check --name sonoff10
     timedSwitch --check --name sonoff23
     #timedSwitch --check --name nightlight
 }

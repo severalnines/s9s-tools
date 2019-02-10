@@ -3,7 +3,7 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.5"
+VERSION="0.0.6"
 VERBOSE=""
 LOGDIR="$HOME/.pip.log"
 LOGFILE="$LOGDIR/${MYNAME}.log"
@@ -56,8 +56,11 @@ Usage:
   --toggle             Toggle the socket.
   --state              Check the state of the socket.
   
-  --power              Read the current power consumption in watts.
-  --temperature        Read the temperature.
+  --power              Read the current power in watts.
+  --voltage            Measure the voltage on the PDU.
+  --current            Measure the current on the PDU.
+  --temperature        Read the temperature from the PDU.
+  --humidity           Read the humidity percent from the PDU.
 
   --print-files        Print file names instead of names.
   --long               Print the long, detailed list.
@@ -75,7 +78,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,list,on,off,toggle,state,\
-power,temperature,print-files,long,group:,all" \
+power,voltage,current,temperature,humidity,print-files,long,group:,all" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -121,6 +124,16 @@ while true; do
             shift
             PDU_OPERATION="power"
             ;;
+        
+        --voltage)
+            shift
+            PDU_OPERATION="voltage"
+            ;;
+        
+        --current)
+            shift
+            PDU_OPERATION="current"
+            ;;
 
         --off)
             shift
@@ -141,6 +154,12 @@ while true; do
             shift
             PDU_OPERATION="temperature"
             ;;
+
+        --humidity)
+            shift
+            PDU_OPERATION="humidity"
+            ;;
+
 
         --print-files)
             shift
@@ -184,6 +203,18 @@ rm -f $HOME/.pip/*.log
 logger "Log file is: '$LOGFILE'."
 [ ! -d "$LOGDIR" ] && mkdir -p "$LOGDIR"
 touch "$LOGFILE"
+
+function print_value()
+{
+    local value="$1"
+    local default="$2"
+
+    if [ -n "$value" ]; then
+        echo "$value"
+    else
+        echo "$default"
+    fi
+}
 
 function outlet_requested()
 {
@@ -338,6 +369,7 @@ function switch_tasmota()
     local url="http://$CONF_PDU_SERVER/cm?cmnd="
     local logfile="$LOGFILE"
     local topic=""
+    local string
 
     if [ -z "$logfile" ]; then
         logfile="/dev/null"
@@ -423,11 +455,70 @@ function switch_tasmota()
             ;;
 
         power)
-            curl ${url}Status%208 2>/dev/null | grep -o '"Power":[^,]\+' | awk -F: '{print $2}'
+            # 
+            # Reading the power from tasmota.
+            #
+            string="$(curl ${url}Status%2010 2>/dev/null)"
+            printVerbose " *** string: $string"
+            
+            string="$(echo "$string" | grep -o '"Power":[^,}]\+')"
+            string="$(echo "$string" | awk -F: '{print $2}')"
+            printVerbose " *** string: $string"
+           
+            print_value "$string" "0"
+            ;;
+        
+        voltage)
+            # 
+            # Reading the voltage from tasmota.
+            #
+            string="$(curl ${url}Status%2010 2>/dev/null)"
+            printVerbose " *** string: $string"
+            
+            string="$(echo "$string" | grep -o '"Voltage":[^,}]\+')"
+            string="$(echo "$string" | awk -F: '{print $2}')"
+            printVerbose " *** string: $string"
+           
+            print_value "$string" "0"
+            ;;
+        
+        current)
+            # 
+            # Reading the current from tasmota.
+            #
+            string="$(curl ${url}Status%2010 2>/dev/null)"
+            printVerbose " *** string: $string"
+            
+            string="$(echo "$string" | grep -o '"Current":[^,}]\+')"
+            string="$(echo "$string" | awk -F: '{print $2}')"
+            printVerbose " *** string: $string"
+           
+            print_value "$string" "0"
             ;;
 
         temperature)
-            curl ${url}Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
+            string="$(curl ${url}Status%2010 2>/dev/null)"
+            printVerbose " *** string: $string"
+
+            string="$(echo "$string" | grep -o '"Temperature":[^,}]\+')"
+            string="$(echo "$string" | awk -F: '{print $2}')"
+            printVerbose " *** string: $string"
+
+            print_value "$string" "0"
+            ;;
+
+        humidity)
+            # 
+            # Reading the humidity from tasmota.
+            #
+            string="$(curl ${url}Status%2010 2>/dev/null)"
+            printVerbose " *** string: $string"
+
+            string="$(echo "$string" | grep -o '"Humidity":[^,}]\+')"
+            string="$(echo "$string" | awk -F: '{print $2}')"
+            printVerbose " *** string: $string"
+
+            print_value "$string" "0"
             ;;
     esac
 }
@@ -437,7 +528,7 @@ function print_header()
     echo -en $TERM_BOLD
 
     cat <<EOF
-DEVICE           GROUP         SERVER        NAME
+DEVICE           MODE  GROUP         SERVER        NAME
 --------------------------------------------------------------------------------
 EOF
 
@@ -450,6 +541,7 @@ function print_device_list_long()
 {
     local group
     local name
+    local mode
 
     print_header
 
@@ -463,10 +555,14 @@ function print_device_list_long()
         CONF_PDU_NAME=""
         CONF_PDU_SERVER=""
         CONF_PDU_URL=""
-        CONF_PDU_MEASURES_TEMPERATURE=""
         CONF_PDU_STANDARD=""
         CONF_PDU_CATEGORY=""
         CONF_PDU_MQTT=""
+        CONF_PDU_MEASURES_POWER=""
+        CONF_PDU_MEASURES_VOLTAGE=""
+        CONF_PDU_MEASURES_CURRENT=""
+        CONF_PDU_MEASURES_TEMPERATURE=""
+        CONF_PDU_MEASURES_HUMIDITY=""
         source "$config_file"
     
         group="$CONF_PDU_CATEGORY"
@@ -478,7 +574,43 @@ function print_device_list_long()
             continue
         fi
 
+        #
+        # The mode string.
+        #
+        mode=""
+
+        if [ -n "$CONF_PDU_MEASURES_POWER" ]; then
+            mode+="W"
+        else
+            mode+="-"
+        fi
+        
+        if [ -n "$CONF_PDU_MEASURES_VOLTAGE" ]; then
+            mode+="V"
+        else
+            mode+="-"
+        fi
+        
+        if [ -n "$CONF_PDU_MEASURES_CURRENT" ]; then
+            mode+="A"
+        else
+            mode+="-"
+        fi
+
+        if [ -n "$CONF_PDU_MEASURES_TEMPERATURE" ]; then
+            mode+="C"
+        else
+            mode+="-"
+        fi
+        
+        if [ -n "$CONF_PDU_MEASURES_HUMIDITY" ]; then
+            mode+="%"
+        else
+            mode+="-"
+        fi
+
         printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
+        printf "$TERM_NORMAL%-5s$TERM_NORMAL "    "$mode"
         #printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
         printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$group"
         printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_PDU_SERVER"
@@ -598,6 +730,10 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
     CONF_PDU_STANDARD=""
     CONF_PDU_CATEGORY=""
     CONF_PDU_DEVICE="$OPTION_DEVICE"
+    CONF_PDU_MEASURES_POWER=""
+    CONF_PDU_MEASURES_CURRENT=""
+    CONF_PDU_MEASURES_TEMPERATURE=""
+    CONF_PDU_MEASURES_HUMIDITY=""
 
     source "$CONFIG_FILE_PATH"
 
