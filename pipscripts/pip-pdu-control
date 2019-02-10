@@ -324,24 +324,44 @@ function switch_apc()
             ;;
 
         current)
-            string=$(pip-pdu-expect "$CONF_PDU_SERVER" "current" "" 2>/dev/null)
-            #printVerbose "*** string: '$string'" 
-            
-            string="$(echo "$string" | grep 'Total:' )"
-            printVerbose "*** string: '$string'" 
-            
-            string="$(echo "$string" | awk -F: '{ print $2 }' )"
-            printVerbose "*** string: '$string'" 
-            
-            string="$(echo "$string" |  tr -d ' ' | tr -d 'A' | tr -d '\r')"
-            printVerbose "*** string: '$string'" 
+            for n in 1 2 3; do
+                string=$(pip-pdu-expect "$CONF_PDU_SERVER" "current" "" \
+                    2>/dev/null)
+           
+                retval=$?
+                if [ "$retval" -eq 0 ]; then
+                    break
+                fi
+                printVerbose "*** retval: '$retval'" 
+                sleep 1
+            done
 
+            string="$(echo "$string" | grep 'Total:' )"
+            string="$(echo "$string" | awk -F: '{ print $2 }' )"
+            string="$(echo "$string" |  tr -d ' ' | tr -d 'A' | tr -d '\r')"
             print_value "$string" "0"            
             ;;
 
         power)
-            pip-pdu-expect "$CONF_PDU_SERVER" "power" "" | \
-                grep "Watts" | awk '{ print $1 }' | tr -d ' '
+            #pip-pdu-expect "$CONF_PDU_SERVER" "power" "" | \
+            #    grep "Watts" | awk '{ print $1 }' | tr -d ' '
+
+            for n in 1 2 3; do
+                string=$(pip-pdu-expect "$CONF_PDU_SERVER" "power" "" \
+                    2>/dev/null)
+           
+                retval=$?
+                if [ "$retval" -eq 0 ]; then
+                    break
+                fi
+                printVerbose "*** retval: '$retval'" 
+                sleep 1
+            done
+
+            string="$(echo "$string" | grep 'Watts' )"
+            string="$(echo "$string" | awk '{ print $1 }' )"
+            string="$(echo "$string" |  tr -d ' ' | tr -d '\r')"
+            print_value "$string" "0"            
             ;;
 
     esac
