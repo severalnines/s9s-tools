@@ -1,0 +1,163 @@
+#! /bin/bash
+
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.6"
+VERBOSE=""
+LOGDIR="$HOME/.pip.log"
+LOGFILE="$LOGDIR/${MYNAME}.log"
+
+source "$MYDIR/utilityfunctions.sh"
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+#
+# Prints the help message and exits the program.
+#
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... DEVICE 
+
+  $MYNAME - Performs measurements and calculates statistics.
+
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,\
+" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+DATE=$(canonicalizeDate "today")
+time_stamp="$(date "+%H:%M" 2>/dev/null)"
+
+DEVICES=$(pip-pdu-control --list --with-temperature)
+for DEVICE in $DEVICES; do
+    file_name="${DEVICE}_temp_${DATE}.dat"
+    printVerbose "File name: $file_name"
+
+    temperature=$(pip-pdu-control --temperature $DEVICE)
+    humidity=$(pip-pdu-control --humidity $DEVICE)
+    echo "\"$DEVICE\",\"$DATE\",\"$time_stamp\",$temperature,$humidity"
+done
+
+DEVICES=$(pip-pdu-control --list --with-power)
+for DEVICE in $DEVICES; do
+    file_name="${DEVICE}_power_${DATE}.dat"
+    printVerbose "File name: $file_name"
+
+    voltage=$(pip-pdu-control --voltage $DEVICE)
+    current=$(pip-pdu-control --current $DEVICE)
+    power=$(pip-pdu-control --power $DEVICE)
+    echo "\"$DEVICE\",\"$DATE\",\"$time_stamp\",$voltage,$current,$power"
+done
+
+
+exit 0
+
+output_dir="$HOME/.pip.measurements"
+
+[ ! -d "$output_dir" ] && mkdir -p "$output_dir"
+
+#
+#
+#
+time_stamp="'$(date "+%H:%M" 2>/dev/null)'"
+date="'$(date "+%Y-%m-%d")'"
+
+#
+#
+#
+output_file="$output_dir/temperature.dat"
+temp1=$(pip-pdu-control --temperature tasmota03)
+temp2=$(pip-pdu-control --temperature tasmota01)
+temp3=$(pip-pdu-control --temperature tasmota07)
+temp4=$(pip-pdu-control --temperature tasmota06)
+[ -z "$temp1" ] && temp1='0.0'
+[ -z "$temp2" ] && temp1='0.0'
+[ -z "$temp3" ] && temp1='0.0'
+[ -z "$temp4" ] && temp1='0.0'
+
+
+if [ ! -f "$output_file" ]; then
+    echo "'Date','Time','Server Room','Office','Chamber1','Chamber2'" \
+        >"$output_file"
+fi
+
+echo "$date,$time_stamp,$temp1" >>$output_dir/tasmota03.dat
+echo "$date,$time_stamp,$temp2" >>$output_dir/tasmota01.dat
+echo "$date,$time_stamp,$temp3" >>$output_dir/tasmota07.dat
+echo "$date,$time_stamp,$temp4" >>$output_dir/tasmota06.dat
+echo "$date,$time_stamp,$temp1,$temp2,$temp3,$temp4" >>$output_file
+
+#
+#
+#
+output_file="$output_dir/rack2-power.dat"
+
+if [ ! -f "$output_file" ]; then
+    echo "'Date','Time','Rack2'" >"$output_file"
+fi
+
+power=0
+let power+=$(pip-pdu-control --power pdu01)
+let power+=$(pip-pdu-control --power pdu01)
+echo "$date,$time_stamp,$power" >>$output_file
+

@@ -38,6 +38,10 @@ function printVersionAndExit()
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
 }
 
+
+#
+# Prints the help message and exits the program.
+#
 function printHelpAndExit()
 {
 cat <<EOF
@@ -50,6 +54,7 @@ Usage:
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+
   --list               List the power distribution units.
   --on                 Turn the socket on.
   --off                Turn the socket off.
@@ -67,8 +72,8 @@ Usage:
 
   --group=GROUP        Only PDUs in the given group.
   --all                All the PDUs.
-
-EXAMPLES
+  --with-power         Lists only the ones that have power mesurements.
+  --with-temperature   Lists only the ones that have temperature sensor.
 
 EOF
     exit 0
@@ -78,7 +83,8 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,list,on,off,toggle,state,\
-power,voltage,current,temperature,humidity,print-files,long,group:,all" \
+power,voltage,current,temperature,humidity,print-files,long,group:,\
+all,with-power,with-temperature" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -180,6 +186,16 @@ while true; do
         --all)
             shift
             OPTION_ALL="true"
+            ;;
+
+        --with-power)
+            shift
+            OPTION_WITH_POWER="true"
+            ;;
+        
+        --with-temperature)
+            shift
+            OPTION_WITH_TEMPERATURE="true"
             ;;
 
         --)
@@ -301,9 +317,26 @@ function switch_apc()
                 [ -z "$has_on" -a -n "$has_off" ] && echo "off"
             ;;
 
+        voltage)
+            #string=$(pip-pdu-expect "$CONF_PDU_SERVER" "help" "")
+            #printVerbose "*** string: '$string'" 
+            echo "0";
+            ;;
+
         current)
-            pip-pdu-expect "$CONF_PDU_SERVER" "current" "" | \
-                grep "Total" | awk -F: '{ print $2 }' | tr -d ' '
+            string=$(pip-pdu-expect "$CONF_PDU_SERVER" "current" "" 2>/dev/null)
+            #printVerbose "*** string: '$string'" 
+            
+            string="$(echo "$string" | grep 'Total:' )"
+            printVerbose "*** string: '$string'" 
+            
+            string="$(echo "$string" | awk -F: '{ print $2 }' )"
+            printVerbose "*** string: '$string'" 
+            
+            string="$(echo "$string" |  tr -d ' ' | tr -d 'A' | tr -d '\r')"
+            printVerbose "*** string: '$string'" 
+
+            print_value "$string" "0"            
             ;;
 
         power)
@@ -572,6 +605,11 @@ function print_device_list_long()
 
         if [ -n "$OPTION_GROUP" -a "$OPTION_GROUP" != "$group" ]; then
             continue
+        elif [ -n "$OPTION_WITH_POWER" -a -z "$CONF_PDU_MEASURES_POWER" ]; then
+            continue
+        elif [ -n "$OPTION_WITH_TEMPERATURE" -a \
+               -z "$CONF_PDU_MEASURES_TEMPERATURE" ]; then
+            continue
         fi
 
         #
@@ -625,10 +663,14 @@ function print_device_list_long()
     done
 }
 
+#
+# Lists the devices in a brief format (only the name or only the files).
+#
 function print_device_list_brief()
 {
     local group
     local name
+    local config_file
 
     for config_file in $HOME/.pip/*.pdu; do
         if [ ! -f "$config_file" ]; then
@@ -640,9 +682,13 @@ function print_device_list_brief()
         CONF_PDU_NAME=""
         CONF_PDU_SERVER=""
         CONF_PDU_URL=""
-        CONF_PDU_MEASURES_TEMPERATURE=""
         CONF_PDU_STANDARD=""
         CONF_PDU_CATEGORY=""
+        CONF_PDU_MEASURES_POWER=""
+        CONF_PDU_MEASURES_VOLTAGE=""
+        CONF_PDU_MEASURES_CURRENT=""
+        CONF_PDU_MEASURES_TEMPERATURE=""
+        CONF_PDU_MEASURES_HUMIDITY=""
         source "$config_file"
     
         group="$CONF_PDU_CATEGORY"
@@ -652,9 +698,19 @@ function print_device_list_brief()
 
         if [ -n "$OPTION_GROUP" -a "$OPTION_GROUP" != "$group" ]; then
             continue
+        elif [ -n "$OPTION_WITH_POWER" -a -z "$CONF_PDU_MEASURES_POWER" ]; then
+            continue
+        elif [ -n "$OPTION_WITH_TEMPERATURE" -a \
+               -z "$CONF_PDU_MEASURES_TEMPERATURE" ]; then
+            continue
         fi
 
-        printf "%s "  "$device_name"
+        if [ -n "$OPTION_PRINT_FILES" ]; then
+            printf "%s " "$config_file"
+        else
+            printf "%s "  "$device_name"
+        fi
+
         printf "\n"
     done
 }
