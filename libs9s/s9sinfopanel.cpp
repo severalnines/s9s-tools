@@ -458,6 +458,7 @@ S9sInfoPanel::printLinePreviewCached(
                     "     Status: <b>%M\n"
                     "         ID: <b>%I\n"
                     "     Config: '<b>%C</b>'\n"
+                    "   Data Dir: '<b>%D</b>'\n"
                     "   Log File: '<b>%g</b>'\n"
                     "   PID File: '<b>%d</b>'\n"
                     );
