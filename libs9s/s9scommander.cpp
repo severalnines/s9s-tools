@@ -335,6 +335,8 @@ S9sCommander::saveContent(
         showErrorDialog(reply.errorString());
     } else {
         m_reloadRequested = true;
+        m_leftInfo.invalidateObject();
+        m_rightInfo.invalidateObject();
     }
 
     return success;
@@ -372,7 +374,10 @@ S9sCommander::updateObject(
     {
         path = m_leftBrowser.selectedNodeFullPath();
 
-        needToRefresh = path != m_rightInfo.objectPath();
+        needToRefresh = 
+            path != m_rightInfo.objectPath() ||
+            m_rightInfo.needsUpdate();
+
         if (time(NULL) - m_rightInfo.objectSetTime() > 15)
             needToRefresh = true;
         
@@ -387,7 +392,10 @@ S9sCommander::updateObject(
     {
         path = m_rightBrowser.selectedNodeFullPath();
 
-        needToRefresh = path != m_leftInfo.objectPath();
+        needToRefresh = 
+            path != m_leftInfo.objectPath() ||
+            m_leftInfo.needsUpdate();
+
         if (time(NULL) - m_leftInfo.objectSetTime() > 15)
             needToRefresh = true;
 

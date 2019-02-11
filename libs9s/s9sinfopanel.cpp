@@ -34,6 +34,7 @@ S9sInfoPanel::S9sInfoPanel() :
     S9sWidget(),
     m_showJson(false),
     m_objectSetTime(0),
+    m_objectInvalid(true),
     m_previewLineOffset(0)
 {
 }
@@ -104,11 +105,30 @@ S9sInfoPanel::setInfoObject(
     m_objectPath    = path;
     m_object        = object;
     m_objectSetTime = time(NULL);
+    m_objectInvalid = false;
 
     if (isObjectChanged)
         m_previewLineOffset = 0;
 
     m_previewLines.clear();
+}
+
+void
+S9sInfoPanel::invalidateObject()
+{
+    m_objectInvalid = true;
+}
+
+bool
+S9sInfoPanel::needsUpdate() const
+{
+    if (m_objectInvalid)
+        return true;
+
+    if (m_objectPath != m_node.fullPath())
+        return true;
+
+    return false;
 }
 
 S9sString
@@ -335,7 +355,7 @@ S9sInfoPanel::printLinePreview(
         printChar("║");
         printChar(" ", width() - 1);
         printChar("║");
-    } else if (m_objectPath != m_node.fullPath())
+    } else if (m_objectPath != m_node.fullPath() || m_objectInvalid)
     {
         // The node is set, but this is an old one, we are waiting for the
         // information about the node.

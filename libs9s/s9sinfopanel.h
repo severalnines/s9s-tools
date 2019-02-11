@@ -49,6 +49,9 @@ class S9sInfoPanel :
                 const S9sString     &path,
                 const S9sVariantMap &theMap);
 
+        void invalidateObject();
+        bool needsUpdate() const;
+
         void setInfoNode(
                 const S9sTreeNode &node);
 
@@ -95,6 +98,8 @@ class S9sInfoPanel :
         S9sString        m_objectPath;
         S9sVariantMap    m_object;
         time_t           m_objectSetTime;
+        bool             m_objectInvalid;
+
         S9sVariantList   m_previewLines;
         int              m_previewLineOffset;
 };
