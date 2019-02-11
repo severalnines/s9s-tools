@@ -113,12 +113,21 @@ S9sInfoPanel::setInfoObject(
     m_previewLines.clear();
 }
 
+/**
+ * This method should be called when the shown object is updated and theinfo
+ * panel shows the old object. When this method is called the info panel starts
+ * showing the "waiting for preview" message.
+ */
 void
 S9sInfoPanel::invalidateObject()
 {
     m_objectInvalid = true;
 }
 
+/**
+ * \returns True if the shown object needs to be set/refreshed, the info panel
+ *   shows the "waiting for preview" message.
+ */
 bool
 S9sInfoPanel::needsUpdate() const
 {
