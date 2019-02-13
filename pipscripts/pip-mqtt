@@ -188,7 +188,6 @@ EOF
     case "$name" in
         PIR01|PIR03)
             timedSwitch --on --name sonoff23
-            #timedSwitch --on --name nightlight
             ;;
         
         PIR11)
@@ -197,7 +196,6 @@ EOF
 
         PIR04)
             timedSwitch --on --name sonoff23
-            #timedSwitch --on --name nightlight
             ;;
     esac
 }
@@ -251,7 +249,7 @@ function change_state()
             pip-pdu-control --on  --group=safety_lights
             pip-pdu-control --off --group=main_lights
             pip-pdu-control --off --group=safety_lights
-            pip-pdu-control --on  nightlight
+            pip-pdu-control --on  sonoff11
             ;;
 
         party)
@@ -370,12 +368,12 @@ function process_message()
 
             7D550C)
                 printVerbose "message : button 3"
-                pip-pdu-control --off nightlight
+                pip-pdu-control --off sonoff11
                 ;;
 
             7D550F)
                 printVerbose "message : button 4"
-                pip-pdu-control --on nightlight
+                pip-pdu-control --on sonoff11
                 ;;
 
             7D5533)
@@ -391,7 +389,7 @@ function process_message()
 
             7D55FF)
                 printVerbose "message : button 15"
-                pip-pdu-control --toggle nightlight
+                pip-pdu-control --toggle sonoff11
                 ;;
 
             7D553C)
@@ -417,13 +415,13 @@ function process_message()
             #
             592EB8)
                 printVerbose "Button A"
-                pip-pdu-control --on nightlight
+                pip-pdu-control --on sonoff11
                 pip-pdu-control --on sonoff19
                 ;;
 
             592EB4)
                 printVerbose "Button B"
-                pip-pdu-control --off nightlight
+                pip-pdu-control --off sonoff11
                 pip-pdu-control --off sonoff19
                 ;;
 
@@ -497,7 +495,6 @@ function process_message()
 
     timedSwitch --check --name sonoff10
     timedSwitch --check --name sonoff23
-    #timedSwitch --check --name nightlight
 }
 
 pip-say "Core system process is starting now." &

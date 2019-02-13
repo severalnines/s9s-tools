@@ -69,9 +69,6 @@ SUPPORTED TESTS:
   o testAddHaProxy       Adds a HaProxy server to the cluster.
   o testRemoveNode       Removes a data node from the cluster.
   o testRollingRestart   Executes a rolling restart on the cluster.
-  o testCreateBackup     Creates a backup.
-  o testRestoreBackup    Restores the previously created backup.
-  o testRemoveBackup     Removes the backup previously created.
   o testStop             Stops the cluster.
   o testStart            Starts the cluster.
 
@@ -872,81 +869,6 @@ function testRollingRestart()
 }
 
 #
-# This will create a backup. Here we pass the backup-dir, so this should work
-# even if the backup directory is not set in the config.
-#
-function testCreateBackup()
-{
-    print_title "The test to create a backup is starting."
-
-    #
-    # Creating the backup.
-    #
-    mys9s backup \
-        --create \
-        --cluster-id=$CLUSTER_ID \
-        --nodes=$FIRST_ADDED_NODE \
-        --backup-dir=/tmp \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-    
-    check_exit_code $?
-}
-
-#
-# This will restore a backup. 
-#
-function testRestoreBackup()
-{
-    local backupId
-
-    print_title "The test to restore a backup is starting."
-    backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
-        head -n1 | \
-        awk '{print $1}')
-
-    mys9s backup --list --long --batch --cluster-id=$CLUSTER_ID
-    
-    #
-    # Restoring the backup. 
-    #
-    mys9s backup \
-        --restore \
-        --cluster-id="$CLUSTER_ID" \
-        --backup-id="$backupId" \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-    
-    check_exit_code $?
-}
-
-#
-# This will remove a backup. 
-#
-function testRemoveBackup()
-{
-    local backupId
-
-    print_title "Removing a Backup"
-
-    backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
-        awk '{print $1}')
-
-    #
-    # Removing the backup.
-    #
-    mys9s backup \
-        --delete \
-        --backup-id=$backupId \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-    
-    check_exit_code $?
-}
-
-#
 # Stopping the cluster.
 #
 function testStop()
@@ -1025,9 +947,6 @@ else
     #runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
-    runFunctionalTest testCreateBackup
-    #runFunctionalTest testRestoreBackup
-    runFunctionalTest testRemoveBackup
     runFunctionalTest testStop
     runFunctionalTest testStart
 fi

@@ -26,6 +26,7 @@ Usage:
   
   --all              Check everything, install everything.
   --install-mongodb  Checks and installs the mongodb driver and mongo-c.
+  --install-mariadb  Checks and installs the MariaDb library.
   --install-mysql    Installs the mysql server with root password.
   --update-packages  Updates packages of the server.
 
@@ -39,7 +40,7 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,all,\
-install-mongodb,install-mysql,update-packages,\
+install-mongodb,install-mariadb,install-mysql,update-packages,\
 no-containers" \
         -- "$@")
 
@@ -79,6 +80,11 @@ while true; do
         --install-mongodb)
             shift
             OPTION_INSTALL_MONGODB="true"
+            ;;
+
+        --install-mariadb)
+            shift
+            OPTION_INSTALL_MARIADB="true"
             ;;
 
         --install-mysql)
@@ -416,6 +422,55 @@ function install_mongoc()
     rm -rvf "$tmp_dir"
 }
 
+function install_mariadb()
+{
+    #
+    # MariaDB library (LGPL)
+    # https://downloads.mariadb.com/Connectors/c/connector-c-3.0.8/
+    #
+    MDBPATH="/opt/mariadb-connector-c-3.0.8-linux-x86_64"
+    MDBURL="https://downloads.mariadb.com/Connectors/c/connector-c-3.0.8/mariadb-connector-c-3.0.8-linux-x86_64.tar.gz"
+    MDBFILE=$(basename ${MDBURL})
+
+    ORIGIFS=$IFS
+    IFS='
+    '
+    DIRS=`find /opt/mariadb-connector-c-* -name mariadb_config`
+    for DIR in $DIRS; do
+        MDBPATH=`dirname $(dirname $DIR)`
+        echo "* Using existing MariaDB C Connector installation: $DIR"
+    done
+    IFS=$ORIGIFS
+
+    if [ -x ${MDBPATH}/bin/mariadb_config ]; then
+       echo "* MariaDB C Connector is installed."
+    else
+        if [ ! -f ${MDBFILE} ]; then
+            echo "* downloading MariaDB C Connector."
+            wget ${MDBURL} -O ${MDBFILE} || exit $?
+        fi
+
+        # extract it
+        echo "Extracting ${MDBFILE}"
+        sudo tar -xzpf ${MDBFILE} -C /opt || exit $?
+        echo "Changing permission in ${MDBPATH}"
+        echo " - for directories"
+        sudo find "${MDBPATH}" -type d -print0 | while read -d $'\0' file; do sudo chmod og+rx "$file" || exit $?; done
+        echo " - for regular files"
+        sudo find "${MDBPATH}" -type f -print0 | while read -d $'\0' file; do sudo chmod og+r "$file" || exit $?; done
+        echo " - for executables"
+        sudo find "${MDBPATH}" -type f -perm /111 -print0 | while read -d $'\0' file; do sudo chmod og+rx "$file" || exit $?; done
+        echo "Permissions ok"
+    fi
+
+    export PATH=${MDBPATH}/bin:${PATH}
+    echo "${MDBPATH}/bin:"
+
+    pushd /opt
+    sudo ln -s mariadb-connector-c-3.0.8-linux-x86_64 mariadb-connector
+    popd
+}
+
 function update_packages()
 {
     local tmp
@@ -431,6 +486,9 @@ function update_packages()
 
     sudo purge-old-kernels
 }
+
+
+
 
 if [ -n "$OPTION_INSTALL_MYSQL" ]; then
     install_mysql_server
@@ -464,6 +522,9 @@ elif [ -n "$OPTION_INSTALL_MONGODB" ]; then
     [ $? -ne 0 ] && exit 1
     
     install_mongoc
+    [ $? -ne 0 ] && exit 1
+elif [ -n "$OPTION_INSTALL_MARIADB" ]; then
+    install_mariadb
     [ $? -ne 0 ] && exit 1
 else
     echo "Nothing to do, no command line option is provided with tasks."
