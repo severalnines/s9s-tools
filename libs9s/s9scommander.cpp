@@ -139,7 +139,7 @@ S9sCommander::main()
             authenticated = m_client.isAuthenticated();
             s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
             #if 1
-            while (authenticated)
+            while (!authenticated)
             {
                 m_client.maybeAuthenticate();
 
@@ -161,7 +161,7 @@ S9sCommander::main()
             }
 
             updateObject(updateRequested);
-            usleep(10000);
+            usleep(100000);
         }    
 }
 
