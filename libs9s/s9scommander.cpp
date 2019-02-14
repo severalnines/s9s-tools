@@ -143,7 +143,8 @@ S9sCommander::main()
             {
                 m_client.maybeAuthenticate();
 
-                if (!m_client.isAuthenticated())
+                authenticated = m_client.isAuthenticated();
+                if (!authenticated)
                     usleep(3000000);
             }
 

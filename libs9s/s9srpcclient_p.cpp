@@ -57,11 +57,11 @@ void
 S9sRpcClientPrivate::ensureHasBuffer(
         size_t   size)
 {
-    s9s_log("-----------------------------------");
-    s9s_log(" ensuring buffer size");
-    s9s_log("          size: %zd", size);
-    s9s_log("  m_bufferSize: %zd", m_bufferSize);
-    s9s_log("      m_buffer: %p",  m_buffer);
+    //s9s_log("-----------------------------------");
+    //s9s_log(" ensuring buffer size");
+    //s9s_log("          size: %zd", size);
+    //s9s_log("  m_bufferSize: %zd", m_bufferSize);
+    //s9s_log("      m_buffer: %p",  m_buffer);
     if (size > m_bufferSize)
     {
         if (m_buffer == NULL)
@@ -73,7 +73,7 @@ S9sRpcClientPrivate::ensureHasBuffer(
             m_bufferSize = size;
         }
     }
-    s9s_log("      m_buffer: %p",  m_buffer);
+    //s9s_log("      m_buffer: %p",  m_buffer);
 }
 
 void
@@ -279,14 +279,14 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
-    s9s_log("%p->read()", this);
+    //s9s_log("%p->read()", this);
     if (m_ssl)
     {
-        s9s_log("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
+        //s9s_log("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
         retval = SSL_read(m_ssl, buffer, bufSize);
     } else {
         do {
-            s9s_log("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
+            //s9s_log("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
             retval = ::read(m_socketFd, buffer, bufSize);
 
             loopCount += 1;
@@ -295,7 +295,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EINTR);
     }
 
-    s9s_log("retval: %zd", retval);
+    //s9s_log("retval: %zd", retval);
     return retval;
 }
 

@@ -403,13 +403,18 @@ bool
 S9sRpcClient::authenticate()
 {
     S9sOptions    *options = S9sOptions::instance();
+    bool           retval = false;
 
+    s9s_log("Authenticating...");
     if (options->hasPassword())
-        return authenticateWithPassword();
+        retval = authenticateWithPassword();
     else if (!options->password().empty())
-        return authenticateWithPassword();
+        retval = authenticateWithPassword();
+    else 
+        retval = authenticateWithKey();
 
-    return authenticateWithKey();
+    s9s_log("  success: %s", retval ? "yes" : "no");
+    return retval;
 }
 
 bool 
