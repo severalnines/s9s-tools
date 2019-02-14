@@ -58,6 +58,7 @@ S9sRpcClientPrivate::ensureHasBuffer(
         size_t   size)
 {
     s9s_log("-----------------------------------");
+    s9s_log(" ensuring buffer size");
     s9s_log("          size: %zd", size);
     s9s_log("  m_bufferSize: %zd", m_bufferSize);
     s9s_log("      m_buffer: %p",  m_buffer);
@@ -278,6 +279,7 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
+    s9s_log("%p->read()", this);
     if (m_ssl)
     {
         s9s_log("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
