@@ -64,6 +64,7 @@ s9s_log(
         va_start(args, formatstring);
         vfprintf(stream, formatstring, args);
         fprintf(stream, "\n");
+        fflush(stream);
         va_end(args);
         
         fclose(stream);

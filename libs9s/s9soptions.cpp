@@ -4555,6 +4555,7 @@ S9sOptions::printHelpGeneric()
 "  --config-file=PATH         Set the configuration file.\n"
 "  --date-format=FORMAT       The format of the dates printed.\n"
 "  -l, --long                 Print the detailed list.\n"
+"  --log-file=PATH            The path where the s9s client puts its logs.\n"
 "  --no-header                Do not print headers.\n"
 "  --only-ascii               Do not use UTF8 characters.\n"
 "  --print-json               Print the sent/received JSon messages.\n"

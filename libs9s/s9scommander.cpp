@@ -127,16 +127,19 @@ S9sCommander::sourceFullPath() const
 void
 S9sCommander::main()
 {
-    int          updateFreq = 60;
+    int          updateFreq = 10;
     start();
     updateTree();
 
         while (true)
         {
             bool updateRequested;
+            bool authenticated;
 
+            authenticated = m_client.isAuthenticated();
+            s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
             #if 1
-            while (!m_client.isAuthenticated())
+            while (authenticated)
             {
                 m_client.maybeAuthenticate();
 
@@ -148,6 +151,7 @@ S9sCommander::main()
             //m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
             //m_lastReply = m_client.reply();
             #endif
+
             updateRequested = m_reloadRequested;
 
             if (time(NULL) - m_rootNodeRecevied > updateFreq || 
@@ -157,7 +161,7 @@ S9sCommander::main()
             }
 
             updateObject(updateRequested);
-            usleep(100000);
+            usleep(10000);
         }    
 }
 
@@ -570,7 +574,7 @@ S9sCommander::processKey(
     #if 0
     // 
     // This is not working in a terminal emulator, not to mention on an apple
-    // computer.
+    // computer. This was an attempt to read the state of the Shift key.
     //
     char shift_state = 6;
     if (ioctl(0, TIOCLINUX, &shift_state) < 0) 

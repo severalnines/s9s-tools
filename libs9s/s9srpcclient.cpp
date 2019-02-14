@@ -7337,8 +7337,8 @@ S9sRpcClient::doExecuteRequest(
         myUri = m_priv->m_path + uri;
 
     PRINT_VERBOSE("URI is '%s'", STR(myUri));
-    s9s_log("     uri: %s\n", STR(myUri));
-    s9s_log(" request: \n%s\n", STR(payload));
+    //s9s_log("     uri: %s\n", STR(myUri));
+    //s9s_log(" request: \n%s\n", STR(payload));
 
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
@@ -7420,6 +7420,8 @@ S9sRpcClient::doExecuteRequest(
     
     for (;;)
     {
+        s9s_log("     m_priv: %p", m_priv);
+        s9s_log("   m_buffer: %p", m_priv->m_buffer);
         m_priv->ensureHasBuffer(m_priv->m_dataSize + READ_SIZE);
 
         readLength = m_priv->read(
@@ -7538,7 +7540,7 @@ S9sRpcClient::doExecuteRequest(
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
             }
 
-            s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
+            //s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
         m_priv->m_errorString.sprintf(
