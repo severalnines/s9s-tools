@@ -57,6 +57,8 @@ class S9sRpcReply : public S9sVariantMap
         S9sString requestStatusAsString() const;
 
         bool isAuthRequired() const;
+        bool isRedirect() const;
+
         S9sString errorString() const;
         S9sString uuid() const;
 

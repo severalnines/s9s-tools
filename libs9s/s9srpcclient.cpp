@@ -7303,11 +7303,61 @@ S9sRpcClient::executeRequest(
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
+    bool           retval;
+    int            nTry = 0;
 
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
 
-    return doExecuteRequest(uri, request);
+
+    while (true)
+    {
+        retval = doExecuteRequest(uri, request);
+
+        if (retval && m_priv->m_reply.isRedirect())
+        {
+            s9s_log("This is a redirect.");
+            S9sVariantMap leader = 
+                m_priv->m_reply["leader_controller"].toVariantMap();
+            S9sString     hostName;
+            int           port;
+
+            hostName = leader["hostname"].toString();
+            port     = leader["port"].toInt();
+
+            s9s_log("hostName: %s", STR(hostName));
+            s9s_log("    port: %d", port);
+
+            if (hostName.empty())
+                return retval;
+    
+            if (hostName == m_priv->m_hostName && port == m_priv->m_port)
+            {
+                s9s_log("Redirected to the same place (%s:%d), so aborting.",
+                        STR(m_priv->m_hostName),
+                        m_priv->m_port);
+                return retval;
+            }
+
+            PRINT_VERBOSE("Redirected to %s:%d.", STR(hostName), port);
+            s9s_log("Redirected to %s:%d.", STR(hostName), port);
+
+            m_priv->close();
+            m_priv->m_hostName = hostName;
+            m_priv->m_port     = port;
+
+            ++nTry;
+            if (nTry > 5) 
+            {
+                s9s_log("Too many redirects (%d), aborting.", nTry);
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    return retval;
 }
 
 /**

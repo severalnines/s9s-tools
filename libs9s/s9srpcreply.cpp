@@ -141,6 +141,21 @@ S9sRpcReply::isAuthRequired() const
 }
 
 /**
+ * \returns true if the reply states that a redirect should be done. 
+ */
+bool
+S9sRpcReply::isRedirect() const
+{
+    // One is for RPC 1.0, the other is for RPC 2.0
+    if (contains("requestStatus"))
+        return at("requestStatus").toString().toLower() == "redirect";
+    else if (contains("request_status"))
+        return at("request_status").toString().toLower() == "redirect";
+
+    return false;
+}
+
+/**
  * \returns The error string sent by the controller in the reply if there is
  *   indeed an error string.
  */

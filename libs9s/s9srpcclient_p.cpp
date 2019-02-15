@@ -97,6 +97,8 @@ S9sRpcClientPrivate::connect()
     struct timeval timeout;
     struct sockaddr_in server;
 
+    s9s_log("Connecting to %s:%d", STR(m_hostName), m_port);
+
     /*
      * disconnect first if there is a previous connection
      */

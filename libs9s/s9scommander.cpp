@@ -136,9 +136,14 @@ S9sCommander::main()
             bool updateRequested;
             bool authenticated;
 
+            /*
+             * We might get unauthenticated on the fly. While testing this
+             * happens when you restart the controller, but there might be other
+             * reasons too.
+             */
             authenticated = m_client.isAuthenticated();
             s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
-            #if 1
+            
             while (!authenticated)
             {
                 m_client.maybeAuthenticate();
@@ -147,11 +152,6 @@ S9sCommander::main()
                 if (!authenticated)
                     usleep(3000000);
             }
-
-            //m_lastReply = S9sRpcReply();
-            //m_client.subscribeEvents(S9sMonitor::eventHandler, (void *) this);
-            //m_lastReply = m_client.reply();
-            #endif
 
             updateRequested = m_reloadRequested;
 
@@ -162,7 +162,7 @@ S9sCommander::main()
             }
 
             updateObject(updateRequested);
-            usleep(100000);
+            usleep(300000);
         }    
 }
 
@@ -193,6 +193,12 @@ S9sCommander::updateTree()
     m_leftInfo.setInfoRequestName("");
     m_rightInfo.setInfoLastReply(getTreeReply);
     m_leftInfo.setInfoLastReply(getTreeReply);
+    
+    m_leftInfo.setInfoController(
+            m_client.hostName(), m_client.port(), m_client.useTls());
+
+    m_rightInfo.setInfoController(
+            m_client.hostName(), m_client.port(), m_client.useTls());
 
     if (getTreeReply.isOk())
     {

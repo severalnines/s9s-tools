@@ -225,9 +225,9 @@ function printVerbose()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    #if [ "$VERBOSE" == "true" ]; then
+    if [ "$VERBOSE" == "true" ]; then
         echo -e "$datestring $*" >&2
-    #fi
+    fi
 
     if [ "$LOGFILE" ]; then
         echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
@@ -278,9 +278,32 @@ function process_message()
     local name
     local directory
 
-    #echo "-------------------------------------------------"
-    #echo "    topic: '$topic'"
-    #echo "  message: '$message'"
+    printVerbose "-------------------------------------------------"
+    printVerbose "    topic: '$topic'"
+    printVerbose "  message: '$message'"
+    if [[ $topic == stat/*/POWER ]] || [[ $topic == stat/*/POWER1 ]]; then
+        name=$(echo "$topic" | cut -d'/' -f 2)
+        config_file="$HOME/.pip/${name}.pdu"
+        if [ ! -f "$config_file" ]; then
+            printVerbose "--> $name"
+cat >$config_file <<EOF
+#
+# PDU configuration file created by $MYNAME $VERSION.
+# Discovered through mqtt as
+#     topic: '$topic'
+#   message: '$message'
+#
+CONF_PDU_NAME="$name"
+
+CONF_PDU_SERVER="???.???.???.???"
+CONF_PDU_URL="http://\$CONF_PDU_SERVER"
+CONF_PDU_STANDARD="tasmota"
+CONF_PDU_CATEGORY="pending"
+CONF_PDU_MQTT="yes"
+EOF
+        fi
+    fi
+
     for file in $HOME/.pip/*.pdu; do
         name=$(basename "$file" .pdu)
         if [ "$topic" == "stat/$name/POWER" ]; then
