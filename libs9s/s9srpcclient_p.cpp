@@ -387,6 +387,80 @@ S9sRpcClientPrivate::setBuffer(
 }
 
 /**
+ *
+{
+    "error_string": "Redirect notification.",
+    "failed_controllers": 
+    {
+    },
+    "follower_controllers": 
+    {
+        "192.168.0.127:10001": 
+        {
+            "class_name": "CmonController",
+            "hostname": "192.168.0.127",
+            "ip": "192.168.0.127",
+            "port": 10001
+        },
+        "192.168.0.127:9556": 
+        {
+            "class_name": "CmonController",
+            "hostname": "192.168.0.127",
+            "ip": "192.168.0.127",
+            "port": 9556
+        }
+    },
+    "leader_controller": 
+    {
+        "class_name": "CmonController",
+        "hostname": "192.168.0.127",
+        "ip": "192.168.0.127",
+        "port": 20001
+    },
+    "reply_received": "2019-02-18T09:04:46.923Z",
+    "request_created": "2019-02-18T09:04:46.915Z",
+    "request_id": 1,
+    "request_processed": "2019-02-18T09:04:46.923Z",
+    "request_status": "Redirect",
+    "status": "CmonControllerFollower"
+}
+ */
+void
+S9sRpcClientPrivate::rememberRedirect()
+{
+    S9sVariantMap  leader;
+    S9sVariantMap  controllers;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariant     value;
+    S9sString      key = "redirect";
+
+    s9s_log("Processing redirect.");
+    m_controllers.clear();
+
+    if (m_reply.contains("leader_controller"))
+    {
+        s9s_log("Has leader.");
+        m_controllers << m_reply["leader_controller"].toVariantMap();
+    }
+
+    if (m_reply.contains("follower_controllers"))
+    {
+        S9sVariantMap followers = m_reply["follower_controllers"].toVariantMap();
+        foreach(const S9sVariant &variant, followers)
+        {
+            m_controllers << variant.toVariantMap();
+        }
+    }
+
+    controllers["url"]         = options->controllerUrl();
+    controllers["controllers"] = m_controllers;
+
+    s9s_log("-> \n%s\n", STR(controllers.toString()));
+    value = controllers;
+    options->setState(key, value);
+}
+
+/**
  * \param title Just a string to be printed.
  *
  * A method for debugging.

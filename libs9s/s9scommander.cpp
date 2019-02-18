@@ -142,10 +142,11 @@ S9sCommander::main()
              * reasons too.
              */
             authenticated = m_client.isAuthenticated();
-            s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
+            //s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
             
             while (!authenticated)
             {
+                s9s_log("Not authenticated, need to do it.");
                 m_client.maybeAuthenticate();
 
                 authenticated = m_client.isAuthenticated();

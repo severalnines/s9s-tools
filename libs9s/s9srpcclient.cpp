@@ -7317,11 +7317,13 @@ S9sRpcClient::executeRequest(
         if (retval && m_priv->m_reply.isRedirect())
         {
             s9s_log("This is a redirect.");
+            s9s_log("Reply: %s", STR(m_priv->m_reply.toString()));
             S9sVariantMap leader = 
                 m_priv->m_reply["leader_controller"].toVariantMap();
             S9sString     hostName;
             int           port;
 
+            m_priv->rememberRedirect();
             hostName = leader["hostname"].toString();
             port     = leader["port"].toInt();
 

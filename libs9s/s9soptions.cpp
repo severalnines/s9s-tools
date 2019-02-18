@@ -459,6 +459,54 @@ S9sOptions::defaultSystemConfigFileName() const
     return S9sString("/etc/s9s.conf");
 }
 
+S9sString
+S9sOptions::userStateFilename() const
+{
+    return S9sString("~/.s9s/s9s.state");
+}
+
+bool
+S9sOptions::loadStateFile()
+{
+    S9sString fileName = userStateFilename();
+    S9sFile   file(fileName);
+    S9sString content;
+
+    if (!file.exists())
+    {
+        s9s_log("File '%s' no exists, ok.", STR(fileName));
+        return true;
+    }
+
+    return true;
+}
+
+bool
+S9sOptions::writeStateFile()
+{
+    S9sString fileName = userStateFilename();
+    S9sFile   file(fileName);
+    S9sString content = m_state.toString();
+    bool      success;
+
+    success = file.writeTxtFile(content);
+    if (!success)
+    {
+        s9s_log("ERROR: %s", STR(file.errorString()));
+    }
+
+    return success;
+}
+
+bool
+S9sOptions::setState(
+        const S9sString    &key,
+        const S9sVariant   &value)
+{
+    m_state[key] = value;
+    return writeStateFile();
+}
+
 /**
  * \returns false if there was any error with the configuration file(s), true if
  *   everything went well (even if there are no configuration files).

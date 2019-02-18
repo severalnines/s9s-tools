@@ -20,6 +20,7 @@ class S9sRpcClientPrivate
         void ref();
         int unRef();
 
+        void rememberRedirect();
         void printBuffer(const S9sString &title);
 
         bool hasCompleteJSon() const;
@@ -64,6 +65,8 @@ class S9sRpcClientPrivate
         void           *m_callbackUserData;
         bool            m_authenticated;
         
+        S9sVariantList  m_controllers;
+
         friend class S9sRpcClient;
 };
 

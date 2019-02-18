@@ -488,6 +488,14 @@ class S9sOptions
         S9sString defaultUserConfigFileName() const;
         S9sString defaultSystemConfigFileName() const;
 
+        S9sString userStateFilename() const;
+        bool loadStateFile();
+        bool writeStateFile();
+
+        bool setState(
+                const S9sString    &key,
+                const S9sVariant   &value);
+
     private:
         void checkController();
         void printHelpGeneric();
@@ -581,6 +589,7 @@ class S9sOptions
         S9sConfigFile        m_userConfig;
         S9sConfigFile        m_systemConfig;
         S9sVector<S9sString> m_extraArguments;
+        S9sVariantMap        m_state;
 
     friend class UtS9sOptions;
     friend class UtS9sRpcClient;

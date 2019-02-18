@@ -5,10 +5,7 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.2"
 VERBOSE=""
 LOGFILE=""
-OPTION_LIST_PROPERTIES=""
-OPTION_PROPERTIES=""
 HOST=""
-REMOTE_USER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 export LC_ALL=C
@@ -64,19 +61,14 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]... 
 
-  $MYNAME - Monitors various system properties and reports them.
+  $MYNAME - Monitors various system properties and reports them through MQTT.
 
  -h, --help           Print this help and exit.
  -v, --version        Print version information and exit.
  --verbose            Print more messages.
  --log-file=FILE      Store all the messages in the given file too.
- --remote-host=HOST   The host to monitor. Default is the localhost.
- --remote-user=USER   The user name used on the remote host.
- --properties=LIST    Set the properties that will be monitored.
- --list-properties    List the available properties.
 
 EXAMPLES:
-  ./pip-monitor-system --remote-host=216.18.199.114 --remote-user=laszlo --properties=load
 
 EOF
     exit 0
@@ -85,8 +77,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,remote-host:,remote-user:,\
-properties:,list-properties" \
+        -l "help,verbose,version,log-file:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -116,29 +107,6 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
-            ;;
-
-        --remote-host)
-            shift
-            HOST="$1"
-            shift
-            ;;
-
-        --remote-user)
-            shift
-            REMOTE_USER="$1"
-            shift
-            ;;
-
-        --properties)
-            shift
-            OPTION_PROPERTIES="$1"
-            shift
-            ;;
-
-        --list-properties)
-            shift
-            OPTION_LIST_PROPERTIES="true"
             ;;
 
         --)
@@ -290,8 +258,13 @@ function disks_to_mqtt()
     echo "  retcode: $retcode"
 }
 
-printVerbose "OPTION_LIST_PROPERTIES  : $OPTION_LIST_PROPERTIES"
-printVerbose "OPTION_PROPERTIES       : $OPTION_PROPERTIES"
+#
+# mpt-status 
+# ioc0 vol_id 0 type IME, 8 phy, 543 GB, state OPTIMAL, flags ENABLED
+# ioc0 phy 7 scsi_id 8 HP       DG146BABCF       HPD5, 136 GB, state ONLINE, flags NONE
+# ioc0 phy 6 scsi_id 1 HP       DG146BABCF       HPD5, 136 GB, state ONLINE, flags NONE
+#
+
 if [ $VERSION_OPTION ]; then
     printVersionAndExit
 else
