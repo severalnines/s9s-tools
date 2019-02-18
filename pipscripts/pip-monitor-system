@@ -161,14 +161,47 @@ function mqtt_config_file()
         mkdir -p "$(dirname $file_name)" 2>/dev/null
 cat <<EOF >$file_name
 #
+# Configuration file created by $MYNAME $(date)
 #
-#
-MQTT_SERVER="192.168.1.104"
+MQTT_SERVER="192.168.0.5"
 MQTT_PORT=1883
+MQTT_USER="pipas"
+MQTT_PASSWORD="p"
 EOF
     fi
 
     echo "$file_name"
+}
+
+#
+# Prints detailed memory measurements in JSon format.
+#
+function get_memory_measurements()
+{
+    local line=$(free | grep -i '^Mem:')
+    local total=$(echo "$line" | awk '{print $2}')
+    local available=$(echo "$line" | awk '{print $7}')
+
+    echo "{ \"Total\": $total, \"Available\": $available }"
+}
+
+function get_load()
+{
+    cat /proc/loadavg | awk '{print $1}'
+}
+
+#
+# Prints the memory and load in JSon format.
+#
+function get_resources()
+{
+    local hostname=$(hostname)
+    local load=$(get_load)
+    local memory=$(get_memory_measurements)
+    local message
+
+    message="{\"Load\":$load, \"Memory\": $memory, \"hostname\":\"$hostname\"}"
+    echo "$message"
 }
 
 CONFIG_FILE=$(mqtt_config_file)
@@ -178,83 +211,100 @@ if [ ! -f "$CONFIG_FILE" ]; then
 else
     printVerbose "Loading config file '$CONFIG_FILE'."
     source "$CONFIG_FILE"
+    printVerbose "    MQTT_SERVER=$MQTT_SERVER"
+    printVerbose "      MQTT_PORT=$MQTT_PORT"
+    printVerbose "      MQTT_USER=$MQTT_USER"
+    printVerbose "  MQTT_PASSWORD=$MQTT_PASSWORD"
 fi
 
 #
 # Sends the load of the local computer to the mqtt broker.
 #
-function local_load_to_mqtt()
+function local_resources_to_mqtt()
 {
-    local load
-    local load_topic
-    local host_name=$(hostname)
-    local account
+    local hostname=$(hostname)
+    local topic="stat/${hostname}/resources"
+    local message=$(get_resources)
+    local retcode
 
-    if [ "$HOST" ]; then
-        host_name=$HOST
-
-        if [ "$REMOTE_USER" ]; then
-            account="${REMOTE_USER}@${HOST}"
-        else
-            account="${HOST}"
-        fi
-
-        load=$($SSH $account -- uptime | awk '{print $12}')
-        [ -z "$load" ] && load=$($SSH $account -- uptime | awk '{print $11}')
-        [ -z "$load" ] && load=$($SSH $account -- uptime | awk '{print $10}')
-    else
-        load=$(uptime | awk '{print $12}')
-        [ -z "$load" ] && load=$(uptime | awk '{print $11}')
-        [ -z "$load" ] && load=$(uptime | awk '{print $10}')
-    fi
-
-    load_topic="server/$host_name/load"
-    printVerbose "mgtt://${MQTT_SERVER}:${MQTT_PORT}/${load_topic}?${load}"
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
     mosquitto_pub \
-        --host $MQTT_SERVER \
-        --port $MQTT_PORT \
-        --topic $load_topic \
-        --message "$load"
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "$topic" \
+        -m "$message"
+
+    retcode=$?
+    echo "  retcode: $retcode"
 }
 
-function local_free_disk_to_mqtt()
+function get_disk_stats()
 {
-    local free
-    local free_topic
+    local hostname=$(hostname)
+    local line
+    local total
+    local used
+    local available
+    local percent
+    local sum
 
-    free=$(df /home | tail -n 1 | awk '{print $4}')
-    free_topic="server/$(hostname)/free_disk"
+    line=$(df --total | grep total)
+    total=$(echo "$line" | awk '{print $2}')
+    used=$(echo "$line" | awk '{print $3}')
+    available=$(echo "$line" | awk '{print $4}')
+    percent=$(echo "$line" | awk '{print $5}' | tr -d '%')
 
-    let free/=1024
-    let free/=1024
+    sum="\"Total\": $total, \"Used\": $used, \"Free\": $available, \"Percent\": $percent"
 
+    echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\"}"
+}
+
+#
+# 
+#
+function disks_to_mqtt()
+{
+    local hostname=$(hostname)
+    local topic="stat/${hostname}/disks"
+    local message=$(get_disk_stats)
+    local retcode
+
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
     mosquitto_pub \
-        --host $MQTT_SERVER \
-        --port $MQTT_PORT \
-        --topic $free_topic \
-        --message "$free"
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "$topic" \
+        -m "$message"
+
+    retcode=$?
+    echo "  retcode: $retcode"
 }
 
 printVerbose "OPTION_LIST_PROPERTIES  : $OPTION_LIST_PROPERTIES"
 printVerbose "OPTION_PROPERTIES       : $OPTION_PROPERTIES"
 if [ $VERSION_OPTION ]; then
     printVersionAndExit
-elif [ "$OPTION_LIST_PROPERTIES" ]; then
-    echo "load"
-    echo "free_disk"
-elif [ "$OPTION_PROPERTIES" ]; then
-    for property in $(echo "$OPTION_PROPERTIES" | tr ',' ' ' | tr ';' ' '); do
-        case "$property" in 
-            load)
-                local_load_to_mqtt
-                ;;
-
-            free_disk)
-                local_free_disk_to_mqtt
-                ;;
-        esac
-    done
 else
-    local_load_to_mqtt
-    local_free_disk_to_mqtt
+    local_resources_to_mqtt
+    disks_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
 fi

@@ -512,6 +512,7 @@ function print_host_list_long()
             fileAge="$(fileAgeInSeconds "$info_file")"
             let fileAge/=60
             if [ "$fileAge" -gt 5 ]; then
+                printVerbose "File '$info_file' older that 5 minutes."
                 if [ "$HOST_STATUS" != "DISABLED" ]; then
                     HOST_STATUS="OFF-LINE"
                     STATUS_TEXT="-"
