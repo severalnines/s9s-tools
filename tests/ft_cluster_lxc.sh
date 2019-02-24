@@ -319,7 +319,9 @@ function removeCluster()
     # Deleting containers.
     #
     print_title "Deleting Containers"
-    
+   
+    mys9s container --list --long
+
     mys9s container --delete $LOG_OPTION "$container_name1"
     check_exit_code $?
     

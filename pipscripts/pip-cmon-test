@@ -546,7 +546,7 @@ function compile_source_dir()
     #
     # Running autogen in the source root. 
     #
-    printVerbose "Running 'autogen.sh'."
+    printVerbose "Running autogen.sh."
     pip-host-control --log "Running 'autogen.sh'."
     rm -f autogen.log
 
@@ -927,7 +927,7 @@ function run_test()
     #
     # Notifying the user about a test is starting.
     #
-    message "Preparing to run '$test_name'."
+    message "Preparing to run $test_name."
     upload_slog_file
 
     #
@@ -948,7 +948,7 @@ function run_test()
             rm -rvf /tmp/cmon*
 
             if [ -x "./ft_full/ft_full" ]; then
-                pip-host-control --log "Running 'ft_full'..."
+                pip-host-control --log "Running ft_full..."
                 printVerbose "Running 'ft_full'..."
 
                 echo "Starting controller: './ft_full/ft_full'" >ft_full.log
@@ -1041,7 +1041,7 @@ function run_test()
                 return 1
             fi
 
-            message "Running '$test_name/$test_name'..."
+            message "Running $test_name."
             ./$test_name/$test_name \
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
@@ -1065,7 +1065,7 @@ function run_test()
             #
             # Running the test.
             #
-            pip-host-control --log "Running ${test_name}."
+            pip-host-control --log "Running $(basename $test_name)."
             printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
             if [ ! -f "$test_name/$test_name" ]; then
@@ -1083,7 +1083,7 @@ function run_test()
                 return 1
             fi
 
-            message "Running '$test_name/$test_name'..."
+            message "Running $test_name."
             $test_name/$test_name --color >>$logfile 2>>$logfile
             return_code=$?
 
@@ -1190,7 +1190,7 @@ function main()
         pip-host-control \
             --idle \
             --log    "Failed to compile, idle." \
-            --status "Idle"
+            --status "Idle."
 
         return 1
     fi
@@ -1214,7 +1214,7 @@ function main()
     pip-host-control \
         --idle \
         --log    "Finished with tests, idle." \
-        --status "Idle"
+        --status "Idle."
 
     #
     # If the "shutdown after the test" is requested and the user did not delete
@@ -1454,7 +1454,7 @@ elif [ "$SERVER" ]; then
 
     run_tests_remote
     #waitForProcessesToEnd 
-    pip-host-control --idle --status="Idle"
+    pip-host-control --idle --status="Idle."
 else
     checkOtherInstances
     echo "checkOtherInstances : $?"
