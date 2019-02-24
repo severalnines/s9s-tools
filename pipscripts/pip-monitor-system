@@ -7,6 +7,9 @@ VERBOSE=""
 LOGFILE=""
 HOST=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+HOST_ID=""
+source $MYDIR/utilityfunctions.sh
+
 
 export LC_ALL=C
 
@@ -63,10 +66,11 @@ Usage:
 
   $MYNAME - Monitors various system properties and reports them through MQTT.
 
- -h, --help           Print this help and exit.
- -v, --version        Print version information and exit.
- --verbose            Print more messages.
- --log-file=FILE      Store all the messages in the given file too.
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+  --id=INTEGER         Set the host ID.
 
 EXAMPLES:
 
@@ -77,7 +81,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,id:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -106,6 +110,12 @@ while true; do
         --log-file)
             shift
             LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --id)
+            shift
+            HOST_ID="$1"
             shift
             ;;
 
@@ -166,9 +176,17 @@ function get_resources()
     local hostname=$(hostname)
     local load=$(get_load)
     local memory=$(get_memory_measurements)
+    local nproc=$(nproc)
+    local n_containers=$(get_number_of_containers)
     local message
 
-    message="{\"Load\":$load, \"Memory\": $memory, \"hostname\":\"$hostname\"}"
+    message="{\
+\"hostname\":\"$hostname\", \
+\"Load\":$load, \
+\"NProc\": $nproc, \
+\"NContainers\": $n_containers, \
+\"Memory\": $memory, \
+\"id\": $HOST_ID}"
     echo "$message"
 }
 
@@ -229,7 +247,7 @@ function get_disk_stats()
 
     sum="\"Total\": $total, \"Used\": $used, \"Free\": $available, \"Percent\": $percent"
 
-    echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\"}"
+    echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\", \"id\": $HOST_ID}"
 }
 
 #
@@ -258,6 +276,62 @@ function disks_to_mqtt()
     echo "  retcode: $retcode"
 }
 
+# {"StatusSNS":{"Time":"1970-01-16T05:49:55","ENERGY":{"Total":35.640,"Yesterday":0.000,"Today":35.640,"Power":0,"Factor":0.00,"Voltage":218,"Current":0.000}}}"
+
+function get_power()
+{
+    local pdu_name=$1
+    local power=$(pip-pdu-control --power $pdu_name)
+    local current=$(pip-pdu-control --current $pdu_name)
+    local topic="stat/$pdu_name/STATUS10"
+    local message
+
+    message="{\"StatusSNS\":{\"ENERGY\":{\"Power\":$power,\"Current\":$current}}}"
+    
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
+
+    mosquitto_pub \
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "$topic" \
+        -m "$message"
+
+    retcode=$?
+    echo "  retcode: $retcode"
+}
+
+#
+# 
+#
+function ping_server()
+{
+    local hostname=$1
+    local topic="stat/${hostname}/state"
+    local message=$(pip-server-control --ping --print-json $hostname)
+    local retcode
+
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
+    mosquitto_pub \
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "$topic" \
+        -m "$message"
+
+    retcode=$?
+    echo "  retcode: $retcode"
+}
+
+
 #
 # mpt-status 
 # ioc0 vol_id 0 type IME, 8 phy, 543 GB, state OPTIMAL, flags ENABLED
@@ -265,9 +339,42 @@ function disks_to_mqtt()
 # ioc0 phy 6 scsi_id 1 HP       DG146BABCF       HPD5, 136 GB, state ONLINE, flags NONE
 #
 
+if [ -z "$HOST_ID" ]; then
+    case "$(hostname)" in
+        t7500)
+            HOST_ID=0
+            ;;
+
+        core1)
+            HOST_ID=1
+            ;;
+
+        storage01)
+            HOST_ID=2
+            ;;
+
+        laptop01)
+            HOST_ID=3
+            ;;
+
+        *)
+            HOST_ID=10
+            ;;
+    esac
+fi
+
 if [ $VERSION_OPTION ]; then
     printVersionAndExit
 else
+    for h in core1 core2 core3 t7500 storage01 laptop01 www dns1 dns2; do
+        ping_server $h
+    done
+
+    if [ "$(hostname)" == "t7500" ]; then
+        get_power pdu01
+        get_power pdu02
+    fi
+
     local_resources_to_mqtt
     disks_to_mqtt
     sleep 15

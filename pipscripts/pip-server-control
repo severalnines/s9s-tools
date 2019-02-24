@@ -3,11 +3,12 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.1"
+VERSION="0.0.5"
 VERBOSE=""
 LOGFILE="$HOME/.pip/${MYNAME}.log"
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
+OPTION_USER=""
 
 SUM_SERVERS=0
 SUM_OFF_LINE_SERVERS=0
@@ -114,14 +115,19 @@ Usage:
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+
   --long               Print detailed/long list.
+  --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
   --print-files        Print file names instead of names.
+
+  --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
 
   --list               List the power distribution units.
   --wake               Start the server.
   --shut-down          Shut down the server.
+  --ping               Check if the server is up.
 
 
 EXAMPLE:
@@ -136,9 +142,9 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,long,print-report,\
-list,wake,shut-down,\
-print-files,wait" \
+        -l "help,verbose,version,log-file:,long,print-report,print-json,\
+list,wake,shut-down,ping,\
+print-files,user:,wait" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -185,6 +191,11 @@ while true; do
             SHUT_DOWN_OPTION="true"
             ;;
 
+        --ping)
+            shift
+            OPTION_PING="true"
+            ;;
+
         --long)
             shift
             LONG_OPTION="true"
@@ -195,36 +206,22 @@ while true; do
             OPTION_PRINT_REPORT="yes"
             ;;
 
+        --print-json)
+            shift
+            OPTION_PRINT_JSON="yes"
+            ;;
+
+        --user)
+            shift
+            OPTION_USER="$1"
+            shift
+            ;;
+
         --wait)
             shift
             WAIT_OPTION="true"
             ;;
-
-        --on)
-            shift
-            PDU_OPERATION="on"
-            ;;
-
-        --power)
-            shift
-            PDU_OPERATION="power"
-            ;;
-
-        --off)
-            shift
-            PDU_OPERATION="off"
-            ;;
-
-        --state)
-            shift
-            PDU_OPERATION="state"
-            ;;
-        
-        --temperature)
-            shift
-            PDU_OPERATION="temperature"
-            ;;
-
+ 
         --print-files)
             shift
             OPTION_PRINT_FILES="true"
@@ -355,10 +352,10 @@ function wake_server ()
         return 1
     fi
 
-    if is_server_running_ssh "$hostName"; then
-        printVerbose "Server '$hostName' is already running."
-        return 0
-    fi
+    #if is_server_running_ssh "$hostName"; then
+    #    printVerbose "Server '$hostName' is already running."
+    #    return 0
+    #fi
 
     macAddress=$(mac_for_server "$hostName")
     if [ -z "$macAddress" ]; then
@@ -367,11 +364,12 @@ function wake_server ()
     fi
 
     printVerbose "Waking server ${hostName} on ${macAddress}."
-    wakeonlan "$macAddress"
+    echo "Sending wake up message to host ${hostName}."
+    wakeonlan "$macAddress" >/dev/null 2>/dev/null
     return 0
 }
 
-function shut_down_server ()
+function shut_down_server()
 {
     local hostname="$1"
 
@@ -379,7 +377,51 @@ function shut_down_server ()
         return 1
     fi
 
-    ssh "$hostname" -- sudo poweroff
+    echo "Trying to shut down host ${hostname}."
+    if [ -n "$OPTION_USER" ]; then
+        ssh -o UserKnownHostsFile=/dev/null \
+            -o StrictHostKeyChecking=no \
+            -o LogLevel=quiet \
+            -i /home/${OPTION_USER}/.ssh/id_rsa \
+            "${OPTION_USER}@$hostname" -- sudo poweroff
+    else
+        ssh -o UserKnownHostsFile=/dev/null \
+            -o StrictHostKeyChecking=no \
+            -o LogLevel=quiet \
+            "$hostname" -- sudo poweroff
+    fi
+}
+
+#
+# topic: stat/t7500/resources
+# message: {"Load":0.37, "Memory": { "Total": 49449668, "Available": 30354284 }, "hostname":"t7500", "id": 0}
+#
+# topic: stat/t7500/disks
+# message: {"Sum": {"Total": 2129717536, "Used": 846944648, "Free": 1178812776, "Percent": 42}, "hostname": "t7500", "id": 0}
+#
+function ping_server()
+{
+    local hostname="$1"
+    local state
+    local message
+
+    if [ -z "$hostname" ]; then
+        return 1
+    fi
+
+    if ping -c 1 -W 1 $hostname >/dev/null 2>/dev/null; then
+        state="on"
+    else
+        state="off"
+    fi
+        
+    if [ -n "$OPTION_PRINT_JSON" ]; then
+        message="{\"hostname\": \"$hostname\", \"status\": \"$state\"}"
+    else
+        message="$state"
+    fi
+
+    echo "$message"
 }
 
 function print_header()
@@ -678,6 +720,10 @@ elif [ -n "$SHUT_DOWN_OPTION" ]; then
     for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 
         shut_down_server "$hostname"
     done
+elif [ -n "$OPTION_PING" ]; then
+    for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 
+        ping_server "$hostname"
+    done 
 elif [ -n "$WAKE_OPTION" ]; then
     #
     # Wake up the servers.

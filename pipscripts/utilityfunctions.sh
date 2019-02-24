@@ -709,6 +709,20 @@ function printProgressBar()
     printf "%3d%% " "$percent"
 }
 
+function get_number_of_containers()
+{
+    local name
+    local retval=0
+
+    if [ "$(which lxc-ls)" ]; then
+        for name in $(sudo lxc-ls); do
+            let retval+=1
+        done
+    fi
+
+    echo "$retval"
+}
+
 function STR_DIRNAME()
 {
     echo "$XTERM_COLOR_BLUE$1$TERM_NORMAL"
