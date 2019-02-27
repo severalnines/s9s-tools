@@ -546,18 +546,20 @@ function compile_source_dir()
     #
     # Running autogen in the source root. 
     #
-    printVerbose "Running autogen.sh."
-    pip-host-control --log "Running 'autogen.sh'."
-    rm -f autogen.log
+    if [ ! -f "Makefile" ]; then
+        printVerbose "Running autogen.sh."
+        pip-host-control --log "Running 'autogen.sh'."
+        rm -f autogen.log
 
-    ./autogen.sh >>"autogen.log" 2>>"autogen.log"
-    retcode $?
-    if [ $retcode -ne 0 ]; then
-        printVerbose "Script autogen.sh failed."
-        pip-host-control \
-            --tail "$PWD/autogen.log" \
-            --error "The ./autogen.sh returned an error ($retcode)."
-        exit 6
+        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+        retcode $?
+        if [ $retcode -ne 0 ]; then
+            printVerbose "Script autogen.sh failed."
+            pip-host-control \
+                --tail "$PWD/autogen.log" \
+                --error "The ./autogen.sh returned an error ($retcode)."
+            exit 6
+        fi
     fi
     
     #
@@ -567,7 +569,7 @@ function compile_source_dir()
     pip-host-control --log "Running 'make'."
     rm -f "make.log"
 
-    make -j10 >>"make.log" 2>>"make.log"
+    make -j20 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         printVerbose "Program 'make' failed."
@@ -653,16 +655,19 @@ function ft_test_ended()
     echo "<h2>Backtrace</h2>" 
     echo "<hr>" 
 
-    echo "The controller did not crash, however failed, so here " \
-        "is the current trace." 
 
-    sudo gdb -p $backend_pid -batch \
-        -ex "thread apply all back" \
-        -ex "quit" 
+    if [ -n "$backend_pid" ]; then
+        echo "The controller did not crash, however failed, so here " \
+            "is the current trace." 
+
+        sudo gdb -p $backend_pid -batch \
+            -ex "thread apply all back" \
+            -ex "quit" 
     
-    sudo gdb -p $backend_pid -batch \
-        -ex "thread apply all back" \
-        -ex "quit" 
+        #sudo gdb -p $backend_pid -batch \
+        #    -ex "thread apply all back" \
+        #    -ex "quit" 
+    fi
 }
 
 #
@@ -1024,16 +1029,24 @@ function run_test()
             ;;
 
         ft_*)
+            message "WD: $PWD test_name: $test_name."
+
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f
                 rm -f "Vagrantfile"
             fi
 
             rm -f test_ssh_key.pub*
+            echo "" >ft_full.log 
 
             pip-host-control --log "Running ${test_name}."
-                
+            if [ -f "tests/$test_name/$test_name" ]; then
+                message "Entering directory 'tests'..."
+                cd tests
+            fi
+
             if [ ! -f "$test_name/$test_name" ]; then
+                message "Program $test_name was not found."
                 pip-host-control \
                     --error "Program $test_name was not found." \
                     --status "Program $test_name was not found."
@@ -1046,11 +1059,34 @@ function run_test()
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
                 --mysql-version=$version \
-                --os="$os" >>"$logfile" 2>>"$logfile"
+                --os="$os" >>"$logfile" 2>>"$logfile" &
 
+            test_pid=$!
+            
+            upload_result_file \
+                --functional-test \
+                --pid "$test_pid" \
+                "$test_name" "RUNNING" $logfile 
+
+            watcher_pid=$!
+            wait "$test_pid"
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
+            
+            ft_test_ended \
+                "$return_code" \
+                "" # \ >>ft_full.log 2>>ft_full.log
+
+            if [ $return_code -eq 0 ]; then
+                upload_result_file \
+                    --functional-test \
+                    "$test_name" "SUCCESS" $logfile
+            else
+                upload_result_file \
+                    --functional-test \
+                    "$test_name" "FAILURE" $logfile
+            fi
             ;;
 
         ut_*)
