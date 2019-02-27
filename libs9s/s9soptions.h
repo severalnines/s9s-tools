@@ -61,6 +61,7 @@ class S9sOptions
             Script,
             Sheet,
             Server,
+            Controller,
             Tree,
             User,
             Event,
@@ -318,6 +319,7 @@ class S9sOptions
         bool isScriptOperation() const;
         bool isSheetOperation() const;
         bool isServerOperation() const;
+        bool isControllerOperation() const;
         bool isTreeOperation() const;
         bool isClusterOperation() const;
         bool isContainerOperation() const;
@@ -495,6 +497,8 @@ class S9sOptions
         bool setState(
                 const S9sString    &key,
                 const S9sVariant   &value);
+        
+        S9sVariant getState(const S9sString    &key);
 
     private:
         void checkController();
@@ -515,6 +519,7 @@ class S9sOptions
         void printHelpScript();
         void printHelpSheet();
         void printHelpServer();
+        void printHelpController();
         void printHelpTree();
 
         bool readOptionsNoMode(int argc, char *argv[]);
@@ -554,6 +559,9 @@ class S9sOptions
         
         bool readOptionsServer(int argc, char *argv[]);
         bool checkOptionsServer();
+        
+        bool readOptionsController(int argc, char *argv[]);
+        bool checkOptionsController();
         
         bool readOptionsTree(int argc, char *argv[]);
         bool checkOptionsTree();

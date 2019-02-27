@@ -96,6 +96,9 @@ main(int argc, char **argv)
         atexit(enable_cursor);
 
     PRINT_VERBOSE("Command line options processed.");
+    
+    s9s_log("Command line options processed.");
+    options->loadStateFile();
 
     finished = options->executeInfoRequest();
     if (finished)

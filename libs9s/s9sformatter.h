@@ -79,6 +79,7 @@ class S9sFormatter
                 const S9sNode    &node) const;
 
         void printServerStat(const S9sServer &server) const;
+        void printControllerStat(const S9sServer &server) const;
         void printClusterStat(const S9sCluster &cluster) const;
         void printContainerStat(const S9sContainer &container) const;
 

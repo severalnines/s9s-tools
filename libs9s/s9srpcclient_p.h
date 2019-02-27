@@ -9,6 +9,7 @@
 #include "S9sString"
 #include "S9sRpcReply"
 #include "S9sVariantMap"
+#include "S9sServer"
 #include "s9srpcclient.h"
 
 class S9sRpcClientPrivate
@@ -21,6 +22,8 @@ class S9sRpcClientPrivate
         int unRef();
 
         void rememberRedirect();
+        bool loadRedirect();
+
         void printBuffer(const S9sString &title);
 
         bool hasCompleteJSon() const;
@@ -66,7 +69,7 @@ class S9sRpcClientPrivate
         bool            m_authenticated;
         
         S9sVariantList  m_controllers;
-
+        S9sVector<S9sServer> m_servers;
         friend class S9sRpcClient;
 };
 

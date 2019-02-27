@@ -617,6 +617,65 @@ S9sServer::alias(
     return defaultValue;
 }
 
+int 
+S9sServer::port() const
+{
+    return property("port").toInt();
+}
+
+/**
+ * The CmonController uses this to report the PID of the controller.
+ */
+int 
+S9sServer::pid() const
+{
+    return property("pid").toInt();
+}
+
+/**
+ * CmonController uses this to report its data directory.
+ */
+S9sString
+S9sServer::dataDir(
+        const S9sString &defaultValue) const
+{
+    if (hasProperty("datadir"))
+        return property("datadir").toString();
+
+    return defaultValue;
+}
+
+S9sString
+S9sServer::configFile(
+        const S9sString &defaultValue) const
+{
+    if (hasProperty("configfile"))
+        return property("configfile").toString();
+
+    return defaultValue;
+}
+
+S9sString
+S9sServer::logFile(
+        const S9sString &defaultValue) const
+{
+    if (hasProperty("logfile"))
+        return property("logfile").toString();
+
+    return defaultValue;
+}
+
+S9sString
+S9sServer::role(
+        const S9sString &defaultValue) const
+{
+    if (hasProperty("role"))
+        return property("role").toString();
+
+    return defaultValue;
+}
+
+
 S9sString
 S9sServer::message(
         const S9sString &defaultValue) const

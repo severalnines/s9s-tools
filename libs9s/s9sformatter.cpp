@@ -1034,6 +1034,125 @@ S9sFormatter::printServerStat(
 }
 
 /**
+ * \param controller The controller to print.
+ *
+ * Prints one controller in stat format, a format we use when the --stat command
+ * line option is provided.
+ */
+void
+S9sFormatter::printControllerStat(
+        const S9sServer &controller) const
+{
+    S9sOptions    *options = S9sOptions::instance();
+    int            terminalWidth = options->terminalWidth();
+    const char    *greyBegin = greyColorBegin();
+    const char    *greyEnd   = greyColorEnd();
+    S9sString      title;
+
+    //
+    // The title line that is in inverse. 
+    //
+    if (controller.hostName() == controller.ipAddress())
+    {
+        title = controller.hostName();
+    } else {
+        title.sprintf("%s (%s)", 
+                STR(controller.hostName()), STR(controller.ipAddress()));
+    }
+
+    printf("%s", TERM_INVERSE);
+    printf("%s", STR(title));
+    for (int n = title.length(); n < terminalWidth; ++n)
+        printf(" ");
+    printf("%s", TERM_NORMAL);
+    printf("\n");
+
+    printObjectStat(controller);
+
+    //
+    // "      IP: 192.168.1.4"
+    //
+    printf("%s      IP:%s ", greyBegin, greyEnd);
+    printf("%s%-33s%s ", 
+            ipColorBegin(controller.ipAddress()),
+            STR(controller.ipAddress()),
+            ipColorEnd());
+
+    printf("%s    Port:%s ", greyBegin, greyEnd);
+    printf("%d ", controller.port());
+
+    printf("\n");
+    
+    //
+    // "  Status: CmonHostOnline                        Role: follower"
+    //
+    printf("%s  Status:%s ", greyBegin, greyEnd);
+    printf("%s%-35s%s ", 
+            hostStateColorBegin(controller.hostStatus()),
+            STR(controller.hostStatus()),
+            hostStateColorEnd());
+
+    printf("  %sRole:%s ", greyBegin, greyEnd);
+    printf("%s", STR(controller.role()));
+    printf("\n");
+    
+    //
+    // ""
+    //
+    //printf("%s      OS:%s ", greyBegin, greyEnd);
+    //printf("%-24s", STR(controller.osVersionString("-")));
+    //printf("\n");
+    
+    //
+    // "     PID: 51836 "
+    //
+    printf("%s     PID:%s ", greyBegin, greyEnd);
+    printf("%-6d", controller.pid());
+    printf("\n");
+
+    // 
+    // "   Alias: ''                        Owner: pipas/users" 
+    //
+    printf("%s   Alias:%s ", greyBegin, greyEnd);
+    printf("%-16s ", STR(controller.alias("-")));
+    printf("\n");
+    
+    //
+    // "  Config: 'configs/FtFull.conf'"
+    //
+    printf("%s  Config:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(controller.configFile()),
+            STR(controller.configFile()),
+            fileColorEnd());
+
+    printf("\n");
+    
+    //
+    // " DataDir: '/tmp/cmon/controller3/var/lib/cmon'"
+    //
+    printf("%s DataDir:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            XTERM_COLOR_BLUE,
+            STR(controller.dataDir()),
+            TERM_NORMAL);
+    printf("\n");
+    
+    //
+    // " LogFile: './cmon-ft-install.log'"
+    //
+    printf("%s LogFile:%s ", greyBegin, greyEnd);
+    printf("'%s%s%s'", 
+            fileColorBegin(controller.logFile()),
+            STR(controller.logFile()),
+            fileColorEnd());
+    printf("\n");
+
+    
+    printf("\n");
+}
+
+/**
  * Prints one cluster in "stat" format, a very detailed format that is
  * used when the --stat command line option is provided.
  */

@@ -129,6 +129,7 @@ class S9sRpcClient
         bool unregisterHost();
         bool getContainers();
         bool getServers();
+        bool getControllers();
         bool createContainerWithJob();
         bool deleteContainerWithJob();
         bool startContainerWithJob();

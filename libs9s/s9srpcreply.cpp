@@ -4427,6 +4427,210 @@ S9sRpcReply::printServers()
     }
 }
 
+void
+S9sRpcReply::printControllers()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isStatRequested())
+    {
+        printControllersStat();
+    } else if (options->isLongRequested()) 
+    {
+        printControllersLong();
+    } else {
+        printControllersBrief();
+    }
+}
+
+/**
+ * Prints the servers in stat format, a format we use when the --stat command
+ * line option is provided.
+ */
+void
+S9sRpcReply::printControllersStat()
+{
+    S9sVariantList  theList = operator[]("controllers").toVariantList();
+    S9sOptions     *options = S9sOptions::instance();
+    
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+        
+        m_formatter.printControllerStat(server);
+    }
+}
+
+/**
+ * Prints the servers in the long format.
+ */
+void 
+S9sRpcReply::printControllersLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("controllers").toVariantList();
+    int             total   = operator[]("total").toInt();
+    int             nLines = 0;
+
+    S9sFormat       versionFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       ownerFormat;
+    S9sFormat       groupFormat;
+    S9sFormat       ipFormat(ipColorBegin(), ipColorEnd());
+    S9sFormat       portFormat;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+        S9sString      version  = server.version();
+        S9sString      owner    = server.ownerName();
+        S9sString      group    = server.groupOwnerName();
+        S9sString      ip       = server.ipAddress();
+        int            port     = server.port();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        if (version.empty())
+            version = "-";
+        
+        versionFormat.widen(version);
+        hostNameFormat.widen(hostName);
+        ownerFormat.widen(owner);
+        groupFormat.widen(group);
+        ipFormat.widen(ip);
+        portFormat.widen(port);
+        ++nLines;
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        versionFormat.widen("VERSION");
+        ownerFormat.widen("OWNER");
+        groupFormat.widen("GROUP");
+        hostNameFormat.widen("SERVER_NAME");
+        ipFormat.widen("IP");
+        portFormat.widen("PORT");
+        
+        ::printf("%s", headerColorBegin());
+        ::printf("S ");
+        versionFormat.printf("VERSION");
+        ownerFormat.printf("OWNER");
+        groupFormat.printf("GROUP");
+        hostNameFormat.printf("NAME");
+        ipFormat.printf("IP", false);
+        portFormat.printf("PORT");
+
+        printf("COMMENT");
+        printf("%s\n", headerColorEnd());
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      role     = server.role();
+        S9sString      hostName = server.hostName();
+        S9sString      version  = theMap["version"].toString();
+        S9sString      status   = server.status();
+        S9sString      owner    = theMap["owner_user_name"].toString();
+        S9sString      group    = theMap["owner_group_name"].toString();
+        S9sString      message  = server.message("-");
+        S9sString      ip       = server.ipAddress("-");
+        int            port     = server.port();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        if (version.empty())
+            version = "-";
+        
+        hostNameFormat.setColor(
+                server.colorBegin(syntaxHighlight),
+                server.colorEnd(syntaxHighlight));
+        
+        // Printing.
+        if (status != "CmonHostOnline")
+            ::printf("- ");
+        else if (role == "leader")
+            ::printf("l ");
+        else if (role == "follower")
+            ::printf("f ");
+        else 
+            ::printf("? ");
+
+        versionFormat.printf(version);
+        
+        printf("%s", userColorBegin());
+        ownerFormat.printf(owner);
+        printf("%s", userColorEnd());
+        
+        printf("%s", groupColorBegin(group));
+        groupFormat.printf(group);
+        printf("%s", groupColorEnd());
+
+        hostNameFormat.printf(hostName);
+        ipFormat.printf(ip);
+
+        portFormat.printf(port);
+
+        printf("%s", STR(message));
+
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d controller(s)\n", total);
+}
+
+/**
+ * Prints the servers in the brief format.
+ */
+void 
+S9sRpcReply::printControllersBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("controllers").toVariantList();
+    const char     *hostColorBegin = "";
+    const char     *hostColorEnd = "";
+
+    if (syntaxHighlight)
+    {
+        hostColorBegin  = XTERM_COLOR_GREEN;
+        hostColorEnd    = TERM_NORMAL;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sServer      server   = theMap;
+        S9sString      hostName = server.hostName();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
+    }
+}
+
 
 /**
  * Prints the servers in stat format, a format we use when the --stat command

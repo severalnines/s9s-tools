@@ -160,10 +160,15 @@ S9sRpcClientPrivate::connect()
 
     if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server) == -1)
     {
+        s9s_log("Connect to %s:%d failed: %m.", STR(m_hostName), m_port);
+
+        // errno: 111 connection refused.
+        s9s_log("errno: %d", errno);
         m_errorString.sprintf(
                 "Connect to %s:%d failed: %m.", 
                 STR(m_hostName), m_port);
       
+        loadRedirect();
         close();
         return false;
     }
@@ -387,6 +392,7 @@ S9sRpcClientPrivate::setBuffer(
 }
 
 /**
+ * This is how the refirect notification looks like:
  *
 {
     "error_string": "Redirect notification.",
@@ -424,40 +430,116 @@ S9sRpcClientPrivate::setBuffer(
     "request_status": "Redirect",
     "status": "CmonControllerFollower"
 }
+ *
+ * Here is how the m_controllers look like.
+[{
+    "class_name": "CmonController",
+    "hostname": "192.168.0.127",
+    "ip": "192.168.0.127",
+    "port": 10001
+}, {
+    "class_name": "CmonController",
+    "hostname": "192.168.0.127",
+    "ip": "192.168.0.127",
+    "port": 20001
+}, {
+    "class_name": "CmonController",
+    "hostname": "192.168.0.127",
+    "ip": "192.168.0.127",
+    "port": 9556
+}]
  */
 void
 S9sRpcClientPrivate::rememberRedirect()
 {
     S9sVariantMap  leader;
-    S9sVariantMap  controllers;
+    S9sVariantMap  redirect;
+    S9sVariantList redirects;
     S9sOptions    *options = S9sOptions::instance();
-    S9sVariant     value;
-    S9sString      key = "redirect";
+    S9sString      key = "redirects";
+    bool           found = false;
 
     s9s_log("Processing redirect.");
+
+    /*
+     * Collecting the controllers into a list that is stored in the object.
+     */
     m_controllers.clear();
 
     if (m_reply.contains("leader_controller"))
     {
-        s9s_log("Has leader.");
+        s9s_log("Has a leader in the redirect notification.");
         m_controllers << m_reply["leader_controller"].toVariantMap();
     }
 
     if (m_reply.contains("follower_controllers"))
     {
-        S9sVariantMap followers = m_reply["follower_controllers"].toVariantMap();
+        S9sVariantMap followers = 
+            m_reply["follower_controllers"].toVariantMap();
+
         foreach(const S9sVariant &variant, followers)
         {
             m_controllers << variant.toVariantMap();
         }
     }
 
-    controllers["url"]         = options->controllerUrl();
-    controllers["controllers"] = m_controllers;
+    redirect["url"]         = options->controllerUrl();
+    redirect["controllers"] = m_controllers;
 
-    s9s_log("-> \n%s\n", STR(controllers.toString()));
-    value = controllers;
-    options->setState(key, value);
+    redirects = options->getState(key).toVariantList();
+    for (uint idx = 0u; idx < redirects.size(); ++idx)
+    {
+        S9sVariantMap tmp = redirects[idx].toVariantMap();
+
+        if (tmp["url"] != options->controllerUrl())
+            continue;
+
+        redirects[idx] = redirect;
+        found = true;
+    }
+
+    if (!found)
+        redirects << redirect;
+
+    // Saving the state file.
+    s9s_log("Setting '%s' in state as: \n%s\n", 
+            STR(key),
+            STR(S9sVariant(redirects).toString()));
+
+    s9s_log("m_controllers: %s", STR(S9sVariant(m_controllers).toString()));
+
+    options->setState(key, redirects);
+}
+
+bool
+S9sRpcClientPrivate::loadRedirect()
+{
+    S9sOptions    *options = S9sOptions::instance();    
+    S9sVariantList redirects;
+    S9sVariantMap  redirect;
+    S9sString      key = "redirects";
+    bool           found = true;
+
+    redirects = options->getState(key).toVariantList();
+    s9s_log("redirects: %s", STR(options->getState(key).toString()));
+    for (uint idx = 0u; idx < redirects.size(); ++idx)
+    {
+        S9sVariantMap tmp = redirects[idx].toVariantMap();
+
+        s9s_log("tmp: %s", STR(tmp.toString()));
+        if (tmp["url"] != options->controllerUrl())
+            continue;
+
+        redirect = redirects[idx].toVariantMap();
+        found = true;
+    }
+   
+    if (found)
+    {
+        s9s_log("Loaded redirect: %s", STR(redirect.toString()));
+    }
+
+    return found;
 }
 
 /**

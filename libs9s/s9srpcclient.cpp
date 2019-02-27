@@ -5465,6 +5465,22 @@ S9sRpcClient::getServers()
 }
 
 /**
+ * Gets the controllers from the controller. :)
+ */
+bool
+S9sRpcClient::getControllers()
+{
+    S9sString      uri = "/v2/host/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList servers   = options->servers();
+   
+    request["operation"]      = "getControllers";
+ 
+    return executeRequest(uri, request);
+}
+
+/**
  * Creates a container by initiating a job. Like this:
  * \code
    #s9s container --create --log --debug
@@ -7317,7 +7333,8 @@ S9sRpcClient::executeRequest(
         if (retval && m_priv->m_reply.isRedirect())
         {
             s9s_log("This is a redirect.");
-            s9s_log("Reply: %s", STR(m_priv->m_reply.toString()));
+            //s9s_log("Reply: %s", STR(m_priv->m_reply.toString()));
+
             S9sVariantMap leader = 
                 m_priv->m_reply["leader_controller"].toVariantMap();
             S9sString     hostName;

@@ -326,6 +326,7 @@ S9sOptions::S9sOptions() :
     m_modes["script"]       = Script;
     m_modes["sheet"]        = Sheet;
     m_modes["server"]       = Server;
+    m_modes["controller"]   = Controller;
     m_modes["tree"]         = Tree;
     m_modes["user"]         = User;
     m_modes["account"]      = Account;
@@ -345,6 +346,7 @@ S9sOptions::S9sOptions() :
     m_modes["scripts"]      = Script;
     m_modes["sheets"]       = Sheet;
     m_modes["servers"]      = Server;
+    m_modes["controllers"]  = Server;
     m_modes["users"]        = User;
     m_modes["accounts"]     = Account;
     m_modes["events"]       = Event;
@@ -472,10 +474,23 @@ S9sOptions::loadStateFile()
     S9sFile   file(fileName);
     S9sString content;
 
+    s9s_log("Loading state file '%s'.", STR(fileName));
     if (!file.exists())
     {
         s9s_log("File '%s' no exists, ok.", STR(fileName));
-        return true;
+        return false;
+    }
+
+    if (!file.readTxtFile(content))
+    {
+        s9s_log("%s.", STR(file.errorString()));
+        return false;
+    }
+
+    if (!m_state.parse(STR(content)))
+    {
+        s9s_log("Error parsing state file.");
+        return false;
     }
 
     return true;
@@ -489,6 +504,7 @@ S9sOptions::writeStateFile()
     S9sString content = m_state.toString();
     bool      success;
 
+    s9s_log("Writing state file '%s'.", STR(fileName));
     success = file.writeTxtFile(content);
     if (!success)
     {
@@ -505,6 +521,16 @@ S9sOptions::setState(
 {
     m_state[key] = value;
     return writeStateFile();
+}
+
+S9sVariant
+S9sOptions::getState(
+        const S9sString    &key)
+{
+    if (m_state.contains(key))
+        return m_state.at(key);
+
+    return S9sVariant();
 }
 
 /**
@@ -2875,6 +2901,15 @@ S9sOptions::isSheetOperation() const
  * \returns true if the main operation is "server".
  */
 bool
+S9sOptions::isControllerOperation() const
+{
+    return m_operationMode == Controller;
+}
+
+/**
+ * \returns true if the main operation is "server".
+ */
+bool
 S9sOptions::isServerOperation() const
 {
     return m_operationMode == Server;
@@ -4375,6 +4410,14 @@ S9sOptions::readOptions(
 
             break;
         
+        case Controller:
+            retval = readOptionsController(*argc, argv);
+            
+            if (retval)
+                retval = checkOptionsController();
+
+            break;
+        
         case Tree:
             retval = readOptionsTree(*argc, argv);
             
@@ -4546,6 +4589,10 @@ S9sOptions::printHelp()
             printHelpServer();
             break;
         
+        case Controller:
+            printHelpController();
+            break;
+        
         case Tree:
             printHelpTree();
             break;
@@ -4572,19 +4619,20 @@ S9sOptions::printHelpGeneric()
 "  %s COMMAND [OPTION...]\n"
 "\n"
 "Where COMMAND is:\n"
-"  account - to manage accounts on clusters.\n"
-"    alarm - to manage alarms.\n"
-"   backup - to view, create and restore database backups.\n"
-"  cluster - to list and manipulate clusters.\n"
-"      job - to view jobs.\n"
-"    maint - to view and manipulate maintenance periods.\n"
-" metatype - to print metatype information.\n"
-"     node - to handle nodes.\n"
-"  process - to view processes running on nodes.\n"
-"   script - to manage and execute scripts.\n"
-"   server - to manage hardware resources.\n"
-"    sheet - to manage spreadsheets.\n"
-"     user - to manage users.\n"
+"    account - to manage accounts on clusters.\n"
+"      alarm - to manage alarms.\n"
+"     backup - to view, create and restore database backups.\n"
+"    cluster - to list and manipulate clusters.\n"
+" controller - to manage Cmon controllers.\n"
+"        job - to view jobs.\n"
+"      maint - to view and manipulate maintenance periods.\n"
+"   metatype - to print metatype information.\n"
+"       node - to handle nodes.\n"
+"    process - to view processes running on nodes.\n"
+"     script - to manage and execute scripts.\n"
+"     server - to manage hardware resources.\n"
+"      sheet - to manage spreadsheets.\n"
+"       user - to manage users.\n"
 "\n"
 "Generic options:\n"
 "  --help                     Show help message and exit.\n" 
@@ -4995,7 +5043,6 @@ S9sOptions::printHelpSheet()
     );
 }
 
-
 void
 S9sOptions::printHelpServer()
 {
@@ -5028,6 +5075,18 @@ S9sOptions::printHelpServer()
 "  --os-user=USERNAME         The username to authenticate on the server.\n"
 "  --refresh                  Do not use cached data, collect information.\n"
 "  --servers=LIST             List of servers.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpController()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"controller\" command:\n"
+"  --list                     List the registered servers.\n"
 "\n"
     );
 }
@@ -10980,6 +11039,248 @@ S9sOptions::readOptionsServer(
 }
 
 /**
+ * Reads the command line options for the "controller" mode.
+ */
+bool
+S9sOptions::readOptionsController(
+        int    argc,
+        char  *argv[])
+{
+    int           c;
+    struct option long_options[] =
+    {
+        // Generic Options
+        { "help",             no_argument,       0, OptionHelp            },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "controller",       required_argument, 0, 'c'                   },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "color",            optional_argument, 0, OptionColor           },
+        { "human-readable",   no_argument,       0, 'h'                   },
+        { "config-file",      required_argument, 0, OptionConfigFile      },
+        { "batch",            no_argument,       0, OptionBatch           },
+        { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        
+        // Job Related Options
+        { "wait",             no_argument,       0, OptionWait            },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+
+        // Main Option
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
+       
+        // FIXME: remove this.
+        //{ "cluster-id",       required_argument, 0, 'i'                   },
+        
+        { "acl",              required_argument, 0, OptionAcl             },
+        { "cloud",            required_argument, 0, OptionCloud           },
+        { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
+        { "os-password",      required_argument, 0, OptionOsPassword      },
+        { "os-user",          required_argument, 0, OptionOsUser          },
+        { "refresh",          no_argument,       0, OptionRefresh         },
+        { "region",           required_argument, 0, OptionRegion          },
+        { "servers",          required_argument, 0, OptionServers         },
+        
+        { "log-file",         required_argument, 0, OptionLogFile         },
+
+        { 0, 0, 0, 0 }
+    };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:VgGu:", 
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // -h, --help
+                m_options["help"] = true;
+                break;
+            
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+            
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+            
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller=URL
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+            
+            case OptionConfigFile:
+                // --config-file=CONFIG
+                m_options["config-file"] = optarg;
+                break;
+            
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+            
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+            
+            case OptionOnlyAscii:
+                // --only-ascii
+                m_options["only_ascii"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+            
+            /*
+             * Main options.
+             */
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
+                break;
+
+            /*
+             * Job related options.
+             */
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+            
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
+            /*
+             * Other command line options.
+             */ 
+            case OptionLogFile:
+                // --log-file=FILE
+                m_options["log_file"] = optarg;
+                break;            
+
+            case '?':
+            default:
+                S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c)) {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    // 
+    // The first extra argument is 'cluster', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
  * Reads the command line options for the "tree" mode.
  */
 bool
@@ -11480,6 +11781,42 @@ S9sOptions::checkOptionsServer()
         countOptions++;
     
     if (isStopRequested())
+        countOptions++;
+
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Main options are mutually exclusive.";
+        m_exitStatus = BadOptions;
+        return false;
+    } else if (countOptions == 0)
+    {
+        m_errorMessage = "Main option is required.";
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok in "controller" mode.
+ */
+bool
+S9sOptions::checkOptionsController()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListRequested())
+        countOptions++;
+    
+    if (isStatRequested())
         countOptions++;
 
     if (countOptions > 1)

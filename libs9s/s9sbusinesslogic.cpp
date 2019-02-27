@@ -438,6 +438,20 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
+    } else if (options->isControllerOperation())
+    {
+        if (options->isListRequested() || options->isStatRequested())
+        {
+            /*
+             * s9s controller --list
+             */
+            S9sRpcReply reply;
+
+            success = client.getControllers();
+            reply = client.reply();
+            reply.printControllers();
+            client.setExitStatus();
+        } 
     } else if (options->isServerOperation())
     {
         if (options->isCreateRequested())
