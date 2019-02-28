@@ -168,8 +168,12 @@ S9sRpcClientPrivate::connect()
                 "Connect to %s:%d failed: %m.", 
                 STR(m_hostName), m_port);
       
-        loadRedirect();
+        setConnectTried(m_hostName, m_port);
         close();
+
+        if (tryNextHost())
+            return connect();
+        
         return false;
     }
 
@@ -520,13 +524,14 @@ S9sRpcClientPrivate::loadRedirect()
     S9sString      key = "redirects";
     bool           found = true;
 
+    s9s_log("Loading controllers from state file.");
     redirects = options->getState(key).toVariantList();
-    s9s_log("redirects: %s", STR(options->getState(key).toString()));
+    //s9s_log("redirects: %s", STR(options->getState(key).toString()));
     for (uint idx = 0u; idx < redirects.size(); ++idx)
     {
         S9sVariantMap tmp = redirects[idx].toVariantMap();
 
-        s9s_log("tmp: %s", STR(tmp.toString()));
+        //s9s_log("tmp: %s", STR(tmp.toString()));
         if (tmp["url"] != options->controllerUrl())
             continue;
 
@@ -534,12 +539,68 @@ S9sRpcClientPrivate::loadRedirect()
         found = true;
     }
    
+    m_servers.clear();
     if (found)
     {
-        s9s_log("Loaded redirect: %s", STR(redirect.toString()));
+        //s9s_log("Loaded redirect: %s", STR(redirect.toString()));
+        S9sVariantList controllers = redirect["controllers"].toVariantList();
+
+        for (uint idx = 0u; idx < controllers.size(); ++idx)
+        {
+            S9sServer controller = controllers[idx].toVariantMap();
+
+            m_servers << controller;
+        }
     }
 
     return found;
+}
+
+void
+S9sRpcClientPrivate::setConnectTried(
+        const S9sString  &hostName, 
+        const int         port)
+{
+    s9s_log("Tried %s:%d", STR(hostName), port);
+    if (m_servers.empty())
+        loadRedirect();
+
+    for (uint idx = 0u; idx < m_servers.size(); ++idx)
+    {
+        S9sServer &controller = m_servers[idx];
+
+        if (controller.hostName() == hostName && 
+                controller.port() == port)
+        {
+            controller.setConnectTried();
+        }
+        
+        s9s_log("[%03u] %s %s:%d", 
+                idx, 
+                controller.connectTried() ? "tried" : "     ",
+                STR(controller.hostName()), controller.port());
+    }
+}
+
+bool
+S9sRpcClientPrivate::tryNextHost()
+{
+    if (m_servers.empty())
+        loadRedirect();
+
+    for (uint idx = 0u; idx < m_servers.size(); ++idx)
+    {
+        S9sServer &controller = m_servers[idx];
+
+        if (!controller.connectTried())
+        {
+            m_hostName = controller.hostName();
+            m_port     = controller.port();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**

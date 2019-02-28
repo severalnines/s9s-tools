@@ -1385,3 +1385,16 @@ S9sServer::compareByName(
     return server1.hostName() < server2.hostName();
 }
 
+bool
+S9sServer::connectTried() const
+{
+    return property("connect_tried").toBoolean();
+}
+
+
+void
+S9sServer::setConnectTried(
+        bool value) 
+{
+    setProperty("connect_tried", value);
+}

@@ -24,6 +24,12 @@ class S9sRpcClientPrivate
         void rememberRedirect();
         bool loadRedirect();
 
+        void setConnectTried(
+                const S9sString  &hostName, 
+                const int         port);
+
+        bool tryNextHost();
+
         void printBuffer(const S9sString &title);
 
         bool hasCompleteJSon() const;

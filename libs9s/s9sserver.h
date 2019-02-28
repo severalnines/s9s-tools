@@ -122,5 +122,8 @@ class S9sServer : public S9sObject
         static bool compareByName(
                 const S9sServer &server1,
                 const S9sServer &server2);
+
+        bool connectTried() const;
+        void setConnectTried(bool value = true);
 };
 
