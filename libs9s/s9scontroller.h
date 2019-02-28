@@ -35,7 +35,9 @@ class S9sController : public S9sServer
         virtual ~S9sController();
 
         S9sController &operator=(const S9sVariantMap &rhs);
-        
+       
+        bool connectFailed() const;
+        void setConnectFailed(bool value = true);
 };
 
 

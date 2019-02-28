@@ -39,6 +39,7 @@
 #include "S9sGroup"
 #include "S9sReport"
 #include "S9sServer"
+#include "S9sController"
 #include "S9sJob"
 #include "S9sContainer"
 #include "S9sStringList"
@@ -4494,13 +4495,13 @@ S9sRpcReply::printControllersLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
-        S9sServer      server   = theMap;
-        S9sString      hostName = server.hostName();
-        S9sString      version  = server.version();
-        S9sString      owner    = server.ownerName();
-        S9sString      group    = server.groupOwnerName();
-        S9sString      ip       = server.ipAddress();
-        int            port     = server.port();
+        S9sController  controller = theMap;
+        S9sString      hostName = controller.hostName();
+        S9sString      version  = controller.version();
+        S9sString      owner    = controller.ownerName();
+        S9sString      group    = controller.groupOwnerName();
+        S9sString      ip       = controller.ipAddress();
+        int            port     = controller.port();
 
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
@@ -4525,7 +4526,7 @@ S9sRpcReply::printControllersLong()
         versionFormat.widen("VERSION");
         ownerFormat.widen("OWNER");
         groupFormat.widen("GROUP");
-        hostNameFormat.widen("SERVER_NAME");
+        hostNameFormat.widen("CONTROLLER_NAME");
         ipFormat.widen("IP");
         portFormat.widen("PORT");
         
@@ -4545,16 +4546,16 @@ S9sRpcReply::printControllersLong()
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
-        S9sServer      server   = theMap;
-        S9sString      role     = server.role();
-        S9sString      hostName = server.hostName();
+        S9sController  controller = theMap;
+        S9sString      role     = controller.role();
+        S9sString      hostName = controller.hostName();
         S9sString      version  = theMap["version"].toString();
-        S9sString      status   = server.status();
+        S9sString      status   = controller.status();
         S9sString      owner    = theMap["owner_user_name"].toString();
         S9sString      group    = theMap["owner_group_name"].toString();
-        S9sString      message  = server.message("-");
-        S9sString      ip       = server.ipAddress("-");
-        int            port     = server.port();
+        S9sString      message  = controller.message("-");
+        S9sString      ip       = controller.ipAddress("-");
+        int            port     = controller.port();
 
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
@@ -4563,8 +4564,8 @@ S9sRpcReply::printControllersLong()
             version = "-";
         
         hostNameFormat.setColor(
-                server.colorBegin(syntaxHighlight),
-                server.colorEnd(syntaxHighlight));
+                controller.colorBegin(syntaxHighlight),
+                controller.colorEnd(syntaxHighlight));
         
         // Printing.
         if (status != "CmonHostOnline")

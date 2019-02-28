@@ -619,6 +619,9 @@ S9sRpcClientPrivate::tryNextHost()
         {
             m_hostName = controller.hostName();
             m_port     = controller.port();
+
+            s9s_log("Next controller to try %s:%d.",
+                    STR(m_hostName), m_port);
             return true;
         }
     }

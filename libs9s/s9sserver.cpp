@@ -1386,16 +1386,3 @@ S9sServer::compareByName(
 }
 
 
-bool
-S9sServer::connectFailed() const
-{
-    return property("connect_tried").toBoolean();
-}
-
-
-void
-S9sServer::setConnectFailed(
-        bool value) 
-{
-    setProperty("connect_tried", value);
-}

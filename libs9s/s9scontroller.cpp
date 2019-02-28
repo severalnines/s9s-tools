@@ -56,3 +56,23 @@ S9sController::operator=(
     return *this;
 }
 
+/**
+ * The CLI uses this property to store if the controller could not be connected
+ * and so an other controller should be contacted.
+ */
+bool
+S9sController::connectFailed() const
+{
+    return property("connect_tried").toBoolean();
+}
+
+/**
+ * The CLI uses this property to store if the controller could not be connected
+ * and so an other controller should be contacted.
+ */
+void
+S9sController::setConnectFailed(
+        bool value) 
+{
+    setProperty("connect_tried", value);
+}

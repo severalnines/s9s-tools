@@ -7372,7 +7372,7 @@ S9sRpcClient::executeRequest(
             ++nTry;
             if (nTry > 5) 
             {
-                PRINT_ERROR("Redirect failed.");
+                //PRINT_ERROR("Redirect failed.");
                 s9s_log("Too many redirects (%d), aborting.", nTry);
                 break;
             }
