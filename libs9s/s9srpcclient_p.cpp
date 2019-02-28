@@ -96,8 +96,10 @@ S9sRpcClientPrivate::connect()
     struct hostent *hp;
     struct timeval timeout;
     struct sockaddr_in server;
+    bool   success;
 
-    s9s_log("Connecting to %s:%d", STR(m_hostName), m_port);
+    s9s_log("");
+    s9s_log("Connecting to '%s:%d'.", STR(m_hostName), m_port);
 
     /*
      * disconnect first if there is a previous connection
@@ -126,11 +128,12 @@ S9sRpcClientPrivate::connect()
     }
 
     /*
-     * Setting up a read and write timeout values
-     * (otherwise it hangs on interrupted connection)
+     * Setting up a read and write timeout values (otherwise it hangs on
+     * interrupted connection).
      */
     timeout.tv_sec  = 240;
     timeout.tv_usec = 0;
+
     setsockopt(
             m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
             (char*) &timeout, sizeof(timeout));
@@ -140,45 +143,54 @@ S9sRpcClientPrivate::connect()
             (char*) &timeout, sizeof(timeout));
 
     /*
-     * lookup
+     * Doing the DNS lookup.
      */
+    success = true;
     hp = gethostbyname(STR(m_hostName));
     if (hp == NULL)
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
         close();
-        return false;
+        success = false;
+    } else {
+        /*
+         * Connecting to the server. (TODO: IPv6)
+         */
+        memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
+        server.sin_family = AF_INET;
+        server.sin_port = htons(m_port);
+
+        if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server)
+                == -1)
+        {
+            s9s_log("Connect to %s:%d failed: %m.", STR(m_hostName), m_port);
+
+            // errno: 111 connection refused.
+            //s9s_log("errno: %d", errno);
+
+            m_errorString.sprintf(
+                    "Connect to %s:%d failed: %m.", 
+                    STR(m_hostName), m_port);
+      
+            setConnectFailed(m_hostName, m_port);
+            close();
+
+            success = false;
+        }
     }
+       
+    /*
+     * If either the DNS lookup or the connect failed and we have an other
+     * controller to connect we do a recursive call here.
+     */
+    if (!success && tryNextHost())
+        return connect();
 
     /*
-     * Connecting to the server.
-     * (TODO: IPv6)
+     *
      */
-    memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
-    server.sin_family = AF_INET;
-    server.sin_port = htons(m_port);
-
-    if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server) == -1)
-    {
-        s9s_log("Connect to %s:%d failed: %m.", STR(m_hostName), m_port);
-
-        // errno: 111 connection refused.
-        s9s_log("errno: %d", errno);
-        m_errorString.sprintf(
-                "Connect to %s:%d failed: %m.", 
-                STR(m_hostName), m_port);
-      
-        setConnectTried(m_hostName, m_port);
-        close();
-
-        if (tryNextHost())
-            return connect();
-        
-        return false;
-    }
-
+    s9s_log("Connected.");
     PRINT_VERBOSE("Connected.");
-
     if (m_useTls)
     {
         PRINT_VERBOSE ("Initiate TLS...");
@@ -506,11 +518,13 @@ S9sRpcClientPrivate::rememberRedirect()
         redirects << redirect;
 
     // Saving the state file.
+    #if 0
     s9s_log("Setting '%s' in state as: \n%s\n", 
             STR(key),
             STR(S9sVariant(redirects).toString()));
 
     s9s_log("m_controllers: %s", STR(S9sVariant(m_controllers).toString()));
+    #endif
 
     options->setState(key, redirects);
 }
@@ -524,7 +538,9 @@ S9sRpcClientPrivate::loadRedirect()
     S9sString      key = "redirects";
     bool           found = true;
 
-    s9s_log("Loading controllers from state file.");
+    s9s_log("Loading controllers from state file for %s.",
+            STR(options->controllerUrl()));
+
     redirects = options->getState(key).toVariantList();
     //s9s_log("redirects: %s", STR(options->getState(key).toString()));
     for (uint idx = 0u; idx < redirects.size(); ++idx)
@@ -557,13 +573,16 @@ S9sRpcClientPrivate::loadRedirect()
 }
 
 void
-S9sRpcClientPrivate::setConnectTried(
+S9sRpcClientPrivate::setConnectFailed(
         const S9sString  &hostName, 
         const int         port)
 {
-    s9s_log("Tried %s:%d", STR(hostName), port);
     if (m_servers.empty())
         loadRedirect();
+
+    s9s_log("Setting controller %s:%d to failed.", STR(hostName), port);
+    s9s_log("IDX   STATE    NAME            PORT");
+    s9s_log("-----------------------------------");
 
     for (uint idx = 0u; idx < m_servers.size(); ++idx)
     {
@@ -575,11 +594,13 @@ S9sRpcClientPrivate::setConnectTried(
             controller.setConnectTried();
         }
         
-        s9s_log("[%03u] %s %s:%d", 
+        s9s_log("[%03u] %s %12s %6d", 
                 idx, 
-                controller.connectTried() ? "tried" : "     ",
+                controller.connectTried() ? "failed  " : "untested",
                 STR(controller.hostName()), controller.port());
     }
+    
+    s9s_log("-----------------------------------");
 }
 
 bool

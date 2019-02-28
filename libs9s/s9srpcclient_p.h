@@ -24,7 +24,7 @@ class S9sRpcClientPrivate
         void rememberRedirect();
         bool loadRedirect();
 
-        void setConnectTried(
+        void setConnectFailed(
                 const S9sString  &hostName, 
                 const int         port);
 

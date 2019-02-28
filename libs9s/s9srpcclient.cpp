@@ -413,7 +413,11 @@ S9sRpcClient::authenticate()
     else 
         retval = authenticateWithKey();
 
-    s9s_log("  success: %s", retval ? "yes" : "no");
+    if (retval)
+        s9s_log("Authenticated.");
+    else
+        s9s_log("Authentication failed.");
+
     return retval;
 }
 
@@ -7332,7 +7336,7 @@ S9sRpcClient::executeRequest(
 
         if (retval && m_priv->m_reply.isRedirect())
         {
-            s9s_log("This is a redirect.");
+            s9s_log("Redirect notification received.");
             //s9s_log("Reply: %s", STR(m_priv->m_reply.toString()));
 
             S9sVariantMap leader = 
@@ -7344,8 +7348,8 @@ S9sRpcClient::executeRequest(
             hostName = leader["hostname"].toString();
             port     = leader["port"].toInt();
 
-            s9s_log("hostName: %s", STR(hostName));
-            s9s_log("    port: %d", port);
+            //s9s_log("hostName: %s", STR(hostName));
+            //s9s_log("    port: %d", port);
 
             if (hostName.empty())
                 return retval;
