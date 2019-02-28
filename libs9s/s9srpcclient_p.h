@@ -9,7 +9,7 @@
 #include "S9sString"
 #include "S9sRpcReply"
 #include "S9sVariantMap"
-#include "S9sServer"
+#include "S9sController"
 #include "s9srpcclient.h"
 
 class S9sRpcClientPrivate
@@ -75,7 +75,7 @@ class S9sRpcClientPrivate
         bool            m_authenticated;
         
         S9sVariantList  m_controllers;
-        S9sVector<S9sServer> m_servers;
+        S9sVector<S9sController> m_servers;
         friend class S9sRpcClient;
 };
 

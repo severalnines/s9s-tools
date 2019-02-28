@@ -185,6 +185,8 @@ S9sRpcClientPrivate::connect()
      */
     if (!success && tryNextHost())
         return connect();
+    else if (!success)
+        return false;
 
     /*
      *
@@ -563,7 +565,7 @@ S9sRpcClientPrivate::loadRedirect()
 
         for (uint idx = 0u; idx < controllers.size(); ++idx)
         {
-            S9sServer controller = controllers[idx].toVariantMap();
+            S9sController controller = controllers[idx].toVariantMap();
 
             m_servers << controller;
         }
@@ -586,17 +588,17 @@ S9sRpcClientPrivate::setConnectFailed(
 
     for (uint idx = 0u; idx < m_servers.size(); ++idx)
     {
-        S9sServer &controller = m_servers[idx];
+        S9sController &controller = m_servers[idx];
 
         if (controller.hostName() == hostName && 
                 controller.port() == port)
         {
-            controller.setConnectTried();
+            controller.setConnectFailed();
         }
         
         s9s_log("[%03u] %s %12s %6d", 
                 idx, 
-                controller.connectTried() ? "failed  " : "untested",
+                controller.connectFailed() ? "failed  " : "untested",
                 STR(controller.hostName()), controller.port());
     }
     
@@ -611,9 +613,9 @@ S9sRpcClientPrivate::tryNextHost()
 
     for (uint idx = 0u; idx < m_servers.size(); ++idx)
     {
-        S9sServer &controller = m_servers[idx];
+        S9sController &controller = m_servers[idx];
 
-        if (!controller.connectTried())
+        if (!controller.connectFailed())
         {
             m_hostName = controller.hostName();
             m_port     = controller.port();

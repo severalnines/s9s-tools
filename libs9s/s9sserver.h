@@ -123,7 +123,7 @@ class S9sServer : public S9sObject
                 const S9sServer &server1,
                 const S9sServer &server2);
 
-        bool connectTried() const;
-        void setConnectTried(bool value = true);
+        bool connectFailed() const;
+        void setConnectFailed(bool value = true);
 };
 
