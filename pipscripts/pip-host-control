@@ -277,10 +277,12 @@ function send_host_info()
     local message
 
     if [ ! -f "$HOST_INFO_FILE" ]; then
+        printVerbose "No file '$HOST_INFO_FILE' found."
         return 1
     fi
 
     if [ ! -f "$MQTT_CONFIG_FILE" ]; then
+        printVerbose "No file '$MQTT_CONFIG_FILE' found."
         return 1
     fi
 
