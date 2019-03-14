@@ -54,9 +54,9 @@ function printVerbose()
         echo -e "DEBUG $*" >&2
     fi
 
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE" 2>/dev/null
-    fi
+    #if [ "$LOGFILE" ]; then
+    #    echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE" 2>/dev/null
+    #fi
 }
 
 #
@@ -505,7 +505,7 @@ function create_container()
     # as template or we download a distribution. 
     #
     if [ "$parent_name" ]; then
-        printVerbose "Creating container $new_name from template."
+        printVerbose "Creating container $new_name from template $parent_name."
         lxc-copy -n "$parent_name" --newname="$new_name"
     else 
         #
@@ -567,9 +567,10 @@ function create_container()
         /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
         2>/dev/null
 
-    if [ $? -ne 0 ]; then
-        printError "Could not create user $OWNER"
-    fi
+    # Well, if the user is already created this might happen.
+    #if [ $? -ne 0 ]; then
+    #    printError "Could not create user $OWNER"
+    #fi
 
     #
     # Copying the SSH keys.

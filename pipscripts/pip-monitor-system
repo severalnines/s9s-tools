@@ -163,6 +163,33 @@ function get_memory_measurements()
     echo "{ \"Total\": $total, \"Available\": $available }"
 }
 
+function get_disk_throughput()
+{
+    local lines=$(sudo iotop -qbokn 4)
+    local read_kilo
+    local write_kilo
+
+    printVerbose "lines: $lines"
+
+    write_kilo=$(\
+        echo "$lines" | grep "Actual DISK WRITE" | tail -n 1 | \
+        awk '{print $10}')
+
+    read_kilo=$(\
+        echo "$lines" | grep "Actual DISK READ" | tail -n 1 | \
+        awk '{print $4}')
+
+    if [ -z "$read_kilo" ]; then
+        read_kilo="null"
+    fi
+    
+    if [ -z "$write_kilo" ]; then
+        write_kilo="null"
+    fi
+
+    echo "{ \"ReadKps\": $read_kilo, \"WriteKps\": $write_kilo }"
+}
+
 function get_load()
 {
     cat /proc/loadavg | awk '{print $1}'
@@ -178,6 +205,7 @@ function get_resources()
     local memory=$(get_memory_measurements)
     local nproc=$(nproc)
     local n_containers=$(get_number_of_containers)
+    local throughput=$(get_disk_throughput)
     local message
 
     message="{\
@@ -186,7 +214,7 @@ function get_resources()
 \"NProc\": $nproc, \
 \"NContainers\": $n_containers, \
 \"Memory\": $memory, \
-\"id\": $HOST_ID}"
+\"DiskThroughput\": $throughput}"
     echo "$message"
 }
 
