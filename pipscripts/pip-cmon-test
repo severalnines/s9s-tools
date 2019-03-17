@@ -449,9 +449,14 @@ function print_title()
 #
 function prepare_source()
 {
+    pip-host-control \
+        --status "Preparing source." 
+
     if [ -z "$NO_GIT_PULL" ]; then
         printVerbose "Pulling source."
-        pip-host-control --log "Pulling source."
+        pip-host-control \
+            --log "Pulling source." \
+            --status "Pulling source." 
         
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
@@ -461,7 +466,10 @@ function prepare_source()
     if [ "$DO_CLEAN" ]; then
         printVerbose "Cleaning source dir."
 
-        pip-host-control --log "Cleaning source dir."
+        pip-host-control \
+            --log "Cleaning source dir." \
+            --status "Cleaning source."
+
         git clean -dfx >/dev/null 2>/dev/null
         pip-host-control --log "Cleaned source."
     fi
@@ -548,7 +556,10 @@ function compile_source_dir()
     #
     if [ ! -f "Makefile" ]; then
         printVerbose "Running autogen.sh."
-        pip-host-control --log "Running 'autogen.sh'."
+        pip-host-control \
+            --log "Running 'autogen.sh'." \
+            --status "Running 'autogen.sh'."
+
         rm -f autogen.log
 
         ./autogen.sh >>"autogen.log" 2>>"autogen.log"
@@ -566,7 +577,10 @@ function compile_source_dir()
     # Running make in source root.
     #
     printVerbose "Running 'make'."
-    pip-host-control --log "Running 'make'."
+    pip-host-control \
+        --log "Running 'make'." \
+        --status "Running 'make'."
+
     rm -f "make.log"
 
     make -j20 >>"make.log" 2>>"make.log"
@@ -581,7 +595,10 @@ function compile_source_dir()
 
     if [ -n "$do_install" ]; then
         printVerbose "Running 'make install'."
-        pip-host-control --log "Running 'make install'."
+        pip-host-control \
+            --log "Running 'make install'." \
+            --status "Running 'make install'."
+
         sudo make install >>"make.log" 2>>"make.log"
 
         if [ $? -ne 0 ]; then
@@ -971,6 +988,7 @@ function run_test()
             else
                 pip-host-control --error "The ft_full/ft_full was not found."
                 pip-host-control --error "  pwd: $PWD"
+                upload_slog_file
                 return 1
             fi
 
@@ -1048,8 +1066,11 @@ function run_test()
             if [ ! -f "$test_name/$test_name" ]; then
                 message "Program $test_name was not found."
                 pip-host-control \
+                    --status "$test_name is missing." \
                     --error "Program $test_name was not found." \
                     --status "Program $test_name was not found."
+                
+                pip-host-control --error "  pwd: $PWD"
                     
                 return 1
             fi
@@ -1167,7 +1188,8 @@ function main()
 
     pip-host-control \
         --testing \
-        --log "Preparing test ($MYNAME ver. $VERSION)."
+        --log "Preparing test ($MYNAME ver. $VERSION)." \
+        --status "Preparing test."
 
     if [ -z "$(psql --version)" ]; then
         sudo apt-get -y --force-yes install postgresql

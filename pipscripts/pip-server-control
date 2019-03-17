@@ -8,7 +8,7 @@ VERBOSE=""
 LOGFILE="$HOME/.pip/${MYNAME}.log"
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
-OPTION_USER=""
+OPTION_USER="pipas"
 
 SUM_SERVERS=0
 SUM_OFF_LINE_SERVERS=0
@@ -347,15 +347,19 @@ function wake_server ()
 {
     local hostName="$1"
     local macAddress
+    local pdu
 
     if [ -z "$hostName" ]; then
         return 1
     fi
 
-    #if is_server_running_ssh "$hostName"; then
-    #    printVerbose "Server '$hostName' is already running."
-    #    return 0
-    #fi
+    if [ -n "$CONF_HOST_PDU" ]; then
+        for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
+            pip-pdu-control --on $pdu
+        done
+
+        sleep 2
+    fi
 
     macAddress=$(mac_for_server "$hostName")
     if [ -z "$macAddress" ]; then
@@ -653,6 +657,7 @@ function print_host_list_brief()
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
+        CONF_HOST_PDU=""
 
         HOSTNAME=""
         NUMBER_OF_CORES=""

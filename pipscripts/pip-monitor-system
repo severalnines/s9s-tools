@@ -13,6 +13,14 @@ source $MYDIR/utilityfunctions.sh
 
 export LC_ALL=C
 
+# sysv-rc-conf --level 5 piphostc on
+# sysv-rc-conf --level 6 piphostc off
+# sysv-rc-conf --level 0 piphostc off
+# sysv-rc-conf --list | grep pip
+# /etc/init.d/piphostc
+#
+
+
 #
 # Prints the software version and exits.
 #
@@ -359,6 +367,64 @@ function ping_server()
     echo "  retcode: $retcode"
 }
 
+function emit_rc_file()
+{
+    cat <<EOF
+#! /bin/bash
+# chkconfig: 2345 20 80
+
+LOCKFILE="/var/lock/subsys/piphostcontrol"
+
+function start()
+{
+    # Touch our lock file so that stopping will work correctly
+    touch \${LOCKFILE}
+
+    sudo -H -u pipas bash -c 'pip-host-control --verbose --status "Started."'
+}
+
+function stop()
+{
+        # Remove our lock file
+        rm \${LOCKFILE}
+
+        # Run that command that we wanted to run
+        sudo -H -u pipas bash -c 'pip-host-control --verbose --status "Shut down."'
+}
+
+case "\$1" in
+    start) start;;
+    stop) stop;;
+    *)
+        echo $"Usage: \$0 {start|stop}"
+        exit 1
+esac
+
+exit 0
+EOF
+
+
+}
+
+function run_checks()
+{
+    local rc_file="/etc/init.d/piphostc"
+    local level
+
+    if [ ! -f "$rc_file" ]; then
+        emit_rc_file | sudo tee "$rc_file" >/dev/null
+        sudo chmod +x "$rc_file"
+
+        sudo apt -y --force-yes install sysv-rc-conf
+        for level in 5 4 3 2 1; do
+            sudo sysv-rc-conf --level $level piphostc on
+        done
+
+        sudo sysv-rc-conf --level 0 piphostc off
+        sudo sysv-rc-conf --level 6 piphostc off 
+    fi
+}
+
 
 #
 # mpt-status 
@@ -394,6 +460,8 @@ fi
 if [ $VERSION_OPTION ]; then
     printVersionAndExit
 else
+    run_checks
+
     for h in core1 core2 core3 t7500 storage01 laptop01 www dns1 dns2; do
         ping_server $h
     done
