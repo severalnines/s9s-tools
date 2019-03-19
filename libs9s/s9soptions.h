@@ -343,6 +343,7 @@ class S9sOptions
 
         bool isHelpRequested() const;
         bool isListRequested() const;
+        bool isEnableCmonHaRequested() const;
         bool isListPartitionsRequested() const;
         bool isListImagesRequested() const;
         bool isListRegionsRequested() const;

@@ -440,7 +440,12 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isControllerOperation())
     {
-        if (options->isListRequested() || options->isStatRequested())
+        if (options->isEnableCmonHaRequested())
+        {
+            success = client.enableCmonHa();
+            client.printMessages("Enabled.", success);
+            client.setExitStatus();
+        } else if (options->isListRequested() || options->isStatRequested())
         {
             /*
              * s9s controller --list

@@ -5300,6 +5300,15 @@ S9sRpcClient::mkfile()
 }
 
 bool
+S9sRpcClient::enableCmonHa()
+{
+    S9sString      fullPath = "/.runtime/cmon_ha/enabled";
+    S9sString      content  = "true";
+    
+    return setContent(fullPath, content);
+}
+
+bool
 S9sRpcClient::setContent(
         const S9sString &fullPath,
         const S9sString &content)

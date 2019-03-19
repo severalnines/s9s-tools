@@ -119,6 +119,9 @@ class S9sRpcClient
 
         bool mkfile();
         bool mkfile(const S9sString &fullPath);
+
+        bool enableCmonHa();
+
         bool setContent(const S9sString &fullPath, const S9sString &content);
         bool setContent();
 

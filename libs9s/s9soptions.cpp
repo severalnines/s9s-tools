@@ -219,6 +219,7 @@ enum S9sOptionType
     OptionRmdir,
     OptionMkfile,
     OptionSave,
+    OptionEnableCmonHa,
     OptionAcl,
     OptionOwner,
     OptionListNics,
@@ -3019,6 +3020,12 @@ bool
 S9sOptions::isListRequested() const
 {
     return getBool("list");
+}
+
+bool
+S9sOptions::isEnableCmonHaRequested() const
+{
+    return getBool("enable_cmon_ha");
 }
 
 /**
@@ -11077,6 +11084,7 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
+        { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
        
@@ -11202,6 +11210,11 @@ S9sOptions::readOptionsController(
             /*
              * Main options.
              */
+            case OptionEnableCmonHa:
+                // --enable-cmon-ha
+                m_options["enable_cmon_ha"] = true;
+                break;
+
             case 'L': 
                 // --list
                 m_options["list"] = true;
@@ -11813,6 +11826,9 @@ S9sOptions::checkOptionsController()
     /*
      * Checking if multiple operations are requested.
      */
+    if (isEnableCmonHaRequested())
+        countOptions++;
+
     if (isListRequested())
         countOptions++;
     
