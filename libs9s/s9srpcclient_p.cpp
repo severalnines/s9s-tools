@@ -484,16 +484,10 @@ S9sRpcClientPrivate::rememberRedirect()
      */
     m_controllers.clear();
 
-    if (m_reply.contains("leader_controller"))
-    {
-        s9s_log("Has a leader in the redirect notification.");
-        m_controllers << m_reply["leader_controller"].toVariantMap();
-    }
-
-    if (m_reply.contains("follower_controllers"))
+    if (m_reply.contains("controllers"))
     {
         S9sVariantMap followers = 
-            m_reply["follower_controllers"].toVariantMap();
+            m_reply["controllers"].toVariantMap();
 
         foreach(const S9sVariant &variant, followers)
         {

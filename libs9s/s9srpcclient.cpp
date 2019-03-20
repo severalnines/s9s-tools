@@ -7323,7 +7323,41 @@ S9sRpcClient::composeJobDataOneContainer() const
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
- * 
+ *
+ * \code{.js}
+ * {
+ *     "controllers": 
+ *     {
+ *         "192.168.0.100:9501": 
+ *         {
+ *             "class_name": "CmonController",
+ *             "hostname": "192.168.0.100",
+ *             "ip": "192.168.0.100",
+ *             "port": 9501
+ *         },
+ *         "192.168.0.223:9501": 
+ *         {
+ *             "class_name": "CmonController",
+ *             "hostname": "192.168.0.223",
+ *             "ip": "192.168.0.223",
+ *             "port": 9501
+ *         },
+ *         "192.168.0.235:9501": 
+ *         {
+ *             "class_name": "CmonController",
+ *             "hostname": "192.168.0.235",
+ *             "ip": "192.168.0.235",
+ *             "port": 9501
+ *         }
+ *     },
+ *     "error_string": "Redirect notification.",
+ *     "reply_received": "2019-03-20T09:44:17.987Z",
+ *     "request_created": "2019-03-20T09:44:17.979Z",
+ *     "request_id": 1,
+ *     "request_processed": "2019-03-20T09:44:17.988Z",
+ *     "request_status": "Redirect"
+ * }
+ * \endcode
  */
 bool
 S9sRpcClient::executeRequest(
@@ -7334,43 +7368,65 @@ S9sRpcClient::executeRequest(
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
     bool           retval;
     int            nTry = 0;
+    S9sVariantMap  triedKeys;
 
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
 
-
     while (true)
     {
+        S9sString      hostName;
+        int            port = 0;
+
         retval = doExecuteRequest(uri, request);
+            
+        if (retval && m_priv->m_reply.isRedirect())
+            m_priv->rememberRedirect();
 
         if (retval && m_priv->m_reply.isRedirect())
         {
+            S9sVariantMap        controllers;
+            S9sVariantMap        controller;
+            S9sVector<S9sString> keys;
+
             s9s_log("Redirect notification received.");
-            //s9s_log("Reply: %s", STR(m_priv->m_reply.toString()));
+            S9S_WARNING("Redirect notification received.");
+            S9S_WARNING("Reply: %s", STR(m_priv->m_reply.toString()));
 
-            S9sVariantMap leader = 
-                m_priv->m_reply["leader_controller"].toVariantMap();
-            S9sString     hostName;
-            int           port;
-
-            m_priv->rememberRedirect();
-            hostName = leader["hostname"].toString();
-            port     = leader["port"].toInt();
-
-            //s9s_log("hostName: %s", STR(hostName));
-            //s9s_log("    port: %d", port);
-
-            if (hostName.empty())
-                return retval;
-    
-            if (hostName == m_priv->m_hostName && port == m_priv->m_port)
+            controllers = m_priv->m_reply["controllers"].toVariantMap();
+            keys = controllers.keys();
+            for (uint idx = 0u; idx < keys.size(); ++idx)
             {
-                s9s_log("Redirected to the same place (%s:%d), so aborting.",
-                        STR(m_priv->m_hostName),
-                        m_priv->m_port);
-                return retval;
+                S9sString key = keys[idx];
+
+                if (triedKeys.contains(key))
+                {
+                    S9S_WARNING("Already tried %s.", STR(key));
+                    continue;
+                }
+
+                triedKeys[key] = true;
+                controller = controllers[key].toVariantMap();
+                hostName   = controller["hostname"].toString();
+                port       = controller["port"].toInt();
+
+                if (m_priv->m_hostName == hostName &&
+                        m_priv->m_port == port)
+                {
+                    S9S_WARNING("We just tried this %s.", STR(key));
+                    continue;
+                }
+
+                break;
             }
 
+            if (hostName.empty())
+            {
+                S9S_WARNING("Could not find controller to try.");
+                return retval;
+            }
+    
+            S9S_WARNING("Trying %s:%d", STR(hostName), port);
             PRINT_VERBOSE("Redirected to %s:%d.", STR(hostName), port);
             s9s_log("Redirected to %s:%d.", STR(hostName), port);
 
@@ -7379,10 +7435,10 @@ S9sRpcClient::executeRequest(
             m_priv->m_port     = port;
 
             ++nTry;
-            if (nTry > 5) 
+            if (nTry > 6) 
             {
-                //PRINT_ERROR("Redirect failed.");
                 s9s_log("Too many redirects (%d), aborting.", nTry);
+                S9S_WARNING("Too many redirects (%d), aborting.", nTry);
                 break;
             }
         } else {
