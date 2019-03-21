@@ -319,6 +319,7 @@ class S9sRpcClient
                 const S9sString   &dbVersion,
                 const S9sString   &osRelease);
 
+        bool createSnapshotJob();
         bool createCluster();
         bool registerCluster();
         bool createNode();

@@ -1886,6 +1886,30 @@ S9sRpcClient::createLocalRepository(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::createSnapshotJob()
+{
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri       = "/v2/jobs/";
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "cmon_ha_create_snapshot";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Create Snapshot";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * Creates a "fail" job, a job that does nothing and fails.
  */

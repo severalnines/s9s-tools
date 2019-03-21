@@ -440,7 +440,12 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isControllerOperation())
     {
-        if (options->isEnableCmonHaRequested())
+        if (options->isCreateSnapshotRequested())
+        {
+            // s9s controller --create-snapshot
+            success = client.createServer();
+            maybeJobRegistered(client, 0, success);
+        } if (options->isEnableCmonHaRequested())
         {
             success = client.enableCmonHa();
             client.printMessages("Enabled.", success);

@@ -298,6 +298,7 @@ enum S9sOptionType
     OptionAlarmId,
     OptionLogFile,
     OptionCredentialId,
+    OptionCreateSnaphot,
 };
 
 /**
@@ -3770,6 +3771,12 @@ bool
 S9sOptions::isDropRequested() const
 {
     return getBool("drop");
+}
+
+bool
+S9sOptions::isCreateSnapshotRequested() const
+{
+    return getBool("create_snapshot");
 }
 
 /**
@@ -11084,6 +11091,7 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
+        { "create-snapshot",  no_argument,       0, OptionCreateSnaphot   },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "list",             no_argument,       0, 'L'                   },
         { "stat",             no_argument,       0, OptionStat            },
@@ -11210,6 +11218,11 @@ S9sOptions::readOptionsController(
             /*
              * Main options.
              */
+            case OptionCreateSnaphot:
+                // --create-snapshot
+                m_options["create_snapshot"] = true;
+                break;
+
             case OptionEnableCmonHa:
                 // --enable-cmon-ha
                 m_options["enable_cmon_ha"] = true;
@@ -11826,6 +11839,9 @@ S9sOptions::checkOptionsController()
     /*
      * Checking if multiple operations are requested.
      */
+    if (isCreateSnapshotRequested())
+        countOptions++;
+
     if (isEnableCmonHaRequested())
         countOptions++;
 
