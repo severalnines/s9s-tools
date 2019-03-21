@@ -443,7 +443,7 @@ S9sBusinessLogic::execute()
         if (options->isCreateSnapshotRequested())
         {
             // s9s controller --create-snapshot
-            success = client.createServer();
+            success = client.createSnapshotJob();
             maybeJobRegistered(client, 0, success);
         } if (options->isEnableCmonHaRequested())
         {
