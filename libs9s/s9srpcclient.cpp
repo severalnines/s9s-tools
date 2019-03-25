@@ -7606,8 +7606,6 @@ S9sRpcClient::doExecuteRequest(
             // read may got interrupted due to too small buffer
             if (readLength >= READ_SIZE - 1)
             {
-                S9S_WARNING("%u >= %d", readLength, READ_SIZE - 1);
-                S9S_WARNING("continue");
                 continue;
             }
         } else if (readLength < 0)
@@ -7641,7 +7639,7 @@ S9sRpcClient::doExecuteRequest(
 
             m_priv->m_jsonReply = m_priv->getCompleteJSon();
             //S9S_WARNING("json: %s", STR(m_priv->m_jsonReply));
-            S9S_WARNING("1 Parsing json");
+            //S9S_WARNING("1 Parsing json");
 
             m_priv->skipRecord();
             if (!jsonRecord.parse(STR(m_priv->m_jsonReply)))
