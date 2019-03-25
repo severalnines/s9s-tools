@@ -7,6 +7,36 @@ s9s-controller \- Command line client for the Severalnines Clustercontrol server
 .RI [OPTION]... 
 
 .SH DESCRIPTION
+The Cmon HA can be set up using the following simple steps:
+
+.TP
+.B 1)
+Install a Cmon Controller together with the Cmon Database serving as a 
+permanent storage for the controller. The Cmon HA will not replicate the Cmon
+Database, so it has to be accessible from all the controllers and if necessary
+it has to provide redundancy on itself.
+
+.TP 
+.B 2)
+Enable the Cmon HA subsystem using the \fB\-\^\-enable\-cmon\-ha\fP on the
+running controller. This will create one \fBCmonController\fP class object.
+Check the object using the \fB\-\^\-list\fP or \fB\-\^\-stat\fP option.
+
+The Cmon HA is now enabled, but there is no redundancy, only one controller is
+running. The one existing controller in this stage should be a leader although
+there are no followers.
+
+.TP
+.B 3)
+Install additional Cmon Controllers one by one and start them the usual way. The
+next controllers should use the Cmon Database, should have the same
+configuration files.
+
+When the additional controllers are started they will find the leader in the
+Cmon Database and will ask the leader to let them join. When the join is
+successful one more \fBCmonController\fP will be created for every joining
+controller.
+
 
 .SH OPTIONS
 .SS "Main Option"
@@ -14,4 +44,77 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+.TP
+.B \-\-create-snapshot
+Creates job that will create a controller to controller snapshot of the Cmon HA
+subsystem. 
 
+Creating a snaphot manually using this command line option is not necessary for
+the Cmon HA to operate, this command line option is made for testing and
+repairing.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --create-snapshot \\
+    --log
+.fi
+
+.TP
+.B \-\-enable\-cmon\-ha
+Enabled the Cmon HA subsystem. By default Cmon HA is not enabled for
+compatibility reasons, so this command line option is implemented to enable the
+controller to controller communication.
+
+When the Cmon HA is enabled CmonController class objects will be created and
+used to implement the high availability features (e.g. the leader election). So
+if the controller at least one CmonController object, the Cmon HA is enabled, if
+not, it is not enabled.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --enable-cmon-ha
+.fi
+
+The command line option itself is only a syntactic sugar to save a "true"
+boolean value into a CDT entry, so for example the following command can also be
+used:
+
+.B EXAMPLE
+.nf
+echo "true" | \\
+    s9s tree \\
+        --save \\
+        --cmon-user=system \\
+        --password=secret \\
+        --controller="https://10.10.1.23:9501" \\
+        --batch \\
+        /.runtime/cmon_ha/enabled
+.fi
+
+.TP
+.B \-\-list
+Lists the CmonController type objects known to the controller. If the Cmon HA is
+not enabled there will be no such objects, if it is enabled one or more
+controllers will be listed.
+
+With the \fB\-\^\-long\fP option a more detailed list will be shown where the
+state of the controllers can be checked.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --list \\
+    --long
+.fi
+
+.TP
+.B \-\-stat
+Prints more details about the controller objects.
+
+.B
+.nf
+s9s controller \\
+    --stat
+.fi

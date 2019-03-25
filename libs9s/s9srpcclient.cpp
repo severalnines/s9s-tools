@@ -35,7 +35,7 @@
 #include <iostream> 
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
@@ -7415,18 +7415,22 @@ S9sRpcClient::executeRequest(
 
             s9s_log("Redirect notification received.");
             PRINT_VERBOSE("Redirect notification received.");
-            S9S_WARNING("Redirect notification received.");
-            S9S_WARNING("Reply: %s", STR(m_priv->m_reply.toString()));
+            //S9S_WARNING("Reply: %s", STR(m_priv->m_reply.toString()));
 
             controllers = m_priv->m_reply["controllers"].toVariantMap();
+            PRINT_VERBOSE(
+                    "Has %u controller(s) in redirect.", 
+                    controllers.size());
+
             keys = controllers.keys();
             for (uint idx = 0u; idx < keys.size(); ++idx)
             {
                 S9sString key = keys[idx];
 
+                PRINT_VERBOSE("Investigating %s...", STR(key));
                 if (triedKeys.contains(key))
                 {
-                    S9S_WARNING("Already tried %s.", STR(key));
+                    PRINT_VERBOSE("Already tried %s.", STR(key));
                     continue;
                 }
 
@@ -7438,7 +7442,7 @@ S9sRpcClient::executeRequest(
                 if (m_priv->m_hostName == hostName &&
                         m_priv->m_port == port)
                 {
-                    S9S_WARNING("We just tried this %s.", STR(key));
+                    PRINT_VERBOSE("We just tried this %s.", STR(key));
                     continue;
                 }
 
@@ -7447,11 +7451,11 @@ S9sRpcClient::executeRequest(
 
             if (hostName.empty())
             {
-                S9S_WARNING("Could not find controller to try.");
+                PRINT_VERBOSE("Could not find controller to try.");
                 return retval;
             }
     
-            S9S_WARNING("Trying %s:%d", STR(hostName), port);
+            //S9S_WARNING("Trying %s:%d", STR(hostName), port);
             PRINT_VERBOSE("Redirected to %s:%d.", STR(hostName), port);
             s9s_log("Redirected to %s:%d.", STR(hostName), port);
 
@@ -7459,11 +7463,13 @@ S9sRpcClient::executeRequest(
             m_priv->m_hostName = hostName;
             m_priv->m_port     = port;
 
+            // This is just an unnecessary protection: if the code is ok this
+            // will never happen.
             ++nTry;
-            if (nTry > 6) 
+            if (nTry > 15) 
             {
                 s9s_log("Too many redirects (%d), aborting.", nTry);
-                S9S_WARNING("Too many redirects (%d), aborting.", nTry);
+                PRINT_VERBOSE("Too many redirects (%d), aborting.", nTry);
                 break;
             }
         } else {

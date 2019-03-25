@@ -15,6 +15,7 @@ man_MANS =            \
 	s9s-event.1       \
 	s9s-script.1      \
 	s9s-tree.1        \
+	s9s-controller.1  \
 	s9s.conf.5        \
 	s9s-cil.3
 

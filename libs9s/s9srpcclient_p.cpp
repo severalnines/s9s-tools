@@ -119,7 +119,7 @@ S9sRpcClientPrivate::connect()
         return false;
     }
 
-    PRINT_VERBOSE("Connecting to %s:%d...", STR(m_hostName), m_port);
+    PRINT_VERBOSE("\n+++ Connecting to %s:%d...", STR(m_hostName), m_port);
     m_socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socketFd == -1)
     {
