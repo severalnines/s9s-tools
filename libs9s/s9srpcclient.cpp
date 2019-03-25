@@ -35,7 +35,7 @@
 #include <iostream> 
 
 //#define DEBUG
-#define WARNING
+//#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
@@ -7415,7 +7415,6 @@ S9sRpcClient::executeRequest(
 
             s9s_log("Redirect notification received.");
             PRINT_VERBOSE("Redirect notification received.");
-            //S9S_WARNING("Reply: %s", STR(m_priv->m_reply.toString()));
 
             controllers = m_priv->m_reply["controllers"].toVariantMap();
             PRINT_VERBOSE(
