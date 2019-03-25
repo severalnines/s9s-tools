@@ -5100,7 +5100,11 @@ S9sOptions::printHelpController()
 
     printf(
 "Options for the \"controller\" command:\n"
-"  --list                     List the registered servers.\n"
+"  --create-snapshot          Creates a controller to controller snapshot.\n"
+"  --enable-cmon-ha           Enables the Cmon HA mode.\n"
+"  --list                     List the registered controllers.\n"
+"  --stat                     Prints details about the controllers.\n"
+""
 "\n"
     );
 }

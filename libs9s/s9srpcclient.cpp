@@ -7414,6 +7414,7 @@ S9sRpcClient::executeRequest(
             S9sVector<S9sString> keys;
 
             s9s_log("Redirect notification received.");
+            PRINT_VERBOSE("Redirect notification received.");
             S9S_WARNING("Redirect notification received.");
             S9S_WARNING("Reply: %s", STR(m_priv->m_reply.toString()));
 
