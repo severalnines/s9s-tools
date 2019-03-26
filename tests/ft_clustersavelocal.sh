@@ -174,6 +174,7 @@ function testCreateGalera()
     local exitCode
     local node_serial=1
     local node_name
+    local config_file
 
     if [ "$CLUSTER_TYPE" != "galera" ]; then
         return 0
@@ -183,6 +184,7 @@ function testCreateGalera()
     #
     #
     print_title "Creating a Galera Cluster"
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -232,6 +234,10 @@ function testCreateGalera()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+
+    config_file="/tmp/cmon_1.cnf"
+    print_subtitle "Cluster Config in $config_file"
+    cat $config_file
 }
 
 
@@ -303,6 +309,40 @@ function testCreatePostgre()
     wait_for_cluster_started "$CLUSTER_NAME"
 }
 
+function testSaveClusterFail()
+{
+    local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
+    local retcode
+
+    print_title "Trying to Save Cluster with no ID"
+    cat <<EOF
+  This test will try to save a cluster while not passing the cluster ID as a 
+  command line option. We had a segfault reported in the controller, so we
+  have this test to check.
+
+EOF
+
+    mys9s backup \
+        --save-cluster-info \
+        --backup-directory=$OUTPUT_DIR \
+        --output-file=$OUTPUT_FILE \
+        --log
+    
+    retcode=$?
+
+    if [ $retcode -eq 0 ]; then
+        failure "Job should not be a success."
+    else
+        success "  o Job failed (retcode=$retcode), ok."
+    fi
+
+    if [ ! -f "$tgz_file" ]; then
+        success "  o File '$tgz_file' was not created, ok"
+    else
+        failure "File '$tgz_file' was created with no cluster ID."
+    fi
+}
+
 function testSaveCluster()
 {
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
@@ -328,8 +368,8 @@ function testDropCluster()
 {
     print_title "Dropping Original Cluster"
     cat <<EOF
-Dropping the original cluster from the controller so that we can restore it from
-the saved file.
+  Dropping the original cluster from the controller so that we can restore it
+  from the saved file.
 
 EOF
 
@@ -345,6 +385,7 @@ function testRestoreCluster()
 {
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
     local retcode
+    local config_file
 
     print_title "Restoring Cluster"
 
@@ -384,6 +425,10 @@ function testRestoreCluster()
     else
         success "  o The cluster is in started state, ok"
     fi
+
+    config_file="/tmp/cmon_2.cnf"
+    print_subtitle "Cluster Config in $config_file"
+    cat $config_file 
 }
 
 function cleanup()
@@ -422,6 +467,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateGalera
     runFunctionalTest testCreatePostgre
+    runFunctionalTest testSaveClusterFail
     runFunctionalTest testSaveCluster
     runFunctionalTest testDropCluster
     runFunctionalTest testRestoreCluster
