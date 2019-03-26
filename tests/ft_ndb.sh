@@ -110,7 +110,7 @@ done
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -121,9 +121,9 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
+        failure "The controller is off line. Further testing is not possible."
     else
-        pip-say "The controller is on line."
+        failure "The controller is on line."
     fi
 }
 
@@ -271,7 +271,7 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    pip-say "The test to remove node is starting now."
+    print_title "The test to remove node is starting now."
     
     #
     # Removing the last added node.
@@ -294,9 +294,7 @@ function testRemoveNode()
 #
 function testRollingRestart()
 {
-    local exitCode
-    
-    pip-say "The test of rolling restart is starting now."
+    print_title "The test of rolling restart is starting now."
 
     #
     # Calling for a rolling restart.
@@ -305,16 +303,8 @@ function testRollingRestart()
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-
-        # FIXME: Is this always going to be job 4?
-        mys9s job --log --job-id=4
-        exit 1
-    fi
+   
+    check_exit_code $?
 }
 
 #
@@ -324,7 +314,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    print_title "The test to drop the cluster is starting now."
 
     #
     # Starting the cluster.
