@@ -240,10 +240,22 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME" 
+    if [ $? -eq 0 ]; then
+        success "  o The cluster got into STARTED state and stayed there, ok. "
+    else
+        failure "Failed to get into STARTED state."
+        mys9s cluster --stat
+        mys9s job --list 
+        return 1
+    fi
 
     #
     # Checking the controller, the nodes and the cluster.
     #
+    print_subtitle "Checking the State of the Cluster&Nodes"
+
+    mys9s cluster --stat
+
     check_controller \
         --owner      "pipas" \
         --group      "testgroup" \

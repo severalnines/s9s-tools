@@ -170,10 +170,12 @@ function startTests ()
         echo "  Command line: $COMMAND_LINE_OPTIONS"
     fi
 
-    echo "      Testname: $TEST_SUITE_NAME"
-    echo "      Hostname: $(hostname)"
-    echo "        My Dir: $MYDIR"
-    echo "          User: $USER"
+    echo " TEST_SUITE_NAME: $TEST_SUITE_NAME"
+    echo "        hostname: $(hostname)"
+    echo "           MYDIR: $MYDIR"
+    echo "         VERSION: $VERSION"
+    echo "            USER: $USER"
+    echo "         OPTIONS: $OPTIONS"
 
     #
     # Doing some checks
@@ -202,10 +204,20 @@ function startTests ()
         echo " [OK]"
     fi
 
+    #
+    # Cleanups before the test.
+    #
     if [ -f "$container_list_file" ]; then
         echo "Removing '$container_list_file'."
         rm -f "$container_list_file"
     fi
+    
+    if [ -f "$HOME/.s9s/s9s.state" ]; then
+        echo "Removing '$HOME/.s9s/s9s.state'."
+        rm -f $HOME/.s9s/s9s.state
+    fi
+
+    rm -rf /tmp/BACKUP*
 
     if [ -d "$MYDIR/../pipscripts" ]; then
         echo "Installing 'pipscripts'."
