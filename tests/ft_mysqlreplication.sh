@@ -259,6 +259,11 @@ function testCreateDatabase()
     local database_name
 
     print_title "Creating Database"
+    cat <<EOF
+  This test will create a few databases, check if the database creation reports
+  back a success.
+
+EOF
 
     #
     # This command will create a new database on the cluster.
@@ -273,7 +278,7 @@ function testCreateDatabase()
         check_exit_code_no_job $?
     done
 
-    s9s database --list --long
+    s9s cluster --list-databases --long --cluster-id=$CLUSTER_ID
 }
 
 function testCreateBackup()
