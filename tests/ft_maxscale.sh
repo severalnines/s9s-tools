@@ -173,8 +173,17 @@ function createCluster()
 #
 # This test will add a MaxScale node.
 #
+#
+# To connect to MaxScale CLI do on 192.168.0.194:
+#maxctrl -u admin -p mariadb
+#
+#To connect to MaxScale RW: mysql -h192.168.0.194 -uadmin -padmin -P4008
+#
+#To connect to MaxScale RR: mysql -h192.168.0.194 -uadmin -padmin -P4006
+#
 function testAddMaxScale()
 {
+
     print_title "Adding a MaxScale Node"
     
     #
@@ -192,7 +201,7 @@ function testAddMaxScale()
     #
     #
     #
-    print_title "Checking MaxScale State"
+    print_subtitle "Checking MaxScale State"
     MAXSCALE_IP=$(maxscale_node_name)
 
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"

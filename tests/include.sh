@@ -138,16 +138,39 @@ function mys9s()
 #
 function print_title()
 {
+    local number
+
+    let t1_counter+=1
+    let t2_counter=0
+
+    number="${t1_counter}"
     if [ -t 1 ]; then
         echo ""
-        echo -e "$TERM_COLOR_TITLE$*\033[0;39m"
+        echo -e "$TERM_COLOR_TITLE$number $*\033[0;39m"
         echo -e "\033[1m\
 -------------------------------------------------------------------------------\
 -\033[0;39m"
     else
         echo "</pre>"
         echo ""
-        echo "<h3>$*</h3>"
+        echo "<h3>$number $*</h3>"
+        echo "<pre>"
+    fi
+}
+
+function print_subtitle()
+{
+    local number
+    let t2_counter+=1
+
+    number="${t1_counter}.${t2_counter}"
+    if [ -t 1 ]; then
+        echo ""
+        echo -e "$TERM_COLOR_TITLE$number $*\033[0;39m"
+    else
+        echo "</pre>"
+        echo ""
+        echo "<h4>$number $*</h4>"
         echo "<pre>"
     fi
 }
@@ -161,6 +184,7 @@ function startTests ()
     local container_list_file="/tmp/${MYNAME}.containers"
 
     TEST_SUITE_NAME=$(basename $0 .sh)
+    pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
     #
     # Printing some info
@@ -226,6 +250,11 @@ function startTests ()
         popd
     fi
 
+    if [ -f "$HOME/.s9s/s9s.state" ]; then
+        echo "Removing '$HOME/.s9s/s9s.state'."
+        rm -f $HOME/.s9s/s9s.state
+    fi
+
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
         echo ""
         echo "***********************"
@@ -251,7 +280,9 @@ function endTests ()
             echo -en "${TERM_NORMAL}"
             echo ""
         fi
-          
+
+        pip-host-control --status="Passed '$TEST_SUITE_NAME'."
+        
         exit 0
     else
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
@@ -264,6 +295,7 @@ function endTests ()
             echo ""
         fi
     
+        pip-host-control --status="Failed '$TEST_SUITE_NAME'."
         exit 1
     fi
 }
@@ -278,19 +310,19 @@ function runFunctionalTest ()
 
     if ! isSuccess; then
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-            printf "  %-26s: SKIPPED\n" $1
+            printf "  %-26s: SKIPPED\n" "$TEST_NAME"
         fi
 
         return 1
     else
-        $1
+        $TEST_NAME $*
     fi
 
     if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
         if ! isSuccess; then
-            printf "  %-26s: FAILURE\n" $1
+            printf "  %-26s: FAILURE\n" "$TEST_NAME"
         else 
-            printf "  %-26s: SUCCESS\n" $1
+            printf "  %-26s: SUCCESS\n" "$TEST_NAME"
         fi
     fi
 }
@@ -1136,7 +1168,8 @@ function wait_for_server_ssh()
 #
 # $1: The name of the container or just leave it empty for the default name.
 #
-# Creates and starts a new virtual machine node.
+# Creates and starts a new virtual machine node. Prints the IP address when the
+# container is up.
 #
 function create_node()
 {
@@ -1248,7 +1281,7 @@ function reset_config()
                 break
         esac
     done
-            
+
     if [ -z "$OPTION_RESET_CONFIG" ]; then
         return 0
     fi
