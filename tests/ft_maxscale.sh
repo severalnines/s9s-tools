@@ -183,7 +183,6 @@ function createCluster()
 #
 function testAddMaxScale()
 {
-
     print_title "Adding a MaxScale Node"
     
     #
@@ -210,6 +209,7 @@ function testAddMaxScale()
         mys9s node --list --long
         mys9s node --stat $MAXSCALE_IP
     else
+        success "  o Maxscale host is in CmonHostOnline, ok."
         mys9s node --stat $MAXSCALE_IP
     fi
 }
@@ -235,6 +235,7 @@ function testStopMaxScale()
         mys9s node --list --long
         mys9s node --stat $MAXSCALE_IP
     else
+        success "  o Maxscale host is in CmonHostOffLine, ok."
         mys9s node --stat $MAXSCALE_IP
     fi
 }
@@ -260,6 +261,7 @@ function testStartMaxScale()
         mys9s node --list --long
         mys9s node --stat $MAXSCALE_IP
     else
+        success "  o Maxscale host is in CmonHostOnLine, ok."
         mys9s node --stat $MAXSCALE_IP
     fi
 }

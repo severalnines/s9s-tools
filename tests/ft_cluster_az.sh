@@ -360,6 +360,9 @@ EOF
 # Running the requested tests.
 #
 startTests
+echo "Test is disabled, because the cmon-cloud is unreliable."
+if false; then
+
 reset_config
 grant_user
 
@@ -377,5 +380,5 @@ else
     runFunctionalTest createContainer
     runFunctionalTest createCluster
 fi
-
+fi
 endTests
