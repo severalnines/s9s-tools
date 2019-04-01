@@ -329,6 +329,7 @@ function upload_file()
         cat "$temp_file"
     fi
 
+    rm "$temp_file"
     return $retcode
 }
 

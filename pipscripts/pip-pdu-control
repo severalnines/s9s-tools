@@ -253,9 +253,28 @@ function outlet_requested()
 function switch_apc()
 {
     local lock_file="/tmp/${CONF_PDU_SERVER}.lock"
+    local tmp
+    local retval
+
     printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
     printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
     printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
+
+    tmp=$(which pip-pdu-expect)
+    if [ -z "$tmp" ]; then
+        printError "The 'pip-pdu-expect' was not found."
+        return 1
+    else
+        printVerbose "*** expect_script: $tmp"
+    fi
+    
+    tmp=$(which expect)
+    if [ -z "$tmp" ]; then
+        printError "The 'expect' was not found."
+        return 1
+    else
+        printVerbose "***        expect: $tmp"
+    fi
 
     for n in 1 2 3 4 5 6 7 8; do
         if [ ! -f "$lock_file" ]; then
@@ -279,10 +298,20 @@ function switch_apc()
                 done
             else
                 for outlet in $(echo $PDU_OUTLETS | tr ',' ' '); do
+                    tmp=$(mktemp)
+
                     printVerbose "Switching outlet $outlet $PDU_OPERATION"
                     pip-pdu-expect \
                         "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
-                            >/dev/null 2>/dev/null
+                            >$tmp 2>$tmp
+
+                    retval=$?
+                    printVerbose "***        retval: $retval"
+                    if [ $retval -ne 0 ]; then
+                        cat $tmp
+                    fi
+
+                    rm -f $tmp
                 done
             fi
             ;;

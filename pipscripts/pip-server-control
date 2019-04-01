@@ -60,47 +60,14 @@ ERR_COLOR="$XTERM_COLOR_RED"
 NORM_COLOR="$XTERM_COLOR_BLUE"
 DATE_COLOR="\033[1m\033[38;5;215m"
 
+source "$MYDIR/utilityfunctions.sh"
+
 #
 # Prints the software version and exits.
 #
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -343,18 +310,39 @@ function mac_for_server()
 #
 # $1: the name of the server
 #
-function wake_server ()
+function wake_server()
 {
     local hostName="$1"
     local macAddress
     local pdu
+    local config_file
 
     if [ -z "$hostName" ]; then
         return 1
     fi
 
+    config_file="$HOME/.pip/${hostName}.host"
+    if [ ! -f "$config_file" ]; then
+        config_file="/home/pipas/.pip/${hostName}.host"
+    fi
+
+    if [ -f "$config_file" ]; then
+        printVerbose "Loading config from '$config_file'."
+        CONF_HOST_NAME=""
+        CONF_HOST_URL=""
+        CONF_HOST_CATEGORY=""
+        CONF_HOST_STANDARD=""
+        CONF_HOST_MAC=""
+        CONF_HOST_PROTECTED=""
+        CONF_HOST_VIRTUAL=""
+        CONF_HOST_PDU=""
+        
+        source "$config_file"
+    fi
+
     if [ -n "$CONF_HOST_PDU" ]; then
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
+            echo "Switching on PDU $pdu."
             pip-pdu-control --on $pdu
         done
 
@@ -529,6 +517,7 @@ function print_host_list_long()
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
+        CONF_HOST_PDU=""
 
         HOSTNAME=""
         NUMBER_OF_CORES="0"
