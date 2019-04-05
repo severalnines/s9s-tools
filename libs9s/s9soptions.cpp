@@ -944,6 +944,32 @@ S9sOptions::density() const
     return getBool("density");
 }
 
+int
+S9sOptions::clientConnectionTimeout() const
+{
+    S9sString  key = "client_connection_timeout";
+    S9sString  stringVal;
+    int        intVal = 10;
+
+    // Finding a string value.
+    stringVal = getenv("S9S_CONNECTION_TIMEOUT");
+    if (stringVal.empty())
+        stringVal = m_userConfig.variableValue(key);
+
+    if (stringVal.empty())
+        stringVal = m_systemConfig.variableValue(key);
+
+    // Converting to integer.
+    if (!stringVal.empty())
+        intVal = stringVal.toInt();
+
+    // Lower limit.
+    if (intVal < 1)
+        intVal = 1;
+
+    return intVal;
+}
+
 /**
  * \returns The value for the "brief_log_format" config variable that
  *   controls the format of the log lines printed when the --long option is not

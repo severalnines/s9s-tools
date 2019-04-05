@@ -83,6 +83,14 @@ The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
 command line option.
 
 .TP 5
+S9S_CONNECTION_TIMEOUT
+The timeout value measured in seconds for the network communication between the
+s9s client program and the Cmon Controller. The default value is 10 seconds.
+This settings can be also passed using the \fBclient_connection_timeout\fP
+variable in the s9s configuration file.
+
+
+.TP 5
 S9S_IGNORE_CONFIG
 Do not load any configuration files when the \fBs9s\fR program starts.
 

@@ -43,7 +43,10 @@ that is by default stored in the ~/.s9s/ directory under the Cmon User's
 username (e.g ~/.s9s/pipas.pub and ~/.s9s/pipas.key in this case). 
 
 
-.SH DESCRIPTION
+.SH CONFIGURATION 
+Here is the list of names the s9s configuration file can hold to configure the
+s9s command line tool:
+
 .TP
 \fBbackup_directory\fP 
 The directory where the created backup files will be placed on the target host.
@@ -66,6 +69,13 @@ this variable is interpreted the same way the value for the
 
 .B EXAMPLE:
 brief_job_log_format = "%32B:%-5L: %-7S %M\\n"
+
+.TP
+\fBclient_connection_timeout\fP
+The timeout value measured in seconds for the network communication between the
+s9s client program and the Cmon Controller. The default value is 10 seconds.
+This settings can be also passed using the \fBS9S_CONNECTION_TIMEOUT\fP
+environment variable.
 
 .TP
 \fBcmon_password\fP

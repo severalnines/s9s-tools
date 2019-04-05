@@ -107,6 +107,8 @@ class S9sOptions
         bool eventNameEnabled(const S9sString &eventName);
 
         bool onlyAscii() const;
+        int clientConnectionTimeout() const;
+        
         bool density() const;
         bool setPropertiesOption(const S9sString &assignments);
         S9sVariantMap propertiesOption() const;
