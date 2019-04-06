@@ -1,3 +1,9 @@
+s9s-tools (1.7.20190406-release1) UNRELEASED; urgency=medium
+
+  * New release for clustercontrol 1.7.2
+
+ -- David Kedves <kedazo@severalnines.com>  Sat, 06 Apr 2019 13:47:50 +0200
+
 s9s-tools (1.7.20190104-release1) UNRELEASED; urgency=medium
 
   * Just a new build with minor bugfixes
