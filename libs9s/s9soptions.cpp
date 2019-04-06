@@ -4516,7 +4516,7 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Milky Way)\n",
+        printf("%s Version %s (Solar System)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
 
         /*

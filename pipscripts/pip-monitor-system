@@ -462,9 +462,14 @@ if [ $VERSION_OPTION ]; then
 else
     run_checks
 
-    for h in core1 core2 core3 t7500 storage01 laptop01 www dns1 dns2; do
-        ping_server $h
-    done
+    hostname=$(hostname)
+    if [ "$hostname" == "t7500" -o "$hostname" == "core1" ]; then
+        for h in core1 core2 core3 t7500 storage01 laptop01 \
+            www dns1 dns2 mqtt; 
+        do
+            ping_server $h
+        done
+    fi
 
     if [ "$(hostname)" == "t7500" ]; then
         get_power pdu01
