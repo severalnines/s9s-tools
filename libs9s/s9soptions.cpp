@@ -967,6 +967,7 @@ S9sOptions::clientConnectionTimeout() const
     if (intVal < 1)
         intVal = 1;
 
+    //S9S_WARNING("intVal: %d", intVal);
     return intVal;
 }
 

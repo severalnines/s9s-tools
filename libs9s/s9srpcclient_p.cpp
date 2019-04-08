@@ -163,15 +163,30 @@ S9sRpcClientPrivate::connect()
         if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server)
                 == -1)
         {
-            s9s_log("Connect to %s:%d failed: %m.", STR(m_hostName), m_port);
 
             // errno: 111 connection refused.
+            // errno: 115 timeout
             //s9s_log("errno: %d", errno);
+            if (errno == 115)
+            {
+                int timeout = S9sOptions::instance()->clientConnectionTimeout();
 
-            m_errorString.sprintf(
-                    "Connect to %s:%d failed: %m.", 
-                    STR(m_hostName), m_port);
-      
+                s9s_log("Connect to %s:%d failed: Timeout (%ds).", 
+                        STR(m_hostName), m_port, timeout);
+
+                m_errorString.sprintf(
+                        "Connect to %s:%d failed: Timeout (%ds).", 
+                        STR(m_hostName), m_port, timeout);
+            } else {
+                s9s_log("Connect to %s:%d failed(%d): %m.", 
+                        STR(m_hostName), m_port,
+                        errno);
+
+                m_errorString.sprintf(
+                        "Connect to %s:%d failed(%d): %m.", 
+                        STR(m_hostName), m_port, errno);
+            }
+
             setConnectFailed(m_hostName, m_port);
             close();
 
