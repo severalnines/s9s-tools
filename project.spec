@@ -36,6 +36,7 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_bindir}/*
 %{_libdir}/*
 %{_mandir}/man1/*
+%{_mandir}/man3/*
 %{_mandir}/man5/*
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
