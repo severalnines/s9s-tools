@@ -17,5 +17,5 @@ usr/share/man/man1/s9s-tree.1
 usr/share/man/man1/s9s-user.1
 usr/share/man/man1/s9s-event.1
 usr/share/man/man1/s9s-controller.1
-usr/share/man/man5/s9s-cil.3
+usr/share/man/man3/s9s-cil.3
 usr/share/man/man5/s9s.conf.5
