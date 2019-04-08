@@ -987,7 +987,7 @@ function run_test()
                 done
             else
                 pip-host-control --error "The ft_full/ft_full was not found."
-                pip-host-control --error "  pwd: $PWD"
+                #pip-host-control --error "  pwd: $PWD"
                 upload_slog_file
                 return 1
             fi
@@ -1047,7 +1047,7 @@ function run_test()
             ;;
 
         ft_*)
-            message "WD: $PWD test_name: $test_name."
+            #message "WD: $PWD test_name: $test_name."
 
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f

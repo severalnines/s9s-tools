@@ -1,12 +1,15 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYDIR=$(dirname $0)
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.1"
+VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 SERVER=""
 OPTIONS="$*"
+
+source "$MYDIR/utilityfunctions.sh"
+
 
 #
 # Prints the software version and exits.
@@ -14,42 +17,6 @@ OPTIONS="$*"
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
-}
-
-#
-# $*: the error message
-#
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$MYNAME($$) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "$MYNAME($$) $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -138,14 +105,17 @@ function emit_config_file()
     local file_name="$HOME/.pip/say.conf"
 
     printVerbose "Creating '$file_name'."
-
     mkdir -p "$(dirname $file_name)" 2>/dev/null
     cat <<EOF >$file_name
 #
 #
 #
-#MQTT_SERVER="192.168.0.5"
-#MQTT_TOPIC="tts/say"
+MQTT_SERVER="192.168.0.5"
+MQTT_PORT=1883
+MQTT_USER="pipas"
+MQTT_PASSWORD="p"
+
+MQTT_TOPIC="tts/say"
 EOF
 }
 
@@ -159,10 +129,18 @@ function emit_beep()
 
 function emit_alert()
 {
-    local file="/home/pipas/star-trek-sounds/alertklaxon_clean2.mp3"
-    if [ -f "$file" ]; then
-        mplayer "$file"
-    fi
+#    local file="/home/pipas/star-trek-sounds/alertklaxon_clean2.mp3"
+#    if [ -f "$file" ]; then
+#        mplayer "$file"
+#    fi
+    printVerbose "Sending apert through mqtt"
+        mosquitto_pub \
+            -u "$MQTT_USER" \
+            -P "$MQTT_PASSWORD" \
+            -h "$MQTT_SERVER" \
+            -p "$MQTT_PORT" \
+            -t "tts/alert" \
+            -m "alert"
 }
 
 
@@ -176,18 +154,39 @@ EXTRA_OPTIONS=$*
 #
 config_file="$HOME/.pip/say.conf"
 
+emit_config_file
+
 if [ ! -f "$config_file" ]; then
     emit_config_file
-else
+fi
+
+if [ -f "$config_file" ]; then
     printVerbose "Loading '$config_file'..."
     source "$config_file"
+    #cat $config_file
 fi
+
+printVerbose "  MQTT_SERVER: $MQTT_SERVER"
+printVerbose "   MQTT_TOPIC: $MQTT_TOPIC"
 
 if [ "$MQTT_SERVER" -a "$MQTT_TOPIC" ]; then
     MOSQUITTO=$(which mosquitto_pub)
     if [ "$MOSQUITTO" ]; then
         printVerbose "Sending with MQTT server '$MQTT_SERVER'."
-        mosquitto_pub -t "$MQTT_TOPIC" -h "$MQTT_SERVER" -m "$EXTRA_OPTIONS"
+        if [ -n "$OPTION_ALERT" ]; then
+            emit_alert
+            sleep 2
+        fi
+
+        if [ "$EXTRA_OPTIONS" ]; then
+            mosquitto_pub \
+                -u "$MQTT_USER" \
+                -P "$MQTT_PASSWORD" \
+                -h "$MQTT_SERVER" \
+                -p "$MQTT_PORT" \
+                -t "$MQTT_TOPIC" \
+                -m "$EXTRA_OPTIONS"
+        fi
         exit 0
     else
         printError "The mosquitto_pub program was not found."
