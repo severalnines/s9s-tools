@@ -949,7 +949,7 @@ S9sOptions::clientConnectionTimeout() const
 {
     S9sString  key = "client_connection_timeout";
     S9sString  stringVal;
-    int        intVal = 10;
+    int        intVal = 30;
 
     // Finding a string value.
     stringVal = getenv("S9S_CONNECTION_TIMEOUT");
