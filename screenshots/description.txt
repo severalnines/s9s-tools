@@ -1,0 +1,22 @@
+description.txt - This file.
+screen-01.png   - Clusters, nodes and users
+screen-02.png   - The CDT (Cmon Directory Tree)
+screen-03.png   - The event viewer monitoring nodes
+screen-04.png   - Monitoring the processes of multiple computers
+screen-05.png   - Virtual machines.
+screen-06.png   - Man pages, the primary information source.
+screen-07.png   - Help page in the event viewer.
+screen-08.png   - Details about one node.
+screen-09.png   - Detailed information about one cluster
+screen-10.png   - Details about a virtualization server
+screen-11.png   - Summarized memory and CPU list of multiple computers
+screen-12.png   - Monitored partitions of multiple computers
+screen-13.png   - Summary of disks and RAID controllers
+screen-14.png   - Monitoring virtual machines on multiple servers
+screen-15.png   - Details about a Cmon user
+screen-16.png   - Browsing the CDT (Cmon Directory Tree)
+screen-17.png   - Cmon HA: The list of cmon controllers
+screen-18.png   - Cmon HA: Details about one controller.
+screen-19.png   - Cmon HA: Low level interaction through CDT
+screen-20.png   - Cmon HA: Controllers in the CDT
+

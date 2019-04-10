@@ -373,7 +373,18 @@ function emit_rc_file()
 #! /bin/bash
 # chkconfig: 2345 20 80
 
-LOCKFILE="/var/lock/subsys/piphostcontrol"
+### BEGIN INIT INFO
+# Provides:          pipscripts
+# Required-Start:    
+# Required-Stop:     
+# Default-Start:     1 2 3 4 5
+# Default-Stop:      0 6
+# Short-Description: Remote monitoring
+# Description:       Remote monitoring and control with pipscripts.
+### END INIT INFO
+
+
+LOCKFILE="/var/lock/subsys/pipscripts"
 
 function start()
 {
@@ -408,8 +419,18 @@ EOF
 
 function run_checks()
 {
-    local rc_file="/etc/init.d/piphostc"
+    local rc_file="/etc/init.d/pipscripts"
     local level
+    
+    for f in /etc/rc5.d/S20piphostc /etc/rc3.d/S20piphostc \
+        /etc/rc2.d/S20piphostc /etc/rc4.d/S20piphostc \
+        /etc/rc1.d/S20piphostc /etc/init.d/piphostc \
+        /etc/rc0.d/K80piphostc /etc/rc6.d/K80piphostc; 
+    do
+        if [ -f $f ]; then
+            sudo rm $f
+        fi
+    done
 
     if [ ! -f "$rc_file" ]; then
         emit_rc_file | sudo tee "$rc_file" >/dev/null
@@ -417,12 +438,13 @@ function run_checks()
 
         sudo apt -y --force-yes install sysv-rc-conf
         for level in 5 4 3 2 1; do
-            sudo sysv-rc-conf --level $level piphostc on
+            sudo sysv-rc-conf --level $level pipscripts on
         done
 
-        sudo sysv-rc-conf --level 0 piphostc off
-        sudo sysv-rc-conf --level 6 piphostc off 
+        sudo sysv-rc-conf --level 0 pipscripts off
+        sudo sysv-rc-conf --level 6 pipscripts off 
     fi
+    
 }
 
 
