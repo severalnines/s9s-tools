@@ -124,7 +124,7 @@ S9sRpcClientPrivate::connect()
     if (m_socketFd == -1)
     {
         m_errorString.sprintf("Error creating socket: %m");
-        PRINT_VERBOSE("%s", STR(m_errorString));
+        PRINT_VERBOSE("ERROR: %s", STR(m_errorString));
         return false;
     }
 
@@ -151,7 +151,7 @@ S9sRpcClientPrivate::connect()
     if (hp == NULL)
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
-        PRINT_VERBOSE("%s", STR(m_errorString));
+        PRINT_VERBOSE("ERROR: %s", STR(m_errorString));
         close();
         success = false;
     } else {
@@ -205,9 +205,13 @@ S9sRpcClientPrivate::connect()
      * controller to connect we do a recursive call here.
      */
     if (!success && tryNextHost())
+    {
+        PRINT_VERBOSE("Failed, trying next host.");
         return connect();
-    else if (!success)
+    } else if (!success)
+    {
         return false;
+    }
 
     /*
      *
