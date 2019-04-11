@@ -1166,8 +1166,12 @@ function wait_for_server_ssh()
 }
 
 #
-# $1: The name of the container or just leave it empty for the default name.
+# Usage:
+#    create_node [OPTION]... [CONTAINER_NAME] 
 #
+#  --autodestroy    Destroy the node when the script ends.
+#  --template NAME  The name of the template to be used.
+# 
 # Creates and starts a new virtual machine node. Prints the IP address when the
 # container is up.
 #
@@ -1179,9 +1183,28 @@ function create_node()
     local option_autodestroy=""
     local container_list_file="/tmp/${MYNAME}.containers"
     local template_option=""
+    local container_name
+    local args
+
+    args=$(\
+    getopt -o h \
+        -l "help,autodestroy,template:" \
+        -- "$@")
+
+    if [ $? -ne 0 ]; then
+        return 6
+    fi
+
+    eval set -- "$args"
 
     while [ "$1" ]; do
         case "$1" in 
+            -h|--help)
+                shift
+                echo "Help requested from the create_node() function."
+                return 1
+                ;;
+
             --autodestroy)
                 shift
                 option_autodestroy="true"
@@ -1190,6 +1213,11 @@ function create_node()
             --template)
                 template_option="--template=$2"
                 shift 2
+                ;;
+
+            --)
+                shift
+                break
                 ;;
 
             *)
@@ -1208,11 +1236,13 @@ function create_node()
         return 1
     fi
 
+    container_name=$1
+
     echo -n "Creating container..." >&2
     ip=$(pip-container-create \
         $template_option \
         $verbose_option \
-        --server=$CONTAINER_SERVER $1)
+        --server=$CONTAINER_SERVER $container_name)
 
     retval=$?
     if [ "$retval" -ne 0 ]; then

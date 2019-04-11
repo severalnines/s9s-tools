@@ -124,6 +124,7 @@ S9sRpcClientPrivate::connect()
     if (m_socketFd == -1)
     {
         m_errorString.sprintf("Error creating socket: %m");
+        PRINT_VERBOSE("%s", STR(m_errorString));
         return false;
     }
 
@@ -150,6 +151,7 @@ S9sRpcClientPrivate::connect()
     if (hp == NULL)
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
+        PRINT_VERBOSE("%s", STR(m_errorString));
         close();
         success = false;
     } else {
@@ -177,6 +179,8 @@ S9sRpcClientPrivate::connect()
                 m_errorString.sprintf(
                         "Connect to %s:%d failed: Timeout (%ds).", 
                         STR(m_hostName), m_port, timeout);
+                
+                PRINT_VERBOSE("%s", STR(m_errorString));
             } else {
                 s9s_log("Connect to %s:%d failed(%d): %m.", 
                         STR(m_hostName), m_port,
@@ -185,6 +189,8 @@ S9sRpcClientPrivate::connect()
                 m_errorString.sprintf(
                         "Connect to %s:%d failed(%d): %m.", 
                         STR(m_hostName), m_port, errno);
+        
+                PRINT_VERBOSE("%s", STR(m_errorString));
             }
 
             setConnectFailed(m_hostName, m_port);
