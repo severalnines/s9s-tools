@@ -107,7 +107,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create PostgreSQL cluster is starting now."
+    ft_registerpostgresql.sh "The test to create PostgreSQL cluster is starting now."
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
@@ -146,7 +146,7 @@ function testDrop()
 {
     local exitCode
 
-    pip-say "The test to drop the cluster is starting now."
+    ft_registerpostgresql.sh "The test to drop the cluster is starting now."
 
     #
     # Starting the cluster.
@@ -167,7 +167,7 @@ function testRegister()
 {
     local exitCode 
 
-    pip-say "The test to register a cluster is starting."
+    ft_registerpostgresql.sh "The test to register a cluster is starting."
 
     #
     # Registering the cluester that we just created and dropped.

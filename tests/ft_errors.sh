@@ -124,7 +124,7 @@ function index_table()
 #
 function testPing()
 {
-    pip-say "Pinging controller."
+    print_title "Pinging controller."
 
     #
     # Pinging. 
@@ -138,9 +138,8 @@ function testPing()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while pinging controller."
-        pip-say "The controller is off line. Further testing is not possible."
     else
-        pip-say "The controller is on line."
+        success "  o The controller is on line."
     fi
 }
 

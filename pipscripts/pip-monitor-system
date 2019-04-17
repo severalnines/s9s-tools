@@ -7,7 +7,6 @@ VERBOSE=""
 LOGFILE=""
 HOST=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
-HOST_ID=""
 source $MYDIR/utilityfunctions.sh
 
 
@@ -123,7 +122,6 @@ while true; do
 
         --id)
             shift
-            HOST_ID="$1"
             shift
             ;;
 
@@ -239,6 +237,13 @@ else
     printVerbose "  MQTT_PASSWORD=$MQTT_PASSWORD"
 fi
 
+function check_install_mosquitto()
+{
+    if [ -z "$(which mosquitto_pub)" ]; then
+        sudo apt -y --force-yes install mosquitto-clients
+    fi
+}
+
 #
 # Sends the load of the local computer to the mqtt broker.
 #
@@ -283,7 +288,7 @@ function get_disk_stats()
 
     sum="\"Total\": $total, \"Used\": $used, \"Free\": $available, \"Percent\": $percent"
 
-    echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\", \"id\": $HOST_ID}"
+    echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\"}"
 }
 
 #
@@ -420,8 +425,11 @@ EOF
 function run_checks()
 {
     local rc_file="/etc/init.d/pipscripts"
+    local check_file="/etc/rc1.d/S20pipscripts"
     local level
-    
+   
+    check_install_mosquitto
+
     for f in /etc/rc5.d/S20piphostc /etc/rc3.d/S20piphostc \
         /etc/rc2.d/S20piphostc /etc/rc4.d/S20piphostc \
         /etc/rc1.d/S20piphostc /etc/init.d/piphostc \
@@ -432,7 +440,7 @@ function run_checks()
         fi
     done
 
-    if [ ! -f "$rc_file" ]; then
+    if [ ! -f "$rc_file" -o ! -f "$check_file" ]; then
         emit_rc_file | sudo tee "$rc_file" >/dev/null
         sudo chmod +x "$rc_file"
 
@@ -454,31 +462,6 @@ function run_checks()
 # ioc0 phy 7 scsi_id 8 HP       DG146BABCF       HPD5, 136 GB, state ONLINE, flags NONE
 # ioc0 phy 6 scsi_id 1 HP       DG146BABCF       HPD5, 136 GB, state ONLINE, flags NONE
 #
-
-if [ -z "$HOST_ID" ]; then
-    case "$(hostname)" in
-        t7500)
-            HOST_ID=0
-            ;;
-
-        core1)
-            HOST_ID=1
-            ;;
-
-        storage01)
-            HOST_ID=2
-            ;;
-
-        laptop01)
-            HOST_ID=3
-            ;;
-
-        *)
-            HOST_ID=10
-            ;;
-    esac
-fi
-
 if [ $VERSION_OPTION ]; then
     printVersionAndExit
 else

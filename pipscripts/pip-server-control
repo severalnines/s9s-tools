@@ -346,18 +346,47 @@ function wake_server()
             pip-pdu-control --on $pdu
         done
 
-        sleep 2
+        sleep 0.5
     fi
 
-    macAddress=$(mac_for_server "$hostName")
-    if [ -z "$macAddress" ]; then
-        printError "MAC address for $hostName was not found."
-        return 1
+    if [ "$hostName" == "core2" ]; then
+        # ILOM needs to start...
+        sleep 10
+
+        echo "Using ILOM to start server."
+        printVerbose "Using ILOM to start server."
+        file="/tmp/ilom.expect"
+
+        sudo rm -f "$file"
+
+        cat >$file <<EOF
+#!/usr/bin/expect -f
+
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no root@192.168.3.100
+expect "*?assword:*"
+send -- "changeme\r"
+sleep 2
+send -- "start -script /SYS\r"
+sleep 1
+send -- "exit\r"
+expect eof
+EOF
+        chmod +x "$file"
+        $file
+        rm -f $file
+    else
+        macAddress=$(mac_for_server "$hostName")
+        if [ -z "$macAddress" ]; then
+            printError "MAC address for $hostName was not found."
+            return 1
+        fi
+
+        printVerbose "Waking server ${hostName} on ${macAddress}."
+        echo "Sending wake up message to host ${hostName}."
+        wakeonlan "$macAddress" >/dev/null 2>/dev/null
     fi
 
-    printVerbose "Waking server ${hostName} on ${macAddress}."
-    echo "Sending wake up message to host ${hostName}."
-    wakeonlan "$macAddress" >/dev/null 2>/dev/null
     return 0
 }
 
