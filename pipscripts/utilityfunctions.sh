@@ -147,7 +147,7 @@ function printVerbose()
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
     if [ "$VERBOSE" == "true" ]; then
-        printf "${XTERM_COLOR_GREEN}%-28s${TERM_NORMAL} " "$MYNAME" >&2
+        printf "${XTERM_COLOR_GREEN}%-18s${TERM_NORMAL} " "$MYNAME" >&2
         echo -e "$*" >&2
     fi
 

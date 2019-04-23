@@ -293,6 +293,9 @@ function send_host_info()
     message="{\"hostname\": \"$hostname\", \"status\": \"$HOST_STATUS\", \
 \"status_text\": \"$STATUS_TEXT\"}"
 
+    printVerbose "  server: $MQTT_SERVER"
+    printVerbose "   topic: $topic"
+    printVerbose " message: $message"
     mosquitto_pub \
         -u "$MQTT_USER" \
         -P "$MQTT_PASSWORD" \

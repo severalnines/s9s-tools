@@ -289,6 +289,7 @@ function switch_apc()
     case "$PDU_OPERATION" in
         on|off)
             if [ "$PDU_OUTLETS" == "all" -a "$CONF_PDU_DELAY" != "0" ]; then
+                printVerbose ""
                 for ((c=$CONF_PDU_FIRST_OUTLET;c<=$CONF_PDU_LAST_OUTLET;++c)); do
                     pip-pdu-expect \
                         "$CONF_PDU_SERVER" "$PDU_OPERATION" "$c" \
@@ -297,21 +298,37 @@ function switch_apc()
                     sleep "$CONF_PDU_DELAY"
                 done
             else
+
                 for outlet in $(echo $PDU_OUTLETS | tr ',' ' '); do
-                    tmp=$(mktemp)
 
                     printVerbose "Switching outlet $outlet $PDU_OPERATION"
-                    pip-pdu-expect \
-                        "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
-                            >$tmp 2>$tmp
+                    for n in 1 2 3 4 5 6; do
+                        tmp=$(mktemp)
 
-                    retval=$?
-                    printVerbose "***        retval: $retval"
-                    if [ $retval -ne 0 ]; then
-                        cat $tmp
-                    fi
+                        pip-pdu-expect \
+                            "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
+                                >$tmp 2>$tmp
 
-                    rm -f $tmp
+                        retval=$?
+                        printVerbose "***        retval: $retval"
+                        if [ $retval -ne 0 ]; then
+                            cat $tmp
+                        fi
+                    
+                        rm -f $tmp
+
+                        if [ $retval -eq 0 ]; then
+                            printVerbose "SUCCESS"
+                            break
+                        elif [ "$n" -gt "5" ]; then
+                            printError "FAILURE"
+                            break
+                        else
+                            printVerbose "RETRY"
+                            sleep 1
+                        fi
+                    done
+
                 done
             fi
             ;;
@@ -793,7 +810,7 @@ if [ -z "$OPTION_DEVICES" ]; then
     exit 1
 fi
 
-for OPTION_DEVICE in $OPTION_DEVICES; do
+for OPTION_DEVICE in $(echo $OPTION_DEVICES | tr ',' ' '); do
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
 
     if [ "$PDU_OPERATION" == "toggle" ]; then
@@ -850,7 +867,7 @@ for OPTION_DEVICE in $OPTION_DEVICES; do
     #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
 
     printVerbose "      device : '$OPTION_DEVICE'"
-    printVerbose "               '$CONF_PDU_DEVICE'"
+    printVerbose " conf_device : '$CONF_PDU_DEVICE'"
     printVerbose "      server : '$CONF_PDU_SERVER'"
     printVerbose "    standard : '$CONF_PDU_STANDARD'"
     printVerbose "       isMqtt: '$CONF_PDU_MQTT'"

@@ -90,6 +90,7 @@ Usage:
 
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
+  --all                Turn on or off all the servers.
 
   --list               List the power distribution units.
   --wake               Start the server.
@@ -111,7 +112,7 @@ ARGS=$(\
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
 list,wake,shut-down,ping,\
-print-files,user:,wait" \
+print-files,user:,wait,all" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -189,6 +190,11 @@ while true; do
             WAIT_OPTION="true"
             ;;
  
+        --all)
+            shift
+            ALL_OPTION="true"
+            ;;
+
         --print-files)
             shift
             OPTION_PRINT_FILES="true"
@@ -346,7 +352,7 @@ function wake_server()
             pip-pdu-control --on $pdu
         done
 
-        sleep 0.5
+        sleep 2
     fi
 
     if [ "$hostName" == "core2" ]; then
@@ -739,6 +745,34 @@ if [ -n "$LIST_OPTION" ]; then
     fi
 
     exit 0
+elif [ -n "$ALL_OPTION" ]; then
+    if [ "$WAKE_OPTION" ]; then
+        for server in \
+            core2 core3 storage01 \
+            host01 host02 host03 host04 host05 \
+            host06 host07 host08 host09 host10 host11
+        do
+            pip-server-control --wake $server
+            sleep 1
+    
+            pip-server-control --wake $server
+        done
+
+        sleep 1
+        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
+        sleep 0.5
+        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
+    elif [ "$SHUT_DOWN_OPTION" ]; then
+        for server in \
+            core2 core3 \
+            host01 host02 host03 host04 host05 \
+            host06 host07 host08 host09 host10 host11 \
+            blade01 blade02 blade03 blade04 blade05 blade06 \
+            blade07 blade08 blade09 blade10
+        do
+            pip-server-control --shut-down $server
+        done
+    fi
 elif [ -n "$SHUT_DOWN_OPTION" ]; then
     for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 
         shut_down_server "$hostname"

@@ -1,4 +1,5 @@
 #! /bin/bash
+MYFULLNAME=$(readlink -m "$0")
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
@@ -202,7 +203,18 @@ function get_load()
 }
 
 #
-# Prints the memory and load in JSon format.
+# Prints some local resources in JSon format. This is the fast method, this is
+# what we execute often.
+# 
+# This information goes to "stat/${hostname}/resources".
+#
+# Collecting the following:
+#   o hostname
+#   o load
+#   o memory 
+#   o processor threads
+#   o number of containers
+#   o disk throughtput
 #
 function get_resources()
 {
@@ -289,6 +301,44 @@ function get_disk_stats()
     sum="\"Total\": $total, \"Used\": $used, \"Free\": $available, \"Percent\": $percent"
 
     echo "{\"Sum\": {$sum}, \"hostname\": \"$hostname\"}"
+}
+
+function get_hw_info()
+{
+    local hostname=$(hostname)    
+    local model=$(cat /sys/class/dmi/id/product_name | head -n1)
+    local manufacturer=$(cat /sys/class/dmi/id/board_vendor | head -n1)
+
+    model=$(echo ${model%%+([[:space:]])})
+    cat <<EOF
+{ "hostname": "$hostname", "model": "$model", "manufacturer": "$manufacturer"}
+EOF
+}
+
+#
+# 
+#
+function hw_to_mqtt()
+{
+    local hostname=$(hostname)
+    local topic="stat/${hostname}/hardware"
+    local message=$(get_hw_info)
+    local retcode
+
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
+    mosquitto_pub \
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "$topic" \
+        -m "$message"
+
+    retcode=$?
+    echo "  retcode: $retcode"
 }
 
 #
@@ -396,16 +446,28 @@ function start()
     # Touch our lock file so that stopping will work correctly
     touch \${LOCKFILE}
 
-    sudo -H -u pipas bash -c 'pip-host-control --verbose --status "Started."'
+    sudo -H -u pipas bash -c 'pip-host-control --idle --status "Started."'
+
+    if [ "\$(hostname)" == "core2" ]; then
+        pip-say --beep "Computer secondary core is on-line."
+    elif [ "\$(hostname)" == "core3" ]; then
+        pip-say --beep "Computer tertiary core is on-line."
+    fi
 }
 
 function stop()
 {
-        # Remove our lock file
-        rm \${LOCKFILE}
+    # Remove our lock file
+    rm \${LOCKFILE}
 
-        # Run that command that we wanted to run
-        sudo -H -u pipas bash -c 'pip-host-control --verbose --status "Shut down."'
+    # Run that command that we wanted to run
+    sudo -H -u pipas bash -c 'pip-host-control --halted --status "Shut down."'
+    
+    if [ "\$(hostname)" == "core2" ]; then
+        pip-say --beep "Computer secondary core is shutting down."
+    elif [ "\$(hostname)" == "core3" ]; then
+        pip-say --beep "Computer tertiary core is shutting down."
+    fi
 }
 
 case "\$1" in
@@ -427,7 +489,8 @@ function run_checks()
     local rc_file="/etc/init.d/pipscripts"
     local check_file="/etc/rc1.d/S20pipscripts"
     local level
-   
+    local emit
+
     check_install_mosquitto
 
     for f in /etc/rc5.d/S20piphostc /etc/rc3.d/S20piphostc \
@@ -440,7 +503,14 @@ function run_checks()
         fi
     done
 
+    emit=""
     if [ ! -f "$rc_file" -o ! -f "$check_file" ]; then
+        emit="true"
+    elif [ "$MYFULLNAME" -nt "$rc_file" ]; then
+        emit="true"
+    fi
+
+    if [ -n "$emit" ]; then
         emit_rc_file | sudo tee "$rc_file" >/dev/null
         sudo chmod +x "$rc_file"
 
@@ -455,7 +525,6 @@ function run_checks()
     
 }
 
-
 #
 # mpt-status 
 # ioc0 vol_id 0 type IME, 8 phy, 543 GB, state OPTIMAL, flags ENABLED
@@ -467,6 +536,20 @@ if [ $VERSION_OPTION ]; then
 else
     run_checks
 
+    hw_to_mqtt
+    local_resources_to_mqtt
+    disks_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
+    
+    local_resources_to_mqtt
+    sleep 15
+    
     hostname=$(hostname)
     if [ "$hostname" == "t7500" -o "$hostname" == "core1" ]; then
         for h in core1 core2 core3 t7500 storage01 laptop01 \
@@ -481,16 +564,4 @@ else
         get_power pdu02
     fi
 
-    local_resources_to_mqtt
-    disks_to_mqtt
-    sleep 15
-    
-    local_resources_to_mqtt
-    sleep 15
-    
-    local_resources_to_mqtt
-    sleep 15
-    
-    local_resources_to_mqtt
-    sleep 15
 fi

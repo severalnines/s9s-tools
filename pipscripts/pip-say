@@ -121,10 +121,14 @@ EOF
 
 function emit_beep()
 {
-    local file="/home/pipas/star-trek-sounds/computerbeep_13.mp3"
-    if [ -f "$file" ]; then
-        mplayer "$file"
-    fi
+    printVerbose "Sending beep through mqtt"
+    mosquitto_pub \
+        -u "$MQTT_USER" \
+        -P "$MQTT_PASSWORD" \
+        -h "$MQTT_SERVER" \
+        -p "$MQTT_PORT" \
+        -t "tts/beep" \
+        -m "alert"
 }
 
 function emit_alert()
@@ -133,7 +137,7 @@ function emit_alert()
 #    if [ -f "$file" ]; then
 #        mplayer "$file"
 #    fi
-    printVerbose "Sending apert through mqtt"
+    printVerbose "Sending alert through mqtt"
         mosquitto_pub \
             -u "$MQTT_USER" \
             -P "$MQTT_PASSWORD" \
@@ -176,6 +180,9 @@ if [ "$MQTT_SERVER" -a "$MQTT_TOPIC" ]; then
         if [ -n "$OPTION_ALERT" ]; then
             emit_alert
             sleep 2
+        elif [ -n "$OPTION_BEEP" ]; then
+            emit_beep
+            sleep 1
         fi
 
         if [ "$EXTRA_OPTIONS" ]; then
