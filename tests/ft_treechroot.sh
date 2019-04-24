@@ -297,6 +297,7 @@ function dropCluster()
         --cluster-id="$CLUSTER_ID" \
         $LOG_OPTION
 
+    mys9s cluster --list --long 
     mys9s tree --list --long
 
     #
