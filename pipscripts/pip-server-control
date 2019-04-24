@@ -357,7 +357,7 @@ function wake_server()
 
     if [ "$hostName" == "core2" ]; then
         # ILOM needs to start...
-        sleep 10
+        sleep 15
 
         echo "Using ILOM to start server."
         printVerbose "Using ILOM to start server."
@@ -379,7 +379,13 @@ send -- "exit\r"
 expect eof
 EOF
         chmod +x "$file"
+        
         $file
+        if [ $? -ne 0 ]; then
+            sleep 5
+            $file
+        fi
+
         rm -f $file
     else
         macAddress=$(mac_for_server "$hostName")

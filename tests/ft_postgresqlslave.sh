@@ -181,6 +181,7 @@ function testStopSlave()
     local timeLoop="0"
 
     print_title "Stopping Slave"
+
     #
     # Stopping the first added node. 
     #
@@ -190,11 +191,8 @@ function testStopSlave()
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
+    check_exit_code $?   
+    
     state=$(cluster_state "$CLUSTER_ID")
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
