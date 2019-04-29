@@ -253,6 +253,33 @@ EOF
     check_exit_code_no_job $?
 }
 
+function testLdapUserSimpleFirst()
+{
+    print_title "Checking LDAP Authentication with Username"
+    cat <<EOF 
+  This test checks the LDAP authentication using the simple name. This is 
+  the first login of this user.
+
+EOF
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="pipas1" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="pipas1" \
+        --password=p \
+        pipas1
+
+    check_exit_code_no_job $?
+}
+
 #
 # Running the requested tests.
 #
@@ -271,6 +298,7 @@ else
     runFunctionalTest testLdapUser
     runFunctionalTest testLdapUserSimple
     runFunctionalTest testLdapUserSecond
+    runFunctionalTest testLdapUserSimpleFirst
 fi
 
 endTests
