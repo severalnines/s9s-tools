@@ -130,6 +130,28 @@ EOF
     ldap_config | sudo tee /etc/cmon-ldap.cnf
 }
 
+function testLdapSupport()
+{
+    print_title "Checking LPAD Support"
+
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/controller
+    
+    check_exit_code_no_job $?
+
+    if s9s tree --cat --cmon-user=system --password=secret \
+        /.runtime/controller | \
+        grep -q "have_libldap : true"; 
+    then
+        success "  o The controller has LDAP support, ok."
+    else
+        failure "No LDAP support."
+    fi
+}
+
 function testLdapUser()
 {
     print_title "Checking LDAP Authentication"
@@ -142,7 +164,6 @@ function testLdapUser()
 
     check_exit_code_no_job $?
    
-    return 0
     mys9s user \
         --stat \
         --long \
@@ -164,9 +185,8 @@ if [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
-    
-    mys9s user --list --long
 else
+    runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
 fi

@@ -574,10 +574,17 @@ S9sFormatter::printUserStat(
     printf("\n");
    
     //
-    //
+    // "   Email: -"
     //
     printf("%s   Email:%s ", greyBegin, greyEnd);
     printf("%s ", STR(user.emailAddress("-")));
+    printf("\n");
+    
+    //
+    //
+    //
+    printf("%s   DName:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(user.distinguishedName("-")));
     printf("\n");
     
     //

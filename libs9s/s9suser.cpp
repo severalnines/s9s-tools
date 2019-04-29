@@ -93,6 +93,7 @@ S9sUser::name() const
     return property("user_name").toString();
 }
 
+
 S9sString 
 S9sUser::id(
         const S9sString &defaultValue) const

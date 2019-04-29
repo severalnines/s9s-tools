@@ -191,6 +191,17 @@ S9sObject::name(
     return retval;
 }
 
+S9sString 
+S9sObject::distinguishedName(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("distinguished_name").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
 
 S9sString 
 S9sObject::aclString() const

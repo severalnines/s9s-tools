@@ -48,6 +48,10 @@ class S9sObject
         virtual S9sString name() const;
         virtual S9sString name(const int columns) const;
 
+        virtual S9sString 
+            distinguishedName(
+                    const S9sString &defaultValue) const;
+
         virtual S9sString id(const S9sString &defaultValue) const;
         virtual S9sString cdtPath() const;
 
