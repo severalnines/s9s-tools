@@ -161,7 +161,7 @@ function testCmonDbUser()
 
 function testLdapUser()
 {
-    print_title "Checking LDAP Authentication"
+    print_title "Checking LDAP Authentication with Distinguished Name"
 
     mys9s user \
         --list \
@@ -175,6 +175,28 @@ function testLdapUser()
         --stat \
         --long \
         --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+}
+
+function testLdapUserSimple()
+{
+    print_title "Checking LDAP Authentication with Username"
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="username" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="username" \
         --password=p \
         username
 
@@ -197,6 +219,7 @@ else
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
+    runFunctionalTest testLdapUserSimple
 fi
 
 endTests
