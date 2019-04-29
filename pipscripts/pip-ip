@@ -1,0 +1,257 @@
+#! /bin/bash
+
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.6"
+VERBOSE=""
+LOGFILE=""
+SERVER=""
+OPTIONS="$*"
+
+IPTABLES=/sbin/iptables
+OPTION_LIST=""
+OPTION_RESET=""
+OPTION_CONTAINER_IP=""
+OPTION_CONTAINER_PORT=""
+OPTION_HOST_IP=""
+OPTION_HOST_PORT=""
+OPTION_BRIDGE="br0"
+OPTION_UNIVERSE="0.0.0.0/0"
+
+UNIVERSE="0.0.0.0/0"
+
+source "$MYDIR/utilityfunctions.sh"
+
+#
+# Prints the software version and exits.
+#
+function printVersionAndExit()
+{
+    echo "$MYNAME Version $VERSION on $(hostname)" >&2
+}
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... [CONTAINER_NAME]...
+
+  $MYNAME - Creates and starts containers.
+
+  -h, --help            Print this help and exit.
+  -v, --version         Print version information and exit.
+  --verbose             Print more messages.
+  --log-file=FILE       Store all the messages in the given file too.
+  --list                List the iptable rules.
+  --reset               Reset the iptable rules.
+  --host-ip=IP          The IP of the parent host.
+  --host-port=PORT      The port of the parent host.
+  --container-ip=IP     The IP of the container we are forwarding.
+  --container-port=PORT The port on the container.
+  --bridge=NAME         The name of the bridge or interface (default is br0).
+  --universe=IP         By default 0.0.0.0/0, those we accept packates from.
+
+EXAMPLE:
+    pip-ip --host-ip=192.168.0.4 --host-port=8080 --container-ip=192.168.0.37 --container-port=nodered
+
+    pip-ip --bridge=eno1 --host-ip=107.182.166.186 --host-port=3335 --container-ip=192.168.10.35 --container-port=mysql --universe=108.171.210.138
+    pip-ip --bridge=eno1 --host-ip=107.182.166.186 --host-port=3336 --container-ip=192.168.10.36 --container-port=mysql --universe=108.171.210.138
+    pip-ip --bridge=eno1 --host-ip=107.182.166.186 --host-port=3337 --container-ip=192.168.10.37 --container-port=mysql --universe=108.171.210.138
+
+EOF
+    exit 0
+}
+
+function nameToPort()
+{
+    case "$1" in
+        nodered|node-red)
+            echo "1880"
+            ;;
+
+        mysql)
+            echo "3306"
+            ;;
+
+        *)
+            echo "$1"
+            ;;
+    esac
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,list,reset,\
+container-ip:,container-port:,host-ip:,host-port:,universe:,bridge:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --list)
+            shift
+            OPTION_LIST="true"
+            ;;
+
+        --reset)
+            shift
+            OPTION_RESET="true"
+            ;;
+
+        --container-ip)
+            OPTION_CONTAINER_IP="$2"
+            shift 2
+            ;;
+        
+        --container-port)
+            OPTION_CONTAINER_PORT="$(nameToPort "$2")"
+            shift 2
+            ;;
+
+        --host-ip)
+            OPTION_HOST_IP="$2"
+            shift 2
+            ;;
+
+        --host-port)
+            OPTION_HOST_PORT="$(nameToPort "$2")"
+            shift 2
+            ;;
+
+        --universe)
+            OPTION_UNIVERSE="$2"
+            shift 2
+            ;;
+
+        --bridge)
+            OPTION_BRIDGE="$2"
+            shift 2
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+function reset_iptable_rules()
+{
+    printVerbose "Enabling IP forwarding..."
+    echo "1" > /proc/sys/net/ipv4/ip_forward
+
+    printVerbose "Reset iptable rules, policies and counters."
+    $IPTABLES -P INPUT ACCEPT
+    $IPTABLES -F INPUT
+    $IPTABLES -P OUTPUT ACCEPT
+    $IPTABLES -F OUTPUT
+    $IPTABLES -P FORWARD ACCEPT
+    $IPTABLES -F FORWARD
+    $IPTABLES -t nat -F
+    $IPTABLES -X
+    $IPTABLES -Z
+    $IPTABLES -t nat -Z
+}
+
+if [ -n "$OPTION_LIST" ]; then
+    iptables -t nat -v -L -n --line-number
+    echo ""
+
+    iptables -v -L FORWARD -n --line-number
+    exit 0
+elif [ -n "$OPTION_RESET" ]; then
+    reset_iptable_rules
+    exit $?
+else
+    if [ -z "$OPTION_CONTAINER_IP" ]; then
+        printError "Container IP is not provided."
+        printError "Use the --container-ip to set the IP of the container."
+        exit 6
+    fi
+
+    if [ -z "$OPTION_CONTAINER_PORT" ]; then
+        printError "Container port is not provided."
+        printError "Use the --container-port to set the port on the container."
+        exit 6
+    fi
+
+    if [ -z "$OPTION_HOST_IP" ]; then
+        printError "Host IP is not provided."
+        printError "Use the --host-ip to set the IP of the parent host."
+        exit 6
+    fi
+
+    if [ -z "$OPTION_HOST_PORT" ]; then
+        printError "Host port is not provided."
+        printError "Use the --host-port to set the port of the parent host."
+        exit 6
+    fi
+fi
+
+#
+# Incoming traffic of the specific port is NAT-ed to the container IP and port.
+#
+$IPTABLES \
+    -t nat \
+    -A PREROUTING \
+    -p tcp \
+    -i "$OPTION_BRIDGE" \
+    --dport  "$OPTION_HOST_PORT" \
+    --source "$OPTION_UNIVERSE" \
+    -j DNAT \
+    --to-destination $OPTION_CONTAINER_IP:$OPTION_CONTAINER_PORT
+
+# And then we do the actual forward
+# FORWARD rules would only be needed if the default policy is not ACCEPT
+# (Shown here for completeness)
+#
+$IPTABLES \
+    -A FORWARD \
+    -p tcp \
+    -i "$OPTION_BRIDGE" \
+    -d $OPTION_CONTAINER_IP \
+    --dport $OPTION_HOST_PORT \
+    -j ACCEPT
+
+#
+# Now, we need to change the source address, otherwise the reply packets
+# would be sent directly to the client, causing confusion.
+#
+$IPTABLES \
+    -t nat \
+    -A POSTROUTING \
+    -o "$OPTION_BRIDGE" \
+    -j SNAT \
+    --to-source $OPTION_HOST_IP
+

@@ -10,7 +10,6 @@ OPTIONS="$*"
 
 source "$MYDIR/utilityfunctions.sh"
 
-
 #
 # Prints the software version and exits.
 #
