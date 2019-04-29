@@ -34,8 +34,8 @@ fi
 function color_command()
 {
     sed \
-        -e "s#\(--.\+\)=\([^\\]*\)[\ ]#\x1b\[0;33m\1\x1b\[0;39m=\"\x1b\[1;35m\2\x1b\[0;39m\" #g" \
-        -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#g"
+        -e "s#\(--[^=]\+\)=\([^\\]*\)[\ ]#\x1b\[0;33m\1\x1b\[0;39m=\"\x1b\[1;35m\2\x1b\[0;39m\" #" \
+        -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#"
 }
 
 function prompt_string
@@ -253,6 +253,11 @@ function startTests ()
     if [ -f "$HOME/.s9s/s9s.state" ]; then
         echo "Removing '$HOME/.s9s/s9s.state'."
         rm -f $HOME/.s9s/s9s.state
+    fi
+
+    if [ -f "/etc/cmon-ldap.cnf" ]; then
+        echo "Removing '/etc/cmon-ldap.cnf'..."
+        sudo rm -f "/etc/cmon-ldap.cnf"
     fi
 
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
