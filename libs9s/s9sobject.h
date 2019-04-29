@@ -52,6 +52,10 @@ class S9sObject
             distinguishedName(
                     const S9sString &defaultValue) const;
 
+        virtual S9sString 
+            origin(
+                    const S9sString &defaultValue) const;
+
         virtual S9sString id(const S9sString &defaultValue) const;
         virtual S9sString cdtPath() const;
 

@@ -590,6 +590,13 @@ S9sFormatter::printUserStat(
     //
     //
     //
+    printf("%s  Origin:%s ", greyBegin, greyEnd);
+    printf("%s ", STR(user.origin("-")));
+    printf("\n");
+    
+    //
+    //
+    //
     printf("%sDisabled:%s ", greyBegin, greyEnd);
     printf("%s", user.isDisabled() ? "yes" : "no");
     printf("\n");

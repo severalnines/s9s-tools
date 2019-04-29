@@ -152,6 +152,13 @@ function testLdapSupport()
     fi
 }
 
+function testCmonDbUser()
+{
+    print_title "Testing User with CmonDb Origin"
+
+    mys9s user --stat pipas
+}
+
 function testLdapUser()
 {
     print_title "Checking LDAP Authentication"
@@ -186,6 +193,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCmonDbUser
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser

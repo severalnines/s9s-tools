@@ -204,6 +204,19 @@ S9sObject::distinguishedName(
 }
 
 S9sString 
+S9sObject::origin(
+        const S9sString &defaultValue) const
+{
+    S9sString retval = property("origin").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+
+S9sString 
 S9sObject::aclString() const
 {
     return property("acl").toString();
