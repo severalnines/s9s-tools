@@ -124,15 +124,24 @@ function testCreateLdapConfig()
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
   file that holds the settings of the LDAP settnings for the Cmon Controller.
-
+  
+  Here is the configuration we created:
 EOF
-
+    
+    echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
+    echo -en "$TERM_BOLD"
     ldap_config | sudo tee /etc/cmon-ldap.cnf
+    echo -en "$TERM_NORMAL"
+    echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
 }
 
 function testLdapSupport()
 {
-    print_title "Checking LPAD Support"
+    print_title "Checking LDAP Support"
+    cat <<EOF
+  This test checks if the controller has LDAP support.
+
+EOF
 
     mys9s tree \
         --cat \
@@ -146,7 +155,7 @@ function testLdapSupport()
         /.runtime/controller | \
         grep -q "have_libldap : true"; 
     then
-        success "  o The controller has LDAP support, ok."
+        success "  o The controller has libldap, ok."
     else
         failure "No LDAP support."
     fi
@@ -162,6 +171,13 @@ function testCmonDbUser()
 function testLdapUser()
 {
     print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. This is the first login of the user, a CmonDb shadow will be
+  created about the user and that shadow will hold some extra information the
+  Cmon Controller needs and will also guarantee a unique user ID.
+
+EOF
 
     mys9s user \
         --list \
@@ -184,6 +200,11 @@ function testLdapUser()
 function testLdapUserSimple()
 {
     print_title "Checking LDAP Authentication with Username"
+    cat <<EOF 
+  This test checks the LDAP authentication using the simple name. This is not
+  the first login, the existing CmonDb shadow will be found and identified.
+
+EOF
 
     mys9s user \
         --list \
@@ -197,6 +218,35 @@ function testLdapUserSimple()
         --stat \
         --long \
         --cmon-user="username" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+}
+
+function testLdapUserSecond()
+{
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. This is not the first time the user logins, so the CmonDb shadow
+  should be found. This shadow contains the origin set to LDAP and so LDAP
+  authentication should be used.
+
+EOF
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
         --password=p \
         username
 
@@ -220,6 +270,7 @@ else
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
     runFunctionalTest testLdapUserSimple
+    runFunctionalTest testLdapUserSecond
 fi
 
 endTests
