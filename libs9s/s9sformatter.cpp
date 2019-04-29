@@ -563,6 +563,7 @@ S9sFormatter::printUserStat(
     for (int n = title.length(); n < terminalWidth; ++n)
         printf(" ");
     printf("%s", TERM_NORMAL);
+    printf("\n");
    
     printObjectStat(user);
  
