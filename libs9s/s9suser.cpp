@@ -496,6 +496,13 @@ S9sUser::toString(
         {
             switch (c)
             {
+                case 'd':
+                    // The distinguished name of the user. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(distinguishedName("-")));
+                    retval += tmp;
+                    break;
+
                 case 'F':
                     // The full name of the user.
                     partFormat += 's';
@@ -556,6 +563,13 @@ S9sUser::toString(
                     // The username of the user.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(userName()));
+                    retval += tmp;
+                    break;
+                
+                case 'o':
+                    // The origin.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(origin("-")));
                     retval += tmp;
                     break;
 

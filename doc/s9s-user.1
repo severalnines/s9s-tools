@@ -448,6 +448,10 @@ character.
 The s9s-tools support the following fields:
 
 .RS 7
+.TP
+.B d
+The distinguished name of the user. This currently has meaning only for users
+originated from an LDAP server.
 
 .TP
 .B F
@@ -484,6 +488,12 @@ The middle name of the user.
 .TP
 .B N
 The username for the user.
+
+.TP
+.B o
+The origin of the user, the place what used to store the original instance of
+the user. The possible values are "CmonDb" for users from the Cmon Database or
+"LDAP" for users from the LDAP server.
 
 .TP
 .B P

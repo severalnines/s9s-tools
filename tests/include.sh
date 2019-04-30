@@ -1847,11 +1847,25 @@ function check_user()
     local email
     local check_key
     local tmp
+    local option_origin
+    local option_cdt_path
+    local option_dn
+    local option_full_name
 
     while [ -n "$1" ]; do
         case "$1" in 
             --user-name)
                 user_name="$2"
+                shift 2
+                ;;
+
+            --full-name)
+                option_full_name="$2"
+                shift 2
+                ;;
+                
+            --dn|--distinguished-name)
+                option_dn="$2"
                 shift 2
                 ;;
 
@@ -1862,6 +1876,16 @@ function check_user()
 
             --email-address|--email)
                 email="$2"
+                shift 2
+                ;;
+
+            --origin)
+                option_origin="$2"
+                shift 2
+                ;;
+
+            --cdt-path)
+                option_cdt_path="$2"
                 shift 2
                 ;;
 
@@ -1876,14 +1900,18 @@ function check_user()
                 ;;
 
             *)
+                printError "check_user(): Invalid option '$1'."
+                return 1
                 break
                 ;;
         esac
     done
 
     echo "" 
-    echo "Checking user $user_name:"
-    if [ -z "$user_name" ]; then
+
+    if [ -n "$user_name" ]; then
+        success "  o received user name '$user_name' to test, ok"
+    else
         failure "check_user(): No username provided."
         return 1
     fi
@@ -1894,9 +1922,9 @@ function check_user()
     if [ -n "$group" ]; then
         tmp=$(get_user_group "$user_name")
         if [ "$tmp" != "$group" ]; then
-            failure "The group of $user_name should be $group and not $tmp."
+            failure "The group be '$group' and not '$tmp'."
         else
-            success "  o group is $group, ok"
+            success "  o group is '$group', ok"
         fi
     fi
 
@@ -1940,6 +1968,16 @@ function check_user()
         #mys9s user --list-keys --cmon-user=$user_name
     fi
 
+    if [ -n "$option_full_name" ]; then
+        tmp=$(s9s user --list --user-format="%F\n" "$user_name" | tr ' ' '_')
+        tmp=$(echo "$tmp" | tr '_' ' ')
+        if [ "$tmp" != "$option_full_name" ]; then
+            failure "The full name should be name $option_full_name, not $tmp."
+        else
+            success "  o the full name is '$tmp', ok"
+        fi
+    fi
+
     #
     # Checking the email address if we are requested to do so.
     #
@@ -1949,6 +1987,33 @@ function check_user()
             failure "The email of $user_name should be $email and not $tmp."
         else
             success "  o email address is $email, ok"
+        fi
+    fi
+
+    if [ -n "$option_dn" ]; then
+        tmp=$(s9s user --list --user-format="%d\n" "$user_name")
+        if [ "$tmp" != "$option_dn" ]; then
+            failure "Distinguished name should be name $option_dn, not $tmp."
+        else
+            success "  o the distinguished name is '$tmp', ok"
+        fi
+    fi
+
+    if [ -n "$option_origin" ]; then
+        tmp=$(s9s user --list --user-format="%o\n" "$user_name")
+        if [ "$tmp" != "$option_origin" ]; then
+            failure "The origin should be '$option_origin' and not '$tmp'."
+        else
+            success "  o the origin is '$tmp', ok"
+        fi
+    fi
+    
+    if [ -n "$option_cdt_path" ]; then
+        tmp=$(s9s user --list --user-format="%P\n" "$user_name")
+        if [ "$tmp" != "$option_cdt_path" ]; then
+            failure "The CDT path should be '$option_cdt_path' and not '$tmp'."
+        else
+            success "  o the CDT path is '$tmp', ok"
         fi
     fi
 }

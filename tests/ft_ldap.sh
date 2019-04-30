@@ -31,7 +31,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
-
+  --ldap-url
 EOF
     exit 1
 }
@@ -106,6 +106,7 @@ function ldap_config()
 # in the ldap.conf(5).
 #
 ldap_server_uri = "ldap://192.168.0.167:389"
+#ldap_server_uri = "ldaps://192.168.0.167:636"
 
 #
 # The default base DN to be used when performing LDAP operations. As it is
@@ -166,6 +167,14 @@ function testCmonDbUser()
     print_title "Testing User with CmonDb Origin"
 
     mys9s user --stat pipas
+
+    check_user \
+        --user-name    "pipas"  \
+        --cdt-path     "/" \
+        --full-name    "Laszlo Pere" \
+        --group        "testgroup" \
+        --dn           "-" \
+        --origin       "CmonDb"    
 }
 
 function testLdapUser()
@@ -195,6 +204,14 @@ EOF
         username
 
     check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "username"  \
+        --cdt-path     "/" \
+        --full-name    "firstname lastname" \
+        --group        "LDAPUsers" \
+        --dn           "cn=username,dc=homelab,dc=local" \
+        --origin       "LDAP"
 }
 
 function testLdapUserSimple()
@@ -278,6 +295,49 @@ EOF
         pipas1
 
     check_exit_code_no_job $?
+    
+    check_user \
+        --user-name    "pipas1"  \
+        --cdt-path     "/" \
+        --full-name    "Lastname" \
+        --group        "LDAPUsers" \
+        --dn           "cn=pipas1,dc=homelab,dc=local" \
+        --origin       "LDAP"
+}
+
+function testLdapObject()
+{
+    print_title "Checking LDAP Authentication with Username"
+    cat <<EOF 
+  This test checks the LDAP authentication using the simple name. This is 
+  the first login of this user. On the LDAP server this user has the class
+  simpleSecurityObject, so we test a bit different code here.
+
+EOF
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --password=p \
+        pipas2
+
+    check_exit_code_no_job $?
+    
+    check_user \
+        --user-name    "pipas2"  \
+        --cdt-path     "/" \
+        --group        "LDAPUsers" \
+        --dn           "uid=pipas2,dc=homelab,dc=local" \
+        --origin       "LDAP"
 }
 
 #
@@ -299,6 +359,7 @@ else
     runFunctionalTest testLdapUserSimple
     runFunctionalTest testLdapUserSecond
     runFunctionalTest testLdapUserSimpleFirst
+    runFunctionalTest testLdapObject
 fi
 
 endTests
