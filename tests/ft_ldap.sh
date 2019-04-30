@@ -340,6 +340,100 @@ EOF
         --origin       "LDAP"
 }
 
+function testLdapGroup()
+{
+    local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
+
+    print_title "Checking LDAP Groups"
+    cat <<EOF 
+  Logging in with a user that is part of an LDAP group and also not in the root
+  of the LDAP tree.
+
+EOF
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="$username" \
+        --password=p \
+        pipas2
+
+    check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "lpere"  \
+        --cdt-path     "/" \
+        --group        "LDAPUsers" \
+        --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
+        --origin       "LDAP"
+}
+
+function testLdapFailures()
+{
+    local retcode
+
+    print_title "Testing Failed Logins"
+
+    #
+    #
+    #
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="nosucuser" \
+        --password=p
+
+    retcode=$?
+
+    if [ "$retcode" -ne 0 ]; then
+        success "  o command failed, ok"
+    else
+        failure "This command should have failed."
+    fi
+
+    #
+    #
+    #
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=nosucuser,dc=homelab,dc=local" \
+        --password=p
+
+    retcode=$?
+
+    if [ "$retcode" -ne 0 ]; then
+        success "  o command failed, ok"
+    else
+        failure "This command should have failed."
+    fi
+    
+    #
+    #
+    #
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="lpere" \
+        --password=wrongpassword
+
+    retcode=$?
+
+    if [ "$retcode" -ne 0 ]; then
+        success "  o command failed, ok"
+    else
+        failure "This command should have failed."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -360,6 +454,8 @@ else
     runFunctionalTest testLdapUserSecond
     runFunctionalTest testLdapUserSimpleFirst
     runFunctionalTest testLdapObject
+    runFunctionalTest testLdapFailures
+    runFunctionalTest testLdapGroup
 fi
 
 endTests
