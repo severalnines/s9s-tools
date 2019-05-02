@@ -180,7 +180,7 @@ function print_ini_file()
      if [ -t 1 ]; then
          highlight --syntax=ini --out-format=xterm256
      else
-         highlight --syntax=ini --out-format=html --inline-css
+         highlight --syntax=ini --out-format=html --inline-css --fragment
      fi
 }
 

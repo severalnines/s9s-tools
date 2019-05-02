@@ -144,11 +144,9 @@ function testCreateLdapConfig()
   Here is the configuration we created:
 EOF
     
-    echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
     ldap_config | \
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
-    echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
     sleep 2
 }
 
