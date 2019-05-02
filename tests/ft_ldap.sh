@@ -106,7 +106,6 @@ function ldap_config()
 # in the ldap.conf(5).
 #
 ldap_server_uri = "ldap://192.168.0.167:389"
-#ldap_server_uri = "ldaps://192.168.0.167:636"
 
 #
 # The default base DN to be used when performing LDAP operations. As it is

@@ -177,11 +177,11 @@ function print_subtitle()
 
 function print_ini_file()
 {
-     if [ -t 1 ]; then
+     #if [ -t 1 ]; then
          highlight --syntax=ini --out-format=xterm256
-     else
-         highlight --syntax=ini
-     fi
+     #else
+     #    highlight --syntax=ini
+     #fi
 }
 
 #
