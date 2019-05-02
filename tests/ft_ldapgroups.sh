@@ -106,7 +106,6 @@ function ldap_config()
 # in the ldap.conf(5).
 #
 ldap_server_uri = "ldap://192.168.0.167:389"
-#ldap_server_uri = "ldaps://192.168.0.167:636"
 
 #
 # The default base DN to be used when performing LDAP operations. As it is
@@ -119,6 +118,19 @@ ldap_base_dn    = "dc=homelab,dc=local"
 #
 ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
 ldap_admin_pwd  = "p"
+
+#
+# This is the baseDn, these settings will control every user.
+#
+[dc=homelab,dc=local]
+ldap_cmon_group_name = "ldap"
+
+#
+# A group, this controls only the group members.
+#
+[cn=ldapgroup,dc=homelab,dc=local]
+ldap_create_cmon_group = false
+
 EOF
 }
 
@@ -133,10 +145,18 @@ function testCreateLdapConfig()
 EOF
     
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
-    echo -en "$TERM_BOLD"
-    ldap_config | sudo tee /etc/cmon-ldap.cnf
-    echo -en "$TERM_NORMAL"
+    if [ -t 1 ]; then
+        ldap_config | \
+            sudo tee /etc/cmon-ldap.cnf | \
+            highlight --syntax=ini --out-format=xterm256
+    else
+        ldap_config | \
+            sudo tee /etc/cmon-ldap.cnf | \
+            highlight --syntax=ini 
+    fi
+
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
+    sleep 2
 }
 
 function testLdapSupport()
@@ -212,99 +232,8 @@ EOF
         --user-name    "username"  \
         --cdt-path     "/" \
         --full-name    "firstname lastname" \
-        --group        "LDAPUsers" \
+        --group        "ldap" \
         --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-}
-
-function testLdapUserSimple()
-{
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is not
-  the first login, the existing CmonDb shadow will be found and identified.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="username" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-}
-
-function testLdapUserSecond()
-{
-    print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is not the first time the user logins, so the CmonDb shadow
-  should be found. This shadow contains the origin set to LDAP and so LDAP
-  authentication should be used.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-}
-
-function testLdapUserSimpleFirst()
-{
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is 
-  the first login of this user.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="pipas1" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="pipas1" \
-        --password=p \
-        pipas1
-
-    check_exit_code_no_job $?
-    
-    check_user \
-        --user-name    "pipas1"  \
-        --cdt-path     "/" \
-        --full-name    "Lastname" \
-        --group        "LDAPUsers" \
-        --dn           "cn=pipas1,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
 
@@ -321,7 +250,7 @@ EOF
     mys9s user \
         --list \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="pipas2" \
         --password=p
 
     check_exit_code_no_job $?
@@ -329,7 +258,7 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="pipas2" \
         --password=p \
         pipas2
 
@@ -338,7 +267,7 @@ EOF
     check_user \
         --user-name    "pipas2"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers" \
+        --group        "ldap" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
@@ -374,68 +303,11 @@ EOF
     check_user \
         --user-name    "lpere"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers,ldapgroup" \
+        --group        "ldap" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
 
-function testLdapFailures()
-{
-    local retcode
-
-    print_title "Testing Failed Logins"
-
-    #
-    #
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="nosucuser" \
-        --password=p
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-
-    #
-    #
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=nosucuser,dc=homelab,dc=local" \
-        --password=p
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-    
-    #
-    #
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="lpere" \
-        --password=wrongpassword
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-}
 
 #
 # Running the requested tests.
@@ -453,11 +325,7 @@ else
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
-    runFunctionalTest testLdapUserSimple
-    runFunctionalTest testLdapUserSecond
-    runFunctionalTest testLdapUserSimpleFirst
     runFunctionalTest testLdapObject
-    runFunctionalTest testLdapFailures
     runFunctionalTest testLdapGroup
 fi
 

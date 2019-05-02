@@ -740,6 +740,25 @@ function print_host_list_brief()
     done
 }
 
+function wake_all()
+{
+    pip-say "Starting all servers."
+        for server in \
+            core2 core3 storage01 \
+            host01 host02 host03 host04 host05 \
+            host06 host07 host08 host09 host10 host11
+        do
+            pip-server-control --wake $server
+            sleep .5
+        done
+
+        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
+        sleep 1
+        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
+
+    pip-say "Starting all servers finished."
+}
+
 if [ -n "$LIST_OPTION" ]; then
     download_current_data
     
@@ -753,22 +772,9 @@ if [ -n "$LIST_OPTION" ]; then
     exit 0
 elif [ -n "$ALL_OPTION" ]; then
     if [ "$WAKE_OPTION" ]; then
-        for server in \
-            core2 core3 storage01 \
-            host01 host02 host03 host04 host05 \
-            host06 host07 host08 host09 host10 host11
-        do
-            pip-server-control --wake $server
-            sleep 1
-    
-            pip-server-control --wake $server
-        done
-
-        sleep 1
-        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
-        sleep 0.5
-        pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
+        wake_all
     elif [ "$SHUT_DOWN_OPTION" ]; then
+        pip-say "Shutting down all servers."
         for server in \
             core2 core3 \
             host01 host02 host03 host04 host05 \
@@ -778,6 +784,7 @@ elif [ -n "$ALL_OPTION" ]; then
         do
             pip-server-control --shut-down $server
         done
+        pip-say "Shutting down all servers finished."
     fi
 elif [ -n "$SHUT_DOWN_OPTION" ]; then
     for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 

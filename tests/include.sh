@@ -228,6 +228,11 @@ function startTests ()
         echo " [OK]"
     fi
 
+    if [ -z "$(which highlight)" ]; then
+        echo "Installing the highlight package."
+        sudo apt -y --force-yes install highlight
+    fi
+
     #
     # Cleanups before the test.
     #
@@ -1339,7 +1344,13 @@ function reset_config()
         emit_s9s_configuration_file >$config_file
 
         # This goes to the standard output.
-        emit_s9s_configuration_file
+        if [ -t 1 ]; then
+            emit_s9s_configuration_file | \
+                highlight --syntax=ini --out-format=xterm256
+        else
+            emit_s9s_configuration_file | \
+                highlight --syntax=ini 
+        fi
     fi
 
     # FIXME: This should not be here:
