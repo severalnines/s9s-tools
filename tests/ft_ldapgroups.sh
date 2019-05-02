@@ -145,16 +145,9 @@ function testCreateLdapConfig()
 EOF
     
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
-    if [ -t 1 ]; then
-        ldap_config | \
-            sudo tee /etc/cmon-ldap.cnf | \
-            highlight --syntax=ini --out-format=xterm256
-    else
-        ldap_config | \
-            sudo tee /etc/cmon-ldap.cnf | \
-            highlight --syntax=ini 
-    fi
-
+    ldap_config | \
+        sudo tee /etc/cmon-ldap.cnf | \
+        print_ini_file
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
     sleep 2
 }

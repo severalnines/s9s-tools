@@ -175,6 +175,15 @@ function print_subtitle()
     fi
 }
 
+function print_ini_file()
+{
+     if [ -t 1 ]; then
+         highlight --syntax=ini --out-format=xterm256
+     else
+         highlight --syntax=ini
+     fi
+}
+
 #
 # This function should be called before the functional tests are executed.
 # Currently this only prints a message for the user, but this might change.

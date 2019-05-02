@@ -133,9 +133,9 @@ function testCreateLdapConfig()
 EOF
     
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
-    echo -en "$TERM_BOLD"
-    ldap_config | sudo tee /etc/cmon-ldap.cnf
-    echo -en "$TERM_NORMAL"
+    ldap_config |\
+        sudo tee /etc/cmon-ldap.cnf | \
+        print_ini_file
     echo "--------8<--------8<--------8<--------8<--------8<--------8<--------"
 }
 
