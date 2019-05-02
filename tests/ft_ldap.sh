@@ -174,7 +174,6 @@ function testCmonDbUser()
     check_user \
         --user-name    "pipas"  \
         --cdt-path     "/" \
-        --full-name    "Laszlo Pere" \
         --group        "testgroup" \
         --dn           "-" \
         --origin       "CmonDb"    
