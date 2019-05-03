@@ -105,7 +105,7 @@ function ldap_config()
 # The URI where the Cmon Controller will find the LDAP server as it is specified
 # in the ldap.conf(5).
 #
-ldap_server_uri = "ldap://192.168.0.167:389"
+ldap_server_uri = "ldap://192.168.42.42:389"
 
 #
 # The default base DN to be used when performing LDAP operations. As it is
@@ -118,8 +118,8 @@ ldap_base_dn    = "dc=homelab,dc=local"
 #
 ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
 ldap_admin_pwd  = "p"
-EOF
 
+EOF
 }
 
 function testCreateLdapConfig()
@@ -132,11 +132,10 @@ function testCreateLdapConfig()
   Here is the configuration we created:
 EOF
     
-    ldap_config |\
+    ldap_config | \
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
-
-    #mysleep 2
+    sleep 2
 }
 
 function testLdapSupport()
@@ -181,101 +180,13 @@ function testCmonDbUser()
 
 function testLdapUser()
 {
-    print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is the first login of the user, a CmonDb shadow will be
-  created about the user and that shadow will hold some extra information the
-  Cmon Controller needs and will also guarantee a unique user ID.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "username"  \
-        --cdt-path     "/" \
-        --full-name    "firstname lastname" \
-        --group        "LDAPUsers" \
-        --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-}
-
-function testLdapUserSimple()
-{
     local retcode
 
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is not
-  the first login, the existing CmonDb shadow will be found and identified.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="username" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    #
-    #
-    #
-    print_title "Trying to Change the Password of a User"
-    cat <<EOF
-  Changing the password on the LDAP server is not yet implemented.
-
-EOF
-
-    mys9s user \
-        --change-password \
-        --cmon-user="system" \
-        --password="secret" \
-        --new-password="p" \
-        "username"     
-
-    retcode=$?
-    if [ $retcode -ne 0 ]; then
-        success "  o The change password failed, ok."
-    else
-        failure "Changing the password for an LDAP user should have failed."
-    fi
-}
-
-function testLdapUserSecond()
-{
     print_title "Checking LDAP Authentication with Distinguished Name"
     cat <<EOF
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is not the first time the user logins, so the CmonDb shadow
-  should be found. This shadow contains the origin set to LDAP and so LDAP
-  authentication should be used.
+  Trying to authenticate with a user that was not found in the Cmon Database
+  while the LDAP server can not be contacted (the LDAP server URI points to a
+  server that does not exist).
 
 EOF
 
@@ -285,51 +196,12 @@ EOF
         --cmon-user="cn=username,dc=homelab,dc=local" \
         --password=p
 
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-}
-
-function testLdapUserSimpleFirst()
-{
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is 
-  the first login of this user.
-
-EOF
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="pipas1" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="pipas1" \
-        --password=p \
-        pipas1
-
-    check_exit_code_no_job $?
-    
-    check_user \
-        --user-name    "pipas1"  \
-        --cdt-path     "/" \
-        --full-name    "Lastname" \
-        --group        "LDAPUsers" \
-        --dn           "cn=pipas1,dc=homelab,dc=local" \
-        --origin       "LDAP"
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o The command failed, ok."
+    else
+        failure "The command should have failed."
+    fi
 }
 
 function testLdapObject()
@@ -345,7 +217,7 @@ EOF
     mys9s user \
         --list \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="pipas2" \
         --password=p
 
     check_exit_code_no_job $?
@@ -353,7 +225,7 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="pipas2" \
         --password=p \
         pipas2
 
@@ -362,7 +234,7 @@ EOF
     check_user \
         --user-name    "pipas2"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers" \
+        --group        "users" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
@@ -398,68 +270,11 @@ EOF
     check_user \
         --user-name    "lpere"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers,ldapgroup" \
+        --group        "users" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
 
-function testLdapFailures()
-{
-    local retcode
-
-    print_title "Testing Failed Logins"
-
-    #
-    # Invalid/non-existing username.
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="nosuchuser" \
-        --password=p
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-
-    #
-    # Non existing distinguished name.
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=nosuchuser,dc=homelab,dc=local" \
-        --password=p
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-    
-    #
-    # Wrong password.
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="lpere" \
-        --password=wrongpassword
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-}
 
 #
 # Running the requested tests.
@@ -477,12 +292,6 @@ else
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
-    runFunctionalTest testLdapUserSimple
-    runFunctionalTest testLdapUserSecond
-    runFunctionalTest testLdapUserSimpleFirst
-    runFunctionalTest testLdapObject
-    runFunctionalTest testLdapFailures
-    runFunctionalTest testLdapGroup
 fi
 
 endTests
