@@ -124,6 +124,8 @@ EOF
 
 function testCreateLdapConfig()
 {
+    local lines
+
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
@@ -135,7 +137,95 @@ EOF
     ldap_config | \
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
-    sleep 2
+    
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/user_manager
+    
+    #
+    #
+    #
+    mys9s tree \
+        --tree \
+        --all \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime
+    
+    check_exit_code_no_job $?
+    
+
+    #
+    # Listing the LDAP config in the CDT.
+    #
+    mys9s tree \
+        --list \
+        --long \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP
+
+    check_exit_code_no_job $?
+    
+    lines=$(mys9s tree \
+            --list \
+            --long \
+            --batch \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime/LDAP)
+    
+    if echo "$lines" | grep --quiet "120, 4"; then
+        success "  o Device numbers are as they should be, ok."
+    else
+        failure "Device numbers seem not to be ok."
+    fi
+    
+    if echo "$lines" | grep --quiet -- "-rw-------"; then
+        success "  o Access rights as they should be, ok."
+    else
+        failure "Access rights seem not to be ok."
+    fi
+    
+    if echo "$lines" | grep --quiet " system "; then
+        success "  o Owner is as they should be, ok."
+    else
+        failure "File owner seem not to be ok."
+    fi
+    
+    if echo "$lines" | grep --quiet " admins "; then
+        success "  o Group is as they should be, ok."
+    else
+        failure "File group seem not to be ok."
+    fi
+
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP/configuration
+    
+    check_exit_code_no_job $?
+
+    lines=$(s9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP/configuration)
+
+    if echo "$lines" | grep --quiet "ldap_server_uri"; then
+        success "  o CDT '/.runtime/LDAP/configuration' is readable, ok"
+    else
+        failure "CDT '/.runtime/LDAP/configuration' is not proper."
+    fi
 }
 
 function testLdapSupport()
@@ -146,6 +236,9 @@ function testLdapSupport()
 
 EOF
 
+    #
+    # The controller info file.
+    #
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -162,6 +255,7 @@ EOF
     else
         failure "No LDAP support."
     fi
+
 }
 
 function testCmonDbUser()
