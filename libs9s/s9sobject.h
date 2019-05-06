@@ -21,6 +21,11 @@
 
 #include "S9sVariantMap"
 
+/**
+ * A class that various other classes use as a base. The reason to add this was
+ * to implement an easy way of handling properties. Our goal is to have as many
+ * common properties for the objects from the controller as it is possible.
+ */
 class S9sObject
 {
     public:

@@ -27,6 +27,11 @@ class S9sContainer;
 class S9sVariantMap;
 class S9sVariantList;
 
+/**
+ * A class implemented to hold various types for convenience. This class is only
+ * partially implemented, it has only the things we use. It is very useful, but
+ * there is roomm for enhancements for sure.
+ */
 class S9sVariant
 {
     public:

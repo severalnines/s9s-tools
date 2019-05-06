@@ -53,6 +53,10 @@ static const S9sAccount          sm_emptyAccount;
 #pragma GCC visibility push(hidden)
 #endif
 
+/**
+ * A proper copy constructor. Makes a copy of the object if the variant holds an
+ * object.
+ */
 S9sVariant::S9sVariant(
         const S9sVariant &orig)
 {
@@ -95,6 +99,10 @@ S9sVariant::S9sVariant(
     }
 }
 
+/**
+ * A constructor to create a variant that holds a node. Makes a copy of the node
+ * object.
+ */
 S9sVariant::S9sVariant(
         const S9sNode &nodeValue) :
     m_type (Node)
@@ -102,6 +110,10 @@ S9sVariant::S9sVariant(
     m_union.nodeValue = new S9sNode(nodeValue);
 }
 
+/**
+ * A constructor to create a variant that holds a container. Makes a copy of the
+ * container object.
+ */
 S9sVariant::S9sVariant(
         const S9sContainer &containerValue) :
     m_type (Container)
@@ -136,6 +148,9 @@ S9sVariant::~S9sVariant()
 }
 
 /**
+ * \param rhs The right-hand-side of the operator.
+ * \returns The variant itself as it is usually done.
+ *
  * Assignment operator for the S9sVariant class that accepts an other S9sVariant
  * object as right hand side argument.
  */
@@ -190,6 +205,14 @@ S9sVariant::operator=(
     return *this;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ * \returns True if the two variants are holding equal values.
+ *
+ * This operator is trying to be as smart as possible to convert the two values,
+ * does fuzzy floating point comparison and everything, but there might be room
+ * for enhancements.
+ */
 bool 
 S9sVariant::operator== (
         const S9sVariant &rhs) const
@@ -457,6 +480,12 @@ S9sVariant::operator[] (
     assert(false);
 }
 
+/**
+ * \returns The name of the type the variant holds.
+ *
+ * This is mostly for debugging and log messages, but for that it is very 
+ * handy.
+ */
 S9sString 
 S9sVariant::typeName() const
 {
@@ -512,6 +541,10 @@ S9sVariant::typeName() const
     return retval;
 }
 
+/**
+ * \returns The container object from the variant if it holds a container.
+ *   Returns an empty, invalid container object if not.
+ */
 const S9sContainer &
 S9sVariant::toContainer() const
 {
@@ -646,6 +679,9 @@ S9sVariant::toVariantList() const
     return sm_emptyList;
 }
 
+/**
+ * \returns The size of lists, it is TBD for other types.
+ */
 int
 S9sVariant::size() const
 {
@@ -760,6 +796,9 @@ S9sVariant::toULongLong(
     return defaultValue;
 }
 
+/**
+ * \returns The value held in the variant converted to time_t.
+ */
 time_t
 S9sVariant::toTimeT() const
 {

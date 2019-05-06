@@ -36,6 +36,10 @@ static const char *shortMonthNames[] =
     "Oct", "Nov", "Dec", NULL
 };
 
+/**
+ * This constructor will create an object that holds no date or time, that is
+ * invalid.
+ */
 S9sDateTime::S9sDateTime()
 {
     m_timeSpec.tv_sec  = -1;
@@ -88,6 +92,9 @@ S9sDateTime::operator-=(
     return *this;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ */
 S9sDateTime &
 S9sDateTime::operator=(
         const S9sDateTime &rhs)
@@ -98,6 +105,9 @@ S9sDateTime::operator=(
     return *this;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ */
 bool
 S9sDateTime::operator< (
         const time_t &rhs) const
@@ -108,6 +118,9 @@ S9sDateTime::operator< (
     return m_timeSpec.tv_sec < rhs;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ */
 bool
 S9sDateTime::operator> (
         const time_t &rhs) const
@@ -118,6 +131,9 @@ S9sDateTime::operator> (
     return m_timeSpec.tv_sec > rhs;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ */
 bool
 S9sDateTime::operator> (
         const S9sDateTime &rhs) const
@@ -136,6 +152,8 @@ S9sDateTime::operator> (
 
 
 /**
+ * \param rhs The right-hand-side of the operator.
+ *
  * Operator to compare two S9sDateTime class objects.
  */
 bool
@@ -148,6 +166,8 @@ S9sDateTime::operator== (
 }
 
 /**
+ * \param rhs The right-hand-side of the operator.
+ *
  * Operator to compare two S9sDateTime class objects.
  */
 bool
@@ -167,6 +187,8 @@ S9sDateTime::operator< (
 }
 
 /**
+ * \param rhs The right-hand-side of the operator.
+ *
  * Operator to compare two S9sDateTime class objects.
  */
 bool
@@ -182,6 +204,10 @@ S9sDateTime::operator<= (
     return false;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ *
+ */
 bool
 S9sDateTime::operator>= (
         const time_t &rhs) const
@@ -192,6 +218,10 @@ S9sDateTime::operator>= (
     return m_timeSpec.tv_sec >= rhs;
 }
 
+/**
+ * \param rhs The right-hand-side of the operator.
+ *
+ */
 bool
 S9sDateTime::operator>= (
         const S9sDateTime &rhs) const
@@ -209,6 +239,7 @@ S9sDateTime::operator>= (
 }
 
 /**
+ * \param rhs The right-hand-side of the operator.
  * \returns the time difference in milliseconds
  */
 longlong

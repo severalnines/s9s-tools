@@ -30,6 +30,10 @@ S9sObject::S9sObject(
     m_properties = orig.m_properties;
 }
 
+/**
+ * A constructor to create an object when we have a variant map with the
+ * properties. This map usually comes from the controller.
+ */
 S9sObject::S9sObject(
         const S9sVariantMap &properties) :
     m_properties(properties)
@@ -116,6 +120,10 @@ S9sObject::setProperty(
     }
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as a boolean.
+ */
 void
 S9sObject::setProperty(
         const S9sString &name,
@@ -124,6 +132,10 @@ S9sObject::setProperty(
     m_properties[name] = value;
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as an integer.
+ */
 void
 S9sObject::setProperty(
         const S9sString &name,
@@ -132,6 +144,10 @@ S9sObject::setProperty(
     m_properties[name] = value;
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as a variant map.
+ */
 void
 S9sObject::setProperty(
         const S9sString     &name,
@@ -140,6 +156,10 @@ S9sObject::setProperty(
     m_properties[name] = value;
 }
 
+/**
+ * \param name The name of the property to set.
+ * \param value The value of the property as a variant list.
+ */
 void
 S9sObject::setProperty(
         const S9sString      &name,
@@ -161,18 +181,32 @@ S9sObject::setProperties(
     m_properties = properties;
 }
 
+/**
+ * \returns The properties of the object in a variant map.
+ */
 const S9sVariantMap &
 S9sObject::toVariantMap() const
 {
     return m_properties;
 }
 
+/**
+ * The name of the object. This is a virtual function so that other classes can
+ * have names represented by other property names.
+ */
 S9sString 
 S9sObject::name() const
 {
     return property("alias").toString();
 }
 
+/**
+ * \param columns Controls how many columns will be used on the terminal to
+ *   print the name. This is an upper limit with ellipsis.
+ * \returns The name of the object (as the name() method), but this time there
+ * is a limit for the number of characters, so that we can pretty print names in
+ * columns.
+ */
 S9sString
 S9sObject::name(
         const int columns) const
@@ -191,6 +225,12 @@ S9sObject::name(
     return retval;
 }
 
+/**
+ * \param defaultValue The value that will be returned if the property is not
+ *   available/set.
+ * \returns The LDAP distinguished name if one is available amongst the
+ *   properties.
+ */
 S9sString 
 S9sObject::distinguishedName(
         const S9sString &defaultValue) const
@@ -203,6 +243,12 @@ S9sObject::distinguishedName(
     return retval;
 }
 
+/**
+ * \param defaultValue The value that will be returned if the property is not
+ *   available/set.
+ * \returns The string value of the "origin" property, that currently can be
+ *   "CmonDb" or "LDAP" showing what the original source of the object is.
+ */
 S9sString 
 S9sObject::origin(
         const S9sString &defaultValue) const
@@ -230,17 +276,13 @@ S9sString
 S9sObject::aclShortString() const
 {
     S9sString retval = property("acl").toString();
-#if 0 
-    retval.replace("user::", "");
-    retval.replace(",group::", "");
-    retval.replace(",other::", "");
-
-    return retval;
-#else
     return aclStringToUiString(retval);
-#endif
 }
 
+/**
+ * \param defaultValue The value that will be returned if the property is not
+ *   available/set.
+ */
 S9sString 
 S9sObject::id(
         const S9sString &defaultValue) const
@@ -263,6 +305,8 @@ S9sObject::cdtPath() const
 }
 
 /**
+ * \param defaultValue The value that will be returned if the property is not
+ *   available/set.
  * \returns The user name of the user that owns this object.
  */
 S9sString 
@@ -285,6 +329,8 @@ S9sObject::ownerName(
 }
 
 /**
+ * \param defaultValue The value that will be returned if the property is not
+ *   available/set.
  * \returns The group name of the group that owns the object.
  */
 S9sString 
