@@ -122,6 +122,20 @@ ldap_admin_pwd  = "p"
 EOF
 }
 
+function ldap_config_ok()
+{
+    cat <<EOF
+#
+# Second Cmon LDAP configuration file created by $MYNAME $VERSION.
+#
+ldap_server_uri = "ldap://192.168.0.167:389"
+ldap_base_dn    = "dc=homelab,dc=local"
+ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
+ldap_admin_pwd  = "p"
+
+EOF
+}
+
 function testCreateLdapConfig()
 {
     local lines
@@ -137,7 +151,10 @@ EOF
     ldap_config | \
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
-    
+   
+    sudo chown $USER.$USER /etc/cmon-ldap.cnf
+    ls -lha /etc/cmon-ldap.cnf
+
     #
     #
     #
@@ -156,6 +173,18 @@ EOF
         --cmon-user=system \
         --password=secret \
         /.runtime
+    
+    check_exit_code_no_job $?
+    
+    mys9s tree \
+        --list \
+        --long \
+        --recursive \
+        --full-path \
+        --all \
+        --cmon-user=system \
+        --password=secret \
+        /
     
     check_exit_code_no_job $?
     
@@ -328,7 +357,7 @@ EOF
     check_user \
         --user-name    "pipas2"  \
         --cdt-path     "/" \
-        --group        "users" \
+        --group        "LDAPUsers" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
 }
@@ -369,6 +398,23 @@ EOF
         --origin       "LDAP"
 }
 
+function testOverwriteLdapConfig()
+{
+    print_title "Creating an LDAP Config that Works"
+
+    ls -lha /etc/cmon-ldap.cnf
+    ldap_config_ok | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
+    check_exit_code_no_job $?
+    
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP/configuration
+}
 
 #
 # Running the requested tests.
@@ -386,6 +432,8 @@ else
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
+    runFunctionalTest testOverwriteLdapConfig
+    runFunctionalTest testLdapObject
 fi
 
 endTests
