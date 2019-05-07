@@ -136,6 +136,21 @@ ldap_admin_pwd  = "p"
 EOF
 }
 
+function ldap_config_disabled()
+{
+    cat <<EOF
+#
+# Third Cmon LDAP configuration file created by $MYNAME $VERSION.
+#
+ldap_is_enabled  = false
+ldap_server_uri  = "ldap://192.168.0.167:389"
+ldap_base_dn     = "dc=homelab,dc=local"
+ldap_admin_dn    = "cn=admin,dc=homelab,dc=local"
+ldap_admin_pwd   = "p"
+
+EOF
+}
+
 function testCreateLdapConfig()
 {
     local lines
@@ -301,15 +316,14 @@ function testCmonDbUser()
         --origin       "CmonDb"    
 }
 
-function testLdapUser()
+function testAuthFail()
 {
     local retcode
 
-    print_title "Checking LDAP Authentication with Distinguished Name"
+    print_title "Checking if LDAP Authentication Fails"
     cat <<EOF
-  Trying to authenticate with a user that was not found in the Cmon Database
-  while the LDAP server can not be contacted (the LDAP server URI points to a
-  server that does not exist).
+  Trying to authenticate with an LDAP user. The authentication should fail 
+  now, we are checking that.
 
 EOF
 
@@ -327,13 +341,12 @@ EOF
     fi
 }
 
-function testLdapObject()
+function testAuthSuccess()
 {
-    print_title "Checking LDAP Authentication with Username"
+    print_title "Checking if LDAP Authentication Succeeds"
     cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is 
-  the first login of this user. On the LDAP server this user has the class
-  simpleSecurityObject, so we test a bit different code here.
+  Checking if the LDAP authentication succeeds. This time the LDAP
+  authentication should work.
 
 EOF
 
@@ -398,12 +411,30 @@ EOF
         --origin       "LDAP"
 }
 
-function testOverwriteLdapConfig()
+function testLdapConfigOk()
 {
     print_title "Creating an LDAP Config that Works"
 
     ls -lha /etc/cmon-ldap.cnf
     ldap_config_ok | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
+    check_exit_code_no_job $?
+    
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP/configuration
+}
+
+function testLdapConfigDisabled()
+{
+    print_title "Creating an LDAP Config that is Disabled"
+
+    ls -lha /etc/cmon-ldap.cnf
+    ldap_config_disabled | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
     check_exit_code_no_job $?
     
     #
@@ -430,10 +461,15 @@ if [ "$1" ]; then
 else
     runFunctionalTest testCmonDbUser
     runFunctionalTest testLdapSupport
+
     runFunctionalTest testCreateLdapConfig
-    runFunctionalTest testLdapUser
-    runFunctionalTest testOverwriteLdapConfig
-    runFunctionalTest testLdapObject
+    runFunctionalTest testAuthFail
+
+    runFunctionalTest testLdapConfigOk
+    runFunctionalTest testAuthSuccess
+
+    runFunctionalTest testLdapConfigDisabled
+    runFunctionalTest testAuthFail
 fi
 
 endTests
