@@ -154,6 +154,7 @@ EOF
 function testCreateLdapConfig()
 {
     local lines
+    local filename="/etc/cmon-ldap.cnf"
 
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
@@ -164,11 +165,15 @@ function testCreateLdapConfig()
 EOF
     
     ldap_config | \
-        sudo tee /etc/cmon-ldap.cnf | \
+        sudo tee $filename  | \
         print_ini_file
    
-    sudo chown $USER.$USER /etc/cmon-ldap.cnf
-    ls -lha /etc/cmon-ldap.cnf
+    # The ft_full has no superuser rights, so we give the config file to this
+    # user.
+    sudo chown $USER.$USER $filename
+    sudo chmod 0600 $filename
+
+    ls -lha $filename
 
     #
     #
@@ -413,20 +418,46 @@ EOF
 
 function testLdapConfigOk()
 {
-    print_title "Creating an LDAP Config that Works"
+    local filename="/etc/cmon-ldap.cnf"
+    local mode
 
-    ls -lha /etc/cmon-ldap.cnf
-    ldap_config_ok | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
-    check_exit_code_no_job $?
-    
-    #
-    #
-    #
-    mys9s tree \
-        --cat \
+    print_title "Creating an LDAP Config that Works"
+    cat <<EOF
+  This test will write the LDAP config file through a CDT file. Then the file
+  is checked.
+
+EOF
+
+    #ls -lha $filename
+    ldap_config_ok | \
+        s9s tree --save \
         --cmon-user=system \
         --password=secret \
-        /.runtime/LDAP/configuration
+        "/.runtime/LDAP/configuration"
+
+    check_exit_code_no_job $?
+    
+    if [ -f "$filename" ]; then
+        success "  o The file '$filename' exists, ok."
+    else
+        failure "File '$filename' does not exist."
+    fi
+
+    mode=$(ls -lha "$filename" | awk '{print $1}')
+    if [ "$mode" == "-rw-------" ]; then
+        success "  o The mode is '$mode', ok."
+    else
+        failure "The mode is '$mode', should be '-rw-------'."
+    fi
+
+    #
+    #
+    #
+    #mys9s tree \
+    #    --cat \
+    #    --cmon-user=system \
+    #    --password=secret \
+    #    /.runtime/LDAP/configuration
 }
 
 function testLdapConfigDisabled()
