@@ -476,6 +476,8 @@ function testLdapConfigDisabled()
         --cmon-user=system \
         --password=secret \
         /.runtime/LDAP/configuration
+
+    cat /etc/cmon-ldap.cnf | print_ini_file
 }
 
 #
