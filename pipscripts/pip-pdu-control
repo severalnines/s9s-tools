@@ -113,6 +113,7 @@ Usage:
   --print-files        Print file names instead of names.
   --long               Print the long, detailed list.
 
+  --outlet=N           The numerical ID of the outlet.
   --group=GROUP        Only PDUs in the given group.
   --all                All the PDUs.
   --with-power         Lists only the ones that have power mesurements.
@@ -127,7 +128,7 @@ ARGS=$(\
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,list,list-outlets,\
 on,off,toggle,state,\
-power,voltage,current,temperature,humidity,print-files,long,group:,\
+power,voltage,current,temperature,humidity,print-files,long,outlet:,group:,\
 all,with-power,with-temperature" \
         -- "$@")
 
@@ -232,6 +233,12 @@ while true; do
             shift
             ;;
 
+        --outlet)
+            shift
+            OPTION_OUTLET="$1"
+            shift
+            ;;
+
         --all)
             shift
             OPTION_ALL="true"
@@ -323,12 +330,15 @@ function switch_apc()
     printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
     printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
     printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
-    
-    if [ "$PDU_OUTLETS" == "all" ]; then
+   
+    if [ -n "$OPTION_OUTLET" ]; then
+        outlets="$(echo "$OPTION_OUTLET" | tr ',' ' ')"
+    elif [ "$PDU_OUTLETS" == "all" ]; then
         outlets=$(seq $CONF_PDU_FIRST_OUTLET $CONF_PDU_LAST_OUTLET)
     else
         outlets=$(echo $PDU_OUTLETS | tr ',' ' ')
     fi
+    printVerbose "***        outlet: $outlet"
 
     case "$PDU_OPERATION" in
         on|off)
@@ -336,12 +346,22 @@ function switch_apc()
                 printVerbose "Switching outlet $outlet $PDU_OPERATION"
                 [ "$PDU_OPERATION" == "on" ]  && value=1
                 [ "$PDU_OPERATION" == "off" ] && value=2
+                
+                [ "$PDU_OPERATION" == "on" ]  && value1=true
+                [ "$PDU_OPERATION" == "off" ] && value1=false
 
                 snmpset \
                     -v 1 \
                     -c private "$CONF_PDU_SERVER" \
                     PowerNet-MIB::sPDUOutletCtl.$outlet integer $value \
                     >/dev/null 2>/dev/null    
+                
+                mosquitto_pub \
+                    -u "$MQTT_USER" \
+                    -P "$MQTT_PASSWORD" \
+                    -h "$MQTT_SERVER" \
+                    -t "stat/${CONF_PDU_SERVER}_$outlet/POWER" \
+                    -m "$PDU_OPERATION"
                 
                 #pip-pdu-expect \
                 #    "$CONF_PDU_SERVER" "$PDU_OPERATION" "$outlet" \
@@ -361,15 +381,22 @@ function switch_apc()
 
                     printVerbose "line: $line"
                     if echo "$line" | grep -q outletOff; then
-                        status="OFF"
+                        status="off"
                     elif echo "$line" | grep -q outletOn; then
-                        status="ON"
+                        status="on"
                     else
-                        status="-"
+                        status="?"
                     fi
+                
+                    mosquitto_pub \
+                        -u "$MQTT_USER" \
+                        -P "$MQTT_PASSWORD" \
+                        -h "$MQTT_SERVER" \
+                        -t "stat/${CONF_PDU_SERVER}_$outlet/POWER" \
+                        -m "$status"
 
-                    [ "$status" == "ON" ]  && has_on="true"
-                    [ "$status" == "OFF" ] && has_off="true"
+                    [ "$status" == "on" ]  && has_on="true"
+                    [ "$status" == "off" ] && has_off="true"
                 done
 
                 [ -n "$has_on" -a -z "$has_off" ] && echo "on"
@@ -383,44 +410,25 @@ function switch_apc()
             ;;
 
         current)
-            for n in 1 2 3; do
-                string=$(pip-pdu-expect "$CONF_PDU_SERVER" "current" "" \
-                    2>/dev/null)
-           
-                retval=$?
-                if [ "$retval" -eq 0 ]; then
-                    break
-                fi
-                printVerbose "*** retval: '$retval'" 
-                sleep 1
-            done
-
-            string="$(echo "$string" | grep 'Total:' )"
-            string="$(echo "$string" | awk -F: '{ print $2 }' )"
-            string="$(echo "$string" |  tr -d ' ' | tr -d 'A' | tr -d '\r')"
-            print_value "$string" "0"            
+            line=$(snmpget \
+                -v 1 \
+                -c private "$CONF_PDU_SERVER" \
+                PowerNet-MIB::rPDULoadStatusLoad.3)
+            
+            line=$(echo "$line" | awk '{print $4}')
+            line=$(bc <<< "scale = 2; $line / 10")
+            print_value "$line"
             ;;
 
         power)
-            #pip-pdu-expect "$CONF_PDU_SERVER" "power" "" | \
-            #    grep "Watts" | awk '{ print $1 }' | tr -d ' '
 
-            for n in 1 2 3; do
-                string=$(pip-pdu-expect "$CONF_PDU_SERVER" "power" "" \
-                    2>/dev/null)
-           
-                retval=$?
-                if [ "$retval" -eq 0 ]; then
-                    break
-                fi
-                printVerbose "*** retval: '$retval'" 
-                sleep 1
-            done
+            line=$(snmpget \
+                -v 1 \
+                -c private "$CONF_PDU_SERVER" \
+                PowerNet-MIB::rPDUIdentDevicePowerWatts.0)
 
-            string="$(echo "$string" | grep 'Watts' )"
-            string="$(echo "$string" | awk '{ print $1 }' )"
-            string="$(echo "$string" |  tr -d ' ' | tr -d '\r')"
-            print_value "$string" "0"            
+            line=$(echo "$line" | awk '{print $4}')
+            print_value "$line" "0"
             ;;
 
     esac
@@ -649,6 +657,18 @@ EOF
 
 }
 
+function print_outlets_long_header()
+{
+    echo -en $TERM_BOLD
+    cat <<EOF
+ # STAT PDU    OUTLET
+--------------------------------------------------------------------------------
+EOF
+
+    echo -en $TERM_NORMAL
+
+}
+
 # https://tobinsramblings.wordpress.com/2011/05/03/snmp-tutorial-apc-pdus/
 #
 # Check the status of one outlet:
@@ -693,8 +713,15 @@ function print_outlets_long_for_device()
         elif echo "$line" | grep -q outletOn; then
             status="on"
         else
-            status="-"
+            status="?"
         fi
+
+                    mosquitto_pub \
+                        -u "$MQTT_USER" \
+                        -P "$MQTT_PASSWORD" \
+                        -h "$MQTT_SERVER" \
+                        -t "stat/${CONF_PDU_SERVER}_$outlet/POWER" \
+                        -m "$status"
 
         outlet_name=$(snmpget \
             -v 1 \
@@ -705,11 +732,11 @@ function print_outlets_long_for_device()
 
         printf "%2d " "$outlet"
         if [ "$status" == "on" ]; then
-            printf "$XTERM_COLOR_GREEN%3s$TERM_NORMAL " "$status"
+            printf "$XTERM_COLOR_GREEN%-4s$TERM_NORMAL " "$status"
         elif [ "$status" == "off" ]; then
-            printf "$XTERM_COLOR_RED%3s$TERM_NORMAL " "$status"
+            printf "$XTERM_COLOR_RED%-4s$TERM_NORMAL " "$status"
         else
-            printf "%3s " "$status"
+            printf "%-4s " "$status"
         fi
 
         printf "$HOST_COLOR%-6s$TERM_NORMAL " "$device"
@@ -721,6 +748,8 @@ function print_outlets_long_for_device()
 
 function print_outlets_long()
 {
+    print_outlets_long_header
+
     for OPTION_DEVICE in $(echo $OPTION_DEVICES | tr ',' ' '); do
         print_outlets_long_for_device $OPTION_DEVICE
     done
