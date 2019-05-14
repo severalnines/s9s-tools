@@ -299,6 +299,9 @@ enum S9sOptionType
     OptionLogFile,
     OptionCredentialId,
     OptionCreateSnaphot,
+    
+    OptionConfigTemplate,
+    OptionNoInstall,
 };
 
 /**
@@ -2368,6 +2371,18 @@ S9sString
 S9sOptions::templateName() const
 {
     return getString("template");
+}
+
+S9sString
+S9sOptions::configTemplate() const
+{
+    return getString("config_template");
+}
+
+bool
+S9sOptions::noInstall() const
+{
+    return getBool("no_install");
 }
 
 /**
@@ -4953,6 +4968,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
+"  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
@@ -4965,6 +4981,7 @@ S9sOptions::printHelpCluster()
 "  --image-os-user=NAME       The name of the initial user on image.\n"
 "  --job-tags=LIST            Tags for the job if a job is created.\n"
 "  --nodes=NODE_LIST          List of nodes to work with.\n"
+"  --no-install               Do not install the cluster software.\n"
 "  --opt-group=NAME           The option group for configuration.\n"
 "  --opt-name=NAME            The name of the configuration item.\n"
 "  --opt-value=VALUE          The value for the configuration item.\n"
@@ -8998,6 +9015,8 @@ S9sOptions::readOptionsCluster(
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "donor",            required_argument, 0, OptionDonor           },
+        { "config-template",  required_argument, 0, OptionConfigTemplate   },
+        { "no-install",       no_argument,       0, OptionNoInstall       },
        
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -9013,10 +9032,10 @@ S9sOptions::readOptionsCluster(
         { "region",           required_argument, 0, OptionRegion          },
         { "servers",          required_argument, 0, OptionServers         },
         { "subnet-id",        required_argument, 0, OptionSubnetId        },
-        { "template",         required_argument, 0, OptionTemplate        },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
-        { "volumes",          required_argument, 0, OptionVolumes         },
-        { "vpc-id",           required_argument, 0, OptionVpcId           },
+        { "volumes",          required_argument, 0, OptionVolumes          },
+        { "vpc-id",           required_argument, 0, OptionVpcId            },
+        { "template",         required_argument, 0, OptionTemplate        },
         { 0, 0, 0, 0 }
     };
 
@@ -9393,6 +9412,16 @@ S9sOptions::readOptionsCluster(
             case OptionDonor:
                 // --donor=ADDRESS
                 m_options["donor"] = optarg;
+                break;
+
+            case OptionConfigTemplate:
+                // --config-template=FILE
+                m_options["config_template"] = optarg;
+                break;
+
+            case OptionNoInstall:
+                // --no-install
+                m_options["no_install"] = true;
                 break;
 
             /*

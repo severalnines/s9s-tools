@@ -502,6 +502,12 @@ The protocol to install and handle mongo data servers.
 .RE
 
 .TP
+.BI \-\^\-no\-install
+Skip the cluster software installation part. Assume all software is installed on
+the node(s). This command line option is considered when installing a new
+cluster or adding a new node to an existing cluster.
+
+.TP
 .BI \-\^\-os\-key\-file= PATH
 The path of the SSH key to install on a new container to allow the user to log
 in. This command line option can be passed when a new container is created, the
@@ -605,6 +611,13 @@ on the remote hosts too.
 The name of the cluster type to be installed. Currently the following types are
 supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or 
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
+
+.TP
+.BI \-\^\-config\-template= FILENAME
+Use the specified file as configuration template to create the configuration
+file for the new cluster. Please note, that the \fB\-\^\-template\fP option is
+for the containers (virtual machines) of the nodes and has completely different
+meaning.
 
 .TP
 .BI \-\^\-donor= ADDRESS
