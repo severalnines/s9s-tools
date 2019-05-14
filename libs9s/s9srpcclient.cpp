@@ -3842,7 +3842,7 @@ S9sRpcClient::addNode(
     
     // The job_data describing the cluster.
     jobData["node"] = hosts[0].toVariantMap();
-    jobData["install_software"] = true;
+    jobData["install_software"] = !options->noInstall();
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
    
@@ -3945,7 +3945,7 @@ S9sRpcClient::addReplicationSlave(
     if (slave.hasPort())
         jobData["port"]         = slave.port();
 
-    jobData["install_software"] = true;
+    jobData["install_software"] = !options->noInstall();
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
    
@@ -4284,7 +4284,7 @@ S9sRpcClient::addMongoNode(
             jobData["node_type"] = "arbiter";
     } //else the caller method is buggy
 
-    jobData["install_software"] = true;
+    jobData["install_software"] = !options->noInstall();
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
 
@@ -4873,7 +4873,7 @@ S9sRpcClient::createServer()
     }
     
     jobData["server"]           = serverMap;
-    jobData["install_software"] = true;
+    jobData["install_software"] = !options->noInstall();
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
     
@@ -5882,7 +5882,7 @@ S9sRpcClient::createBackup()
 
         tmpMap["disable_firewall"] = true;
         tmpMap["disable_selinux"]  = true;
-        tmpMap["install_software"] = true;
+        tmpMap["install_software"] = !options->noInstall();
         tmpMap["server_address"]   = options->testServer();
         
         jobData["verify_backup"]   = tmpMap;
@@ -5937,7 +5937,7 @@ S9sRpcClient::verifyBackup()
     jobData["server_address"] = options->testServer();
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"] = true;
-    jobData["install_software"] = true;
+    jobData["install_software"] = !options->noInstall();
     jobData["terminate_db_server"] = true;
     
     // The jobspec describing the command.
@@ -7288,6 +7288,12 @@ S9sRpcClient::composeJobData(
 
     if (options->hasCredentialIdOption())
         jobData["cloud_credentials_id"] = options->credentialId();
+
+    if (options->noInstall())
+        jobData["install_software"] = !options->noInstall();
+
+    if (!options->configTemplate().empty())
+        jobData["config_template"] = options->configTemplate();
 
     return jobData;
 }
