@@ -2483,7 +2483,6 @@ S9sRpcClient::createCluster()
     S9sString      osSudoPassword;
     S9sString      vendor;
     S9sString      dbVersion;
-    bool           uninstall = true;
     S9sRpcReply    reply;
     bool           success;
 
@@ -2544,31 +2543,31 @@ S9sRpcClient::createCluster()
             options->clusterType() == "mysql-single")
     {
         success = createMySqlSingleCluster(
-                hosts, osUserName, vendor, dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "galera")
     {
         success = createGaleraCluster(
-                hosts, osUserName, vendor, dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "mysqlreplication" ||
             options->clusterType() == "mysql")
     {
         success = createMySqlReplication(
-                hosts, osUserName, vendor, dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "group_replication" || 
             options->clusterType() == "groupreplication")
     {
         success = createGroupReplication(
-                hosts, osUserName, vendor, dbVersion, uninstall);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "postgresql")
     {
         success = createPostgreSql(
                 hosts, osUserName, osSudoPassword,
-                dbVersion, uninstall);
+                dbVersion);
 	} else if (options->clusterType() == "mongodb")
 	{
 		success = createMongoCluster(
 				hosts, osUserName, osSudoPassword, 
-                vendor, dbVersion, uninstall);
+                vendor, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -2600,7 +2599,7 @@ S9sRpcClient::createCluster()
 
         success = createNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts,
-                osUserName, vendor, dbVersion, uninstall);
+                osUserName, vendor, dbVersion);
     } else {
         PRINT_ERROR(
             "Not supported cluster type '%s'.", STR(options->clusterType()));
@@ -2738,7 +2737,6 @@ S9sRpcClient::getStats(
  * \param osUserName the user name to be used to SSH to the host.
  * \param vendor the name of the database vendor to install.
  * \param mySqlVersion the MySql version to install.
- * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *
@@ -2748,8 +2746,7 @@ S9sRpcClient::createGaleraCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
-        const S9sString      &mySqlVersion,
-        bool                  uninstall)
+        const S9sString      &mySqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -2771,9 +2768,17 @@ S9sRpcClient::createGaleraCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -2807,8 +2812,7 @@ S9sRpcClient::createMySqlSingleCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
-        const S9sString      &mySqlVersion,
-        bool                  uninstall)
+        const S9sString      &mySqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -2830,9 +2834,17 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -2928,7 +2940,6 @@ S9sRpcClient::registerGaleraCluster(
  * \param osUserName the user name to be used to SSH to the host.
  * \param vendor the name of the database vendor to install.
  * \param mySqlVersion the MySql version to install. 
- * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  */
@@ -2937,8 +2948,7 @@ S9sRpcClient::createMySqlReplication(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
-        const S9sString      &mySqlVersion,
-        bool                  uninstall)
+        const S9sString      &mySqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -2962,7 +2972,6 @@ S9sRpcClient::createMySqlReplication(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["enable_uninstall"] = uninstall;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
     jobData["repl_user"]        = options->dbAdminUserName();
@@ -2973,6 +2982,15 @@ S9sRpcClient::createMySqlReplication(
 
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"]      = options->osKeyFile();
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
 
     // 
     // The jobspec describing the command.
@@ -3064,7 +3082,6 @@ S9sRpcClient::registerMySqlReplication(
  * \param osUserName the user name to be used to SSH to the host.
  * \param vendor the name of the database vendor to install.
  * \param mySqlVersion the MySql version to install. 
- * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  */
@@ -3073,8 +3090,7 @@ S9sRpcClient::createGroupReplication(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &vendor,
-        const S9sString      &mySqlVersion,
-        bool                  uninstall)
+        const S9sString      &mySqlVersion)
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList hostNames;
@@ -3105,11 +3121,19 @@ S9sRpcClient::createGroupReplication(
     jobData["master_address"]   = hostNames[0].toString();
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["enable_uninstall"] = uninstall;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
     jobData["repl_user"]        = options->dbAdminUserName();
     jobData["repl_password"]    = options->dbAdminPassword();
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3206,8 +3230,7 @@ S9sRpcClient::createNdbCluster(
         const S9sVariantList &ndbdHosts,
         const S9sString      &osUserName, 
         const S9sString      &vendor,
-        const S9sString      &mySqlVersion,
-        bool                  uninstall)
+        const S9sString      &mySqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  mySqlHostNames, mgmdHostNames, ndbdHostNames;
@@ -3253,6 +3276,15 @@ S9sRpcClient::createNdbCluster(
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = true;
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3359,7 +3391,6 @@ S9sRpcClient::registerNdbCluster(
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
  * \param osUserName the user name to be used to SSH to the host.
- * \param uninstall true if uninstalling the existing software is allowed.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
@@ -3371,8 +3402,7 @@ S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &osSudoPassword,
-        const S9sString      &psqlVersion,
-        bool                  uninstall)
+        const S9sString      &psqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -3393,12 +3423,21 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["nodes"]            = nodesField(hosts);
-    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
+
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    } 
+
     if (options->hasBackupId())
         jobData["backup_id"]        = options->backupId();
 
@@ -3497,8 +3536,7 @@ S9sRpcClient::createMongoCluster(
         const S9sString      &osUserName,
         const S9sString      &osSudoPassword,
         const S9sString      &vendor,
-        const S9sString      &mongoVersion,
-        bool                  uninstall)
+        const S9sString      &mongoVersion)
 {
     S9sMap<S9sString, S9sVariantList> nodelistMap;
     S9sOptions     *options = S9sOptions::instance();
@@ -3648,7 +3686,6 @@ S9sRpcClient::createMongoCluster(
     jobData["cluster_type"]     = "mongodb";
     jobData["vendor"]           = vendor;
     jobData["mongodb_version"]  = mongoVersion;
-    jobData["enable_uninstall"] = uninstall;
     jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
 
@@ -3657,6 +3694,15 @@ S9sRpcClient::createMongoCluster(
 
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
+    
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3842,7 +3888,15 @@ S9sRpcClient::addNode(
     
     // The job_data describing the cluster.
     jobData["node"] = hosts[0].toVariantMap();
-    jobData["install_software"] = !options->noInstall();
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    }
+        
     jobData["disable_firewall"] = true;
     jobData["disable_selinux"]  = true;
    
@@ -7290,7 +7344,10 @@ S9sRpcClient::composeJobData(
         jobData["cloud_credentials_id"] = options->credentialId();
 
     if (options->noInstall())
-        jobData["install_software"] = !options->noInstall();
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    }
 
     if (!options->configTemplate().empty())
         jobData["config_template"] = options->configTemplate();

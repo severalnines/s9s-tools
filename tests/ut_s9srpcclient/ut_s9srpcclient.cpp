@@ -503,7 +503,7 @@ UtS9sRpcClient::testCreateGalera()
     hosts << S9sNode("192.168.1.192");
     hosts << S9sNode("192.168.1.193");
 
-    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6", true));
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
     uri     = client.uri(0u);
     payload = client.payload(0u);
 
@@ -535,7 +535,7 @@ UtS9sRpcClient::testCreateReplication()
     hosts << S9sNode("192.168.1.193");
 
     S9S_VERIFY(client.createMySqlReplication(
-                hosts, "pi", "percona", "5.6", true));
+                hosts, "pi", "percona", "5.6"));
 
     uri     = client.uri(0u);
     payload = client.payload(0u);
@@ -585,7 +585,7 @@ UtS9sRpcClient::testCreateNdbCluster()
 
     S9S_VERIFY(client.createNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts,
-                "pip", "oracle", "5.6", true));
+                "pip", "oracle", "5.6"));
 
     uri     = client.uri(0u);
     payload = client.payload(0u);

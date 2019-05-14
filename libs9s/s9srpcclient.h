@@ -385,15 +385,13 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
+                const S9sString      &mySqlVersion);
 
         bool createGaleraCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
+                const S9sString      &mySqlVersion);
 
         bool registerGaleraCluster(
                 const S9sVariantList &hosts,
@@ -403,8 +401,7 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
+                const S9sString      &mySqlVersion);
         
         bool registerMySqlReplication(
                 const S9sVariantList &hosts,
@@ -414,8 +411,7 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
+                const S9sString      &mySqlVersion);
 
         bool registerGroupReplication(
                 const S9sVariantList &hosts,
@@ -427,8 +423,7 @@ class S9sRpcClient
                 const S9sVariantList &ndbdHosts,
                 const S9sString      &osUserName, 
                 const S9sString      &vendor,
-                const S9sString      &mySqlVersion,
-                bool                  uninstall);
+                const S9sString      &mySqlVersion);
         
         bool registerNdbCluster(
                 const S9sVariantList &mySqlHosts,
@@ -440,16 +435,14 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &osSudoPassword,
-                const S9sString      &psqlVersion,
-                bool                  uninstall);
+                const S9sString      &psqlVersion);
 
         bool createMongoCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &osSudoPassword,
                 const S9sString      &vendor,
-                const S9sString      &mongoVersion,
-                bool                  uninstall);
+                const S9sString      &mongoVersion);
 
         bool registerPostgreSql(
                 const S9sVariantList &hosts,
