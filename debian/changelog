@@ -1,8 +1,14 @@
-s9s-tools (1.7.20190406-release1) UNRELEASED; urgency=medium
+s9s-tools (1.7.20190514-release1) UNRELEASED; urgency=medium
 
-  * New release for clustercontrol 1.7.2
+  * Added the --config-template and --no-install options.
 
- -- David Kedves <kedazo@severalnines.com>  Sat, 06 Apr 2019 13:47:50 +0200
+ -- David Kedves <kedazo@severalnines.com>  Tue, 14 May 2019 13:05:05 +0200
+
+s9s-tools (1.7.20190430-release1) UNRELEASED; urgency=medium
+
+  * New patch release
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 30 Apr 2019 10:19:30 +0200
 
 s9s-tools (1.7.20190104-release1) UNRELEASED; urgency=medium
 
