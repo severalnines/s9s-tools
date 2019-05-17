@@ -648,7 +648,7 @@ function print_header()
     echo -en $TERM_BOLD
 
     cat <<EOF
-DEVICE           MODE  GROUP         SERVER        NAME
+DEVICE           MODE  GROUP         SERVER           NAME
 --------------------------------------------------------------------------------
 EOF
 
@@ -836,7 +836,7 @@ function print_device_list_long()
         printf "$TERM_NORMAL%-5s$TERM_NORMAL "    "$mode"
         #printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
         printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$group"
-        printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_PDU_SERVER"
+        printf "$IP_COLOR%-16s$TERM_NORMAL "      "$CONF_PDU_SERVER"
 
         if [ -z "$OPTION_PRINT_FILES" ]; then
             printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$CONF_PDU_NAME"

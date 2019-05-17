@@ -23,16 +23,19 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+Usage: 
+  $MYNAME [OPTION]... [TESTNAME]
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  $MYNAME - Test script for s9s to check various error conditions.
+
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+  --force-sqlite   Use SQLite despite the setting in the config files.
 
 EOF
     exit 1
@@ -40,7 +43,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
+force-sqlite" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -1095,6 +1099,203 @@ EOF
     fi
 }
 
+function check_extended_privileges()
+{
+    local cmon_user_option=""
+    local can_execute_job=""
+    local can_create_cluster=""
+    local retcode
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --cmon-user)
+                cmon_user_option=" --cmon-user=$2";
+                shift 2
+                ;;
+
+            --can-execute-job)
+                can_execute_job="true"
+                shift
+                ;;
+
+            --can-create-cluster)
+                can_create_cluster="true"
+                shift
+                ;;
+        esac
+    done
+
+    # The file privileges.
+    mys9s tree$cmon_user_option \
+        --access --privileges="r-x" \
+        /.runtime/jobs/jobExecutor
+
+    retcode=$?
+    if [ -n "$can_execute_job" ]; then
+        if [ "$retcode" -eq 0 ]; then
+            success "  o The user can execute jobs, ok."
+        else
+            failure "The user should be able to execute jobs."
+        fi
+    else
+        if [ "$retcode" -eq 0 ]; then
+            failure "The user should not be able to execute jobs."
+        else
+            success "  o The user is not able to execute jobs, ok."
+        fi
+    fi
+    
+    mys9s tree$cmon_user_option \
+        --access --privileges="r-x" \
+        /.runtime/jobs/jobExecutorCreateCluster
+    
+    retcode=$?
+    if [ -n "$can_execute_job" ]; then
+        if [ "$retcode" -eq 0 ]; then
+            success "  o The user can create clusters, ok."
+        else
+            failure "The user should be able to create clusters."
+        fi
+    else
+        if [ "$retcode" -eq 0 ]; then
+            failure "The user should not be able to create clusters."
+        else
+            success "  o The user can not create clusters, ok."
+        fi
+    fi
+
+    # The same information in the RPC reply.
+    echo -e "$TERM_NORMAL"
+
+    my_command s9s user$cmon_user_option --whoami --print-json \
+        \| jq .user_extended_privileges
+
+    s9s user$cmon_user_option --whoami --print-json | \
+        jq .user_extended_privileges
+
+    tmp=$(s9s user$cmon_user_option --whoami --print-json |\
+        jq .user_extended_privileges.can_execute_jobs)
+    if [ "$tmp" == "true" ]; then
+        if [ "$retcode" -eq 0 ]; then
+            success "  o The user can execute jobs, ok."
+        else
+            failure "The user should be able to execute jobs."
+        fi
+    else
+        if [ "$retcode" -eq 0 ]; then
+            failure "The user should be not able to execute jobs."
+        else
+            success "  o The user can not execute jobs, ok."
+        fi
+    fi
+
+    tmp=$(s9s user$cmon_user_option --whoami --print-json |\
+        jq .user_extended_privileges.can_create_clusters)
+    if [ "$tmp" == "true" ]; then
+        if [ "$retcode" -eq 0 ]; then
+            success "  o The user can create clusters, ok."
+        else
+            failure "The user should be able to create clusters."
+        fi
+    else
+        if [ "$retcode" -eq 0 ]; then
+            failure "The user should not be able to create clusters."
+        else
+            success "  o The user can not create clusters, ok."
+        fi
+    fi
+}
+
+function checkExtendedPrivileges()
+{
+    local tmp
+
+    print_title "Checking Extended Privileges"
+    cat <<EOF
+  This test will check how the extended privileges (can execute a job and can
+  create a new cluster) can be controlled by setting ACL entries to some special
+  CDT entries in /.runtime/jobs/. The test will check the default values for
+  some users, then deny these privileges with a user ACL entry and a group ACL
+  entry.
+
+EOF
+    my_command  s9s user --whoami --print-json \| jq .user_extended_privileges
+    s9s user --whoami --print-json | jq .user_extended_privileges
+
+    #
+    # Defaults.
+    #
+    check_extended_privileges \
+        --can-execute-job \
+        --can-create-cluster
+   
+    #
+    #
+    #
+    print_subtitle "Denying by User ACL Entry"
+    check_extended_privileges \
+        --cmon-user          "kirk"  \
+        --can-execute-job            \
+        --can-create-cluster
+
+    mys9s tree --add-acl --acl="user:kirk:---" \
+        /.runtime/jobs/jobExecutor
+    
+    check_exit_code_no_job $?
+    
+    mys9s tree --add-acl --acl="user:kirk:---" \
+        /.runtime/jobs/jobExecutorCreateCluster
+
+    mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
+    mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
+
+    check_extended_privileges \
+        --cmon-user          "kirk"  
+
+
+    #
+    # Denying by group ACL.
+    #
+    print_subtitle "Denying by a Group ACL Entry"
+    check_extended_privileges \
+        --cmon-user          "worf"  \
+        --can-execute-job            \
+        --can-create-cluster
+    
+    mys9s tree --add-acl --acl="group:ds9:---" \
+        /.runtime/jobs/jobExecutor
+    
+    mys9s tree --add-acl --acl="group:ds9:---" \
+        /.runtime/jobs/jobExecutorCreateCluster
+    
+    mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
+    mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
+
+    check_extended_privileges \
+        --cmon-user          "worf"  
+
+    return 0
+    mys9s tree --access --privileges="r-x" /.runtime/jobs/jobExecutor
+    mys9s tree --access --privileges="r-x" /.runtime/jobs/jobExecutorCreateCluster
+
+    tmp=$(s9s user --whoami --print-json | \
+        jq .user_extended_privileges.can_execute_jobs)
+    if [ "$tmp" == "true" ]; then
+        success "  o The user can execute jobs, ok."
+    else
+        failure "The user should be able to execute jobs."
+    fi
+
+    tmp=$(s9s user --whoami --print-json | \
+        jq .user_extended_privileges.can_create_clusters)
+    if [ "$tmp" == "true" ]; then
+        success "  o The user can create clusters, ok."
+    else
+        failure "The user should be able to create clusters."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -1124,6 +1325,7 @@ else
     runFunctionalTest testSetGroup
     runFunctionalTest testAcl
     runFunctionalTest testAddToGroup
+    runFunctionalTest checkExtendedPrivileges
 
     print_title "Finished"
     mys9s user --list --long

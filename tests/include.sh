@@ -34,8 +34,8 @@ fi
 function color_command()
 {
     sed \
-        -e "s#\(--[^=]\+\)=\([^\\]*\)[\ ]#\x1b\[0;33m\1\x1b\[0;39m=\"\x1b\[1;35m\2\x1b\[0;39m\" #" \
-        -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#"
+        -e "s#\(--.\+\)=\([^\\]*\)[\ ]#\x1b\[0;33m\1\x1b\[0;39m=\"\x1b\[1;35m\2\x1b\[0;39m\" #g" \
+        -e "s#\(--[^\\\ ]\+\)#\x1b\[0;33m\1\x1b\[0;39m#g"
 }
 
 function prompt_string
@@ -53,6 +53,57 @@ function mysleep()
     echo -ne " ${XTERM_COLOR_ORANGE}$@${TERM_NORMAL}"
     echo ""
     sleep $@
+}
+
+function my_command()
+{
+    local hostname=$(hostname)
+    local dirname=$(basename $PWD)
+    local username="$USER"
+    local prompt
+    local the_command
+    local argument
+    
+    while [ -n "$1" ]; do
+        case "$1" in
+            --hostname)
+                hostname="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    prompt="$username@$hostname:$dirname\$"
+
+    the_command="$1"
+    shift
+
+    #
+    # Printing the command.
+    #
+    echo -ne "$prompt ${XTERM_COLOR_YELLOW}${the_command}${TERM_NORMAL} "
+    while [ "$the_command" == "nohup" -o "$the_command" == "sudo" ]; do
+        the_command="$1"
+        echo -ne "${XTERM_COLOR_YELLOW}${the_command}${TERM_NORMAL} "
+        shift
+    done
+
+    for argument in "$@"; do
+        case "$argument" in
+            -*)
+                echo -ne " ${XTERM_COLOR_ORANGE}$argument${TERM_NORMAL}"
+                ;;
+            *)
+                echo -ne " ${XTERM_COLOR_BLUE}$argument${TERM_NORMAL}"
+                ;;
+        esac
+    done
+
+    echo ""
 }
 
 function mys9s_singleline()
@@ -132,6 +183,9 @@ function mys9s()
         mys9s_multiline "$@"
     fi
 }
+
+t1_counter="0"
+t2_counter="0"
 
 #
 # Prints a title line that looks nice on the terminal and also on the web.

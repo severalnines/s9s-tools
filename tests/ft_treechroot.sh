@@ -192,7 +192,7 @@ function testCreateContainer()
     mys9s container \
         --create \
         --template=ubuntu \
-        --wait \
+        $LOG_OPTION \
         $container_name
 
     check_exit_code $?
@@ -243,7 +243,7 @@ function testCreateCluster()
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
-        --wait
+        $LOG_OPTION
 
     check_exit_code $?
 
