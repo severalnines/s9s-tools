@@ -866,7 +866,15 @@ function testRemoveNode()
 #
 function testRollingRestart()
 {
+    local ret_code
     print_title "The test of rolling restart is starting now."
+    cat <<EOF
+  This test will try to execute a rollingrestart job on the cluster. If the
+  number of nodes is less than 3 this should fail, if it is at least 3 it should
+  be successful. Either way the cluster should remain operational which is
+  checked in consequite tests.
+
+EOF
 
     #
     # Calling for a rolling restart.
@@ -877,7 +885,16 @@ function testRollingRestart()
         $LOG_OPTION \
         $DEBUG_OPTION
     
-    check_exit_code $?
+    ret_code=$?
+    if [ $OPTION_NUMBER_OF_NODES -lt 3 ]; then
+        if [ $ret_code -ne 0 ]; then
+            success "  o The cluster is too small for rollingrestart, ok."
+        else
+            failure "The cluster is too small, this should have failed."
+        fi
+    else
+        check_exit_code $ret_code
+    fi
 }
 
 #

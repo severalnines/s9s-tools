@@ -187,6 +187,9 @@ function install_packages()
     install_package g++
     install_package flex
     install_package bison
+    install_package pkgconf
+    install_package libsqlite3-dev
+    install_package libldap2-dev
 
     #install_package vagrant
     #install_package virtualbox
