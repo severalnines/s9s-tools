@@ -177,6 +177,7 @@ function testAbortSuccess()
     mys9s job --kill --job-id=$job_id
     sleep 3
     mys9s job --list
+
     state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
     if [ "$state" == "ABORTED" ]; then
         success "  o Job $job_id is $state, ok"

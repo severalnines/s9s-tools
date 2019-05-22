@@ -1326,6 +1326,9 @@ S9sRpcClient::deleteJobInstance(
     return retval;
 }
 
+/**
+ * Sends a 'killJobInstance' request to abort a running job.
+ */
 bool
 S9sRpcClient::killJobInstance(
         const int jobId)
@@ -1336,6 +1339,7 @@ S9sRpcClient::killJobInstance(
 
     request["operation"] = "killJobInstance";
     request["job_id"]    = jobId;
+    request["signal"]    = 15;
 
     retval = executeRequest(uri, request);
 

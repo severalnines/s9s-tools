@@ -1108,11 +1108,13 @@ function wait_for_cluster_state()
             # do check the timeout only when we are not in the expected state.
             #
             if [ "$waited" -gt 120 ]; then
+                failure "Waited ${waited}s to reach state $expectedState."
                 return 1
             fi
         fi
 
         if [ "$stayed" -gt 10 ]; then
+            success "  o Cluster is in $expectedState, ok."
             return 0
         fi
 

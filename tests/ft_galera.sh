@@ -6,7 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="1.0.0"
 
-LOG_OPTION="--wait"
+LOG_OPTION="--log"
 DEBUG_OPTION=""
 
 CLUSTER_NAME="${MYBASENAME}_$$"
@@ -428,6 +428,8 @@ function testRestartNode()
 {
     local exitCode
 
+    print_title "Restarting Node"
+    
     #
     # Restarting a node. 
     #
@@ -895,6 +897,8 @@ EOF
     else
         check_exit_code $ret_code
     fi
+    
+    wait_for_cluster_started "$CLUSTER_NAME" 
 }
 
 #
@@ -950,6 +954,7 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
+        runFunctionalTest testRestartNode
     fi
 elif [ "$1" ]; then
     for testName in $*; do
