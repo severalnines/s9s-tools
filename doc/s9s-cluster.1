@@ -48,6 +48,19 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\^\-collect\-logs
+This option will create a job that will collect the log files from the nodes of
+the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --collect-logs \\
+    --cluster-id=1 \\
+    --log
+.fi
+
+.TP
 .B \-\-create\-account
 Create a new account to be used on the cluster to access the database(s).
 Creating accounts is also possible using the \fBaccount\fP mode, check
@@ -119,7 +132,7 @@ s9s cluster \\
 .fi
 
 .TP
-.B \-\-drop
+.B \-\^\-drop
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
 
@@ -130,6 +143,19 @@ s9s cluster \\
     --cluster-id=1 \\
     --wait 
 .fi
+
+.TP
+.B \-\^\-import\-config
+Creates a job that will import all the logsfiles from the nodes of the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --import-config \\
+    --cluster-id=1 \\
+    --log
+.fi
+
 
 .TP
 .B \-\^\-list\-databases

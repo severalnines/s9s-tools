@@ -300,6 +300,8 @@ class S9sRpcClient
         bool deleteReport(const int reportId);
         bool getReports();
         bool rollingRestart();
+        bool importConfig();
+        bool collectLogs();
         bool enableSsl();
         bool disableSsl();
         bool saveCluster();

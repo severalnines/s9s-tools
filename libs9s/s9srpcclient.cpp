@@ -2139,6 +2139,60 @@ S9sRpcClient::rollingRestart()
     return executeRequest(uri, request);
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Creates a job for to import config files.
+ */
+bool
+S9sRpcClient::importConfig()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobSpec["command"]    = "import_config";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Import Config";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Creates a job for to collect log files.
+ */
+bool
+S9sRpcClient::collectLogs()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobSpec["command"]    = "collect_logs";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Collect Logs";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
 bool
 S9sRpcClient::enableSsl()
 {

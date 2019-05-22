@@ -120,6 +120,14 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isImportConfigRequested())
+        {
+            success = client.importConfig();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isCollectLogsRequested())
+        {
+            success = client.collectLogs();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isEnableSslRequested())
         {
             success = client.enableSsl();

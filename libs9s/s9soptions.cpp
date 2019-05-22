@@ -188,6 +188,8 @@ enum S9sOptionType
     OptionOnlyAscii,
     OptionDensity,
     OptionRollingRestart,
+    OptionCollectLogs,
+    OptionImportConfig,
     OptionEnableSsl,
     OptionDisableSsl,
     OptionCreateReport,
@@ -3744,6 +3746,26 @@ S9sOptions::isRollingRestartRequested() const
     return getBool("rolling_restart");
 }
 
+/**
+ * \returns true if the --collect-logs command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCollectLogsRequested() const
+{
+    return getBool("collect_logs");
+}
+
+/**
+ * \returns true if the --import-config command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isImportConfigRequested() const
+{
+    return getBool("import_config");
+}
+
 bool
 S9sOptions::isEnableSslRequested() const
 {
@@ -4940,6 +4962,7 @@ S9sOptions::printHelpCluster()
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
+"  --collect-logs             Collects logs from the nodes.\n"
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
 "  --create-database          Create a database on the cluster.\n"
@@ -4950,6 +4973,7 @@ S9sOptions::printHelpCluster()
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
+"  --import-config            Collects configuration files from the nodes.\n"
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
@@ -7235,6 +7259,12 @@ S9sOptions::checkOptionsCluster()
     if (isRollingRestartRequested())
         countOptions++;
     
+    if (isCollectLogsRequested())
+        countOptions++;
+    
+    if (isImportConfigRequested())
+        countOptions++;
+    
     if (isEnableSslRequested())
         countOptions++;
     
@@ -8968,6 +8998,8 @@ S9sOptions::readOptionsCluster(
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
+        { "collect-logs",     no_argument,       0, OptionCollectLogs     },
+        { "import-config",    no_argument,       0, OptionImportConfig    },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
@@ -9116,6 +9148,16 @@ S9sOptions::readOptionsCluster(
             case OptionRollingRestart:
                 // --rolling-restart
                 m_options["rolling_restart"] = true;
+                break;
+
+            case OptionImportConfig:
+                // --import-config
+                m_options["import_config"] = true;
+                break;
+            
+            case OptionCollectLogs:
+                // --collect-logs
+                m_options["collect_logs"] = true;
                 break;
             
             case OptionEnableSsl:
