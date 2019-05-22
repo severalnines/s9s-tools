@@ -56,6 +56,21 @@ s9s job \\
 .fi
 
 .TP
+.B \-\-kill
+This command line option can be used to send a signal to a running Cmon Job in
+order to abort its execution. The job subsystem is not preemptive in the
+controller, so the job only will be actually aborted if and when the job
+supports aborting what it is doing. 
+
+.B EXAMPLE
+.nf
+s9s job \\
+    --kill \\
+    --job-id=20 
+.fi
+
+
+.TP
 .B \-L, \-\-list
 Lists jobs. 
 

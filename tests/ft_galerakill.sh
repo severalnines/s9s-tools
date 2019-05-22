@@ -174,8 +174,10 @@ function testCreateCluster()
     local job_id=1
     local job_state
 
-    print_title "Creating a Galera Cluster"
-    
+    print_title "Aborting Create Galera Cluster Job"
+    cat <<EOF
+EOF
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -196,7 +198,7 @@ function testCreateCluster()
     done
      
     #
-    # Creating a Galera cluster.
+    # Starting galera cluster creation, aborting the job after a few seconds.
     #
     mys9s cluster \
         --create \
@@ -215,7 +217,7 @@ function testCreateCluster()
         mys9s job --list 
     fi
         
-    mys9s job --log --job-id=$job_id
+    #mys9s job --log --job-id=$job_id
 
     mys9s job --kill --job-id=$job_id 
     for i in $(seq 1 10); do
@@ -228,14 +230,12 @@ function testCreateCluster()
         sleep 10
     done
 
+    mys9s job --log --job-id=$job_id
     if [ "$job_state" == "ABORTED" ]; then
         success "  o The job is in 'ABORTED' state, ok."
     else
         failure "The job should be in 'ABORTED' state, not in '$job_state'."
-        mys9s job --log --job-id=$job_id
-    fi
-        
-    mys9s job --log --job-id=$job_id
+    fi    
 }
 
 #
