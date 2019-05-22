@@ -146,6 +146,7 @@ function _s9s()
             main_opt+="--create-report --delete-account --drop --list "
             main_opt+="--list-databases --ping "
             main_opt+="--remove-node --rolling-restart --setup-audit-logging "
+            main_opt+="--import-config --collect-logs "
             main_opt+="--start --stat --stop "
 
             if ! _s9s_has_options $main_opt; then
