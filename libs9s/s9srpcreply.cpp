@@ -6380,6 +6380,7 @@ S9sRpcReply::printJobListBrief()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  requiredTags    = options->jobTags();
     int             total           = operator[]("total").toInt();
+    int             nLines          = 0;
     S9sFormat       idFormat;
     S9sFormat       cidFormat;
     S9sFormat       stateFormat;
@@ -6426,12 +6427,15 @@ S9sRpcReply::printJobListBrief()
         userFormat.widen(user);
         groupFormat.widen(group);
         dateFormat.widen(timeStampString);
+
+        ++nLines;
     }
 
     //
-    // Printing the header.
+    // Printing the header. If we have no lines to print we won't print the
+    // header either.
     //
-    if (!options->isNoHeaderRequested())
+    if (!options->isNoHeaderRequested() && nLines > 0)
     {
         idFormat.widen("ID");
         cidFormat.widen("CID");

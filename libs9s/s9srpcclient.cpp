@@ -2143,7 +2143,28 @@ S9sRpcClient::rollingRestart()
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *
- * Creates a job for to import config files.
+ * Creates a job for to import config files. Creates a request something like
+ * this:
+ * 
+ * \code{.js}
+ * {
+ *     "cluster_id": 1,
+ *     "job": 
+ *     {
+ *         "class_name": "CmonJobInstance",
+ *         "job_spec": 
+ *         {
+ *             "command": "import_config"
+ *         },
+ *         "tags": [ "manual", "transient" ],
+ *         "title": "Import Config"
+ *     },
+ *     "operation": "createJobInstance",
+ *     "request_created": "2019-05-23T12:09:34.583Z",
+ *     "request_id": 3
+ * }
+ * \endcode
+
  */
 bool
 S9sRpcClient::importConfig()
