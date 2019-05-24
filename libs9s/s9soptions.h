@@ -302,6 +302,11 @@ class S9sOptions
         S9sVariantList jobTags() const;
         bool setJobTags(const S9sString &value);
 
+        S9sVariantList withTags() const;
+        bool setWithTags(const S9sString &value);
+        S9sVariantList withoutTags() const;
+        bool setWithoutTags(const S9sString &value);
+
         bool setParallellism(const S9sString &value);
         bool hasParallellism() const;
         int parallellism() const;

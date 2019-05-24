@@ -188,6 +188,11 @@ accepted as specified in the strftime(3) man page.
 Some operations will start a job on the controller. The following command line
 options can be used in relation to these jobs:
 
+.TP 
+.BI \-\^\-job\-tags= LIST 
+List of one of more strings separated by either ',' or ';' to be added as tags
+to a newly created job if a job is indeed created.
+
 .TP
 .B \-\-log
 If the s9s application created a job and this command line option is provided it
@@ -248,6 +253,7 @@ While waiting a progress bar will be shown unless the silent mode is set.
 .\"
 .\"
 .SS Job Related Options
+The following command line options are supported by the 'job' mode:
 
 .TP
 .BR \-\^\-job\-id =\fIID\fP
@@ -374,6 +380,19 @@ shows only hours, minutes and seconds instead of the full date and time.
 The '%' character itself. 
 
 .RE
+
+.TP
+.BI \-\^\-with\-tags= LIST 
+List of one of more strings separated by either ',' or ';' to be used as a
+filter when printing information about jobs. When this command line option is
+provided only the jobs that has any of the tags will be printed.
+
+.TP
+.BI \-\^\-without\-tags= LIST 
+List of one of more strings separated by either ',' or ';' to be used as a
+filter when printing information about jobs. When this command line option is
+provided the jobs that has any of the tags will not be printed.
+
 
 .\"
 .\"

@@ -643,7 +643,7 @@ function testDeleteOld()
     print_title "Deleting Old Backups (No Old Backups)"
     mys9s backup --delete-old --cluster-id=1 --job-tags=no_old_found --dry --log
     job_id=$(\
-        s9s job --list --batch --job-tags=no_old_found | \
+        s9s job --list --batch --with-tags=no_old_found | \
         tail -n 1 | \
         awk '{ print $1 }')
 
@@ -659,7 +659,7 @@ function testDeleteOld()
     print_title "Deleting Old Backups (Has to Keep All)"
     mys9s backup --delete-old --cluster-id=1 --job-tags=not_enough_sc --backup-retention=0 --safety-copies=10 --dry --log 
     job_id=$(\
-        s9s job --list --batch --job-tags=not_enough_sc | \
+        s9s job --list --batch --with-tags=not_enough_sc | \
         tail -n 1 | \
         awk '{ print $1 }')
 
@@ -675,7 +675,7 @@ function testDeleteOld()
     print_title "Deleting Old Backups (Has to Keep Some)"
     mys9s backup --delete-old --cluster-id=1 --job-tags=some_deleted --backup-retention=0 --safety-copies=3 --dry --log 
     job_id=$(\
-        s9s job --list --batch --job-tags=some_deleted | \
+        s9s job --list --batch --with-tags=some_deleted | \
         tail -n 1 | \
         awk '{ print $1 }')
 

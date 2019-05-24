@@ -6378,7 +6378,8 @@ S9sRpcReply::printJobListBrief()
     S9sOptions     *options         = S9sOptions::instance();
     S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sVariantList  requiredTags    = options->jobTags();
+    S9sVariantList  requiredTags    = options->withTags();
+    S9sVariantList  disabledTags    = options->withoutTags();
     int             total           = operator[]("total").toInt();
     int             nLines          = 0;
     S9sFormat       idFormat;
@@ -6413,8 +6414,17 @@ S9sRpcReply::printJobListBrief()
         if (group.empty())
             group = "-";
 
-        if (!job.hasTags(requiredTags))
-            continue;
+        if (!requiredTags.empty())
+        {
+            if (!job.hasTags(requiredTags))
+                continue;
+        }
+
+        if (!disabledTags.empty())
+        {
+            if (job.hasTags(disabledTags))
+                continue;
+        }
 
         // The timestamp. Now we use 'created' later we can make this
         // configurable.
@@ -6494,8 +6504,17 @@ S9sRpcReply::printJobListBrief()
         if (group.empty())
             group = "-";
         
-        if (!job.hasTags(requiredTags))
-            continue;
+        if (!requiredTags.empty())
+        {
+            if (!job.hasTags(requiredTags))
+                continue;
+        }
+
+        if (!disabledTags.empty())
+        {
+            if (job.hasTags(disabledTags))
+                continue;
+        }
 
         // The progress.
         if (job.hasProgressPercent())
@@ -6612,7 +6631,8 @@ S9sRpcReply::printJobListLong()
     int             terminalWidth   = options->terminalWidth();
     S9sVariantList  theList         = jobs();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sVariantList  requiredTags    = options->jobTags();
+    S9sVariantList  requiredTags    = options->withTags();
+    S9sVariantList  disabledTags    = options->withoutTags();
     int             total           = operator[]("total").toInt();
     unsigned int    userNameLength  = 0;
     S9sString       userNameFormat;
@@ -6636,8 +6656,17 @@ S9sRpcReply::printJobListLong()
         if (options->hasJobId() && options->jobId() != jobId)
             continue;
 
-        if (!job.hasTags(requiredTags))
-            continue;
+        if (!requiredTags.empty())
+        {
+            if (!job.hasTags(requiredTags))
+                continue;
+        }
+
+        if (!disabledTags.empty())
+        {
+            if (job.hasTags(disabledTags))
+                continue;
+        }
 
         if (user.length() > userNameLength)
             userNameLength = user.length();
@@ -6676,8 +6705,17 @@ S9sRpcReply::printJobListLong()
         if (options->hasJobId() && options->jobId() != jobId)
             continue;
 
-        if (!job.hasTags(requiredTags))
-            continue;
+        if (!requiredTags.empty())
+        {
+            if (!job.hasTags(requiredTags))
+                continue;
+        }
+
+        if (!disabledTags.empty())
+        {
+            if (job.hasTags(disabledTags))
+                continue;
+        }
 
         // The title.
         if (title.empty())

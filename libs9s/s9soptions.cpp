@@ -282,7 +282,10 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    
     OptionJobTags,
+    OptionWithTags,
+    OptionWithoutTags,
 
     OptionShowDefined,
     OptionShowRunning,
@@ -2730,6 +2733,10 @@ S9sOptions::hasJobTags() const
     return m_options.contains("job_tags");
 }
 
+/**
+ * \returns The list of tags passed as the argument for the --job-tags command
+ *   line option.
+ */
 S9sVariantList
 S9sOptions::jobTags() const
 {
@@ -2741,6 +2748,11 @@ S9sOptions::jobTags() const
     return retval;
 }
 
+/**
+ * \param value The argument, a list of strings with , or ; as field separator.
+ *
+ * This is where we store the argument of the command line option --job-tags. 
+ */
 bool
 S9sOptions::setJobTags(
         const S9sString &value)
@@ -2750,6 +2762,68 @@ S9sOptions::setJobTags(
     m_options["job_tags"] = tags;
     return true;
 }
+
+/**
+ * \returns The list of tags passed as the argument for the --with-tags command
+ *   line option.
+ */
+S9sVariantList
+S9sOptions::withTags() const
+{
+    S9sVariantList retval;
+
+    if (m_options.contains("with_tags"))
+        retval = m_options.at("with_tags").toVariantList();
+
+    return retval;
+}
+
+/**
+ * \param value The argument, a list of strings with , or ; as field separator.
+ *
+ * This is where we store the argument of the command line option --with-tags. 
+ */
+bool
+S9sOptions::setWithTags(
+        const S9sString &value)
+{
+    S9sVariantList tags = value.split(";,");
+
+    m_options["with_tags"] = tags;
+    return true;
+}
+
+/**
+ * \returns The list of tags passed as the argument for the --without-tags 
+ *   command line option.
+ */
+S9sVariantList
+S9sOptions::withoutTags() const
+{
+    S9sVariantList retval;
+
+    if (m_options.contains("without_tags"))
+        retval = m_options.at("without_tags").toVariantList();
+
+    return retval;
+}
+
+/**
+ * \param value The argument, a list of strings with , or ; as field separator.
+ *
+ * This is where we store the argument of the command line option 
+ * --without-tags. 
+ */
+bool
+S9sOptions::setWithoutTags(
+        const S9sString &value)
+{
+    S9sVariantList tags = value.split(";,");
+
+    m_options["without_tags"] = tags;
+    return true;
+}
+
 
 bool
 S9sOptions::hasParallellism() const
@@ -4735,6 +4809,7 @@ S9sOptions::printHelpGeneric()
 "  --print-json               Print the sent/received JSon messages.\n"
 "\n"
 "Job related options:\n"
+"  --job-tags=LIST            Set job tags when creating a new job.\n"
 "  --log                      Wait and monitor job messages.\n"
 "  --recurrence=CRONTABSTRING Timing information for recurring jobs.\n"
 "  --schedule=DATE&TIME       Run the job at the specified time.\n"
@@ -4764,7 +4839,6 @@ S9sOptions::printHelpJob()
 "\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
 "  --job-id=ID                The ID of the job.\n"
-"  --job-tags=LIST            List of job tags to filter jobs.\n"
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
 "  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
@@ -4775,6 +4849,8 @@ S9sOptions::printHelpJob()
 "  --show-finished            Show finished jobs while printing job list.\n"
 "  --show-running             Show running jobs while printing job list.\n"
 "  --show-scheduled           Show scheduled jobs while printing job list.\n"
+"  --with-tags=LIST           Show only the jobs that has the tags.\n"
+"  --without-tags=LIST        Show only the jobs that does not have the tags.\n"
 "\n"
     );
 }
@@ -10004,6 +10080,8 @@ S9sOptions::readOptionsJob(
         { "show-finished",    no_argument,       0, OptionShowFinished    },
         { "show-running",     no_argument,       0, OptionShowRunning     },
         { "show-scheduled",   no_argument,       0, OptionShowScheduled   },
+        { "without-tags",     required_argument, 0, OptionWithoutTags     },
+        { "with-tags",        required_argument, 0, OptionWithTags        },
 
         { 0, 0, 0, 0 }
     };
@@ -10225,12 +10303,23 @@ S9sOptions::readOptionsJob(
                 // --show-failed
                 m_options["show_failed"] = true;
                 break;
+            
+            case OptionWithTags:
+                // --with-tags=one;two
+                setWithTags(optarg);
+                break;
+            
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
+                break;
 
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
                 {
-                    if (isascii(c)) {
+                    if (isascii(c)) 
+                    {
                         m_errorMessage.sprintf("Unknown option '%c'.", c);
                     } else {
                         m_errorMessage.sprintf("Unkown option %d.", c);

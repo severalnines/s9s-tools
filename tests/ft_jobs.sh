@@ -145,12 +145,12 @@ EOF
         failure "There should be one finished job ('$n_lines')."
     fi
 
-    n_lines=$(s9s job --list --batch --job-tags=test | wc -l)
+    n_lines=$(s9s job --list --batch --with-tags=test | wc -l)
     if [ "$n_lines" -ne 2 ]; then
         failure "There should be 2 jobs with the tag 'test'."
     fi
     
-    n_lines=$(s9s job --list --batch --job-tags=success | wc -l)
+    n_lines=$(s9s job --list --batch --with-tags=success | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be 1 jobs with the tag 'success'."
     fi
