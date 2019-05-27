@@ -952,6 +952,9 @@ function run_test()
     message "Preparing to run $test_name."
     upload_slog_file
 
+    message "Enabling core file creation."
+    echo "core" | sudo tee /proc/sys/kernel/core_pattern
+
     #
     # Running the actual test.
     #

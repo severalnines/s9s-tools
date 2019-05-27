@@ -230,6 +230,7 @@ EOF
         sleep 10
     done
 
+    mys9s job --list
     mys9s job --log --job-id=$job_id
     if [ "$job_state" == "ABORTED" ]; then
         success "  o The job is in 'ABORTED' state, ok."

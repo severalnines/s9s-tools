@@ -346,6 +346,8 @@ function wake_server()
         source "$config_file"
     fi
 
+    pip-say --beep "Starting up ${hostname}."
+
     if [ -n "$CONF_HOST_PDU" ]; then
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
             echo "Switching on PDU $pdu."
@@ -410,6 +412,7 @@ function shut_down_server()
         return 1
     fi
 
+    pip-say --beep "Shutting down ${hostname}."
     echo "Trying to shut down host ${hostname}."
     if [ -n "$OPTION_USER" ]; then
         ssh -o UserKnownHostsFile=/dev/null \
