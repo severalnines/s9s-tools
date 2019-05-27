@@ -128,6 +128,7 @@ enum S9sOptionType
     OptionFullUuid,
     OptionWhoAmI,
     OptionListProperties,
+    OptionListClusterTypes,
     OptionListContainers,
     OptionType,
     OptionNoCompression,
@@ -3436,6 +3437,16 @@ S9sOptions::isListPropertiesRequested() const
 {
     return getBool("list_properties");
 }
+
+/**
+ * \returns true if the --list-cluster-types main option was provided.
+ */
+bool
+S9sOptions::isListClusterTypesRequested() const
+{
+    return getBool("list_cluster_types");
+}
+
 
 /**
  * \returns true if the --list-containers main option was provided.
@@ -8820,6 +8831,7 @@ S9sOptions::readOptionsMetaType(
         { "help",             no_argument,       0, OptionHelp            },
         { "list",             no_argument,       0, 'L'                   },
         { "list-properties",  no_argument,       0, OptionListProperties  },
+        { "list-cluster-types", no_argument,     0, OptionListClusterTypes },
 
         // Generic Options
         { "debug",            no_argument,       0, OptionDebug           },
@@ -8838,6 +8850,7 @@ S9sOptions::readOptionsMetaType(
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "date-format",      required_argument, 0, OptionDateFormat      },
         { "full-uuid",        no_argument,       0, OptionFullUuid        },
+        { "cmon-user",        required_argument, 0, 'u'                   }, 
         
         // Type/property related options
         { "type",             required_argument, 0, OptionType            },
@@ -8877,6 +8890,11 @@ S9sOptions::readOptionsMetaType(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+            
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
                 break;
 
             case 'c':
@@ -8952,6 +8970,11 @@ S9sOptions::readOptionsMetaType(
                 m_options["list_properties"] = true;
                 break;
 
+            case OptionListClusterTypes:
+                // --list-cluster-types
+                m_options["list_cluster_types"] = true;
+                break;
+
             case OptionType:
                 // --type=NAME
                 m_options["type"] = optarg;
@@ -9001,6 +9024,9 @@ S9sOptions::checkOptionsMetaType()
         countOptions++;
     
     if (isListPropertiesRequested())
+        countOptions++;
+    
+    if (isListClusterTypesRequested())
         countOptions++;
     
     if (countOptions > 1)

@@ -98,6 +98,7 @@ class S9sRpcReply : public S9sVariantMap
         void printJobList();
         void printBackupList();
         void printKeys();
+        void printSupportedClusterList();
         
         // Methods handling users.
         void printUserList();
@@ -121,6 +122,9 @@ class S9sRpcReply : public S9sVariantMap
         void printControllersLong();
         void printControllersBrief();
         void printControllersStat();
+
+        void printSupportedClusterListBrief();
+        void printSupportedClusterListLong();
 
         void printProcessors(S9sString indent = S9sString());
         void printDisks(S9sString indent = S9sString());

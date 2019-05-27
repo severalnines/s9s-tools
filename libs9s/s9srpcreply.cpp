@@ -661,6 +661,125 @@ S9sRpcReply::printCheckHostsReply()
     }
 }
 
+void 
+S9sRpcReply::printSupportedClusterList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printf("%s\n", STR(toString()));
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    //else if (options->isStatRequested())
+        //printClustersStat();
+    else if (options->isLongRequested())
+        printSupportedClusterListLong();
+    else
+        printSupportedClusterListBrief();
+}
+
+void
+S9sRpcReply::printSupportedClusterListLong()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    //bool           syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList names = operator[]("cluster_type_names").toVariantList();
+    S9sVariantMap  types = operator[]("cluster_type_properties").toVariantMap();
+    S9sFormat      nameFormat("\033[95m", TERM_NORMAL);
+    S9sFormat      vendorNameFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      versionFormat("\033[33m", TERM_NORMAL);
+    S9sFormat      longNameFormat("\033[1m\033[97m", TERM_NORMAL);
+
+    for (uint idx = 0u; idx < names.size(); ++idx)
+    {
+        S9sString     name = names[idx].toString();
+        S9sVariantMap properties = types[name].toVariantMap();
+        S9sString     longName = properties["long_name"].toString();
+        S9sVariantList vendors = properties["vendors"].toVariantList();
+
+        for (uint idx1 = 0u; idx1 < vendors.size(); ++idx1)
+        {
+            S9sVariantMap  vendor = vendors[idx1].toVariantMap();
+            S9sString      vendorName = vendor["name"].toString();
+            S9sVariantList versions = vendor["versions"].toVariantList();
+
+            vendorNameFormat.widen(vendorName);
+
+            for (uint idx2 = 0u; idx2 < versions.size(); ++idx2)
+            {
+                S9sString version = versions[idx2].toString();
+
+                versionFormat.widen(version);
+            }
+        }
+
+        nameFormat.widen(name);
+        longNameFormat.widen(longName);
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        nameFormat.widen("CLUSTER TYPE");
+        vendorNameFormat.widen("VENDOR");
+        versionFormat.widen("VERSION");
+        longNameFormat.widen("DESCRIPTION");
+
+        ::printf("%s", headerColorBegin());
+        nameFormat.printf("CLUSTER TYPE", false);
+        vendorNameFormat.printf("VENDOR", false);
+        versionFormat.printf("VERSION", false);
+        longNameFormat.printf("DESCRIPTION", false);
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
+    }
+    
+    versionFormat.setRightJustify();
+
+    for (uint idx = 0u; idx < names.size(); ++idx)
+    {
+        S9sString      name = names[idx].toString();
+        S9sVariantMap  properties = types[name].toVariantMap();
+        S9sString      longName = properties["long_name"].toString();
+        S9sVariantList vendors = properties["vendors"].toVariantList();
+
+        for (uint idx1 = 0u; idx1 < vendors.size(); ++idx1)
+        {
+            S9sVariantMap   vendor = vendors[idx1].toVariantMap();
+            S9sString       vendorName = vendor["name"].toString();
+            S9sVariantList  versions = vendor["versions"].toVariantList();
+
+            for (uint idx2 = 0u; idx2 < versions.size(); ++idx2)
+            {
+                S9sString version = versions[idx2].toString();
+
+                nameFormat.printf(name);
+                vendorNameFormat.printf(vendorName);
+                versionFormat.printf(version);
+                longNameFormat.printf(longName);
+                ::printf("\n");
+            }
+        }
+    }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d cluster types\n", (int)names.size()); 
+}
+
+void
+S9sRpcReply::printSupportedClusterListBrief()
+{
+    S9sVariantList names = operator[]("cluster_type_names").toVariantList();
+
+    for (uint idx = 0u; idx < names.size(); ++idx)
+    {
+        S9sString name = names[idx].toString();
+
+        ::printf("%s ", STR(name));
+    }
+
+    ::printf("\n");
+}
+
 /**
  * This is a simple output function that we can call to print a short message
  * when a new job is registered on the server. This prints the job ID that is

@@ -5860,10 +5860,14 @@ S9sRpcClient::stopContainerWithJob()
     return executeRequest(uri, request);
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
 bool
 S9sRpcClient::getSupportedClusterTypes()
 {
-    //getSshCredentials();
     S9sString      uri = "/v2/discovery/";
     S9sVariantMap  request;
    

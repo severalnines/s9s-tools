@@ -922,6 +922,13 @@ S9sBusinessLogic::execute()
         } else if (options->isListPropertiesRequested())
         {
             executeMetaTypePropertyList(client);
+        } else if (options->isListClusterTypesRequested())
+        {
+            S9sRpcReply reply;
+            
+            success = client.getSupportedClusterTypes();
+            reply = client.reply();
+            reply.printSupportedClusterList();
         } else {
             PRINT_ERROR("Unknown metatype operation.");
         }
