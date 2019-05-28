@@ -1,0 +1,222 @@
+#! /bin/bash
+
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.1"
+VERBOSE=""
+LOGFILE="/dev/null"
+
+OPTION_CONTINUOUS=""
+
+START_TIME=$(date)
+LAST_TEST_STARTED="-"
+LAST_TEST_NAME="-"
+LAST_HOST_NAME="-"
+LAST_USER_NAME="-"
+SUM_STARTED_TESTS=0
+
+cd $MYDIR
+source "./project.conf"
+source "./utilityfunctions.sh"
+source "./htmlfunctions.sh"
+
+#
+# Prints the help text and exits.
+#
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... 
+
+  $MYNAME - Runs tests as they appear in the file-system.
+
+  -h, --help         Print this help and exit.
+  -v, --version      Print version information and exit.
+  --verbose          Print more messages.
+  --log-file=FILE    Store all the messages in the given file too.
+  --continuous       Continue watching if no schedules found.
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hv \
+        -l "help,verbose,version,log-file:,continuous" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+            
+        --continuous)
+            shift
+            OPTION_CONTINUOUS="true"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            break
+            ;;
+    esac
+done
+
+#
+# Waits until it finds an idle server, then starts the given test on it.
+#
+function start_test()
+{
+    local config_file="$1"
+    local test_server=""
+    local testname=""
+    local state=""
+    local user=""
+    local project=""
+    local option_s9s=""
+    local retcode
+
+    source "$config_file"
+
+    test_server=$(./list_servers.sh --idle)
+    while [ -z "$test_server" ]; do
+        test_server=$(./list_servers.sh --idle)
+    done
+    
+    if [ -z "$user" ]; then
+        user="$USER"
+    fi
+
+    LAST_USER_NAME="$user"
+
+    echo " ---------------------------------"
+    echo "   test_server: $test_server"
+    echo "      testname: $testname"
+    echo "         state: $state"
+    echo "          user: $user"
+    echo "       project: $project"
+
+    if [ "$project" == "s9s-tools" ]; then
+        option_s9s="--s9s"
+    fi
+
+    LAST_TEST_STARTED=$(date)
+    LAST_TEST_NAME="$testname"
+    LAST_HOST_NAME="$test_server"
+
+    let SUM_STARTED_TESTS+=1
+
+    cat <<EOF
+    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user"
+EOF
+
+    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user"
+
+    retcode=$?
+    echo "pip-cmon-test retcode: $retcode"
+
+    return $retcode
+}
+
+#
+# Lists the schedule files in reverse timestamp order (oldest files first).
+#
+function schedule_files()
+{
+    local root_dir="$PROJECT_DATA_ROOT"
+
+    if [ -z "$root_dir" ]; then
+        root_dir="/var/lib/test-ui"
+    fi
+
+    if [ ! -d "$root_dir" ]; then
+        printError "The project root dir '$root_dir' does not exist."
+        return 1
+    fi
+
+    ls -tr $root_dir/scheduled-tests/*.conf 2>/dev/null
+}
+
+function print_report()
+{
+    #clear
+    printf "        Start time: %s\n" "$START_TIME"
+    printf "      Current time: %s\n" "$(date)"
+    printf " Last test started: %s\n" "$LAST_TEST_STARTED"
+    printf "\n"
+    printf "    Last test name: %s\n" "$LAST_TEST_NAME"
+    printf "         Last user: %s\n" "$LAST_USER_NAME"
+    printf "    Last host name: %s\n" "$LAST_HOST_NAME"
+    printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
+    printf "\n\n\n"
+}
+
+#
+# The main function that does some polling by checking the scheduled tests and
+# returns once in every round.
+#
+function process_scheduled_tests()
+{
+    local config_file
+
+    for config_file in $(schedule_files); do
+        if [ ! -f "$config_file" ]; then
+            sleep 5
+            continue
+        elif [ ! -x "$config_file" ]; then
+            # Files that are not executable are being created and not yet 
+            # ready.
+            continue
+        fi
+
+        start_test "$config_file"
+
+        rm -f "$config_file"
+        ./delete_old_results.sh
+        sleep 1
+
+        print_report
+    done
+        
+    print_report
+}
+
+if [ "$OPTION_CONTINUOUS" ]; then
+    while true; do
+        process_scheduled_tests
+    done
+else 
+    process_scheduled_tests
+fi
+
