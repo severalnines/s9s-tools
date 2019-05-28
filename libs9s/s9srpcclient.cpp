@@ -5494,9 +5494,15 @@ S9sRpcClient::setContent()
                 "the full path of the CDT entry to be saved.");
 
         return false;
+    } else if (!options->inputFile().empty())
+    {
+        S9sFile inputFile(options->inputFile());
+        if (!inputFile.readTxtFile(content))
+        {
+            PRINT_ERROR("%s\n", STR(inputFile.errorString()));
+            return false;
+        }
     } else {
-        fullPath = options->extraArgument(0u);
-
     	std::string s; 
     	while(std::getline(std::cin, s))
         {
@@ -5505,6 +5511,8 @@ S9sRpcClient::setContent()
     	}
     }
     
+    fullPath = options->extraArgument(0u);
+
 
     return setContent(fullPath, content);
 }

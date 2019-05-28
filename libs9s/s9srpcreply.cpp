@@ -355,7 +355,10 @@ S9sRpcReply::printCat()
         PRINT_ERROR("%s", STR(errorString()));
     } else {
         S9sString content = operator[]("file_content").toString();
-        printf("%s", STR(content));
+        ::printf("%s", STR(content));
+
+        if (!content.endsWith("\n"))
+            ::printf("\n");
     }
 }
 

@@ -4969,6 +4969,7 @@ S9sOptions::printHelpMetaType()
     printf(
 "Options for the \"metatype\" command:\n"
 "  --list                     List all the metatypes.\n"
+"  --list-cluster-types       Lists the supported cluster types.\n"
 "  --list-properties          List the properties of a certain type.\n"
 "\n"
 "  --type=NAME                The name of the type.\n"
@@ -11570,7 +11571,8 @@ S9sOptions::readOptionsTree(
         { "touch",            no_argument,       0, OptionMkfile          }, 
         { "tree",             no_argument,       0, OptionTree            },
         { "watch",            no_argument,       0, OptionWatch           },
-        
+       
+        // Other options.
         { "acl",              required_argument, 0, OptionAcl             },
         { "all",              no_argument,       0, OptionAll             },
         { "directory",        no_argument,       0, 'd'                   },
@@ -11581,6 +11583,7 @@ S9sOptions::readOptionsTree(
         { "full-path",        no_argument,       0, OptionFullPath        },
 
         { "log-file",         required_argument, 0, OptionLogFile         },
+        { "input-file",       required_argument, 0, OptionInputFile       },
 
         { 0, 0, 0, 0 }
     };
@@ -11822,6 +11825,11 @@ S9sOptions::readOptionsTree(
             case OptionLogFile:
                 // --log-file=FILE
                 m_options["log_file"] = optarg;
+                break;
+            
+            case OptionInputFile:
+                // --input-file=FILE
+                m_options["input_file"] = optarg;
                 break;
 
             case '?':

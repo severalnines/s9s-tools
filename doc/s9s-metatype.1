@@ -15,6 +15,9 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+.\" 
+.\" The main options.
+.\" 
 .TP
 .B \-\-help
 Print the help message and exist.
@@ -23,10 +26,37 @@ Print the help message and exist.
 .B \-L, \-\-list
 List the names of the types the controller supports. 
 
+.B EXAMPLE
+.nf
+s9s metatype \\
+    --list \\
+    --long
+.fi
+
+.TP
+.B \-\-list\-cluster\-types
+Lists the cluster types the controller supports. With the \fP\-\-long\fR option
+also lists the vendors and the versions.
+
+.B EXAMPLE
+.nf
+s9s metatype \\
+    --list-cluster-types \\
+    --long
+.fi 
+
 .TP
 .B \-\-list\-properties
 List the properties the given metatype has. Use the \fP\-\-type\fR command line
 option to pass the name of the metatype.
+
+.B EXAMPLE
+.nf
+s9s metatype \\
+    --list-properties \\
+    --type=CmonDiskStats \\
+    --long
+.fi
 
 .SS Generic Options
 
@@ -147,23 +177,3 @@ a single '-' character if the unit is not applicable.
 The short human readable description of the property.
 .RE
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-List the metatypes the controller supports.
-
-.nf
-# \fBs9s metatype --list\fR
-.fi
-
-List a detailed list of the properties the \fBCmonUser\fR type has.
-
-.nf
-# \fBs9s metatype \\
-    --list-properties \\
-    --type=CmonUser \\
-    --long\fR
-.fi
