@@ -11,7 +11,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-PROVIDER_VERSION="9.4"
+PROVIDER_VERSION="10"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
