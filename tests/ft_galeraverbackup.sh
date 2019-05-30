@@ -122,7 +122,7 @@ function testCreateCluster()
     local nodeName
     local exitCode
 
-    pip-say "The test to create Galera cluster is starting now."
+    print_title "Creating a Galera Cluster"
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName"
     FIRST_ADDED_NODE=$nodeName
