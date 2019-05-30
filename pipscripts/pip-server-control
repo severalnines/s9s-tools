@@ -19,6 +19,8 @@ SUM_MEMORY=0
 SUM_DISK=0
 SUM_CONTAINERS=0
 
+OPTION_STATE_FILTER=""
+
 TERM_ERASE_EOL="\033[K"
 TERM_HOME="\033[0;0H"
 TERM_NORMAL="\033[0;39m"
@@ -97,6 +99,10 @@ Usage:
   --shut-down          Shut down the server.
   --ping               Check if the server is up.
 
+  --idle               Print only the idle servers.
+  --testing            Print only the servers that are testing.
+  --offline            Print only the servers that are off-line.
+  --disabled           Print only the disabled servers.
 
 EXAMPLE:
   pip-server-control --list --long host01 host02
@@ -112,7 +118,8 @@ ARGS=$(\
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
 list,wake,shut-down,ping,\
-print-files,user:,wait,all" \
+print-files,user:,wait,all,\
+idle,testing,offline,disabled" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -198,6 +205,26 @@ while true; do
         --print-files)
             shift
             OPTION_PRINT_FILES="true"
+            ;;
+
+        --idle)
+            shift
+            OPTION_STATE_FILTER="IDLE"
+            ;;
+        
+        --testing)
+            shift
+            OPTION_STATE_FILTER="TESTING"
+            ;;
+
+        --offline)
+            shift
+            OPTION_STATE_FILTER="OFF-LINE"
+            ;;
+
+        --disabled)
+            shift
+            OPTION_STATE_FILTER="DISABLED"
             ;;
 
         --)
@@ -587,6 +614,8 @@ function print_host_list_long()
         fi
     
         [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
+        [ -n "$CONF_HOST_PROTECTED" ] && HOST_STATUS="PROTECTED"
+
         if [ -f "$info_file" ]; then
             fileAge="$(fileAgeInSeconds "$info_file")"
             let fileAge/=60
@@ -603,7 +632,13 @@ function print_host_list_long()
                 STATUS_TEXT="-"
             fi
         fi
-        
+       
+        if [ "$OPTION_STATE_FILTER" ]; then 
+            if [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
+                continue
+            fi
+        fi
+
         let SUM_CORES+=NUMBER_OF_CORES
         let SUM_MEMORY+=MEMORY_GIGABYTES
         let SUM_DISK+=DISK_GIGABYTES
@@ -649,6 +684,8 @@ function print_host_list_long()
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "PROTECTED" ]; then
+            printf "$XTERM_COLOR_RED%-9s$TERM_NORMAL " "$HOST_STATUS"
         else
             printf "%-9s " "$HOST_STATUS"
         fi
@@ -701,9 +738,13 @@ function print_host_list_brief()
         HOST_STATUS=""
         STATUS_TEXT=""
 
+        printVerbose "Loading config file '$config_file'."
         source "$config_file"
         if [ -f "$info_file" ]; then
+            printVerbose "Loading info file '$info_file'."
             source "$info_file"
+        else
+            printVerbose "No info file found at '$info_file'."
         fi
     
         let SUM_SERVERS+=1
@@ -718,6 +759,8 @@ function print_host_list_brief()
         fi
     
         [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
+        [ -n "$CONF_HOST_PROTECTED" ] && HOST_STATUS="PROTECTED"
+
         if [ -f "$info_file" ]; then
             fileAge="$(fileAgeInSeconds "$info_file")"
             let fileAge/=60
@@ -731,6 +774,12 @@ function print_host_list_brief()
             if [ "$HOST_STATUS" != "DISABLED" ]; then
                 HOST_STATUS="OFF-LINE"
                 STATUS_TEXT="-"
+            fi
+        fi
+
+        if [ "$OPTION_STATE_FILTER" ]; then 
+            if [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
+                continue
             fi
         fi
         

@@ -253,6 +253,8 @@ class S9sOptions
         S9sString accountName() const;
 
         bool withDatabase() const;
+        bool withTimescaleDb() const;
+
         S9sString dbName() const;
         S9sString privileges() const;
         

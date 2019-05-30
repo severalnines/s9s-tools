@@ -17,9 +17,9 @@ LAST_USER_NAME="-"
 SUM_STARTED_TESTS=0
 
 cd $MYDIR
-source "./project.conf"
 source "./utilityfunctions.sh"
-source "./htmlfunctions.sh"
+[ -f "./project.conf" ] && source "./project.conf"
+[ -f "./htmlfunctions.sh" ] && source "./htmlfunctions.sh"
 
 #
 # Prints the help text and exits.
@@ -109,9 +109,11 @@ function start_test()
 
     source "$config_file"
 
-    test_server=$(./list_servers.sh --idle)
+    # 
+    # Getting the list of available servers.
+    test_server=$(pip-server-control --list --idle)
     while [ -z "$test_server" ]; do
-        test_server=$(./list_servers.sh --idle)
+        test_server=$(pip-server-control --list --idle)
     done
     
     if [ -z "$user" ]; then
@@ -189,10 +191,17 @@ function print_report()
 function process_scheduled_tests()
 {
     local config_file
+    local config_files=$(schedule_files)
+
+    if [ -z "$config_files" ]; then
+        printVerbose "No tests scheduled."
+        sleep 5
+        return 0
+    fi
 
     for config_file in $(schedule_files); do
+        printVerbose "*** config_file: $config_file"
         if [ ! -f "$config_file" ]; then
-            sleep 5
             continue
         elif [ ! -x "$config_file" ]; then
             # Files that are not executable are being created and not yet 
@@ -203,13 +212,12 @@ function process_scheduled_tests()
         start_test "$config_file"
 
         rm -f "$config_file"
-        ./delete_old_results.sh
-        sleep 1
-
+        /var/www/html/ft_install/delete_old_results.sh
         print_report
     done
         
     print_report
+    sleep 1
 }
 
 if [ "$OPTION_CONTINUOUS" ]; then

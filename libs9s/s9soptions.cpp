@@ -308,6 +308,7 @@ enum S9sOptionType
     
     OptionConfigTemplate,
     OptionNoInstall,
+    OptionWithTimescaleDb,
 };
 
 /**
@@ -2546,6 +2547,16 @@ S9sOptions::withDatabase() const
 {
     return getBool("with_database");
 }
+
+/**
+ * \returns true if the --with-timescaledb command line option was provided.
+ */
+bool
+S9sOptions::withTimescaleDb() const
+{
+    return getBool("with_timescaledb");
+}
+
 
 S9sString
 S9sOptions::dbName() const
@@ -5109,6 +5120,7 @@ S9sOptions::printHelpCluster()
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n");
 }
 
@@ -9142,6 +9154,7 @@ S9sOptions::readOptionsCluster(
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "account",          required_argument, 0, OptionAccount,        },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "db-name",          required_argument, 0, OptionDbName          },
         { "objects",          required_argument, 0, OptionObjects         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
@@ -9512,6 +9525,11 @@ S9sOptions::readOptionsCluster(
             case OptionWithDatabase:
                 // --with-database
                 m_options["with_database"] = true;
+                break;
+
+            case OptionWithTimescaleDb:
+                // --with-timescaledb
+                m_options["with_timescaledb"] = true;
                 break;
 
             case OptionDbName:

@@ -655,6 +655,9 @@ EOF
     
     check_exit_code_no_job $?
 
+    mys9s user --stat worf
+    mys9s user --whoami --print-json --cmon-user worf
+
     #
     # After creating all these users the logged in user should still be me.
     #

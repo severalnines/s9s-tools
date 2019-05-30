@@ -3508,6 +3508,9 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
 
+    if (options->withTimescaleDb())
+        jobData["install_timescaledb"] = true;
+
     if (options->noInstall())
     {
         jobData["install_software"] = false;

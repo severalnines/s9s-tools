@@ -217,7 +217,7 @@ function _s9s()
                 opts+="--volumes= "
                 opts+="--vpc-id= "
                 opts+="--with-database "
-                opts+="--no-install "
+                opts+="--no-install --with-timescaledb "
                 opts+="--config-template= "
             fi 
         elif [[ ${COMP_WORDS[i]} == "job" ]]; then
