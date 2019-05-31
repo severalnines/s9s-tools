@@ -268,6 +268,7 @@ class S9sRpcClient
                 bool               replacePrimaryGroup);
 
         bool setGroup();
+        bool resetPassword();
 
         bool deleteUser();
         bool removeFromGroup();

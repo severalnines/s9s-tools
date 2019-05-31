@@ -1299,6 +1299,22 @@ EOF
     fi
 }
 
+function checkPasswordReset()
+{
+    local retCode
+
+    print_title "Checking Password Reset Option"
+
+    mys9s user --password-reset --cmon-user admin 
+
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "This should have failed, the user has no email address."
+    else
+        success "  o Failed, no email address, ok."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -1329,6 +1345,7 @@ else
     runFunctionalTest testAcl
     runFunctionalTest testAddToGroup
     runFunctionalTest checkExtendedPrivileges
+    runFunctionalTest checkPasswordReset
 
     print_title "Finished"
     mys9s user --list --long

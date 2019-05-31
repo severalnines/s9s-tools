@@ -6735,6 +6735,18 @@ S9sRpcClient::setGroup()
 }
 
 bool
+S9sRpcClient::resetPassword()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/auth/";
+    S9sVariantMap  request;
+    
+    request["operation"]    = "passwordReset"; 
+    request["user_name"]    = options->userName();
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::deleteUser()
 {
     S9sOptions    *options  = S9sOptions::instance();
@@ -8086,9 +8098,8 @@ S9sRpcClient::detectVersion()
     S9sString      uri = "/v2/auth";
 
     /*
-     * Firing an intentionally empty request,
-     * so we can parse the controllers version out
-     * from the returned Server: HTTP header
+     * Firing an intentionally empty request, so we can parse the controllers
+     * version out from the returned Server: HTTP header
      */
     executeRequest(uri, request);
 

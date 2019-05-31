@@ -84,6 +84,7 @@ enum S9sOptionType
     OptionSetGroup,
     OptionAddToGroup,
     OptionRemoveFromGroup,
+    OptionPasswordReset,
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
@@ -3729,6 +3730,16 @@ S9sOptions::isRemoveFromGroupRequested() const
     return getBool("remove_from_group");
 }
 
+/**
+ * \returns True if the --password-reset command line option is provided at 
+ *   startup.
+ */
+bool
+S9sOptions::isPasswordResetRequested() const
+{
+    return getBool("password_reset");
+}
+
 bool
 S9sOptions::isDisableRequested() const
 {
@@ -5010,6 +5021,7 @@ S9sOptions::printHelpUser()
 "  --list-groups              List user groups.\n"
 "  --list-keys                List the public keys of a user.\n"
 "  --list                     List the users.\n"
+"  --password-reset           Sends a 'forgot' password email to the user.\n"
 "  --remove-from-group        Remove the user from a group.\n"
 "  --set                      Change the properties of a user.\n"
 "  --set-group                Set the primary group for an existing user.\n"
@@ -7678,6 +7690,9 @@ S9sOptions::checkOptionsUser()
     
     if (isRemoveFromGroupRequested())
         countOptions++;
+    
+    if (isPasswordResetRequested())
+        countOptions++;
 
     if (isDisableRequested())
         countOptions++;
@@ -8050,6 +8065,7 @@ S9sOptions::readOptionsUser(
         { "list-groups",      no_argument,       0, OptionListGroups      },
         { "list-keys",        no_argument,       0, OptionListKeys        },
         { "list",             no_argument,       0, 'L'                   },
+        { "password-reset",   no_argument,       0, OptionPasswordReset   },
         { "remove-from-group", no_argument,      0, OptionRemoveFromGroup },
         { "set-group",        no_argument,       0, OptionSetGroup        },
         { "set",              no_argument,       0, OptionSet             },
@@ -8244,7 +8260,12 @@ S9sOptions::readOptionsUser(
                 // --change-password
                 m_options["change_password"] = true;
                 break;
-            
+           
+            case OptionPasswordReset:
+                // --password-reset
+                m_options["password_reset"] = true;
+                break;
+
             case OptionRemoveFromGroup:
                 // --remove-from-group
                 m_options["remove_from_group"] = true;

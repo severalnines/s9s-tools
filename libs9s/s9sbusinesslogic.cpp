@@ -68,6 +68,12 @@ S9sBusinessLogic::execute()
         //
         // We do not authenticate here, we simply do process an input file.
         //
+    } else if (options->isPasswordResetRequested())
+    {
+        //
+        // We do not authenticate for password reset, the user forgot the 
+        // password.
+        //
     } else {
         success = client.maybeAuthenticate();
         if (!success && !options->isWatchRequested())
@@ -867,6 +873,11 @@ S9sBusinessLogic::execute()
         } else if (options->isSetGroupRequested())
         {
             success = client.setGroup();
+            client.printMessages("Ok.", success);
+            client.setExitStatus();
+        } else if (options->isPasswordResetRequested())
+        {
+            success = client.resetPassword();
             client.printMessages("Ok.", success);
             client.setExitStatus();
         } else {

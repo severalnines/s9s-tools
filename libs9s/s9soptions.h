@@ -415,6 +415,7 @@ class S9sOptions
         bool isSetGroupRequested() const;
         bool isAddToGroupRequested() const;
         bool isRemoveFromGroupRequested() const;
+        bool isPasswordResetRequested() const;
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isPromoteSlaveRequested() const;
