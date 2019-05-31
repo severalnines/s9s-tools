@@ -6743,6 +6743,13 @@ S9sRpcClient::resetPassword()
     
     request["operation"]    = "passwordReset"; 
     request["user_name"]    = options->userName();
+
+    if (!options->token().empty())
+        request["token"]    = options->token();
+
+    if (options->hasNewPassword())
+        request["new_password"] = options->newPassword();
+
     return executeRequest(uri, request);
 }
 

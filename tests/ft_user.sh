@@ -1302,9 +1302,11 @@ EOF
 function checkPasswordReset()
 {
     local retCode
+    local mailFile
 
     print_title "Checking Password Reset Option"
 
+    rm -rf "/tmp/cmon/emails/outgoing/"
     mys9s user --password-reset --cmon-user admin 
 
     retCode=$?
@@ -1313,6 +1315,71 @@ function checkPasswordReset()
     else
         success "  o Failed, no email address, ok."
     fi
+    
+    #
+    # Sending the password reset mail.
+    #
+    mys9s user --password-reset --cmon-user system
+    retCode=$?
+    
+    mailFile="/tmp/cmon/emails/outgoing/system@mynewdomain.com/email_0000.json";
+    if [ -f "$mailFile" ]; then
+        cat $mailFile | jq .
+    fi
+
+    if [ $retCode -eq 0 ]; then
+        success "  o Password reset request is succeeded, ok."
+    else
+        failure "Password reset failed."
+    fi
+
+    if [ -f "$mailFile" ]; then
+        success "  o The mail is found, ok."
+    else
+        failure "The mail is not found in '$mailFile'."
+    fi
+        
+
+    token=$(cat $mailFile | \
+        jq .elements[0].values | \
+        jq '.["@PASSWORD_RESET_TOKEN@"]')
+    if [ -n "$token" ]; then
+        success "  o The token is '$token', ok"
+    else
+        failure "Token not found."
+    fi
+    
+    recipient=$(cat $mailFile | \
+        jq .elements[0].values | \
+        jq '.["@RECIPIENT@"]')
+    if [ -n "$recipient" ]; then
+        success "  o The recpient found ('$recipient'), ok"
+        if [ "$recipient" == '"system@mynewdomain.com"' ]; then
+            success "  o Recipient is correct, ok."
+        else
+            failure "Recipient should be \"system@mynewdomain.com\"."
+        fi
+    else
+        failure "Recipient not found."
+    fi
+
+    #
+    #
+    #
+    token=$(echo $token | tr -d '"')
+
+    mys9s user \
+        --password-reset \
+        --cmon-user=system \
+        --token=$token \
+        --new-password="newpassword"
+
+    check_exit_code_no_job $?
+
+    mys9s user --whoami --cmon-user="system" --password="newpassword"
+
+    check_exit_code_no_job $?
+
 }
 
 #

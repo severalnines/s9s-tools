@@ -266,6 +266,7 @@ class S9sOptions
         S9sString donor() const;
         S9sString templateName() const;
         S9sString configTemplate() const;
+        S9sString token() const;
         bool noInstall() const;
         S9sString cloudName() const;
         S9sString subnetId() const;

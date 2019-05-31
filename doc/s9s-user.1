@@ -237,6 +237,28 @@ s9s user \\
 List the users registered for the ClusterControl controller. 
 
 .TP
+.B \-\^\-password\-reset
+Resets the password for the user using the "forgot password" email schema. This
+option must be used twice to change the password, once without a token to send
+an email about the password reset and once with the token received in the email.
+Here is an example showing both cases:
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --password-reset \\
+    --cmon-user="system"
+.fi
+
+.nf 
+s9s user \\
+    --password-reset \\
+    --cmon-user="system" \\
+    --token="98197ee4b5584cedba88ef1f583a1258" \\
+    --new-password="newpassword"
+.fi
+
+.TP
 .B \-\^\-set
 Changes the specified properties of the user.
 

@@ -310,6 +310,7 @@ enum S9sOptionType
     OptionConfigTemplate,
     OptionNoInstall,
     OptionWithTimescaleDb,
+    OptionToken
 };
 
 /**
@@ -2386,6 +2387,14 @@ S9sOptions::configTemplate() const
 {
     return getString("config_template");
 }
+
+
+S9sString
+S9sOptions::token() const
+{
+    return getString("token");
+}
+
 
 bool
 S9sOptions::noInstall() const
@@ -5038,6 +5047,7 @@ S9sOptions::printHelpUser()
 "  --public-key-file=FILE     The name of the file where the public key is.\n"
 "  --public-key-name=NAME     The name of the public key.\n"
 "  --title=TITLE              The prefix title for the user.\n"
+"  --token=TOKEN              Password reset token as received in email.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
 "\n");
 }
@@ -8084,6 +8094,7 @@ S9sOptions::readOptionsUser(
         { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
         { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
         { "title",            required_argument, 0, OptionTitle           },
+        { "token",            required_argument, 0, OptionToken           }, 
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
 
         { 0, 0, 0, 0 }
@@ -8297,6 +8308,11 @@ S9sOptions::readOptionsUser(
             case OptionTitle:
                 // --title=TITLE
                 m_options["title"] = optarg;
+                break;
+            
+            case OptionToken:
+                // --token=TOKEN
+                m_options["token"] = optarg;
                 break;
             
             case OptionEmailAddress:
