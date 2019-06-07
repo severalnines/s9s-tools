@@ -536,9 +536,11 @@ function testCreateAccount()
     #
     # Checking if the account is created.
     #
-    userName=$(s9s account --list --cluster-id=1 john_doe)
+    userName=$(s9s account --list --cluster-id=$CLUSTER_ID john_doe)
     if [ "$userName" != "john_doe" ]; then
-        failure "Failed to create user 'john_doe'."
+        failure "Account is not in the account list."
+        mys9s account --list --long --cluster-id=$CLUSTER_ID
+        mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
         exit 1
     fi
 
