@@ -581,8 +581,6 @@ function testStop()
 #
 function testDrop()
 {
-    local exitCode
-
     print_title "Dropping the cluster"
 
     #
@@ -592,12 +590,8 @@ function testDrop()
         --drop \
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code $?
 }
 
 #
