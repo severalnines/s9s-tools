@@ -233,13 +233,7 @@ function testCreateGalera()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_GALERA)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -302,13 +296,7 @@ function testCreatePostgre()
         $LOG_OPTION \
         $DEBUG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_POSTGRESQL)
     if [ "$CLUSTER_ID" -gt 0 ]; then
