@@ -48,6 +48,7 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --vendor=STRING  Use the given Galera vendor.
   --leave-nodes    Do not destroy the nodes at exit.
+  --enable-ssl     Enable the SSL once the cluster is created.
   
   --provider-version=VERSION The SQL server provider version.
   --number-of-nodes=N        The number of nodes in the initial cluster.
@@ -82,7 +83,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,number-of-nodes:,vendor:,leave-nodes" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -151,6 +152,11 @@ while true; do
         --leave-nodes)
             shift
             OPTION_LEAVE_NODES="true"
+            ;;
+
+        --enable-ssl)
+            shift
+            OPTION_ENABLE_SSL="true"
             ;;
 
         --)
@@ -224,13 +230,7 @@ function testCreateCluster()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -285,6 +285,15 @@ function testCreateCluster()
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
 
+    #
+    # One more thing: if the option is given we enable the SSL here, so we test
+    # everything with this feature.
+    #
+    if [ -n "$OPTION_ENABLE_SSL" ]; then
+        print_title "Enabling SSL"
+        mys9s cluster --enable-ssl --cluster-id=$CLUSTER_ID
+        check_exit_code $?
+    fi
 }
 
 function testSetupAudit()
