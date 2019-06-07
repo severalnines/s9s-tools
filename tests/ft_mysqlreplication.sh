@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--wait"
+LOG_OPTION="--log"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -581,6 +581,8 @@ function testStop()
 #
 function testDrop()
 {
+    local exitCode
+
     print_title "Dropping the cluster"
 
     #
@@ -591,7 +593,11 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
    
-    check_exit_code $?
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        mys9s job --list 
+        check_exit_code $?
+    fi
 }
 
 #
