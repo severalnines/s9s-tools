@@ -238,8 +238,6 @@ function testStop()
 #
 function testDrop()
 {
-    local exitCode
-
     print_title "Dropping cluster"
 
     #
@@ -248,13 +246,11 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        --log 
+
+        #$LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 }
 
 #

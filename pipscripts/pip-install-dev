@@ -28,6 +28,7 @@ Usage:
   --install-mongodb  Checks and installs the mongodb driver and mongo-c.
   --install-mariadb  Checks and installs the MariaDb library.
   --install-mysql    Installs the mysql server with root password.
+  --update-libssh    Installs the new version of the libssh package.
   --update-packages  Updates packages of the server.
 
   --no-containers    Do not install container virtualization technology.
@@ -40,7 +41,7 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,all,\
-install-mongodb,install-mariadb,install-mysql,update-packages,\
+install-mongodb,install-mariadb,install-mysql,update-libssh,update-packages,\
 no-containers" \
         -- "$@")
 
@@ -90,6 +91,11 @@ while true; do
         --install-mysql)
             shift
             OPTION_INSTALL_MYSQL="true"
+            ;;
+
+        --update-libssh)
+            shift
+            OPTION_UPDATE_LIBSSH="true"
             ;;
 
         --update-packages)
@@ -491,16 +497,21 @@ function update_packages()
 }
 
 
-
-
 if [ -n "$OPTION_INSTALL_MYSQL" ]; then
     install_mysql_server
+    exit $?
+fi
+
+if [ -n "$OPTION_UPDATE_LIBSSH" ]; then
+    check_install_libssh_ppa
     exit $?
 fi
 
 if [ -n "$OPTION_INSTALL_PACKAGES" ]; then
     update_packages
 fi
+
+
 
 if [ -n "$OPTION_ALL" ]; then
     install_packages
