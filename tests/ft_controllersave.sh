@@ -289,7 +289,7 @@ function testCreatePostgre()
         --cluster-type=postgresql \
         --nodes="$nodes" \
         --cluster-name="$CLUSTER_NAME_POSTGRESQL" \
-        --provider-version="9.3" \
+        --provider-version="9.4" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --generate-key \
