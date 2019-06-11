@@ -133,6 +133,7 @@ function createUser()
 
     mys9s user \
         --create \
+        --template="ubuntu" \
         --cmon-user=system \
         --password=secret \
         --title="Captain" \
@@ -212,12 +213,13 @@ function createCluster()
     #   CmonConfiguration::setOverride(PropOsUser, CmonString(getenv("USER")));
     mys9s cluster \
         --create \
+        --template="ubuntu" \        
         --password="$CMON_USER_PASSWORD" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
         --provider-version="5.6" \
-        --vendor=percona \
-        --cloud=lxc \
+        --vendor="percona" \
+        --cloud="lxc" \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
         --generate-key \

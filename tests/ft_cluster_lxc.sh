@@ -283,7 +283,7 @@ function createCluster()
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        --log
+        $LOG_OPTION 
 
     check_exit_code $?
     check_container_ids --galera-nodes
