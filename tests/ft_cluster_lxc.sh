@@ -173,7 +173,7 @@ function registerServer()
     print_title "Registering Container Server"
 
     #
-    # Creating a container.
+    # Creating a container server.
     #
     mys9s server \
         --register \
@@ -205,6 +205,7 @@ function createContainer()
         --create \
         --cloud=lxc \
         --os-user=sisko \
+        --template="ubuntu" \
         --os-key-file="$config_dir/sisko.key" \
         $LOG_OPTION \
         "$container_name"
