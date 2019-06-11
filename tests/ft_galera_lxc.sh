@@ -209,10 +209,10 @@ function testAlarms()
     local n_alarms
 
     print_title "Check Alarms"
+    cat <<EOF
+    Alarms before doing anything nasty:
+EOF
 
-    # Before.
-    echo "Alarms before doing anything nasty."
-    echo ""
     mys9s alarm --list --long 
     echo ""
     echo ""
