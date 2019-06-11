@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
 
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 DEBUG_OPTION="--debug"
 
 CONTAINER_SERVER=""
