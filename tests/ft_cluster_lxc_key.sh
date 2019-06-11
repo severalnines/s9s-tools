@@ -133,7 +133,6 @@ function createUser()
 
     mys9s user \
         --create \
-        --template="ubuntu" \
         --cmon-user=system \
         --password=secret \
         --title="Captain" \
