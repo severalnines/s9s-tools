@@ -212,7 +212,7 @@ function createCluster()
     #   CmonConfiguration::setOverride(PropOsUser, CmonString(getenv("USER")));
     mys9s cluster \
         --create \
-        --template="ubuntu" \        
+        --template="ubuntu" \
         --password="$CMON_USER_PASSWORD" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
