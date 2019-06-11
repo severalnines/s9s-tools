@@ -163,6 +163,7 @@ function createCluster()
     print_title "Creating a Cluster"
     mys9s cluster \
         --create \
+        --template="ubuntu" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
         --provider-version="$PROVIDER_VERSION" \
