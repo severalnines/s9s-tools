@@ -38,6 +38,7 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --vendor=STRING  Use the given Galera vendor.
   --provider-version=STRING The SQL server provider version.
+  --install        Just install the cluster and exit.
 
 EOF
     exit 1
@@ -46,7 +47,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,reset-config,\
+        -l "help,verbose,log,server:,print-commands,install,reset-config,\
 provider-version:,vendor:" \
         -- "$@")
 
@@ -82,6 +83,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --install)
+            shift
+            OPTION_INSTALL="--install"
             ;;
 
         --reset-config)
@@ -261,7 +267,15 @@ startTests
 reset_config
 grant_user
 
-if [ "$1" ]; then
+if [ "$OPTION_INSTALL" ]; then
+    if [ -n "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateCluster
+    fi
+elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done

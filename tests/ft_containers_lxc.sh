@@ -420,7 +420,8 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with duplicate name should have failed."
-        exit 1
+    else
+        success "  o Container creation failed, ok."
     fi
     
     #
@@ -437,7 +438,8 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid cloud should have failed."
-        exit 1
+    else
+        success "  o Container creation failed, ok."
     fi
     
     #
@@ -453,7 +455,8 @@ function createFail()
     exitCode=$?
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid subnet should have failed."
-        exit 1
+    else
+        success "  o Container creation failed, ok."
     fi
 
     # FIXME: well, this invalid subnet issue is only recognized after the
@@ -474,7 +477,8 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
-        exit 1
+    else
+        success "  o Container creation failed, ok."
     fi
 }
 #
