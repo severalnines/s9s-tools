@@ -498,17 +498,17 @@ function createContainers()
     #
     # Creating a container Centos 7.
     #
-#    print_title "Creating Centos 7 Container"
-#    mys9s container \
-#        --create \
-#        --image=centos_7 \
-#        --servers=$CONTAINER_SERVER \
-#        $LOG_OPTION \
-#        "$container_name1"
-    
-#    check_exit_code $?
-#    remember_cmon_container "$container_name1"
-#    check_container "$container_name1"
+    print_title "Creating Centos 7 Container"
+    mys9s container \
+        --create \
+        --image=centos_7 \
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        "$container_name1"
+   
+    check_exit_code $?
+    remember_cmon_container "$container_name1"
+    check_container "$container_name1"
 
     #
     # Creating a container Centos 6.

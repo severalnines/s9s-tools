@@ -273,6 +273,7 @@ function createCluster()
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
+        --template="ubuntu" \
         --cluster-type=galera \
         --provider-version="5.6" \
         --vendor=percona \
