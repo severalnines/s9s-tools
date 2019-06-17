@@ -1493,7 +1493,8 @@ function grant_user()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while granting user."
-        return 1
+    else 
+        success "  o Return code is 0, ok."
     fi
 
     #

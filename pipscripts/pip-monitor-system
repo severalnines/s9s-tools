@@ -202,6 +202,25 @@ function get_load()
     cat /proc/loadavg | awk '{print $1}'
 }
 
+function get_cpu_temp()
+{
+    local temp
+    
+    temp=$(sensors | \
+        grep Core | \
+        awk -F: '{print $2}' | \
+        awk '{print $1}' | \
+        tr -d '[+°C]'  | \
+        sort | \
+        tail -n1)
+
+    if [ -z "$temp" ]; then
+        temp='0.0'
+    fi
+
+    echo $temp
+}
+
 #
 # Prints some local resources in JSon format. This is the fast method, this is
 # what we execute often.
@@ -220,6 +239,7 @@ function get_resources()
 {
     local hostname=$(hostname)
     local load=$(get_load)
+    local temp=$(get_cpu_temp)
     local memory=$(get_memory_measurements)
     local nproc=$(nproc)
     local n_containers=$(get_number_of_containers)
@@ -229,6 +249,7 @@ function get_resources()
     message="{\
 \"hostname\":\"$hostname\", \
 \"Load\":$load, \
+\"CpuTemp\":$temp, \
 \"NProc\": $nproc, \
 \"NContainers\": $n_containers, \
 \"Memory\": $memory, \

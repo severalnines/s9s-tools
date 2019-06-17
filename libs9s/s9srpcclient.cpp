@@ -2177,7 +2177,9 @@ S9sRpcClient::importConfig()
     jobSpec["command"]    = "import_config";
 
     // The job instance describing how the job will be executed.
-    job["title"]          = "Import Config";
+    if (!job.contains("title"))
+        job["title"]      = "Import Config";
+
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.    
@@ -7322,6 +7324,9 @@ S9sRpcClient::composeJob() const
 
     if (options->hasJobTags())
         job["tags"] = options->jobTags();
+    
+    if (!options->jobTitle().empty())
+        job["title"] = options->jobTitle();
 
     return job;
 }

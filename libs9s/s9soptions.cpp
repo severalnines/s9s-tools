@@ -120,6 +120,7 @@ enum S9sOptionType
     OptionEmailAddress,
     OptionLastName,
     OptionTitle,
+    OptionJobTitle,
     OptionStart,
     OptionRestart,
     OptionEnd,
@@ -9164,8 +9165,10 @@ S9sOptions::readOptionsCluster(
         { "output-dir",       required_argument, 0, OptionOutputDir       },
 
         // Job Related Options
+        { "backup-id",        required_argument, 0, OptionBackupId        },
         { "batch",            no_argument,       0, OptionBatch           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "job-title",        required_argument, 0, OptionJobTitle        },
         { "log",              no_argument,       0, 'G'                   },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
@@ -9173,7 +9176,6 @@ S9sOptions::readOptionsCluster(
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
-        { "backup-id",        required_argument, 0, OptionBackupId        },
 
 
         // Cluster information.
@@ -9449,6 +9451,11 @@ S9sOptions::readOptionsCluster(
             case OptionJobTags:
                 // --job-tags=LIST
                 setJobTags(optarg);
+                break;
+            
+            case OptionJobTitle:
+                // --job-title=TITLE
+                m_options["job_title"] = optarg;
                 break;
             
             case OptionNoHeader:
@@ -12363,6 +12370,15 @@ S9sString
 S9sOptions::title() const
 {
     return getString("title");
+}
+
+/**
+ * \returns The argument of the --job-title command line option.
+ */
+S9sString
+S9sOptions::jobTitle() const
+{
+    return getString("job_title");
 }
 
 /**
