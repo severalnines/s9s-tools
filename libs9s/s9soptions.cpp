@@ -355,6 +355,7 @@ S9sOptions::S9sOptions() :
     m_modes["jobs"]         = Job;
     m_modes["logs"]         = Log;
     m_modes["maintenances"] = Maintenance;
+    m_modes["maint"]        = Maintenance;
     m_modes["metatypes"]    = MetaType;
     m_modes["nodes"]        = Node;
     m_modes["processes"]    = Process;
@@ -4820,7 +4821,7 @@ S9sOptions::printHelpGeneric()
 "    cluster - to list and manipulate clusters.\n"
 " controller - to manage Cmon controllers.\n"
 "        job - to view jobs.\n"
-"      maint - to view and manipulate maintenance periods.\n"
+"maintenance - to view and manipulate maintenance periods.\n"
 "   metatype - to print metatype information.\n"
 "       node - to handle nodes.\n"
 "    process - to view processes running on nodes.\n"
