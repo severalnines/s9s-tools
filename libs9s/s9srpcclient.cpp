@@ -4203,6 +4203,7 @@ S9sRpcClient::addProxySql(
         const int             clusterId,
         const S9sVariantList &hosts)
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
@@ -4233,6 +4234,10 @@ S9sRpcClient::addProxySql(
 
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
+
+    if (options->hasProviderVersion())
+        jobData["version"] = options->providerVersion();
+        
     #if 0
     // FIXME: This certainly works on the current version of the controller, but
     // not necessarily compatible with the older versions. So this should be

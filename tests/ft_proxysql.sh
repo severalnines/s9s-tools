@@ -40,6 +40,7 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
   --install        Just install the cluster and exit.
+  --proxy2         Install ProxySQL 2.0.
 
 SUPPORTED TESTS:
   o registerServer     Registers a container server for containers.
@@ -56,7 +57,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
-install" \
+install,proxy2" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -107,6 +108,11 @@ while true; do
         --install)
             shift
             OPTION_INSTALL="--install"
+            ;;
+
+        --proxy2)
+            shift
+            OPTION_POXYSQL_VERSION="--provider-version=2"
             ;;
 
         --)
@@ -203,7 +209,9 @@ function testAddProxySql()
         --cluster-id=1 \
         --nodes="proxySql://$CONTAINER_NAME9" \
         --containers="$CONTAINER_NAME9" \
-        --log --debug
+        --log \
+        $OPTION_POXYSQL_VERSION \
+        --debug
     
     check_exit_code $?
 

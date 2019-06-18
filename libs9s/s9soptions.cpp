@@ -1471,6 +1471,12 @@ S9sOptions::uuid() const
     return getString("uuid");
 }
 
+bool
+S9sOptions::hasProviderVersion() const
+{
+    return m_options.contains("provider_version");
+}
+
 /**
  * \returns the provider version string as it is set by the --provider-version
  *   command line option.

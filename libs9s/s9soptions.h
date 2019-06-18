@@ -140,6 +140,7 @@ class S9sOptions
         S9sString longUserFormat() const;
         
         S9sString vendor() const;
+        bool hasProviderVersion() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
         S9sString osSudoPassword() const;
 
