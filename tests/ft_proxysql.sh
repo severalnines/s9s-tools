@@ -236,7 +236,7 @@ function testStopProxySql()
     #
     #
     #
-    print_title "Stopping Node"
+    print_title "Stopping ProxySQL Node"
 
     mys9s container --stop --wait "$CONTAINER_NAME9"
     check_exit_code $?
@@ -244,7 +244,7 @@ function testStopProxySql()
     #
     # Checking that the ProxySql goes into offline state.
     #
-    print_title "Waiting HapProxy to go Off-line"
+    print_title "Waiting ProxySql to go Off-line"
     wait_for_node_state "$PROXYSQL_IP" "CmonHostOffLine"
 
     if [ $? -ne 0 ]; then
@@ -261,7 +261,7 @@ function testStartProxySql()
     #
     #
     #
-    print_title "Starting Node"
+    print_title "Starting ProxySQL Node"
 
     mys9s container --start --wait "$CONTAINER_NAME9"
     check_exit_code $?
@@ -269,7 +269,7 @@ function testStartProxySql()
     #
     # Checking that the ProxySql goes into offline state.
     #
-    print_title "Waiting HapProxy to go On-line"
+    print_title "Waiting ProxySql to go On-line"
     wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
 
     if [ $? -ne 0 ]; then
