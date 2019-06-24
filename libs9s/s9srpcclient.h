@@ -130,6 +130,9 @@ class S9sRpcClient
         bool startInTree();
 
         bool unregisterHost();
+        bool registerHost();
+        bool registerMaxScaleHost(const S9sNode &node);
+
         bool getContainers();
         bool getServers();
         bool getControllers();

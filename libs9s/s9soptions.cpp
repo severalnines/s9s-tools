@@ -5453,6 +5453,7 @@ S9sOptions::readOptionsNode(
         { "list",             no_argument,       0, 'L'                   },
         { "pull-config",      no_argument,       0, OptionPullConfig      },
         { "push-config",      no_argument,       0, OptionPushConfig      },
+        { "register",         no_argument,       0, OptionRegister        },
         { "restart",          no_argument,       0, OptionRestart         },
         { "set",              no_argument,       0, OptionSet             },
         { "start",            no_argument,       0, OptionStart           },
@@ -5603,6 +5604,11 @@ S9sOptions::readOptionsNode(
             case OptionPushConfig:
                 // --push-config
                 m_options["push_config"] = true;
+                break;
+            
+            case OptionRegister:
+                // --register
+                m_options["register"] = true;
                 break;
             
             case OptionUnregister:
@@ -7589,6 +7595,9 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isUnregisterRequested())
+        countOptions++;
+    
+    if (isRegisterRequested())
         countOptions++;
 
     if (countOptions > 1)

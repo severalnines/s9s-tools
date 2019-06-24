@@ -315,6 +315,10 @@ S9sBusinessLogic::execute()
         {
             success = client.restartNode();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isRegisterRequested())
+        {
+            success = client.registerHost();
+            maybeJobRegistered(client, clusterId, success); 
         } else if (options->isUnregisterRequested()) 
         {
             success = client.unregisterHost();

@@ -21,6 +21,15 @@ following:
 Creates a new account on the cluster. Please note, the account is an account of
 the cluster and not a user of the Cmon system.
 
+.B EXAMPLE
+.nf
+mys9s account \\
+    --create \\
+    --cluster-id=$CLUSTER_ID \\
+    --account="pipas:password@myhost.com" \\
+    --privileges="cmon.*:ALL"
+.fi
+
 .TP
 .B \-\^\-delete 
 Remove the account.

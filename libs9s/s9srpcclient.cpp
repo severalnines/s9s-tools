@@ -3015,6 +3015,90 @@ S9sRpcClient::registerGaleraCluster(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::registerHost()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts = options->nodes();
+    bool           hasMaxScale = false;
+
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while registering node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    } else if (hosts.size() > 1u)
+    {
+        PRINT_ERROR("Registering nodes can only be done one-by-one.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol == "maxscale")
+            hasMaxScale = true;
+    }
+   
+    if (hasMaxScale)
+    {
+        S9sNode node = hosts[0u].toNode();
+        return registerMaxScaleHost(node);
+    } else {
+        PRINT_ERROR("Registering this type of node is not supported.");
+        return false;
+    }
+
+    return true;
+}
+
+bool
+S9sRpcClient::registerMaxScaleHost(
+        const S9sNode &node)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    int             clusterId;
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+   
+    if (options->hasClusterIdOption())
+    {
+        clusterId = options->clusterId();
+    } else {
+        PRINT_ERROR("Cluster ID is missing.");
+        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["action"] = "register";
+    jobData["server_address"] = node.hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "maxscale";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Register MaxScale Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -4006,6 +4090,7 @@ S9sRpcClient::addNode(
         PRINT_ERROR(
                 "Either the --cluster-id or the --cluster-name command line "
                 "option has to be provided.");
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
     
@@ -5609,7 +5694,6 @@ S9sRpcClient::unregisterHost()
 
     request["operation"]      = "unregisterHost";
     request["host"]           = hosts[0];
-    //request["dry_run"]        = true;
 
     return executeRequest(uri, request);
 }

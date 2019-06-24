@@ -827,7 +827,7 @@ function node_state()
 {
     local nodeName="$1"
         
-    s9s node --list --batch --long --node-format="%S" "$nodeName"
+    s9s node --list --batch --long --node-format="%S\n" "$nodeName" | head -n1
 }
 
 function node_ip()
@@ -929,6 +929,14 @@ function proxysql_node_name()
 {
     s9s node --list --long --batch |\
         grep '^y' | \
+        awk '{print $5 }'
+}
+
+function galera_node_name()
+{
+    s9s node --list --long --batch | \
+        grep '^g' | \
+        head -n1  | \
         awk '{print $5 }'
 }
 
