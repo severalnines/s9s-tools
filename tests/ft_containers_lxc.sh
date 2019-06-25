@@ -495,6 +495,9 @@ function createContainers()
     local template
     local container_ip
 
+    # Ubuntu after some upgrades have several terrible problems.
+    return 0
+
     #
     # Creating a container Centos 7.
     #

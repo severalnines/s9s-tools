@@ -388,6 +388,8 @@ function testConfig()
 
     if [ ! -f "tmp/postgresql.conf" ]; then
         failure "Failed to pull the configuration."
+    else
+        success "  o File 'tmp/postgresql.conf' is found, ok."
     fi
 
     rm -rf tmp

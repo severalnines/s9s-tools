@@ -19,25 +19,62 @@ following:
 .B \-L, \-\^\-list
 List the nodes managed by the controller.
 
+.B EXAMPLE
+.nf
+s9s node --list --long
+.fi
+
 .TP
 .B \-\-restart
 Restart the node. This means the process that provides the main functionality on
 the node (e.g. the MySql daemon on a Galera node) will be stopped then start
 again.
 
+.B EXAMPLE
+.nf
+s9s node \\
+    --restart \\
+    --cluster-id="1" \\
+    --nodes="192.168.0.72" \\
+    --wait
+.fi
+
 .TP
 .B \-\-start
 Start the node. This means the process that provides the main functionality on
 the node (e.g. the MySql daemon on a Galera node) will be start.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --start \\
+    --cluster-id="1" \\
+    --nodes="192.168.0.72" \\
+    --wait
+.fi
 
 .TP
 .B \-\-stop
 Stop the node. This means the process that provides the main functionality on
 the node (e.g. the MySql daemon on a Galera node) will be stopped.
 
+.B EXAMPLE
+.nf
+s9s node \\
+    --stop \\
+    --cluster-id="1" \\
+    --nodes="192.168.0.72" \\
+    --wait
+.fi
+
 .TP
 .B \-\-stat
 Print the details of one or more nodes.
+
+.B EXAMPLE
+.nf
+s9s node --stat 192.168.0.85
+.fi
 
 .TP
 .B \-\-set
@@ -47,14 +84,41 @@ Sets various properties of the specified node/host.
 .B \-\-list\-config
 List the configuration values for the given node.
 
+.B EXAMPLE
+.nf
+s9s node \\
+    --list-config \\
+    --nodes="192.168.0.72" \\
+    'max*'
+.fi
+
 .TP
-.B \-\-set\-config
+.B \-\-change\-config
 Change configuration values for the given node.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --change-config \\
+    --nodes="192.168.0.72" \\
+    --opt-name="max_connections" \\
+    --opt-group="MYSQLD" \\
+    --opt-value="200"
+.fi
 
 .TP
 .B \-\-pull\-config
 Copy the configuration file(s) from the node to the local computer. Use the 
 \fB\-\-output\-dir\fP to control where the files will be created.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --pull-config \\
+    --nodes="192.168.0.232" \\
+    --output-dir="tmp" \\
+    --batch 
+.fi
 
 .\"
 .\" The generic options that we have in all the modes.
