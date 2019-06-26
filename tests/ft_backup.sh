@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -12,6 +12,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 DATABASE_USER="$USER"
 PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -38,6 +39,7 @@ Usage:
   --install        Create a cluster, some backups and leave them when exiting.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --provider-version=STRING The SQL server provider version.
+  --vendor=STRING  Use the given Galera vendor.
 
 SUPPORTED TESTS
   o testCreateCluster  Creates a cluster that is needed for the tests.
@@ -60,7 +62,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:" \
+vendor:,provider-version:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -113,6 +115,12 @@ while true; do
             shift
             ;;
 
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -151,7 +159,7 @@ function testCreateCluster()
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \
-        --vendor=percona \
+        --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
@@ -176,6 +184,44 @@ function testCreateCluster()
     #mys9s cluster --list --long
     #sleep 60
     #mys9s cluster --list --long
+}
+
+function testCreateClusterFromBackup()
+{
+    local container_name
+    local nodes
+    local nodeName
+    local exitCode
+    local nNodes=1
+    local nodeId=2
+    local cluster_name="${CLUSTER_NAME}_copy"
+
+    print_title "Creating a Galera Cluster from Backup"
+
+    for ((n=0;n<nNodes;++n)); do
+        echo "Creating container #${n}."
+        container_name="$(printf "ft_backup_%08d_node%02d" "$$" "$nodeId")"
+        nodeName=$(create_node --autodestroy $container_name)
+        nodes+="$nodeName;"
+        
+        let nodeId+=1
+    done
+       
+    #
+    # Creating a Galera cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$cluster_name" \
+        --provider-version=$PROVIDER_VERSION \
+        --backup-id=2 \
+        --log
+
+    check_exit_code $?
+    wait_for_cluster_started "$cluster_name"
 }
 
 #
@@ -298,19 +344,19 @@ function testCreateBackup01()
 
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
-        failure "There should be 1 backup in the output"
+        failure "There should be 1 backup in the output."
         exit 1
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $6}')
     if [ "$value" != "COMPLETED" ]; then
-        failure "The backup should be completed"
+        failure "The backup should be completed."
         exit 1
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
-        failure "The owner of the backup should be '$USER'"
+        failure "The owner of the backup should be '$USER'."
         exit 1
     fi
     
@@ -323,10 +369,10 @@ function testCreateBackup01()
     # Checking the path.
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/backup-001-0001/mysql/' | \
+        grep '^/tmp/backup-001-0001/pipas/' | \
         wc -l)
     if [ "$value" != 1 ]; then
-        failure "A file should be in '/tmp/backup-001-0001/mysql/'"
+        failure "A file should be in '/tmp/backup-001-0001/pipas/'"
         mys9s backup --list-files --full-path --backup-id=1
         mys9s backup --list-files --full-path 
     fi
@@ -435,14 +481,14 @@ function testCreateBackup03()
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
         --subdirectory="testCreateBackup03" \
-        --log
+        $LOG_OPTION
 
     retcode=$?
     if [ "$retcode" -eq 0 ]; then
         failure "Overwriting of backup directory should not be possible"
         exit 1
     else
-        echo "Yes, this should have failed, we tried to overwrite the backup."
+        success "  o No overwrite of the backups, ok."
     fi
 }
 
@@ -473,7 +519,7 @@ function testCreateBackup04()
         --test-server="$node" \
         --backup-dir=/tmp \
         --subdirectory="backup-%03i-%04I" \
-        --log
+        $LOG_OPTION
     
     retcode=$?
 
@@ -491,6 +537,10 @@ function testCreateBackup04()
 
 function testCreateBackup05()
 {
+    if [ "$PROVIDER_VERSION" == "10.3" ]; then
+        return 0
+    fi
+
     print_title "Creating xtrabackupfull Backup"
 
     #
@@ -559,22 +609,24 @@ function testRestore()
         --restore \
         --backup-id=1 \
         --cluster-id=1 \
-        --log
+        $LOG_OPTION
 
     check_exit_code $?
     
     #
     #
     #
-    print_title "Restoring Backup 7"
+    if [ "$PROVIDER_VERSION" != "10.3" ]; then
+        print_title "Restoring Backup 7"
+    
+        mys9s backup \
+            --restore \
+            --backup-id=7 \
+            --cluster-id=1 \
+            $LOG_OPTION
 
-    mys9s backup \
-        --restore \
-        --backup-id=7 \
-        --cluster-id=1 \
-        --log
-
-    check_exit_code $?
+        check_exit_code $?
+    fi
     
     #
     #
@@ -585,7 +637,7 @@ function testRestore()
         --restore \
         --backup-id=2 \
         --cluster-id=1 \
-        --log
+        $LOG_OPTION
 
     check_exit_code $?
     
@@ -598,7 +650,7 @@ function testRestore()
         --restore \
         --backup-id=6 \
         --cluster-id=1 \
-        --log
+        $LOG_OPTION
 
     check_exit_code $?
 }
@@ -715,6 +767,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
     runFunctionalTest testCreateBackup06
+    runFunctionalTest testCreateClusterFromBackup
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -729,6 +782,7 @@ else
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
     runFunctionalTest testCreateBackup06
+    runFunctionalTest testCreateClusterFromBackup
     runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup
     runFunctionalTest testDelete

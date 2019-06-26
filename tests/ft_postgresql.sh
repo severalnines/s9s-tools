@@ -576,7 +576,21 @@ function testCreateBackup()
     check_exit_code $?    
 
     mys9s backup --list --long
-    # s9s backup --list --verbose --print-json
+    
+    #
+    # Creating a backup using the pgbackrestfull method.
+    #
+    mys9s backup \
+        --create \
+        --cluster-name=$CLUSTER_NAME \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-directory=/tmp \
+        --backup-method=pgbackrestfull \
+        $LOG_OPTION
+    
+    check_exit_code $?    
+
+    mys9s backup --list --long
 }
 
 #

@@ -2861,6 +2861,9 @@ S9sRpcClient::createGaleraCluster(
         jobData["enable_uninstall"] = true;
     }
     
+    if (options->hasBackupId())
+        jobData["backup_id"]        = options->backupId();
+    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
