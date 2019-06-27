@@ -13,6 +13,7 @@ CONTAINER_SERVER=""
 DATABASE_USER="$USER"
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
+OPTION_NUMBER_OF_NODES="2"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -37,9 +38,11 @@ Usage:
   --server=SERVER  The name of the server that will hold the containers.
   --print-commands Do not print unit test info, print the executed commands.
   --install        Create a cluster, some backups and leave them when exiting.
-  --reset-config   Remove and re-generate the ~/.s9s directory.
+
+  --reset-config      Remove and re-generate the ~/.s9s directory.
   --provider-version=STRING The SQL server provider version.
-  --vendor=STRING  Use the given Galera vendor.
+  --vendor=STRING     Use the given Galera vendor.
+  --number-of-nodes=N The number of nodes in the initial cluster.
 
 SUPPORTED TESTS
   o testCreateCluster  Creates a cluster that is needed for the tests.
@@ -62,7 +65,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-vendor:,provider-version:" \
+vendor:,provider-version:,number-of-nodes:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -121,6 +124,12 @@ while true; do
             shift
             ;;
 
+        --number-of-nodes)
+            shift
+            OPTION_NUMBER_OF_NODES="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -137,13 +146,13 @@ function testCreateCluster()
     local nodes
     local nodeName
     local exitCode
-    local nNodes=1
+    local nNodes=$OPTION_NUMBER_OF_NODES
 
     print_title "Creating a Galera Cluster"
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
-        container_name="$(printf "ft_backup_%08d_node%02d" "$$" "$n")"
+        container_name="$(printf "ft_backup_%08d_node0%02d" "$$" "$n")"
         nodeName=$(create_node --autodestroy $container_name)
         nodes+="$nodeName;"
     
@@ -192,19 +201,17 @@ function testCreateClusterFromBackup()
     local nodes
     local nodeName
     local exitCode
-    local nNodes=1
-    local nodeId=2
+    local nNodes=$OPTION_NUMBER_OF_NODES
     local cluster_name="${CLUSTER_NAME}_copy"
+
 
     print_title "Creating a Galera Cluster from Backup"
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
-        container_name="$(printf "ft_backup_%08d_node%02d" "$$" "$nodeId")"
+        container_name="$(printf "ft_backup_%08d_node1%02d" "$$" "$n")"
         nodeName=$(create_node --autodestroy $container_name)
         nodes+="$nodeName;"
-        
-        let nodeId+=1
     done
        
     #
