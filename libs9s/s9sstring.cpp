@@ -859,6 +859,7 @@ do_again:
     s.replace("<em style='color: #c49854;'>",     XTERM_COLOR_7);
     s.replace("<em style='color: #877d0f;'>",     XTERM_COLOR_7);
     s.replace("<strong style='color: red;'>",     XTERM_COLOR_RED);
+    s.replace("<strong style='color: orange;'>",  "\033[38;5;172m");
 
     //s.replace("", );
     s.replace("</em>",       TERM_NORMAL);
