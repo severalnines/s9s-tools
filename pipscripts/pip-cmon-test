@@ -461,6 +461,8 @@ function prepare_source()
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
         pip-host-control --log "Pulled source."
+
+        git checkout CMON-1081
     fi
 
     if [ "$DO_CLEAN" ]; then
@@ -1006,6 +1008,7 @@ function run_test()
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
+                --log \
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
