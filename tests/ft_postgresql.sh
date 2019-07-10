@@ -4,8 +4,11 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-VERSION="0.0.3"
+VERSION="0.0.4"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -87,6 +90,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -178,7 +182,8 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version=$PROVIDER_VERSION \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
@@ -256,7 +261,8 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $? 
 
@@ -289,7 +295,8 @@ function testStopStartNode()
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
     
@@ -305,7 +312,8 @@ function testStopStartNode()
         --start \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 
@@ -557,7 +565,8 @@ function testCreateBackup()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-directory=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
     
@@ -571,7 +580,8 @@ function testCreateBackup()
         --nodes=$FIRST_ADDED_NODE \
         --backup-directory=/tmp \
         --backup-method=pg_basebackup \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 
@@ -617,7 +627,8 @@ function testRestoreBackup()
         --restore \
         --cluster-id=$CLUSTER_ID \
         --backup-id=$backupId \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     exitCode=$?
     check_exit_code $exitCode
@@ -648,7 +659,8 @@ function testRemoveBackup()
         --delete \
         --backup-id=$backupId \
         --batch \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 }
@@ -707,7 +719,8 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 }
@@ -725,7 +738,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 }
