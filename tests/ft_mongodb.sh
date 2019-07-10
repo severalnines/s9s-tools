@@ -188,6 +188,7 @@ function createCluster()
 
     mys9s cluster \
         --create \
+        --template="ubuntu" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=mongodb \
         --provider-version="$PROVIDER_VERSION" \
