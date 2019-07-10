@@ -5,7 +5,10 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.3"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION="--debug"
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -76,6 +79,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"            
             ;;
 
         --server)
@@ -148,7 +152,8 @@ EOF
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version=$PROVIDER_VERSION \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
@@ -226,7 +231,8 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $? 
 
@@ -255,7 +261,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?    
 }
