@@ -460,9 +460,17 @@ function prepare_source()
         
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
+
+        # This is temporary
+        git checkout master
+        git pull >/dev/null 2>/dev/null
+        
         pip-host-control --log "Pulled source."
 
-        git checkout CMON-1081
+        # Files are left everywhere... :(
+        if [ -d "./tests/configs/tls" ]; then
+            rm -rvf "./tests/configs/tls"
+        fi
     fi
 
     if [ "$DO_CLEAN" ]; then
