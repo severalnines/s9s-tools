@@ -291,14 +291,26 @@ function testCreateCluster()
     #
     if [ -n "$OPTION_ENABLE_SSL" ]; then
         print_title "Enabling SSL"
+        cat <<EOF
+  This test will enable SSL on a cluster, then the cluster will be stopped and 
+  started. Then the test will check if the cluster is indeed started.
+EOF
+        mys9s cluster --enable-ssl --cluster-id=$CLUSTER_ID \
+            $LOG_OPTION \
+            $DEBUG_OPTION
 
-        mys9s cluster --enable-ssl --cluster-id=$CLUSTER_ID
         check_exit_code $?
         
-        mys9s cluster --stop --cluster-id=$CLUSTER_ID
+        mys9s cluster --stop --cluster-id=$CLUSTER_ID \
+            $LOG_OPTION \
+            $DEBUG_OPTION
+
         check_exit_code $?
         
-        mys9s cluster --start --cluster-id=$CLUSTER_ID
+        mys9s cluster --start --cluster-id=$CLUSTER_ID \
+            $LOG_OPTION \
+            $DEBUG_OPTION
+
         check_exit_code $?
     
         wait_for_cluster_started "$CLUSTER_NAME" 
