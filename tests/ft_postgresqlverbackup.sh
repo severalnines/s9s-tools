@@ -14,6 +14,8 @@ CLUSTER_ID=""
 CLUSTER_ID_FROM_BACKUP=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
+PROVIDER_VERSION="10"
+
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 VERIFY_BACKUP_NODE=""
@@ -124,7 +126,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="10" \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -215,7 +217,7 @@ function testCreateClusterFromBackup()
         --cluster-name="${CLUSTER_NAME}-frombackup" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
