@@ -166,6 +166,7 @@ function createContainer()
     #
     mys9s container \
         --create \
+        --template="ubuntu" \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name"
