@@ -4,7 +4,10 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 
@@ -58,6 +61,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -169,6 +173,7 @@ function createContainer()
         --template="ubuntu" \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name"
     
     check_exit_code $?
@@ -266,6 +271,7 @@ function createContainerInContainer()
         --create \
         --servers=$CONTAINER_IP \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name"
 
     check_exit_code $?
@@ -284,6 +290,7 @@ function deleteContainer()
         --delete \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "ft_containers_$$"
     
     check_exit_code $?
