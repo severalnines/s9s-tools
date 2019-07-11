@@ -5,7 +5,9 @@ MYDIR=$(dirname $0)
 MYHOSTNAME="$(hostname)"
 VERBOSE=""
 VERSION="0.0.3"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER="$MYHOSTNAME"
 CONTAINER_IP=""
@@ -78,6 +80,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -257,6 +260,7 @@ function createContainer()
         --template=ubuntu \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name"
     
     check_exit_code $?
@@ -340,6 +344,7 @@ function createAsSystem()
         --os-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --template=ubuntu \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name"
     
     check_exit_code $?
@@ -414,6 +419,7 @@ function createFail()
     mys9s container \
         --create \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$LAST_CONTAINER_NAME"
     
     exitCode=$?
@@ -432,6 +438,7 @@ function createFail()
         --create \
         --cloud="no_such_cloud" \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "node100"
     
     exitCode=$?
@@ -450,6 +457,7 @@ function createFail()
         --create \
         --subnet-id="no_such_subnet" \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "node101"
     
     exitCode=$?
@@ -471,6 +479,7 @@ function createFail()
         --create \
         --image="no_such_image" \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "node102"
     
     exitCode=$?
@@ -507,6 +516,7 @@ function createContainers()
         --image=centos_7 \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name1"
    
     check_exit_code $?
@@ -522,6 +532,7 @@ function createContainers()
         --image=centos_6 \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name2"
     
     check_exit_code $?
@@ -552,6 +563,7 @@ function createContainers()
         --image=debian_stretch \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "$container_name4"
     
     check_exit_code $?
@@ -576,7 +588,10 @@ function restartContainer()
     #
     print_title "Stopping Container"
 
-    mys9s container --stop $LOG_OPTION "$container_name"
+    mys9s container --stop \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$container_name"
     check_exit_code $?
 
     status_field=$(\
@@ -593,7 +608,10 @@ function restartContainer()
     #
     print_title "Starting Container"
 
-    mys9s container --start $LOG_OPTION "$container_name"
+    mys9s container --start \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$container_name"
     check_exit_code $?
     
     status_field=$(\
@@ -627,7 +645,8 @@ function createServer()
     mys9s server \
         --create \
         --servers="lxc://$CONTAINER_IP" \
-        $LOG_OPTION 
+        $LOG_OPTION \ 
+        $DEBUG_OPTION 
 
     check_exit_code $?
 
@@ -673,6 +692,7 @@ function failOnContainers()
     mys9s container \
         --delete \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "unexisting_container_$$"
 
     retcode=$?
@@ -687,6 +707,7 @@ function failOnContainers()
     mys9s container \
         --stop \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "unexisting_container_$$"
 
     retcode=$?
@@ -701,6 +722,7 @@ function failOnContainers()
     mys9s container \
         --start \
         $LOG_OPTION \
+        $DEBUG_OPTION \
         "unexisting_container_$$"
 
     retcode=$?
@@ -734,7 +756,8 @@ function createCluster()
         --vendor=percona \
         --nodes="$node001" \
         --containers="$node001" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     remember_cmon_container "$node001"
@@ -769,7 +792,8 @@ function createCluster()
         --cluster-id=$CLUSTER_ID \
         --nodes="proxysql://$node002" \
         --containers="$node002" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION 
 
     check_exit_code $?
     remember_cmon_container "$node002"
@@ -811,7 +835,8 @@ function createCluster()
         --cluster-id=$CLUSTER_ID \
         --nodes="$node003" \
         --containers="$node003" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION 
 
     check_exit_code $?
     remember_cmon_container "$node003"
@@ -841,6 +866,7 @@ function deleteContainer()
             --password=secret \
             --delete \
             $LOG_OPTION \
+            $DEBUG_OPTION \
             "$container"
     
         check_exit_code $?
