@@ -176,6 +176,8 @@ function testCreateCluster()
 
     print_title "Aborting Create Galera Cluster Job"
     cat <<EOF
+  This test will start a job to create a cluster, then it will kill the job and
+  check if the job comes into aborted state.
 EOF
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
@@ -217,12 +219,9 @@ EOF
         mys9s job --list 
     fi
         
-    #mys9s job --log --job-id=$job_id
-
     mys9s job --kill --job-id=$job_id 
     for i in $(seq 1 10); do
         job_state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
-        #echo "-> $job_state"
         if [ "$job_state" == "ABORTED" ]; then
             break
         fi
@@ -231,7 +230,7 @@ EOF
     done
 
     mys9s job --list
-    mys9s job --log --job-id=$job_id
+    mys9s job --log --debug --job-id=$job_id
     if [ "$job_state" == "ABORTED" ]; then
         success "  o The job is in 'ABORTED' state, ok."
     else
