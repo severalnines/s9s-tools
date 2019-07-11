@@ -208,6 +208,7 @@ function testAddProxySql()
         --add-node \
         --cluster-id=1 \
         --nodes="proxySql://$CONTAINER_NAME9" \
+        --template="ubuntu" \
         --containers="$CONTAINER_NAME9" \
         --log \
         $OPTION_POXYSQL_VERSION \
