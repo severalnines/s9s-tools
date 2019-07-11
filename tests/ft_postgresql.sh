@@ -500,9 +500,7 @@ function testCreateAccount02()
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account='jake:jake@192.168.0.0/24' \
-        --print-json \
-        --verbose 
+        --account='jake:jake@192.168.0.0/24' 
 
     mys9s account --list --long
 }
