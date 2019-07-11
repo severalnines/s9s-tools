@@ -4,7 +4,10 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -88,6 +91,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -171,7 +175,8 @@ function testCreateCluster()
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -345,7 +350,8 @@ function testCreateBackup01()
         --parallellism=5 \
         --encrypt-backup \
         --debug \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
@@ -406,7 +412,8 @@ function testCreateBackup01()
         --cluster-id=$CLUSTER_ID \
         --backup-id=1 \
         --test-server="$node" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     #
     #
@@ -438,7 +445,8 @@ function testCreateBackup02()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
@@ -454,7 +462,8 @@ function testCreateBackup02()
         --cluster-id=$CLUSTER_ID \
         --backup-id=2 \
         --test-server="$node" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 }
 
 #
@@ -477,7 +486,8 @@ function testCreateBackup03()
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
         --subdirectory="testCreateBackup03" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
@@ -488,7 +498,8 @@ function testCreateBackup03()
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
         --subdirectory="testCreateBackup03" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     retcode=$?
     if [ "$retcode" -eq 0 ]; then
@@ -526,7 +537,8 @@ function testCreateBackup04()
         --test-server="$node" \
         --backup-dir=/tmp \
         --subdirectory="backup-%03i-%04I" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     retcode=$?
 
@@ -561,7 +573,8 @@ function testCreateBackup05()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
     
@@ -578,7 +591,8 @@ function testCreateBackup05()
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 }
@@ -600,7 +614,8 @@ function testCreateBackup06()
         --nodes=$FIRST_ADDED_NODE \
         --backup-dir=/tmp \
         --pitr-compatible \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
@@ -616,7 +631,8 @@ function testRestore()
         --restore \
         --backup-id=1 \
         --cluster-id=1 \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
@@ -630,7 +646,7 @@ function testRestore()
             --restore \
             --backup-id=7 \
             --cluster-id=1 \
-            $LOG_OPTION
+            $LOG_OPTION \
 
         check_exit_code $?
     fi
@@ -644,7 +660,8 @@ function testRestore()
         --restore \
         --backup-id=2 \
         --cluster-id=1 \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
@@ -657,7 +674,8 @@ function testRestore()
         --restore \
         --backup-id=6 \
         --cluster-id=1 \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
