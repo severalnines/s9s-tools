@@ -5,7 +5,10 @@ MYDIR=$(dirname "$0")
 VERSION="0.0.1"
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 CLUSTER_ID_FROM_BACKUP=""
@@ -70,6 +73,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -121,7 +125,8 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="10" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -148,7 +153,8 @@ function testCreateBackup()
         --cluster-id=$CLUSTER_ID \
         --nodes="${FIRST_ADDED_NODE}" \
         --backup-directory=/tmp \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -178,7 +184,8 @@ function testVerifyBackup()
         --cluster-id=${CLUSTER_ID} \
         --backup-id=${backupId} \
         --test-server="$VERIFY_BACKUP_NODE" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -209,7 +216,8 @@ function testCreateClusterFromBackup()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="9.3" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -231,7 +239,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
@@ -246,7 +255,8 @@ function testDropFromBackup()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID_FROM_BACKUP \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
