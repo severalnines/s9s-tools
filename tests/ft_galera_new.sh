@@ -186,6 +186,12 @@ function testCreateClusterFail()
     #
     #
     print_title "Creating Cluster with Failure"
+    cat <<EOF
+  This test will try to create a MySQL replication cluster by re-using a node
+  that is part of an already existing cluster. This should fail, no way to 
+  co-locate MySQL servers on the same computer.
+
+EOF
 
     mys9s cluster \
         --create \
@@ -208,6 +214,11 @@ function testRemoveClusterFail()
     local exitCode 
 
     print_title "Removing Cluster 0"
+    cat <<EOF
+  This test will try to remove cluster 0 and checks that this actually fails.
+
+EOF
+
     mys9s cluster \
         --drop \
         --cluster-id=0 \
@@ -215,7 +226,7 @@ function testRemoveClusterFail()
 
     exitCode=$?
     if [ $exitCode -eq 0 ]; then
-        failure "Re-using node in a new cluster should have failed."
+        failure "Removing the cluster with ID 0 should have failed."
     else
         echo "Yes, this should fail, removing cluster 0."
     fi
