@@ -4,7 +4,9 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -81,6 +83,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -189,7 +192,9 @@ function createCluster()
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
-        $LOG_OPTION 
+        --template="ubuntu" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
