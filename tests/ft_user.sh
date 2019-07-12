@@ -1382,6 +1382,81 @@ function checkPasswordReset()
 
 }
 
+function testUserSelfAdmin()
+{
+    local ret_code
+
+    print_title "Testing Security"
+    cat <<EOF
+  In this test a new admin user is created, then this new admin user creates yet
+  another user ("student") that has no superuser privileges. Then this "student"
+  user tries to get superuser privileges by adding itself to the admins group.
+  This of course should fail, it would be a big security hole indeed.
+
+EOF
+
+    mys9s user \
+        --create \
+        --generate-key \
+        --group="admins" \
+        --new-password="admin" \
+        --email-address="test@severalnines.com" \
+        --first-name="QA" \
+        --last-name="s9s" \
+        "test"
+
+    check_exit_code_no_job $?
+        
+    mys9s user \
+        --create \
+        --cmon-user="test" \
+        --generate-key \
+        --group="students" \
+        --new-password="student" \
+        --create-group \
+        "student"
+
+    check_exit_code_no_job $?
+
+    #
+    #
+    #
+    mys9s user \
+        --set-group \
+        --group=admins \
+        --cmon-user="student" \
+        student
+    
+    ret_code=$?
+    if [ "$ret_code" == 0 ]; then
+        failure "User should not be able to make itself a superuser."
+    else
+        success "  o User can not make itself an admin user, ok."
+    fi
+    
+    mys9s user \
+        --add-to-group \
+        --group=admins \
+        --cmon-user="student" \
+        student
+    
+    ret_code=$?
+    if [ "$ret_code" == 0 ]; then
+        failure "User should not be able to make itself a superuser."
+    else
+        success "  o User can not make itself an admin user, ok."
+    fi
+
+    print_subtitle "Checking the \"student\" User"
+    mys9s user --stat student
+
+    if s9s user --stat student | grep -q "Groups: students "; then
+        success "  o The user is still belongs to the 'students' group, ok."
+    else
+        failure "The group for 'student' does not look ok."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -1413,6 +1488,7 @@ else
     runFunctionalTest testAddToGroup
     runFunctionalTest checkExtendedPrivileges
     runFunctionalTest checkPasswordReset
+    runFunctionalTest testUserSelfAdmin
 
     print_title "Finished"
     mys9s user --list --long
