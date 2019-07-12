@@ -41,6 +41,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Fri Jul 12 2019 David Kedves <kedazo@severalnines.com> 1.7.20190712
+- New release for clustercontrol 1.7.3 release
 * Tue May 14 2019 David Kedves <kedazo@severalnines.com> 1.7.20190514
 - Added the --config-template and --no-install options.
 * Tue Apr 30 2019 David Kedves <kedazo@severalnines.com> 1.7.20190430
