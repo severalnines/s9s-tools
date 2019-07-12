@@ -5,7 +5,10 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="1.0.0"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -46,7 +49,8 @@ Usage:
 
 SUPPORTED TESTS
   o testCreateCluster       Creates a cluster.
-  o testCreateClusterFail   Fails to create a cluster by re-using nodes.
+  o testCreateClusterFail1  Fails to create a cluster by re-using nodes.
+  o testCreateClusterDupl1  Creates cluster with duplicate name.
   o testRemoveClusterFail   Fails to remove cluster 0.
 
 EXAMPLE
@@ -83,6 +87,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -149,10 +154,10 @@ function testCreateCluster()
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     
-    echo "Creating node #1"
-    nodeName=$(create_node --autodestroy $node2)
-    nodes+="$nodeName;"
-    LAST_ADDED_NODE="$nodeName"
+    #echo "Creating node #1"
+    #nodeName=$(create_node --autodestroy $node2)
+    #nodes+="$nodeName;"
+    #LAST_ADDED_NODE="$nodeName"
  
     #
     # Creating a Galera cluster.
@@ -164,13 +169,14 @@ function testCreateCluster()
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "  o Cluster ID is $CLUSTER_ID, ok"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -178,7 +184,7 @@ function testCreateCluster()
     wait_for_cluster_started "$CLUSTER_NAME"
 }
 
-function testCreateClusterFail()
+function testCreateClusterFail1()
 {
     local exitCode
 
@@ -199,14 +205,113 @@ EOF
         --nodes="$LAST_ADDED_NODE" \
         --vendor="percona" \
         --provider-version="5.6" \
-        --log
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     exitCode=$?
     if [ $exitCode -eq 0 ]; then
         failure "Re-using node in a new cluster should have failed."
     else
-        echo "Yes, this should fail, it is re-using a node."
+        success "  o Cluster that re-using a node failed, ok."
     fi
+}
+
+function testCreateClusterDupl1()
+{
+    local node1="ft_galera_new_011"
+    local newClusterName="${CLUSTER_NAME}~1"
+    local newClusterId
+    local nodes
+    local nodeName
+    local exitCode
+
+    print_title "Creating a Galera Cluster with Same Name"
+    cat <<EOF
+  This test will try to create a new cluster with the name that is already used
+  by a previously created cluster. In this case the cluster should be created,
+  but renamed to CLUSTERNAME~1 on the fly.
+
+EOF
+
+    echo "Creating node #1"
+    nodeName=$(create_node --autodestroy $node1)
+    nodes+="$nodeName;"
+ 
+    #
+    # Creating a Galera cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=$PROVIDER_VERSION \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?
+
+    mys9s cluster --list --long
+    mys9s node --list --long
+
+    newClusterId=$(find_cluster_id $newClusterName)
+    if [ "$newClusterId" -gt 0 ]; then
+        success "  o Cluster ID is $newClusterId, ok"
+    else
+        failure "Cluster ID '$newClusterId' is invalid"
+    fi
+    
+    wait_for_cluster_started "$newClusterName"
+}
+
+function testCreateClusterDupl2()
+{
+    local node1="ft_galera_new_021"
+    local newClusterName="${CLUSTER_NAME}~2"
+    local newClusterId
+    local nodes
+    local nodeName
+    local exitCode
+
+    print_title "Creating a Galera Cluster with Same Name"
+    cat <<EOF
+  Yet another cluster with the same name. This should be renamed to
+  CLUSTERNAME~2 of course.
+
+EOF
+
+    echo "Creating node #2"
+    nodeName=$(create_node --autodestroy $node1)
+    nodes+="$nodeName;"
+ 
+    #
+    # Creating a Galera cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=$PROVIDER_VERSION \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?
+
+    mys9s cluster --list --long
+    mys9s node --list --long
+
+    newClusterId=$(find_cluster_id $newClusterName)
+    if [ "$newClusterId" -gt 0 ]; then
+        success "  o Cluster ID is $newClusterId, ok"
+    else
+        failure "Cluster ID '$newClusterId' is invalid"
+    fi
+    
+    wait_for_cluster_started "$newClusterName"
+
 }
 
 function testRemoveClusterFail()
@@ -222,13 +327,14 @@ EOF
     mys9s cluster \
         --drop \
         --cluster-id=0 \
-        --log 
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     exitCode=$?
     if [ $exitCode -eq 0 ]; then
         failure "Removing the cluster with ID 0 should have failed."
     else
-        echo "Yes, this should fail, removing cluster 0."
+        success "  o Removing cluster 0 failed, ok."
     fi
 }
 
@@ -248,7 +354,9 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
-    runFunctionalTest testCreateClusterFail
+    runFunctionalTest testCreateClusterFail1
+    runFunctionalTest testCreateClusterDupl1
+    runFunctionalTest testCreateClusterDupl2
     runFunctionalTest testRemoveClusterFail
 fi
 
