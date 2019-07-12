@@ -22,6 +22,8 @@ OPTION_VENDOR="percona"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
+export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+
 cd $MYDIR
 source ./include.sh
 
@@ -146,22 +148,77 @@ function testCreateCluster()
     local nodes
     local nodeName
     local exitCode
+    local command_line
+    #
+    # Creating a Galera cluster.
+    #
+    print_title "Creating a Galera Cluster by Re-using the Nodes"
+    cat <<EOF
+  In this test we first create a cluster, then immediately we drop the cluster
+  and so make the nodes available for creating a new cluster on them. After
+  these we create a new cluster re-using the nodes and so drive the controller
+  into a situation when it needs to uninstall the software the first cluster
+  creation installed.
 
-    print_title "Creating a Galera Cluster"
+EOF
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy $node1)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     
-    #echo "Creating node #1"
-    #nodeName=$(create_node --autodestroy $node2)
-    #nodes+="$nodeName;"
-    #LAST_ADDED_NODE="$nodeName"
+    echo "Creating node #1"
+    nodeName=$(create_node --autodestroy $node2)
+    nodes+="$nodeName;"
+    LAST_ADDED_NODE="$nodeName"
  
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=$PROVIDER_VERSION \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        success "  o Cluster ID is $CLUSTER_ID, ok"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
+
     #
-    # Creating a Galera cluster.
+    # Dropping the cluster we just created.
     #
+    print_subtitle "Dropping the Galera Cluster"
+    mys9s cluster --drop \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+
+    # Need to stop the daemon...
+    command_line="sudo killall -KILL mysql mysqld_safe mysqld"
+
+    echo "$FIRST_ADDED_NODE@$USER# $command_line"
+    $SSH $FIRST_ADDED_NODE -- "$command_line"
+
+    echo "$LAST_ADDED_NODE@$USER# $command_line"
+    $SSH $LAST_ADDED_NODE -- "$command_line"
+
+    #
+    # Creating the a new cluster using the same name, the same nodes.
+    #
+    print_subtitle "Creating a Cluster Using the Same Nodes"
+   
+
     mys9s cluster \
         --create \
         --cluster-type=galera \
