@@ -4678,7 +4678,7 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Solar System)\n",
+        printf("%s Version %s (Earth)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
 
         /*
@@ -4688,7 +4688,7 @@ S9sOptions::executeInfoRequest()
         printf("BUILD (%s-%s) %s\n",
             PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
 
-        printf("Copyright (C) 2016-2018 Severalnines AB\n");
+        printf("Copyright (C) 2016-2019 Severalnines AB\n");
         printf("\n");
         //printf("Written by ...\n");
         return true;
