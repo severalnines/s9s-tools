@@ -80,6 +80,7 @@ class S9sRpcReply : public S9sVariantMap
 
         bool progressLine(S9sString &retval, bool syntaxHighlight);
 
+        void printDebugMessages();
         void printMessages(const S9sString &defaultMessage);
         void printCheckHostsReply();
         void printJobStarted();
