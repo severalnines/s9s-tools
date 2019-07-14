@@ -5315,6 +5315,11 @@ S9sRpcReply::printContainersLong()
     }
 }
 
+/**
+ * Prints the list of containers in brief format (only the names). If the
+ * container format is specified prints the containers using the given format
+ * specifier.
+ */
 void 
 S9sRpcReply::printContainersBrief()
 {
@@ -5325,7 +5330,12 @@ S9sRpcReply::printContainersBrief()
     S9sVariantList  theList = operator[]("containers").toVariantList();
     S9sString       cloudName = options->cloudName();
     S9sString       formatString = options->containerFormat();
-    
+    int             nPrinted = 0;
+
+    /*
+     * If the format is specified printing the list using the the given format
+     * and returning.
+     */
     if (options->hasContainerFormat())
     {
         for (uint idx = 0; idx < theList.size(); ++idx)
@@ -5345,7 +5355,7 @@ S9sRpcReply::printContainersBrief()
             if (!vpcId.empty() && vpcId != container.subnetVpcId())
                 continue;
 
-            printf("%s", 
+            ::printf("%s", 
                     STR(container.toString(syntaxHighlight, formatString)));
         }
 
@@ -5378,9 +5388,11 @@ S9sRpcReply::printContainersBrief()
                 STR(alias),
                 containerColorEnd());
 
+        ++nPrinted;
     }
     
-    printf("\n");
+    if (nPrinted > 0)
+        printf("\n");
 }
 
 /**
