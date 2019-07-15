@@ -202,6 +202,7 @@ enum S9sOptionType
     OptionOffset,
     OptionRegister,
     OptionUnregister,
+    OptionInspect,
     OptionMove,
     OptionOldPassword,
     OptionNewPassword,
@@ -3612,6 +3613,17 @@ S9sOptions::isUnregisterRequested() const
 }
 
 /**
+ * \returns true if the --inspect command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isInspectRequested() const
+{
+    return getBool("inspect");
+}
+
+
+/**
  * \returns true if the --move command line option was provided when the
  *   program was started.
  */
@@ -5453,6 +5465,7 @@ S9sOptions::readOptionsNode(
 
         // Main Option
         { "change-config",    no_argument,       0, OptionChangeConfig    },
+        { "inspect",          no_argument,       0, OptionInspect         },
         { "list-config",      no_argument,       0, OptionListConfig      },
         { "list",             no_argument,       0, 'L'                   },
         { "pull-config",      no_argument,       0, OptionPullConfig      },
@@ -5598,6 +5611,11 @@ S9sOptions::readOptionsNode(
             case OptionChangeConfig:
                 // --change-config
                 m_options["change_config"] = true;
+                break;
+
+            case OptionInspect:
+                // --inspect
+                m_options["inspect"] = true;
                 break;
 
             case OptionPullConfig:
@@ -7599,6 +7617,9 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isUnregisterRequested())
+        countOptions++;
+    
+    if (isInspectRequested())
         countOptions++;
     
     if (isRegisterRequested())

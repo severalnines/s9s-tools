@@ -885,8 +885,6 @@ S9sRpcReply::printJobLog()
         return;
     } 
     
-    printDebugMessages();
-    
     if (options->isLongRequested())
     {
         printJobLogLong();

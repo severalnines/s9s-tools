@@ -324,6 +324,10 @@ S9sBusinessLogic::execute()
             success = client.unregisterHost();
             client.printMessages("Unregistered.", success);
             client.setExitStatus();
+        } else if (options->isInspectRequested())
+        {
+            success = client.inspectHost();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

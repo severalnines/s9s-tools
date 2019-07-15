@@ -246,7 +246,7 @@ class S9sRpcClient
                 S9sString remoteFileName);
 
         bool treeScripts();
-
+        bool inspectHost();
         bool executeSystemCommand(const S9sVariant shellCommand);
         bool executeSystemCommand(const S9sVariantList &scriptLines);
 

@@ -2112,6 +2112,45 @@ S9sRpcClient::executeSystemCommand(
 }
 
 /**
+ * \returns True if the request was successfully sent and a reply is received
+ *   even if the reply is actually a failure message.
+ *
+ * Sends a request to create an "inspect_host" request.
+ */
+bool
+S9sRpcClient::inspectHost()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList hosts       = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sVariantMap  jobData = composeJobData();    
+    S9sString      uri = "/v2/jobs/";
+
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
+    
+    if (options->hasTimeout())
+        jobData["timeout"] = options->timeout();
+
+    // JobSpec
+    jobSpec["command"]       = "inspect_host";
+    jobSpec["job_data"]      = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]             = "Inspecting Host";
+    job["job_spec"]          = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]     = "createJobInstance";
+    request["job"]           = job;
+    
+    return executeRequest(uri, request);
+}
+
+
+/**
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  *

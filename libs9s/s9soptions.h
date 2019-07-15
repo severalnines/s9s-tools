@@ -409,6 +409,7 @@ class S9sOptions
         bool isRecursiveRequested() const;
         bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;
+        bool isInspectRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;
         bool isCloneRequested() const;
