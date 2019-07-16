@@ -4,7 +4,9 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -12,7 +14,7 @@ CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 MAXSCALE_IP=""
 OPTION_INSTALL=""
-OPTION_COLOCATE="true"
+OPTION_COLOCATE=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
@@ -28,8 +30,9 @@ source include.sh
 function printHelpAndExit()
 {
 cat << EOF
-Usage: $MYNAME [OPTION]... [TESTNAME]
- Test script for s9s to check various error conditions.
+  Usage: $MYNAME [OPTION]... [TESTNAME]
+
+  $MYNAME - Test script for s9s MaxScale support.
 
   -h, --help       Print this help and exit.
   --verbose        Print more messages.
@@ -71,6 +74,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -150,7 +154,8 @@ function registerServer()
 
     if [ "$class" != "CmonLxcServer" ]; then
         failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
+    else
+        success "  o Server class is ok."
     fi
     
     #
@@ -175,7 +180,8 @@ function createCluster()
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
-        $LOG_OPTION 
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 }
@@ -205,7 +211,8 @@ function testAddMaxScale()
             --cluster-id=1 \
             --nodes="maxscale://$CONTAINER_NAME9" \
             --containers="$CONTAINER_NAME9" \
-            $LOG_OPTION
+            $LOG_OPTION \
+            $DEBUG_OPTION
     
         check_exit_code $?
     else
@@ -219,7 +226,8 @@ function testAddMaxScale()
                 --add-node \
                 --cluster-id=1 \
                 --nodes="maxscale://$MAXSCALE_IP" \
-                $LOG_OPTION
+                $LOG_OPTION \
+                $DEBUG_OPTION
     
             check_exit_code $?
         else
@@ -228,31 +236,17 @@ function testAddMaxScale()
     fi
 
     mys9s node --list --long
-    mysleep 15
-    mys9s node --list --long
+    MAXSCALE_IP=$(maxscale_node_name)
 
     #
     #
     #
     print_subtitle "Checking MaxScale State"
-    MAXSCALE_IP=$(maxscale_node_name)
 
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
-    if [ $? -ne 0 ]; then
-        state=$(node_state $MAXSCALE_IP)
-
-        failure "MaxScale $MAXSCALE_IP is not in CmonHostOnline state."
-        failure "The IP is    '$MAXSCALE_IP'."
-        failure "The state is '$state'."
-        mys9s node --list --long
-        mys9s node --stat $MAXSCALE_IP
-    else
-        success "  o Maxscale host is in CmonHostOnline, ok."
-        mys9s node --stat $MAXSCALE_IP
-    fi
 }
 
-function testStopMaxScale()
+function testStopContainer()
 {
     if [ -n "$OPTION_COLOCATE" ]; then
         return 0
@@ -261,28 +255,24 @@ function testStopMaxScale()
     #
     #
     #
-    print_title "Stopping Node"
+    print_title "Stopping Container"
+    cat <<EOF
+  This test will stop the container on which the MaxScale process is running.
+  Then the test will check if the controller realizes the MaxScale is down.
 
-    mys9s container --stop --wait "$CONTAINER_NAME9"
+EOF
+
+    mys9s container \
+        --stop \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$CONTAINER_NAME9"
+
     check_exit_code $?
-
-    #
-    # Checking that the MaxScale goes into offline state.
-    #
-    print_title "Waiting HapProxy to go Off-line"
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOffLine"
-
-    if [ $? -ne 0 ]; then
-        failure "MaxScale $MAXSCALE_IP is not in CmonHostOffLine state"
-        mys9s node --list --long
-        mys9s node --stat $MAXSCALE_IP
-    else
-        success "  o Maxscale host is in CmonHostOffLine, ok."
-        mys9s node --stat $MAXSCALE_IP
-    fi
 }
 
-function testStartMaxScale()
+function testStartContainer()
 {
     if [ -n "$OPTION_COLOCATE" ]; then
         return 0
@@ -291,25 +281,21 @@ function testStartMaxScale()
     #
     #
     #
-    print_title "Starting Node"
+    print_title "Starting Container"
+    cat <<EOF
+  This test will re-start the container which holds the MaxScale process and
+  check if the controller figures out the MaxScale is back again.
 
-    mys9s container --start --wait "$CONTAINER_NAME9"
+EOF
+
+    mys9s container \
+        --start \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$CONTAINER_NAME9"
+
     check_exit_code $?
-
-    #
-    # Checking that the MaxScale goes into offline state.
-    #
-    print_title "Waiting HapProxy to go On-line"
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
-
-    if [ $? -ne 0 ]; then
-        failure "MaxScale $MAXSCALE_IP is not in CmonHostOnLine state"
-        mys9s node --list --long
-        mys9s node --stat $MAXSCALE_IP
-    else
-        success "  o Maxscale host is in CmonHostOnLine, ok."
-        mys9s node --stat $MAXSCALE_IP
-    fi
 }
 
 function unregisterMaxScale()
@@ -318,6 +304,12 @@ function unregisterMaxScale()
     local line
 
     print_title "Unregistering then Registering MaxScale Node"
+    cat <<EOF
+  This test will unregister the MaxScale node, then register the same node again
+  and check if the node is properly re-added to the cluster.
+
+EOF
+
     node_ip=$(maxscale_node_name)
     
     mys9s node --list --long
@@ -332,6 +324,11 @@ function unregisterMaxScale()
         failure "The MaxScale is still there after unregistering the node."
     fi
 
+    mysleep 30
+
+    #
+    #
+    #
     mys9s node \
         --register \
         --cluster-id=1 \
@@ -340,7 +337,6 @@ function unregisterMaxScale()
 
     check_exit_code $?
        
-    mys9s node --list --long
     line=$(s9s node --list --long --batch | grep '^x')
     if [ -n "$line" ]; then 
         success "  o The MaxScale node is part of he cluster, ok."
@@ -348,7 +344,71 @@ function unregisterMaxScale()
         failure "The MaxScale is not part of the cluster."
     fi
 
+    wait_for_node_state "$node_ip" "CmonHostOnline"
+    mys9s node --list --long
 }
+
+function testStopMaxScale()
+{
+    local node_ip
+
+    print_title "Stopping MaxScale Service"
+    cat <<EOF
+  This test will stop the MaxScale service and check if the node changed state.
+
+EOF
+
+    node_ip=$(maxscale_node_name)
+    if [ -n "$node_ip" ]; then
+        success "  o Found the MaxScale node, ok."
+    else
+        failure "MaxScale node was not found."
+        return 1
+    fi
+
+    mys9s \
+        node \
+        --stop \
+        --cluster-id=1 \
+        --nodes="maxscale://$node_ip:6603" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?    
+    wait_for_node_state "$MAXSCALE_IP" "CmonHostShutDown"
+}
+
+function testStartMaxScale()
+{
+    local node_ip
+
+    print_title "Starting MaxScale Service"
+    cat <<EOF
+  This test will start the MaxScale service again and check if the node changed
+  state.
+
+EOF
+
+    node_ip=$(maxscale_node_name)
+    if [ -n "$node_ip" ]; then
+        success "  o Found the MaxScale node, ok."
+    else
+        failure "MaxScale node was not found."
+        return 1
+    fi
+
+    mys9s \
+        node \
+        --start \
+        --cluster-id=1 \
+        --nodes="maxscale://$node_ip:6603" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?    
+    wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
+}
+
 
 function destroyContainers()
 {
@@ -386,6 +446,8 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddMaxScale
+    runFunctionalTest testStopContainer
+    runFunctionalTest testStartContainer
     runFunctionalTest testStopMaxScale
     runFunctionalTest testStartMaxScale
     runFunctionalTest unregisterMaxScale

@@ -6,6 +6,10 @@ TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
 
+NUMBER_OF_SUCCESS_TESTS=0
+NUMBER_OF_FAILED_TESTS=0
+NUMBER_OF_PERFORMED_TESTS=0
+
 TERM_NORMAL="\033[0;39m"
 TERM_BOLD="\033[1m"
 XTERM_COLOR_RED="\033[0;31m"
@@ -358,6 +362,10 @@ function endTests ()
             echo ""
         fi
 
+        printf "  Performed: %'4d test(s)\n" "$NUMBER_OF_PERFORMED_TESTS"
+        printf "    Success: %'4d test(s)\n" "$NUMBER_OF_SUCCESS_TESTS"
+        printf "     Failed: %'4d test(s)\n" "$NUMBER_OF_FAILED_TESTS"
+
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
         exit 0
@@ -444,11 +452,14 @@ function printVerbose
 function failure
 {
     if [ "$TEST_SUITE_NAME" -a "$TEST_NAME" ]; then
-        echo -e "$TEST_SUITE_NAME::$TEST_NAME(): ${XTERM_COLOR_RED}$1${TERM_NORMAL}"
+        echo -en "$TEST_SUITE_NAME::$TEST_NAME(): "
+        echo -e  "${XTERM_COLOR_RED}$1${TERM_NORMAL}"
     else
         echo "FAILURE: $1"
     fi
 
+    let NUMBER_OF_PERFORMED_TESTS+=1
+    let NUMBER_OF_FAILED_TESTS+=1
     FAILED="true"
 }
 
@@ -457,6 +468,9 @@ function failure
 #
 function success()
 {
+    let NUMBER_OF_SUCCESS_TESTS+=1
+    let NUMBER_OF_PERFORMED_TESTS+=1
+
     echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
 }
 
@@ -896,11 +910,13 @@ function wait_for_node_state()
             # do check the timeout only when we are not in the expected state.
             #
             if [ "$waited" -gt 120 ]; then
+                failure "Node $nodeName failed to reach state $expectedState."
                 return 1
             fi
         fi
 
         if [ "$stayed" -gt 10 ]; then
+            success "  o Node $nodeName is in state $state, ok."
             return 0
         fi
 
