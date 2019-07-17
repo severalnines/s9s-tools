@@ -312,7 +312,8 @@ enum S9sOptionType
     OptionConfigTemplate,
     OptionNoInstall,
     OptionWithTimescaleDb,
-    OptionToken
+    OptionToken,
+    OptionNoWrap,
 };
 
 /**
@@ -4222,6 +4223,12 @@ S9sOptions::useSyntaxHighlight()
     }
 
     return false;
+}
+
+bool
+S9sOptions::noWrap() const
+{
+    return getBool("no_wrap");
 }
 
 bool
@@ -10204,6 +10211,8 @@ S9sOptions::readOptionsJob(
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "schedule",         required_argument, 0, OptionSchedule        },
         
+        { "no-wrap",          no_argument,       0, OptionNoWrap          },
+        
         { "show-aborted",     no_argument,       0, OptionShowAborted     },
         { "show-defined",     no_argument,       0, OptionShowDefined     },
         { "show-failed",      no_argument,       0, OptionShowFailed      },
@@ -10397,6 +10406,11 @@ S9sOptions::readOptionsJob(
             case OptionSchedule:
                 // --schedule=DATETIME
                 m_options["schedule"] = optarg;
+                break;
+
+            case OptionNoWrap:
+                // --no-wrap
+                m_options["no_wrap"] = true;
                 break;
             
             case OptionRecurrence:

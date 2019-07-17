@@ -1304,7 +1304,11 @@ S9sRpcReply::printJobLogBrief(
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString;
     bool            isDebug = options->isDebug();
+    bool            noWrap = options->noWrap();
     S9sVariantList  theList = operator[]("messages").toVariantList();
+
+    if (noWrap)
+        ::printf("%s", TERM_AUTOWRAP_OFF);
 
     if (format != NULL)
         formatString = format;
@@ -1319,6 +1323,9 @@ S9sRpcReply::printJobLogBrief(
         S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sMessage    message = theMap;
 
+        if (noWrap)
+            message.wrap();
+
         if (!isDebug && message.severity() == "DEBUG")
             continue;
 
@@ -1330,6 +1337,9 @@ S9sRpcReply::printJobLogBrief(
                     STR(message.toString(syntaxHighlight, formatString)));
         }
     }
+    
+    if (noWrap)
+        ::printf("%s", TERM_AUTOWRAP_ON);
 }
 
 /**

@@ -470,6 +470,7 @@ class S9sOptions
 
         bool useSyntaxHighlight();
         bool truncate();
+        bool noWrap() const;
         bool humanReadable() const;
         void setHumanReadable(const bool value = true);
 

@@ -201,6 +201,28 @@ S9sMessage::severity() const
     return status;
 }
 
+void
+S9sMessage::wrap()
+{
+    if (m_properties.contains("message"))
+    {
+        S9sString messageText = m_properties.at("message").toString();
+
+        messageText.replace("\n", "\\n");
+        messageText.replace("\r", "\\r");
+        m_properties["message"] = messageText;
+    }
+    
+    if (m_properties.contains("message_text"))
+    {
+        S9sString messageText = m_properties.at("message_text").toString();
+
+        messageText.replace("\n", "\\n");
+        messageText.replace("\r", "\\r");
+        m_properties["message_text"] = messageText;
+    }
+}
+
 S9sString
 S9sMessage::message() const
 {

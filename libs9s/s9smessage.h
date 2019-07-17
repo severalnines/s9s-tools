@@ -34,6 +34,7 @@ class S9sMessage
 
         const S9sVariantMap &toVariantMap() const;
 
+        
         bool hasFileName() const;
         S9sString fileName() const;
 
@@ -51,6 +52,7 @@ class S9sMessage
         S9sDateTime created() const;
         S9sString severity() const;
 
+        void wrap();
         S9sString message() const;
 
         bool isError() const;
