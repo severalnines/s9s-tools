@@ -1387,6 +1387,7 @@ S9sRpcClient::getJobLog(
         const int limit,
         const int offset)
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
     bool           retval;
@@ -1395,7 +1396,10 @@ S9sRpcClient::getJobLog(
     request["operation"]  = "getJobLog";
     request["job_id"]     = jobId;
     request["ascending"]  = true;
-    
+   
+    if (options->isDebug())
+        request["log_level"] = "DEBUG";
+
     if (limit != 0)
         request["limit"]  = limit;
 
