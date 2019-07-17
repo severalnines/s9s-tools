@@ -1730,7 +1730,7 @@ S9sBusinessLogic::executeJobLog(
     int         jobId     = options->jobId();
     bool        success;
 
-    success = client.getJobLog(jobId);
+    success = client.getJobLog(jobId, options->limit(), options->offset());
     if (success)
     {
         reply = client.reply();
