@@ -578,7 +578,7 @@ S9sRpcReply::progressLine(
  *
  * \code{.js}
  * {
- *     "messages": [ "RPC V2 authenticated user is 'pipas'." ],
+ *     "debug_messages": [ "RPC V2 authenticated user is 'pipas'." ],
  *     "reply_received": "2019-07-14T05:57:43.145Z",
  *     "request_created": "2019-07-14T05:57:43.141Z",
  *     "request_id": 3,
@@ -600,10 +600,10 @@ S9sRpcReply::printDebugMessages()
     if (!options->isDebug())
         return;
     
-    if (contains("messages"))
+    if (contains("debug_messages"))
     {
         // RPC 2.0 might hold multiple messages.
-        S9sVariantList list = at("messages").toVariantList();
+        S9sVariantList list = at("debug_messages").toVariantList();
 
         for (uint idx = 0u; idx < list.size(); ++idx)
         {
@@ -629,15 +629,17 @@ S9sRpcReply::printMessages(
     if (options->isBatchRequested())
         return;
 
+
+    printDebugMessages();
+
     // Print out the messages first (or the default message)
     if (contains("messages"))
     {
         // RPC 2.0 might hold multiple messages.
         S9sVariantList list = at("messages").toVariantList();
-
         for (uint idx = 0u; idx < list.size(); ++idx)
         {
-            printf("%s\n", STR(S9sString::html2ansi(list[idx].toString())));
+            ::printf("%s\n", STR(S9sString::html2ansi(list[idx].toString())));
         }
     }
     
