@@ -6,9 +6,9 @@ TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
 
-NUMBER_OF_SUCCESS_TESTS=0
-NUMBER_OF_FAILED_TESTS=0
-NUMBER_OF_PERFORMED_TESTS=0
+NUMBER_OF_SUCCESS_CHECKS=0
+NUMBER_OF_FAILED_CHECKS=0
+NUMBER_OF_PERFORMED_CHECKS=0
 
 TERM_NORMAL="\033[0;39m"
 TERM_BOLD="\033[1m"
@@ -362,9 +362,9 @@ function endTests ()
             echo ""
         fi
 
-        printf "  Performed: %'4d test(s)\n" "$NUMBER_OF_PERFORMED_TESTS"
-        printf "    Success: %'4d test(s)\n" "$NUMBER_OF_SUCCESS_TESTS"
-        printf "     Failed: %'4d test(s)\n" "$NUMBER_OF_FAILED_TESTS"
+        printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
+        printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
+        printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
 
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
@@ -458,8 +458,8 @@ function failure
         echo "FAILURE: $1"
     fi
 
-    let NUMBER_OF_PERFORMED_TESTS+=1
-    let NUMBER_OF_FAILED_TESTS+=1
+    let NUMBER_OF_PERFORMED_CHECKS+=1
+    let NUMBER_OF_FAILED_CHECKS+=1
     FAILED="true"
 }
 
@@ -468,8 +468,8 @@ function failure
 #
 function success()
 {
-    let NUMBER_OF_SUCCESS_TESTS+=1
-    let NUMBER_OF_PERFORMED_TESTS+=1
+    let NUMBER_OF_SUCCESS_CHECKS+=1
+    let NUMBER_OF_PERFORMED_CHECKS+=1
 
     echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
 }
