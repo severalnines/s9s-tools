@@ -6160,8 +6160,11 @@ S9sRpcReply::printReport()
 {
     S9sVariantMap   reportMap = operator[]("report").toVariantMap();
     S9sReport       report(reportMap);
+    S9sString       content = report.content();
 
-    printf("%s", STR(report.content()));
+    content.replace("001b", "\033");
+    content = S9sString::html2ansi(content);
+    ::printf("%s", STR(content));
 }
 
 /**

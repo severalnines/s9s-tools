@@ -875,9 +875,11 @@ do_again:
     // so it is kinda unfinished here.
     S9sRegExp regexp2("<em style=.color:[^;]+;.>",      "i");
     S9sRegExp regexp3("<strong style=.color:[^;]+;.>",  "i");
+    S9sRegExp regexp4("<a href=[^>]*>",  "i");
     
     s.replace(regexp2, XTERM_COLOR_ORANGE);
     s.replace(regexp3, XTERM_COLOR_8);
+    s.replace(regexp4, "");
 
     s.replace("<BR/>", "\n");
     s.replace("<br/>", "\n");

@@ -1808,10 +1808,15 @@ S9sRpcClient::generateReport()
     S9sString      uri = "/v2/reports/";
     S9sVariantMap  request;
     S9sVariantMap  reportMap;
+    S9sString      reportType = options->type();
+
+    if (reportType.empty())
+        reportType = "default";
 
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
-    reportMap["report_type"] = "testreport";
+    // "testreport", "default", "availability", "backup"
+    reportMap["report_type"] = reportType;
     reportMap["recipients"]  = "laszlo@severalnines.com";
     reportMap["text_format"] = "AnsiTerminal";
 

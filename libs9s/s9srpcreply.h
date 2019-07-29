@@ -91,7 +91,10 @@ class S9sRpcReply : public S9sVariantMap
 
         void printCat();
         void printAcl();
+        
         void printReportList();
+        void printReport();
+
         void printClusterList();
         void printAlarmList();
         void printConfigList();
@@ -250,9 +253,6 @@ class S9sRpcReply : public S9sVariantMap
                 const S9sString           &filterName,
                 const S9sVariant          &filterValue);
         
-        void printReport();
-
-
     protected:
         S9sVariantMap clusterMap(const int clusterId);
         

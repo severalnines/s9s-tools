@@ -7346,6 +7346,7 @@ S9sOptions::readOptionsReport(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
+        { "type",             required_argument, 0, OptionType            },
         
 
         { 0, 0, 0, 0 }
@@ -7480,7 +7481,15 @@ S9sOptions::readOptionsReport(
                 // --list
                 m_options["list"] = true;
                 break;
-            
+           
+            /*
+             * Other options.
+             */
+            case OptionType:
+                // --type=NAME
+                m_options["type"] = optarg;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
