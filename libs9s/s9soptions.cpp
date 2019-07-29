@@ -314,6 +314,7 @@ enum S9sOptionType
     OptionWithTimescaleDb,
     OptionToken,
     OptionNoWrap,
+    OptionRemoteClusterId,
 };
 
 /**
@@ -1848,6 +1849,18 @@ bool
 S9sOptions::hasClusterIdOption() const
 {
     return m_options.contains("cluster_id");
+}
+
+bool
+S9sOptions::hasRemoteClusterIdOption() const
+{
+    return m_options.contains("remote_cluster_id");
+}
+
+int
+S9sOptions::remoteClusterId() const
+{
+    return getInt("remote_cluster_id");
 }
 
 bool
@@ -5162,6 +5175,7 @@ S9sOptions::printHelpCluster()
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
+"  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
@@ -9250,8 +9264,9 @@ S9sOptions::readOptionsCluster(
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "donor",            required_argument, 0, OptionDonor           },
-        { "config-template",  required_argument, 0, OptionConfigTemplate   },
+        { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "no-install",       no_argument,       0, OptionNoInstall       },
+        { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
        
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -9677,6 +9692,11 @@ S9sOptions::readOptionsCluster(
             case OptionNoInstall:
                 // --no-install
                 m_options["no_install"] = true;
+                break;
+
+            case OptionRemoteClusterId:
+                // --remote-cluster-id=ID
+                m_options["remote_cluster_id"] = optarg;
                 break;
 
             /*

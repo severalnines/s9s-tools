@@ -4,7 +4,10 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 
@@ -73,6 +76,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-commands)
@@ -165,6 +169,7 @@ function testCreateCluster()
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
+        $DEBUG_OPTION \
         $LOG_OPTION
 
     check_exit_code $?
@@ -225,6 +230,7 @@ function testCreateBackup()
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE:3306" \
         --backup-directory=/tmp \
+        $DEBUG_OPTION \
         $LOG_OPTION
     
     check_exit_code $?
@@ -253,6 +259,7 @@ function testAddNode()
         --add-node \
         --cluster-name=$CLUSTER_NAME \
         --nodes="$nodes" \
+        $DEBUG_OPTION \
         $LOG_OPTION
     
     exitCode=$?
@@ -280,6 +287,7 @@ function testRemoveNode()
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
+        $DEBUG_OPTION \
         $LOG_OPTION
     
     exitCode=$?
@@ -302,6 +310,7 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
+        $DEBUG_OPTION \
         $LOG_OPTION
    
     check_exit_code $?
@@ -322,6 +331,7 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
+        $DEBUG_OPTION \
         $LOG_OPTION
     
     exitCode=$?

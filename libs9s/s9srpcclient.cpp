@@ -2895,6 +2895,9 @@ S9sRpcClient::createGaleraCluster(
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
+    if (options->hasRemoteClusterIdOption())
+        jobData["remote_cluster_id"] = options->remoteClusterId();
+
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -2963,6 +2966,9 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["version"]          = mySqlVersion;
     jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    
+    if (options->hasRemoteClusterIdOption())
+        jobData["remote_cluster_id"] = options->remoteClusterId();
     
     if (options->noInstall())
     {
@@ -3488,6 +3494,9 @@ S9sRpcClient::createNdbCluster(
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = true;
     
+    if (options->hasRemoteClusterIdOption())
+        jobData["remote_cluster_id"] = options->remoteClusterId();
+    
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -3902,6 +3911,9 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_version"]  = mongoVersion;
     jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
+    
+    if (options->hasRemoteClusterIdOption())
+        jobData["remote_cluster_id"] = options->remoteClusterId();
 
     if (!options->osKeyFile().empty())
         jobData["ssh_keyfile"] = options->osKeyFile();
