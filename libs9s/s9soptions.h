@@ -65,7 +65,8 @@ class S9sOptions
             Tree,
             User,
             Event,
-            Alarm
+            Alarm,
+            Report,
         };
 
         enum ExitCodes
@@ -347,6 +348,7 @@ class S9sOptions
         bool isAccountOperation() const;
         bool isMaintenanceOperation() const;
         bool isMetaTypeOperation() const;
+        bool isReportOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -538,6 +540,7 @@ class S9sOptions
         void printHelpLog();
         void printHelpEvent();
         void printHelpAlarm();
+        void printHelpReport();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -603,6 +606,9 @@ class S9sOptions
         
         bool readOptionsAlarm(int argc, char *argv[]);
         bool checkOptionsAlarm();
+        
+        bool readOptionsReport(int argc, char *argv[]);
+        bool checkOptionsReport();
 
         bool setMode(const S9sString &modeName);
 

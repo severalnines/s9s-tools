@@ -951,6 +951,23 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown metatype operation.");
         }
+    } else if (options->isReportOperation())
+    {
+        if (options->isListRequested())
+        {
+            S9sRpcReply reply;
+
+            client.getReports();
+            reply = client.reply();
+            reply.printReportList();
+        } else if (options->isCreateRequested())
+        {
+            success = client.generateReport();
+            client.printMessages("Created.", success);
+            client.setExitStatus(); 
+        } else {
+            PRINT_ERROR("Unknown report operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }

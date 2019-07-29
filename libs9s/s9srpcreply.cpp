@@ -394,6 +394,19 @@ S9sRpcReply::printAcl()
     
 }
 
+void
+S9sRpcReply::printReportList()
+{
+    S9sOptions     *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else {
+        printReportListLong();
+    }
+}
+
 /**
  * Prints the RPC reply as a cluster list. Considers command line options to
  * decide what format will be used to print the list.
@@ -2825,6 +2838,84 @@ S9sRpcReply::printClusterListLong()
    
     if (!options->isBatchRequested())
         printf("Total: %lu\n", (unsigned long int) theList.size());
+}
+
+void 
+S9sRpcReply::printReportListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList reports = operator[]("reports").toVariantList();
+    S9sFormat      idFormat;
+    S9sFormat      cidFormat;
+    S9sFormat      typeFormat;
+    S9sFormat      createdFormat;
+    S9sFormat      titleFormat;
+    int            nLines = 0;
+    
+    for (uint idx = 0u; idx < reports.size(); ++idx)
+    {
+        S9sVariantMap  reportMap = reports[idx].toVariantMap();
+        S9sString      title = reportMap["title"].toString();
+        int            reportId = reportMap["report_id"].toInt();
+        int            clusterId = reportMap["cluster_id"].toInt();
+        S9sString      reportType = reportMap["report_type"].toString();
+        S9sDateTime    created;
+        S9sString      timeStamp;
+        
+        created.parse(reportMap["created"].toString());
+        timeStamp = options->formatDateTime(created);
+
+        idFormat.widen(reportId);
+        cidFormat.widen(clusterId);
+        typeFormat.widen(reportType);
+        createdFormat.widen(timeStamp);
+        titleFormat.widen(title);
+
+        ++nLines;
+    }
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        cidFormat.widen("CID");
+        typeFormat.widen("TYPE");
+        createdFormat.widen("CREATED");
+        titleFormat.widen("TITLE");
+        
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        cidFormat.printf("CID");
+        typeFormat.printf("TYPE");
+        createdFormat.printf("CREATED");
+        titleFormat.printf("TITLE");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (uint idx = 0u; idx < reports.size(); ++idx)
+    {
+        S9sVariantMap  reportMap = reports[idx].toVariantMap();
+        S9sString      title = reportMap["title"].toString();
+        int            reportId = reportMap["report_id"].toInt();
+        int            clusterId = reportMap["cluster_id"].toInt();
+        S9sString      reportType = reportMap["report_type"].toString();
+        S9sDateTime    created;
+        S9sString      timeStamp;
+        
+        created.parse(reportMap["created"].toString());
+        timeStamp = options->formatDateTime(created);
+
+        idFormat.printf(reportId);
+        cidFormat.printf(clusterId);
+        typeFormat.printf(reportType);
+        createdFormat.printf(timeStamp);
+        titleFormat.printf(title);
+
+        ::printf("\n");
+    }
 }
 
 void
