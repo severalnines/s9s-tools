@@ -9,7 +9,7 @@ function elementExists()
         --config-file \
         --controller --controller-port \
         --color \
-        --cluster-id --cluster-name --nodes \
+        --cluster-id --remote-cluster-id --cluster-name --nodes \
         --properties \
         --vendor --provider-version --os-user \
         --cluster-type --db-admin --db-admin-passwd \
@@ -183,11 +183,11 @@ function _s9s()
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "
                 opts+="--output-dir= --donor= "
+                opts+="--remote-cluster-id= "
 
                 opts+="--account= "
                 opts+="--cloud= "
                 opts+="--cluster-format= "
-                opts+="--cluster-id= "
                 opts+="--cluster-name= "
                 opts+="--cluster-type= "
                 opts+="--containers= "
