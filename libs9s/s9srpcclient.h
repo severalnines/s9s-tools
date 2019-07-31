@@ -302,7 +302,11 @@ class S9sRpcClient
         bool getAlarmStatistics();
         bool generateReport();
         bool deleteReport(const int reportId);
+        bool getReport();
+
         bool getReports();
+        bool getReportTemplates();
+
         bool rollingRestart();
         bool importConfig();
         bool collectLogs();

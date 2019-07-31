@@ -315,6 +315,8 @@ enum S9sOptionType
     OptionToken,
     OptionNoWrap,
     OptionRemoteClusterId,
+
+    OptionReportId,
 };
 
 /**
@@ -1959,6 +1961,15 @@ S9sString
 S9sOptions::type() const
 {
     return getString("type");
+}
+
+/**
+ * \returns The value provided using the --report-id option.
+ */
+int
+S9sOptions::reportId() const
+{
+    return getInt("report_id");
 }
 
 int
@@ -5480,8 +5491,11 @@ S9sOptions::printHelpReport()
 
     printf(
 "Options for the \"report\" command:\n"
-"  --list                     List the alarms.\n"
-"  --delete                   Set the alarm to be ignored.\n"
+"  --cat                      Prints the report test of one report.\n"
+"  --create                   Creates a new report.\n"
+"  --delete                   Deletes one specific report.\n"
+"  --list                     List the reports.\n"
+"  --list-templates           Prints the available report templates.\n"
 "\n"
     );
 }
@@ -6487,6 +6501,12 @@ S9sOptions::checkOptionsReport()
     if (isCreateRequested())
         countOptions++;
     
+    if (isCatRequested())
+        countOptions++;
+    
+    if (isListTemplatesRequested())
+        countOptions++;
+    
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -7339,14 +7359,17 @@ S9sOptions::readOptionsReport(
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
         // Main Option
+        { "cat",              no_argument,       0, OptionCat             },
         { "create",           no_argument,       0, OptionCreate          },
         { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-templates",   no_argument,       0, OptionListTemplates   },
         
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "type",             required_argument, 0, OptionType            },
+        { "report-id",        required_argument, 0, OptionReportId        },
         
 
         { 0, 0, 0, 0 }
@@ -7464,9 +7487,19 @@ S9sOptions::readOptionsReport(
                 m_options["cluster_name"] = optarg;
                 break;
 
+            case OptionReportId:
+                // --report-id=ID
+                m_options["report_id"] = optarg;
+                break;
+
             /*
              * Main options.
              */
+            case OptionCat:
+                // --cat
+                m_options["cat"] = true;
+                break;
+                
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
@@ -7480,6 +7513,11 @@ S9sOptions::readOptionsReport(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionListTemplates:
+                // --list-templates
+                m_options["list_templates"] = true;
                 break;
            
             /*

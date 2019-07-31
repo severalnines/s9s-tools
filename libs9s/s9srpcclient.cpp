@@ -1508,17 +1508,6 @@ S9sRpcClient::getJobLog(
 bool
 S9sRpcClient::getLog()
 {
-    #if 0
-    S9sRpcReply theReply;
-
-    generateReport();
-    theReply = reply();
-    theReply.printReport();
-
-    deleteReport(1);
-    //getReports();
-    #endif
-
     S9sOptions    *options   = S9sOptions::instance();
     int            limit     = options->limit();
     int            offset    = options->offset();
@@ -1802,6 +1791,27 @@ S9sRpcClient::getReports()
 }
 
 bool
+S9sRpcClient::getReportTemplates()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/reports/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getReportTemplates";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::generateReport()
 {
     S9sOptions    *options   = S9sOptions::instance();
@@ -1833,6 +1843,32 @@ S9sRpcClient::generateReport()
 
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::getReport()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            reportId  = options->reportId();
+    S9sString      uri = "/v2/reports/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    // FIXME: This is different from the deleteReport...
+
+    request["operation"]     = "getReport";
+    request["report_id"]     = reportId;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::deleteReport(

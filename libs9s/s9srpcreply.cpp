@@ -407,6 +407,21 @@ S9sRpcReply::printReportList()
     }
 }
 
+
+void
+S9sRpcReply::printReportTemplateList()
+{
+    S9sOptions     *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else {
+        printReportTemplateListLong();
+    }
+}
+
+
 /**
  * Prints the RPC reply as a cluster list. Considers command line options to
  * decide what format will be used to print the list.
@@ -2847,7 +2862,7 @@ S9sRpcReply::printReportListLong()
     S9sVariantList reports = operator[]("reports").toVariantList();
     S9sFormat      idFormat;
     S9sFormat      cidFormat;
-    S9sFormat      typeFormat;
+    S9sFormat      typeFormat("\033[38;5;128m", TERM_NORMAL);
     S9sFormat      createdFormat;
     S9sFormat      titleFormat;
     int            nLines = 0;
@@ -2886,11 +2901,11 @@ S9sRpcReply::printReportListLong()
         titleFormat.widen("TITLE");
         
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        cidFormat.printf("CID");
-        typeFormat.printf("TYPE");
-        createdFormat.printf("CREATED");
-        titleFormat.printf("TITLE");
+        idFormat.printf("ID", false);
+        cidFormat.printf("CID", false);
+        typeFormat.printf("TYPE", false);
+        createdFormat.printf("CREATED", false);
+        titleFormat.printf("TITLE", false);
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -2915,6 +2930,89 @@ S9sRpcReply::printReportListLong()
         titleFormat.printf(title);
 
         ::printf("\n");
+    }
+}
+
+void 
+S9sRpcReply::printReportTemplateListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList reports = operator[]("reports").toVariantList();
+    //S9sFormat      idFormat;
+    //S9sFormat      cidFormat;
+    S9sFormat      typeFormat("\033[38;5;128m", TERM_NORMAL);
+    //S9sFormat      createdFormat;
+    S9sFormat      titleFormat;
+    int            nLines = 0;
+    
+    for (uint idx = 0u; idx < reports.size(); ++idx)
+    {
+        S9sVariantMap  reportMap = reports[idx].toVariantMap();
+        S9sString      title = reportMap["title"].toString();
+        //int            reportId = reportMap["report_id"].toInt();
+        //int            clusterId = reportMap["cluster_id"].toInt();
+        S9sString      reportType = reportMap["report_type"].toString();
+        //S9sDateTime    created;
+        //S9sString      timeStamp;
+        
+        //created.parse(reportMap["created"].toString());
+        //timeStamp = options->formatDateTime(created);
+
+        //idFormat.widen(reportId);
+        //cidFormat.widen(clusterId);
+        typeFormat.widen(reportType);
+        //createdFormat.widen(timeStamp);
+        titleFormat.widen(title);
+
+        ++nLines;
+    }
+    
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        //idFormat.widen("ID");
+        //cidFormat.widen("CID");
+        typeFormat.widen("TYPE");
+        //createdFormat.widen("CREATED");
+        titleFormat.widen("TITLE");
+        
+        printf("%s", headerColorBegin());
+        //idFormat.printf("ID");
+        //cidFormat.printf("CID");
+        typeFormat.printf("TYPE", false);
+        //createdFormat.printf("CREATED");
+        titleFormat.printf("TITLE", false);
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (uint idx = 0u; idx < reports.size(); ++idx)
+    {
+        S9sVariantMap  reportMap = reports[idx].toVariantMap();
+        S9sString      title = reportMap["title"].toString();
+        //int            reportId = reportMap["report_id"].toInt();
+        //int            clusterId = reportMap["cluster_id"].toInt();
+        S9sString      reportType = reportMap["report_type"].toString();
+        //S9sDateTime    created;
+        //S9sString      timeStamp;
+        
+        //created.parse(reportMap["created"].toString());
+        //timeStamp = options->formatDateTime(created);
+
+        //idFormat.printf(reportId);
+        //cidFormat.printf(clusterId);
+        typeFormat.printf(reportType);
+        //createdFormat.printf(timeStamp);
+        titleFormat.printf(title);
+
+        ::printf("\n");
+    }
+
+    if (nLines > 0)
+    {
+        ::printf("Total: %d report templates\n", nLines);
     }
 }
 
@@ -3545,7 +3643,7 @@ S9sRpcReply::printDisks(
         }
     }
 
-    printf("%sTotal: %d disks, %llu GBytes\n", 
+    ::printf("%sTotal: %d disks, %llu GBytes\n", 
             STR(indent), totalDisks, totalCapacity);
 }
 
@@ -6158,13 +6256,20 @@ S9sRpcReply::printScriptOutputBrief()
 void
 S9sRpcReply::printReport()
 {
-    S9sVariantMap   reportMap = operator[]("report").toVariantMap();
-    S9sReport       report(reportMap);
-    S9sString       content = report.content();
+    S9sOptions      *options       = S9sOptions::instance();
 
-    content.replace("001b", "\033");
-    content = S9sString::html2ansi(content);
-    ::printf("%s", STR(content));
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else {
+        S9sVariantMap   reportMap = operator[]("report").toVariantMap();
+        S9sReport       report(reportMap);
+        S9sString       content = report.content();
+
+        content.replace("001b", "\033");
+        content = S9sString::html2ansi(content);
+        ::printf("%s", STR(content));
+    }
 }
 
 /**

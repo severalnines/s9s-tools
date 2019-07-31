@@ -210,6 +210,7 @@ class S9sOptions
         bool encryptBackup() const;
         int updateFreq() const;
         S9sString type() const;
+        int reportId() const;
 
         S9sString clusterName() const;
         bool hasClusterNameOption();

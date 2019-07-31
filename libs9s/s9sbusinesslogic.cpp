@@ -960,6 +960,13 @@ S9sBusinessLogic::execute()
             client.getReports();
             reply = client.reply();
             reply.printReportList();
+        } else if (options->isListTemplatesRequested())
+        {
+            S9sRpcReply reply;
+
+            client.getReportTemplates();
+            reply = client.reply();
+            reply.printReportTemplateList();
         } else if (options->isCreateRequested())
         {
             success = client.generateReport();
@@ -972,6 +979,14 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printReport();
             #endif
+        } else if (options->isCatRequested())
+        {
+            S9sRpcReply reply;
+            
+            success = client.getReport();
+
+            reply = client.reply();
+            reply.printReport();
         } else {
             PRINT_ERROR("Unknown report operation.");
         }
