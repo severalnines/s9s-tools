@@ -1871,11 +1871,11 @@ S9sRpcClient::getReport()
 
 
 bool
-S9sRpcClient::deleteReport(
-        const int reportId)
+S9sRpcClient::deleteReport()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sString      uri = "/v2/reports/";
+    int            reportId  = options->reportId();
+    S9sString      uri       = "/v2/reports/";
     S9sVariantMap  request;
     S9sVariantMap  reportMap;
 

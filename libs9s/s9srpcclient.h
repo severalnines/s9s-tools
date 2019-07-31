@@ -301,7 +301,7 @@ class S9sRpcClient
         bool ignoreAlarm();
         bool getAlarmStatistics();
         bool generateReport();
-        bool deleteReport(const int reportId);
+        bool deleteReport();
         bool getReport();
 
         bool getReports();

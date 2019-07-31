@@ -970,23 +970,22 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateRequested())
         {
             success = client.generateReport();
-            #if 0
-            client.printMessages("Created.", success);
-            client.setExitStatus(); 
-            #else
             S9sRpcReply reply;
 
             reply = client.reply();
             reply.printReport();
-            #endif
         } else if (options->isCatRequested())
         {
             S9sRpcReply reply;
             
             success = client.getReport();
-
             reply = client.reply();
             reply.printReport();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteReport();
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();  
         } else {
             PRINT_ERROR("Unknown report operation.");
         }
