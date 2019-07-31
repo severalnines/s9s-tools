@@ -82,6 +82,8 @@ class S9sNode : public S9sObject
         S9sString fullErrorString() const;
 
         S9sString hostStatus() const;
+        S9sString hostStatusShort() const;
+
         virtual int stateAsChar() const;
 
         S9sString nodeType() const;
@@ -106,6 +108,8 @@ class S9sNode : public S9sObject
         S9sString slavesAsString() const;
         S9sString masterHost() const;
         int masterPort() const;
+        bool hasMasterClusterId() const;
+        int masterClusterId() const;
 
         // %Z
         S9sString cpuModel() const;
@@ -154,6 +158,10 @@ class S9sNode : public S9sObject
                 uint             index,
                 const S9sString &defaultValue = "-") const;
 
+    private:
+        bool hasReplicationSlaveInfo() const;
+        S9sVariantMap replicationSlaveInfo() const;
+        
     private:
         S9sUrl           m_url;
         S9sCluster       m_cluster;

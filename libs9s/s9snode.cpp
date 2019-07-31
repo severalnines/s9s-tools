@@ -930,6 +930,16 @@ S9sNode::hostStatus() const
     return S9sString();
 }
 
+S9sString
+S9sNode::hostStatusShort() const
+{
+    S9sString retval = hostStatus();
+
+    retval.replace("CmonHost", "");
+    return retval;
+}
+
+
 /**
  * \returns The host status encoded into one character.
  */
@@ -1321,11 +1331,8 @@ S9sNode::masterHost() const
 {
     S9sString retval;
 
-    if (m_properties.contains("replication_slave"))
-    {
-        S9sVariantMap map = m_properties.at("replication_slave").toVariantMap();
-        retval = map["master_host"].toString();
-    }
+    if (hasReplicationSlaveInfo())
+        retval = replicationSlaveInfo()["master_host"].toString();
 
     return retval;
 }
@@ -1335,11 +1342,30 @@ S9sNode::masterPort() const
 {
     int retval = -1;
 
-    if (m_properties.contains("replication_slave"))
-    {
-        S9sVariantMap map = m_properties.at("replication_slave").toVariantMap();
-        retval = map["master_port"].toInt();
-    }
+    if (hasReplicationSlaveInfo())
+        retval = replicationSlaveInfo()["master_port"].toInt();
+
+    return retval;
+}
+
+bool
+S9sNode::hasMasterClusterId() const
+{
+    bool retval = false;
+
+    if (hasReplicationSlaveInfo())
+        retval = replicationSlaveInfo().contains("master_cluster_id");
+
+    return retval;
+}
+
+int
+S9sNode::masterClusterId() const
+{
+    bool retval = false;
+
+    if (hasMasterClusterId())
+        retval = replicationSlaveInfo()["master_cluster_id"].toInt();
 
     return retval;
 }
@@ -1614,3 +1640,22 @@ S9sNode::backendServerComment(
 
     return retval;
 }
+
+bool 
+S9sNode::hasReplicationSlaveInfo() const
+{
+    return m_properties.contains("replication_slave");
+}
+
+S9sVariantMap 
+S9sNode::replicationSlaveInfo() const
+{
+    if (m_properties.contains("replication_slave"))
+    {
+        return m_properties.at("replication_slave").toVariantMap();
+    }
+
+    return S9sVariantMap();
+}
+
+

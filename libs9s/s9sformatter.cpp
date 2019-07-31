@@ -1642,8 +1642,7 @@ S9sFormatter::printReplicationTable(
         int            port           = node.port();
         S9sString      masterHostname = node.masterHost();
         int            masterPort     = node.masterPort();
-        S9sString      masterCluster  = "?";
-        S9sString      linkStatus     = "???";
+        S9sString      linkStatus     = node.hostStatusShort();
         S9sString      masterName;
         S9sString      slaveName;
 
@@ -1663,7 +1662,12 @@ S9sFormatter::printReplicationTable(
         //::printf("%12s ", STR(role));
         slaveNameFormat.widen(slaveName);
         masterNameFormat.widen(masterName);
-        masterClusterFormat.widen(masterCluster);
+        
+        if (node.hasMasterClusterId())
+            masterClusterFormat.widen(node.masterClusterId());
+        else
+            masterClusterFormat.widen("?");
+
         linkStatusFormat.widen(linkStatus);
         
         ++nLines;
@@ -1709,8 +1713,7 @@ S9sFormatter::printReplicationTable(
         int            port           = node.port();
         S9sString      masterHostname = node.masterHost();
         int            masterPort     = node.masterPort();
-        S9sString      masterCluster  = "?";
-        S9sString      linkStatus     = "???";
+        S9sString      linkStatus     = node.hostStatusShort();
         S9sString      masterName;
         S9sString      slaveName;
 
@@ -1730,7 +1733,13 @@ S9sFormatter::printReplicationTable(
         ::printf("%s", STR(indent));
         slaveNameFormat.printf(slaveName);
         masterNameFormat.printf(masterName);
-        masterClusterFormat.printf(masterCluster);
+       
+        
+        if (node.hasMasterClusterId())
+            masterClusterFormat.printf(node.masterClusterId());
+        else
+            masterClusterFormat.printf("?");
+
         linkStatusFormat.printf(linkStatus);
         ::printf("\n");
     }
