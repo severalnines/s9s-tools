@@ -247,6 +247,14 @@ S9sNode::toString(
 
                     retval += tmp;
                     break;
+
+                case 'b':
+                    // The list of slaves in one string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(masterHost()));
+                    retval += tmp;
+                
+                    break;
  
                 case 'C':
                     // The configuration file. 
@@ -1300,6 +1308,20 @@ S9sNode::slavesAsString() const
             retval += "; ";
 
         retval += list[idx].toString();
+    }
+
+    return retval;
+}
+
+S9sString
+S9sNode::masterHost() const
+{
+    S9sString retval;
+
+    if (m_properties.contains("replication_slave"))
+    {
+        S9sVariantMap map = m_properties.at("replication_slave").toVariantMap();
+        retval = map["master_host"].toString();
     }
 
     return retval;
