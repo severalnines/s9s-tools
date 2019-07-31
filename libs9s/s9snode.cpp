@@ -1313,6 +1313,9 @@ S9sNode::slavesAsString() const
     return retval;
 }
 
+/**
+ * replication_slave/master_host
+ */
 S9sString
 S9sNode::masterHost() const
 {
@@ -1322,6 +1325,20 @@ S9sNode::masterHost() const
     {
         S9sVariantMap map = m_properties.at("replication_slave").toVariantMap();
         retval = map["master_host"].toString();
+    }
+
+    return retval;
+}
+
+int
+S9sNode::masterPort() const
+{
+    int retval = -1;
+
+    if (m_properties.contains("replication_slave"))
+    {
+        S9sVariantMap map = m_properties.at("replication_slave").toVariantMap();
+        retval = map["master_port"].toInt();
     }
 
     return retval;

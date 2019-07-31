@@ -86,4 +86,5 @@ class S9sFormatter
         void printBackendServersSubList(const S9sNode &node) const;
         void printContainersCompact(const S9sVariantList &containers) const;
         void printHostTable(const S9sCluster &cluster) const;
+        void printReplicationTable(const S9sCluster &cluster) const;
 };

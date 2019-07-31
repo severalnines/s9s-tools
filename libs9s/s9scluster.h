@@ -22,6 +22,8 @@
 #include <S9sVariantMap>
 #include <S9sObject>
 
+class S9sNode;
+
 #define S9S_INVALID_CLUSTER_ID -1
 #define S9S_CLUSTER_ID_IS_VALID(_id) (_id > 0)
 
@@ -71,6 +73,8 @@ class S9sCluster : public S9sObject
         int jobsFailed() const;
         int jobsFinished() const;
         int jobsRunning() const;
+
+        S9sVector<S9sNode> nodes() const;
 
         // %h
         int nHosts() const;

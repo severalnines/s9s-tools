@@ -105,6 +105,7 @@ class S9sNode : public S9sObject
         int sshFailCount() const;
         S9sString slavesAsString() const;
         S9sString masterHost() const;
+        int masterPort() const;
 
         // %Z
         S9sString cpuModel() const;

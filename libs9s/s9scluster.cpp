@@ -20,6 +20,8 @@
 #include "s9scluster.h"
 #include "S9sRpcReply"
 
+#include "S9sNode"
+
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"
@@ -576,6 +578,26 @@ S9sCluster::cpuUsagePercent() const
     }
 
     return values.sum();
+}
+
+S9sVector<S9sNode>
+S9sCluster::nodes() const
+{
+    S9sVector<S9sNode> retval;
+    S9sVariantList     variantList;
+    
+    if (m_properties.contains("hosts"))
+        variantList = m_properties.at("hosts").toVariantList();
+
+    for (uint idx = 0u; idx < variantList.size(); ++idx)
+    {
+        S9sVariantMap theMap = variantList[idx].toVariantMap();
+        S9sNode       node = theMap;
+
+        retval << node;
+    }
+
+    return retval;
 }
 
 

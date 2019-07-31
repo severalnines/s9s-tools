@@ -1266,6 +1266,7 @@ S9sFormatter::printClusterStat(
     printf("\n");
 
     printHostTable(cluster);
+    printReplicationTable(cluster);
 }
 
 void 
@@ -1619,6 +1620,125 @@ S9sFormatter::printContainersCompact(
 }
 
 void 
+S9sFormatter::printReplicationTable(
+        const S9sCluster &cluster) const
+{
+    S9sOptions        *options = S9sOptions::instance();
+    int                terminalWidth = options->terminalWidth();
+    int                tableWidth;
+    S9sString          indent;
+    S9sVector<S9sNode> nodes = cluster.nodes();
+    int                nLines = 0;
+    S9sFormat          slaveNameFormat;
+    S9sFormat          masterNameFormat;
+    S9sFormat          masterClusterFormat;
+    S9sFormat          linkStatusFormat;
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        const S9sNode &node           = nodes[idx];
+        S9sString      role           = node.role();
+        S9sString      hostName       = node.hostName();
+        int            port           = node.port();
+        S9sString      masterHostname = node.masterHost();
+        int            masterPort     = node.masterPort();
+        S9sString      masterCluster  = "?";
+        S9sString      linkStatus     = "???";
+        S9sString      masterName;
+        S9sString      slaveName;
+
+
+        if (role == "controller")
+            continue;
+        
+        if (role == "master")
+            continue;
+
+        if (masterHostname.empty())
+            continue;
+
+        masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
+        slaveName.sprintf("%s:%d", STR(hostName), port);
+
+        //::printf("%12s ", STR(role));
+        slaveNameFormat.widen(slaveName);
+        masterNameFormat.widen(masterName);
+        masterClusterFormat.widen(masterCluster);
+        linkStatusFormat.widen(linkStatus);
+        
+        ++nLines;
+    }
+
+    if (nLines == 0)
+        return;
+
+    slaveNameFormat.widen("SLAVE");
+    masterNameFormat.widen("MASTER");
+    masterClusterFormat.widen("MASTER_CLUSTER");
+    linkStatusFormat.widen("STATUS");
+
+    tableWidth = 
+        slaveNameFormat.realWidth() + masterNameFormat.realWidth() +
+        masterClusterFormat.realWidth() + linkStatusFormat.realWidth();
+
+    if (terminalWidth - tableWidth > 0)
+        indent = S9sString(" ") * ((terminalWidth - tableWidth) / 2);
+   
+    /*
+     * Printing the header.
+     */
+    printf("%s", headerColorBegin());
+    printf("%s", STR(indent));
+        
+    slaveNameFormat.printf("SLAVE");
+    masterNameFormat.printf("MASTER");
+    masterClusterFormat.printf("MASTER_CLUSTER");
+    linkStatusFormat.printf("STATUS");
+
+    printf("%s", headerColorEnd());
+    printf("\n");
+
+    /*
+     *
+     */
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        const S9sNode &node           = nodes[idx];
+        S9sString      role           = node.role();
+        S9sString      hostName       = node.hostName();
+        int            port           = node.port();
+        S9sString      masterHostname = node.masterHost();
+        int            masterPort     = node.masterPort();
+        S9sString      masterCluster  = "?";
+        S9sString      linkStatus     = "???";
+        S9sString      masterName;
+        S9sString      slaveName;
+
+
+        if (role == "controller")
+            continue;
+        
+        if (role == "master")
+            continue;
+
+        if (masterHostname.empty())
+            continue;
+
+        masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
+        slaveName.sprintf("%s:%d", STR(hostName), port);
+
+        ::printf("%s", STR(indent));
+        slaveNameFormat.printf(slaveName);
+        masterNameFormat.printf(masterName);
+        masterClusterFormat.printf(masterCluster);
+        linkStatusFormat.printf(linkStatus);
+        ::printf("\n");
+    }
+
+    ::printf("\n");
+}
+
+void 
 S9sFormatter::printHostTable(
         const S9sCluster &cluster) const
 {
@@ -1681,8 +1801,10 @@ S9sFormatter::printHostTable(
     
     tableWidth = 
         hostNameFormat.realWidth() + coresFormat.realWidth() +
+        cpuUsageFormat.realWidth() + 
         memTotalFormat.realWidth() + memUsedFormat.realWidth() +
-        cpuUsageFormat.realWidth() + totalDiskFormat.realWidth() +
+        swapTotalFormat.realWidth() + 
+        totalDiskFormat.realWidth() + swapFreeFormat.realWidth() +
         freeDiskFormat.realWidth() + labelFormat.realWidth() +
         rxSpeedFormat.realWidth()  + txSpeedFormat.realWidth();
 
@@ -1736,6 +1858,7 @@ S9sFormatter::printHostTable(
         S9sVariant txSpeed   = cluster.txBytesPerSecond(hostId);
 
         printf("%s", STR(indent));
+
         hostNameFormat.printf(hostName);
         coresFormat.printf(nCores.toInt());
         cpuUsageFormat.printf(
