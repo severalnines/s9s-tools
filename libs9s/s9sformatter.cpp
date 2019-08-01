@@ -1733,8 +1733,7 @@ S9sFormatter::printReplicationTable(
         ::printf("%s", STR(indent));
         slaveNameFormat.printf(slaveName);
         masterNameFormat.printf(masterName);
-       
-        
+
         if (node.hasMasterClusterId())
             masterClusterFormat.printf(node.masterClusterId());
         else

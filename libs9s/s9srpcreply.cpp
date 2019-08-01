@@ -395,6 +395,112 @@ S9sRpcReply::printAcl()
 }
 
 void
+S9sRpcReply::printReplicationList()
+{
+    S9sOptions     *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printf("%s\n", STR(toString()));
+    } else {
+        printReplicationListLong();
+    }
+}
+
+void
+S9sRpcReply::printReplicationListLong()
+{
+    //S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  clusterList = clusters();
+    int             nLines = 0;
+    S9sFormat       clusterIdFormat;
+    S9sFormat       slaveNameFormat;
+    S9sFormat       masterNameFormat;
+    S9sFormat       linkStatusFormat;
+    S9sFormat       masterClusterFormat;
+
+    // Going through once, collecting some information.
+    for (uint idx = 0; idx < clusterList.size(); ++idx)
+    {
+        S9sVariantMap  clusterMap  = clusterList[idx].toVariantMap();
+        S9sCluster     cluster     = clusterMap;
+        S9sVector<S9sNode> nodes = cluster.nodes();
+        int            clusterId   = cluster.clusterId();
+
+        for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
+        {
+            const S9sNode &node           = nodes[idx1];
+            S9sString      role           = node.role();
+            S9sString      slaveHostname  = node.hostName();
+            //int            slavePort      = node.port();
+            S9sString      masterHostname = node.masterHost();
+            //int            masterPort     = node.masterPort();
+            S9sString      slaveStatus     = node.hostStatusShort();
+            S9sString      masterCluster;
+
+            if (role == "controller" || role == "master")
+                continue;
+            
+            if (masterHostname.empty())
+                continue;
+        
+            if (node.hasMasterClusterId())
+                masterCluster.sprintf("%d", node.masterClusterId());
+            else
+                masterCluster.sprintf("%s", "?");
+
+            clusterIdFormat.widen(clusterId);
+            slaveNameFormat.widen(slaveHostname);
+            masterNameFormat.widen(masterHostname);
+            linkStatusFormat.widen(slaveStatus);
+            masterClusterFormat.widen(masterCluster);
+            ++nLines;
+        }
+    }
+
+    if (nLines == 0)
+        return;
+    
+    for (uint idx = 0; idx < clusterList.size(); ++idx)
+    {
+        S9sVariantMap  clusterMap  = clusterList[idx].toVariantMap();
+        S9sCluster     cluster     = clusterMap;
+        S9sVector<S9sNode> nodes = cluster.nodes();
+        int            clusterId   = cluster.clusterId();
+
+        for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
+        {
+            const S9sNode &node           = nodes[idx1];
+            S9sString      role           = node.role();
+            S9sString      slaveHostname  = node.hostName();
+            //int            slavePort      = node.port();
+            S9sString      masterHostname = node.masterHost();
+            //int            masterPort     = node.masterPort();
+            S9sString      slaveStatus     = node.hostStatusShort();
+            S9sString      masterCluster;
+
+            if (role == "controller" || role == "master")
+                continue;
+            
+            if (masterHostname.empty())
+                continue;
+        
+            if (node.hasMasterClusterId())
+                masterCluster.sprintf("%d", node.masterClusterId());
+            else
+                masterCluster.sprintf("%s", "?");
+
+            clusterIdFormat.printf(clusterId);
+            slaveNameFormat.printf(slaveHostname);
+            masterNameFormat.printf(masterHostname);
+            linkStatusFormat.printf(slaveStatus);
+            masterClusterFormat.printf(masterCluster);
+            ::printf("\n");
+        }
+    }    
+}
+
+void
 S9sRpcReply::printReportList()
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -406,7 +512,6 @@ S9sRpcReply::printReportList()
         printReportListLong();
     }
 }
-
 
 void
 S9sRpcReply::printReportTemplateList()

@@ -92,6 +92,8 @@ class S9sRpcReply : public S9sVariantMap
         void printCat();
         void printAcl();
         
+        void printReplicationList();
+        
         void printReportList();
         void printReportTemplateList();
         void printReport();
@@ -286,6 +288,8 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterListBrief();
         void printClusterListLong();
         void printClustersStat();
+
+        void printReplicationListLong();
 
         void printReportListLong();
         void printReportTemplateListLong();

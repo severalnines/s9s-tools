@@ -757,6 +757,7 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
+        runFunctionalTest testAddNode
     fi
 elif [ "$1" ]; then
     for testName in $*; do

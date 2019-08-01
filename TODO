@@ -1,3 +1,29 @@
+* Implement the replication mode:
+  $ s9s replication --change-master --slave=SLAVE:3306  --master=NEW_MASTER:3306
+  $ s9s replication --stop-slave --slave=SLAVE:3306  
+  $ s9s replication --start-slave --slave=SLAVE:3306   
+  $ s9s replication --rebuild-slave --slave=SLAVE:3306  --master=MASTER:3306
+
+{ "command" : "start_replication_slave",
+  "job_data" :
+  {
+    "slave_address": "STRING" // the address of the replication slave ("host:port")
+  }
+}
+
+CmonHost
+CmonArguments::hostFromArguments(
+        int defaultPortNum) const
+
+{ "command" : "failover_replication_slave",
+  "job_data":
+  {
+    "master_address": "STRING",
+    "slave_address": "STRING"
+  }
+
+
+
 * Implement repeating of jobs.
 
 * Implement firewall listing and manipulating, maybe other things too:

@@ -989,6 +989,18 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown report operation.");
         }
+    } else if (options->isReplicationOperation())
+    {
+        if (options->isListRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getClusters();
+            reply = client.reply();
+            reply.printReplicationList();
+        } else {
+            PRINT_ERROR("Unknown replication operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }
