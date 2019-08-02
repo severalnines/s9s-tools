@@ -407,6 +407,15 @@ S9sRpcReply::printReplicationList()
     }
 }
 
+/**
+ * This now looks like this:
+ *
+CID SLAVE              MASTER             STATUS MASTER_CLUSTER 
+  1 192.168.0.76:3306  192.168.0.161:3306 Online ?              
+  1 192.168.0.240:3306 192.168.0.161:3306 Online ?              
+  1 192.168.0.91:3306  192.168.0.161:3306 Online ?              
+ *
+ */
 void
 S9sRpcReply::printReplicationListLong()
 {
@@ -528,6 +537,9 @@ S9sRpcReply::printReplicationListLong()
             ::printf("\n");
         }
     }    
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d replication link(s)\n", nLines); 
 }
 
 void
@@ -8828,6 +8840,9 @@ S9sRpcReply::printGroupListLong()
         S9sString      groupOwner    = group.groupOwnerName();
         int            groupId       = group.groupId();
 
+        if (!options->isStringMatchExtraArguments(groupName))
+            continue;
+
         idFormat.widen(groupId);
         ownerFormat.widen(ownerName);
         groupOwnerFormat.widen(groupOwner);
@@ -8865,6 +8880,9 @@ S9sRpcReply::printGroupListLong()
         S9sString      groupOwner    = group.groupOwnerName();
         const char    *groupColorBegin = "";
         const char    *groupColorEnd   = "";
+
+        if (!options->isStringMatchExtraArguments(groupName))
+            continue;
 
         if (syntaxHighlight)
         {

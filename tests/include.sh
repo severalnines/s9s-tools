@@ -10,11 +10,11 @@ PRINT_COMMANDS=""
 # Convenience variables to use the IP addresses of the created nodes in the
 # tests.
 #
-FIRST_ADDED_NODE=""
-SECOND_ADDED_NODE=""
-THIRD_ADDED_NODE=""
-FOURTH_ADDED_NODE=""
-LAST_ADDED_NODE=""
+export FIRST_ADDED_NODE=""
+export SECOND_ADDED_NODE=""
+export THIRD_ADDED_NODE=""
+export FOURTH_ADDED_NODE=""
+export LAST_ADDED_NODE=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
 NUMBER_OF_FAILED_CHECKS=0
@@ -1381,6 +1381,20 @@ function create_node()
         echo "$ip" >>$container_list_file
     fi
 
+    #
+    # If we are here we seem to be having a new IP address.
+    #
+    if [ -z "$FIRST_ADDED_NODE" ]; then
+        FIRST_ADDED_NODE="$ip"
+    elif [ -z "$SECOND_ADDED_NODE" ]; then
+        SECOND_ADDED_NODE="$ip"
+    elif [ -z "$THIRD_ADDED_NODE" ]; then
+        THIRD_ADDED_NODE="$ip"
+    elif [ -z "$FOURTH_ADDED_NODE" ]; then
+        FOURTH_ADDED_NODE="$ip"
+    fi
+   
+    LAST_ADDED_NODE="$ip"
     echo $ip
 }
 
@@ -1946,6 +1960,68 @@ function check_cluster()
         fi
     fi
 
+}
+
+function check_group()
+{
+    local group
+    local owner_name
+    local group_owner_name
+    local tmp
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --group-name)
+                group="$2"
+                shift 2
+                ;;
+           
+            --owner-name)
+                owner_name="$2"
+                shift 2
+                ;;
+
+            --group-owner)
+                group_owner_name="$2"
+                shift 2
+                ;;
+            
+            *)
+                printError "check_user(): Invalid option '$1'."
+                return 1
+                break
+                ;;
+        esac
+    done
+    
+    mys9s user --list-groups --long 
+
+    if [ -n "$group" ]; then
+        success "  o received group name '$group' to test, ok"
+    else
+        failure "check_group(): No group name provided."
+        return 1
+    fi
+
+    if [ -n "$owner_name" ]; then
+        tmp=$(s9s user --list-groups --long --batch $group | awk '{print $2}')
+
+        if [ "$tmp" == "$owner_name" ]; then 
+            success "  o owner of the group is $tmp, ok"
+        else
+            failure "The owner of the group is $tmp."
+        fi
+    fi
+    
+    if [ -n "$group_owner_name" ]; then
+        tmp=$(s9s user --list-groups --long --batch $group | awk '{print $3}')
+
+        if [ "$tmp" == "$group_owner_name" ]; then 
+            success "  o owner of the group is $tmp, ok"
+        else
+            failure "The owner of the group is $tmp."
+        fi
+    fi
 }
 
 function check_user()

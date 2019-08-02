@@ -524,11 +524,14 @@ function testCreateUsers()
     cat <<EOF
 This test will create several users through RPC v2 and check if they are
 properly created.
+
 EOF
 
     #
     # Let's add some users so that we have something to work on.
     #
+
+    # This is where we create a new group ds9 with a new user.
     mys9s user \
         --create \
         --cmon-user=system \
@@ -543,7 +546,15 @@ EOF
         --create-group \
         --batch \
         "sisko"
-      
+
+    s9s user --list-groups --print-json | jq .
+    mys9s user --list-groups --long 
+
+    check_group \
+        --group-name   "ds9"     \
+        --owner-name   "system"  \
+        --group-owner  "admins" 
+  
     check_exit_code_no_job $?
     check_user \
         --group      "ds9" \
@@ -1406,7 +1417,7 @@ EOF
         "test"
 
     check_exit_code_no_job $?
-        
+    
     mys9s user \
         --create \
         --cmon-user="test" \
@@ -1417,6 +1428,11 @@ EOF
         "student"
 
     check_exit_code_no_job $?
+        
+    check_group \
+        --group-name   "students"     \
+        --owner-name   "test"         \
+        --group-owner  "admins" 
 
     #
     #

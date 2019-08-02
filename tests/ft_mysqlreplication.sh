@@ -183,10 +183,6 @@ function testCreateCluster()
 
         nodes+="$node_ip"
 
-        if [ -z "$FIRST_ADDED_NODE" ]; then
-            FIRST_ADDED_NODE="$node_ip"
-        fi
-
         let node_serial+=1
     done
     
@@ -247,6 +243,11 @@ function testCreateCluster()
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
+
+    echo "  FIRST_ADDED_NODE: '$FIRST_ADDED_NODE'"
+    echo " SECOND_ADDED_NODE: '$SECOND_ADDED_NODE'"
+    echo "  THIRD_ADDED_NODE: '$THIRD_ADDED_NODE'"
+    mys9s replication --list --long
 }
 
 #
