@@ -548,7 +548,6 @@ EOF
         "sisko"
 
     s9s user --list-groups --print-json | jq .
-    mys9s user --list-groups --long 
 
     check_group \
         --group-name   "ds9"     \
@@ -1473,6 +1472,34 @@ EOF
     fi
 }
 
+function testWeirdChar()
+{
+    print_title "Creating a User and a Group With #"
+        
+    mys9s user \
+        --create \
+        --cmon-user="system" \
+        --password="newpassword" \
+        --generate-key \
+        --group="Group#1" \
+        --new-password="User#1" \
+        --create-group \
+        "User#1"
+    
+    check_exit_code_no_job $?
+
+    check_user \
+        --group      "Group#1"    \
+        --user-name  "User#1"     \
+        --password   "User#1"     \
+        --check-key 
+    
+    check_group \
+        --group-name   "Group#1"  \
+        --owner-name   "system"   \
+        --group-owner  "admins" 
+}
+
 #
 # Running the requested tests.
 #
@@ -1505,6 +1532,7 @@ else
     runFunctionalTest checkExtendedPrivileges
     runFunctionalTest checkPasswordReset
     runFunctionalTest testUserSelfAdmin
+    runFunctionalTest testWeirdChar
 
     print_title "Finished"
     mys9s user --list --long
