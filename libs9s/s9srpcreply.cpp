@@ -410,7 +410,7 @@ S9sRpcReply::printReplicationList()
 void
 S9sRpcReply::printReplicationListLong()
 {
-    //S9sOptions     *options = S9sOptions::instance();
+    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  clusterList = clusters();
     int             nLines = 0;
     S9sFormat       clusterIdFormat;
@@ -432,10 +432,11 @@ S9sRpcReply::printReplicationListLong()
             const S9sNode &node           = nodes[idx1];
             S9sString      role           = node.role();
             S9sString      slaveHostname  = node.hostName();
-            //int            slavePort      = node.port();
+            int            slavePort      = node.port();
             S9sString      masterHostname = node.masterHost();
-            //int            masterPort     = node.masterPort();
-            S9sString      slaveStatus     = node.hostStatusShort();
+            int            masterPort     = node.masterPort();
+            S9sString      slaveStatus    = node.hostStatusShort();
+            S9sString      masterName, slaveName;
             S9sString      masterCluster;
 
             if (role == "controller" || role == "master")
@@ -449,9 +450,12 @@ S9sRpcReply::printReplicationListLong()
             else
                 masterCluster.sprintf("%s", "?");
 
+            masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
+            slaveName.sprintf("%s:%d", STR(slaveHostname), slavePort);
+
             clusterIdFormat.widen(clusterId);
-            slaveNameFormat.widen(slaveHostname);
-            masterNameFormat.widen(masterHostname);
+            slaveNameFormat.widen(slaveName);
+            masterNameFormat.widen(masterName);
             linkStatusFormat.widen(slaveStatus);
             masterClusterFormat.widen(masterCluster);
             ++nLines;
@@ -460,6 +464,28 @@ S9sRpcReply::printReplicationListLong()
 
     if (nLines == 0)
         return;
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        clusterIdFormat.widen("CID");
+        slaveNameFormat.widen("SLAVE");
+        masterNameFormat.widen("MASTER");
+        linkStatusFormat.widen("STATUS");
+        masterClusterFormat.widen("MASTER_CLUSTER");
+
+        printf("%s", headerColorBegin());
+        clusterIdFormat.printf("CID");
+        slaveNameFormat.printf("SLAVE");
+        masterNameFormat.printf("MASTER");
+        linkStatusFormat.printf("STATUS");
+        masterClusterFormat.printf("MASTER_CLUSTER"); 
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+    
     
     for (uint idx = 0; idx < clusterList.size(); ++idx)
     {
@@ -473,10 +499,11 @@ S9sRpcReply::printReplicationListLong()
             const S9sNode &node           = nodes[idx1];
             S9sString      role           = node.role();
             S9sString      slaveHostname  = node.hostName();
-            //int            slavePort      = node.port();
+            int            slavePort      = node.port();
             S9sString      masterHostname = node.masterHost();
-            //int            masterPort     = node.masterPort();
+            int            masterPort     = node.masterPort();
             S9sString      slaveStatus     = node.hostStatusShort();
+            S9sString      masterName, slaveName;
             S9sString      masterCluster;
 
             if (role == "controller" || role == "master")
@@ -489,10 +516,13 @@ S9sRpcReply::printReplicationListLong()
                 masterCluster.sprintf("%d", node.masterClusterId());
             else
                 masterCluster.sprintf("%s", "?");
+            
+            masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
+            slaveName.sprintf("%s:%d", STR(slaveHostname), slavePort);
 
             clusterIdFormat.printf(clusterId);
-            slaveNameFormat.printf(slaveHostname);
-            masterNameFormat.printf(masterHostname);
+            slaveNameFormat.printf(slaveName);
+            masterNameFormat.printf(masterName);
             linkStatusFormat.printf(slaveStatus);
             masterClusterFormat.printf(masterCluster);
             ::printf("\n");
