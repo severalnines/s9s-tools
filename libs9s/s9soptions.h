@@ -120,6 +120,10 @@ class S9sOptions
         bool setSlave(const S9sString &value);
         S9sVariant slave() const;
         bool hasSlave() const;
+        
+        bool setMaster(const S9sString &value);
+        S9sVariant master() const;
+        bool hasMaster() const;
 
         S9sVariantList nodes() const;
         
@@ -415,7 +419,8 @@ class S9sOptions
         bool isAddKeyRequested() const;
         bool isSetRequested() const;
         bool isChangePasswordRequested() const;
-        bool isLogRequested() const;
+
+
         bool isCreateRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
@@ -457,6 +462,7 @@ class S9sOptions
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;
         bool isStartRequested() const;
+        bool isFailoverRequested() const;
         bool isRestartRequested() const;
         bool isCreateAccountRequested() const; 
         bool isGrantRequested() const;
@@ -478,6 +484,8 @@ class S9sOptions
         bool isWaitRequested() const;
         bool isBatchRequested() const;
         bool isNoHeaderRequested() const;
+        bool isLogRequested() const;
+
         bool isStringMatchExtraArguments(const S9sString &theString) const;
         uint nExtraArguments() const;
         S9sString extraArgument(uint idx);

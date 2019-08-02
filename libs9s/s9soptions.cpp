@@ -62,6 +62,7 @@ enum S9sOptionType
     OptionNoHeader,
     OptionNodes,
     OptionSlave,
+    OptionMaster,
     OptionServers,
     OptionContainers,
     OptionAddNode,
@@ -123,6 +124,7 @@ enum S9sOptionType
     OptionTitle,
     OptionJobTitle,
     OptionStart,
+    OptionFailover,
     OptionRestart,
     OptionEnd,
     OptionReason,
@@ -1276,6 +1278,11 @@ S9sOptions::setNodes(
     return true;
 }
 
+/**
+ * \param value The agument for the --slave (or --replication-slave) command
+ *   line option.
+ * \returns True if the value is valid/acceptable.
+ */
 bool
 S9sOptions::setSlave(
         const S9sString &value)
@@ -1293,18 +1300,72 @@ S9sOptions::setSlave(
     return true;
 }
 
+/**
+ * \returns True if the --slave (or --replication-slave) command line option was
+ *   provided.
+ */
 bool
 S9sOptions::hasSlave() const
 {
     return m_options.contains("slave");
 }
 
+/**
+ * \returns The S9sNode variant that holds the argument for the --slave (or
+ *   --replication-slave) command line option.
+ */
 S9sVariant
 S9sOptions::slave() const
 {
     S9sVariant retval;
     if (m_options.contains("slave"))
         retval = m_options.at("slave");
+
+    return retval;
+}
+
+/**
+ * \param value The agument for the --master (or --replication-master) command
+ *   line option.
+ * \returns True if the value is valid/acceptable.
+ */
+bool
+S9sOptions::setMaster(
+        const S9sString &value)
+{
+    S9sNode master = value;
+        
+    if (master.hasError())
+    {
+        PRINT_ERROR("%s", STR(master.fullErrorString()));
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["master"] = master;
+    return true;
+}
+
+/**
+ * \returns True if the --master (or --replication-master) command line option
+ * was provided.
+ */
+bool
+S9sOptions::hasMaster() const
+{
+    return m_options.contains("master");
+}
+
+/**
+ * \returns The S9sNode variant that holds the argument for the --master (or
+ *   --replication-master) command line option.
+ */
+S9sVariant
+S9sOptions::master() const
+{
+    S9sVariant retval;
+    if (m_options.contains("master"))
+        retval = m_options.at("master");
 
     return retval;
 }
@@ -4084,6 +4145,15 @@ S9sOptions::isStartRequested() const
 }
 
 /**
+ * \returns True if the --failover command line option is provided.
+ */
+bool
+S9sOptions::isFailoverRequested() const
+{
+    return getBool("failover");
+}
+
+/**
  * \returns true if the --restart command line option was provided when the
  * program was started.
  */
@@ -5572,9 +5642,16 @@ S9sOptions::printHelpReplication()
 
     printf(
 "Options for the \"replication\" command:\n"
+"  --failover                 Take the role of master from a failed master.\n"
 "  --list                     List the replication links.\n"
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
+"\n"
+"  --master=NODE              The replication master.\n"
+"  --replication-master=NODE  The same as --master.\n"
+"  --replication-slave=NODE   The same as --slave.\n"
+"  --slave=NODE               The replication slave.\n"
+
 "\n"
     );
 }
@@ -6622,6 +6699,9 @@ S9sOptions::checkOptionsReplication()
         countOptions++;
     
     if (isStopRequested())
+        countOptions++;
+    
+    if (isFailoverRequested())
         countOptions++;
     
     if (countOptions > 1)
@@ -7710,6 +7790,7 @@ S9sOptions::readOptionsReplication(
         { "wait",             no_argument,       0, OptionWait            },
 
         // Main Option
+        { "failover",         no_argument,       0, OptionFailover        },
         { "list",             no_argument,       0, 'L'                   },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
@@ -7717,8 +7798,10 @@ S9sOptions::readOptionsReplication(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "slave",            required_argument, 0, OptionSlave           },
+        { "master",           required_argument, 0, OptionMaster          },
+        { "replication-master",required_argument, 0, OptionMaster         },
         { "replication-slave",required_argument, 0, OptionSlave           },
+        { "slave",            required_argument, 0, OptionSlave           },
         
         { 0, 0, 0, 0 }
     };
@@ -7843,6 +7926,11 @@ S9sOptions::readOptionsReplication(
             /*
              * Main options.
              */
+            case OptionFailover:
+                // --failover
+                m_options["failover"] = true;
+                break;
+
             case 'L': 
                 // --list
                 m_options["list"] = true;
@@ -7899,6 +7987,12 @@ S9sOptions::readOptionsReplication(
             /*
              * Other options.
              */
+            case OptionMaster:
+                // --master=STRING
+                if (!setMaster(optarg))
+                    return false;
+                break;
+
             case OptionSlave:
                 // --slave=STRING
                 if (!setSlave(optarg))
