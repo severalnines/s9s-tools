@@ -339,7 +339,11 @@ class S9sRpcClient
         bool dropCluster();
 
         bool startNode();
+        bool startSlave();
+        
         bool stopNode();
+        bool stopSlave();
+
         bool restartNode();
         bool promoteSlave();
         bool demoteNode();

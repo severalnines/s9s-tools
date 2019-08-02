@@ -4767,8 +4767,8 @@ S9sRpcClient::startCluster()
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      title;
     S9sVariantMap  request   = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -4885,6 +4885,98 @@ S9sRpcClient::stopNode()
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Stopping Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::stopSlave()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (!options->hasSlave())
+    {
+        PRINT_ERROR("To stop replication the slave must be specified.");
+        PRINT_ERROR("Use the --slave or --replication-slave option.");
+        return false;
+    } else {
+        node = options->slave().toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["replication_slave"] = node.toVariantMap();
+     
+    //if (options->force())
+    //    jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "stop_replication_slave";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Stopping Replication Slave";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::startSlave()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (!options->hasSlave())
+    {
+        PRINT_ERROR("To start replication the slave must be specified.");
+        PRINT_ERROR("Use the --slave or --replication-slave option.");
+        return false;
+    } else {
+        node = options->slave().toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["replication_slave"] = node.toVariantMap();
+     
+    //if (options->force())
+    //    jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "start_replication_slave";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Starting Replication Slave";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.

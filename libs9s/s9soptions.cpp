@@ -61,6 +61,7 @@ enum S9sOptionType
     OptionBatch,
     OptionNoHeader,
     OptionNodes,
+    OptionSlave,
     OptionServers,
     OptionContainers,
     OptionAddNode,
@@ -1273,6 +1274,39 @@ S9sOptions::setNodes(
 
     m_options["nodes"] = nodes;
     return true;
+}
+
+bool
+S9sOptions::setSlave(
+        const S9sString &value)
+{
+    S9sNode slave = value;
+        
+    if (slave.hasError())
+    {
+        PRINT_ERROR("%s", STR(slave.fullErrorString()));
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["slave"] = slave;
+    return true;
+}
+
+bool
+S9sOptions::hasSlave() const
+{
+    return m_options.contains("slave");
+}
+
+S9sVariant
+S9sOptions::slave() const
+{
+    S9sVariant retval;
+    if (m_options.contains("slave"))
+        retval = m_options.at("slave");
+
+    return retval;
 }
 
 /**
@@ -5539,6 +5573,8 @@ S9sOptions::printHelpReplication()
     printf(
 "Options for the \"replication\" command:\n"
 "  --list                     List the replication links.\n"
+"  --start                    Make the slave start replicating.\n"
+"  --stop                     Make the slave stop replicating.\n"
 "\n"
     );
 }
@@ -6580,6 +6616,12 @@ S9sOptions::checkOptionsReplication()
      * Checking if multiple operations are requested.
      */
     if (isListRequested())
+        countOptions++;
+    
+    if (isStartRequested())
+        countOptions++;
+    
+    if (isStopRequested())
         countOptions++;
     
     if (countOptions > 1)
@@ -7658,12 +7700,25 @@ S9sOptions::readOptionsReplication(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
+        // Job related options.
+        { "force",            no_argument,       0, OptionForce           },
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
+
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
+        { "start",            no_argument,       0, OptionStart           },
+        { "stop",             no_argument,       0, OptionStop            },
         
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
+        { "slave",            required_argument, 0, OptionSlave           },
+        { "replication-slave",required_argument, 0, OptionSlave           },
         
         { 0, 0, 0, 0 }
     };
@@ -7793,9 +7848,62 @@ S9sOptions::readOptionsReplication(
                 m_options["list"] = true;
                 break;
             
+            case OptionStart:
+                // --start
+                m_options["start"] = true;
+                break;
+
+            case OptionStop:
+                // --stop
+                m_options["stop"] = true;
+                break;
+
+            /*
+             * Job related options.
+             */
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+            
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+            
             /*
              * Other options.
              */
+            case OptionSlave:
+                // --slave=STRING
+                if (!setSlave(optarg))
+                    return false;
+                break;
 
             case '?':
             default:

@@ -116,6 +116,11 @@ class S9sOptions
         S9sVariantMap propertiesOption() const;
 
         bool setNodes(const S9sString &value);
+
+        bool setSlave(const S9sString &value);
+        S9sVariant slave() const;
+        bool hasSlave() const;
+
         S9sVariantList nodes() const;
         
         bool setServers(const S9sString &value);

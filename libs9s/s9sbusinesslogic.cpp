@@ -998,6 +998,14 @@ S9sBusinessLogic::execute()
             client.getClusters();
             reply = client.reply();
             reply.printReplicationList();
+        } else if (options->isStopRequested())
+        {
+            success = client.stopSlave();
+            maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isStartRequested())
+        {
+            success = client.startSlave();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Unknown replication operation.");
         }
