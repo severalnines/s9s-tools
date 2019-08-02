@@ -15,9 +15,6 @@ CONTAINER_SERVER=""
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
-# The IP of the node we added last. Empty if we did not.
-LAST_ADDED_NODE=""
-
 nodes=""
 
 
@@ -47,15 +44,16 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
-  o testPing
-  o testCreateCluster    Creating a PostgreSql cluster.
+  o testPing             Checks if the controller is on-line.
+  o testCreateCluster    Creating a MySQL replication cluster.
   o testCreateDatabase   Creating some databases.
   o testCreateBackup     Creates a backup on the cluster.
-  o createDeleteAccount
-  o testAddNode
-  o testRemoveNode
-  o testStop
-  o testDrop
+  o testCreateAccount    Creates an account.
+  o createDeleteAccount  Creates and deletes an account.
+  o testAddNode          Adds a new node to the cluster.
+  o testRemoveNode       Removes a node from the cluster.
+  o testStop             Stops the cluster.
+  o testDrop             Drops the cluster.
 
 EOF
     exit 1

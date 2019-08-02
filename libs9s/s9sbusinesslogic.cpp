@@ -1010,6 +1010,10 @@ S9sBusinessLogic::execute()
         {
             success = client.failoverMaster();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isPromoteSlaveRequested())
+        {
+            success = client.promoteReplicationSlave();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Unknown replication operation.");
         }

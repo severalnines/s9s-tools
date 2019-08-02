@@ -5644,6 +5644,7 @@ S9sOptions::printHelpReplication()
 "Options for the \"replication\" command:\n"
 "  --failover                 Take the role of master from a failed master.\n"
 "  --list                     List the replication links.\n"
+"  --promote                  Make a slave to become a master.\n"
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
 "\n"
@@ -6693,6 +6694,9 @@ S9sOptions::checkOptionsReplication()
      * Checking if multiple operations are requested.
      */
     if (isListRequested())
+        countOptions++;
+    
+    if (isPromoteSlaveRequested())
         countOptions++;
     
     if (isStartRequested())
@@ -7792,6 +7796,7 @@ S9sOptions::readOptionsReplication(
         // Main Option
         { "failover",         no_argument,       0, OptionFailover        },
         { "list",             no_argument,       0, 'L'                   },
+        { "promote",          no_argument,       0, OptionPromoteSlave    },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
         
@@ -7934,6 +7939,11 @@ S9sOptions::readOptionsReplication(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionPromoteSlave:
+                // --promote
+                m_options["promote_slave"] = true;
                 break;
             
             case OptionStart:

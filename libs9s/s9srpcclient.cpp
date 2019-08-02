@@ -4989,6 +4989,52 @@ S9sRpcClient::startSlave()
 }
 
 bool
+S9sRpcClient::promoteReplicationSlave()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (!options->hasSlave())
+    {
+        PRINT_ERROR("To promote a node the slave must be specified.");
+        PRINT_ERROR("Use the --slave or --replication-slave option.");
+        return false;
+    } else {
+        node = options->slave().toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["replication_slave"] = node.toVariantMap();
+     
+    //if (options->force())
+    //    jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "promote_replication_slave";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Promoting Replication Slave";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
 S9sRpcClient::failoverMaster()
 {
     S9sOptions    *options   = S9sOptions::instance();
