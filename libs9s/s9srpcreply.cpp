@@ -804,7 +804,6 @@ S9sRpcReply::printMessages(
     if (options->isBatchRequested())
         return;
 
-
     printDebugMessages();
 
     // Print out the messages first (or the default message)
@@ -824,9 +823,7 @@ S9sRpcReply::printMessages(
         if (isOk())
         {
             printf("%s\n", STR(defaultMessage));
-        }
-        else
-        {
+        } else {
             PRINT_ERROR("Error: Unknown error: %s\n", STR(toString()));
         }
     }
@@ -836,11 +833,9 @@ S9sRpcReply::printMessages(
     {
         if (isOk())
         {
-            printf("%s\n", STR(S9sString::html2ansi(errorString())));
-        }
-        else
-        {
-            PRINT_ERROR("%s\n", STR(errorString()));
+            ::printf("%s\n", STR(S9sString::html2ansi(errorString())));
+        } else {
+            PRINT_ERROR("%s", STR(errorString()));
         }
     }
 }

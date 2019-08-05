@@ -1500,6 +1500,82 @@ function testWeirdChar()
         --group-owner  "admins" 
 }
 
+function testDeleteUser()
+{
+    print_title "Checking if Groups can be Created and Deleted"
+    cat <<EOF
+  This test will test the creation and deletion of Cmon Groups. It will try to
+  delete groups, check for error conditions and will also check that the groups
+  can actually be deleted.
+
+EOF
+
+    #
+    #
+    #
+    mys9s group --delete "nonexisting"
+    if [ $? -ne 0 ]; then
+        success "  o Can not delete groups that does not exist, ok."
+    else
+        failure "Deleting nonexisting groups should not be possible."
+    fi
+
+    #
+    #
+    #
+    mys9s group --delete "Group#1"
+    if [ $? -ne 0 ]; then
+        success "  o Can not delete groups that has members, ok."
+    else
+        failure "Deleting groups with members should not be possible."
+    fi
+
+    #
+    # Creating a group and immediately deleting it.
+    #
+    mys9s group --create "tmpgroup"
+    if [ $? -eq 0 ]; then
+        success "  o New group could be created, ok."
+    else
+        failure "Group could not be created."
+        return 1
+    fi
+    
+    check_group \
+        --group-name   "tmpgroup" \
+        --owner-name   "pipas"    \
+        --group-owner  "admins"
+
+    #
+    # 
+    #
+    mys9s group --delete --cmon-user=student --password=student "tmpgroup"
+    if [ $? -ne 0 ]; then
+        success "  o Group can not be deleted with insufficient rights."
+    else
+        failure "User 'student' should not be able to delete group 'tmpgroup'."
+    fi
+
+    #
+    # Successful deletion of the group.
+    #
+    mys9s group --delete "tmpgroup"
+    
+    if [ $? -eq 0 ]; then
+        success "  o The group could be deleted, ok."
+    else
+        failure "Group could not be deleted."
+        return 1
+    fi
+
+    if s9s group --list | grep -q tmpgroup; then
+        failure "The group still exists after it is deleted."
+    else
+        success "  o The group is actually deleted, ok."
+    fi
+
+}
+
 #
 # Running the requested tests.
 #
@@ -1533,6 +1609,7 @@ else
     runFunctionalTest checkPasswordReset
     runFunctionalTest testUserSelfAdmin
     runFunctionalTest testWeirdChar
+    runFunctionalTest testDeleteUser
 
     print_title "Finished"
     mys9s user --list --long

@@ -292,6 +292,7 @@ class S9sRpcClient
          */
         bool getGroups();
         bool createGroup();
+        bool deleteGroup();
 
         /*
          *

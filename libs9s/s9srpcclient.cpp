@@ -7043,6 +7043,9 @@ S9sRpcClient::createUser(
     return executeRequest(uri, request);
 }
 
+/**
+ * This call is for adding a new CmonGroup.
+ */
 bool
 S9sRpcClient::createGroup()
 {
@@ -7065,6 +7068,36 @@ S9sRpcClient::createGroup()
     groupMap["group_name"] =  options->extraArgument(0);
 
     request["operation"]    = "createGroup";
+    request["group"]        = groupMap;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * This call is for deleting CmonGroup objects.
+ */
+bool
+S9sRpcClient::deleteGroup()
+{
+    S9sOptions    *options  = S9sOptions::instance();
+    S9sString      uri = "/v2/users/";
+    S9sVariantMap  groupMap;
+    S9sVariantMap  request;
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "One group name should be passed as command line argument "
+                "when deleting a group.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    groupMap["class_name"] = "CmonGroup";
+    groupMap["group_name"] =  options->extraArgument(0);
+
+    request["operation"]    = "deleteGroup";
     request["group"]        = groupMap;
 
     return executeRequest(uri, request);

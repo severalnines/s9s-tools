@@ -901,6 +901,11 @@ S9sBusinessLogic::execute()
             success = client.createGroup();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isDeleteRequested())
+        {
+            success = client.deleteGroup();
+            client.printMessages("Deleted.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }
