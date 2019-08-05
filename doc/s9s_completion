@@ -270,7 +270,8 @@ function _s9s()
                 opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
             fi
         elif [[ ${COMP_WORDS[i]} == "replication" ]]; then
-            main_opt+="--help --failover --list --promote --start --stop "
+            main_opt+="--help --failover --stage --list --promote"
+            main_opt+=" --start --stop "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt

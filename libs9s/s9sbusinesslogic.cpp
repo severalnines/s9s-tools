@@ -1028,6 +1028,10 @@ S9sBusinessLogic::execute()
         {
             success = client.failoverMaster();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isStageRequested())
+        {
+            success = client.stageSlave();
+            maybeJobRegistered(client, clusterId, success); 
         } else if (options->isPromoteSlaveRequested())
         {
             success = client.promoteReplicationSlave();

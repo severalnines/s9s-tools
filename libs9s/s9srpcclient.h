@@ -356,6 +356,7 @@ class S9sRpcClient
         bool stopSlave();
 
         bool failoverMaster();
+        bool stageSlave();
 
         bool restartNode();
         bool promoteSlave();

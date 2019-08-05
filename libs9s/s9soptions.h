@@ -429,6 +429,7 @@ class S9sOptions
 
 
         bool isCreateRequested() const;
+        bool isStageRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
         bool isAllRequested() const;

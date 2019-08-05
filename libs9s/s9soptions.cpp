@@ -79,6 +79,7 @@ enum S9sOptionType
     OptionProperties,
     OptionVendor,
     OptionCreate,
+    OptionStage,
     OptionDelete,
     OptionClone,
     OptionEnable,
@@ -3715,6 +3716,15 @@ S9sOptions::isCreateRequested() const
     return getBool("create");
 }
 
+/**
+ * \returns true if the --stage command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isStageRequested() const
+{
+    return getBool("stage");
+}
 
 /**
  * \returns true if the --register command line option was provided when the
@@ -5687,6 +5697,7 @@ S9sOptions::printHelpReplication()
 "  --failover                 Take the role of master from a failed master.\n"
 "  --list                     List the replication links.\n"
 "  --promote                  Make a slave to become a master.\n"
+"  --stage                    Stage/rebuild a replication slave.\n"
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
 "\n"
@@ -6739,6 +6750,9 @@ S9sOptions::checkOptionsReplication()
         countOptions++;
     
     if (isPromoteSlaveRequested())
+        countOptions++;
+    
+    if (isStageRequested())
         countOptions++;
     
     if (isStartRequested())
@@ -7839,6 +7853,7 @@ S9sOptions::readOptionsReplication(
         { "failover",         no_argument,       0, OptionFailover        },
         { "list",             no_argument,       0, 'L'                   },
         { "promote",          no_argument,       0, OptionPromoteSlave    },
+        { "stage",            no_argument,       0, OptionStage           },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
         
@@ -7986,6 +8001,11 @@ S9sOptions::readOptionsReplication(
             case OptionPromoteSlave:
                 // --promote
                 m_options["promote_slave"] = true;
+                break;
+            
+            case OptionStage:
+                // --stage
+                m_options["stage"] = true;
                 break;
             
             case OptionStart:
