@@ -896,6 +896,11 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeGroupList(client);
+        } else if (options->isCreateRequested())
+        {
+            success = client.createGroup();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

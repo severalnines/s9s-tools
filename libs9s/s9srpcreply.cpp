@@ -8822,7 +8822,6 @@ S9sRpcReply::printGroupListLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  groupList = operator[]("groups").toVariantList();
-
     S9sFormat       idFormat;
     S9sFormat       ownerFormat;
     S9sFormat       groupOwnerFormat;

@@ -264,6 +264,7 @@ class S9sRpcClient
                 const S9sString &newPassword,
                 bool             createGroup);
 
+        
         bool addToGroup();
         bool addToGroup(
                 const S9sUser     &user,
@@ -278,7 +279,6 @@ class S9sRpcClient
 
         bool getUsers();
         bool whoAmI();
-        bool getGroups();
         bool canCreateUser();
         bool setUser();
         bool enableUser();
@@ -287,6 +287,15 @@ class S9sRpcClient
         bool addKey();
         bool setPassword();
 
+        /*
+         * Requests related to cmon groups.
+         */
+        bool getGroups();
+        bool createGroup();
+
+        /*
+         *
+         */
         bool getJobInstance(const int jobId);
         
         bool getJobLog(
