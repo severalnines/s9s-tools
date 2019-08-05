@@ -45,6 +45,11 @@ class S9sOptions
         static S9sOptions *instance();
         static void uninit();
 
+        /**
+         * An enum for the main modes. When one writes for example 
+         * s9s user --list --long
+         * the "user" is the main mode.
+         */
         enum OperationMode 
         {
             NoMode  = 0,
@@ -64,6 +69,7 @@ class S9sOptions
             Controller,
             Tree,
             User,
+            Group,
             Event,
             Alarm,
             Report,
@@ -356,6 +362,7 @@ class S9sOptions
         bool isBackupOperation() const;
         bool isProcessOperation() const;
         bool isUserOperation() const;
+        bool isGroupOperation() const;
         bool isAccountOperation() const;
         bool isMaintenanceOperation() const;
         bool isMetaTypeOperation() const;
@@ -551,6 +558,7 @@ class S9sOptions
         void printHelpContainer();
         void printHelpNode();
         void printHelpUser();
+        void printHelpGroup();
         void printHelpAccount();
         void printHelpJob();
         void printHelpLog();
@@ -590,6 +598,9 @@ class S9sOptions
         
         bool readOptionsUser(int argc, char *argv[]);
         bool checkOptionsUser();
+        
+        bool readOptionsGroup(int argc, char *argv[]);
+        bool checkOptionsGroup();
         
         bool readOptionsAccount(int argc, char *argv[]);
         bool checkOptionsAccount();
