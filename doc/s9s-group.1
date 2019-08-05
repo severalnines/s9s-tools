@@ -1,0 +1,48 @@
+.TH S9S-GROUP 1 "August 5, 2019"
+
+.SH NAME
+s9s-groupr \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-group
+.RI [OPTION]...
+.RI [GROUPNAME]...
+
+
+.\"
+.\" The main options.
+.\"
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B --create
+This command line option can be used to create a new Cmon group.
+
+.B EXAMPLE
+.nf
+s9s group --create tmpgroup
+.fi
+
+.TP
+.B --delete
+This option can be used to delete an existing Cmon group. Only groups that has
+no users assigned to them as members (empty groups) can be deleted. The
+authernticated user has to have write access on the group object in order to
+delete it.
+
+.B EXAMPLE
+.nf
+s9s group --delete tmpgroup
+.fi
+
+.TP
+.B --list
+This option can be used to list the existing Cmon groups.
+
+.B EXAMPLE
+.nf
+s9s group --list --list
+.fi

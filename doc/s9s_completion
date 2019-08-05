@@ -54,8 +54,8 @@ function _s9s_has_options()
 function _s9s_no_command()
 {
     if ! _s9s_has_options "account" "backup" "cluster" "job" "maintenance" \
-        "node" "process" "user" "script" "metatype" "log" "server" \
-        "container" "tree" "event" "alarm" "sheet"; 
+        "node" "process" "user" "group" "script" "metatype" "log" "server" \
+        "container" "tree" "event" "alarm" "sheet" "replication"; 
     then
         return 0
     fi
@@ -83,8 +83,9 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="account backup cluster job maintenance node process user script "
-        opts+="metatype log server container tree event alarm sheet"
+        opts+="account backup cluster job maintenance node process user group "
+        opts+="script metatype log server container tree event "
+        opts+="alarm sheet replication"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -266,6 +267,26 @@ function _s9s()
                 opts+="--cmon-user= --password= "
 
                 opts+="--acl= "
+                opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
+            fi
+        elif [[ ${COMP_WORDS[i]} == "replication" ]]; then
+            main_opt+="--help --failover --list --promote --start --stop "
+
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version --config-file= --controller= "
+                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--no-header --only-ascii --wait --log --schedule= "
+                opts+="--cluster-id= --cluster-name= "
+                opts+="--cmon-user= --password= "
+
+                opts+="--master= --replication-master= --replication-slave= "
+                opts+="--slave= "
                 opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
             fi
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
@@ -522,6 +543,26 @@ function _s9s()
                 opts+="--account= --with-database --db-name= --user-format= "
                 opts+="--cmon-user= --password= "
                 opts+="--new-password= --old-password= --public-key-file= "
+                opts+="--public-key-name= "
+                opts+=$(s9s user --list 2>/dev/null)
+            fi
+        elif [[ ${COMP_WORDS[i]} == "group" ]]; then
+            main_opt="--help "
+            main_opt+="--create --list --delete "
+            
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
+            elif [ "$prev" == "--cmon-user" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s user --list)
+            else
+                opts+="--help --verbose --version " 
+                opts+="--config-file= "
+                opts+="--controller= --controller-port= "
+                opts+="--rpc-tls "
+                opts+="--long --print-json --color= --batch --no-header "
+                opts+="--cmon-user= --password= "
                 opts+="--public-key-name= "
                 opts+=$(s9s user --list 2>/dev/null)
             fi

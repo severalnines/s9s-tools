@@ -15,6 +15,7 @@ usr/share/man/man1/s9s-script.1
 usr/share/man/man1/s9s-server.1
 usr/share/man/man1/s9s-tree.1
 usr/share/man/man1/s9s-user.1
+usr/share/man/man1/s9s-group.1
 usr/share/man/man1/s9s-event.1
 usr/share/man/man1/s9s-controller.1
 usr/share/man/man3/s9s-cil.3
