@@ -891,6 +891,14 @@ S9sBusinessLogic::execute()
         } else {
             executeCreateUser(client);
         }
+    } else if (options->isGroupOperation())
+    {
+        if (options->isListRequested())
+        {
+            executeGroupList(client);
+        } else {
+            PRINT_ERROR("Operation is not specified.");
+        }
     } else if (options->isAccountOperation())
     {
         if (options->isListRequested())
@@ -1698,7 +1706,7 @@ S9sBusinessLogic::executeAccountList(
 }
 
 
-
+// FIXME: We should not need a method for this.
 void 
 S9sBusinessLogic::executeGroupList(
         S9sRpcClient &client)
