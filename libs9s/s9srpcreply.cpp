@@ -43,6 +43,7 @@
 #include "S9sJob"
 #include "S9sContainer"
 #include "S9sStringList"
+#include "S9sReplication"
 
 //#define DEBUG
 //#define WARNING
@@ -420,6 +421,8 @@ void
 S9sRpcReply::printReplicationListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sNode         slaveFilter(options->slave().toVariantMap());
+    S9sNode         masterFilter(options->master().toVariantMap());
     S9sVariantList  clusterList = clusters();
     int             nLines = 0;
     S9sFormat       clusterIdFormat;
@@ -439,9 +442,9 @@ S9sRpcReply::printReplicationListLong()
         for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
         {
             const S9sNode &node           = nodes[idx1];
+            S9sReplication replication(cluster, node);
+
             S9sString      role           = node.role();
-            S9sString      slaveHostname  = node.hostName();
-            int            slavePort      = node.port();
             S9sString      masterHostname = node.masterHost();
             int            masterPort     = node.masterPort();
             S9sString      slaveStatus    = node.hostStatusShort();
@@ -453,14 +456,20 @@ S9sRpcReply::printReplicationListLong()
             
             if (masterHostname.empty())
                 continue;
-        
+       
+            if (!replication.matchSlave(slaveFilter))
+                continue;
+            
+            if (!replication.matchMaster(masterFilter))
+                continue;
+
             if (node.hasMasterClusterId())
                 masterCluster.sprintf("%d", node.masterClusterId());
             else
                 masterCluster.sprintf("%s", "?");
 
             masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
-            slaveName.sprintf("%s:%d", STR(slaveHostname), slavePort);
+            slaveName = replication.slaveName();
 
             clusterIdFormat.widen(clusterId);
             slaveNameFormat.widen(slaveName);
@@ -506,6 +515,8 @@ S9sRpcReply::printReplicationListLong()
         for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
         {
             const S9sNode &node           = nodes[idx1];
+            S9sReplication replication(cluster, node);
+
             S9sString      role           = node.role();
             S9sString      slaveHostname  = node.hostName();
             int            slavePort      = node.port();
@@ -519,6 +530,12 @@ S9sRpcReply::printReplicationListLong()
                 continue;
             
             if (masterHostname.empty())
+                continue;
+            
+            if (!replication.matchSlave(slaveFilter))
+                continue;
+            
+            if (!replication.matchMaster(masterFilter))
                 continue;
         
             if (node.hasMasterClusterId())

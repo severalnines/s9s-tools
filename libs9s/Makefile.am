@@ -136,6 +136,8 @@ libs9s_public_h_headers =     \
 	s9salarm.h                \
 	S9sNode                   \
 	s9snode.h                 \
+	S9sReplication            \
+	s9sreplication.h          \
 	S9sSpreadsheet            \
 	s9sspreadsheet.h          \
 	S9sServer                 \
@@ -239,6 +241,7 @@ libs9s_a_SOURCES =            \
 	s9surl.cpp                \
 	s9salarm.cpp              \
 	s9snode.cpp               \
+	s9sreplication.cpp        \
 	s9sspreadsheet.cpp        \
 	s9scontainer.cpp          \
 	s9sevent.cpp              \
