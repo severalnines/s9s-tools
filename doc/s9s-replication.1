@@ -1,0 +1,98 @@
+.TH S9S-GROUP 1 "August 6, 2019"
+.SH NAME
+s9s-replication - Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-replication
+.RI [OPTION]...
+.RI [HOSTNAME]...
+
+.\"
+.\" The main options.
+.\"
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B --failover
+Take the role of master from a failed master.
+
+.TP
+.B --list
+List the replication links.
+
+.B EXAMPLE
+.nf
+s9s replication --list --long
+.fi
+
+.TP
+.B --promote
+Make a slave to become a master.
+
+.TP
+.B --stage
+Stage/rebuild a replication slave.
+
+.B EXAMPLE
+.nf
+s9s replication \\
+    --stage \\
+    --cluster-id="1" \\
+    --job-tags="stage" \\
+    --slave="192.168.0.83:3306" \\
+    --master="192.168.0.76:3306" \\
+    --wait 
+.fi
+
+.TP
+.B --start
+Make the slave start replicating previously stopped using the \fB\-\-stop\fR
+option.
+
+.B EXAMPLE
+.nf
+s9s replication \\
+    --start \\
+    --cluster-id="1" \\
+    --slave="192.168.0.80:3306" \\
+    --wait 
+.fi
+
+.TP
+.B --stop
+Make the slave stop replicating. This option will create a job that does not
+stop the server but stops the replication on it.
+
+.B EXAMPLE
+.nf
+s9s replication \\
+    --stop \\
+    --cluster-id="1" \\
+    --slave="192.168.0.80:3306" \\
+    --wait 
+.fi
+
+.\"
+.\" Other options
+.\"
+.SS Other Options
+
+.TP
+.BI --master= NODE
+The replication master.
+
+.TP
+.BI --replication-master= NODE
+This is the same as the \fB\-\-master\fR option.
+
+.TP
+.BI --slave= NODE
+The replication slave.
+
+.TP
+.BI --replication-slave= NODE
+This is the same as the \fB\-\-slave\fR option.
+

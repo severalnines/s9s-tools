@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -182,6 +182,20 @@ function testCreateCluster()
         fi
 
         nodes+="$node_ip"
+        
+        case $node_serial in 
+            1)
+                FIRST_ADDED_NODE="$node_ip"
+                ;;
+
+            2)
+                SECOND_ADDED_NODE="$node_ip"
+                ;;
+
+            3)
+                THIRD_ADDED_NODE="$node_ip"
+                ;;
+        esac
 
         let node_serial+=1
     done
@@ -248,6 +262,64 @@ function testCreateCluster()
     echo " SECOND_ADDED_NODE: '$SECOND_ADDED_NODE'"
     echo "  THIRD_ADDED_NODE: '$THIRD_ADDED_NODE'"
     mys9s replication --list --long
+}
+
+function testStopStartReplication()
+{
+    print_title "Stopping and Starting Replication"
+    cat <<EOF
+  This test will stop then start the replication on a replication slave.
+
+EOF
+
+    mys9s replication --list --long
+
+    mys9s replication \
+        --stop \
+        --cluster-id=1 \
+        --job-tags="stop" \
+        --slave=$SECOND_ADDED_NODE:3306 \
+        $LOG_OPTION
+
+    check_exit_code $?
+    
+    mys9s replication --list --long
+
+    mys9s replication \
+        --start \
+        --cluster-id=1 \
+        --job-tags="start" \
+        --slave=$SECOND_ADDED_NODE:3306 \
+        $LOG_OPTION
+
+    check_exit_code $?
+    
+    mys9s replication --list --long
+}
+
+function testStageSlave()
+{
+    print_title "Testing the Rebuilding a Replication Slave"
+    cat <<EOF
+  This test will use the --stage option to rebuild the replication slave and
+  then check if the job was properly executed.
+
+EOF
+
+    mys9s replication --list --long
+
+    mys9s replication \
+        --stage \
+        --cluster-id=1 \
+        --job-tags="stage" \
+        --slave=$SECOND_ADDED_NODE:3306 \
+        --master=$FIRST_ADDED_NODE:3306 \
+        $LOG_OPTION
+    
+    check_exit_code $?
+    
+    mys9s replication --list --long
+    mys9s job --list --long
 }
 
 #
@@ -622,6 +694,9 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testStopStartReplication
+    runFunctionalTest testStageSlave
+
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup
 
