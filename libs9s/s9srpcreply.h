@@ -218,10 +218,7 @@ class S9sRpcReply : public S9sVariantMap
         static S9sString progressBar(bool syntaxHighlight);
 
         static bool useSyntaxHighLight() ;
-#if 0
-        static const char *hostStateColorBegin(const S9sString state);
-        static const char *hostStateColorEnd();
-#endif
+
         static const char *clusterStateColorBegin(S9sString state);
         static const char *clusterStateColorEnd();
         

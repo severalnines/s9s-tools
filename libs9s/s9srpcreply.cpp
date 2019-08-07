@@ -9984,37 +9984,6 @@ S9sRpcReply::propertyColorEnd() const
     return "";
 }
 
-#if 0
-const char *
-S9sRpcReply::hostStateColorBegin(
-        const S9sString status)
-{
-    if (useSyntaxHighLight())
-    {
-        if (status == "CmonHostRecovery" || status == "CmonHostShutDown")
-        {
-            return XTERM_COLOR_YELLOW;
-        } else if (status == "CmonHostUnknown" || status == "CmonHostOffLine")
-        {
-            return XTERM_COLOR_RED;
-        } else {
-            return XTERM_COLOR_GREEN;
-        }
-    }
-
-    return "";
-}
-
-const char *
-S9sRpcReply::hostStateColorEnd()
-{
-    if (useSyntaxHighLight())
-        return TERM_NORMAL;
-
-    return "";
-}
-#endif
-
 /**
  * This method returns the ANSI color sequence for the beginning of a cluster
  * state string. The color of course depends on the state itself.

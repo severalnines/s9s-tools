@@ -1112,13 +1112,17 @@ function wait_for_cluster_state()
     expectedState="$2"
 
     if [ -z "$clusterName" ]; then
-        printError "Expected a cluster name."
+        failure "wait_for_cluster_state(): Expected a cluster name."
         return 6
+    else
+        success "  o Waiting for cluster $clusterName state, ok."
     fi
 
     if [ -z "$expectedState" ]; then 
-        printError "Expected state name."
+        failure "wait_for_cluster_state(): Expected cluster state name."
         return 6
+    else
+        success "  o Expecting cluster state $expectedState, ok."
     fi
 
     while true; do
@@ -1879,16 +1883,19 @@ function check_cluster()
                 cluster_state="$2"
                 shift 2
                 ;;
+
+            *)
+                break
+                ;;
         esac
     done
 
     if [ -z "$cluster_name" ]; then
         failure "No cluster name provided while checking cluster."
         return 1
+    else
+        success "  o Will check state of cluster '$cluster_name', ok"
     fi
-
-    echo ""
-    echo "Checking cluster '$cluster_name'..."
 
     if [ -n "$config_file" ]; then
         tmp=$(s9s cluster --list --cluster-format "%C\n" "$cluster_name")
@@ -1960,6 +1967,54 @@ function check_cluster()
         fi
     fi
 
+}
+
+function check_replication_state()
+{
+    local cluster_name    
+    local state
+    local expected_state
+    local slave
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster|--cluster-name)
+                cluster_name="$2"
+                shift 2
+                ;;
+           
+            --state)
+                expected_state="$2"
+                shift 2
+                ;;
+
+            --slave)
+                slave="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    if [ -n "$expected_state" -a -n "$slave" ]; then
+        success "  o Will check replication on slave $slave, ok."
+    else
+        failure "check_replication_state(): Invalid arguments."
+        return 1
+    fi
+
+    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
+    if [ "$state" == "$expected_state" ]; then
+        success "  o Replication state on $slave is $state, ok."
+    else
+        failure "Replication state is '$state', should be '$expected_state'."
+        return 1
+    fi
+
+    return 0
 }
 
 function check_group()

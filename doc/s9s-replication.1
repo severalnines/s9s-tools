@@ -31,6 +31,15 @@ s9s replication --list --long
 .B --promote
 Make a slave to become a master.
 
+.B EXAMPLE
+.nf
+s9s replication \\
+    --promote \\
+    --cluster-name="ft_mysqlreplication_24013" \\
+    --slave="192.168.0.164:3306" \\
+    --wait 
+.fi
+
 .TP
 .B --stage
 Stage/rebuild a replication slave.

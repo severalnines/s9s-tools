@@ -182,7 +182,10 @@ function testCreateCluster()
         fi
 
         nodes+="$node_ip"
-        
+       
+        #
+        # The first will be the master, the second and third are the slaves.
+        #
         case $node_serial in 
             1)
                 FIRST_ADDED_NODE="$node_ip"
@@ -222,10 +225,11 @@ function testCreateCluster()
         failure "Cluster was not created"
     fi
 
+    # FIXME: This should not be needed.
     wait_for_cluster_started "$CLUSTER_NAME" 
 
-    mys9s cluster --stat
-    mys9s node    --stat
+    #mys9s cluster --stat
+    #mys9s node    --stat
 
     #
     # Checking the controller, the nodes and the cluster.
@@ -262,7 +266,16 @@ function testCreateCluster()
     echo "  FIRST_ADDED_NODE: '$FIRST_ADDED_NODE'"
     echo " SECOND_ADDED_NODE: '$SECOND_ADDED_NODE'"
     echo "  THIRD_ADDED_NODE: '$THIRD_ADDED_NODE'"
-    mys9s replication --list --long
+    #mys9s replication --list --long
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
 }
 
 function testStopStartReplication()
@@ -280,12 +293,20 @@ EOF
     # Preliminary checks.
     #
     mys9s replication --list --long
-    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
-    if [ "$state" == "Online" ]; then
-        success "  o The status of $slave is $state, ok."
-    else
-        failure "The status of $slave is $state, not 'Online'."
-    fi
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_cluster \
+        --cluster        "$CLUSTER_NAME" \
+        --state          "STARTED" 
 
     #
     # Stopping the replication.
@@ -310,10 +331,14 @@ EOF
   problem is that we have no way to know that the replication is stopped from
   the properties the controller sends.
 
-  Here are the properties to check:
 EOF
-    s9s replication --list --print-json | jq .
     fi
+    
+    wait_for_cluster_state "$CLUSTER_NAME" "DEGRADED"
+    
+    check_cluster \
+        --cluster        "$CLUSTER_NAME" \
+        --state          "DEGRADED" 
 
     #
     # Starting the replication, checking the state.
@@ -326,15 +351,23 @@ EOF
         $LOG_OPTION
 
     check_exit_code $?
-    
+    wait_for_cluster_state "$CLUSTER_NAME" "STARTED"
+
     mys9s replication --list --long
     
-    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
-    if [ "$state" == "Online" ]; then
-        success "  o The status of $slave is $state, ok."
-    else
-        failure "The status of $slave is $state, not 'Online'."
-    fi
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_cluster \
+        --cluster        "$CLUSTER_NAME" \
+        --state          "STARTED" 
 }
 
 function testStageSlave()
@@ -352,14 +385,90 @@ EOF
         --stage \
         --cluster-id=1 \
         --job-tags="stage" \
-        --slave=$SECOND_ADDED_NODE:3306 \
+        --slave=$THIRD_ADDED_NODE:3306 \
         --master=$FIRST_ADDED_NODE:3306 \
         $LOG_OPTION
     
     check_exit_code $?
     
     mys9s replication --list --long
-    mys9s job --list --long
+    #mys9s job --list --long
+}
+
+function testPromoteSlave()
+{
+    print_title "Promoting Slave"
+    cat <<EOF
+  This test will use the --promote command line option to make a replication
+  slave become a master. Then the same command line option is used to switch
+  back to the original master, make it a replication master again.
+
+EOF
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+
+    #
+    # Making the second node a master, first node a slave 
+    #
+    mys9s replication \
+        --promote \
+        --cluster-name="$CLUSTER_NAME" \
+        --slave="$SECOND_ADDED_NODE:3306" \
+        $LOG_OPTION
+
+    check_exit_code $?
+    mys9s replication --list --long --cluster-name="$CLUSTER_NAME"
+    
+    # FIXME: This should not be needed.
+    wait_for_cluster_started "$CLUSTER_NAME" 
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$FIRST_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_cluster \
+        --cluster        "$CLUSTER_NAME" \
+        --state          "STARTED"
+
+    #
+    # Now making the first node the master again.
+    #
+    mys9s replication \
+        --promote \
+        --cluster-name="$CLUSTER_NAME" \
+        --slave="$FIRST_ADDED_NODE:3306" \
+        $LOG_OPTION
+
+    check_exit_code $?
+    mys9s replication --list --long --cluster-name="$CLUSTER_NAME"
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_cluster \
+        --cluster        "$CLUSTER_NAME" \
+        --state          "STARTED"
 }
 
 #
@@ -736,6 +845,7 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testStopStartReplication
     runFunctionalTest testStageSlave
+    runFunctionalTest testPromoteSlave
 
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup
