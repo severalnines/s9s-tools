@@ -205,6 +205,7 @@ function testCreateCluster()
     #
     mys9s cluster \
         --create \
+        --job-tags="create" \
         --cluster-type=mysqlreplication \
         --nodes="$nodes" \
         --vendor="$OPTION_VENDOR" \

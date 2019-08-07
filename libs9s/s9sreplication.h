@@ -54,6 +54,9 @@ class S9sReplication : public S9sObject
         S9sString slaveMessage() const;
         int secondsBehindMaster() const;
 
+        S9sString slavePosition() const;
+        S9sString masterPosition() const;
+
         S9sString toString(
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;
@@ -63,6 +66,11 @@ class S9sReplication : public S9sObject
 
     private:
         S9sVariantMap slaveInfo() const;
+        S9sVariantMap masterInfo() const;
+
+        S9sNode node(
+                const S9sString &hostName,
+                const int        port) const;
 
     private:
         /** The cluster in which the slave can be found. */

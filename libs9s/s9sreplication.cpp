@@ -130,6 +130,20 @@ S9sReplication::secondsBehindMaster() const
     return map["slave_io_state"].toInt();
 }
 
+S9sString
+S9sReplication::slavePosition() const
+{
+    S9sVariantMap map = slaveInfo();
+    return map["exec_master_log_pos"].toString();
+}
+
+S9sString
+S9sReplication::masterPosition() const
+{
+    S9sVariantMap map = masterInfo();
+    return map["position"].toString();
+}
+
 /**
  * \param syntaxHighlight Controls if the string will have colors or not.
  * \param formatString The formatstring with markup.
@@ -231,6 +245,20 @@ S9sReplication::toString(
                     // The host name of the master.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(masterHostName()));
+                    retval += tmp;
+                    break;
+                
+                case 'o':
+                    // The slave position
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(slavePosition()));
+                    retval += tmp;
+                    break;
+                
+                case 'O':
+                    // The master position
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(masterPosition()));
                     retval += tmp;
                     break;
                 
@@ -416,3 +444,33 @@ S9sReplication::slaveInfo() const
  * }
  * \endcode
  */
+S9sVariantMap
+S9sReplication::masterInfo() const
+{
+    S9sNode       master = node(masterHostName(), masterPort());
+    S9sVariantMap retval;
+    S9sVariantMap tmp;
+
+    tmp = master.toVariantMap();
+    retval = tmp["replication_master"].toVariantMap();
+    return retval;
+}
+
+S9sNode
+S9sReplication::node(
+        const S9sString &hostName,
+        const int        port) const
+{
+    S9sVector<S9sNode> nodes = m_cluster.nodes();
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        const S9sNode &node = nodes[idx];
+
+        if (node.hostName() == hostName && node.port() == port)
+            return node;
+    }
+
+    return S9sNode();
+}
+
