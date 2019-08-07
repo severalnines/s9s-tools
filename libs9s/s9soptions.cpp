@@ -190,6 +190,7 @@ enum S9sOptionType
     OptionBackupFormat,
     OptionUserFormat,
     OptionContainerFormat,
+    OptionLinkFormat,
     OptionGraph,
     OptionBegin,
     OptionOnlyAscii,
@@ -2241,6 +2242,25 @@ S9sString
 S9sOptions::containerFormat() const
 {
     return getString("container_format");
+}
+
+/**
+ * \returns True if the --link-format command line option was provided.
+ */
+bool
+S9sOptions::hasLinkFormat() const
+{
+    return m_options.contains("link_format");
+}
+
+/**
+ * \returns The command line option argument for the --link-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::linkFormat() const
+{
+    return getString("link_format");
 }
 
 /**
@@ -5701,11 +5721,11 @@ S9sOptions::printHelpReplication()
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
 "\n"
+"  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
 "  --slave=NODE               The replication slave.\n"
-
 "\n"
     );
 }
@@ -7860,11 +7880,13 @@ S9sOptions::readOptionsReplication(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
+
+        { "link-format",      required_argument, 0, OptionLinkFormat      },
         { "master",           required_argument, 0, OptionMaster          },
         { "replication-master",required_argument, 0, OptionMaster         },
         { "replication-slave",required_argument, 0, OptionSlave           },
         { "slave",            required_argument, 0, OptionSlave           },
-        
+
         { 0, 0, 0, 0 }
     };
 
@@ -8059,6 +8081,11 @@ S9sOptions::readOptionsReplication(
             /*
              * Other options.
              */
+            case OptionLinkFormat:
+                // --link-format
+                m_options["link_format"] = optarg;
+                break;
+
             case OptionMaster:
                 // --master=STRING
                 if (!setMaster(optarg))

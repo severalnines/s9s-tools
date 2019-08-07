@@ -425,7 +425,7 @@ S9sUser::isMemberOf(
  * \param formatString The formatstring with markup.
  * \returns The string representation according to the format string.
  *
- * Converts the message to a string using a special format string that may
+ * Converts the user to a string using a special format string that may
  * contain field names of properties of the user.
  */
 S9sString

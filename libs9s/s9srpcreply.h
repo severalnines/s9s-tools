@@ -93,7 +93,8 @@ class S9sRpcReply : public S9sVariantMap
         void printAcl();
         
         void printReplicationList();
-        
+        void printReplicationListCustom();
+
         void printReportList();
         void printReportTemplateList();
         void printReport();

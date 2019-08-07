@@ -325,10 +325,16 @@ S9sFormatter::hostStateColorBegin(
 {
     if (useSyntaxHighLight())
     {
-        if (status == "CmonHostRecovery" || status == "CmonHostShutDown")
+        if (status == "CmonHostRecovery" || 
+                status == "CmonHostShutDown" ||
+                status == "Recovery" ||
+                status == "ShutDown")
         {
             return XTERM_COLOR_YELLOW;
-        } else if (status == "CmonHostUnknown" || status == "CmonHostOffLine")
+        } else if (status == "CmonHostUnknown" || 
+                status == "CmonHostOffLine" ||
+                status == "Unknown" ||
+                status == "OffLine")
         {
             return XTERM_COLOR_RED;
         } else {

@@ -252,6 +252,9 @@ class S9sOptions
         bool hasContainerFormat() const;
         S9sString containerFormat() const;
         
+        bool hasLinkFormat() const;
+        S9sString linkFormat() const;
+        
         bool hasUserFormat() const;
         S9sString userFormat() const;
 

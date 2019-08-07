@@ -403,6 +403,9 @@ S9sRpcReply::printReplicationList()
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
+    } else if (options->hasLinkFormat())
+    {
+        printReplicationListCustom();
     } else {
         printReplicationListLong();
     }
@@ -421,6 +424,7 @@ void
 S9sRpcReply::printReplicationListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sFormatter    formatter;
     S9sNode         slaveFilter(options->slave().toVariantMap());
     S9sNode         masterFilter(options->master().toVariantMap());
     S9sVariantList  clusterList = clusters();
@@ -441,20 +445,12 @@ S9sRpcReply::printReplicationListLong()
 
         for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
         {
-            const S9sNode &node           = nodes[idx1];
+            const S9sNode &node = nodes[idx1];
             S9sReplication replication(cluster, node);
-
-            S9sString      role           = node.role();
-            S9sString      masterHostname = node.masterHost();
-            int            masterPort     = node.masterPort();
-            S9sString      slaveStatus    = node.hostStatusShort();
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
 
-            if (role == "controller" || role == "master")
-                continue;
-            
-            if (masterHostname.empty())
+            if (!replication.isValid())
                 continue;
        
             if (!replication.matchSlave(slaveFilter))
@@ -468,13 +464,13 @@ S9sRpcReply::printReplicationListLong()
             else
                 masterCluster.sprintf("%s", "?");
 
-            masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
+            masterName = replication.masterName();
             slaveName = replication.slaveName();
 
             clusterIdFormat.widen(clusterId);
             slaveNameFormat.widen(slaveName);
             masterNameFormat.widen(masterName);
-            linkStatusFormat.widen(slaveStatus);
+            linkStatusFormat.widen(replication.slaveStatusShort());
             masterClusterFormat.widen(masterCluster);
             ++nLines;
         }
@@ -516,22 +512,13 @@ S9sRpcReply::printReplicationListLong()
         {
             const S9sNode &node           = nodes[idx1];
             S9sReplication replication(cluster, node);
-
-            S9sString      role           = node.role();
-            S9sString      slaveHostname  = node.hostName();
-            int            slavePort      = node.port();
-            S9sString      masterHostname = node.masterHost();
-            int            masterPort     = node.masterPort();
-            S9sString      slaveStatus     = node.hostStatusShort();
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
+            S9sString      status = replication.slaveStatusShort();
 
-            if (role == "controller" || role == "master")
+            if (!replication.isValid())
                 continue;
-            
-            if (masterHostname.empty())
-                continue;
-            
+
             if (!replication.matchSlave(slaveFilter))
                 continue;
             
@@ -541,15 +528,20 @@ S9sRpcReply::printReplicationListLong()
             if (node.hasMasterClusterId())
                 masterCluster.sprintf("%d", node.masterClusterId());
             else
-                masterCluster.sprintf("%s", "?");
+                masterCluster.sprintf("%s", "-");
             
-            masterName.sprintf("%s:%d", STR(masterHostname), masterPort);
-            slaveName.sprintf("%s:%d", STR(slaveHostname), slavePort);
+            masterName = replication.masterName();
+            slaveName = replication.slaveName();
 
             clusterIdFormat.printf(clusterId);
             slaveNameFormat.printf(slaveName);
             masterNameFormat.printf(masterName);
-            linkStatusFormat.printf(slaveStatus);
+
+            ::printf("%s", formatter.hostStateColorBegin(status));
+            linkStatusFormat.printf(status);
+            ::printf("%s", formatter.hostStateColorEnd());
+
+
             masterClusterFormat.printf(masterCluster);
             ::printf("\n");
         }
@@ -557,6 +549,43 @@ S9sRpcReply::printReplicationListLong()
     
     if (!options->isBatchRequested())
         printf("Total: %d replication link(s)\n", nLines); 
+}
+
+void
+S9sRpcReply::printReplicationListCustom()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sString       formatString = options->linkFormat();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+
+    S9sNode         slaveFilter(options->slave().toVariantMap());
+    S9sNode         masterFilter(options->master().toVariantMap());
+    S9sVariantList  clusterList = clusters();
+    
+    for (uint idx = 0; idx < clusterList.size(); ++idx)
+    {
+        S9sVariantMap  clusterMap  = clusterList[idx].toVariantMap();
+        S9sCluster     cluster     = clusterMap;
+        S9sVector<S9sNode> nodes = cluster.nodes();
+        
+        for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
+        {
+            const S9sNode &node = nodes[idx1];
+            S9sReplication replication(cluster, node);
+            
+            if (!replication.isValid())
+                continue;
+       
+            if (!replication.matchSlave(slaveFilter))
+                continue;
+            
+            if (!replication.matchMaster(masterFilter))
+                continue;
+
+            ::printf("%s", 
+                    STR(replication.toString(syntaxHighlight, formatString)));
+        }
+    }
 }
 
 void

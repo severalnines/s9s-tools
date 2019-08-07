@@ -38,6 +38,8 @@ class S9sReplication : public S9sObject
                 const S9sCluster &cluster,
                 const S9sNode    &slave);
 
+        bool isValid() const;
+
         S9sString slaveHostName() const;
         S9sString masterHostName() const;
 
@@ -47,8 +49,20 @@ class S9sReplication : public S9sObject
         S9sString slaveName() const;
         S9sString masterName() const;
 
+        S9sString slaveStatusShort() const;
+
+        S9sString slaveMessage() const;
+        int secondsBehindMaster() const;
+
+        S9sString toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
+
         bool matchSlave(const S9sNode &slave);
         bool matchMaster(const S9sNode &master);
+
+    private:
+        S9sVariantMap slaveInfo() const;
 
     private:
         /** The cluster in which the slave can be found. */
