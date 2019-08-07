@@ -1013,7 +1013,7 @@ S9sBusinessLogic::execute()
         {
             S9sRpcReply reply;
             
-            client.getClusters();
+            client.getClusters(true, false);
             reply = client.reply();
             reply.printReplicationList();
         } else if (options->isStopRequested())

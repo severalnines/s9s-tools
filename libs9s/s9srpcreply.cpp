@@ -6778,6 +6778,7 @@ void
 S9sRpcReply::printNodeListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    S9sFormatter    formatter;
     S9sVariantMap   properties = options->propertiesOption();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       clusterNameFilter = options->clusterName();
@@ -6940,20 +6941,13 @@ S9sRpcReply::printNodeListLong()
         if (version.empty())
             version = "-";
 
-        // FIXME: I am not sure this is actually user friendly.
+        // FIXME: I am not sure this is actually user friendly. We use the state
+        // color for name color.
         if (syntaxHighlight)
         {
-            if (status == "CmonHostRecovery" ||
-                    status == "CmonHostShutDown")
-            {
-                hostNameFormat.setColor(XTERM_COLOR_YELLOW, TERM_NORMAL);
-            } else if (status == "CmonHostUnknown" ||
-                    status == "CmonHostOffLine")
-            {
-                hostNameFormat.setColor(XTERM_COLOR_RED, TERM_NORMAL);
-            } else {
-                hostNameFormat.setColor(XTERM_COLOR_GREEN, TERM_NORMAL);
-            }
+            hostNameFormat.setColor(
+                    formatter.hostStateColorBegin(status),
+                    formatter.hostStateColorEnd());
         }
 
         // Calculating how much space we have for the message column.
@@ -9990,6 +9984,7 @@ S9sRpcReply::propertyColorEnd() const
     return "";
 }
 
+#if 0
 const char *
 S9sRpcReply::hostStateColorBegin(
         const S9sString status)
@@ -10018,7 +10013,7 @@ S9sRpcReply::hostStateColorEnd()
 
     return "";
 }
-
+#endif
 
 /**
  * This method returns the ANSI color sequence for the beginning of a cluster

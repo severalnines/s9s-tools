@@ -333,8 +333,11 @@ S9sFormatter::hostStateColorBegin(
             return XTERM_COLOR_YELLOW;
         } else if (status == "CmonHostUnknown" || 
                 status == "CmonHostOffLine" ||
+                status == "CmonHostFailed" ||
                 status == "Unknown" ||
-                status == "OffLine")
+                status == "OffLine" ||
+                status == "Failed"
+                )
         {
             return XTERM_COLOR_RED;
         } else {

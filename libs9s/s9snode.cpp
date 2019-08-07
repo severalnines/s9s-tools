@@ -509,14 +509,13 @@ S9sNode::toString(
 
                     if (syntaxHighlight)
                     {
-                        retval += 
-                            S9sRpcReply::hostStateColorBegin(hostStatus());
+                        retval += formatter.hostStateColorBegin(hostStatus());
                     }
 
                     retval += tmp;
 
                     if (syntaxHighlight)
-                        retval += S9sRpcReply::hostStateColorEnd();
+                        retval += formatter.hostStateColorEnd();
 
                     break;
                 

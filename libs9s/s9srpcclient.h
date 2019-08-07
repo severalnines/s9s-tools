@@ -75,7 +75,10 @@ class S9sRpcClient
          * The executers that send an RPC request and receive an RPC reply from
          * the server.
          */
-        bool getClusters();
+        bool getClusters(
+                bool withHosts      = true,
+                bool withSheetInfo  = true);
+
         bool getCluster(const S9sString &clusterName, const int clusterId);
         bool getTree(bool withDotDot = false);
         bool getDatabases();

@@ -267,14 +267,29 @@ function testCreateCluster()
 
 function testStopStartReplication()
 {
+    local state
+    local slave=$SECOND_ADDED_NODE
+
     print_title "Stopping and Starting Replication"
     cat <<EOF
   This test will stop then start the replication on a replication slave.
 
 EOF
 
+    #
+    # Preliminary checks.
+    #
     mys9s replication --list --long
+    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
+    if [ "$state" == "Online" ]; then
+        success "  o The status of $slave is $state, ok."
+    else
+        failure "The status of $slave is $state, not 'Online'."
+    fi
 
+    #
+    # Stopping the replication.
+    #
     mys9s replication \
         --stop \
         --cluster-id=1 \
@@ -285,7 +300,24 @@ EOF
     check_exit_code $?
     
     mys9s replication --list --long
+    #mys9s replication --list --print-json | jq .
+    
+    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
+    if [ "$state" == "Failed" ]; then
+        cat <<EOF
+  We deliberately stopped the replication on the $slave and it seems the host
+  status is now CmonHostFailed. It could be CmonHostShutDown, but the real
+  problem is that we have no way to know that the replication is stopped from
+  the properties the controller sends.
 
+  Here are the properties to check:
+EOF
+    s9s replication --list --print-json | jq .
+    fi
+
+    #
+    # Starting the replication, checking the state.
+    #
     mys9s replication \
         --start \
         --cluster-id=1 \
@@ -296,6 +328,13 @@ EOF
     check_exit_code $?
     
     mys9s replication --list --long
+    
+    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
+    if [ "$state" == "Online" ]; then
+        success "  o The status of $slave is $state, ok."
+    else
+        failure "The status of $slave is $state, not 'Online'."
+    fi
 }
 
 function testStageSlave()

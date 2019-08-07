@@ -898,6 +898,7 @@ S9sMonitor::printJobs()
 void
 S9sMonitor::printNodes()
 {
+    S9sFormatter formatter;
     S9sFormat   sourceFileFormat(XTERM_COLOR_BLUE, TERM_NORMAL);
     S9sFormat   sourceLineFormat;
     S9sFormat   versionFormat;
@@ -995,8 +996,8 @@ S9sMonitor::printNodes()
         if (m_clusters.contains(node.clusterId()))
             clusterName = m_clusters[node.clusterId()].name();
 
-        beginColor = S9sRpcReply::hostStateColorBegin(node.hostStatus());
-        endColor   = S9sRpcReply::hostStateColorEnd();
+        beginColor = formatter.hostStateColorBegin(node.hostStatus());
+        endColor   = formatter.hostStateColorEnd();
         hostNameFormat.setColor(beginColor, endColor);
 
         if (m_viewDebug)

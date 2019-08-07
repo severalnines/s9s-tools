@@ -1,10 +1,9 @@
-.TH S9S-GROUP 1 "August 6, 2019"
+.TH S9S-REPLICATION 1 "August 6, 2019"
 .SH NAME
 s9s-replication - Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
-.B s9s-replication
+.B s9s replication
 .RI [OPTION]...
-.RI [HOSTNAME]...
 
 .\"
 .\" The main options.
@@ -80,6 +79,91 @@ s9s replication \\
 .\"
 .SS Other Options
 
+.\"
+.\" The format-string option with the description of the format specifiers.
+.\"
+.TP
+.BI --link-format= FORMATSTRING
+This command line option can be used to print specific information about the
+replication links. The format string controls the format of the printed 
+information about the links.
+
+When this command line option is used the specified information will be printed
+instead of the default columns. The format string uses the '%' character to mark
+variable fields and flag characters as they are specified in the standard
+printf() C library functions. The '%' specifiers are ended by field name letters
+to refer to various properties of the replication.
+
+The "%+12p" format string for example has the "+12" flag characters in it with
+the standard meaning: the field will be 12 character wide and the "+" or "-"
+sign will always be printed with the number. 
+
+The properties of the links are encoded by letters. The in the "%4p" for
+example the letter "p" encodes the "slave port" field, so the port number of the
+slave node will be substituted.
+
+Standard '\\' notation is also available, \\n for example encodes a new-line 
+character.
+
+.B EXAMPLE
+.nf
+s9s replication \\
+    --list \\
+    --long \\
+    --link-format="%16h %4p <- %H %2P %o %O\\n"
+.fi
+
+The s9s-tools support the following fields:
+
+.RS 7
+.TP 
+.B c
+The cluster ID of the cluster where the slave node can be found.
+
+.TP
+.B d
+This format specifier denotes the "seconds behind the master" property of the
+slave.
+
+.TP
+.B h
+The host name of the slave node in the link.
+
+.TP
+.B H
+The host name of the master node in the link.
+
+.TP
+.B o
+The position of the slave in the replication log.
+
+.TP 
+.B O 
+The position of the master in the replication log.
+
+.TP
+.B p
+The port number of the slave.
+
+.TP 
+.B P
+The port number of the master node.
+
+.TP
+.B s
+A short string representing the link status, e.g. "Online" when everything is
+ok.
+
+.TP
+.B m
+A slightly longer, human readable string representing the state of the link.
+This is actually the "slave_io_state" property of the slave node.
+
+.RE
+
+.\"
+.\"
+.\"
 .TP
 .BI --master= NODE
 The replication master.
