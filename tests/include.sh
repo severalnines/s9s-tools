@@ -14,6 +14,7 @@ export FIRST_ADDED_NODE=""
 export SECOND_ADDED_NODE=""
 export THIRD_ADDED_NODE=""
 export FOURTH_ADDED_NODE=""
+export FIFTH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
@@ -598,6 +599,32 @@ function check_job()
     fi
 }
 
+#
+#
+#
+function check_log()
+{
+    local log_file="/tmp/cmon.log"
+    local line
+
+    if [ -n "$log_file" ]; then
+        success "  o Will check log file '$log_file', ok."
+
+        if [ -f "$log_file" ]; then
+            success "  o Log file '$log_file' exists, ok."
+        else
+            failure "Log file '$log_file' does not exist."
+        fi
+
+        for line in "$@"; do
+            if grep --quiet "$line" $log_file; then
+                success "  o Expression found: '$line'"
+            else
+                failure "Expression not found: '$line'"
+            fi
+        done
+    fi
+}
 
 function check_container()
 {

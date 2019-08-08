@@ -1519,8 +1519,15 @@ S9sRpcClient::getLog()
 
     // Building the request.
     request["operation"]  = "getLogEntries";
-    request["ascending"]  = true;
+    request["ascending"]  = false;
+    request["cluster_id"] = options->clusterId();
     
+    if (options->isDebug())
+        request["severity"] = "LOG_DEBUG";
+
+    else if (options->isWarning())
+        request["severity"] = "LOG_WARNING";
+
     if (!options->from().empty())
         request["created_after"] = options->from();
 

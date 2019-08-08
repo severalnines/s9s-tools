@@ -531,6 +531,7 @@ class S9sOptions
         void setVerbose(bool value);
 
         bool isDebug() const;
+        bool isWarning() const;
 
         static void printVerbose(const char *formatString, ...);
         static void printError(const char *formatString, ...);

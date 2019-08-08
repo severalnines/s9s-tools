@@ -185,6 +185,7 @@ enum S9sOptionType
     OptionExtended,
     OptionDry,
     OptionDebug,
+    OptionWarning,
     OptionClusterFormat,
     OptionNodeFormat,
     OptionBackupFormat,
@@ -997,7 +998,6 @@ S9sOptions::clientConnectionTimeout() const
     if (intVal < 1)
         intVal = 1;
 
-    //S9S_WARNING("intVal: %d", intVal);
     return intVal;
 }
 
@@ -1266,8 +1266,6 @@ S9sOptions::setNodes(
         S9sString nodeString = nodeStrings[idx].toString();
         S9sNode   node(nodeString.trim());
 
-        //S9S_WARNING("[%2u] %s", idx, STR(nodeStrings[idx].toString()));
-        //S9S_WARNING("%s\n", STR(node.toVariantMap().toString()));
         if (node.hasError())
         {
             PRINT_ERROR("%s", STR(node.fullErrorString()));
@@ -4587,10 +4585,19 @@ S9sOptions::setVerbose(
     m_options["verbose"] = value;
 }
 
+/**
+ * \returns True if the --debug option was provided.
+ */
 bool
 S9sOptions::isDebug() const
 {
     return getBool("debug");
+}
+
+bool
+S9sOptions::isWarning() const
+{
+    return getBool("warning");
 }
 
 /**
@@ -6813,6 +6820,7 @@ S9sOptions::readOptionsLog(
         // Generic Options
         { "help",             no_argument,       0, OptionHelp            },
         { "debug",            no_argument,       0, OptionDebug           },
+        { "warning",          no_argument,       0, OptionWarning         },
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
@@ -6873,6 +6881,11 @@ S9sOptions::readOptionsLog(
             case OptionDebug:
                 // --debug
                 m_options["debug"] = true;
+                break;
+            
+            case OptionWarning:
+                // --warning
+                m_options["warning"] = true;
                 break;
 
             case 'v':

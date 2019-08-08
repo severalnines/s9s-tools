@@ -186,6 +186,12 @@ EOF
     else
         success "  o the keys are there, ok"
     fi
+
+    print_subtitle "Checking Logs"
+
+    check_log \
+        "Checked tables" \
+        "License is"
 }
 
 #

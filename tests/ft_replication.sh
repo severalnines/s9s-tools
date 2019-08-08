@@ -4,6 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
+VERSION="0.0.5"
 LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -166,15 +167,19 @@ function testCreateCluster()
     nodes+="$nodeName?slave;"
     
     nodeName=$(create_node --autodestroy "${MYBASENAME}_02_$$")
+    THIRD_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
     
     nodeName=$(create_node --autodestroy "${MYBASENAME}_03_$$")
+    FOURTH_ADDED_NODE=$nodeName
     nodes+="$nodeName?master;"
     
     nodeName=$(create_node --autodestroy "${MYBASENAME}_04_$$")
+    FIFTH_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
     
     nodeName=$(create_node --autodestroy "${MYBASENAME}_05_$$")
+    LAST_ADDED_NODE=$nodeName
     nodes+="$nodeName?slave;"
     
     #
@@ -198,21 +203,160 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    mys9s cluster --stat 
-    sleep 30
-    mys9s cluster --stat
+    wait_for_cluster_started "$CLUSTER_NAME" 
+
+    mys9s replication --list --long
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "REPLICATION" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$FIFTH_ADDED_NODE" \
+        --state          "Online"
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$LAST_ADDED_NODE" \
+        --state          "Online"
+}
+
+function testStageSlave()
+{
+    print_title "Testing the Rebuilding a Replication Slave"
+    cat <<EOF
+  This test will use the --stage option to rebuild the replication slave and
+  then check if the job was properly executed.
+
+EOF
+
+    mys9s replication --list --long
+
+    mys9s replication \
+        --stage \
+        --cluster-id=1 \
+        --job-tags="stage" \
+        --slave=$THIRD_ADDED_NODE:3306 \
+        --master=$FIRST_ADDED_NODE:3306 \
+        $LOG_OPTION
+    
+    check_exit_code $?
+    mys9s replication --list --long
+    
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+}
+
+#
+# This test will create a user and a database and then upload some data if the
+# data can be found on the local computer.
+#
+function testUploadData()
+{
+    local db_name="pipas1"
+    local user_name="pipas1"
+    local password="p"
+    local reply
+    local count=0
+
+    print_title "Testing data upload on cluster."
 
     #
-    # FIXME: Forget it, it is not woprking and nobody fixes it.
+    # Creating a new database on the cluster.
     #
-#    print_title "Promoting Slave $SECOND_ADDED_NODE"
-#    mys9s cluster \
-#        --promote-slave \
-#        --nodes="$SECOND_ADDED_NODE" \
-#        --cluster-id="$CLUSTER_ID" \
-#        $LOG_OPTION
-#
-#    check_exit_code $?
+    mys9s cluster \
+        --create-database \
+        --db-name=$db_name
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
+    fi
+
+    #
+    # Creating a new account on the cluster.
+    #
+    mys9s account \
+        --create \
+        --account="$user_name:$password" \
+        --privileges="$db_name.*:ALL"
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
+    fi
+
+    #
+    # Executing a simple SQL statement using the account we created.
+    #
+    reply=$(\
+        mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$FIRST_ADDED_NODE \
+            -u$user_name \
+            -p$password \
+            $db_name \
+            -e "SELECT 41+1" | tail -n +2 )
+
+    if [ "$reply" != "42" ]; then
+        failure "Cluster failed to execute an SQL statement: '$reply'."
+    fi
+
+    #
+    # Here we upload some tables. This part needs test data...
+    #
+    for file in \
+        /home/pipas/Desktop/stuff/databases/*.sql.gz \
+        /home/domain_names_ngtlds_dropped_whois/*/*/*.sql.gz;
+    do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        printf "%'6d " "$count"
+        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
+        printf "\n"
+        zcat $file | \
+            mysql --batch -h$FIRST_ADDED_NODE -u$user_name -pp $db_name
+
+        exitCode=$?
+        if [ "$exitCode" -ne 0 ]; then
+            failure "Exit code is $exitCode while uploading data."
+            break
+        fi
+
+        let count+=1
+        if [ "$count" -gt 99 ]; then
+            break
+        fi
+    done
 }
 
 #
@@ -282,6 +426,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
+    runFunctionalTest testUploadData
+    runFunctionalTest testStageSlave
     runFunctionalTest testStop
     runFunctionalTest testDrop
 fi

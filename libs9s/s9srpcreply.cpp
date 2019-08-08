@@ -2134,18 +2134,18 @@ S9sRpcReply::printLogBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    bool            isDebug = options->isDebug();
     S9sString       formatString = options->briefLogFormat();
     S9sVariantList  theList = operator[]("log_entries").toVariantList();
+
+    std::reverse(std::begin(theList), std::end(theList));
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
         S9sVariantMap theMap  = theList[idx].toVariantMap();
         S9sMessage    message = theMap;
         S9sString     severity = message.severity();
-
-        if (!isDebug && (severity == "DEBUG" || severity == "INFO"))
-            continue;
+        
+        // Filtering by severity level is done on the controller now.
 
         if (formatString.empty())
             printf("%s\n", STR(S9sString::html2ansi(message.message())));
@@ -2161,9 +2161,10 @@ S9sRpcReply::printLogLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
-    bool            isDebug = options->isDebug();
     S9sString       formatString = options->longLogFormat();
     S9sVariantList  theList = operator[]("log_entries").toVariantList();
+
+    std::reverse(std::begin(theList), std::end(theList));
 
     // FIXME:
     // The implementation of the long format is just a formatstring, the same
@@ -2177,8 +2178,7 @@ S9sRpcReply::printLogLong()
         S9sMessage    message = theMap;
         S9sString     severity = message.severity();
 
-        if (!isDebug && (severity == "DEBUG" || severity == "INFO"))
-            continue;
+        // Filtering by severity level is done on the controller now.
 
         if (formatString.empty())
             printf("%s\n", STR(S9sString::html2ansi(message.message())));

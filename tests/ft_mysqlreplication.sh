@@ -228,8 +228,9 @@ function testCreateCluster()
     # FIXME: This should not be needed.
     wait_for_cluster_started "$CLUSTER_NAME" 
 
-    #mys9s cluster --stat
-    #mys9s node    --stat
+    mys9s cluster --stat
+    mys9s node    --stat
+    mys9s replication --list --long
 
     #
     # Checking the controller, the nodes and the cluster.
@@ -370,6 +371,95 @@ EOF
         --state          "STARTED" 
 }
 
+#
+# This test will create a user and a database and then upload some data if the
+# data can be found on the local computer.
+#
+function testUploadData()
+{
+    local db_name="pipas1"
+    local user_name="pipas1"
+    local password="p"
+    local reply
+    local count=0
+
+    print_title "Testing data upload on cluster."
+
+    #
+    # Creating a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --db-name=$db_name
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
+    fi
+
+    #
+    # Creating a new account on the cluster.
+    #
+    mys9s account \
+        --create \
+        --account="$user_name:$password" \
+        --privileges="$db_name.*:ALL"
+    
+    exitCode=$?
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is $exitCode while creating a database."
+        exit 1
+    fi
+
+    #
+    # Executing a simple SQL statement using the account we created.
+    #
+    reply=$(\
+        mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$FIRST_ADDED_NODE \
+            -u$user_name \
+            -p$password \
+            $db_name \
+            -e "SELECT 41+1" | tail -n +2 )
+
+    if [ "$reply" != "42" ]; then
+        failure "Cluster failed to execute an SQL statement: '$reply'."
+    fi
+
+    #
+    # Here we upload some tables. This part needs test data...
+    #
+    for file in \
+        /home/pipas/Desktop/stuff/databases/*.sql.gz \
+        /home/domain_names_ngtlds_dropped_whois/*/*/*.sql.gz;
+    do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        printf "%'6d " "$count"
+        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
+        printf "\n"
+        zcat $file | \
+            mysql --batch -h$FIRST_ADDED_NODE -u$user_name -pp $db_name
+
+        exitCode=$?
+        if [ "$exitCode" -ne 0 ]; then
+            failure "Exit code is $exitCode while uploading data."
+            break
+        fi
+
+        let count+=1
+        if [ "$count" -gt 99 ]; then
+            break
+        fi
+    done
+}
+
+
 function testStageSlave()
 {
     print_title "Testing the Rebuilding a Replication Slave"
@@ -390,9 +480,7 @@ EOF
         $LOG_OPTION
     
     check_exit_code $?
-    
     mys9s replication --list --long
-    #mys9s job --list --long
 }
 
 function testPromoteSlave()
@@ -844,6 +932,7 @@ else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testStopStartReplication
+    runFunctionalTest testUploadData
     runFunctionalTest testStageSlave
     runFunctionalTest testPromoteSlave
 

@@ -20,6 +20,7 @@
 #include "s9smessage.h"
 
 #include "S9sOptions"
+#include "S9sFormatter"
 
 //#define DEBUG
 #define WARNING
@@ -137,6 +138,18 @@ S9sMessage::lineNumber() const
     return -1;
 }
 
+int 
+S9sMessage::clusterId() const
+{
+    if (m_properties.contains("log_specifics"))
+    {
+        S9sVariantMap map = m_properties.at("log_specifics").toVariantMap();
+        return map["cluster_id"].toInt(0);
+    }
+
+    return 0;
+}
+
 /**
  * \returns The numerical ID of the message if there is a message ID or -1 if
  *   there is no ID.
@@ -146,8 +159,21 @@ S9sMessage::messageId() const
 {
     if (m_properties.contains("message_id"))
         return m_properties.at("message_id").toInt();
+    
+    // This is for log messages.
+    if (m_properties.contains("log_id"))
+        return m_properties.at("log_id").toInt();
 
     return -1;
+}
+
+S9sString
+S9sMessage::logClass() const
+{
+    if (m_properties.contains("log_class"))
+        return m_properties.at("log_class").toString();
+
+    return S9sString();
 }
 
 int
@@ -291,7 +317,7 @@ S9sMessage::termColorString() const
 S9sString
 S9sMessage::toString() const
 {
-    S9sString retval;
+    S9sString    retval;
 
     if (hasFileName() && hasLineNumber())
     {
@@ -319,6 +345,7 @@ S9sMessage::toString(
         const S9sString &formatString) const
 {
     S9sOptions  *options = S9sOptions::instance();
+    S9sFormatter formatter;
     S9sString    retval;
     S9sString    tmp;
     char         c;
@@ -381,10 +408,35 @@ S9sMessage::toString(
         {
             switch (c)
             {
+                case 'c':
+                    // The 'log_class' property.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(logClass()));
+                    retval += formatter.typeColorBegin();
+                    retval += tmp;
+                    retval += formatter.typeColorEnd();
+                    break;
+
+                case 'C':
+                    // The 'created' date&time.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(options->formatDateTime(created())));
+                    retval += tmp;
+                    break;
+                
                 case 'L':
                     // The line number.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), lineNumber());
+                    retval += tmp;
+                    break;
+                
+                case 'i':
+                    // The message ID.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), clusterId());
                     retval += tmp;
                     break;
                 
@@ -420,15 +472,6 @@ S9sMessage::toString(
                     retval += tmp;
                     break;
 
-                case 'C':
-                    // The 'created' date&time.
-                    partFormat += 's';
-                    tmp.sprintf(
-                            STR(partFormat), 
-                            STR(options->formatDateTime(created())));
-                    retval += tmp;
-                    break;
-                
                 case 'T':
                     // The 'created' time.
                     partFormat += 's';

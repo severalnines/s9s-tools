@@ -22,6 +22,48 @@
 #include <S9sVariantMap>
 #include <S9sDateTime>
 
+/**
+ * Represents human readable messages that are in the log or in the job message
+ * log.
+ *
+ * Here is how a message coming from the log looks like:
+ * \code{.js}
+ * {
+ *   "class_name": "CmonLogMessage",
+ *   "component": "ClusterConfiguration",
+ *   "created": "2019-08-08T06:45:00.728Z",
+ *   "log_class": "LogMessage",
+ *   "log_id": 133,
+ *   "log_origins": {
+ *     "sender_binary": "cmon",
+ *     "sender_file": "cmonhostmanager.cpp",
+ *     "sender_line": 619,
+ *     "sender_pid": 40692,
+ *     "tv_nsec": 728473605,
+ *     "tv_sec": 1565246700
+ *   },
+ *   "log_specifics": {
+ *     "cluster_id": 1,
+ *     "message_text": "Registering CmonMySqlHost: 192.168.0.76:3306"
+ *   },
+ *   "severity": "LOG_DEBUG"
+ * }
+ * \endcode
+ *
+ * And here is a message that comes from a job:
+ * \code{.js}
+ * {
+ *   "class_name": "CmonJobMessage",
+ *   "created": "2019-08-08T06:33:34.000Z",
+ *   "file_name": "Communication.cpp",
+ *   "job_id": 1,
+ *   "line_number": 6665,
+ *   "message_id": 6,
+ *   "message_status": "JOB_SUCCESS",
+ *   "message_text": "Checking ssh/sudo on 3 hosts."
+ * }
+ * \endcode
+ */
 class S9sMessage
 {
     public:
@@ -38,16 +80,19 @@ class S9sMessage
         bool hasFileName() const;
         S9sString fileName() const;
 
-#ifdef LOG_FUNCNAMES_TO_JOBLOG
+        #ifdef LOG_FUNCNAMES_TO_JOBLOG
         bool hasFunctionName() const;
         S9sString functionName() const;
-#endif
+        #endif
 
         bool hasLineNumber() const;
         int lineNumber() const;
 
+        int clusterId() const;
         int messageId() const;
         int jobId() const;
+        S9sString logClass() const;
+
 
         S9sDateTime created() const;
         S9sString severity() const;
