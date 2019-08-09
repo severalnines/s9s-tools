@@ -397,33 +397,6 @@ function endTests ()
 }
 
 #
-# This is the BASH function that executes a functional test. The functional test
-# itself should be implemented as a BASH function.
-#
-function runFunctionalTest ()
-{
-    TEST_NAME=$1
-
-    if ! isSuccess; then
-        if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-            printf "  %-26s: SKIPPED\n" "$TEST_NAME"
-        fi
-
-        return 1
-    else
-        $TEST_NAME $*
-    fi
-
-    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-        if ! isSuccess; then
-            printf "  %-26s: FAILURE\n" "$TEST_NAME"
-        else 
-            printf "  %-26s: SUCCESS\n" "$TEST_NAME"
-        fi
-    fi
-}
-
-#
 # Returns true if none of the tests failed before, false if some bug was
 # detected.
 #
@@ -560,6 +533,8 @@ function check_exit_code_no_job()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}."
         return 1
+    else
+        success "  o The exit code is 0, ok."
     fi
 
     return 0
@@ -602,11 +577,52 @@ function check_job()
 #
 #
 #
-function check_log()
+function check_log_messages()
 {
     local log_file="/tmp/cmon.log"
     local line
+    local cmon_user="system"
+    local password="secret"
 
+    while true; do
+        case "$1" in 
+            --cmon-user)
+                cmon_user="$2"
+                shift 2
+                ;;
+
+            --password)
+                password="$2"
+                shift 2
+                ;;
+
+            --)
+                break
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    for line in "$@"; do
+        s9s log \
+            --cmon-user=system \
+            --password=secret \
+            --list \
+            --long \
+            --log-format="%I %M\n" \
+            --cluster-id=0 | \
+        grep --quiet "$line"
+
+        if [ $? -eq 0 ]; then
+            success "  o Found in log: '$line'"
+        else
+            failure "Not found in log: '$line'"
+        fi
+    done
+    
     if [ -n "$log_file" ]; then
         success "  o Will check log file '$log_file', ok."
 
@@ -618,12 +634,32 @@ function check_log()
 
         for line in "$@"; do
             if grep --quiet "$line" $log_file; then
-                success "  o Expression found: '$line'"
+                success "  o Found in file: '$line'"
             else
-                failure "Expression not found: '$line'"
+                failure "Not found in file: '$line'"
             fi
         done
     fi
+
+    mys9s log \
+        --cmon-user="$cmon_user" \
+        --password="$password" \
+        --list \
+        --long \
+        --log-format="%02i %04I %18c %38B:%4L %-8S %M\n" \
+        --cluster-id=0 \
+        --limit=25
+}
+
+function print_log_messages()
+{
+    mys9s log \
+        --list \
+        --long \
+        --log-format="%02i %04I %18c %38B:%4L %-8S %M\n" \
+        --cluster-id=0 \
+        --limit=25 \
+        --debug
 }
 
 function check_container()
@@ -2786,6 +2822,36 @@ function cmon_container_list()
 {
     echo $CMON_CONTAINER_NAMES
 }
+
+#
+# This is the BASH function that executes a functional test. The functional test
+# itself should be implemented as a BASH function.
+#
+function runFunctionalTest ()
+{
+    TEST_NAME=$1
+
+    if ! isSuccess; then
+        if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
+            printf "  %-26s: SKIPPED\n" "$TEST_NAME"
+        fi
+
+        return 1
+    else
+        # This is where we call the function that executes the test.
+        $TEST_NAME $*
+        #print_log_messages
+    fi
+
+    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
+        if ! isSuccess; then
+            printf "  %-26s: FAILURE\n" "$TEST_NAME"
+        else 
+            printf "  %-26s: SUCCESS\n" "$TEST_NAME"
+        fi
+    fi
+}
+
 
 trap clean_up_after_test EXIT
 

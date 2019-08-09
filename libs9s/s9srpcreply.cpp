@@ -2162,8 +2162,18 @@ S9sRpcReply::printLogLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->longLogFormat();
-    S9sVariantList  theList = operator[]("log_entries").toVariantList();
 
+    S9sVariantList  variantList = operator[]("log_entries").toVariantList();
+    S9sVector<S9sMessage> theList;
+
+    for (uint idx = 0u; idx < variantList.size(); ++idx)
+    {
+        S9sVariantMap theMap  = variantList[idx].toVariantMap();
+        S9sMessage    message = theMap;
+        
+        theList << message;
+    }
+    
     std::reverse(std::begin(theList), std::end(theList));
 
     // FIXME:
@@ -2174,15 +2184,15 @@ S9sRpcReply::printLogLong()
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
-        S9sVariantMap theMap  = theList[idx].toVariantMap();
-        S9sMessage    message = theMap;
+        S9sMessage    message  = theList[idx];
         S9sString     severity = message.severity();
 
         // Filtering by severity level is done on the controller now.
 
         if (formatString.empty())
+        {
             printf("%s\n", STR(S9sString::html2ansi(message.message())));
-        else {
+        } else {
             printf("%s",
                     STR(message.toString(syntaxHighlight, formatString)));
         }

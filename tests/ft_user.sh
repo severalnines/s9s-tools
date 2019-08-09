@@ -189,7 +189,8 @@ EOF
 
     print_subtitle "Checking Logs"
 
-    check_log \
+    check_log_messages \
+        "Configuration loaded" \
         "Checked tables" \
         "License is"
 }
@@ -416,6 +417,14 @@ function testFailWrongPassword()
     # Using the wrong password.
     #
     print_title "Trying a Wrong Password"
+    cat <<EOF
+  This test will try to authenticate the system user with a wrong password
+  and check that both the return value and the error message shows the failure.
+  Then the test checks that the failed attempty is indicated in both the user
+  stats and the logs.
+
+EOF
+
     output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
@@ -431,18 +440,22 @@ function testFailWrongPassword()
         success "  o output is '$output', ok"
     fi
 
-    #mys9s user --stat system
+    # Checking the user stats.
     output=$(s9s user --stat system | grep Failure | awk '{print $2}')
     if [ "$output" == "-" ]; then
         failure "Failed login is not indicated."
     else
         success "  o failed login at '$output', ok"
     fi
-    
+   
+    # Checking the logs.
+    check_log_messages \
+        "failed to log in with password"
+
     #
     # Using the wrong username.
     #
-    print_title "Trying a Wrong Username"
+    print_subtitle "Trying a Wrong Username"
     output=$(s9s user --whoami --cmon-user=sys --password=secret 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
@@ -457,6 +470,10 @@ function testFailWrongPassword()
     else
         success "  o output is '$output', ok"
     fi
+    
+    # Checking the logs.
+    check_log_messages \
+        "User 'sys' is not found"
 }
 
 #
@@ -513,6 +530,9 @@ function testFailNoGroup()
         --user-name    "kirk"  \
         --password     "secret" \
         --email        "kirk@enterprise.com"
+    
+    check_log_messages \
+        "Creating new cmon user 'kirk'"
 
     #mys9s user --list --long
     
@@ -528,8 +548,8 @@ function testCreateUsers()
 
     print_title "Testing Creation of Users"
     cat <<EOF
-This test will create several users through RPC v2 and check if they are
-properly created.
+  This test will create several users through RPC v2 and check if they are
+  properly created.
 
 EOF
 
@@ -553,20 +573,22 @@ EOF
         --batch \
         "sisko"
 
-    s9s user --list-groups --print-json | jq .
+    check_exit_code_no_job $?
 
     check_group \
         --group-name   "ds9"     \
         --owner-name   "system"  \
         --group-owner  "admins" 
   
-    check_exit_code_no_job $?
     check_user \
         --group      "ds9" \
         --user-name  "sisko" \
         --password   "secret" \
         --email      "sisko@ds9.com" \
         --check-key 
+    
+    check_log_messages \
+        "Creating new cmon user 'sisko'"
 
     # User odo
     mys9s user \
@@ -584,12 +606,16 @@ EOF
         "odo"
     
     check_exit_code_no_job $?
+
     check_user \
         --group      "ds9" \
         --user-name  "odo" \
         --password   "odo" \
         --email      "odo@ds9.com" \
         --check-key 
+    
+    check_log_messages \
+        "Creating new cmon user 'odo'"
 
     # User jake
     mys9s user \
@@ -606,6 +632,9 @@ EOF
         "jake"
     
     check_exit_code_no_job $?
+    
+    check_log_messages \
+        "Creating new cmon user 'jake'"
 
     mys9s user \
         --create \
@@ -622,6 +651,9 @@ EOF
         "bashir"
     
     check_exit_code_no_job $?
+    
+    check_log_messages \
+        "Creating new cmon user 'bashir'"
 
     mys9s user \
         --create \
@@ -638,6 +670,9 @@ EOF
         "chief"
     
     check_exit_code_no_job $?
+    
+    check_log_messages \
+        "Creating new cmon user 'chief'"
 
     mys9s user \
         --create \
@@ -654,6 +689,9 @@ EOF
         "jadzia"
     
     check_exit_code_no_job $?
+    
+    check_log_messages \
+        "Creating new cmon user 'jadzia'"
 
     mys9s user \
         --create \
@@ -671,8 +709,8 @@ EOF
     
     check_exit_code_no_job $?
 
-    mys9s user --stat worf
-    mys9s user --whoami --print-json --cmon-user worf
+    #mys9s user --stat worf
+    #mys9s user --whoami --print-json --cmon-user worf
 
     #
     # After creating all these users the logged in user should still be me.
@@ -839,8 +877,10 @@ function testChangePassword()
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
+        failure "The exit code is ${exitCode} while changing password."
         return 1
+    else
+        success "  o Changing password succeeded, ok."
     fi
 
     myself=$(s9s user --whoami --cmon-user=$userName --password=p)
@@ -928,6 +968,7 @@ function testPrivateKey()
             --whoami \
             --cmon-user=$userName \
             --private-key-file=$privateKey)
+
     if [ "$myself" != "$userName" ]; then
         failure "Failed to log in with public key"
         mys9s user \
@@ -954,8 +995,9 @@ function testSetGroup()
     #
     print_title "Changing the Primary Group"
     cat <<EOF
-This test will change the $user_name user, set its primary group to $group_name
-by calling the s9s with the --set-group command line option.
+  This test will change the $user_name user, set its primary group to
+  $group_name by calling the s9s with the --set-group command line option.
+  
 EOF
     mys9s user \
         --set-group \
@@ -969,6 +1011,8 @@ EOF
     actual_group_name=$(get_user_group "$user_name")
     if [ "$actual_group_name" != "$group_name" ]; then
         failure "The group for '$user_name' is '$actual_group_name'."
+    else
+        success "  o The group for '$user_name' is '$actual_group_name', ok."
     fi
 
     mys9s user --list --long
@@ -1059,14 +1103,15 @@ EOF
     fi
 
     mys9s user --stat sisko
+    print_log_messages
 
     #
     # Adding the user again should fail.
     #
-    print_title "Trying to Add to the Group Again"
+    print_subtitle "Trying to Add to the Group Again"
     cat <<EOF
-Checking if adding the user to a group it already belongs to will result in 
-an error.
+  Checking if adding the user to a group it already belongs to will result in 
+  an error.
 EOF
 
     mys9s user \
@@ -1084,10 +1129,12 @@ EOF
         success "  o adding to the same group failed, ok"
     fi
 
+    print_log_messages
+
     #
     # Removing the user from the group.
     #
-    print_title "Removing the User from the Group"
+    print_subtitle "Removing the User from the Group"
     cat <<EOF
 Here we remove the user $user_name from the admins group and check if the user
 was indeed removed and the special privileges are revoked.
@@ -1380,7 +1427,7 @@ function checkPasswordReset()
     fi
 
     #
-    #
+    # Password reset with the token.
     #
     token=$(echo $token | tr -d '"')
 
@@ -1393,9 +1440,7 @@ function checkPasswordReset()
     check_exit_code_no_job $?
 
     mys9s user --whoami --cmon-user="system" --password="newpassword"
-
     check_exit_code_no_job $?
-
 }
 
 function testUserSelfAdmin()
