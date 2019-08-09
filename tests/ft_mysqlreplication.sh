@@ -277,6 +277,8 @@ function testCreateCluster()
         --cluster-name   "$CLUSTER_NAME" \
         --slave          "$THIRD_ADDED_NODE" \
         --state          "Online"
+
+    print_log_messages
 }
 
 function testStopStartReplication()
@@ -481,6 +483,8 @@ EOF
     
     check_exit_code $?
     mys9s replication --list --long
+    
+    print_log_messages
 }
 
 function testPromoteSlave()
