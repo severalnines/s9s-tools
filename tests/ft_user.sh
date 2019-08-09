@@ -1362,87 +1362,6 @@ EOF
     fi
 }
 
-function checkPasswordReset()
-{
-    local retCode
-    local mailFile
-
-    print_title "Checking Password Reset Option"
-
-    rm -rf "/tmp/cmon/emails/outgoing/"
-    mys9s user --password-reset --cmon-user admin 
-
-    retCode=$?
-    if [ $retCode -eq 0 ]; then
-        failure "This should have failed, the user has no email address."
-    else
-        success "  o Failed, no email address, ok."
-    fi
-    
-    #
-    # Sending the password reset mail.
-    #
-    mys9s user --password-reset --cmon-user system
-    retCode=$?
-    
-    mailFile="/tmp/cmon/emails/outgoing/system@mynewdomain.com/email_0000.json";
-    if [ -f "$mailFile" ]; then
-        cat $mailFile | jq .
-    fi
-
-    if [ $retCode -eq 0 ]; then
-        success "  o Password reset request is succeeded, ok."
-    else
-        failure "Password reset failed."
-    fi
-
-    if [ -f "$mailFile" ]; then
-        success "  o The mail is found, ok."
-    else
-        failure "The mail is not found in '$mailFile'."
-    fi
-        
-
-    token=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@PASSWORD_RESET_TOKEN@"]')
-    if [ -n "$token" ]; then
-        success "  o The token is '$token', ok"
-    else
-        failure "Token not found."
-    fi
-    
-    recipient=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@RECIPIENT@"]')
-    if [ -n "$recipient" ]; then
-        success "  o The recpient found ('$recipient'), ok"
-        if [ "$recipient" == '"system@mynewdomain.com"' ]; then
-            success "  o Recipient is correct, ok."
-        else
-            failure "Recipient should be \"system@mynewdomain.com\"."
-        fi
-    else
-        failure "Recipient not found."
-    fi
-
-    #
-    # Password reset with the token.
-    #
-    token=$(echo $token | tr -d '"')
-
-    mys9s user \
-        --password-reset \
-        --cmon-user=system \
-        --token=$token \
-        --new-password="newpassword"
-
-    check_exit_code_no_job $?
-
-    mys9s user --whoami --cmon-user="system" --password="newpassword"
-    check_exit_code_no_job $?
-}
-
 function testUserSelfAdmin()
 {
     local ret_code
@@ -1530,7 +1449,7 @@ function testWeirdChar()
     mys9s user \
         --create \
         --cmon-user="system" \
-        --password="newpassword" \
+        --password="secret" \
         --generate-key \
         --group="Group#1" \
         --new-password="User#1" \
@@ -1551,9 +1470,10 @@ function testWeirdChar()
         --group-owner  "admins" 
 }
 
-function testDeleteUser()
+function testDeleteGroup()
 {
     print_title "Checking if Groups can be Created and Deleted"
+
     cat <<EOF
   This test will test the creation and deletion of Cmon Groups. It will try to
   delete groups, check for error conditions and will also check that the groups
@@ -1596,6 +1516,10 @@ EOF
         --group-name   "tmpgroup" \
         --owner-name   "pipas"    \
         --group-owner  "admins"
+    
+    check_log_messages \
+        "Creating new cmon group 'tmpgroup'" 
+    
 
     #
     # 
@@ -1624,8 +1548,102 @@ EOF
     else
         success "  o The group is actually deleted, ok."
     fi
-
 }
+
+function checkPasswordReset()
+{
+    local retCode
+    local mailFile
+
+    print_title "Checking Password Reset Option"
+    cat <<EOF
+  This test will perform a full pasword reset using a token. The new password is
+  set and then checked.
+
+EOF
+
+    rm -rf "/tmp/cmon/emails/outgoing/"
+    mys9s user --password-reset --cmon-user admin 
+
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "This should have failed, the user has no email address."
+    else
+        success "  o Failed, no email address, ok."
+    fi
+    
+    #
+    # Sending the password reset mail.
+    #
+    mys9s user --password-reset --cmon-user system
+    retCode=$?
+    
+    mailFile="/tmp/cmon/emails/outgoing/system@mynewdomain.com/email_0000.json";
+    if [ -f "$mailFile" ]; then
+        cat $mailFile | jq .
+    fi
+
+    if [ $retCode -eq 0 ]; then
+        success "  o Password reset request is succeeded, ok."
+    else
+        failure "Password reset failed."
+    fi
+
+    if [ -f "$mailFile" ]; then
+        success "  o The mail is found, ok."
+    else
+        failure "The mail is not found in '$mailFile'."
+    fi
+        
+
+    token=$(cat $mailFile | \
+        jq .elements[0].values | \
+        jq '.["@PASSWORD_RESET_TOKEN@"]')
+    if [ -n "$token" ]; then
+        success "  o The token is '$token', ok"
+    else
+        failure "Token not found."
+    fi
+    
+    recipient=$(cat $mailFile | \
+        jq .elements[0].values | \
+        jq '.["@RECIPIENT@"]')
+    if [ -n "$recipient" ]; then
+        success "  o The recpient found ('$recipient'), ok"
+        if [ "$recipient" == '"system@mynewdomain.com"' ]; then
+            success "  o Recipient is correct, ok."
+        else
+            failure "Recipient should be \"system@mynewdomain.com\"."
+        fi
+    else
+        failure "Recipient not found."
+    fi
+
+    #
+    # Password reset with the token.
+    #
+    token=$(echo $token | tr -d '"')
+
+    mys9s user \
+        --password-reset \
+        --cmon-user=system \
+        --token=$token \
+        --new-password="newpassword"
+
+    check_exit_code_no_job $?
+
+    mys9s user --whoami --cmon-user="system" --password="newpassword"
+    check_exit_code_no_job $?
+    
+    check_log_messages \
+        --cmon-user    "system" \
+        --password     "newpassword" \
+        "Created password reset token" \
+        "Password reset token is validated"
+
+    print_log_messages
+}
+
 
 #
 # Running the requested tests.
@@ -1657,10 +1675,10 @@ else
     runFunctionalTest testAcl
     runFunctionalTest testAddToGroup
     runFunctionalTest checkExtendedPrivileges
-    runFunctionalTest checkPasswordReset
     runFunctionalTest testUserSelfAdmin
     runFunctionalTest testWeirdChar
-    runFunctionalTest testDeleteUser
+    runFunctionalTest testDeleteGroup
+    runFunctionalTest checkPasswordReset
 
     print_title "Finished"
     mys9s user --list --long

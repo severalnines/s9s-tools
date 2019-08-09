@@ -575,7 +575,8 @@ function check_job()
 }
 
 #
-#
+# This function is for checking if certain messages are n the cmon log (not the
+# job messages, the log).
 #
 function check_log_messages()
 {
@@ -608,8 +609,8 @@ function check_log_messages()
     
     for line in "$@"; do
         s9s log \
-            --cmon-user=system \
-            --password=secret \
+            --cmon-user="$cmon_user" \
+            --password="$password" \
             --list \
             --long \
             --log-format="%I %M\n" \
@@ -640,17 +641,12 @@ function check_log_messages()
             fi
         done
     fi
-
-    mys9s log \
-        --cmon-user="$cmon_user" \
-        --password="$password" \
-        --list \
-        --long \
-        --log-format="%02i %04I %18c %38B:%4L %-8S %M\n" \
-        --cluster-id=0 \
-        --limit=25
 }
 
+#
+# This debug function is for printing the cmon log (not the job messages, the
+# log).
+#
 function print_log_messages()
 {
     mys9s log \
