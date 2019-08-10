@@ -649,7 +649,9 @@ function check_log_messages()
 #
 function print_log_messages()
 {
-    mys9s log \
+    print_subtitle "Cmon Logs"
+
+    s9s log \
         --list \
         --long \
         --log-format="%02i %04I %18c %38B:%5L %-8S %M\n" \
