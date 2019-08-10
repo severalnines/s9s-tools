@@ -95,9 +95,7 @@ Usage:
  --gzip                 Compress the archive with gzip.
 
 EXAMPLES:
-  pip-container-archive --gzip --verbose --stop --server=core1 --output-dir=/home/pipas --owner=pipas --storage="storage01:" dns1
-  
-  pip-container-archive --verbose --stop --owner=pipas --server=core1 dns1
+  pip-container-archive --server=$server --gzip --verbose "$container"
 
 EOF
     exit 0
