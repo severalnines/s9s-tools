@@ -40,7 +40,7 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... DEVICE 
+  $MYNAME [OPTION]... [HOSTNAME]...
 
   $MYNAME - Lists and controls servers.
 
@@ -48,6 +48,11 @@ Usage:
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+  
+  --list               List the power distribution units.
+  --ping               Check if the server is up.
+  --shut-down          Shut down the server.
+  --wake               Start the server.
 
   --long               Print detailed/long list.
   --print-json         Print the output in JSon format.
@@ -58,15 +63,11 @@ Usage:
   --wait               Wait for the server.
   --all                Turn on or off all the servers.
 
-  --list               List the power distribution units.
-  --wake               Start the server.
-  --shut-down          Shut down the server.
-  --ping               Check if the server is up.
-
-  --idle               Print only the idle servers.
-  --testing            Print only the servers that are testing.
-  --offline            Print only the servers that are off-line.
-  --disabled           Print only the disabled servers.
+  --disabled           Process only the disabled servers.
+  --idle               Process only the idle servers.
+  --offline            Process only the servers that are off-line.
+  --protected          Process only the servers that are protected.
+  --testing            Process only the servers that are testing.
 
 EXAMPLE:
   pip-server-control --list --long host01 host02
@@ -83,7 +84,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
 list,wake,shut-down,ping,\
 print-files,user:,wait,all,\
-idle,testing,offline,disabled" \
+disabled,idle,offline,protected,testing" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -189,6 +190,11 @@ while true; do
         --disabled)
             shift
             OPTION_STATE_FILTER="DISABLED"
+            ;;
+        
+        --protected)
+            shift
+            OPTION_STATE_FILTER="PROTECTED"
             ;;
 
         --)
@@ -328,7 +334,6 @@ function wake_server()
         CONF_HOST_NAME=""
         CONF_HOST_URL=""
         CONF_HOST_CATEGORY=""
-        CONF_HOST_STANDARD=""
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
@@ -495,6 +500,7 @@ function download_current_data()
     local root_dir=$SERVER_STAT_ROOT
 
     if [ ! -d "$root_dir" ]; then
+        printVerbose "Creating directory '$root_dir'."
         mkdir -p "$root_dir"
         if [ ! -d "$root_dir" ]; then
             printError "Unable to create '$root_dir'."
@@ -502,12 +508,14 @@ function download_current_data()
         fi
     fi
 
+    printVerbose "Entering directory '$root_dir'..."
     pushd $root_dir >/dev/null 2>/dev/null
     if [ $? -ne 0 ]; then
         printError "Unable to jump into '$root_dir'."
         return 1
     fi
 
+    printVerbose "Downloading '$SERVER_STAT_URL/*.hostinfo'..."
     scp -p $SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
 
     popd >/dev/null 2>/dev/null
@@ -548,7 +556,6 @@ function print_host_list_long()
         CONF_HOST_NAME=""
         CONF_HOST_URL=""
         CONF_HOST_CATEGORY=""
-        CONF_HOST_STANDARD=""
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
@@ -584,7 +591,7 @@ function print_host_list_long()
             fileAge="$(fileAgeInSeconds "$info_file")"
             let fileAge/=60
             if [ "$fileAge" -gt 5 ]; then
-                printVerbose "File '$info_file' older that 5 minutes."
+                #printVerbose "File '$info_file' older that 5 minutes."
                 if [ "$HOST_STATUS" != "DISABLED" ]; then
                     HOST_STATUS="OFF-LINE"
                     STATUS_TEXT="-"
@@ -684,14 +691,13 @@ function print_host_list_brief()
             continue
         fi
 
-        CONF_HOST_NAME=""
-        CONF_HOST_URL=""
         CONF_HOST_CATEGORY=""
-        CONF_HOST_STANDARD=""
         CONF_HOST_MAC=""
-        CONF_HOST_PROTECTED=""
-        CONF_HOST_VIRTUAL=""
+        CONF_HOST_NAME=""
         CONF_HOST_PDU=""
+        CONF_HOST_PROTECTED=""
+        CONF_HOST_URL=""
+        CONF_HOST_VIRTUAL=""
 
         HOSTNAME=""
         NUMBER_OF_CORES=""
