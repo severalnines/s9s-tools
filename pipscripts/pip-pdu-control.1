@@ -1,0 +1,25 @@
+.TH PIP-PDU-CONTROL 1 "August 11, 2019"
+.SH NAME
+pip-pdu-control - Command line tool to control power distribution units.
+.SH SYNOPSIS
+.B pip-pdu-control
+.RI [OPTION]...
+.RI [DEVICE]...
+
+.SH OPTIONS
+.SS "Main Option"
+The main options control what the program will do. The main options are one of
+the following:
+
+.TP
+.B --list
+List the devices and their poperties.
+
+.TP
+.B --list-outlets
+List the outlets of the devices and their state.
+
+.B EXAMPLE
+.nf
+pip-pdu-control --list-outlets pdu01 pdu02
+.fi

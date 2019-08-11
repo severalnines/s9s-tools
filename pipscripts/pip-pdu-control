@@ -7,16 +7,27 @@ VERSION="0.0.6"
 VERBOSE=""
 LOGDIR="$HOME/.pip.log"
 LOGFILE="$LOGDIR/${MYNAME}.log"
+
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
+OPTION_PRINT_REPORT=""
+
 PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
 
 MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
-source "$MYDIR/utilityfunctions.sh"
+SUM_DEVICES=0
 
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
+if false; then
 TERM_ERASE_EOL="\033[K"
 TERM_HOME="\033[0;0H"
 TERM_NORMAL="\033[0;39m"
@@ -57,7 +68,7 @@ WARN_COLOR="$XTERM_COLOR_YELLOW"
 ERR_COLOR="$XTERM_COLOR_RED"
 NORM_COLOR="$XTERM_COLOR_BLUE"
 DATE_COLOR="\033[1m\033[38;5;215m"
-
+fi
 
 #
 # SonOTA: 
@@ -88,7 +99,7 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... DEVICE 
+  $MYNAME [OPTION]... [DEVICE]...
 
   $MYNAME - Turns on and off pdu outlets.
 
@@ -96,6 +107,7 @@ Usage:
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
+  --print-report       Print a detailed report at the end.
 
   --list               List the power distribution units.
   --list-outlets       List the outlets of the PDU.
@@ -126,7 +138,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,list,list-outlets,\
+        -l "help,verbose,version,log-file:,print-report,"\
+"list,list-outlets,\
 on,off,toggle,state,\
 power,voltage,current,temperature,humidity,print-files,long,outlet:,group:,\
 all,with-power,with-temperature" \
@@ -159,6 +172,11 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
+            ;;
+
+        --print-report)
+            shift
+            OPTION_PRINT_REPORT="true"
             ;;
 
         --list)
@@ -755,12 +773,27 @@ function print_outlets_long()
     done
 }
 
+function print_summary()
+{
+    if [ -z "$OPTION_PRINT_REPORT" ]; then
+        return 0
+    fi
+
+    printf "\n"
+    printf "Summary:\n"
+    printf "         Total: %'6d devices\n" "$SUM_DEVICES" 
+}
+
+#
+# Prints the list of PDU devices in long format.
+#
 function print_device_list_long()
 {
     local group
     local name
     local mode
 
+    printVerbose "print_device_list_long()"
     print_header
 
     for config_file in $HOME/.pip/*.pdu; do
@@ -801,7 +834,6 @@ function print_device_list_long()
         # The mode string.
         #
         mode=""
-
         if [ -n "$CONF_PDU_MEASURES_POWER" ]; then
             mode+="W"
         else
@@ -845,7 +877,11 @@ function print_device_list_long()
         fi
 
         printf "\n"
+
+        let SUM_DEVICES+=1
     done
+
+    print_summary
 }
 
 #

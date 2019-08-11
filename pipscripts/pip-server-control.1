@@ -1,0 +1,147 @@
+.TH PIP-SERVER-CONTROL 1 "August 10, 2019"
+.SH NAME
+pip-server-control - Command line tool to control servers.
+.SH SYNOPSIS
+.B pip-server-control
+.RI [OPTION]...
+.RI [HOSTNAME]...
+
+.SH OPTIONS
+.SS "Main Option"
+The main options control what the program will do. The main options are one of
+the following:
+
+.TP
+.B --list
+List the servers and their properties.
+
+.B EXAMPLE
+.nf
+pip-server-control --list --long
+.fi
+
+.TP
+.B --ping
+Check if the server is running, reachable and print the result.
+
+.B EXAMPLE
+.nf
+pip-server-control --ping --print-json core1
+.fi
+
+.TP
+.B --shut-down
+Shut down the server.
+
+.B EXAMPLE
+.nf 
+pip-server-control --shut-down host01
+.fi
+
+.TP
+.B --wake
+Start the server.
+
+.B EXAMPLE
+.nf
+pip-server-control --wake --wait host01
+.fi
+
+.\" 
+.\" Description of the filter options.
+.\"
+.SS "Filter Options"
+Filter options control which servers the program will process or consider
+processing. Here is the comprehensive list of filter options:
+
+.TP
+.B --disabled
+Process only servers that are disabled.
+
+.TP
+.B --idle
+Process only servers that are in the idle state. These servers are turned on,
+not disabled, not protected and not running any batch processing. These servers
+are ready to take a batch job to execute.
+
+.TP
+.B --offline
+Process servers that are off-line, not turned off.
+
+.TP
+.B --protected
+Process servers that are protected.
+
+.TP
+.B --testing
+Process servers that are running a test as a batch job.
+
+.SH FILES
+.\" The *.host files and the list of possible config values in them.
+.TP 
+.B $HOME/.pip/*.host
+Individual config file for hosts, one file for every host. Here is an example
+for such a configuration file.
+
+.nf
+CONF_HOST_NAME="Host12"
+CONF_HOST_URL="https://host12:1311"
+CONF_HOST_CATEGORY="Hosts"
+CONF_HOST_MAC=""
+.fi
+
+.RS 7
+.TP
+.B CONF_HOST_CATEGORY
+A short name to put the servers into groups, to categorize them.
+
+.TP
+.B CONF_HOST_MAC
+The MAC address of the host. This is used to send wakeonlan packets when
+starting up the host.
+
+.TP
+.B CONF_HOST_NAME 
+The name of the host. This will be used when a host is printed in a short format
+for lists, widgets.
+
+.TP
+.B CONF_HOST_PDU
+The name of the PDU (or names of the PDUs with ',' as separator) to turn the
+power on and off.
+
+.TP
+.B CONF_HOST_PROTECTED
+If this value is a non-empty string no batch jobs should be sent to the server
+and powering off should be restricted.
+
+.TP
+.B CONF_HOST_URL
+An URL for the host management system if there is one. This should bring up a
+web page to configure the host HW and SW.
+
+.TP
+.B CONF_HOST_VIRTUAL
+If this value is a non-empty string the server is actually a virtual machine and
+should be handled accordingly. Statistics are not aggregated from these hosts
+since their resources are already considered when the parent server is checked.
+.RE
+
+.\"
+.\" Descrption of the *.hostinfo files.
+.\"
+.TP
+.B $HOME/.pip-servers/*.hostinfo
+Automatically created file that holds statistics about the server. These files
+are created by the \fBpip-host-control\fp program. Here is an example:
+
+.nf
+HOSTNAME="core1"
+NUMBER_OF_CORES=16
+MEMORY_GIGABYTES=65
+DISK_GIGABYTES=559
+NUMBER_OF_CONTAINERS=8
+AVERAGE_LOAD=0.00
+HOST_STATUS="IDLE"
+STATUS_TEXT="Started."
+.fi

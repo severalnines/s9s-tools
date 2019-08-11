@@ -460,10 +460,17 @@ function print_header()
 {
     echo -en $TERM_BOLD
 
+    if [ -n "$OPTION_PRINT_FILES" ]; then
+    cat <<EOF
+SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    CONFIG_FILE
+--------------------------------------------------------------------------------
+EOF
+    else
     cat <<EOF
 SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    DESCRIPTION
 --------------------------------------------------------------------------------
 EOF
+    fi
 
     echo -en $TERM_NORMAL
 }
@@ -661,11 +668,11 @@ function print_host_list_long()
             printf "%-9s " "$HOST_STATUS"
         fi
 
-
         if [ -z "$OPTION_PRINT_FILES" ]; then
             printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
         else
-            printf "$FILE_COLOR%s$TERM_NORMAL"     "$config_file"
+            tmp=$(echo "$config_file" | sed -e "s#$HOME/#~/#g")
+            printf "$FILE_COLOR%s$TERM_NORMAL"     "$tmp"
         fi
 
         printf "\n"
