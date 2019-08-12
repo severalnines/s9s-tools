@@ -81,6 +81,20 @@ S9sMessage::fileName() const
     return S9sString();
 }
 
+S9sString
+S9sMessage::hostName(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    retval = m_properties.valueByPath("log_specifics/host/hostname").toString();
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
 #ifdef LOG_FUNCNAMES_TO_JOBLOG
 bool
 S9sMessage::hasFunctionName() const
@@ -423,6 +437,13 @@ S9sMessage::toString(
                     tmp.sprintf(
                             STR(partFormat), 
                             STR(options->formatDateTime(created())));
+                    retval += tmp;
+                    break;
+                
+                case 'h':
+                    // The related host name. 
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(hostName("-")));
                     retval += tmp;
                     break;
                 

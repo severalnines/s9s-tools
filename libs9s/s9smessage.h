@@ -76,9 +76,10 @@ class S9sMessage
 
         const S9sVariantMap &toVariantMap() const;
 
-        
         bool hasFileName() const;
         S9sString fileName() const;
+
+        S9sString hostName(const S9sString &defaultValue) const;
 
         #ifdef LOG_FUNCNAMES_TO_JOBLOG
         bool hasFunctionName() const;
