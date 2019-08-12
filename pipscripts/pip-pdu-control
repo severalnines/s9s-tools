@@ -457,6 +457,30 @@ function switch_orvibo()
     esac
 }
 
+function outlet_name()
+{
+    local ip_address="$1"
+    local id="$2"
+    local url=""
+    local retval
+
+    if [ "$CONF_PDU_STANDARD" == "tasmota" ]; then
+        let id-=1
+        url="http://$ip_address/cm?cmnd=Status%200"
+        printVerbose "*** url='$url'"
+
+        retval=$(curl $url 2>/dev/null | jq ".Status.FriendlyName[$id]")
+        retval=$(echo "$retval" | tr -d '"')
+    fi
+
+    if [ -z "$retval" ]; then
+        retval="Outlet $id"
+    fi
+
+    echo "$retval"
+    return 0
+}
+
 #
 # pipas@t7500:~$ curl http://192.168.2.5/cm?cmnd=Status%2010 2>/dev/null | grep -o '"Temperature":[^,]\+' | awk -F: '{print $2}'
 # 24.4
@@ -663,18 +687,6 @@ EOF
 
 }
 
-function print_outlets_long_header()
-{
-    echo -en $TERM_BOLD
-    cat <<EOF
- # STAT PDU        OUTLET
---------------------------------------------------------------------------------
-EOF
-
-    echo -en $TERM_NORMAL
-
-}
-
 # https://tobinsramblings.wordpress.com/2011/05/03/snmp-tutorial-apc-pdus/
 #
 # Check the status of one outlet:
@@ -743,7 +755,7 @@ function print_outlets_long_for_device()
             outlet_name=$(echo "$outlet_name" | cut -d'"' -f2)
         else
             status=$(pip-pdu-control --state $device --outlet="$outlet")
-            outlet_name="Outlet $outlet"
+            outlet_name=$(outlet_name "$CONF_PDU_SERVER" "$outlet")
         fi
 
         printf "%2d " "$outlet"
@@ -755,11 +767,24 @@ function print_outlets_long_for_device()
             printf "%-4s " "$status"
         fi
 
-        printf "$HOST_COLOR%-10s$TERM_NORMAL " "$device"
+        printf "$DEVICE_COLOR%-16s$TERM_NORMAL "       "$device"
         printf "$XTERM_COLOR_PURPLE%-12s$TERM_NORMAL " "$outlet_name"
         printf "\n"
     done
 }
+
+function print_outlets_long_header()
+{
+    echo -en $TERM_BOLD
+    cat <<EOF
+ # STAT DEVICE           OUTLET_NAME
+--------------------------------------------------------------------------------
+EOF
+
+    echo -en $TERM_NORMAL
+
+}
+
 
 function print_outlets_long()
 {
