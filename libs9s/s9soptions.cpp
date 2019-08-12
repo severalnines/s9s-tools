@@ -5621,6 +5621,9 @@ S9sOptions::printHelpTree()
     );
 }
 
+/**
+ * This is where we print the help info specific to the "log" mode.
+ */
 void
 S9sOptions::printHelpLog()
 {
@@ -5628,13 +5631,15 @@ S9sOptions::printHelpLog()
 
     printf(
 "Options for the \"log\" command:\n"
-"  --list                     List the log messages.\n"
+"  --list                     List the log messages, print the log.\n"
 "\n"
+"  --debug                    Print the debug messages too.\n"
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
 "  --log-format=FORMATSTRING  The format of log messages printed.\n"
 "  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
+"  --warning                  Print warning and more severe messages.\n"
 "\n"
     );
 }
