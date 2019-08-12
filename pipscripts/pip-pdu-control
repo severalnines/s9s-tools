@@ -27,49 +27,6 @@ else
     exit 5
 fi
 
-if false; then
-TERM_ERASE_EOL="\033[K"
-TERM_HOME="\033[0;0H"
-TERM_NORMAL="\033[0;39m"
-TERM_BOLD="\033[1m"
-TERM_INVERSE="\033[7m"
-XTERM_COLOR_RED="\033[0;31m"
-XTERM_COLOR_GREEN="\033[0;32m"
-XTERM_COLOR_ORANGE="\033[0;33m"
-XTERM_COLOR_BLUE="\033[0;34m"
-XTERM_COLOR_PURPLE="\033[0;35m"
-XTERM_COLOR_CYAN="\033[0;36m"
-XTERM_COLOR_LIGHT_GRAY="\033[0;37m"
-XTERM_COLOR_DARK_GRAY="\033[1;30m"
-XTERM_COLOR_LIGHT_RED="\033[1;31m"
-XTERM_COLOR_LIGHT_GREEN="\033[1;32m"
-XTERM_COLOR_YELLOW="\033[1;33m"
-XTERM_COLOR_LIGHT_BLUE="\033[1;34m"
-XTERM_COLOR_LIGHT_PURPLE="\033[1;35m"
-XTERM_COLOR_LIGHT_CYAN="\033[1;36m"
-XTERM_COLOR_WHITE="\033[1;37m"
-
-OWNER_COLOR="$XTERM_COLOR_ORANGE"
-USER_COLOR="\033[1m\033[38;5;212m"
-EMAIL_COLOR="$XTERM_COLOR_PURPLE"
-PROJECT_COLOR="\033[1m\033[38;5;210m"
-TEST_COLOR="\033[2m\033[38;5;190m"
-HOST_COLOR="\033[1m\033[38;5;184m"
-INC_COLOR="\033[1m\033[36m"
-QUERY_COLOR="\033[1m\033[36m"
-COMMENT_COLOR="\033[1m\033[38;5;12m"
-IP_COLOR="\033[2m\033[38;5;201m"
-FILE_COLOR="\033[38;5;119m"
-GROUP_COLOR="\033[2m\033[38;5;7m"
-DEVICE_COLOR="\033[1m\033[38;5;203m"
-
-OK_COLOR="$XTERM_COLOR_GREEN"
-WARN_COLOR="$XTERM_COLOR_YELLOW"
-ERR_COLOR="$XTERM_COLOR_RED"
-NORM_COLOR="$XTERM_COLOR_BLUE"
-DATE_COLOR="\033[1m\033[38;5;215m"
-fi
-
 #
 # SonOTA: 
 #   source: https://github.com/mirko/SonOTA/
@@ -111,11 +68,12 @@ Usage:
 
   --list               List the power distribution units.
   --list-outlets       List the outlets of the PDU.
-  --on                 Turn the socket on.
   --off                Turn the socket off.
-  --toggle             Toggle the socket.
+  --on                 Turn the socket on.
   --state              Check the state of the socket.
-  
+  --toggle             Toggle the socket.
+  --discover           Try to contact he device and find information about it.
+
   --power              Read the current power in watts.
   --voltage            Measure the voltage on the PDU.
   --current            Measure the current on the PDU.
@@ -139,8 +97,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,print-report,"\
-"list,list-outlets,\
-on,off,toggle,state,\
+"list,list-outlets,discover,on,off,toggle,state,\
 power,voltage,current,temperature,humidity,print-files,long,outlet:,group:,\
 all,with-power,with-temperature" \
         -- "$@")
@@ -182,6 +139,11 @@ while true; do
         --list)
             shift
             LIST_OPTION="true"
+            ;;
+
+        --discover)
+            shift
+            DISCOVER_OPTION="true"
             ;;
 
         --list-outlets)
@@ -501,6 +463,19 @@ function switch_orvibo()
 #
 # curl http://192.168.2.9/cm?cmnd=Status%208 | grep -o '"Power":[^,]\+' | awk -F: '{print $2}'
 #
+# TOGGLE:
+# curl "http://192.168.2.30/cm?cmnd=Power%20TOGGLE"
+#
+# STATUS DETAILS:
+# curl "http://192.168.2.30/cm?cmnd=Status%200" 2>/dev/null | jq .
+#
+# Get the friendly name from a tasmota device:
+# curl "http://192.168.2.30/cm?cmnd=Status%209" 2>/dev/null | jq '.Status.FriendlyName[0]' | tr -d '"'
+# curl "http://192.168.2.30/cm?cmnd=Status%209" 2>/dev/null | jq '.Status.Topic' | tr -d '"'
+#
+# Number of outlets:
+# curl "http://192.168.2.18/cm?cmnd=Status%200" 2>/dev/null | jq '.Status.FriendlyName | length'
+#
 function switch_tasmota()
 {
     local output
@@ -508,9 +483,15 @@ function switch_tasmota()
     local logfile="$LOGFILE"
     local topic=""
     local string
+    local outlet
 
     if [ -z "$logfile" ]; then
         logfile="/dev/null"
+    fi
+
+    outlet="$CONF_PDU_OUTLET"
+    if [ -n "$OPTION_OUTLET" ]; then
+        outlet="$OPTION_OUTLET"
     fi
 
     #
@@ -526,7 +507,7 @@ function switch_tasmota()
                 printVerbose "Switching '$CONF_PDU_DEVICE' on with MQTT..."
                 
                 topic="cmnd/$CONF_PDU_DEVICE/power"
-                [ -n "$CONF_PDU_OUTLET" ] && topic+=$CONF_PDU_OUTLET
+                [ -n "$outlet" ] && topic+=$outlet
 
                 mosquitto_pub \
                     -u "$MQTT_USER" \
@@ -534,8 +515,8 @@ function switch_tasmota()
                     -h "$MQTT_SERVER" \
                     -t "$topic" \
                     -m 1
-            elif [ -n "$CONF_PDU_OUTLET" ]; then
-                curl ${url}Power${CONF_PDU_OUTLET}%20on \
+            elif [ -n "$outlet" ]; then
+                curl ${url}Power${outlet}%20on \
                     2>/dev/null >/dev/null
             else
                 # Switching a specific outlet.
@@ -553,7 +534,7 @@ function switch_tasmota()
                 printVerbose "Switching '$CONF_PDU_DEVICE' off with MQTT..."
                 
                 topic="cmnd/$CONF_PDU_DEVICE/power"
-                [ -n "$CONF_PDU_OUTLET" ] && topic+=$CONF_PDU_OUTLET
+                [ -n "$outlet" ] && topic+=$outlet
 
                 mosquitto_pub \
                     -u "$MQTT_USER" \
@@ -561,8 +542,8 @@ function switch_tasmota()
                     -h "$MQTT_SERVER" \
                     -t "$topic" \
                     -m 0
-            elif [ -n "$CONF_PDU_OUTLET" ]; then            
-                curl ${url}Power${CONF_PDU_OUTLET}%20off \
+            elif [ -n "$oulet" ]; then            
+                curl ${url}Power${outlet}%20off \
                     2>/dev/null >/dev/null
             else
                 curl ${url}Power%20off \
@@ -572,13 +553,14 @@ function switch_tasmota()
 
         state)
             printVerbose "Checking switch state."
-            if [ -z "$CONF_PDU_OUTLET" ]; then
+            printVerbose "*** outlet='$outlet'"
+            if [ -z "$outlet" ]; then
                 output=$(curl \
                     ${url}Power%20status \
                     2>$logfile)
             else
                 output=$(curl \
-                    ${url}Power${CONF_PDU_OUTLET}%20status \
+                    ${url}Power${outlet}%20status \
                     2>$logfile)
             fi
 
@@ -666,8 +648,14 @@ function print_header()
     echo -en $TERM_BOLD
 
     cat <<EOF
-DEVICE           MODE  GROUP         SERVER           NAME
+DEVICE           MODE  #O GROUP         SERVER           NAME
 --------------------------------------------------------------------------------
+core2_pdu01      -----  1 servers       pdu01            core2 pdu01
+core2_pdu02      -----  1 servers       pdu02            core2 pdu02
+core3_pdu01      -----  1 servers       pdu01            core3 pdu01
+core3_pdu02      -----  1 servers       pdu02            core3 pdu02
+dell1955_pdu01   -----  1 servers       pdu01            dell 1955 pdu01
+
 EOF
 
     echo -en $TERM_NORMAL
@@ -679,7 +667,7 @@ function print_outlets_long_header()
 {
     echo -en $TERM_BOLD
     cat <<EOF
- # STAT PDU    OUTLET
+ # STAT PDU        OUTLET
 --------------------------------------------------------------------------------
 EOF
 
@@ -719,34 +707,44 @@ function print_outlets_long_for_device()
         printError "File '$CONFIG_FILE_PATH' was not found."
     fi
 
+    printVerbose "Loading file '$CONFIG_FILE_PATH'..."
     source "$CONFIG_FILE_PATH"
 
+    [ -z "$CONF_PDU_FIRST_OUTLET" ] && CONF_PDU_FIRST_OUTLET=1
+    [ -z "$CONF_PDU_LAST_OUTLET" ] && CONF_PDU_LAST_OUTLET=1
     for outlet in $(seq "$CONF_PDU_FIRST_OUTLET" "$CONF_PDU_LAST_OUTLET"); do
-        line=$(snmpget \
-            -v 1 \
-            -c private $device \
-            PowerNet-MIB::sPDUOutletCtl.$outlet)
-        if echo "$line" | grep -q outletOff; then
-            status="off"
-        elif echo "$line" | grep -q outletOn; then
-            status="on"
-        else
-            status="?"
-        fi
-
-                    mosquitto_pub \
-                        -u "$MQTT_USER" \
-                        -P "$MQTT_PASSWORD" \
-                        -h "$MQTT_SERVER" \
-                        -t "stat/${CONF_PDU_SERVER}_$outlet/POWER" \
-                        -m "$status"
-
-        outlet_name=$(snmpget \
-            -v 1 \
-            -c private $device \
-            PowerNet-MIB::sPDUOutletCtlName.$outlet)
+        if [ "$CONF_PDU_STANDARD" == "apc" ]; then
+            printVerbose "Getting status with snmp."
+            line=$(snmpget \
+                -v 1 \
+                -c private $device \
+                PowerNet-MIB::sPDUOutletCtl.$outlet)
         
-        outlet_name=$(echo "$outlet_name" | cut -d'"' -f2)
+            if echo "$line" | grep -q outletOff; then
+                status="off"
+            elif echo "$line" | grep -q outletOn; then
+                status="on"
+            else
+                status="?"
+            fi
+        
+            mosquitto_pub \
+                -u "$MQTT_USER" \
+                -P "$MQTT_PASSWORD" \
+                -h "$MQTT_SERVER" \
+                -t "stat/${CONF_PDU_SERVER}_$outlet/POWER" \
+                -m "$status"
+
+            outlet_name=$(snmpget \
+                -v 1 \
+                -c private $device \
+                PowerNet-MIB::sPDUOutletCtlName.$outlet)
+        
+            outlet_name=$(echo "$outlet_name" | cut -d'"' -f2)
+        else
+            status=$(pip-pdu-control --state $device --outlet="$outlet")
+            outlet_name="Outlet $outlet"
+        fi
 
         printf "%2d " "$outlet"
         if [ "$status" == "on" ]; then
@@ -757,12 +755,11 @@ function print_outlets_long_for_device()
             printf "%-4s " "$status"
         fi
 
-        printf "$HOST_COLOR%-6s$TERM_NORMAL " "$device"
+        printf "$HOST_COLOR%-10s$TERM_NORMAL " "$device"
         printf "$XTERM_COLOR_PURPLE%-12s$TERM_NORMAL " "$outlet_name"
         printf "\n"
     done
 }
-
 
 function print_outlets_long()
 {
@@ -792,6 +789,7 @@ function print_device_list_long()
     local group
     local name
     local mode
+    local n_outlets
 
     printVerbose "print_device_list_long()"
     print_header
@@ -814,6 +812,8 @@ function print_device_list_long()
         CONF_PDU_MEASURES_CURRENT=""
         CONF_PDU_MEASURES_TEMPERATURE=""
         CONF_PDU_MEASURES_HUMIDITY=""
+        CONF_PDU_FIRST_OUTLET=""
+        CONF_PDU_LAST_OUTLET=""
         source "$config_file"
     
         group="$CONF_PDU_CATEGORY"
@@ -829,6 +829,9 @@ function print_device_list_long()
                -z "$CONF_PDU_MEASURES_TEMPERATURE" ]; then
             continue
         fi
+
+        n_outlets="$CONF_PDU_LAST_OUTLET"
+        [ -z "$n_outlets" ] && n_outlets="1"
 
         #
         # The mode string.
@@ -866,6 +869,8 @@ function print_device_list_long()
 
         printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
         printf "$TERM_NORMAL%-5s$TERM_NORMAL "    "$mode"
+        printf "$NUMBER_COLOR%2d$TERM_NORMAL "     "$n_outlets"
+
         #printf "$GROUP_COLOR%-8s$TERM_NORMAL "    "$CONF_PDU_STANDARD"
         printf "$OWNER_COLOR%-13s$TERM_NORMAL "   "$group"
         printf "$IP_COLOR%-16s$TERM_NORMAL "      "$CONF_PDU_SERVER"
@@ -936,6 +941,61 @@ function print_device_list_brief()
     done
 }
 
+function discover_device_at()
+{
+    local device="$1"
+    local url="http://$device/cm?cmnd=Status%200"
+    local name
+    local ip_address
+    local mac
+    local last_outlet
+
+    name=$(curl $url 2>/dev/null | jq '.Status.Topic' | tr -d '"')
+    [ -z "$name" ] && return 0
+
+    ip_address=$(curl $url 2>/dev/null | jq '.StatusNET.IPAddress' | tr -d '"')
+    mac=$(curl $url 2>/dev/null | jq '.StatusNET.Mac' | tr -d '"')
+    last_outlet=$(curl $url 2>/dev/null | jq '.Status.FriendlyName | length')
+    energy=$(curl $url 2>/dev/null | jq '.StatusSNS.ENERGY.Total')
+    temperature=$(curl $url 2>/dev/null | jq '.StatusSNS.AM2301.Temperature')
+
+    if [ "$energy" == "null" ]; then
+        energy="false"
+    else
+        energy="true"
+    fi
+    
+    if [ "$temperature" == "null" ]; then
+        temperature="false"
+    else
+        temperature="true"
+    fi
+
+    cat <<EOF
+#
+# Device $name
+#
+CONF_PDU_NAME="$name"
+CONF_PDU_SERVER="$device"
+CONF_PDU_URL="http://\$CONF_PDU_SERVER"
+CONF_PDU_STANDARD="tasmota"
+CONF_PDU_FIRST_OUTLET="1"
+CONF_PDU_LAST_OUTLET="$last_outlet"
+
+CONF_PDU_CATEGORY="pending"
+
+CONF_PDU_IP_ADDRESS="$ip_address"
+CONF_PDU_MAC="$mac"
+
+CONF_PDU_MEASURES_POWER="$energy"
+CONF_PDU_MEASURES_VOLTAGE="$energy"
+CONF_PDU_MEASURES_CURRENT="$energy"
+CONF_PDU_MEASURES_TEMPERATURE="$temperature"
+CONF_PDU_MEASURES_HUMIDITY="$temperature"
+EOF
+
+}
+
 if [ -f "$MQTT_CONFIG_FILE" ]; then
     printVerbose "Loading '$MQTT_CONFIG_FILE'..."
     source "$MQTT_CONFIG_FILE"
@@ -944,7 +1004,12 @@ fi
 #
 # Checking the command line options.
 #
-if [ -n "$LIST_OPTION" ]; then
+if [ -n "$DISCOVER_OPTION" ]; then
+    for device in $@; do
+        discover_device_at $device
+    done
+    exit 1
+elif [ -n "$LIST_OPTION" ]; then
     if [ "$OPTION_LONG" ]; then
         print_device_list_long
     else
