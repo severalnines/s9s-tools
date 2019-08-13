@@ -233,6 +233,9 @@ class S9sOptions
 
         bool hasJobId() const;
         int jobId() const;
+        
+        bool hasMessageId() const;
+        int messageId() const;
 
         bool hasLogFormat() const;
         S9sString logFormat() const;

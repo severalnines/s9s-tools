@@ -1518,28 +1518,34 @@ S9sRpcClient::getLog()
     bool           retval;
 
     // Building the request.
-    request["operation"]  = "getLogEntries";
-    request["ascending"]  = false;
-    request["cluster_id"] = options->clusterId();
+    if (!options->hasMessageId())
+    {
+        request["operation"]  = "getLogEntries";
+        request["ascending"]  = false;
     
-    if (options->isDebug())
-        request["severity"] = "LOG_DEBUG";
+        if (options->isDebug())
+            request["severity"] = "LOG_DEBUG";
 
-    else if (options->isWarning())
-        request["severity"] = "LOG_WARNING";
+        else if (options->isWarning())
+            request["severity"] = "LOG_WARNING";
 
-    if (!options->from().empty())
-        request["created_after"] = options->from();
+        if (!options->from().empty())
+            request["created_after"] = options->from();
 
-    if (!options->until().empty())
-        request["created_before"] = options->until();
+        if (!options->until().empty())
+            request["created_before"] = options->until();
 
-    if (limit > 0)
-        request["limit"]  = limit;
+        if (limit > 0)
+            request["limit"]  = limit;
 
-    if (offset > 0)
-        request["offset"] = offset;
+        if (offset > 0)
+            request["offset"] = offset;
+    } else {
+        request["operation"]  = "getLogEntry";
+        request["message_id"] = options->messageId();
+    }
 
+    request["cluster_id"] = options->clusterId();
     retval = executeRequest(uri, request);
 
     return retval;

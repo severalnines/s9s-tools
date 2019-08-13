@@ -2135,13 +2135,16 @@ S9sRpcReply::printLogBrief()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->briefLogFormat();
-    S9sVariantList  theList = operator[]("log_entries").toVariantList();
+    S9sVariantList  variantList = operator[]("log_entries").toVariantList();
+    
+    if (variantList.empty() && contains("log_entry"))
+        variantList << operator[]("log_entry").toVariantMap();
 
-    std::reverse(std::begin(theList), std::end(theList));
+    std::reverse(std::begin(variantList), std::end(variantList));
 
-    for (uint idx = 0; idx < theList.size(); ++idx)
+    for (uint idx = 0; idx < variantList.size(); ++idx)
     {
-        S9sVariantMap theMap  = theList[idx].toVariantMap();
+        S9sVariantMap theMap  = variantList[idx].toVariantMap();
         S9sMessage    message = theMap;
         S9sString     severity = message.severity();
         
@@ -2162,9 +2165,11 @@ S9sRpcReply::printLogLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->longLogFormat();
-
     S9sVariantList  variantList = operator[]("log_entries").toVariantList();
     S9sVector<S9sMessage> theList;
+
+    if (variantList.empty() && contains("log_entry"))
+        variantList << operator[]("log_entry").toVariantMap();
 
     for (uint idx = 0u; idx < variantList.size(); ++idx)
     {

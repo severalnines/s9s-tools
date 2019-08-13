@@ -323,6 +323,7 @@ enum S9sOptionType
     OptionRemoteClusterId,
 
     OptionReportId,
+    OptionMessageId,
 };
 
 /**
@@ -2128,6 +2129,29 @@ S9sOptions::jobId() const
 
     return -1;
 }
+
+
+/**
+ * \returns True if the --message-id command line option was provided.
+ */
+bool
+S9sOptions::hasMessageId() const
+{
+    return m_options.contains("message_id");
+}
+
+/**
+ * \returns The message ID as it is set by the --message-id command line option.
+ */
+int
+S9sOptions::messageId() const
+{
+    if (m_options.contains("message_id"))
+        return m_options.at("message_id").toInt();
+
+    return -1;
+}
+
 
 /**
  * \returns True if the --log-format command line option is provided.
@@ -5637,6 +5661,7 @@ S9sOptions::printHelpLog()
 "  --from=DATE&TIME           The start of the interval to be printed.\n"
 "  --limit=NUMBER             Controls how many jobs are printed max.\n"
 "  --log-format=FORMATSTRING  The format of log messages printed.\n"
+"  --message-id=ID            The ID of the log message.\n"
 "  --offset=NUMBER            Controls the index of the first item printed.\n"
 "  --until=DATE&TIME          The end of the interval to be printed.\n"
 "  --warning                  Print warning and more severe messages.\n"
@@ -6860,6 +6885,7 @@ S9sOptions::readOptionsLog(
         { "limit",            required_argument, 0, OptionLimit           },
         { "offset",           required_argument, 0, OptionOffset          },
         { "log-format",       required_argument, 0, OptionLogFormat       },
+        { "message-id",       required_argument, 0, OptionMessageId       },
 
         { 0, 0, 0, 0 }
     };
@@ -7009,6 +7035,11 @@ S9sOptions::readOptionsLog(
             case OptionLogFormat:
                 // --log-format=FORMAT
                 m_options["log_format"] = optarg;
+                break;
+            
+            case OptionMessageId:
+                // --message-id=ID
+                m_options["message_id"] = optarg;
                 break;
             
             case '?':

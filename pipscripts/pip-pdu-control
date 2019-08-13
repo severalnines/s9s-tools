@@ -674,12 +674,6 @@ function print_header()
     cat <<EOF
 DEVICE           MODE  #O GROUP         SERVER           NAME
 --------------------------------------------------------------------------------
-core2_pdu01      -----  1 servers       pdu01            core2 pdu01
-core2_pdu02      -----  1 servers       pdu02            core2 pdu02
-core3_pdu01      -----  1 servers       pdu01            core3 pdu01
-core3_pdu02      -----  1 servers       pdu02            core3 pdu02
-dell1955_pdu01   -----  1 servers       pdu01            dell 1955 pdu01
-
 EOF
 
     echo -en $TERM_NORMAL
@@ -974,9 +968,20 @@ function discover_device_at()
     local ip_address
     local mac
     local last_outlet
+    local config_file
 
+    printVerbose "Accessing '$url'..."
     name=$(curl $url 2>/dev/null | jq '.Status.Topic' | tr -d '"')
-    [ -z "$name" ] && return 0
+    if [ -z "$name" ]; then
+        printError "Failed to discover..."
+        return 0
+    fi
+
+    config_file="$HOME/.pip/$name.pdu"
+    if [ -f "$config_file" ]; then
+        printError "File '$config_file' already exists."
+        return 0
+    fi
 
     ip_address=$(curl $url 2>/dev/null | jq '.StatusNET.IPAddress' | tr -d '"')
     mac=$(curl $url 2>/dev/null | jq '.StatusNET.Mac' | tr -d '"')
@@ -985,18 +990,18 @@ function discover_device_at()
     temperature=$(curl $url 2>/dev/null | jq '.StatusSNS.AM2301.Temperature')
 
     if [ "$energy" == "null" ]; then
-        energy="false"
+        energy=""
     else
         energy="true"
     fi
     
     if [ "$temperature" == "null" ]; then
-        temperature="false"
+        temperature=""
     else
         temperature="true"
     fi
 
-    cat <<EOF
+    cat >"$config_file" <<EOF 
 #
 # Device $name
 #
@@ -1019,6 +1024,7 @@ CONF_PDU_MEASURES_TEMPERATURE="$temperature"
 CONF_PDU_MEASURES_HUMIDITY="$temperature"
 EOF
 
+    cat "$config_file"
 }
 
 if [ -f "$MQTT_CONFIG_FILE" ]; then
