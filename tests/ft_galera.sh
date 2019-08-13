@@ -222,6 +222,7 @@ function testCreateCluster()
     #
     mys9s cluster \
         --create \
+        --job-tags="createCluster" \
         --cluster-type=galera \
         --nodes="$nodes" \
         --vendor="$OPTION_VENDOR" \
