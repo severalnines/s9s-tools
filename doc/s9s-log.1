@@ -153,6 +153,13 @@ the following fields:
 The base name of the source file that produced the message. 
 
 .TP
+.B c
+The \fB"log_class"\fP property of the log message. All the log messages are of
+the same class (\fBCmonLogMessage\fP), the \fB"log_class"\fP however shows what
+extra information is held by the message, what kind of event triggered the
+creation of the given log message.
+
+.TP
 .B C
 The creation date&time that marks the exact moment when the message was
 created. The format of the date&time sustituted can be set using the 
@@ -197,6 +204,55 @@ shows only hours, minutes and seconds instead of the full date and time.
 The '%' character itself. 
 
 .RE 
+
+Moreover the format string can contain expression \fB${...}\fR that refer the
+properties of the log entry. For example the expression
+\fB${/log_specifics/job_instance}\fR will be substituted by the value of the
+given property converted into a string. Please note that various messages have
+different properties. The \fB"log_class"\fR property (denoted by \fB"%c"\fR or
+\fB${/log_class}\fR in the format string) can be used to identify what
+properties can be expected.
+
+.B EXAMPLE
+
+The following example prints a log message that is about a Cmon Job being
+started. It prints some information with the '%' notation and the job JSon
+string that is part of the log entry:
+
+.nf
+# s9s log \\
+    --list \\
+    --message-id=23 \\
+    --log-format='   ID: %I\\nclass: %c\\n  loc: %B:%L\\n mess: %M\\n job:\\n${/log_specifics/job_instance/job_spec}\\n'
+
+   ID: 23
+class: JobStarted
+  loc: CmonCommandHandlerWorker.cpp:332
+ mess: Job 'Create Cluster' just started.
+ job:
+{
+    "command": "create_cluster",
+    "job_data": 
+    {
+        "cluster_name": "ft_postgresql_8488",
+        "cluster_type": "postgresql_single",
+        "enable_uninstall": true,
+        "install_software": true,
+        "nodes": [ 
+        {
+            "class_name": "CmonHost",
+            "hostname": "192.168.0.76",
+            "port": 8089
+        } ],
+        "postgre_password": "passwd12",
+        "postgre_user": "postmaster",
+        "ssh_user": "pipas",
+        "sudo_password": "",
+        "type": "postgresql",
+        "version": "10"
+    }
+}
+.fi
 
 .\"
 .\"

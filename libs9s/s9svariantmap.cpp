@@ -108,6 +108,51 @@ S9sVariantMap::toString() const
     return toString(0, *this);
 }
 
+S9sString
+S9sVariantMap::toString(
+        const bool       syntaxHighlight,
+        const S9sString &formatString) const
+{
+    S9sString    retval;
+    char         c;
+    bool         dollar = false;
+    bool         expression = false;
+    S9sString    partFormat;
+
+    for (uint n = 0; n < formatString.size(); ++n)
+    {
+        c = formatString[n];
+        
+        if (c == '$' && !dollar)
+        {
+            dollar = true;
+            continue;
+        } else if (c == '{' && dollar && !expression)
+        {
+            expression = true;
+            partFormat = "";
+            continue;
+        } else if (c != '}' && expression)
+        {
+            partFormat += c;
+            continue;
+        } else if (c == '}' && expression)
+        {
+            retval += valueByPath(partFormat).toString();
+            dollar = false;
+            expression = false;
+            continue;
+        } else {
+            retval += c;
+        }
+
+        dollar = false;
+        expression = false;
+    }
+
+    return retval;
+}
+
 /**
  * Private function, part of the S9sVariantMap::toString() implemtation.
  */

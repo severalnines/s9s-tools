@@ -604,6 +604,6 @@ S9sMessage::toString(
         escaped    = false;
     }
 
-    return retval;
+    return toVariantMap().toString(syntaxHighlight, retval);
 }
 

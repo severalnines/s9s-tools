@@ -23,7 +23,13 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
         const S9sVariant &valueByPath(S9sVariantList path) const;
 
         bool parse(const char *source);
+
         S9sString toString() const;
+
+        S9sString toString(
+                const bool       syntaxHighlight,
+                const S9sString &formatString) const;
+
         bool parseAssignments(const S9sString &input);
         bool isSubSet(const S9sVariantMap &superSet) const;
 
