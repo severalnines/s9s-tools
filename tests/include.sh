@@ -729,7 +729,7 @@ function check_log_message()
     fi
 
     while true; do
-        format_string="$1"
+        format_string=$(echo "$1" | sed -e 's#$#\\$#g')
         expected_value="$2"
 
         if [ -z "$format_string" ]; then
