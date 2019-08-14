@@ -722,26 +722,19 @@ function check_log_message()
     done
 
     if [ -n "$message_id" ]; then
-        success "  o Will check message with ID $message_id, ok."
+        success "  o Will check log message with ID $message_id, ok."
     else
         failure "Message ID unknown."
         return 1
     fi
 
     while true; do
-        format_string=$(echo "$1" | sed -e 's#$#\\$#g')
+        format_string="$1"
         expected_value="$2"
 
         if [ -z "$format_string" ]; then
             break
         fi
-
-        cat >&2 <<EOF
-        value=\$(s9s \
-            log --list --long \
-            --log-format="$format_string" \
-            --message-id="$message_id")
-EOF
 
         value=$(s9s \
             log --list --long \

@@ -253,17 +253,21 @@ EOF
         --log-format='   ID: %I\nclass: %c\n  loc: %B:%L\n mess: %M\n job:\n${/log_specifics/job_instance}\n' \
         --message-id=$message_id
 
-    prefix="/log_specifics/job_instance/job_spec"
+    prefix="/log_specifics/job_instance"
     check_log_message \
         --message-id    "$message_id" \
-        "\${$prefix/class_name}"                         "CmonJobInstance"  \
-        "\${$prefix/cluster_id}"                         "0" \
-        "\${$prefix/job_spec/command}"                   "create_cluster" \
-        "\${$prefix/job_spec/job_data/cluster_type}"     "postgresql_single" \
-        "\${$prefix/job_spec/job_data/enable_uninstall}" "true" \
-        "\${$prefix/job_spec/job_data/install_software}" "true" \
-        "\${$prefix/job_spec/job_data/postgre_password}" "xxxxxxxxx" \
-        "\${$prefix/job_spec/job_data/sudo_password}"    "xxxxxxxxx" 
+        "#{$prefix/class_name}"                         "CmonJobInstance"  \
+        "#{$prefix/group_name}"                         "testgroup"  \
+        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/status}"                             "RUNNING"  \
+        "#{$prefix/rpc_version}"                        "2.0"  \
+        "#{$prefix/cluster_id}"                         "0" \
+        "#{$prefix/job_spec/command}"                   "create_cluster" \
+        "#{$prefix/job_spec/job_data/cluster_type}"     "postgresql_single" \
+        "#{$prefix/job_spec/job_data/enable_uninstall}" "true" \
+        "#{$prefix/job_spec/job_data/install_software}" "true" \
+        "#{$prefix/job_spec/job_data/postgre_password}" "xxxxxxxxx" \
+        "#{$prefix/job_spec/job_data/sudo_password}"    "xxxxxxxxx" 
 }
 
 #
@@ -757,6 +761,14 @@ function testRollingRestart()
 function testDrop()
 {
     print_title "Dropping the Cluster"
+    cat <<EOF
+  We are at the end of the test script, we now drop the cluster that we created
+  at the beginning of this test.
+
+EOF
+
+    print_subtitle "Printing the Logs"
+    s9s log --list --log-format="%4I %-14h %18c %36B:%-5L %M\n"
 
     #
     # 

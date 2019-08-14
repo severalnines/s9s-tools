@@ -172,13 +172,27 @@ The name of the source file that created the message. This is similar to the
 substituted.
 
 .TP
+.B h
+The host name of the host that is related to the log message. Please note that
+not all log entries are related to one specific host.
+
+.TP
+.B i
+The cluster ID. If the log message is not related to any clusters the ID here
+will be 0. 
+
+.TP
 .B I
 The ID of the message, a numerical ID that can be used as a unique identifier
 for the message.
 
 .TP
 .B J
-The Job ID.
+The Job ID if the message has a job ID.
+
+.TP
+.B j
+The entire message object as a JSon string.
 
 .TP
 .B L

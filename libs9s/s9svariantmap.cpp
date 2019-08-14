@@ -123,7 +123,7 @@ S9sVariantMap::toString(
     {
         c = formatString[n];
         
-        if (c == '$' && !dollar)
+        if ((c == '$' || c == '#') && !dollar)
         {
             dollar = true;
             continue;

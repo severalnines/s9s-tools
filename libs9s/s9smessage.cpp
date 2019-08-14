@@ -422,6 +422,22 @@ S9sMessage::toString(
         {
             switch (c)
             {
+                case 'B':
+                    // The base name in color.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat), 
+                            STR(fileName().baseName()));
+                        
+                    if (syntaxHighlight)
+                        retval += XTERM_COLOR_BLUE;
+
+                    retval += tmp;
+
+                    if (syntaxHighlight)
+                        retval += TERM_NORMAL;
+                    break;
+
                 case 'c':
                     // The 'log_class' property.
                     partFormat += 's';
@@ -447,15 +463,8 @@ S9sMessage::toString(
                     retval += tmp;
                     break;
                 
-                case 'L':
-                    // The line number.
-                    partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), lineNumber());
-                    retval += tmp;
-                    break;
-                
                 case 'i':
-                    // The message ID.
+                    // The cluster ID.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), clusterId());
                     retval += tmp;
@@ -472,6 +481,20 @@ S9sMessage::toString(
                     // The job ID.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), jobId());
+                    retval += tmp;
+                    break;
+                
+                case 'j':
+                    // The message as json string.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(m_properties.toString()));
+                    retval += tmp;
+                    break;
+                
+                case 'L':
+                    // The line number.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), lineNumber());
                     retval += tmp;
                     break;
 
@@ -543,22 +566,6 @@ S9sMessage::toString(
                     retval += tmp;
 
                     retval += TERM_NORMAL;
-                    break;
-
-                case 'B':
-                    // The base name in color.
-                    partFormat += 's';
-                    tmp.sprintf(
-                            STR(partFormat), 
-                            STR(fileName().baseName()));
-                        
-                    if (syntaxHighlight)
-                        retval += XTERM_COLOR_BLUE;
-
-                    retval += tmp;
-
-                    if (syntaxHighlight)
-                        retval += TERM_NORMAL;
                     break;
 
 #ifdef LOG_FUNCNAMES_TO_JOBLOG
