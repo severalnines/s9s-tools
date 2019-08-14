@@ -136,17 +136,23 @@ function testCreateCluster()
     local node1="ft_postgresql_01_$$"
     local nodes
     local nodeName
+    local message_id
+    local prefix
 
     print_title "Creating a PostgreSQL Cluster"
-    
-    for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
-        [ "$servers" ] && servers+=";"
-        servers+="lxc://$server"
-    done
+    cat <<EOF
+  This test will create a PostgreSQL cluster and check its state.
 
-    if [ "$servers" ]; then
-        mys9s server --register --servers=$servers
-    fi
+EOF
+
+#    for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
+#        [ "$servers" ] && servers+=";"
+#        servers+="lxc://$server"
+#    done
+#
+#    if [ "$servers" ]; then
+#        mys9s server --register --servers=$servers
+#    fi
 
     #
     # Creating containers.
@@ -154,28 +160,13 @@ function testCreateCluster()
     nodeName=$(create_node --autodestroy $node1)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
-  
-    #
-    # Check the nodes before creating a cluster.
-    #
-#    mys9s cluster \
-#        --check-hosts \
-#        --nodes="$nodes" 
-#
-#    check_exit_code_no_job $?
-#    
-#    mys9s cluster \
-#        --check-hosts \
-#        --nodes="$nodes" \
-#        --print-json
-#    
-#    check_exit_code_no_job $?
 
     #
     # Creating a PostgreSQL cluster.
     #
     mys9s cluster \
         --create \
+        --job-tags="createCluster" \
         --cluster-type=postgresql \
         --nodes="$nodes" \
         --cluster-name="$CLUSTER_NAME" \
@@ -238,6 +229,41 @@ function testCreateCluster()
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
+
+    #
+    # Checking what log messages were created while the cluster was created.
+    # These are not the job messages, these are actual log messages.
+    #
+    print_subtitle "Checking Log Messages"
+    cat <<EOF
+  Checking what log messages were filed while the cluster was created.
+
+EOF
+
+    print_log_messages
+
+    message_id=$(get_log_message_id --job-command "create_cluster")
+    if [ -n "$message_id" ]; then
+        success "  o Found JobStarted message at ID $message_id, ok."
+    else
+        failure "JobStarted message was not found."
+    fi
+
+    mys9s log --list \
+        --log-format='   ID: %I\nclass: %c\n  loc: %B:%L\n mess: %M\n job:\n${/log_specifics/job_instance}\n' \
+        --message-id=$message_id
+
+    prefix="/log_specifics/job_instance/job_spec"
+    check_log_message \
+        --message-id    "$message_id" \
+        "\${$prefix/class_name}"                         "CmonJobInstance"  \
+        "\${$prefix/cluster_id}"                         "0" \
+        "\${$prefix/job_spec/command}"                   "create_cluster" \
+        "\${$prefix/job_spec/job_data/cluster_type}"     "postgresql_single" \
+        "\${$prefix/job_spec/job_data/enable_uninstall}" "true" \
+        "\${$prefix/job_spec/job_data/install_software}" "true" \
+        "\${$prefix/job_spec/job_data/postgre_password}" "xxxxxxxxx" \
+        "\${$prefix/job_spec/job_data/sudo_password}"    "xxxxxxxxx" 
 }
 
 #
@@ -245,6 +271,8 @@ function testCreateCluster()
 #
 function testAddNode()
 {
+    local node="ft_postgresql_02_$$"
+
     print_title "Adding a New Node"
     cat <<EOF
 This test will add a new node as slave to the cluster created in the previous
@@ -252,7 +280,7 @@ test as a single node postgresql cluster.
 
 EOF
 
-    LAST_ADDED_NODE=$(create_node --autodestroy)
+    LAST_ADDED_NODE=$(create_node --autodestroy "$node")
 
     #
     # Adding a node to the cluster.

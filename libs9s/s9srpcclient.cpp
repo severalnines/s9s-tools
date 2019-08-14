@@ -4872,10 +4872,9 @@ S9sRpcClient::stopNode()
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
     S9sVariantMap  request   = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
-    S9sString      uri = "/v2/jobs/";
     S9sNode        node;
     bool           retval;
     
@@ -4906,7 +4905,78 @@ S9sRpcClient::stopNode()
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest("/v2/jobs/", request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::setNodeReadOnly()
+{
+    return startNodeJob(
+            "enable_db_readonly",
+            "Setting Node to Read-only");
+}
+
+bool
+S9sRpcClient::setNodeReadWrite()
+{
+    return startNodeJob(
+            "disable_db_readonly",
+            "Setting Node to Read-write");
+}
+
+/**
+ * \returns true if the request was sent and the reply was received (even if the
+ *   reply is an error notification).
+ *
+ * A private method to create a job that has one node of a cluster as argument.
+ * We have many of these jobs, makes sense to have a method like this to make
+ * them.
+ */
+bool
+S9sRpcClient::startNodeJob(
+        const S9sString &command,
+        const S9sString &title)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("Node was not provided.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"]       = hosts[0].toVariantMap();
+     
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = command;
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest("/v2/jobs/", request);
 
     return retval;
 }

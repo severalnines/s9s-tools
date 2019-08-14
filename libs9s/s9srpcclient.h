@@ -357,7 +357,9 @@ class S9sRpcClient
         
         bool stopNode();
         bool stopSlave();
-
+        bool setNodeReadOnly();
+        bool setNodeReadWrite();
+        
         bool failoverMaster();
         bool stageSlave();
 
@@ -410,6 +412,9 @@ class S9sRpcClient
                 const S9sString &errorString,
                 const S9sString &errorCode = "ConnectError");
     private:
+        bool startNodeJob(
+                const S9sString &command,
+                const S9sString &title);
         
         // Low level methods that create/register new clusters.
         bool createMySqlSingleCluster(

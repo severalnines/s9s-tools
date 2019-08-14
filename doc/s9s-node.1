@@ -77,8 +77,36 @@ s9s node --stat 192.168.0.85
 .fi
 
 .TP
-.B \-\-set
+.B --set
 Sets various properties of the specified node/host.
+
+.TP
+.B --set-read-only
+Creates a job that sets the node to read-only mode. Please note that not all
+cluster types support re-only mode.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --set-read-only \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.78 \\
+    --log
+.fi
+
+.TP
+.B --set-read-write
+Creates a job that sets the node to read-write mode if it was prevously set to
+read-only mode. Please note that not all cluster types support re-only mode.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --set-read-write \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.78 \\
+    --log
+.fi
 
 .TP
 .B \-\-list\-config

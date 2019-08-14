@@ -328,6 +328,14 @@ S9sBusinessLogic::execute()
         {
             success = client.inspectHost();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isSetReadOnlyRequested())
+        {
+            success = client.setNodeReadOnly();
+            maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isSetReadWriteRequested())
+        {
+            success = client.setNodeReadWrite();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

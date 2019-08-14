@@ -661,6 +661,104 @@ function print_log_messages()
         --debug 
 }
 
+function get_log_message_id()
+{
+    local job_command
+    local lines
+    local log_format
+
+    while true; do
+        case "$1" in 
+            --job-command)
+                job_command="$2"
+                shift 2
+                ;;
+
+            --)
+                break
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    log_format+='%I '
+    log_format+='${/log_specifics/job_instance/job_spec/command} '
+    log_format+='\n'
+
+    lines=$(s9s log --list --log-format="$log_format")
+
+    if [ -n "$job_command" ]; then
+        lines=$(echo "$lines" | awk "\$2 == \"$job_command\" { print \$0 }")
+    fi
+
+    echo $lines | tail -n 1 | awk '{ print $1 }'
+}
+
+function check_log_message()
+{
+    local message_id
+    local format_string
+    local expected_value
+    local value
+
+    while true; do
+        case "$1" in 
+            --message-id)
+                message_id="$2"
+                shift 2
+                ;;
+
+            --)
+                break
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    if [ -n "$message_id" ]; then
+        success "  o Will check message with ID $message_id, ok."
+    else
+        failure "Message ID unknown."
+        return 1
+    fi
+
+    while true; do
+        format_string="$1"
+        expected_value="$2"
+
+        if [ -z "$format_string" ]; then
+            break
+        fi
+
+        cat >&2 <<EOF
+        value=\$(s9s \
+            log --list --long \
+            --log-format="$format_string" \
+            --message-id="$message_id")
+EOF
+
+        value=$(s9s \
+            log --list --long \
+            --log-format="$format_string" \
+            --message-id="$message_id")
+
+        if [ "$value" == "$expected_value" ]; then
+            success "  o Value for '$format_string' is '$value', ok."
+        else
+            failure "Value for '$format_string' is '$value', not '$expected_value'."
+        fi
+
+        shift 2
+    done
+
+}
+
 function check_container()
 {
     local container_name

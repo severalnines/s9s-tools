@@ -431,6 +431,8 @@ class S9sOptions
         bool isListKeysRequested() const;
         bool isAddKeyRequested() const;
         bool isSetRequested() const;
+        bool isSetReadOnlyRequested() const;
+        bool isSetReadWriteRequested() const;
         bool isChangePasswordRequested() const;
 
 

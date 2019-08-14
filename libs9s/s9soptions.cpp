@@ -324,6 +324,8 @@ enum S9sOptionType
 
     OptionReportId,
     OptionMessageId,
+    OptionSetReadOnly,
+    OptionSetReadWrite
 };
 
 /**
@@ -3727,6 +3729,18 @@ S9sOptions::isSetRequested() const
     return getBool("set");
 }
 
+bool
+S9sOptions::isSetReadOnlyRequested() const
+{
+    return getBool("set_read_only");
+}
+
+bool
+S9sOptions::isSetReadWriteRequested() const
+{
+    return getBool("set_read_write");
+}
+
 /**
  * \returns true if the "change password" function is requested using the 
  *   --change-password command line option.
@@ -5505,6 +5519,8 @@ S9sOptions::printHelpNode()
 "  --register                 Register a node that already is working.\n"
 "  --restart                  Stop, then start the node.\n"
 "  --set                      Change the properties of a node.\n"
+"  --set-read-only            Set the node to read-only mode.\n"
+"  --set-read-write           Set the node to read-write mode.\n"
 "  --start                    Start the node.\n"
 "  --stat                     Print detailed node information.\n"
 "  --stop                     Stop the node.\n"
@@ -5798,7 +5814,9 @@ S9sOptions::readOptionsNode(
         { "density",          no_argument,       0, OptionDensity         },
         { "no-header",        no_argument,       0, OptionNoHeader        },
 
-        // Main Option
+        /*
+         * Main Option
+         */
         { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "inspect",          no_argument,       0, OptionInspect         },
         { "list-config",      no_argument,       0, OptionListConfig      },
@@ -5808,6 +5826,8 @@ S9sOptions::readOptionsNode(
         { "register",         no_argument,       0, OptionRegister        },
         { "restart",          no_argument,       0, OptionRestart         },
         { "set",              no_argument,       0, OptionSet             },
+        { "set-read-only",    no_argument,       0, OptionSetReadOnly     },
+        { "set-read-write",   no_argument,       0, OptionSetReadWrite    },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
@@ -5921,6 +5941,16 @@ S9sOptions::readOptionsNode(
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
+                break;
+
+            case OptionSetReadOnly:
+                // --set-read-only
+                m_options["set_read_only"] = true;
+                break;
+            
+            case OptionSetReadWrite:
+                // --set-read-write
+                m_options["set_read_write"] = true;
                 break;
 
             case OptionStart:
@@ -8579,6 +8609,12 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isRegisterRequested())
+        countOptions++;
+    
+    if (isSetReadOnlyRequested())
+        countOptions++;
+    
+    if (isSetReadWriteRequested())
         countOptions++;
 
     if (countOptions > 1)
