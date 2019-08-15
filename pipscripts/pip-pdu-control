@@ -97,7 +97,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,print-report,"\
-"list,list-outlets,discover,on,off,toggle,state,\
+"list,list-outlets,list-measurements,discover,on,off,toggle,state,\
 power,voltage,current,temperature,humidity,print-files,long,outlet:,group:,\
 all,with-power,with-temperature" \
         -- "$@")
@@ -141,14 +141,19 @@ while true; do
             LIST_OPTION="true"
             ;;
 
-        --discover)
-            shift
-            DISCOVER_OPTION="true"
-            ;;
-
         --list-outlets)
             shift
             LIST_OUTLETS_OPTION="true"
+            ;;
+
+        --list-measurements)
+            shift
+            LIST_MEASUREMENTS_OPTION="true"
+            ;;
+
+        --discover)
+            shift
+            DISCOVER_OPTION="true"
             ;;
 
         --on)
@@ -800,6 +805,82 @@ function print_summary()
     printf "         Total: %'6d devices\n" "$SUM_DEVICES" 
 }
 
+function print_measurements_long()
+{
+    for config_file in $HOME/.pip/*.pdu; do
+        if [ ! -f "$config_file" ]; then
+            continue
+        fi
+
+        device_name=$(basename "$config_file" .pdu)
+        
+        CONF_PDU_NAME=""
+        CONF_PDU_SERVER=""
+        CONF_PDU_URL=""
+        CONF_PDU_STANDARD=""
+        CONF_PDU_CATEGORY=""
+        CONF_PDU_MQTT=""
+        CONF_PDU_MEASURES_POWER=""
+        CONF_PDU_MEASURES_VOLTAGE=""
+        CONF_PDU_MEASURES_CURRENT=""
+        CONF_PDU_MEASURES_TEMPERATURE=""
+        CONF_PDU_MEASURES_HUMIDITY=""
+        CONF_PDU_FIRST_OUTLET=""
+        CONF_PDU_LAST_OUTLET=""
+        source "$config_file"
+
+        has_value=""
+        temperature="-"
+        humidity="-"
+        power="-"
+        voltage="-"
+        current="-"
+        if [ "$CONF_PDU_MEASURES_TEMPERATURE" ]; then
+            temperature=$(pip-pdu-control --temperature "$device_name")
+            temperature+="C"
+            has_value="true"
+        fi
+
+        if [ "$CONF_PDU_MEASURES_HUMIDITY" ]; then
+            humidity=$(pip-pdu-control --humidity "$device_name")
+            humidity+="%"
+            has_value="true"
+        fi
+
+        if [ "$CONF_PDU_MEASURES_POWER" ]; then
+            power=$(pip-pdu-control --power "$device_name")
+            power+="W"
+            has_value="true"
+        fi
+
+        if [ "$CONF_PDU_MEASURES_VOLTAGE" ]; then
+            voltage=$(pip-pdu-control --voltage "$device_name")
+            voltage+="V"
+            has_value="true"
+        fi
+
+        if [ "$CONF_PDU_MEASURES_CURRENT" ]; then
+            current=$(pip-pdu-control --current "$device_name")
+            current+="A"
+            has_value="true"
+        fi
+        
+        if [ -z "$has_value" ]; then
+            continue
+        fi
+
+        printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
+        printf "%7s " "$voltage"
+        printf "%7s " "$current"
+        printf "%7s " "$power"
+        printf "%7s " "$temperature"
+        printf "%7s " "$humidity"
+        printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$CONF_PDU_NAME"
+
+        printf "\n"
+    done
+}
+
 #
 # Prints the list of PDU devices in long format.
 #
@@ -1040,6 +1121,9 @@ if [ -n "$DISCOVER_OPTION" ]; then
         discover_device_at $device
     done
     exit 1
+elif [ -n "$LIST_MEASUREMENTS_OPTION" ]; then
+    print_measurements_long
+    exit 0
 elif [ -n "$LIST_OPTION" ]; then
     if [ "$OPTION_LONG" ]; then
         print_device_list_long
