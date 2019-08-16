@@ -659,6 +659,9 @@ function print_log_messages()
         --limit=100 \
         --color="always" \
         --debug 
+
+    print_subtitle "Cmon Logs with Templates"
+    s9s log --list --long --log-format-file='templates/log/%c_${log_specifics/job_instance/job_spec/command};templates/log/%c'
 }
 
 function print_log_message()

@@ -1,4 +1,4 @@
+
 \e[1m\e[37mCluster Changed State\e[0;39m
 \e[38;5;238m      id\e[0;39m: ${log_specifics/cluster_id}
 \e[38;5;238m   state\e[0;39m: ${log_specifics/previous_cluster_state} -> ${log_specifics/cluster_state}
-

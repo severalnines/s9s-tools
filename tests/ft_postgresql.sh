@@ -249,7 +249,7 @@ EOF
 
     if [ -n "$message_id" ]; then
         success "  o Found JobStarted message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobStarted message was not found."
     fi
@@ -277,7 +277,7 @@ EOF
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -337,6 +337,8 @@ EOF
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
         --no-maint
+    
+    print_log_messages
 }
 
 #
@@ -374,7 +376,7 @@ function testStopStartNode()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -403,7 +405,7 @@ function testStopStartNode()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -639,6 +641,8 @@ function testCreateDatabase()
 #
 function testCreateBackup()
 {
+    local message_id
+
     print_title "Creating Backups"
 
     #
@@ -661,7 +665,7 @@ function testCreateBackup()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -690,7 +694,7 @@ function testCreateBackup()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -702,6 +706,7 @@ function testCreateBackup()
 function testRestoreBackup()
 {
     local backupId
+    local message_id
 
     print_title "Restoring a Backup"
 
@@ -729,7 +734,7 @@ function testRestoreBackup()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -770,7 +775,7 @@ function testRunScript()
     local output_file=$(mktemp)
     local script_file="scripts/test_output_lines.js"
     local exitCode
-    
+
     print_title "Running a Script"
     
     cat $script_file
@@ -808,6 +813,8 @@ function testRunScript()
 #
 function testRollingRestart()
 {
+    local message_id
+
     print_title "Performing Rolling Restart"
 
     #
@@ -828,7 +835,7 @@ function testRollingRestart()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        print_log_message "$message_id"
+        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
