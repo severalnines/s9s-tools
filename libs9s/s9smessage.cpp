@@ -366,7 +366,7 @@ S9sMessage::toString(
     S9sString    partFormat;
     bool         percent = false;
     bool         escaped = false;
-    
+   
     for (uint n = 0; n < formatString.size(); ++n)
     {
         c = formatString[n];
@@ -403,7 +403,7 @@ S9sMessage::toString(
                     break;
 
                 case 'e':
-                    retval += '\027';
+                    retval += '\033';
                     break;
 
                 case 'n':
@@ -442,9 +442,14 @@ S9sMessage::toString(
                     // The 'log_class' property.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(logClass()));
-                    retval += formatter.typeColorBegin();
+                    if (syntaxHighlight)
+                        retval += formatter.typeColorBegin();
+
                     retval += tmp;
-                    retval += formatter.typeColorEnd();
+
+                    if (syntaxHighlight)
+                        retval += formatter.typeColorEnd();
+
                     break;
 
                 case 'C':

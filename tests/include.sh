@@ -661,16 +661,31 @@ function print_log_messages()
         --debug 
 }
 
+function print_log_message()
+{
+    local message_id="$1"
+
+    s9s log --list \
+        --log-format='   ID: %I\nclass: %c\n  loc: %B:%L\n mess: %M\n job:\n${/log_specifics/job_instance}\n' \
+        --message-id=$message_id
+}
+
 function get_log_message_id()
 {
     local job_command
     local lines
     local log_format
+    local job_class
 
     while true; do
         case "$1" in 
             --job-command)
                 job_command="$2"
+                shift 2
+                ;;
+
+            --job-class)
+                job_class="$2"
                 shift 2
                 ;;
 
@@ -685,13 +700,18 @@ function get_log_message_id()
     done
 
     log_format+='%I '
+    log_format+='%c '
     log_format+='${/log_specifics/job_instance/job_spec/command} '
     log_format+='\n'
 
     lines=$(s9s log --list --log-format="$log_format")
 
     if [ -n "$job_command" ]; then
-        lines=$(echo "$lines" | awk "\$2 == \"$job_command\" { print \$0 }")
+        lines=$(echo "$lines" | awk "\$3 == \"$job_command\" { print \$0 }")
+    fi
+    
+    if [ -n "$job_class" ]; then
+        lines=$(echo "$lines" | awk "\$2 == \"$job_class\" { print \$0 }")
     fi
 
     echo $lines | tail -n 1 | awk '{ print $1 }'

@@ -242,16 +242,17 @@ EOF
 
     print_log_messages
 
-    message_id=$(get_log_message_id --job-command "create_cluster")
+    # The JobStarted log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobStarted" \
+        --job-command "create_cluster")
+
     if [ -n "$message_id" ]; then
         success "  o Found JobStarted message at ID $message_id, ok."
+        print_log_message "$message_id"
     else
         failure "JobStarted message was not found."
     fi
-
-    mys9s log --list \
-        --log-format='   ID: %I\nclass: %c\n  loc: %B:%L\n mess: %M\n job:\n${/log_specifics/job_instance}\n' \
-        --message-id=$message_id
 
     prefix="/log_specifics/job_instance"
     check_log_message \
@@ -260,6 +261,34 @@ EOF
         "#{$prefix/group_name}"                         "testgroup"  \
         "#{$prefix/user_name}"                          "pipas"  \
         "#{$prefix/status}"                             "RUNNING"  \
+        "#{$prefix/rpc_version}"                        "2.0"  \
+        "#{$prefix/cluster_id}"                         "0" \
+        "#{$prefix/job_spec/command}"                   "create_cluster" \
+        "#{$prefix/job_spec/job_data/cluster_type}"     "postgresql_single" \
+        "#{$prefix/job_spec/job_data/enable_uninstall}" "true" \
+        "#{$prefix/job_spec/job_data/install_software}" "true" \
+        "#{$prefix/job_spec/job_data/postgre_password}" "xxxxxxxxx" \
+        "#{$prefix/job_spec/job_data/sudo_password}"    "xxxxxxxxx" 
+
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "create_cluster")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
+    
+    prefix="/log_specifics/job_instance"
+    check_log_message \
+        --message-id    "$message_id" \
+        "#{$prefix/class_name}"                         "CmonJobInstance"  \
+        "#{$prefix/group_name}"                         "testgroup"  \
+        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/status}"                             "FINISHED"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
         "#{$prefix/job_spec/command}"                   "create_cluster" \
@@ -317,6 +346,7 @@ EOF
 function testStopStartNode()
 {
     local state 
+    local message_id
 
     print_title "Stopping and Starting a Node"
 
@@ -336,9 +366,21 @@ function testStopStartNode()
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
     fi
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "stop")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
 
     #
-    # Then start.
+    # Then start the node again.
     #
     mys9s node \
         --start \
@@ -352,6 +394,18 @@ function testStopStartNode()
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
+    fi
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "start")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
     fi
 }
 
@@ -600,6 +654,18 @@ function testCreateBackup()
     
     check_exit_code $?
     
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "backup")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
+    
     #
     # Creating a backup using the cluster name. It is a pg_basebackup this 
     # time.
@@ -617,22 +683,17 @@ function testCreateBackup()
 
     mys9s backup --list --long
    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "backup")
 
-    #
-    # Creating a backup using the pgbackrestfull method.
-    # Well, it doesn't work...
-    #
-#    mys9s backup \
-#        --create \
-#        --cluster-name=$CLUSTER_NAME \
-#        --nodes=$FIRST_ADDED_NODE \
-#        --backup-directory=/tmp \
-#        --backup-method=pgbackrestfull \
-#        $LOG_OPTION
-#    
-#    check_exit_code $?    
-#
-#    mys9s backup --list --long
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
 }
 
 #
@@ -641,7 +702,6 @@ function testCreateBackup()
 function testRestoreBackup()
 {
     local backupId
-    local exitCode
 
     print_title "Restoring a Backup"
 
@@ -660,11 +720,18 @@ function testRestoreBackup()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    exitCode=$?
-    check_exit_code $exitCode
+    check_exit_code $?
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "restore_backup")
 
-    if [ "$exitCode" -ne 0 ]; then
-        exit 1
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
     fi
 }
 
@@ -753,6 +820,18 @@ function testRollingRestart()
         $DEBUG_OPTION
     
     check_exit_code $?    
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "rolling_restart")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
 }
 
 #
@@ -822,7 +901,7 @@ else
     runFunctionalTest testRunScript
     runFunctionalTest testRollingRestart
 
-    runFunctionalTest testDrop
+    #runFunctionalTest testDrop
 fi
 
 endTests

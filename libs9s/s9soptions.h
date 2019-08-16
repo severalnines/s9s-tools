@@ -240,6 +240,9 @@ class S9sOptions
         bool hasLogFormat() const;
         S9sString logFormat() const;
         
+        bool hasLogFormatFile() const;
+        S9sString logFormatFile() const;
+        
         bool hasClusterFormat() const;
         S9sString clusterFormat() const;
 

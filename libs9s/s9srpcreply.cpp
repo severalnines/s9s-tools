@@ -2165,6 +2165,8 @@ S9sRpcReply::printLogLong()
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sString       formatString = options->longLogFormat();
+    bool            hasLogFormatFile = options->hasLogFormatFile();
+    S9sString       logFormatFile = options->logFormatFile();
     S9sVariantList  variantList = operator[]("log_entries").toVariantList();
     S9sVector<S9sMessage> theList;
 
@@ -2184,8 +2186,10 @@ S9sRpcReply::printLogLong()
     // FIXME:
     // The implementation of the long format is just a formatstring, the same
     // code is used here as it is added to the brief format.
-    if (formatString.empty())
+    if (!hasLogFormatFile && formatString.empty())
+    {
         formatString = "%C %36B:%-5L: %-8S %M\n";
+    }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
     {
@@ -2193,12 +2197,25 @@ S9sRpcReply::printLogLong()
         S9sString     severity = message.severity();
 
         // Filtering by severity level is done on the controller now.
+        
+        if (hasLogFormatFile)
+        {
+            S9sString fileName;
+            S9sFile   file;
+
+            fileName = message.toString(false, logFormatFile);
+            file     = S9sFile(fileName);
+
+            formatString = "";
+            file.readTxtFile(formatString);
+            S9S_WARNING("*** fileName: '%s'", STR(fileName));
+        }
 
         if (formatString.empty())
         {
-            printf("%s\n", STR(S9sString::html2ansi(message.message())));
+            //printf("%s\n", STR(S9sString::html2ansi(message.message())));
         } else {
-            printf("%s",
+            ::printf("%s",
                     STR(message.toString(syntaxHighlight, formatString)));
         }
     }
