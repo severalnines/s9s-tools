@@ -2200,15 +2200,25 @@ S9sRpcReply::printLogLong()
         
         if (hasLogFormatFile)
         {
-            S9sString fileName;
-            S9sFile   file;
+            S9sVariantList fileNames;
+            S9sString      fileName;
+            S9sFile        file;
 
-            fileName = message.toString(false, logFormatFile);
-            file     = S9sFile(fileName);
+            fileNames = logFormatFile.split(";");
+            for (uint idx = 0u; idx < fileNames.size(); ++idx)
+            {
+                fileName = fileNames[idx].toString();
+                S9S_WARNING("***      fileName: '%s'", STR(fileName));
+                fileName = message.toString(false, fileName);
+                S9S_WARNING("*** form fileName: '%s'", STR(fileName));
+
+                file     = S9sFile(fileName);
+                if (file.exists())
+                    break;
+            }
 
             formatString = "";
             file.readTxtFile(formatString);
-            S9S_WARNING("*** fileName: '%s'", STR(fileName));
         }
 
         if (formatString.empty())

@@ -1,0 +1,5 @@
+\e[1m\e[37mJob Started\e[0;39m
+\e[38;5;238m   title\e[0;39m: ${log_specifics/job_instance/title}
+\e[38;5;238m command\e[0;39m: \e[38;5;57m${log_specifics/job_instance/job_spec/command}\e[0;39m
+\e[38;5;238m    user\e[0;39m: \e[38;5;166m${log_specifics/job_instance/user_name}\e[0;39m
+
