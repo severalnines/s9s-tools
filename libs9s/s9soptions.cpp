@@ -7979,6 +7979,7 @@ S9sOptions::readOptionsReplication(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
+        { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
 
         { "link-format",      required_argument, 0, OptionLinkFormat      },
         { "master",           required_argument, 0, OptionMaster          },
@@ -8099,6 +8100,11 @@ S9sOptions::readOptionsReplication(
             case 'n':
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
+                break;
+            
+            case OptionRemoteClusterId:
+                // --remote-cluster-id=ID
+                m_options["remote_cluster_id"] = optarg;
                 break;
 
             case OptionReportId:

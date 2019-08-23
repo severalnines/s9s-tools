@@ -613,7 +613,7 @@ S9sMessage::toString(
         }
 
         percent = false;
-        escaped    = false;
+        escaped = false;
     }
 
     return toVariantMap().toString(syntaxHighlight, retval);

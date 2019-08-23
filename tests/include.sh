@@ -1588,12 +1588,16 @@ function node_created()
 
 function emit_s9s_configuration_file()
 {
+    local cmon_port="$OPTION_CMON_PORT"
+
+    [ -z "$cmon_port" ] && cmon_port="9556"
+    
     cat <<EOF
 #
 # This configuration file was created by ${MYNAME} version ${VERSION}.
 #
 [global]
-controller = https://localhost:9556
+controller = https://localhost:$cmon_port
 
 [log]
 brief_job_log_format = "%36B:%-5L: %-7S %M\n"
@@ -1698,8 +1702,12 @@ function grant_user()
 {
     local first
     local last
+    local cmon_port="$OPTION_CMON_PORT"
+
+    [ -z "$cmon_port" ] && cmon_port="9556"
 
     print_title "Creating the First User"
+
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 
@@ -1708,7 +1716,7 @@ function grant_user()
         --group="testgroup" \
         --create-group \
         --generate-key \
-        --controller="https://localhost:9556" \
+        --controller="https://localhost:$cmon_port" \
         --new-password="p" \
         --email-address="laszlo@severalnines.com" \
         --first-name="$first" \
@@ -1732,6 +1740,7 @@ function grant_user()
     #
     mys9s user \
         --add-key \
+        --password="p" \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
 

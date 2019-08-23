@@ -66,13 +66,14 @@ Usage:
   --log-file=FILE      Store all the messages in the given file too.
   --print-report       Print a detailed report at the end.
 
+  --discover           Try to contact he device and find information about it.
   --list               List the power distribution units.
+  --list-measurements  Fetch and list values the devices can measure.
   --list-outlets       List the outlets of the PDU.
   --off                Turn the socket off.
   --on                 Turn the socket on.
   --state              Check the state of the socket.
   --toggle             Toggle the socket.
-  --discover           Try to contact he device and find information about it.
 
   --power              Read the current power in watts.
   --voltage            Measure the voltage on the PDU.
