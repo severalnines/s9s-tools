@@ -3733,6 +3733,9 @@ S9sRpcClient::createPostgreSql(
 
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
+    
+    if (options->hasRemoteClusterIdOption())
+        jobData["remote_cluster_id"] = options->remoteClusterId();
 
     if (options->noInstall())
     {
