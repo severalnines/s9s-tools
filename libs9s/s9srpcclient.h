@@ -359,6 +359,8 @@ class S9sRpcClient
         bool stopSlave();
         bool setNodeReadOnly();
         bool setNodeReadWrite();
+
+        bool setClusterReadOnly();
         
         bool failoverMaster();
         bool stageSlave();

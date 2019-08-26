@@ -126,6 +126,10 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isSetReadOnlyRequested())
+        {
+            success = client.setClusterReadOnly();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isImportConfigRequested())
         {
             success = client.importConfig();

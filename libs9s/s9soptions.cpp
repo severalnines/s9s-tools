@@ -3742,12 +3742,18 @@ S9sOptions::isSetRequested() const
     return getBool("set");
 }
 
+/**
+ * \returns True if the --set-read-only command line option was provided.
+ */
 bool
 S9sOptions::isSetReadOnlyRequested() const
 {
     return getBool("set_read_only");
 }
 
+/**
+ * \returns True if the --set-read-write option was provided.
+ */
 bool
 S9sOptions::isSetReadWriteRequested() const
 {
@@ -8485,6 +8491,9 @@ S9sOptions::checkOptionsCluster()
     
     if (isRegisterRequested())
         countOptions++;
+    
+    if (isSetReadOnlyRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -10414,26 +10423,27 @@ S9sOptions::readOptionsCluster(
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
+        { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
-        { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
+        { "demote-node",      no_argument,       0, OptionDemoteNode      },
+        { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
+        { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
+        { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
+        { "import-config",    no_argument,       0, OptionImportConfig    },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
         { "promote-slave",    no_argument,       0, OptionPromoteSlave    },
-        { "demote-node",      no_argument,       0, OptionDemoteNode      },
         { "register",         no_argument,       0, OptionRegister        },
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
-        { "collect-logs",     no_argument,       0, OptionCollectLogs     },
-        { "import-config",    no_argument,       0, OptionImportConfig    },
-        { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
-        { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
+        { "set-read-only",    no_argument,       0, OptionSetReadOnly     },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
@@ -10603,6 +10613,11 @@ S9sOptions::readOptionsCluster(
             case OptionDisableSsl:
                 // --disable-ssl
                 m_options["disable_ssl"] = true;
+                break;
+            
+            case OptionSetReadOnly:
+                // --set-read-only
+                m_options["set_read_only"] = true;
                 break;
             
             case OptionSetupAudit:

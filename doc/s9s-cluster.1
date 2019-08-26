@@ -237,7 +237,7 @@ s9s cluster \\
 .fi
 
 .TP
-.B \-\-rolling-restart
+.B --rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
 line option will create a job that will restart all the nodes.
 
@@ -247,6 +247,21 @@ s9s cluster \\
     --rolling-restart \\
     --cluster-id=1 \\
     --wait 
+.fi
+
+.TP
+.B --set-read-only
+This option will create a job that when executed will set the entire cluster
+into read-only mode. Please note that not every cluster type supports the
+read-only mode.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --set-read-only \\
+    --cluster-id=1 \\
+    --debug \\
+    --log
 .fi
 
 .TP
