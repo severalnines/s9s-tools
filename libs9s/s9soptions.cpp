@@ -5444,6 +5444,7 @@ S9sOptions::printHelpCluster()
 "  --register                 Register a pre-existing cluster.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
+"  --set-read-only            Set the entire cluster into read-only mode.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"

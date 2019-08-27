@@ -1361,7 +1361,7 @@ S9sNode::hasMasterClusterId() const
 int
 S9sNode::masterClusterId() const
 {
-    bool retval = false;
+    int retval = -1;
 
     if (hasMasterClusterId())
         retval = replicationSlaveInfo()["master_cluster_id"].toInt();

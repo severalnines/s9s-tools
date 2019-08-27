@@ -240,7 +240,7 @@ EOF
 
 EOF
 
-    print_log_messages
+    #print_log_messages
 
     # The JobStarted log message.
     message_id=$(get_log_message_id \
@@ -541,13 +541,99 @@ EOF
     fi
 }
 
+function check_postgresql_account()
+{
+    local hostname
+    local port
+    local account_name
+    local account_password
+    local database_name="template1"
+    local lines
+    local retcode
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --hostname)
+                hostname="$2"
+                shift 2
+                ;;
+
+            --port)
+                port="$2"
+                shift 2
+                ;;
+
+            --account-name)
+                account_name="$2"
+                shift 2
+                ;;
+
+            --account-password)
+                account_password="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    cat <<EOF
+    PGPASSWORD="$account_password" psql -t --username="$account_name" --host="$hostname" --port="$port" --dbname="$database_name" --command="select 41 + 1;"
+EOF
+
+    if [ -n "$hostname" ]; then
+        success "  o Test host is '$hostname', ok."
+    else
+        failure "PostgreSQL host name required."
+        return 1
+    fi
+    
+    if [ -n "$account_name" ]; then
+        success "  o Test account is '$account_name', ok."
+    else
+        failure "Account name required."
+        return 1
+    fi
+
+    lines=$(PGPASSWORD="$account_password" \
+        psql \
+            -t \
+            --username="$account_name" \
+            --host="$hostname" \
+            --port="$port" \
+            --dbname="$database_name" \
+            --command="select 41 + 1;")
+
+    retcode="$?"
+
+    echo "$lines"
+
+    lines=$(echo "$lines" | tail -n 1);
+    lines=$(echo $lines);
+    
+    if [ "$retcode" -eq 0 ]; then
+        success "  o The return code is 0, ok."
+    else
+        failure "The return code is '$retcode'."
+    fi
+
+    if [ "$lines" == "42" ]; then
+        success "  o The result is '$lines', ok."
+    else
+        failure "The result is '$lines'."
+    fi
+}
+
 #
 # Creating a new account on the cluster.
 #
-#
 function testCreateAccount01()
 {
-    print_title "Creating an Account"
+    print_title "Creating and Deleting an Account"
+    cat <<EOF
+EOF
 
     #
     # This command will create a new account on the cluster.
@@ -555,15 +641,17 @@ function testCreateAccount01()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="joe:password" 
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating an account"
-        mys9s node --stat
-    fi
-    
+        --account="joe:password" \
+        --debug 
+   
+    check_exit_code_no_job $?
+   
+#    check_postgresql_account \
+#        --hostname           "$FIRST_ADDED_NODE" \
+#        --port               "8089" \
+#        --account-name       "joe" \
+#        --account-password   "password"
+
     #
     # This command will delete the same account from the cluster.
     # FIXME: this won't work maybe because the user has a database.
@@ -588,9 +676,49 @@ function testCreateAccount02()
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account='jake:jake@192.168.0.0/24' 
+        --account='jake:jake@192.168.0.0/24' \
+        --debug
 
     mys9s account --list --long
+    mys9s node --stat "$FIRST_ADDED_NODE"
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "jake" \
+        --account-password   "jake"
+}
+
+function testCreateAccount03()
+{
+    local privileges
+    print_title "Create Accounts"
+    cat <<EOF
+  This test will create an account with special privileges. Then the account is
+  tested by contacting the SQL server and executing SQL queries.
+
+EOF
+
+    privileges+="CREATEDB,REPLICATION,SUPER"
+    #privileges+=",testCreateDatabase.*:INSERT,UPDATE"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account='kirk:kirk@192.168.0.0/24' \
+        --privileges="$privileges" \
+        --debug
+    
+    check_exit_code_no_job $?
+
+    #mys9s account --list --long
+    #mys9s node --stat "$FIRST_ADDED_NODE"
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "kirk" \
+        --account-password   "kirk"
 }
 
 #
@@ -899,6 +1027,7 @@ else
 
     runFunctionalTest testCreateAccount01
     runFunctionalTest testCreateAccount02
+    runFunctionalTest testCreateAccount03
     runFunctionalTest testCreateDatabase
 
     runFunctionalTest testCreateBackup
