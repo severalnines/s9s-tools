@@ -434,6 +434,7 @@ S9sRpcReply::printReplicationListLong()
     S9sFormat       masterNameFormat;
     S9sFormat       linkStatusFormat;
     S9sFormat       masterClusterFormat;
+    S9sFormat       lagFormat;
 
     // Going through once, collecting some information.
     for (uint idx = 0; idx < clusterList.size(); ++idx)
@@ -442,13 +443,14 @@ S9sRpcReply::printReplicationListLong()
         S9sCluster     cluster     = clusterMap;
         S9sVector<S9sNode> nodes = cluster.nodes();
         int            clusterId   = cluster.clusterId();
-
+        
         for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
         {
             const S9sNode &node = nodes[idx1];
             S9sReplication replication(cluster, node);
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
+            int            lag = replication.secondsBehindMaster();
 
             if (!replication.isValid())
                 continue;
@@ -472,6 +474,7 @@ S9sRpcReply::printReplicationListLong()
             masterNameFormat.widen(masterName);
             linkStatusFormat.widen(replication.slaveStatusShort());
             masterClusterFormat.widen(masterCluster);
+            lagFormat.widen(lag);
             ++nLines;
         }
     }
@@ -489,6 +492,7 @@ S9sRpcReply::printReplicationListLong()
         masterNameFormat.widen("MASTER");
         linkStatusFormat.widen("STATUS");
         masterClusterFormat.widen("MASTER_CLUSTER");
+        lagFormat.widen("LAG");
 
         printf("%s", headerColorBegin());
         clusterIdFormat.printf("CID");
@@ -496,6 +500,7 @@ S9sRpcReply::printReplicationListLong()
         masterNameFormat.printf("MASTER");
         linkStatusFormat.printf("STATUS");
         masterClusterFormat.printf("MASTER_CLUSTER"); 
+        lagFormat.printf("LAG"); 
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -515,6 +520,7 @@ S9sRpcReply::printReplicationListLong()
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
             S9sString      status = replication.slaveStatusShort();
+            int            lag = replication.secondsBehindMaster();
 
             if (!replication.isValid())
                 continue;
@@ -543,6 +549,7 @@ S9sRpcReply::printReplicationListLong()
 
 
             masterClusterFormat.printf(masterCluster);
+            lagFormat.printf(lag);
             ::printf("\n");
         }
     }    
