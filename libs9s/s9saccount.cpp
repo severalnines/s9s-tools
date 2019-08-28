@@ -189,7 +189,9 @@ S9sAccount::grants(
     S9sString value = grants();
     S9sString retval;
 
-    S9S_WARNING("syntaxHighlight: %s", syntaxHighlight ? "true" : "false");
+    S9S_WARNING("          value: %s", STR(value));
+    S9S_WARNING("      highlight: %s", syntaxHighlight ? "true" : "false");
+
     if (syntaxHighlight)
     {
         S9sVariantList values = value.split(";");
@@ -209,45 +211,62 @@ S9sAccount::grants(
 
 void
 S9sAccount::appendColorizedGrant(
-        const S9sString &grant,
+        const S9sString &value,
         S9sString       &result) const
 {
-    S9S_WARNING("  grant: %s", STR(grant));
+    S9S_WARNING("          value: %s", STR(value));
+
     if (!result.empty())
         result += ";";
 
-    if (grant.contains(","))
+#if 0
+    if (value.contains(":"))
     {
-        S9sVariantList values = grant.split(",");
+        S9sVariantList values = value.split(":");
+        
+        
+    }
+#endif
+    appendColorizedPrivilege(value, result);
+}
+
+void
+S9sAccount::appendColorizedPrivileges(
+        const S9sString &value,
+        S9sString       &result) const
+{
+    if (value.contains(","))
+    {
+        S9sVariantList values = value.split(",");
         S9sString      part;
 
         for (size_t idx = 0u; idx < values.size(); ++idx)
         {
             S9sString orig = values[idx].toString();
 
-            appendColorizedGrantPart(orig, part);
+            appendColorizedPrivilege(orig, part);
         }
 
         result += part;
     } else {
-        result += grant;
+        appendColorizedPrivilege(value, result);
     }
 }
 
 void
-S9sAccount::appendColorizedGrantPart(
-        const S9sString &grant,
+S9sAccount::appendColorizedPrivilege(
+        const S9sString &value,
         S9sString       &result) const
 {
-    S9S_WARNING("  grant: %s", STR(grant));
+    S9S_WARNING("          value: %s", STR(value));
 
     if (!result.empty())
         result += ",";
 
-    if (grant.toUpper() == "SUPERUSER")
-        result += "\033[1m\033[97m" + grant + TERM_NORMAL;
+    if (value.toUpper() == "SUPERUSER")
+        result += "\033[1m\033[97m" + value + TERM_NORMAL;
     else
-        result += grant;
+        result += value;
 }
 
 void

@@ -1970,14 +1970,13 @@ S9sRpcReply::printAccountListLong()
      */
     for (uint idx = 0; idx < accountList.size(); ++idx)
     {
-        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
-        S9sAccount     account      = accountMap;
-        S9sString      accountName  = account.userName();
-        S9sString      hostName     = account.hostAllow();
-        S9sString      grants       = account.grants(syntaxHighlight);
-        S9sString      password     = account.password();
+        S9sVariantMap  accountMap     = accountList[idx].toVariantMap();
+        S9sAccount     account        = accountMap;
+        S9sString      accountName    = account.userName();
+        S9sString      hostName       = account.hostAllow();
+        S9sString      password       = account.password();
         int            maxConnections = account.maxConnections();
-        int            connections  = account.connections();
+        int            connections    = account.connections();
         int            thisWidth;
         int            requiredWidth;
 
@@ -2019,14 +2018,8 @@ S9sRpcReply::printAccountListLong()
         passwordFormat.printf(password);
         connectionsFormat.printf(connections);
         maxConnectionsFormat.printf(maxConnections);
-#if 0
-        if (isTerminal && (int) grants.length() > columns && columns > 1)
-        {
-            grants.resize(columns - 1);
-            grants += "…";
-        }
-#endif
-        ::printf("%s", STR(grants));
+        
+        ::printf("%s", STR(account.grants(syntaxHighlight)));
         ::printf("\n");
     }
     

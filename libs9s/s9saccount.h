@@ -66,11 +66,15 @@ class S9sAccount
         bool parseStringRep(const S9sString &input);
 
         void appendColorizedGrant(
-                const S9sString &grant,
+                const S9sString &value,
                 S9sString       &result) const;
 
-        void appendColorizedGrantPart(
-                const S9sString &grant,
+        void appendColorizedPrivileges(
+                const S9sString &value,
+                S9sString       &result) const;
+
+        void appendColorizedPrivilege(
+                const S9sString &value,
                 S9sString       &result) const;
 
     private:
