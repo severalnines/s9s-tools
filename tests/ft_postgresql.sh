@@ -607,8 +607,7 @@ EOF
             --command="select 41 + 1;")
 
     retcode="$?"
-
-    echo "$lines"
+    #echo "$lines"
 
     lines=$(echo "$lines" | tail -n 1);
     lines=$(echo $lines);
@@ -631,8 +630,14 @@ EOF
 #
 function testCreateAccount01()
 {
-    print_title "Creating and Deleting an Account"
+    print_title "Testing Account Management"
     cat <<EOF
+  This test will create an account with special privileges. Then the account is
+  tested by contacting the SQL server and executing SQL queries.
+
+  This time creating an account with no special privileges, no host name and no
+  auto-created database.
+
 EOF
 
     #
@@ -671,50 +676,26 @@ EOF
 
 function testCreateAccount02()
 {
-    print_title "Create Accounts"
+    local username="user02"
+    local password="password02"
 
-    mys9s cluster \
-        --create-account \
-        --cluster-id=$CLUSTER_ID \
-        --account='jake:jake@192.168.0.0/24' \
-        --debug
-
-    mys9s account --list --long
-    mys9s node --stat "$FIRST_ADDED_NODE"
-
-    check_postgresql_account \
-        --hostname           "$FIRST_ADDED_NODE" \
-        --port               "8089" \
-        --account-name       "jake" \
-        --account-password   "jake"
-}
-
-function testCreateAccount03()
-{
-    local privileges
-    local username="user03"
-    local password="password03"
-
-    print_title "Create Accounts"
+    print_title "Testing Account Management"
     cat <<EOF
   This test will create an account with special privileges. Then the account is
   tested by contacting the SQL server and executing SQL queries.
 
-EOF
+  This time no special privileges, a hostname with a subnet mask and no auto
+  created database.
 
-    privileges+="CREATEDB,REPLICATION,SUPER"
-    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+EOF
 
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
         --account="$username:$password@192.168.0.0/24" \
-        --privileges="$privileges" \
         --debug
-    
-    check_exit_code_no_job $?
 
-    mys9s account --list --long "$username"
+    mys9s account --list --long
 
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
@@ -729,15 +710,18 @@ function testCreateAccount03()
     local username="user03"
     local password="password03"
 
-    print_title "Create Accounts"
+    print_title "Testing Account Management"
     cat <<EOF
-  This test will create an account with special privileges. Then the account is
-  tested by contacting the SQL server and executing SQL queries.
+  This test will create an account then the account is tested reading it 
+  back with the s9s CLI and by contacting the SQL server and executing SQL 
+  queries.
+
+  This time withh special privileges that contain no database/relation
+  privileges, a hostname with a subnet mask and no auto created database.
 
 EOF
 
     privileges+="CREATEDB,REPLICATION,SUPER"
-    #privileges+=";testCreateDatabase.*:CREATE,CONNECT"
 
     mys9s cluster \
         --create-account \
@@ -763,10 +747,49 @@ function testCreateAccount04()
     local username="user04"
     local password="password04"
 
-    print_title "Create Accounts"
+    print_title "Testing Account Management"
     cat <<EOF
-  This test will create an account with special privileges. Then the account is
-  tested by contacting the SQL server and executing SQL queries.
+  This test will create an account then the account is tested reading it 
+  back with the s9s CLI and by contacting the SQL server and executing SQL 
+  queries.
+
+EOF
+
+    privileges+="CREATEDB,REPLICATION,SUPER"
+    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="$username:$password@192.168.0.0/24" \
+        --privileges="$privileges" \
+        --debug
+    
+    check_exit_code_no_job $?
+
+    mys9s account --list --long "$username"
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "$username" \
+        --account-password   "$password"
+}
+
+function testCreateAccount04()
+{
+    local privileges
+    local username="user04"
+    local password="password04"
+
+    print_title "Testing Account Management"
+    cat <<EOF
+  This test will create an account then the account is tested reading it 
+  back with the s9s CLI and by contacting the SQL server and executing SQL 
+  queries.
+  
+  This time with special privileges, privileges for a database, a hostname 
+  with a subnet mask and no auto created database.
 
 EOF
 

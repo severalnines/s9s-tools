@@ -240,6 +240,13 @@ S9sReplication::toString(
                     retval += tmp;
                     break;
                 
+                case 'C':
+                    // The master cluster ID of the slave.
+                    partFormat += 'd';
+                    tmp.sprintf(STR(partFormat), m_slave.masterClusterId());
+                    retval += tmp;
+                    break;
+                
                 case 'd':
                     // Seconds behind master.
                     partFormat += 'd';
