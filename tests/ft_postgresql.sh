@@ -692,6 +692,9 @@ function testCreateAccount02()
 function testCreateAccount03()
 {
     local privileges
+    local username="user03"
+    local password="password03"
+
     print_title "Create Accounts"
     cat <<EOF
   This test will create an account with special privileges. Then the account is
@@ -700,26 +703,94 @@ function testCreateAccount03()
 EOF
 
     privileges+="CREATEDB,REPLICATION,SUPER"
-    #privileges+=",testCreateDatabase.*:INSERT,UPDATE"
+    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
 
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account='kirk:kirk@192.168.0.0/24' \
+        --account="$username:$password@192.168.0.0/24" \
         --privileges="$privileges" \
         --debug
     
     check_exit_code_no_job $?
 
-    #mys9s account --list --long
-    #mys9s node --stat "$FIRST_ADDED_NODE"
+    mys9s account --list --long "$username"
 
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
-        --account-name       "kirk" \
-        --account-password   "kirk"
+        --account-name       "$username" \
+        --account-password   "$password"
 }
+
+function testCreateAccount03()
+{
+    local privileges
+    local username="user03"
+    local password="password03"
+
+    print_title "Create Accounts"
+    cat <<EOF
+  This test will create an account with special privileges. Then the account is
+  tested by contacting the SQL server and executing SQL queries.
+
+EOF
+
+    privileges+="CREATEDB,REPLICATION,SUPER"
+    #privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="$username:$password@192.168.0.0/24" \
+        --privileges="$privileges" \
+        --debug
+    
+    check_exit_code_no_job $?
+
+    mys9s account --list --long "$username"
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "$username" \
+        --account-password   "$password"
+}
+
+function testCreateAccount04()
+{
+    local privileges
+    local username="user04"
+    local password="password04"
+
+    print_title "Create Accounts"
+    cat <<EOF
+  This test will create an account with special privileges. Then the account is
+  tested by contacting the SQL server and executing SQL queries.
+
+EOF
+
+    privileges+="CREATEDB,REPLICATION,SUPER"
+    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+
+    mys9s cluster \
+        --create-account \
+        --cluster-id=$CLUSTER_ID \
+        --account="$username:$password@192.168.0.0/24" \
+        --privileges="$privileges" \
+        --debug
+    
+    check_exit_code_no_job $?
+
+    mys9s account --list --long "$username" --debug
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "$username" \
+        --account-password   "$password"
+}
+
 
 #
 # Creating a new database on the cluster.

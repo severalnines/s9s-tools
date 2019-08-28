@@ -130,11 +130,24 @@ S9sReplication::secondsBehindMaster() const
     return map["slave_io_state"].toInt();
 }
 
+/**
+ * \returns Dunno, some property of the slave that describes where it is in the
+ * master's log?
+ */
 S9sString
 S9sReplication::slavePosition() const
 {
     S9sVariantMap map = slaveInfo();
-    return map["exec_master_log_pos"].toString();
+
+    // This is for mysql.
+    if (map.contains("exec_master_log_pos"))
+        return map.at("exec_master_log_pos").toString();
+
+    // This is for postgresql
+    if (map.contains("replay_location"))
+        return map.at("replay_location").toString();
+
+    return S9sString();
 }
 
 S9sString
