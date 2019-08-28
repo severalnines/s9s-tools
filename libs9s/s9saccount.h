@@ -49,6 +49,7 @@ class S9sAccount
 
         void setGrants(const S9sString &value);
         S9sString grants() const;
+        S9sString grants(bool syntaxHighlight) const;
 
         void setError(const S9sString &value);
         bool hasError() const;
@@ -63,6 +64,14 @@ class S9sAccount
 
     protected:
         bool parseStringRep(const S9sString &input);
+
+        void appendColorizedGrant(
+                const S9sString &grant,
+                S9sString       &result) const;
+
+        void appendColorizedGrantPart(
+                const S9sString &grant,
+                S9sString       &result) const;
 
     private:
         S9sVariantMap    m_properties;

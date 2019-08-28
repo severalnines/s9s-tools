@@ -127,7 +127,7 @@ int
 S9sReplication::secondsBehindMaster() const
 {
     S9sVariantMap map = slaveInfo();
-    return map["slave_io_state"].toInt();
+    return map["seconds_behind_master"].toInt();
 }
 
 /**

@@ -434,6 +434,7 @@ S9sRpcReply::printReplicationListLong()
     S9sFormat       masterNameFormat;
     S9sFormat       linkStatusFormat;
     S9sFormat       masterClusterFormat;
+    S9sFormat       lagFormat;
 
     // Going through once, collecting some information.
     for (uint idx = 0; idx < clusterList.size(); ++idx)
@@ -442,13 +443,14 @@ S9sRpcReply::printReplicationListLong()
         S9sCluster     cluster     = clusterMap;
         S9sVector<S9sNode> nodes = cluster.nodes();
         int            clusterId   = cluster.clusterId();
-
+        
         for (uint idx1 = 0u; idx1 < nodes.size(); ++idx1)
         {
             const S9sNode &node = nodes[idx1];
             S9sReplication replication(cluster, node);
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
+            int            lag = replication.secondsBehindMaster();
 
             if (!replication.isValid())
                 continue;
@@ -472,6 +474,7 @@ S9sRpcReply::printReplicationListLong()
             masterNameFormat.widen(masterName);
             linkStatusFormat.widen(replication.slaveStatusShort());
             masterClusterFormat.widen(masterCluster);
+            lagFormat.widen(lag);
             ++nLines;
         }
     }
@@ -489,6 +492,7 @@ S9sRpcReply::printReplicationListLong()
         masterNameFormat.widen("MASTER");
         linkStatusFormat.widen("STATUS");
         masterClusterFormat.widen("MASTER_CLUSTER");
+        lagFormat.widen("LAG");
 
         printf("%s", headerColorBegin());
         clusterIdFormat.printf("CID");
@@ -496,6 +500,7 @@ S9sRpcReply::printReplicationListLong()
         masterNameFormat.printf("MASTER");
         linkStatusFormat.printf("STATUS");
         masterClusterFormat.printf("MASTER_CLUSTER"); 
+        lagFormat.printf("LAG"); 
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -515,6 +520,7 @@ S9sRpcReply::printReplicationListLong()
             S9sString      masterName, slaveName;
             S9sString      masterCluster;
             S9sString      status = replication.slaveStatusShort();
+            int            lag = replication.secondsBehindMaster();
 
             if (!replication.isValid())
                 continue;
@@ -543,6 +549,7 @@ S9sRpcReply::printReplicationListLong()
 
 
             masterClusterFormat.printf(masterCluster);
+            lagFormat.printf(lag);
             ::printf("\n");
         }
     }    
@@ -1878,7 +1885,7 @@ S9sRpcReply::printAccountListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormat       accountNameFormat, hostNameFormat, passwordFormat;
     S9sFormat       maxConnectionsFormat, connectionsFormat;
-    int             isTerminal    = options->isTerminal();
+    //int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
     int             columns;
     const char     *colorBegin = "";
@@ -1891,13 +1898,13 @@ S9sRpcReply::printAccountListLong()
      */
     for (uint idx = 0; idx < accountList.size(); ++idx)
     {
-        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
-        S9sAccount     account      = accountMap;
-        S9sString      accountName  = account.userName();
-        S9sString      hostName     = account.hostAllow();
-        S9sString      password     = account.password();
+        S9sVariantMap  accountMap     = accountList[idx].toVariantMap();
+        S9sAccount     account        = accountMap;
+        S9sString      accountName    = account.userName();
+        S9sString      hostName       = account.hostAllow();
+        S9sString      password       = account.password();
         int            maxConnections = account.maxConnections();
-        int            connections  = account.connections();
+        int            connections    = account.connections();
         S9sString      fullName;
 
         if (!options->isStringMatchExtraArguments(accountName))
@@ -1967,7 +1974,7 @@ S9sRpcReply::printAccountListLong()
         S9sAccount     account      = accountMap;
         S9sString      accountName  = account.userName();
         S9sString      hostName     = account.hostAllow();
-        S9sString      grants       = account.grants();
+        S9sString      grants       = account.grants(syntaxHighlight);
         S9sString      password     = account.password();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
@@ -2012,15 +2019,15 @@ S9sRpcReply::printAccountListLong()
         passwordFormat.printf(password);
         connectionsFormat.printf(connections);
         maxConnectionsFormat.printf(maxConnections);
-
+#if 0
         if (isTerminal && (int) grants.length() > columns && columns > 1)
         {
             grants.resize(columns - 1);
             grants += "…";
         }
-
-        printf("%s", STR(grants));
-        printf("\n");
+#endif
+        ::printf("%s", STR(grants));
+        ::printf("\n");
     }
     
     if (!options->isBatchRequested())
