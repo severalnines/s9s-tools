@@ -170,6 +170,9 @@ S9sAccount::setGrants(
         m_properties["grants"] = value;
 }
 
+/**
+ * \returns A string representing the grants of an account.
+ */
 S9sString
 S9sAccount::grants() const
 {
@@ -177,6 +180,74 @@ S9sAccount::grants() const
         return m_properties.at("grants").toString();
 
     return S9sString();
+}
+
+S9sString
+S9sAccount::grants(
+        bool syntaxHighlight) const
+{
+    S9sString value = grants();
+    S9sString retval;
+
+    S9S_WARNING("syntaxHighlight: %s", syntaxHighlight ? "true" : "false");
+    if (syntaxHighlight)
+    {
+        S9sVariantList values = value.split(";");
+
+        for (size_t idx = 0u; idx < values.size(); ++idx)
+        {
+            const S9sString grant = values[idx].toString();
+
+            appendColorizedGrant(grant, retval);
+        }
+    } else {
+        retval = value;
+    }
+
+    return retval;
+}
+
+void
+S9sAccount::appendColorizedGrant(
+        const S9sString &grant,
+        S9sString       &result) const
+{
+    S9S_WARNING("  grant: %s", STR(grant));
+    if (!result.empty())
+        result += ";";
+
+    if (grant.contains(","))
+    {
+        S9sVariantList values = grant.split(",");
+        S9sString      part;
+
+        for (size_t idx = 0u; idx < values.size(); ++idx)
+        {
+            S9sString orig = values[idx].toString();
+
+            appendColorizedGrantPart(orig, part);
+        }
+
+        result += part;
+    } else {
+        result += grant;
+    }
+}
+
+void
+S9sAccount::appendColorizedGrantPart(
+        const S9sString &grant,
+        S9sString       &result) const
+{
+    S9S_WARNING("  grant: %s", STR(grant));
+
+    if (!result.empty())
+        result += ",";
+
+    if (grant.toUpper() == "SUPERUSER")
+        result += "\033[1m\033[97m" + grant + TERM_NORMAL;
+    else
+        result += grant;
 }
 
 void

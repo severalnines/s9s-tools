@@ -1878,7 +1878,7 @@ S9sRpcReply::printAccountListLong()
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormat       accountNameFormat, hostNameFormat, passwordFormat;
     S9sFormat       maxConnectionsFormat, connectionsFormat;
-    int             isTerminal    = options->isTerminal();
+    //int             isTerminal    = options->isTerminal();
     int             terminalWidth = options->terminalWidth();
     int             columns;
     const char     *colorBegin = "";
@@ -1891,13 +1891,13 @@ S9sRpcReply::printAccountListLong()
      */
     for (uint idx = 0; idx < accountList.size(); ++idx)
     {
-        S9sVariantMap  accountMap   = accountList[idx].toVariantMap();
-        S9sAccount     account      = accountMap;
-        S9sString      accountName  = account.userName();
-        S9sString      hostName     = account.hostAllow();
-        S9sString      password     = account.password();
+        S9sVariantMap  accountMap     = accountList[idx].toVariantMap();
+        S9sAccount     account        = accountMap;
+        S9sString      accountName    = account.userName();
+        S9sString      hostName       = account.hostAllow();
+        S9sString      password       = account.password();
         int            maxConnections = account.maxConnections();
-        int            connections  = account.connections();
+        int            connections    = account.connections();
         S9sString      fullName;
 
         if (!options->isStringMatchExtraArguments(accountName))
@@ -1967,7 +1967,7 @@ S9sRpcReply::printAccountListLong()
         S9sAccount     account      = accountMap;
         S9sString      accountName  = account.userName();
         S9sString      hostName     = account.hostAllow();
-        S9sString      grants       = account.grants();
+        S9sString      grants       = account.grants(syntaxHighlight);
         S9sString      password     = account.password();
         int            maxConnections = account.maxConnections();
         int            connections  = account.connections();
@@ -2012,15 +2012,15 @@ S9sRpcReply::printAccountListLong()
         passwordFormat.printf(password);
         connectionsFormat.printf(connections);
         maxConnectionsFormat.printf(maxConnections);
-
+#if 0
         if (isTerminal && (int) grants.length() > columns && columns > 1)
         {
             grants.resize(columns - 1);
             grants += "…";
         }
-
-        printf("%s", STR(grants));
-        printf("\n");
+#endif
+        ::printf("%s", STR(grants));
+        ::printf("\n");
     }
     
     if (!options->isBatchRequested())
