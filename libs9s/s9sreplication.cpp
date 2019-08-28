@@ -140,8 +140,8 @@ S9sReplication::slavePosition() const
     S9sVariantMap map = slaveInfo();
 
     // This is for mysql.
-    if (map.contains("exec_master_log_pos"))
-        return map.at("exec_master_log_pos").toString();
+    if (map.contains("gtid_binlog_pos"))
+        return map.at("gtid_binlog_pos").toString();
 
     // This is for postgresql
     if (map.contains("replay_location"))
