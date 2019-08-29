@@ -548,6 +548,9 @@ function check_postgresql_account()
     local account_name
     local account_password
     local database_name="template1"
+    local table_name
+    local create_table
+    local query
     local lines
     local retcode
 
@@ -571,6 +574,16 @@ function check_postgresql_account()
             --account-password)
                 account_password="$2"
                 shift 2
+                ;;
+
+            --table-name)
+                table_name="$2"
+                shift 2
+                ;;
+
+            --create-table)
+                create_table="yes"
+                shift
                 ;;
 
             *)
@@ -622,6 +635,29 @@ EOF
         success "  o The result is '$lines', ok."
     else
         failure "The result is '$lines'."
+    fi
+
+    if [ -n "$create_table" ]; then
+        query="CREATE TABLE $table_name( \
+            NAME           CHAR(50) NOT NULL,\
+            VALUE          INT      NOT NULL \
+        );"
+
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Create table '$table_name' command suceeded, ok."
+        else
+            failure "Create table failed."
+        fi
     fi
 }
 
@@ -811,7 +847,9 @@ EOF
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
         --account-name       "$username" \
-        --account-password   "$password"
+        --account-password   "$password" \
+        --table-name         "testCreateAccount04" \
+        --create-table
 }
 
 

@@ -68,6 +68,10 @@ class S9sAccount
         void appendColorizedGrant(
                 const S9sString &value,
                 S9sString       &result) const;
+        
+        void appendColorizedTarget(
+                const S9sString &value,
+                S9sString       &result) const;
 
         void appendColorizedPrivileges(
                 const S9sString &value,

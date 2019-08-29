@@ -178,6 +178,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_BDEV         "\033[38;5;11m"
 #define XTERM_COLOR_NUMBER       "\033[1m"
 #define XTERM_COLOR_DATABASE     "\033[38;5;202m"
+#define XTERM_COLOR_PRIVILEGE    "\033[33m"
 #define XTERM_COLOR_CLASS        "\033[96m"
 #define XTERM_COLOR_SUBCLASS     "\033[38;5;123m"
 #define XTERM_COLOR_TAG          "\033[38;5;69m"

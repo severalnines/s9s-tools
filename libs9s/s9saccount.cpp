@@ -200,6 +200,9 @@ S9sAccount::grants(
         {
             const S9sString grant = values[idx].toString();
 
+            if (!retval.empty())
+                retval += ";";
+
             appendColorizedGrant(grant, retval);
         }
     } else {
@@ -214,20 +217,63 @@ S9sAccount::appendColorizedGrant(
         const S9sString &value,
         S9sString       &result) const
 {
+    S9sString part;
+    
     S9S_WARNING("          value: %s", STR(value));
 
-    if (!result.empty())
-        result += ";";
-
-#if 0
     if (value.contains(":"))
     {
         S9sVariantList values = value.split(":");
         
+        if (values.size() > 0)
+        {
+            appendColorizedTarget(values[0].toString(), part);
+            result += part;
+        }
+
+        result += ":";
         
+        if (values.size() > 1)
+        {
+            part = "";
+            appendColorizedPrivileges(values[1].toString(), part);
+            result += part;
+        }
+    } else {
+        part = "";
+        appendColorizedPrivileges(value, part);
+    
+        result += part;
     }
-#endif
-    appendColorizedPrivilege(value, result);
+}
+
+void
+S9sAccount::appendColorizedTarget(
+        const S9sString &value,
+        S9sString       &result) const
+{
+    if (value.contains("."))
+    {
+        S9sVariantList values = value.split(".");
+        
+        if (values.size() > 0)
+        {
+            result += XTERM_COLOR_DATABASE;
+            result += values[0].toString();
+            result += TERM_NORMAL;
+        }
+
+        result += ".";
+        
+        if (values.size() > 1)
+        {
+            result += values[1].toString();
+        }
+    } else {
+        result += XTERM_COLOR_DATABASE;
+        result += value;
+        result += TERM_NORMAL;
+    }
 }
 
 void
@@ -249,7 +295,10 @@ S9sAccount::appendColorizedPrivileges(
 
         result += part;
     } else {
-        appendColorizedPrivilege(value, result);
+        S9sString part;
+
+        appendColorizedPrivilege(value, part);
+        result += part;
     }
 }
 
@@ -259,14 +308,15 @@ S9sAccount::appendColorizedPrivilege(
         S9sString       &result) const
 {
     S9S_WARNING("          value: %s", STR(value));
+    S9S_WARNING("         result: %s", STR(result));
 
     if (!result.empty())
         result += ",";
 
-    if (value.toUpper() == "SUPERUSER")
-        result += "\033[1m\033[97m" + value + TERM_NORMAL;
-    else
-        result += value;
+    //if (value.toUpper() == "SUPERUSER")
+        result += XTERM_COLOR_PRIVILEGE + value + TERM_NORMAL;
+    //else
+    //    result += value;
 }
 
 void
