@@ -5765,6 +5765,9 @@ S9sOptions::printHelpAlarm()
     );
 }
 
+/**
+ * The function that prints the extra help lines for the report mode.
+ */
 void
 S9sOptions::printHelpReport()
 {
@@ -5777,6 +5780,11 @@ S9sOptions::printHelpReport()
 "  --delete                   Deletes one specific report.\n"
 "  --list                     List the reports.\n"
 "  --list-templates           Prints the available report templates.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --cluster-name=NAME        The name of the cluster (instead the ID).\n"
+"  --report-id=ID             The unique numerical ID of the report.\n"
+"  --type=TYPENAME            The type of the report, AKA 'report-template'.\n"
 "\n"
     );
 }
@@ -7754,8 +7762,8 @@ S9sOptions::readOptionsReport(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "type",             required_argument, 0, OptionType            },
         { "report-id",        required_argument, 0, OptionReportId        },
+        { "type",             required_argument, 0, OptionType            },
         
 
         { 0, 0, 0, 0 }

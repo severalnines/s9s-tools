@@ -295,6 +295,12 @@ function _s9s()
             main_opt+="--help --cat --create --delete --list --list-templates "
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
+            elif [ "$prev" == "--type" ]; then
+                prev="${cur%%=*}="
+                cur=${cur#*=}
+                opts=$(s9s report --list-templates)
+            else
+                opts+="--help --type= --report-id= "
             fi
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
             main_opt+="--help "
