@@ -7713,6 +7713,9 @@ S9sOptions::readOptionsAlarm(
     return true;
 }
 
+/**
+ * The function that reads the command line options for the "report" mode.
+ */
 bool
 S9sOptions::readOptionsReport(
         int    argc,

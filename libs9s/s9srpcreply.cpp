@@ -608,6 +608,28 @@ S9sRpcReply::printReportList()
     }
 }
 
+/**
+ * Here is an example showing a reply that we print here.
+ * \code{.js}
+ * {
+ *     "debug_messages": [ "RPC V2 authenticated user is 'pipas'." ],
+ *     "reply_received": "2019-08-30T06:21:30.383Z",
+ *     "reports": [ 
+ *     {
+ *         "class_name": "CmonReport",
+ *         "report_type": "default",
+ *         "title": "System Report"
+ *     }, 
+ *     ...
+ *     } ],
+ *     "request_created": "2019-08-30T06:21:30.379Z",
+ *     "request_id": 3,
+ *     "request_processed": "2019-08-30T06:21:30.383Z",
+ *     "request_status": "Ok",
+ *     "request_user_id": 4
+ * }
+ * \endcode
+ */
 void
 S9sRpcReply::printReportTemplateList()
 {
@@ -616,8 +638,11 @@ S9sRpcReply::printReportTemplateList()
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
-    } else {
+    } else if (options->isLongRequested())
+    {
         printReportTemplateListLong();
+    } else {
+        printReportTemplateListBrief();
     }
 }
 
@@ -3168,10 +3193,7 @@ S9sRpcReply::printReportTemplateListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList reports = operator[]("reports").toVariantList();
-    //S9sFormat      idFormat;
-    //S9sFormat      cidFormat;
     S9sFormat      typeFormat("\033[38;5;128m", TERM_NORMAL);
-    //S9sFormat      createdFormat;
     S9sFormat      titleFormat;
     int            nLines = 0;
     
@@ -3179,19 +3201,9 @@ S9sRpcReply::printReportTemplateListLong()
     {
         S9sVariantMap  reportMap = reports[idx].toVariantMap();
         S9sString      title = reportMap["title"].toString();
-        //int            reportId = reportMap["report_id"].toInt();
-        //int            clusterId = reportMap["cluster_id"].toInt();
         S9sString      reportType = reportMap["report_type"].toString();
-        //S9sDateTime    created;
-        //S9sString      timeStamp;
         
-        //created.parse(reportMap["created"].toString());
-        //timeStamp = options->formatDateTime(created);
-
-        //idFormat.widen(reportId);
-        //cidFormat.widen(clusterId);
         typeFormat.widen(reportType);
-        //createdFormat.widen(timeStamp);
         titleFormat.widen(title);
 
         ++nLines;
@@ -3202,47 +3214,43 @@ S9sRpcReply::printReportTemplateListLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        //idFormat.widen("ID");
-        //cidFormat.widen("CID");
         typeFormat.widen("TYPE");
-        //createdFormat.widen("CREATED");
         titleFormat.widen("TITLE");
         
-        printf("%s", headerColorBegin());
-        //idFormat.printf("ID");
-        //cidFormat.printf("CID");
+        ::printf("%s", headerColorBegin());
         typeFormat.printf("TYPE", false);
-        //createdFormat.printf("CREATED");
         titleFormat.printf("TITLE", false);
-        printf("%s", headerColorEnd());
-        printf("\n");
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
     }
 
     for (uint idx = 0u; idx < reports.size(); ++idx)
     {
         S9sVariantMap  reportMap = reports[idx].toVariantMap();
         S9sString      title = reportMap["title"].toString();
-        //int            reportId = reportMap["report_id"].toInt();
-        //int            clusterId = reportMap["cluster_id"].toInt();
         S9sString      reportType = reportMap["report_type"].toString();
-        //S9sDateTime    created;
-        //S9sString      timeStamp;
         
-        //created.parse(reportMap["created"].toString());
-        //timeStamp = options->formatDateTime(created);
-
-        //idFormat.printf(reportId);
-        //cidFormat.printf(clusterId);
         typeFormat.printf(reportType);
-        //createdFormat.printf(timeStamp);
         titleFormat.printf(title);
 
         ::printf("\n");
     }
 
     if (nLines > 0)
-    {
         ::printf("Total: %d report templates\n", nLines);
+}
+
+void 
+S9sRpcReply::printReportTemplateListBrief()
+{
+    S9sVariantList reports = operator[]("reports").toVariantList();
+    
+    for (uint idx = 0u; idx < reports.size(); ++idx)
+    {
+        S9sVariantMap  reportMap = reports[idx].toVariantMap();
+        S9sString      reportType = reportMap["report_type"].toString();
+        
+        ::printf("%s\n", STR(reportType));
     }
 }
 
@@ -6483,6 +6491,11 @@ S9sRpcReply::printScriptOutputBrief()
     printScriptBacktrace();
 }
 
+/**
+ * Certain replies, like the one we receive when a report is created, can
+ * contain a "report" field with an operational report. This method is called to
+ * print that report ina human readable format.
+ */
 void
 S9sRpcReply::printReport()
 {
@@ -6491,6 +6504,9 @@ S9sRpcReply::printReport()
     if (options->isJsonRequested())
     {
         printf("%s\n", STR(toString()));
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
     } else {
         S9sVariantMap   reportMap = operator[]("report").toVariantMap();
         S9sReport       report(reportMap);
