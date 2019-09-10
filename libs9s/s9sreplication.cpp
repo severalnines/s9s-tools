@@ -140,6 +140,10 @@ S9sReplication::slavePosition() const
     S9sVariantMap map = slaveInfo();
 
     // This is for mysql.
+    if (map.contains("executed_gtid_set"))
+        return map.at("executed_gtid_set").toString();
+    
+    // This is for mariadb.
     if (map.contains("gtid_io_pos"))
         return map.at("gtid_io_pos").toString();
 
