@@ -1,3 +1,4 @@
+#! /bin/bash
 #-*- mode: shell-script;-*-
 
 #
@@ -26,6 +27,10 @@ function elementExists()
     return 0
 }
 
+_S9S_MODES="account backup cluster job maintenance \
+node process user group script metatype log server \
+container tree event alarm sheet replication report"
+
 #
 # $*. The options to find.
 #
@@ -53,10 +58,7 @@ function _s9s_has_options()
 #
 function _s9s_no_command()
 {
-    if ! _s9s_has_options "account" "backup" "cluster" "job" "maintenance" \
-        "node" "process" "user" "group" "script" "metatype" "log" "server" \
-        "container" "tree" "event" "alarm" "sheet" "replication"; 
-    then
+    if ! _s9s_has_options $_S9S_MODES; then
         return 0
     fi
 
@@ -83,9 +85,8 @@ function _s9s()
     # Offering the commands if they are not entered.
     #
     if _s9s_no_command; then
-        opts+="account backup cluster job maintenance node process user group "
-        opts+="script metatype log server container tree event "
-        opts+="alarm sheet replication"
+        
+        opts+="$_S9S_MODES"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
@@ -289,6 +290,11 @@ function _s9s()
                 opts+="--master= --replication-master= --replication-slave= "
                 opts+="--slave= "
                 opts+=$(s9s tree --list 2>/dev/null | awk '{print $4}')
+            fi
+        elif [[ ${COMP_WORDS[i]} == "report" ]]; then
+            main_opt+="--help --cat --create --delete --list --list-templates "
+            if ! _s9s_has_options $main_opt; then
+                opts=$main_opt
             fi
         elif [[ ${COMP_WORDS[i]} == "server" ]]; then
             main_opt+="--help "

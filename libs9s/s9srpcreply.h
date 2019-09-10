@@ -291,6 +291,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printReportListLong();
         void printReportTemplateListLong();
+        void printReportTemplateListBrief();
         
         void printAlarmListLong();
         

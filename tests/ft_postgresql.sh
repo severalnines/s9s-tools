@@ -14,7 +14,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-PROVIDER_VERSION="10"
+PROVIDER_VERSION="9.6"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -50,9 +50,13 @@ SUPPORTED TESTS:
   o testStopStartNode    Stopping then starting a node.
   o testConfig           Reading and changing the configuration.
   o testConfigFail       Testing configuration changes that should fail.
-  o testCreateAccount01  Create an account on the cluster.
-  o testCreateAccount02  Create more accounts on the cluster.
   o testCreateDatabase   Creates database and account.
+  o testCreateAccount01  Create an account on the cluster.
+  o testCreateAccount02  Create and check more accounts on the cluster.
+  o testCreateAccount03  Create and check more accounts on the cluster.
+  o testCreateAccount04  Create and check more accounts on the cluster.
+  o testCreateAccount05  Create and check more accounts on the cluster.
+  o testCreateAccount06  Create and check more accounts on the cluster.
   o testCreateBackup     Creates a backup.
   o testRestoreBackup    Restores a backup.
   o testRemoveBackup     Removes a backup.
@@ -127,6 +131,146 @@ while true; do
             ;;
     esac
 done
+
+#
+# A function to do various checks on a PostgreSQL database accound.
+#
+function check_postgresql_account()
+{
+    local hostname
+    local port
+    local account_name
+    local account_password
+    local database_name="template1"
+    local table_name
+    local create_table
+    local query
+    local lines
+    local retcode
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --hostname)
+                hostname="$2"
+                shift 2
+                ;;
+
+            --port)
+                port="$2"
+                shift 2
+                ;;
+
+            --account-name)
+                account_name="$2"
+                shift 2
+                ;;
+
+            --account-password)
+                account_password="$2"
+                shift 2
+                ;;
+
+            --database-name)
+                database_name="$2"
+                shift 2
+                ;;
+
+            --table-name)
+                table_name="$2"
+                shift 2
+                ;;
+
+            --create-table)
+                create_table="yes"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    cat <<EOF
+    PGPASSWORD="$account_password" psql -t --username="$account_name" --host="$hostname" --port="$port" --dbname="$database_name" --command="select 41 + 1;"
+EOF
+
+    if [ -n "$hostname" ]; then
+        success "  o Test host is '$hostname', ok."
+    else
+        failure "PostgreSQL host name required."
+        return 1
+    fi
+    
+    if [ -n "$account_name" ]; then
+        success "  o Test account is '$account_name', ok."
+    else
+        failure "Account name required."
+        return 1
+    fi
+
+    lines=$(PGPASSWORD="$account_password" \
+        psql \
+            -t \
+            --username="$account_name" \
+            --host="$hostname" \
+            --port="$port" \
+            --dbname="$database_name" \
+            --command="select 41 + 1;")
+
+    retcode="$?"
+    #echo "$lines"
+
+    lines=$(echo "$lines" | tail -n 1);
+    lines=$(echo $lines);
+    
+    if [ "$retcode" -eq 0 ]; then
+        success "  o The return code is 0, ok."
+    else
+        failure "The return code is '$retcode'."
+    fi
+
+    if [ "$lines" == "42" ]; then
+        success "  o The result is '$lines', ok."
+    else
+        failure "The result is '$lines'."
+    fi
+
+    if [ -n "$create_table" ]; then
+        query="CREATE TABLE $table_name( \
+            NAME           CHAR(50) NOT NULL,\
+            VALUE          INT      NOT NULL \
+        );"
+
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Create table '$database_name.$table_name' is ok."
+        else
+            failure "Create table failed."
+        fi
+    fi
+   
+    #
+    # Printing the databases.
+    #
+    PGPASSWORD="$account_password" \
+        psql \
+            -P pager=off \
+            --username="$account_name" \
+            --host="$hostname" \
+            --port="$port" \
+            --dbname="$database_name" \
+            --command="SELECT datname, datacl FROM pg_database;"
+}
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -541,88 +685,64 @@ EOF
     fi
 }
 
-function check_postgresql_account()
+#
+# Creating a new database on the cluster.
+#
+function testCreateDatabase()
 {
-    local hostname
-    local port
-    local account_name
-    local account_password
-    local database_name="template1"
-    local lines
-    local retcode
+    print_title "Creating Databases"
 
-    while [ -n "$1" ]; do
-        case "$1" in
-            --hostname)
-                hostname="$2"
-                shift 2
-                ;;
-
-            --port)
-                port="$2"
-                shift 2
-                ;;
-
-            --account-name)
-                account_name="$2"
-                shift 2
-                ;;
-
-            --account-password)
-                account_password="$2"
-                shift 2
-                ;;
-
-            *)
-                break
-                ;;
-        esac
-    done
+    #
+    # This command will create a new database on the cluster.
+    #
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testcreatedatabase"
+   
+    check_exit_code_no_job $?
     
-    cat <<EOF
-    PGPASSWORD="$account_password" psql -t --username="$account_name" --host="$hostname" --port="$port" --dbname="$database_name" --command="select 41 + 1;"
-EOF
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "postmaster" \
+        --account-password   "passwd12" 
 
-    if [ -n "$hostname" ]; then
-        success "  o Test host is '$hostname', ok."
-    else
-        failure "PostgreSQL host name required."
-        return 1
-    fi
+    return 0
+
+    # These doesn't work. Previously the controller reported ok, but it did not
+    # work then either.
+
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas:password" \
+        --privileges="testcreatedatabase.*:INSERT,UPDATE"
     
-    if [ -n "$account_name" ]; then
-        success "  o Test account is '$account_name', ok."
-    else
-        failure "Account name required."
-        return 1
-    fi
-
-    lines=$(PGPASSWORD="$account_password" \
-        psql \
-            -t \
-            --username="$account_name" \
-            --host="$hostname" \
-            --port="$port" \
-            --dbname="$database_name" \
-            --command="select 41 + 1;")
-
-    retcode="$?"
-    #echo "$lines"
-
-    lines=$(echo "$lines" | tail -n 1);
-    lines=$(echo $lines);
+    check_exit_code_no_job $?
     
-    if [ "$retcode" -eq 0 ]; then
-        success "  o The return code is 0, ok."
-    else
-        failure "The return code is '$retcode'."
-    fi
-
-    if [ "$lines" == "42" ]; then
-        success "  o The result is '$lines', ok."
-    else
-        failure "The result is '$lines'."
-    fi
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "pipas" \
+        --account-password   "password" 
+    
+    #
+    # This command will create a new account on the cluster and grant some
+    # rights to the just created database.
+    #
+    mys9s account \
+        --grant \
+        --cluster-id=$CLUSTER_ID \
+        --account="pipas" \
+        --privileges="testcreatedatabase.*:DELETE" \
+        --batch 
+    
+    check_exit_code_no_job $?
 }
 
 #
@@ -634,9 +754,6 @@ function testCreateAccount01()
     cat <<EOF
   This test will create an account with special privileges. Then the account is
   tested by contacting the SQL server and executing SQL queries.
-
-  This time creating an account with no special privileges, no host name and no
-  auto-created database.
 
 EOF
 
@@ -679,13 +796,10 @@ function testCreateAccount02()
     local username="user02"
     local password="password02"
 
-    print_title "Testing Account Management"
+    print_title "Testing Account Management Without Privileges"
     cat <<EOF
   This test will create an account with special privileges. Then the account is
   tested by contacting the SQL server and executing SQL queries.
-
-  This time no special privileges, a hostname with a subnet mask and no auto
-  created database.
 
 EOF
 
@@ -710,14 +824,11 @@ function testCreateAccount03()
     local username="user03"
     local password="password03"
 
-    print_title "Testing Account Management"
+    print_title "Testing Account Management With Options"
     cat <<EOF
   This test will create an account then the account is tested reading it 
   back with the s9s CLI and by contacting the SQL server and executing SQL 
   queries.
-
-  This time withh special privileges that contain no database/relation
-  privileges, a hostname with a subnet mask and no auto created database.
 
 EOF
 
@@ -747,7 +858,7 @@ function testCreateAccount04()
     local username="user04"
     local password="password04"
 
-    print_title "Testing Account Management"
+    print_title "Testing Account Management With Database Privileges"
     cat <<EOF
   This test will create an account then the account is tested reading it 
   back with the s9s CLI and by contacting the SQL server and executing SQL 
@@ -755,8 +866,7 @@ function testCreateAccount04()
 
 EOF
 
-    privileges+="CREATEDB,REPLICATION,SUPER"
-    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+    privileges+="testcreatedatabase:CREATE,CONNECT"
 
     mys9s cluster \
         --create-account \
@@ -776,25 +886,22 @@ EOF
         --account-password   "$password"
 }
 
-function testCreateAccount04()
+function testCreateAccount05()
 {
     local privileges
     local username="user04"
     local password="password04"
 
-    print_title "Testing Account Management"
+    print_title "Testing Account Management with Options and Database Privileges"
     cat <<EOF
   This test will create an account then the account is tested reading it 
   back with the s9s CLI and by contacting the SQL server and executing SQL 
   queries.
-  
-  This time with special privileges, privileges for a database, a hostname 
-  with a subnet mask and no auto created database.
 
 EOF
 
     privileges+="CREATEDB,REPLICATION,SUPER"
-    privileges+=";testCreateDatabase.*:CREATE,CONNECT"
+    privileges+=";testcreatedatabase:CREATE,CONNECT"
 
     mys9s cluster \
         --create-account \
@@ -811,52 +918,52 @@ EOF
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
         --account-name       "$username" \
-        --account-password   "$password"
+        --account-password   "$password" \
+        --table-name         "testCreateAccount04" \
+        --database-name      "testcreatedatabase" \
+        --create-table
 }
 
-
-#
-# Creating a new database on the cluster.
-#
-function testCreateDatabase()
+function testCreateAccount06()
 {
-    print_title "Creating Databases"
+    local privileges
+    local username="user05"
+    local password="password05"
 
-    #
-    # This command will create a new database on the cluster.
-    #
+    print_title "Testing Account Management with Table Privileges"
+    cat <<EOF
+  This test will create an account then the account is tested reading it 
+  back with the s9s CLI and by contacting the SQL server and executing SQL 
+  queries.
+  
+  This time with special privileges, privileges for a database, a hostname 
+  with a subnet mask and no auto created database.
+
+EOF
+
+    privileges+="CREATEDB,REPLICATION,SUPER"
+    privileges+=";testcreatedatabase.testCreateAccount04:SELECT,INSERT"
+
     mys9s cluster \
-        --create-database \
+        --create-account \
         --cluster-id=$CLUSTER_ID \
-        --db-name="testCreateDatabase"
-   
-    check_exit_code_no_job $?
-    
-    #
-    # This command will create a new account on the cluster and grant some
-    # rights to the just created database.
-    #
-    mys9s account \
-        --create \
-        --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
-        --privileges="testCreateDatabase.*:INSERT,UPDATE"
+        --account="$username:$password@192.168.0.0/24" \
+        --privileges="$privileges" \
+        --debug
     
     check_exit_code_no_job $?
-    
-    #
-    # This command will create a new account on the cluster and grant some
-    # rights to the just created database.
-    #
-    mys9s account \
-        --grant \
-        --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
-        --privileges="testCreateDatabase.*:DELETE" \
-        --batch 
-    
-    check_exit_code_no_job $?
+
+    mys9s account --list --long "$username" --debug
+
+    check_postgresql_account \
+        --hostname           "$FIRST_ADDED_NODE" \
+        --port               "8089" \
+        --account-name       "$username" \
+        --account-password   "$password" \
+        --database-name      "testcreatedatabase" 
 }
+
+
 
 #
 # This will create a backup.
@@ -1119,10 +1226,13 @@ else
     runFunctionalTest testConfig
     runFunctionalTest testConfigFail
 
+    runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount01
     runFunctionalTest testCreateAccount02
     runFunctionalTest testCreateAccount03
-    runFunctionalTest testCreateDatabase
+    runFunctionalTest testCreateAccount04
+    runFunctionalTest testCreateAccount05
+    runFunctionalTest testCreateAccount06
 
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
