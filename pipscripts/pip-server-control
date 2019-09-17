@@ -57,7 +57,7 @@ Usage:
   --long               Print detailed/long list.
   --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
-  --print-files        Print file names instead of names.
+  --print-files        Print the config files of the servers. 
 
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
@@ -506,6 +506,7 @@ function download_current_data()
 {
     local root_dir=$SERVER_STAT_ROOT
 
+    printVerbose "Downloading current data from $SERVER_STAT_URL..."
     if [ ! -d "$root_dir" ]; then
         printVerbose "Creating directory '$root_dir'."
         mkdir -p "$root_dir"
@@ -539,6 +540,9 @@ function fileAgeInSeconds()
     echo $((`date +%s` - `stat -L --format %Y $1` ))
 }
 
+#
+# This is where we print the detailed list.
+#
 function print_host_list_long()
 {
     local config_file
@@ -546,6 +550,7 @@ function print_host_list_long()
     local category
     local name
 
+    printVerbose "Printing detailed list..."
     print_header
 
     for config_file in $HOME/.pip/*.host; do
@@ -679,6 +684,9 @@ function print_host_list_long()
     done
 }
 
+#
+# This is where we print the brief list of hosts.
+#
 function print_host_list_brief()
 {
     local config_file
@@ -686,6 +694,7 @@ function print_host_list_brief()
     local category
     local name
 
+    printVerbose "Printing brief list."
     for config_file in $HOME/.pip/*.host; do
         if [ ! -f "$config_file" ]; then
             continue
@@ -764,8 +773,13 @@ function print_host_list_brief()
         let SUM_MEMORY+=MEMORY_GIGABYTES
 
         [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
-        
-        printf "%s\n"  "$device_name"
+       
+        if [ -n "$OPTION_PRINT_FILES" ]; then
+            tmp=$(echo "$config_file" | sed -e "s#$HOME/#~/#g")
+            printf "%s\n"     "$tmp"
+        else             
+            printf "%s\n"  "$device_name"
+        fi
     done
 }
 
@@ -789,6 +803,7 @@ function wake_all()
 }
 
 if [ -n "$LIST_OPTION" ]; then
+    printVerbose "Listing servers..."
     download_current_data
     
     if [ -n "$LONG_OPTION" ]; then

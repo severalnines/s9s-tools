@@ -15,64 +15,19 @@ OWNER=""
 STORAGE_URL=""
 GZIP_OPTION=""
 
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
 #
 # Prints the software version and exits.
 #
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)." >&2
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR  $(hostname) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR  $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printWarning()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "WARNING $(hostname) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring WARNING $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" ]; then
-        echo -e "DEBUG   $(hostname) $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG   $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -83,19 +38,19 @@ Usage:
 
   $MYNAME - Creates archives of containers.
 
- -h, --help             Print this help and exit.
- -v, --version          Print version information and exit.
- --verbose              Print more messages.
- --log-file=FILE        Store all the messages in the given file too.
- --server=SERVER        Create the container on remote server.
- --stop                 Stop containers that are running.
- --output-dir=DIRECTORY The directory where the archive files go.
- --owner=USERNAME       Sets the owner of the resulting archive files.
- --storage=URL          The place where the file will be uploaded.
- --gzip                 Compress the archive with gzip.
+  -h, --help             Print this help and exit.
+  -v, --version          Print version information and exit.
+  --verbose              Print more messages.
+  --log-file=FILE        Store all the messages in the given file too.
+  --server=SERVER        Create the container on remote server.
+  --stop                 Stop containers that are running.
+  --output-dir=DIRECTORY The directory where the archive files go.
+  --owner=USERNAME       Sets the owner of the resulting archive files.
+  --storage=URL          The place where the file will be uploaded.
+  --gzip                 Compress the archive with gzip.
 
 EXAMPLES:
-  pip-container-archive --server=$server --gzip --verbose "$container"
+  pip-container-archive --server=core1 --gzip --verbose "www"
 
 EOF
     exit 0
@@ -302,16 +257,6 @@ function archive_one_container()
         tar --numeric-owner -cf "$tar_file_name" "$container"
     fi
 
-    #
-    #
-    #
-#    if [ "$OWNER" ]; then
-#        target_dir="/home/$OWNER"
-#        printVerbose "Moving file to '$target_dir/$tar_basename'."
-#        mv "$tar_file_name" "$target_dir"
-#        chown "$OWNER:$OWNER" "$target_dir/$tar_basename"
-#    fi
-
     if [ "$STORAGE_URL" ]; then
         # If we have a storage URL we upload the archive file there.
         if [ "$OWNER" ]; then
@@ -404,30 +349,24 @@ else
     $SSH $SERVER -- \
         sudo $MYNAME \
             $GZIP_OPTION \
-            $VERSION_OPTION $VERBOSE_OPTION \
-            $STOP_OPTION $OUTPUT_DIR_OPTION \
-            $OWNER_OPTION $STORAGE_OPTION \
+            $VERSION_OPTION \
+            $VERBOSE_OPTION \
+            $STOP_OPTION \
+            $OUTPUT_DIR_OPTION \
+            $OWNER_OPTION \
+            $STORAGE_OPTION \
             "$EXTRA_OPTIONS"
 
     if [ -n "$SERVER" -a -z "$VERSION_OPTION" ]; then
         for container in $EXTRA_OPTIONS; do
             tar_file_name="$(archive_file_name "$container")"
             tar_basename="$(basename "$tar_file_name")"
+
             printVerbose "Downloading $tar_file_name"
             printVerbose "  to $tar_basename"
             $SSH $SERVER -- \
                 "sudo cat $tar_file_name" >$tar_basename
         done
     fi
-
-#    if [ "$SERVER" ]; then
-#        for container in $EXTRA_OPTIONS; do
-#            tar_file_name="$(archive_file_name "$container")"
-#            tar_basename="$(basename "$tar_file_name")"
-#            scp \
-#                "$SERVER:$tar_basename" \
-#                .
-#        done
-#    fi
 fi
 
