@@ -6,6 +6,8 @@ TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
 
+export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+
 #
 # Convenience variables to use the IP addresses of the created nodes in the
 # tests.
@@ -244,6 +246,9 @@ function print_subtitle()
     fi
 }
 
+#
+# This function should be used as a filter to colorize configuration files.
+#
 function print_ini_file()
 {
      if [ -t 1 ]; then
@@ -282,6 +287,7 @@ function startTests ()
     echo "         VERSION: $VERSION"
     echo "            USER: $USER"
     echo "         OPTIONS: $OPTIONS"
+    echo "  OPTION_INSTALL: $OPTION_INSTALL"
 
     #
     # Doing some checks

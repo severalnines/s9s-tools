@@ -785,7 +785,7 @@ function testAddProxySql()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
-        --log --debug
+        $DEBUG_OPTION
     
     check_exit_code $?
 

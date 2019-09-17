@@ -687,7 +687,7 @@ function failOnContainers()
     print_title "Trying to Manipulate Unexisting Containers"
 
     #
-    #
+    # Trying to delete a container that does not exists.
     #
     mys9s container \
         --delete \
@@ -698,11 +698,12 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while deleting unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
     
     #
-    #
+    # Trying to stop a container that does not exists.
     #
     mys9s container \
         --stop \
@@ -713,11 +714,12 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while stopping unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
     
     #
-    #
+    # Trying to start a container that does not exists.
     #
     mys9s container \
         --start \
@@ -728,7 +730,8 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while starting unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
 }
 
