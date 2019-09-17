@@ -76,6 +76,39 @@ Process servers that are protected.
 .B --testing
 Process servers that are running a test as a batch job.
 
+.\" 
+.\" Output format options.
+.\"
+.SS "Format Options"
+Command line options that control the format of the printout the program
+creates.
+
+.TP 
+.B --long
+Print a detailed list, one server in every line.
+
+.TP
+.B --print-containers
+Print the list of the managed containers, containers that should be on the
+server and should be managed (e.g. archived).
+
+.TP 
+.B --print-files
+Print the configuration files of the servers. This makes it easy to find and
+then perhaps modify the configuration file of a server.
+
+.TP
+.B --print-json
+Print in JSon format. This option is not fully implemented.
+
+.TP
+.B --print-report
+Print a report at the end of the printout. The report has summaries and
+statistics.
+
+.\" 
+.\" Description of the files.
+.\"
 .SH FILES
 .\" The *.host files and the list of possible config values in them.
 .TP 
@@ -94,6 +127,11 @@ CONF_HOST_MAC=""
 .TP
 .B CONF_HOST_CATEGORY
 A short name to put the servers into groups, to categorize them.
+
+.TP
+.B CONF_HOST_CONTAINERS
+The list of permanent containers. This is not the list of containers but the
+containers that should be there and should be managed (e.g. by archiving them).
 
 .TP
 .B CONF_HOST_MAC
