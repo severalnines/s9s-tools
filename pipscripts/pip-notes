@@ -285,7 +285,7 @@ function cat_note()
             cat $file
             print_debug
         else
-            cat $file | html2text -style pretty -width 100
+            cat $file | html2text -style pretty -width 100 -utf8
         fi
     fi
 }
