@@ -55,10 +55,10 @@ Usage:
   --wake               Start the server.
 
   --long               Print detailed/long list.
+  --print-containers   Print the permanent containers on the server.
+  --print-files        Print the config files of the servers. 
   --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
-  --print-files        Print the config files of the servers. 
-  --print-containers   Print the permanent containers on the server.
 
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.

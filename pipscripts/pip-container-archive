@@ -49,8 +49,11 @@ Usage:
   --storage=URL          The place where the file will be uploaded.
   --gzip                 Compress the archive with gzip.
 
+  --auto                 Execute automatic archiving of a given server.
+
 EXAMPLES:
   pip-container-archive --server=core1 --gzip --verbose "www"
+  pip-container-archive --server=core1 --auto --verbose
 
 EOF
     exit 0
@@ -60,6 +63,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,server:,stop,output-dir:,owner:,\
+auto,\
 storage:,gzip" \
         -- "$@")
 
@@ -117,6 +121,11 @@ while true; do
             shift
             ;;
 
+        --auto)
+            shift
+            AUTO_OPTION="true"
+            ;;
+
         --storage)
             shift
             STORAGE_URL="$1"
@@ -146,7 +155,7 @@ CONTAINER="$1"
 #
 # Checking the command line options.
 #
-if [ -z "$CONTAINER" -a -z "$VERSION_OPTION" ]; then
+if [ -z "$CONTAINER" -a -z "$VERSION_OPTION" -a -z "$AUTO_OPTION" ]; then
     printError "The first argument should be the name of the container."
     exit 6
 fi
@@ -331,16 +340,11 @@ function archive_all_containers()
 }
 
 #
-# Doing the job.
+# This is kinda normal operation...
+#   pip-container-archive --server=core1 --gzip --verbose "www"
 #
-if [ -z "$SERVER" ]; then
-    if [ "$VERSION_OPTION" ]; then
-        printVersionAndExit
-        exit 0
-    else
-        archive_all_containers "$EXTRA_OPTIONS"
-    fi
-else
+function create_archive_normal()
+{
     #
     # We received the --server option and so we run the script on a remote
     # server.
@@ -368,5 +372,125 @@ else
                 "sudo cat $tar_file_name" >$tar_basename
         done
     fi
+}
+
+function create_backup_dir()
+{
+    local server=$1
+    local n=5
+    local nplusone=6
+
+    if [ -z "$server" ]; then
+        printError "create_backup_dir(): Expected server name."
+        exit 1
+    fi
+
+    if [ -d "${server}.${nplusone}" ]; then
+        rm -rf "${server}.${nplusone}"
+    fi
+
+    while true; do
+        if [ $n -eq 0 ]; then
+            break
+        fi
+
+        if [ -d "${server}.${n}" ]; then
+            mv "${server}.${n}" "${server}.${nplusone}"
+        fi
+
+        let nplusone-=1
+        let n-=1
+    done
+
+    if [ -d "$server" ]; then
+        mv "${server}" "${server}.1"
+    fi
+
+    mkdir "$server"
+}
+
+function create_archive_auto_server()
+{
+    local server="$1"
+    local target_dir
+    local containers
+    local container
+    local n_containers
+
+    printVerbose "Executing in auto mode..."
+    if [ -z "$server" ]; then
+        printError "create_archive_auto_server(): Expected server name."
+        exit 1
+    fi
+
+    # Finding the target directory.
+    target_dir="$HOME/archives"
+    if [ ! -d "$target_dir" ]; then
+        printError "Directory '$target_dir' is not found..."
+        return 1
+    fi
+
+    # Entering the target directory.
+    printVerbose "Entering directory '$target_dir'..."
+    pushd "$target_dir" 2>/dev/null >/dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to enter directory '$target_directory'."
+        return 1
+    fi
+
+    containers=$(pip-server-control --list --print-containers "$server")
+    n_containers=0
+    for container in $containers; do
+        let n_containers+=1
+    done
+
+    if [ $n_containers -gt 0 ]; then
+        printVerbose "Will archive $n_containers container(s)..."
+    else
+        printError "No containers in the server's config file."
+        return 1
+    fi
+
+    create_backup_dir "$server"
+    
+    printVerbose "Entering directory '$target_dir'..."
+    pushd "$server" 2>/dev/null >/dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to enter directory '$server'."
+        return 1
+    fi
+
+    for container in $containers; do
+        printVerbose "Archiving $container in $PWD"
+        pip-container-archive --server=$server --gzip --verbose "$container"
+    done
+
+    popd 2>/dev/null >/dev/null
+    popd 2>/dev/null >/dev/null
+}
+
+function create_archive_auto()
+{
+    local server
+
+    for server in $(echo $SERVER | tr ',' ' '); do
+        create_archive_auto_server "$server"
+    done
+}
+
+#
+# Doing the job.
+#
+if [ -z "$SERVER" ]; then
+    if [ "$VERSION_OPTION" ]; then
+        printVersionAndExit
+        exit 0
+    else
+        archive_all_containers "$EXTRA_OPTIONS"
+    fi
+elif [ -n "$AUTO_OPTION" ]; then
+    create_archive_auto
+else
+    create_archive_normal
 fi
 
