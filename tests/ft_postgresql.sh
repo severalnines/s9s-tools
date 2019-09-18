@@ -644,12 +644,14 @@ EOF
         success "  o File 'tmp/postgresql.conf' is found, ok."
     fi
 
-    cat tmp/postgresql.conf | print_ini_file
-    rm -rf tmp
+    if grep -q data_directory tmp/postgresql.conf; then
+        success "  o The downloaded file seems to be ok."
+    else
+        failure "The downloaded file seems to be incomplete."
+        cat tmp/postgresql.conf | print_ini_file
+    fi
 
-    #mys9s node \
-    #    --list-config \
-    #    --nodes=$FIRST_ADDED_NODE 
+    rm -rf tmp
 }
 
 function testConfigAccess()
@@ -657,7 +659,12 @@ function testConfigAccess()
     local retCode
 
     print_title "Testing Node Config Access Rights"
+    cat <<EOF
+  This test will create an unprimivileged user and try to access the host
+  configuration using this new user. The access for both read and write should
+  be denied by the controller.
 
+EOF
     #
     # Creating an outsider user.
     #
@@ -685,7 +692,7 @@ function testConfigAccess()
     if [ $retCode -eq 0 ]; then
         warning "The user should not have read access to the configuration."
     else
-        success "  o User has no access to configuration, ok."
+        success "  o User has no read access to configuration, ok."
     fi
     
     #
@@ -702,7 +709,7 @@ function testConfigAccess()
     if [ $retCode -eq 0 ]; then
         warning "The user should not have read access to the configuration."
     else
-        success "  o User has no access to configuration, ok."
+        success "  o User has no write access to configuration, ok."
     fi
 }
 

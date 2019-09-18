@@ -22,14 +22,20 @@ Usage:
 
   $MYNAME - Tests moving objects in the Cmon Directory Tree.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install           Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install           Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+
+SUPPORTED TESTS:
+  o testCreateUser       Creates a user with normal user privileges.
+  o testCreateSuperuser  Creates a user with superuser privileges.
+
+
 
 EOF
     exit 1
@@ -210,6 +216,149 @@ EOF
 
     check_exit_code_no_job $?
     #mys9s tree --list --long
+}
+
+function testLicenseDevice()
+{
+    local retCode
+    print_title "Checking Access to the License Device File"
+
+    mys9s tree \
+        --cat \
+        /.runtime/cmon_license 
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Normal user should not have read access to the license file."
+    else
+        success "  o Normal user can't read the license, ok."
+    fi
+
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/cmon_license 
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        success "  o Superuser can read the license file, ok."
+    else
+        failure "Superuser should be able to read the license."
+    fi
+
+    print_title "Uploading License"
+    cat <<EOF
+  This test will try to upload a license to the controller. Both valid and
+  invalid attempts are tested. Here is an example how we do that:
+
+    echo "\$license" | \\
+        s9s tree \\
+            --save \\
+            --cmon-user=system \\
+            --password=secret \\
+            "/.runtime/cmon_license"
+
+EOF
+
+    # 
+    # Trying with an invalid license. 
+    #
+    license=$(cat <<EOF 
+wogICAgImNvbXBhbnkiOiAib25lIiwKICAgICJlbWFpbF9hZGRyZXNzIjogInR3byIsCiAgICAi
+ZXhwaXJhdGlvbl9kYXRlIjogIjIwMjEtMTItMzFUMDA6MDA6MDAuMDAxWiIsCiAgICAibGljZW5z
+ZWRfbm9kZXMiOiAwLAogICAgInR5cGUiOiAiRGVtbyIKfQp7czlzLXNpZ25hdHVyZS1zZXBhcmF0
+b3J9CkYoFPzdyxqj55jO2GMANgYs/YgcSyxvYCcTsGZuj6P+pKMtE8gZbGCifdc2D3Y5pcP6YfKh
+Om44ElVqMbYe9oeiyxZbUvmxZJYTsEX1KTnoaRys2dGQmfixehRIHlvcE9QT/ALoqiSOqkGTdT2G
+Y+pklXhSuGGy+UxWPAeheZ/Gb27rE+VJcouCNXpBeE478ekdnR7ExlPTOX0YBafm3pukcMZ8ddkF
+9zBYXocy3+YkPdRYz6brXvGuuspCW7FGubxNlywOdEofP4R1qD6pdLVnoH1dgmWLlT0CJVeMhgDF
+fLAVrLNNedQ69sAv5JyDmiyrf/T7an3iiSZWHlH31vwY8LdhRQiiycNJ6BRGBIsuPN8Joi4GQosk
+N1OAth0O8lm5SR82YgfrpQB6HFyre1qMQqj6kuHJ4hInPer7BeSLMUr+1XiOU0NKjS7HwVdveDvy
+D6/KcALlH7ifkU89U6O6qR6NF+T5dQJfccnRw1u93lIhItdc3pH+o3+BNcRX1mMmBM1ysDDpVYHY
+7uAov5OmDajW37DXgeNkJYhdYeviPaoXQYeiMJmDaJ0BDqEDPB5AcdFBRLZ3FgdoTJUyRsw6iYck
+0ZXMgNVbL8bNf07K9ooEjByY8Mia9HNCFo8XXEjPQqUVdet3j/KkecoJB8kLXhjsFEvGxaR601+Z
+/JfV
+EOF
+)
+    echo "$license" | \
+        s9s tree \
+            --save \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime/cmon_license
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Invalid license should not be accepted."
+    else
+        success "  o Invalid license is rejected, ok."
+    fi
+    
+    #
+    # Trying with a valid one, but normal user.
+    #
+    license=$(cat <<EOF 
+ewogICAgImNvbXBhbnkiOiAib25lIiwKICAgICJlbWFpbF9hZGRyZXNzIjogInR3byIsCiAgICAi
+ZXhwaXJhdGlvbl9kYXRlIjogIjIwMjEtMTItMzFUMDA6MDA6MDAuMDAxWiIsCiAgICAibGljZW5z
+ZWRfbm9kZXMiOiAwLAogICAgInR5cGUiOiAiRGVtbyIKfQp7czlzLXNpZ25hdHVyZS1zZXBhcmF0
+b3J9CkYoFPzdyxqj55jO2GMANgYs/YgcSyxvYCcTsGZuj6P+pKMtE8gZbGCifdc2D3Y5pcP6YfKh
+Om44ElVqMbYe9oeiyxZbUvmxZJYTsEX1KTnoaRys2dGQmfixehRIHlvcE9QT/ALoqiSOqkGTdT2G
+Y+pklXhSuGGy+UxWPAeheZ/Gb27rE+VJcouCNXpBeE478ekdnR7ExlPTOX0YBafm3pukcMZ8ddkF
+9zBYXocy3+YkPdRYz6brXvGuuspCW7FGubxNlywOdEofP4R1qD6pdLVnoH1dgmWLlT0CJVeMhgDF
+fLAVrLNNedQ69sAv5JyDmiyrf/T7an3iiSZWHlH31vwY8LdhRQiiycNJ6BRGBIsuPN8Joi4GQosk
+N1OAth0O8lm5SR82YgfrpQB6HFyre1qMQqj6kuHJ4hInPer7BeSLMUr+1XiOU0NKjS7HwVdveDvy
+D6/KcALlH7ifkU89U6O6qR6NF+T5dQJfccnRw1u93lIhItdc3pH+o3+BNcRX1mMmBM1ysDDpVYHY
+7uAov5OmDajW37DXgeNkJYhdYeviPaoXQYeiMJmDaJ0BDqEDPB5AcdFBRLZ3FgdoTJUyRsw6iYck
+0ZXMgNVbL8bNf07K9ooEjByY8Mia9HNCFo8XXEjPQqUVdet3j/KkecoJB8kLXhjsFEvGxaR601+Z
+/JfV
+EOF
+)
+    echo "$license" | \
+        s9s tree \
+            --save \
+            /.runtime/cmon_license
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Normal user should not be able to upload license."
+    else
+        success "  o Normal user can't set license, ok."
+    fi
+   
+    #
+    # Same, valid license, but superuser this time. 
+    #
+    echo "$license" | \
+        s9s tree \
+            --save \
+            --cmon-user=system --password=secret \
+            /.runtime/cmon_license
+
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        success "  o Superuser can read the license file, ok."
+    else
+        failure "Superuser should be able to read the license."
+    fi
+   
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/cmon_license 
+
+    json=$(mys9s tree --cat \
+        --cmon-user=system --password=secret \
+        /.runtime/cmon_license)
+
+    if $(echo "$json" | grep -q one); then
+        success "  o The license seems to be updated, ok."
+    else
+        failure "The license seems to be not updated."
+    fi
 }
 
 #####
@@ -1005,6 +1154,7 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testCreateUser
         runFunctionalTest testCreateSuperuser
+        runFunctionalTest testLicenseDevice
         runFunctionalTest testRegisterServer
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
@@ -1016,6 +1166,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateSuperuser
+    runFunctionalTest testLicenseDevice
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
