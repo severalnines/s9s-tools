@@ -1265,8 +1265,9 @@ S9sBusinessLogic::executeConfigList(
     S9sRpcReply reply;
     bool        success;
 
-
     success = client.getConfig(options->nodes());
+    client.setExitStatus();            
+    
     if (success)
     {
         reply = client.reply();

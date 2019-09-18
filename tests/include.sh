@@ -20,6 +20,7 @@ export FIFTH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
+NUMBER_OF_WARNING_CHECKS=0
 NUMBER_OF_FAILED_CHECKS=0
 NUMBER_OF_PERFORMED_CHECKS=0
 
@@ -381,6 +382,7 @@ function endTests ()
 
         printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
         printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
+        printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
         printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
 
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
@@ -464,6 +466,13 @@ function success()
     echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
 }
 
+function warning()
+{
+    let NUMBER_OF_WARNING_CHECKS+=1
+    let NUMBER_OF_PERFORMED_CHECKS+=1
+
+    echo -e "${XTERM_COLOR_YELLOW}$1${TERM_NORMAL}"
+}
 
 #
 # This will check the exit code passed as an argument and print the logs

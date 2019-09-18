@@ -383,8 +383,9 @@ function testCreateCluster()
     #
     print_title "Creating a Cluster"
     cat <<EOF 
-In this test we create a cluster and check various properties of it (e.g. the
-owner and the group owner). 
+  In this test we create a cluster and check various properties of it (e.g. the
+  owner and the group owner). 
+
 EOF
     mys9s cluster \
         --create \
@@ -398,7 +399,7 @@ EOF
     check_exit_code $?
     
     #
-    # Checking...
+    # Checking the access rights of the cluster.
     #
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME"); do

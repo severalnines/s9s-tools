@@ -326,7 +326,9 @@ enum S9sOptionType
     OptionReportId,
     OptionMessageId,
     OptionSetReadOnly,
-    OptionSetReadWrite
+    OptionSetReadWrite,
+
+    OptionUsr1,
 };
 
 /**
@@ -4229,6 +4231,12 @@ bool
 S9sOptions::isStopRequested() const
 {
     return getBool("stop");
+}
+
+bool
+S9sOptions::isUsr1Requested() const
+{
+    return getBool("usr1");
 }
 
 /**
@@ -8506,6 +8514,9 @@ S9sOptions::checkOptionsCluster()
     
     if (isSetReadOnlyRequested())
         countOptions++;
+    
+    if (isUsr1Requested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -10460,6 +10471,7 @@ S9sOptions::readOptionsCluster(
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
+        { "usr1",             no_argument,       0, OptionUsr1            },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -10670,6 +10682,11 @@ S9sOptions::readOptionsCluster(
             case OptionStop:
                 // --stop
                 m_options["stop"] = true;
+                break;
+            
+            case OptionUsr1:
+                // --usr1
+                m_options["usr1"] = true;
                 break;
             
             case OptionStart:
