@@ -1546,6 +1546,10 @@ S9sRpcClient::getLog()
     }
 
     request["cluster_id"] = options->clusterId();
+    
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+
     retval = executeRequest(uri, request);
 
     return retval;

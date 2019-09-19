@@ -911,7 +911,7 @@ EOF
             /$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
@@ -969,7 +969,7 @@ EOF
             /home/pipas/$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 

@@ -1798,10 +1798,13 @@ S9sBusinessLogic::executeLogList(
     bool        success;
 
     success = client.getLog();
+    client.setExitStatus();
+
     if (success)
     {
         reply = client.reply();
         success = reply.isOk();
+        
         if (success)
         {
             reply.printLogList();
