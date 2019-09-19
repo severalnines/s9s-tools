@@ -1852,6 +1852,11 @@ S9sBusinessLogic::executeJobLog(
 }
 }
 
+/**
+ * This method should be called when we sent a request that supposed to create a
+ * new job. If a new job is indeed created this will take care of monitoring the
+ * job, if not, the error will be also handled here.
+ */
 void
 S9sBusinessLogic::maybeJobRegistered(
         S9sRpcClient &client,
@@ -1861,17 +1866,23 @@ S9sBusinessLogic::maybeJobRegistered(
     S9sOptions    *options = S9sOptions::instance();
     S9sRpcReply    reply;
 
-    if (success)
+    //S9S_WARNING("success: %s", success ? "true" : "false");
+    client.setExitStatus();
+
+    if (success/* && client.reply().requestStatus() == S9sRpcReply::Ok*/)
     {
         jobRegistered(client, clusterId);
     } else {
         reply = client.reply();
-
         if (options->isJsonRequested())
+        {
             printf("%s\n", STR(reply.toString()));
-        else
+        } else {
             PRINT_ERROR("%s", STR(client.errorString()));
-    }    
+        }
+    
+        client.setExitStatus();
+    }
 }
 
 

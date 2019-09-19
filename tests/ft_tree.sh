@@ -34,7 +34,10 @@ Usage:
 SUPPORTED TESTS:
   o testCreateUser       Creates a user with normal user privileges.
   o testCreateSuperuser  Creates a user with superuser privileges.
+  o testCreateOutsider   Creates an outsider user who should not have access.
+  o testLicenseDevice    Reading and writing the license through CDT.
 
+  . . . 
 
 
 EOF
@@ -216,6 +219,31 @@ EOF
 
     check_exit_code_no_job $?
     #mys9s tree --list --long
+}
+
+function testCreateOutsider()
+{
+    print_title "Creating an 'outsider' User"
+    cat <<EOF
+  This test will create a usr called 'grumio' who is an outsider, used in the
+  test to check situations where the user should not have access to various
+  objects.
+
+EOF
+
+    mys9s user \
+        --create \
+        --cmon-user=system \
+        --password=secret \
+        --group="plebs" \
+        --create-group \
+        --generate-key \
+        --first-name="Grumio" \
+        --email-address="grumio@rome.com" \
+        --new-password="p" \
+        grumio
+    
+    check_exit_code_no_job $?
 }
 
 function testLicenseDevice()
@@ -574,7 +602,102 @@ EOF
     IFS=$old_ifs    
 }
 
-#####
+function testJobFail()
+{
+    local retCode
+    print_title "Checking if Outsiders can't Create Jobs"
+    cat <<EOF
+  This test will check that an outsider can not execute a job on the cluster it
+  can't even see. Then we double check that the owner can actually execute a
+  job.
+
+EOF
+
+    mys9s job \
+        --success \
+        --cluster-id=1 \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create jobs on cluster."
+    else
+        success "  o Outsider can not execute job, ok."
+    fi
+    
+    mys9s job \
+        --success \
+        --cluster-name="$CLUSTER_NAME" \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create jobs on cluster."
+    else
+        success "  o Outsider can not execute job, ok."
+    fi
+   
+    #
+    # Checking that the owner on the other hand can create a job.
+    #
+    mys9s job \
+        --success \
+        --cluster-id=1 \
+        --log 
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o The owner can execute a job, ok."
+    else
+        falilure "The owner could not execute a job."
+    fi
+}
+
+function testLogFail()
+{
+    local retCode
+    print_title "Checking if Outsiders can't See the Logs"
+
+    cat <<EOF
+  This test will check that an outsider can not see the logs of a cluster he
+  can't see. Then we check that the owner can see the logs.
+
+EOF
+
+    mys9s log \
+        --list \
+        --cmon-user=grumio \
+        --password=p \
+        --cluster-id=1 \
+        --limit=10 \
+        --log-format="%i %M\n"
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the logs of the cluster."
+    else
+        success "  o Outsider can not see the log of the cluster, ok."
+    fi
+
+    mys9s log \
+        --list \
+        --cluster-id=1 \
+        --limit=10 \
+        --log-format="%i %M\n"
+    
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o Owner of the cluster can see the logs, ok."
+    else
+        failure "The owner can't see the logs."
+    fi
+}
+
+#
 # Creating databases.
 #
 function testCreateDatabase()
@@ -1154,10 +1277,13 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testCreateUser
         runFunctionalTest testCreateSuperuser
+        runFunctionalTest testCreateOutsider
         runFunctionalTest testLicenseDevice
         runFunctionalTest testRegisterServer
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
+        runFunctionalTest testJobFail
+        runFunctionalTest testLogFail
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1166,10 +1292,13 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateSuperuser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest testLicenseDevice
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
+    runFunctionalTest testJobFail
+    runFunctionalTest testLogFail
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount
     runFunctionalTest testMoveObjects
