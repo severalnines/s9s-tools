@@ -912,7 +912,13 @@ EOF
 function testDatabaseAccess()
 {
     local retCode
+    
     print_title "Checking that Outsider can not Access Databases"
+    cat <<EOF
+  This test checks that an outsider can not create new databases and can not
+  list the existing databases on a cluster.
+
+EOF
 
     mys9s cluster \
         --create-database \
@@ -953,6 +959,55 @@ function testDatabaseAccess()
         warning "Outsiders should not be able to see databases."
     else
         success "  o Outsider can not see databases, ok."
+    fi
+}
+
+function testBackupAccess()
+{
+    local retCode
+
+    print_title "Checking that Outsider can not Access Backups"
+
+    mys9s backup \
+        --list \
+        --long \
+        --cluster-id="1" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see backups."
+    else
+        success "  o Outsider can not see backups, ok."
+    fi
+ 
+    #
+    #
+    #
+    mys9s backup \
+        --create \
+        --cluster-id="1" \
+        --backup-dir=/tmp \
+        --nodes="$CONTAINER_IP" \
+        --log 
+
+    mys9s backup --list --long 
+
+    #
+    #
+    #
+    mys9s backup \
+        --delete \
+        --backup-id=1 \
+        --cmon-user=grumio \
+        --password=p
+    
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not delete backups."
+    else
+        success "  o Outsider can not delete backups, ok."
     fi
 }
 
@@ -1464,6 +1519,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testLogAccess
         runFunctionalTest testAccountAccess
         runFunctionalTest testDatabaseAccess
+        runFunctionalTest testBackupAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1483,6 +1539,7 @@ else
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
     runFunctionalTest testDatabaseAccess
+    runFunctionalTest testBackupAccess
     runFunctionalTest testCreateAccount
     runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects

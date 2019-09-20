@@ -761,6 +761,7 @@ S9sBusinessLogic::execute()
                 options->isListDatabasesRequested())
         {
             executeBackupList(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createBackup();
@@ -804,6 +805,7 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else {
             PRINT_ERROR("Unknown backup operation.");
+            options->setExitStatus(S9sOptions::BadOptions);
         }
     } else if (options->isAlarmOperation())
     {
