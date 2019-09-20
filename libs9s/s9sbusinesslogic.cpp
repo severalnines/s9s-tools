@@ -102,6 +102,7 @@ S9sBusinessLogic::execute()
             success = client.getDatabases();
             reply = client.reply();
             reply.printDatabaseList();
+            client.setExitStatus();
         } else if (options->isCheckHostsRequested())
         {
             client.checkHosts();

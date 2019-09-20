@@ -909,6 +909,53 @@ EOF
     fi
 }
 
+function testDatabaseAccess()
+{
+    local retCode
+    print_title "Checking that Outsider can not Access Databases"
+
+    mys9s cluster \
+        --create-database \
+        --cluster-name="$CLUSTER_NAME" \
+        --db-name="grumio" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create databases."
+    else
+        success "  o Outsider can not create database, ok."
+    fi
+
+    mys9s cluster \
+        --create-database \
+        --cluster-id="1" \
+        --db-name="grumio" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create databases."
+    else
+        success "  o Outsider can not create database, ok."
+    fi
+    
+    mys9s cluster \
+        --list-databases \
+        --cluster-id="1" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to see databases."
+    else
+        success "  o Outsider can not see databases, ok."
+    fi
+}
+
 #
 # Creating a database account.
 #
@@ -935,6 +982,25 @@ function testAccountAccess()
     local retCode
 
     print_title "Checking if Outsiders can Access Accounts"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s account \
+        --create \
+        --cluster-id=1 \
+        --account="grumio:grumio" \
+        --privileges="*.*:ALL" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create accounts."
+    else
+        success "  o Outsider can not create account, ok."
+    fi
+    
     mys9s account \
         --create \
         --cluster-name="galera_001" \
@@ -950,6 +1016,9 @@ function testAccountAccess()
         success "  o Outsider can not create account, ok."
     fi
 
+    #
+    #  Checking the read access to the accounts.
+    #
     mys9s account \
         --list \
         --long \
@@ -1394,6 +1463,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testJobAccess
         runFunctionalTest testLogAccess
         runFunctionalTest testAccountAccess
+        runFunctionalTest testDatabaseAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1412,6 +1482,7 @@ else
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
+    runFunctionalTest testDatabaseAccess
     runFunctionalTest testCreateAccount
     runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects
