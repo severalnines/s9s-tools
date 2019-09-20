@@ -981,16 +981,32 @@ function testBackupAccess()
     else
         success "  o Outsider can not see backups, ok."
     fi
+    
+    mys9s backup \
+        --list \
+        --long \
+        --cluster-name="$CLUSTER_NAME" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see backups."
+    else
+        success "  o Outsider can not see backups, ok."
+    fi
  
     #
-    #
+    # Creating a backup that we can try to delete.
     #
     mys9s backup \
         --create \
         --cluster-id="1" \
         --backup-dir=/tmp \
         --nodes="$CONTAINER_IP" \
-        --log 
+        --wait
+    
+    check_exit_code $?
 
     mys9s backup --list --long 
 
