@@ -926,6 +926,7 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeAccountList(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createAccount();
@@ -946,6 +947,7 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
+            options->setExitStatus(S9sOptions::BadOptions);
         }
     } else if (options->isMaintenanceOperation())
     {

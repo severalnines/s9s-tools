@@ -41,7 +41,7 @@ SUPPORTED TESTS:
   o testCreateCluster    Creates a cluster on the container.
   o testPingAccess       Tests if outsiders can not ping a cluster.
   o testJobAccess        Checks if outsiders can not create a job.
-  o testLogFail          Checks if outsiders can not see the logs of a cluster.
+  o testLogAccess        Checks if outsiders can not see the logs of a cluster.
   o testCreateDatabase   Creates some databases.
   o testCreateAccount    Creates some database accounts.
   o testMoveObjects      Moves objects in the tree.
@@ -724,7 +724,7 @@ EOF
     fi
 }
 
-function testLogFail()
+function testLogAccess()
 {
     local retCode
     print_title "Checking if Outsiders can't See the Logs"
@@ -909,12 +909,18 @@ EOF
     fi
 }
 
-#####
+#
 # Creating a database account.
 #
 function testCreateAccount()
 {
     print_title "Creating Database Account"
+    cat <<EOF
+  This test will create an account on the cluster and checks the return value to
+  see if the operation was indeed successfull.
+
+EOF
+
     mys9s account \
         --create \
         --cluster-name="galera_001" \
@@ -922,6 +928,41 @@ function testCreateAccount()
         --privileges="*.*:ALL"
 
     check_exit_code_no_job $?
+}
+
+function testAccountAccess()
+{
+    local retCode
+
+    print_title "Checking if Outsiders can Access Accounts"
+    mys9s account \
+        --create \
+        --cluster-name="galera_001" \
+        --account="grumio:grumio" \
+        --privileges="*.*:ALL" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create accounts."
+    else
+        success "  o Outsider can not create account, ok."
+    fi
+
+    mys9s account \
+        --list \
+        --long \
+        --cluster-id=1 \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the accounts."
+    else
+        success "  o Outsider can not see the accounts, ok."
+    fi
 }
 
 #
@@ -1351,7 +1392,8 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateCluster
         runFunctionalTest testPingAccess
         runFunctionalTest testJobAccess
-        runFunctionalTest testLogFail
+        runFunctionalTest testLogAccess
+        runFunctionalTest testAccountAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1368,9 +1410,10 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testPingAccess
     runFunctionalTest testJobAccess
-    runFunctionalTest testLogFail
+    runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount
+    runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects
     runFunctionalTest testStats
     runFunctionalTest testAclChroot
