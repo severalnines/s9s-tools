@@ -36,9 +36,22 @@ SUPPORTED TESTS:
   o testCreateSuperuser  Creates a user with superuser privileges.
   o testCreateOutsider   Creates an outsider user who should not have access.
   o testLicenseDevice    Reading and writing the license through CDT.
-
-  . . . 
-
+  o testRegisterServer   Registers a container server.
+  o testCreateContainer  Creates a container.
+  o testCreateCluster    Creates a cluster on the container.
+  o testPingAccess       Tests if outsiders can not ping a cluster.
+  o testJobAccess        Checks if outsiders can not create a job.
+  o testLogFail          Checks if outsiders can not see the logs of a cluster.
+  o testCreateDatabase   Creates some databases.
+  o testCreateAccount    Creates some database accounts.
+  o testMoveObjects      Moves objects in the tree.
+  o testStats
+  o testAclChroot
+  o testCreateFolder
+  o testManipulate
+  o testTree
+  o testMoveBack
+  o deleteContainers
 
 EOF
     exit 1
@@ -543,7 +556,7 @@ EOF
     fi
 }
 
-#####
+#
 # Creating a Galera cluster.
 #
 function testCreateCluster()
@@ -602,7 +615,61 @@ EOF
     IFS=$old_ifs    
 }
 
-function testJobFail()
+function testPingAccess()
+{
+    local retCode
+    print_title "Checking if Outsiders can't Ping Clusters"
+    cat <<EOF
+  This test will check that an outsider can not ping a cluster it can't even
+  see. Then we double check that the owner can actually ping the cluster job.
+
+EOF
+
+    mys9s cluster \
+        --ping \
+        --cluster-id=1 \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to ping a cluster."
+    else
+        success "  o Outsider can not ping a cluster, ok."
+    fi
+    
+    mys9s cluster \
+        --ping \
+        --cluster-name="$CLUSTER_NAME" \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to ping a cluster."
+    else
+        success "  o Outsider can not ping the cluster, ok."
+    fi
+   
+    #
+    # Checking that the owner on the other hand can create a job.
+    #
+    mys9s cluster \
+        --ping \
+        --cluster-id=1 \
+        --log 
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o The owner can ping the cluster, ok."
+    else
+        failure "The owner could not ping the cluster."
+    fi
+}
+
+function testJobAccess()
 {
     local retCode
     print_title "Checking if Outsiders can't Create Jobs"
@@ -653,7 +720,7 @@ EOF
     if [ "$retCode" -eq 0 ]; then
         success "  o The owner can execute a job, ok."
     else
-        falilure "The owner could not execute a job."
+        failure "The owner could not execute a job."
     fi
 }
 
@@ -1282,7 +1349,8 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testRegisterServer
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
-        runFunctionalTest testJobFail
+        runFunctionalTest testPingAccess
+        runFunctionalTest testJobAccess
         runFunctionalTest testLogFail
     fi
 elif [ "$1" ]; then
@@ -1294,10 +1362,12 @@ else
     runFunctionalTest testCreateSuperuser
     runFunctionalTest testCreateOutsider
     runFunctionalTest testLicenseDevice
+
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
-    runFunctionalTest testJobFail
+    runFunctionalTest testPingAccess
+    runFunctionalTest testJobAccess
     runFunctionalTest testLogFail
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount
