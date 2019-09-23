@@ -1048,6 +1048,29 @@ EOF
     check_exit_code_no_job $?
 }
 
+function testAlarmAccess()
+{
+    local retCode
+
+    print_title "Checking if Outsiders can See the Alarms"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s alarm \
+        --list \
+        --long \
+        --cmon-user="grumio" \
+        --password="p"
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the alarms."
+    else
+        success "  o Outsider can not see the alarms, ok."
+    fi
+}
+
 function testAccountAccess()
 {
     local retCode
@@ -1536,6 +1559,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testAccountAccess
         runFunctionalTest testDatabaseAccess
         runFunctionalTest testBackupAccess
+        runFunctionalTest testAlarmAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1556,6 +1580,7 @@ else
     runFunctionalTest testCreateDatabase
     runFunctionalTest testDatabaseAccess
     runFunctionalTest testBackupAccess
+    runFunctionalTest testAlarmAccess
     runFunctionalTest testCreateAccount
     runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects
