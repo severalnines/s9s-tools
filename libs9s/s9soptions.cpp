@@ -8509,6 +8509,9 @@ S9sOptions::checkOptionsCluster()
     if (isListDatabasesRequested())
         countOptions++;
     
+    if (isListConfigRequested())
+        countOptions++;
+    
     if (isRegisterRequested())
         countOptions++;
     
@@ -10459,6 +10462,7 @@ S9sOptions::readOptionsCluster(
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "import-config",    no_argument,       0, OptionImportConfig    },
+        { "list-config",      no_argument,       0, OptionListConfig      },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
@@ -10712,6 +10716,11 @@ S9sOptions::readOptionsCluster(
             case OptionListDatabases:
                 // --list-databases
                 m_options["list_databases"] = true;
+                break;
+            
+            case OptionListConfig:
+                // --list-config
+                m_options["list_config"] = true;
                 break;
             
             case OptionGrant:

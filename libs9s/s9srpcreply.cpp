@@ -2133,7 +2133,9 @@ S9sRpcReply::printConfigList()
     
     printDebugMessages();
 
-    if (options->isDebug())
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else if (options->isDebug())
         printConfigDebug();
     else if (options->isLongRequested())
         printConfigLong();

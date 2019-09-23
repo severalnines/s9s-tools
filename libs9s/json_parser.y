@@ -33,6 +33,7 @@ int json_error(S9sJsonParseContext &context, const char *c);
 
 %token <vval> JSON_INTEGER
 %token <vval> JSON_STRING
+%token <vval> JSON_NULL
 %token <vval> JSON_DOUBLE
 %token <vval> JSON_BOOLEAN
 
@@ -87,6 +88,7 @@ json_value_list
 
 literal
     : JSON_STRING
+    | JSON_NULL
     | JSON_INTEGER
     | JSON_BOOLEAN
     | JSON_DOUBLE

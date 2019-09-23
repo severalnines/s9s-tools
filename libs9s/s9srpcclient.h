@@ -198,6 +198,7 @@ class S9sRpcClient
          */
         bool createAccount();
         bool getAccounts();
+        bool getClusterConfig();
 
         bool getSpreadsheets();
         bool getSpreadsheet();

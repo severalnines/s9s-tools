@@ -1048,6 +1048,18 @@ EOF
     check_exit_code_no_job $?
 }
 
+function testConfigController()
+{
+    local controller_name
+
+    print_title "Testing the Configuration of the Controller"
+
+    controller_name=$(\
+        s9s node --list --node-format "%R %A\n" | \
+        grep controller | \
+        awk '{print $2}')
+}
+
 function testAlarmAccess()
 {
     local retCode

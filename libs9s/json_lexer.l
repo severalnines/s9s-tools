@@ -174,6 +174,12 @@ DOUBLESPECIAL   ({NAN}|{INF})
     return JSON_BOOLEAN;
 }
 
+"null" {
+    S9S_DEBUG("JSON_NULL: %s", yytext);
+    yylval->vval = new S9sVariant;
+    return JSON_NULL;
+}
+
 [a-zA-Z_]+ {
     S9S_DEBUG("JSON_STRING2   : '%s'", yytext);
     yylval->vval = new S9sVariant(yytext);

@@ -6842,6 +6842,21 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
+bool
+S9sRpcClient::getClusterConfig()
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+    S9sAccount     account;
+    bool           retval;
+
+    request["operation"]  = "getConfig";
+    request["account"]    = account;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 
 bool
@@ -7901,7 +7916,7 @@ S9sRpcClient::composeRequest()
     S9sString      clusterName = options->clusterName();
     S9sVariantMap  request;
  
-    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId) || options->hasClusterIdOption())
         request["cluster_id"] = clusterId;
 
     if (!clusterName.empty())

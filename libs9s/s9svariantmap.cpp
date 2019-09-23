@@ -407,6 +407,10 @@ S9sVariantMap::toString (
 
     switch (value.type())
     {
+        case Invalid:
+            retval += "null";
+            break;
+
         case String:
             retval += quote(value.toString());
             break;

@@ -103,6 +103,14 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printDatabaseList();
             client.setExitStatus();
+        } else if (options->isListConfigRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getClusterConfig();
+            reply = client.reply();
+            reply.printConfigList();
+            client.setExitStatus();
         } else if (options->isCheckHostsRequested())
         {
             client.checkHosts();
