@@ -33,6 +33,16 @@ class S9sVariantMap : public S9sMap<S9sString, S9sVariant>
         bool parseAssignments(const S9sString &input);
         bool isSubSet(const S9sVariantMap &superSet) const;
 
+        S9sString 
+            toJsonString(
+                    const S9sFormatFlags &formatFlags) const;
+
+        S9sString
+            toJsonString(
+                    int                   depth,
+                    const S9sFormatFlags &formatFlags) const;
+
+
     protected:
         static const S9sVariant sm_invalid;
 

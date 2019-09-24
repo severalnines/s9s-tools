@@ -65,4 +65,45 @@ S9sVariantList::min() const
     return smallest;
 }
 
+        
+S9sString 
+S9sVariantList::toJsonString(
+        int                   depth,
+        const S9sFormatFlags &formatFlags) const
+{
+    S9sString retval;
+    bool      singleLine = size() <= 1u;
 
+    if (formatFlags & S9sFormatIndent && !singleLine)
+        retval += "[\n";
+    else
+        retval += "[ ";
+
+    for (size_t idx = 0u; idx < size(); ++idx)
+    {
+        const S9sVariant &value = at(idx);
+
+        if (formatFlags & S9sFormatIndent && !singleLine)
+            retval += S9sVariant::indent(depth + 1, formatFlags);
+
+        retval += value.toJsonString(depth + 1, formatFlags);
+
+        if (idx + 1 < size())
+            retval += ',';
+
+        if (formatFlags & S9sFormatIndent && !singleLine)
+            retval += "\n";
+        else
+            retval += " ";
+    }
+
+    if (formatFlags & S9sFormatIndent && !singleLine)
+    {
+        retval += S9sVariant::indent(depth, formatFlags);
+        retval += "]";
+    } else {
+        retval += " ]";
+    }
+
+    return retval;
+}

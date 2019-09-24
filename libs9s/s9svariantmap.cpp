@@ -185,6 +185,64 @@ S9sVariantMap::toString(
     return retval;
 }
 
+S9sString
+S9sVariantMap::toJsonString(
+        const S9sFormatFlags &formatFlags) const
+{
+    return toJsonString(0, formatFlags);
+}
+
+S9sString
+S9sVariantMap::toJsonString(
+        int                   depth,
+        const S9sFormatFlags &formatFlags) const
+{
+    S9sVector<S9sString> theKeys = keys();
+    S9sString            retval;
+
+    //retval += S9sVariant::indent(depth, formatFlags);
+
+    if (formatFlags & S9sFormatColor)
+        retval += TERM_NORMAL;
+
+    if (formatFlags & S9sFormatIndent)
+        retval += "{\n";
+    else
+        retval += "{ ";
+
+    for (uint idx = 0; idx < theKeys.size(); ++idx)
+    {
+        retval += S9sVariant::indent(depth + 1, formatFlags);
+        
+        if (formatFlags & S9sFormatColor)
+            retval += "\033[38;5;63m";
+
+        retval += S9sVariant::quote(theKeys[idx], S9sFormatNormal);
+
+        if (formatFlags & S9sFormatColor)
+            retval += TERM_NORMAL;
+
+        retval += ": ";
+       
+        const S9sVariant &value = at(theKeys[idx]);
+        
+        retval += value.toJsonString(depth + 1, formatFlags);
+        
+        if (idx + 1 < theKeys.size())
+            retval += ',';
+
+        if (formatFlags & S9sFormatIndent)
+            retval += "\n";
+        else
+            retval += " ";
+    }
+
+    retval += S9sVariant::indent(depth, formatFlags) + "}";
+
+    return retval;
+}
+
+
 enum AssignmentState
 {
     Start,

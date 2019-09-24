@@ -41,11 +41,12 @@ enum S9sBasicType
     Ulonglong,
     Double,
     String,
+    Map,
+    List,
+    
     Node,
     Container,
     Account,
-    Map,
-    List
 };
 
 union S9sUnion 

@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sVariant"
-#include "S9sVector"
+#include <S9sVariant>
+#include <S9sVector>
 
 class S9sVariantList : public S9sVector<S9sVariant>
 {
@@ -14,4 +14,7 @@ class S9sVariantList : public S9sVector<S9sVariant>
         S9sVariant max() const;
         S9sVariant min() const;
 
+        S9sString toJsonString(
+                int                   depth,
+                const S9sFormatFlags &formatFlags) const;
 };

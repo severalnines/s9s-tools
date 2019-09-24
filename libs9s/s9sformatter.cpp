@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2016 severalnines.com
+ * Copyright (C) 2016-present severalnines.com
  */
 #include "s9sformatter.h"
 

@@ -84,7 +84,8 @@ class S9sRpcReply : public S9sVariantMap
         void printMessages(const S9sString &defaultMessage);
         void printCheckHostsReply();
         void printJobStarted();
-        
+        void printJsonFormat() const;
+
         void printJobLog();
         void printJobLogBrief(const char *format = NULL);
         void printJobLogLong();
@@ -102,6 +103,7 @@ class S9sRpcReply : public S9sVariantMap
         void printClusterList();
         void printAlarmList();
         void printConfigList();
+        void printExtendedConfig();
         void printLogList();
         void printNodeList();
         void printJobList();
@@ -282,6 +284,8 @@ class S9sRpcReply : public S9sVariantMap
 
         void printConfigDebug();
         void printConfigLong();
+
+        void printExtendedConfigLong();
 
         void printClusterListBrief();
         void printClusterListLong();

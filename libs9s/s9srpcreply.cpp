@@ -350,7 +350,7 @@ S9sRpcReply::printCat()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -370,7 +370,7 @@ S9sRpcReply::printAcl()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -402,7 +402,7 @@ S9sRpcReply::printReplicationList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (options->hasLinkFormat())
     {
         printReplicationListCustom();
@@ -602,7 +602,7 @@ S9sRpcReply::printReportList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else {
         printReportListLong();
     }
@@ -637,7 +637,7 @@ S9sRpcReply::printReportTemplateList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (options->isLongRequested())
     {
         printReportTemplateListLong();
@@ -657,7 +657,7 @@ S9sRpcReply::printClusterList()
     S9sOptions *options = S9sOptions::instance();
 
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
@@ -875,7 +875,7 @@ S9sRpcReply::printMessages(
         
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -929,7 +929,7 @@ S9sRpcReply::printCheckHostsReply()
    
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -967,7 +967,7 @@ S9sRpcReply::printSupportedClusterList()
     printDebugMessages();
 
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     //else if (options->isStatRequested())
@@ -1081,6 +1081,23 @@ S9sRpcReply::printSupportedClusterListBrief()
 }
 
 /**
+ * Prints the reply in Json string format. Uses syntax highlight when
+ * applicable.
+ */
+void
+S9sRpcReply::printJsonFormat() const
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sFormatFlags  format  = S9sFormatIndent;
+
+    if (syntaxHighlight)
+        format = format | S9sFormatColor;
+        
+    printf("%s\n", STR(toJsonString(format)));
+}
+
+/**
  * This is a simple output function that we can call to print a short message
  * when a new job is registered on the server. This prints the job ID that is
  * essential for the user to later monitor the job. 
@@ -1094,7 +1111,7 @@ S9sRpcReply::printJobStarted()
 
     if (options->isJsonRequested())
     {
-        printf("%s", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -1117,7 +1134,7 @@ S9sRpcReply::printJobStarted()
         else
             printf("Job with ID %d registered.\n", id);
     } else {
-        printf("%s", STR(toString()));
+        printJsonFormat();
     }
 }
 
@@ -1131,7 +1148,7 @@ S9sRpcReply::printJobLog()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     } 
     
@@ -1216,7 +1233,7 @@ S9sRpcReply::printProcessList()
 
     if (options->isJsonRequested())
     {
-        printf("\n%s\n", STR(toString()));
+        printJsonFormat();
         return;
     } 
     
@@ -1715,7 +1732,7 @@ S9sRpcReply::printJobList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -1734,7 +1751,7 @@ S9sRpcReply::printBackupList()
     
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -1771,7 +1788,7 @@ S9sRpcReply::printKeys()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     } 
     
@@ -1808,7 +1825,7 @@ S9sRpcReply::printAccountList()
     
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -1833,7 +1850,7 @@ S9sRpcReply::printDatabaseList()
     
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -2059,7 +2076,7 @@ S9sRpcReply::printGroupList()
     
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     } 
     
@@ -2084,7 +2101,7 @@ S9sRpcReply::printMaintenanceList()
     
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -2106,7 +2123,7 @@ S9sRpcReply::printNodeList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         printDebugMessages();
     }
 
@@ -2127,7 +2144,7 @@ S9sRpcReply::printConfigList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -2143,13 +2160,96 @@ S9sRpcReply::printConfigList()
         printConfigBrief();
 }
 
+/**
+ * The extended config is what we get when we read the configuration of a
+ * cluster.
+ */
+void
+S9sRpcReply::printExtendedConfig()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    printExtendedConfigLong();
+}
+
+void
+S9sRpcReply::printExtendedConfigLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   configMap = operator[]("config").toVariantMap();
+    S9sVariantList  items = configMap["config_values"].toVariantList();
+    S9sFormat       nameFormat;
+    S9sFormat       valueFormat;
+    int             nValues = 0;
+
+    for (size_t idx = 0u; idx < items.size(); ++idx)
+    {
+        S9sVariantMap itemMap = items[idx].toVariantMap();
+        S9sVariant    name    = itemMap["name"];
+        
+        ++nValues;
+
+        if (!options->isStringMatchExtraArguments(name.toString()))
+            continue;
+
+        nameFormat.widen(name.toString());
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested())
+    {
+        nameFormat.widen("NAME");
+        valueFormat.widen("VALUE");
+
+        printf("%s", headerColorBegin());
+        nameFormat.printf("NAME");
+        valueFormat.printf("VALUE");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (size_t idx = 0u; idx < items.size(); ++idx)
+    {
+        S9sVariantMap itemMap = items[idx].toVariantMap();
+        S9sVariant    name    = itemMap["name"];
+        S9sVariant    value   = itemMap["current_value"];
+        
+        if (!options->isStringMatchExtraArguments(name.toString()))
+            continue;
+
+        ::printf("%s", "\033[38;5;4m");
+        nameFormat.printf(name.toString());
+        ::printf("%s", TERM_NORMAL);
+        
+        ::printf("%s", STR(value.toJsonString(0, S9sFormatColor)));
+
+        ::printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s%d%s values.\n", 
+                numberColorBegin(),
+                nValues,
+                numberColorEnd());
+    }
+}
+
 void 
 S9sRpcReply::printLogList()
 {
     S9sOptions *options = S9sOptions::instance();
 
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (options->isLongRequested())
         printLogLong();
     else 
@@ -2285,7 +2385,7 @@ S9sRpcReply::printConfigDebug()
         for (uint idx1 = 0u; idx1 < lines.size(); ++idx1)
         {
             S9sString  line = lines[idx1].toString();
-
+            
             //line.replace("\\r", "");
             ::printf("[%04u] %s\n", idx1, STR(line));
         }
@@ -3262,7 +3362,7 @@ S9sRpcReply::printAlarmList()
     S9sOptions *options = S9sOptions::instance();
 
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else if (options->isLongRequested())
@@ -3639,7 +3739,7 @@ S9sRpcReply::printScriptTree()
 {
     S9sOptions *options = S9sOptions::instance();
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else 
@@ -4312,7 +4412,7 @@ S9sRpcReply::printTemplates()
     // If the json is requested we simply print it and that's all.
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -4448,7 +4548,7 @@ S9sRpcReply::printSubnets()
     // If the json is requested we simply print it and that's all.
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -4594,7 +4694,7 @@ S9sRpcReply::printRegions()
     // If the json is requested we simply print it and that's all.
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -4722,7 +4822,7 @@ S9sRpcReply::printSheets()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -4838,7 +4938,7 @@ S9sRpcReply::printSheet()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -4871,7 +4971,7 @@ S9sRpcReply::printImages()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -5068,7 +5168,7 @@ S9sRpcReply::printServers()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -5090,7 +5190,7 @@ S9sRpcReply::printControllers()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -5510,7 +5610,7 @@ S9sRpcReply::printContainers()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
     
@@ -5844,7 +5944,7 @@ S9sRpcReply::printObjectTree()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     } 
     
@@ -6341,7 +6441,7 @@ S9sRpcReply::printObjectList()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -6375,7 +6475,7 @@ S9sRpcReply::printObjectListLong()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -6426,7 +6526,7 @@ S9sRpcReply::printObjectListBrief()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -6443,7 +6543,7 @@ S9sRpcReply::printScriptOutput()
 {
     S9sOptions *options = S9sOptions::instance();
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else 
@@ -6505,7 +6605,7 @@ S9sRpcReply::printReport()
 
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
@@ -6662,7 +6762,7 @@ S9sRpcReply::printGraph()
     S9S_DEBUG("Printing graphs.");
     if (options->isJsonRequested())
     {
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
         return true;
     }
 
@@ -9057,7 +9157,7 @@ S9sRpcReply::printUserList()
     
     if (options->isJsonRequested())
     {
-        ::printf("%s\n", STR(toString()));
+        printJsonFormat();
         return;
     }
 
@@ -10127,7 +10227,7 @@ S9sRpcReply::printMetaTypeList()
     S9sOptions *options = S9sOptions::instance();
     
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (options->isLongRequested())
         printMetaTypeListLong();
     else
@@ -10270,7 +10370,7 @@ S9sRpcReply::printMetaTypePropertyList()
     S9sOptions *options = S9sOptions::instance();
     
     if (options->isJsonRequested())
-        printf("%s\n", STR(toString()));
+        printJsonFormat();
     else if (options->isLongRequested())
         printMetaTypePropertyListLong();
     else
