@@ -2175,7 +2175,12 @@ S9sRpcReply::printExtendedConfig()
         return;
     }
 
-    printExtendedConfigLong();
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printExtendedConfigLong();
+    }
 }
 
 void

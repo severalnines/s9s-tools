@@ -458,7 +458,7 @@ EOF
     fi
 }
 
-#####
+#
 # Creating a container.
 #
 function testCreateContainer()
@@ -477,9 +477,9 @@ function testCreateContainer()
     #
     print_title "Creating a Container"
     cat <<EOF
-This test will create a container outside of the Cmon Controller (manually, 
-by executing a few commands on the server) then it will check if the container
-appears in the list the controller maintains about the containers.
+  Creating a container through the Cmon Contoller, checking that everything is
+  ok and the container is visible through the controller.
+
 EOF
 
     #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
@@ -666,6 +666,59 @@ EOF
         success "  o The owner can ping the cluster, ok."
     else
         failure "The owner could not ping the cluster."
+    fi
+}
+
+function testConfigAccess()
+{
+    print_title "Checking Who has Access to Configuration"
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        'config_file_path'
+
+    if [ $? -eq 0 ]; then
+        success "  o The owner has access to the configuration, ok."
+    else
+        failure "The owner should have access to the configuration."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        --cmon-user=grumio \
+        --password=p \
+        'config_file_path'
+
+    if [ $? -ne 0 ]; then
+        success "  o Outsiders has no access to the configuration, ok."
+    else
+        failure "Outsiders should have no access to the configuration."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=0 \
+        'config_file_path'
+
+    if [ $? -ne 0 ]; then
+        success "  o Normal users has no access to cluster 0, ok."
+    else
+        failure "Normal users should have no access to cluster 0."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=0 \
+        --cmon-user=system \
+        --password=secret \
+        'config_file_path'
+
+    if [ $? -eq 0 ]; then
+        success "  o System user has access to cluster 0, ok."
+    else
+        failure "The system user should have no access to cluster 0."
     fi
 }
 
@@ -1566,6 +1619,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
         runFunctionalTest testPingAccess
+        runFunctionalTest testConfigAccess
         runFunctionalTest testJobAccess
         runFunctionalTest testLogAccess
         runFunctionalTest testAccountAccess
@@ -1587,6 +1641,7 @@ else
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
     runFunctionalTest testPingAccess
+    runFunctionalTest testConfigAccess
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase

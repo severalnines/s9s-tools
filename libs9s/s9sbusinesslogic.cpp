@@ -1248,6 +1248,8 @@ S9sBusinessLogic::executeNodeList(
     bool        success;
 
     success = client.getClusters();
+    client.setExitStatus();
+
     if (success)
     {
         reply = client.reply();

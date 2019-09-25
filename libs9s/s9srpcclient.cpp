@@ -6847,12 +6847,9 @@ S9sRpcClient::getClusterConfig()
 {
     S9sString      uri     = "/v2/clusters/";
     S9sVariantMap  request = composeRequest();
-    S9sAccount     account;
     bool           retval;
 
     request["operation"]  = "getConfig";
-    request["account"]    = account;
-
     retval = executeRequest(uri, request);
 
     return retval;
