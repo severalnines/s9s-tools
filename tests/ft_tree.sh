@@ -671,7 +671,7 @@ EOF
 
 function testConfigAccess()
 {
-    print_title "Checking Who has Access to Configuration"
+    print_title "Checking Who has Read Access to Configuration"
 
     mys9s cluster \
         --list-config \
@@ -720,6 +720,22 @@ function testConfigAccess()
     else
         failure "The system user should have no access to cluster 0."
     fi
+
+    #
+    # The write access.
+    #
+    print_title "Checking Who has Write Access to Cluster Configuration"
+
+    mys9s node \
+        --change-config \
+        --cluster-id=1 \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="60"    
+    
+    mys9s node \
+        --list-config \
+        --cluster-id=1 \
+        "host_stats_collection_interval"
 }
 
 function testJobAccess()

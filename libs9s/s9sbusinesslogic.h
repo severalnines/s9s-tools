@@ -78,7 +78,6 @@ class S9sBusinessLogic
         void executeNodeGraph(S9sRpcClient &client);
         void executeNodeSet(S9sRpcClient &client);
         void executeConfigList(S9sRpcClient &client);
-        void executeSetConfig(S9sRpcClient &client);
         void executePullConfig(S9sRpcClient &client);
 
         void executeExecute(S9sRpcClient &client);

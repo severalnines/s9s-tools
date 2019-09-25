@@ -728,10 +728,10 @@ S9sRpcClient::getConfig(
  * one node.
  */
 bool
-S9sRpcClient::setConfig(
-        const S9sVariantList &hosts)
+S9sRpcClient::setConfig()
 {
     S9sOptions    *options    = S9sOptions::instance();
+    S9sVariantList hosts      = options->nodes();
     S9sString      uri        = "/v2/config/";
     S9sVariantMap  request    = composeRequest();
     S9sVariantList optionList;
@@ -749,8 +749,22 @@ S9sRpcClient::setConfig(
             request["port"] = node.port();
     } else {
         PRINT_ERROR("setConfig only implemented for one host.");
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+
+    if (options->optName().empty())
+    {
+        PRINT_ERROR(
+                "Configuration option name is not provided.\n"
+                "Use the --opt-name command line option to provide"
+                " a configuration option name."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
 
     // 
     // The configuration value: here it is implemented for one value.
@@ -768,6 +782,49 @@ S9sRpcClient::setConfig(
     retval = executeRequest(uri, request);
     return retval;
 }
+
+/**
+ * Sends a call to get the cluster configuration.
+ */
+bool
+S9sRpcClient::getClusterConfig()
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+    bool           retval;
+
+    request["operation"]  = "getConfig";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::setClusterConfig()
+{
+    S9sOptions    *options    = S9sOptions::instance();
+    S9sString      uri        = "/v2/clusters/";
+    S9sVariantMap  request    = composeRequest();
+    S9sVariantList optionList;
+    S9sVariantMap  optionMap;
+    bool           retval;
+
+    request["operation"]  = "setConfig";
+
+    // 
+    // The configuration value: here it is implemented for one value.
+    //
+    optionMap["name"]  = options->optName();
+    optionMap["value"] = options->optValue();
+
+    optionList << optionMap;
+
+    request["configuration"] = optionList;
+
+    retval = executeRequest(uri, request);
+    return retval;
+}
+
 
 bool
 S9sRpcClient::ping()
@@ -6841,20 +6898,6 @@ S9sRpcClient::createAccount()
 
     return retval;
 }
-
-bool
-S9sRpcClient::getClusterConfig()
-{
-    S9sString      uri     = "/v2/clusters/";
-    S9sVariantMap  request = composeRequest();
-    bool           retval;
-
-    request["operation"]  = "getConfig";
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
 
 bool
 S9sRpcClient::getAccounts()

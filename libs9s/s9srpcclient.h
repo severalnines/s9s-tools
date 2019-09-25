@@ -145,7 +145,7 @@ class S9sRpcClient
         bool stopContainerWithJob();
 
         bool getConfig(const S9sVariantList &hosts);
-        bool setConfig(const S9sVariantList &hosts);
+        bool setConfig();
 
         bool ping();
 
@@ -198,7 +198,9 @@ class S9sRpcClient
          */
         bool createAccount();
         bool getAccounts();
+
         bool getClusterConfig();
+        bool setClusterConfig();
 
         bool getSpreadsheets();
         bool getSpreadsheet();

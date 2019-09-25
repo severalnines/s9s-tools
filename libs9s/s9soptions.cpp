@@ -8478,6 +8478,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isAddNodeRequested())
         countOptions++;
+    
+    if (isChangeConfigRequested())
+        countOptions++;
 
     if (isRemoveNodeRequested())
         countOptions++;
@@ -10448,6 +10451,7 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
+        { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
@@ -10498,30 +10502,30 @@ S9sOptions::readOptionsCluster(
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
+        { "account",          required_argument, 0, OptionAccount,        },
+        { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "nodes",            required_argument, 0, OptionNodes           },
-        { "vendor",           required_argument, 0, OptionVendor          },
-        { "provider-version", required_argument, 0, OptionProviderVersion },
-        { "os-user",          required_argument, 0, OptionOsUser          },
-        { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
-        { "db-admin",         required_argument, 0, OptionDbAdmin         },
+        { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
-        { "account",          required_argument, 0, OptionAccount,        },
-        { "with-database",    no_argument,       0, OptionWithDatabase    },
-        { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-name",          required_argument, 0, OptionDbName          },
+        { "donor",            required_argument, 0, OptionDonor           },
+        { "nodes",            required_argument, 0, OptionNodes           },
+        { "no-install",       no_argument,       0, OptionNoInstall       },
         { "objects",          required_argument, 0, OptionObjects         },
-        { "privileges",       required_argument, 0, OptionPrivileges      },
         { "opt-group",        required_argument, 0, OptionOptGroup        },
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
-        { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
-        { "donor",            required_argument, 0, OptionDonor           },
-        { "config-template",  required_argument, 0, OptionConfigTemplate  },
-        { "no-install",       no_argument,       0, OptionNoInstall       },
+        { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
+        { "os-user",          required_argument, 0, OptionOsUser          },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "provider-version", required_argument, 0, OptionProviderVersion },
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
+        { "vendor",           required_argument, 0, OptionVendor          },
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
        
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -10671,6 +10675,11 @@ S9sOptions::readOptionsCluster(
             case OptionAddNode:
                 // --add-node
                 m_options["add_node"] = true;
+                break;
+            
+            case OptionChangeConfig:
+                // --change-config
+                m_options["change_config"] = true;
                 break;
             
             case OptionRemoveNode:

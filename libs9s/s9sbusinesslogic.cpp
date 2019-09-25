@@ -111,6 +111,11 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printExtendedConfig();
             client.setExitStatus();
+        } else if (options->isChangeConfigRequested())
+        {
+            success = client.setClusterConfig();
+            client.printMessages("OK.", success);
+            client.setExitStatus();      
         } else if (options->isCheckHostsRequested())
         {
             client.checkHosts();
@@ -312,7 +317,9 @@ S9sBusinessLogic::execute()
             executeConfigList(client);
         } else if (options->isChangeConfigRequested())
         {
-            executeSetConfig(client);
+            success = client.setConfig();
+            client.printMessages("OK.", success);
+            client.setExitStatus();  
         } else if (options->isPullConfigRequested())
         {
             executePullConfig(client);
@@ -1459,50 +1466,6 @@ S9sBusinessLogic::executeMetaTypePropertyList(
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
-}
-
-/**
- * \param client A client for the communication.
- */
-void 
-S9sBusinessLogic::executeSetConfig(
-        S9sRpcClient &client)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    S9sRpcReply     reply;
-    S9sVariantList  hosts;
-    S9sString       optName;
-    bool            success;
-
-    hosts = options->nodes();
-    if (hosts.empty())
-    {
-        options->printError(
-                "Node list is empty while setting configuration.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-    
-    optName = options->optName();
-    if (optName.empty())
-    {
-        options->printError(
-                "Configuration option name is not provided.\n"
-                "Use the --opt-name command line option to provide"
-                " a configuration option name."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    success = client.setConfig(hosts);
-
-    client.printMessages("OK.", success);
-    client.setExitStatus();            
 }
 
 /**
