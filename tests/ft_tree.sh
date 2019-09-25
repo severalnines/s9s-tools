@@ -725,14 +725,59 @@ function testConfigAccess()
     # The write access.
     #
     print_title "Checking Who has Write Access to Cluster Configuration"
+    cat <<EOF
+  New we check who has write access to the cluster configuration. The owner
+  should of course be able to change the configuration while the outsider should
+  not.
 
-    mys9s node \
+EOF
+
+    mys9s cluster \
+        --change-config \
+        --cluster-id=1 \
+        --cmon-user="grumio" \
+        --password="p" \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="60"    
+    
+    if [ $? -ne 0 ]; then
+        success "  o The outsider has no write access to cluster 1, ok."
+    else
+        failure "The outsider should have no write access to cluster 1."
+    fi
+
+    mys9s cluster \
         --change-config \
         --cluster-id=1 \
         --opt-name="host_stats_collection_interval" \
         --opt-value="60"    
     
-    mys9s node \
+    if [ $? -eq 0 ]; then
+        success "  o The owner has write access to cluster 1, ok."
+    else
+        failure "The owner should have write access to cluster 1."
+    fi
+    
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        "host_stats_collection_interval"
+
+    mys9s cluster \
+        --change-config \
+        --cluster-id=1 \
+        --cmon-user="system" \
+        --password="secret" \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="120"    
+    
+    if [ $? -eq 0 ]; then
+        success "  o The superuser has write access to cluster 1, ok."
+    else
+        failure "The superuser should have write access to cluster 1."
+    fi
+
+    mys9s cluster \
         --list-config \
         --cluster-id=1 \
         "host_stats_collection_interval"
