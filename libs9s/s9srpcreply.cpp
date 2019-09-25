@@ -2187,8 +2187,8 @@ void
 S9sRpcReply::printExtendedConfigLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantMap   configMap = operator[]("config").toVariantMap();
-    S9sVariantList  items = configMap["config_values"].toVariantList();
+    S9sVariantMap   configMap = operator[]("configuration").toVariantMap();
+    S9sVariantList  items = configMap["values"].toVariantList();
     S9sFormat       nameFormat;
     S9sFormat       valueFormat;
     int             nValues = 0;
