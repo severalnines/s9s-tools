@@ -10,6 +10,7 @@ CLUSTER_NAME="galera_001"
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -234,31 +235,6 @@ EOF
     #mys9s tree --list --long
 }
 
-function testCreateOutsider()
-{
-    print_title "Creating an 'outsider' User"
-    cat <<EOF
-  This test will create a usr called 'grumio' who is an outsider, used in the
-  test to check situations where the user should not have access to various
-  objects.
-
-EOF
-
-    mys9s user \
-        --create \
-        --cmon-user=system \
-        --password=secret \
-        --group="plebs" \
-        --create-group \
-        --generate-key \
-        --first-name="Grumio" \
-        --email-address="grumio@rome.com" \
-        --new-password="p" \
-        grumio
-    
-    check_exit_code_no_job $?
-}
-
 function testLicenseDevice()
 {
     local retCode
@@ -446,7 +422,7 @@ EOF
             $CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 object_found="yes"
                 ;;
         esac
@@ -537,7 +513,7 @@ EOF
                     success "  o group is '$group', ok"
                 fi
 
-                if [ "$mode"  != "crwxrw----" ]; then
+                if [ "$mode"  != "crwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is '$mode', ok" 
@@ -955,7 +931,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -978,7 +954,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -1001,7 +977,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
                 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -1315,14 +1291,14 @@ EOF
             /$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
@@ -1373,14 +1349,14 @@ EOF
             /home/pipas/$CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /home/pipas/$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
         esac

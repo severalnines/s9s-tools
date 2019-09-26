@@ -9,10 +9,6 @@ CONTAINER=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 STOP_OPTION=""
-OUTPUT_DIR=""
-OUTPUT_DIR_OPTION=""
-OWNER=""
-STORAGE_URL=""
 GZIP_OPTION=""
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
@@ -44,16 +40,13 @@ Usage:
   --log-file=FILE        Store all the messages in the given file too.
   --server=SERVER        Create the container on remote server.
   --stop                 Stop containers that are running.
-  --output-dir=DIRECTORY The directory where the archive files go.
-  --owner=USERNAME       Sets the owner of the resulting archive files.
-  --storage=URL          The place where the file will be uploaded.
   --gzip                 Compress the archive with gzip.
 
   --auto                 Execute automatic archiving of a given server.
 
 EXAMPLES:
   pip-container-archive --server=core1 --gzip --verbose "www"
-  pip-container-archive --server=core1 --auto --verbose
+  pip-container-archive --auto --server=core1 --verbose
 
 EOF
     exit 0
@@ -62,9 +55,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,stop,output-dir:,owner:,\
-auto,\
-storage:,gzip" \
+        -l "help,verbose,version,log-file:,server:,stop,\
+auto,gzip" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -107,30 +99,9 @@ while true; do
             STOP_OPTION="--stop"
             ;;
 
-        --output-dir)
-            shift
-            OUTPUT_DIR="$(readlink -m "$1")"
-            OUTPUT_DIR_OPTION="--output-dir=\"$1\""
-            shift
-            ;;
-
-        --owner)
-            shift
-            OWNER="$1"
-            OWNER_OPTION="--owner=\"$1\""
-            shift
-            ;;
-
         --auto)
             shift
             AUTO_OPTION="true"
-            ;;
-
-        --storage)
-            shift
-            STORAGE_URL="$1"
-            STORAGE_OPTION="--storage=\"$1\""
-            shift
             ;;
 
         --gzip)
@@ -184,12 +155,6 @@ function archive_file_name()
         tar_file_name+=".gz"
     fi
 
-    if [ "$OUTPUT_DIR" ]; then
-        tar_file_name="$OUTPUT_DIR/$tar_file_name"
-    else
-        tar_file_name="/var/lib/lxc/$tar_file_name"
-    fi
-
     echo "$tar_file_name"
 }
 
@@ -238,8 +203,7 @@ function archive_one_container()
     fi
         
     #
-    # Archiving into the $OUTPUT_DIR or into /var/lib/lxc if the output dir is
-    # not set.
+    # Archiving into the /var/lib/lxc/ directory.
     #
     cd /var/lib/lxc
 
@@ -266,18 +230,6 @@ function archive_one_container()
         tar --numeric-owner -cf "$tar_file_name" "$container"
     fi
 
-    if [ "$STORAGE_URL" ]; then
-        # If we have a storage URL we upload the archive file there.
-        if [ "$OWNER" ]; then
-            sudo -S -u $OWNER -i \
-                /bin/bash -l -c \
-                    "scp \"$tar_file_name\" \"$STORAGE_URL\""
-        else
-            scp "$tar_file_name" "$STORAGE_URL"
-        fi
-
-    fi
-
     #
     # If we stopped the container, we start it again.
     #
@@ -300,7 +252,6 @@ function check_one_container()
 
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
-            #printWarning "Container '$container' is running (no --stop option)."
             retval=0
         fi
     elif [ "$state" == "STOPPED" ]; then
@@ -356,9 +307,6 @@ function create_archive_normal()
             $VERSION_OPTION \
             $VERBOSE_OPTION \
             $STOP_OPTION \
-            $OUTPUT_DIR_OPTION \
-            $OWNER_OPTION \
-            $STORAGE_OPTION \
             "$EXTRA_OPTIONS"
 
     if [ -n "$SERVER" -a -z "$VERSION_OPTION" ]; then
@@ -481,13 +429,11 @@ function create_archive_auto()
 #
 # Doing the job.
 #
-if [ -z "$SERVER" ]; then
-    if [ "$VERSION_OPTION" ]; then
-        printVersionAndExit
-        exit 0
-    else
-        archive_all_containers "$EXTRA_OPTIONS"
-    fi
+if [ "$VERSION_OPTION" ]; then
+    printVersionAndExit
+    exit 0
+elif [ -z "$SERVER" ]; then
+    archive_all_containers "$EXTRA_OPTIONS"
 elif [ -n "$AUTO_OPTION" ]; then
     create_archive_auto
 else
