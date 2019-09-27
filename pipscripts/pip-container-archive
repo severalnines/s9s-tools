@@ -311,7 +311,7 @@ function create_archive_normal()
 
     if [ -n "$SERVER" -a -z "$VERSION_OPTION" ]; then
         for container in $EXTRA_OPTIONS; do
-            tar_file_name="$(archive_file_name "$container")"
+            tar_file_name="/var/lib/lxc/$(archive_file_name "$container")"
             tar_basename="$(basename "$tar_file_name")"
 
             printVerbose "Downloading $tar_file_name"
