@@ -365,6 +365,7 @@ function create_archive_auto_server()
     local container
     local n_containers
 
+    # Checking arguments.
     printVerbose "Executing in auto mode..."
     if [ -z "$server" ]; then
         printError "create_archive_auto_server(): Expected server name."
@@ -386,6 +387,7 @@ function create_archive_auto_server()
         return 1
     fi
 
+    # Finding out which containers we need to archive.
     containers=$(pip-server-control --list --print-containers "$server")
     n_containers=0
     for container in $containers; do
@@ -399,6 +401,7 @@ function create_archive_auto_server()
         return 1
     fi
 
+    # Creating and entering the backup directory for the server.
     create_backup_dir "$server"
     
     printVerbose "Entering directory '$target_dir'..."
@@ -408,6 +411,7 @@ function create_archive_auto_server()
         return 1
     fi
 
+    # Now we can archive the containers one by one.
     for container in $containers; do
         printVerbose "Archiving $container in $PWD"
         pip-container-archive --server=$server --gzip --verbose "$container"

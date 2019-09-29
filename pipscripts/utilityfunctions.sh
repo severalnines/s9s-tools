@@ -121,6 +121,12 @@ function printError()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.err" \
+        "$*"
 }
 
 #
@@ -139,6 +145,12 @@ function printWarning()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring WARNING $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.warning" \
+        "$*"
 }
 
 #
@@ -158,6 +170,32 @@ function printVerbose()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.notice" \
+        "$*"
+}
+
+function printMessage()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        printf "${XTERM_COLOR_GREEN}%-18s${TERM_NORMAL} " "$MYNAME" >&2
+        echo -e "$*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+    fi
+
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.notice" \
+        "$*"
 }
 
 #

@@ -23,6 +23,7 @@ CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -302,6 +303,7 @@ function unregisterMaxScale()
 {
     local node_ip
     local line
+    local retcode
 
     print_title "Unregistering then Registering MaxScale Node"
     cat <<EOF
@@ -311,9 +313,29 @@ function unregisterMaxScale()
 EOF
 
     node_ip=$(maxscale_node_name)
-    
-    mys9s node --list --long
-    mys9s node --unregister --nodes="maxscale://$node_ip:6603"
+   
+    #
+    # Unregistering by an outsider should not be possible.
+    #
+    mys9s node \
+        --unregister \
+        --nodes="maxscale://$node_ip:6603"
+        
+    retcode=$?
+
+    if [ "$retcode" -eq 0 ]; then
+        failure "Outsiders should not be able to unregister a node."
+    else
+        success "  o Outsider can't unregister node, ok."
+    fi
+
+    #
+    # Unregister by the owner should be possible.
+    #
+    mys9s node \
+        --unregister \
+        --nodes="maxscale://$node_ip:6603"
+
     check_exit_code_no_job $?
 
     mys9s node --list --long
@@ -434,6 +456,7 @@ if [ "$OPTION_INSTALL" ]; then
             runFunctionalTest "$testName"
         done
     else
+        runFunctionalTest testCreateOutsider        
         runFunctionalTest registerServer
         runFunctionalTest createCluster
         runFunctionalTest testAddMaxScale
@@ -443,6 +466,7 @@ elif [ -n "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddMaxScale

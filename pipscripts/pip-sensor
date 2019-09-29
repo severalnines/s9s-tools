@@ -11,6 +11,14 @@ PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
 
+
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
 #
 # Prints the software version and exits.
 #
@@ -19,48 +27,13 @@ function printVersionAndExit()
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
 }
 
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
 function printHelpAndExit()
 {
 cat <<EOF
 Usage:
   $MYNAME [OPTION]... DEVICE 
 
-  $MYNAME - Turns on and off pdu outlets.
+  $MYNAME - 
 
   -h, --help           Print this help and exit.
   -v, --version        Print version information and exit.
