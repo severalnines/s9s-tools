@@ -319,6 +319,8 @@ EOF
     #
     mys9s node \
         --unregister \
+        --cmon-user="grumio" \
+        --password="p" \
         --nodes="maxscale://$node_ip:6603"
         
     retcode=$?

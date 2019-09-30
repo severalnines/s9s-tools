@@ -732,6 +732,7 @@ function restartContainer()
 function createServer()
 {
     local class
+    local retcode
 
     if [ -z "$CONTAINER_IP" ]; then
         return 0
@@ -770,6 +771,26 @@ function createServer()
     # Unregistering.
     #
     print_title "Unregistering Server"
+    cat <<EOF
+  Unregistering the server. First an outsider tries to unregister it, that
+  should fail, but then the owner does it and that should secceed.
+
+EOF
+
+    mys9s server \
+        --unregister \
+        --servers="lxc://$CONTAINER_IP" \
+        --cmon-user="grumio" \
+        --password="p"
+
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o Outsiders can't unregister the server, ok."
+    else
+        failure "Outsider should not be able to unregister the server."
+    fi
+
+    # And the owner should be able...    
     mys9s server --unregister --servers="lxc://$CONTAINER_IP"
 
     check_exit_code_no_job $?
