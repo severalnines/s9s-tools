@@ -2978,7 +2978,14 @@ S9sRpcClient::getStats(
     request["operation"]  = "statByName";
     request["name"]       = statName;
     request["with_hosts"] = true;
-    request["cluster_id"] = clusterId;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = clusterId;
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
 
     if (!begin.empty())
         request["start_datetime"] = begin;
