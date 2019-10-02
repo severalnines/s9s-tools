@@ -622,7 +622,20 @@ function check_log_messages()
         esac
     done
     
+    mys9s log \
+        --cmon-user="$cmon_user" \
+        --password="$password" \
+        --list \
+        --long \
+        --log-format="%I %M\n" \
+        --cluster-id=0
+
+    if [ $? -ne 0 ]; then
+        failure "Failed to get the log messages."
+    fi
+
     for line in "$@"; do
+
         s9s log \
             --cmon-user="$cmon_user" \
             --password="$password" \

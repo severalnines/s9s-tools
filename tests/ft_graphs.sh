@@ -231,7 +231,7 @@ function testStatAccess()
     if [ $? -eq 0 ]; then
         failure "Unexisting cluster should not return 0."
     else
-        success "  o Unexisting cluster returns error, ok."
+        success "  o Unexisting cluster ID returns error, ok."
     fi
     
     s9s node \
@@ -243,7 +243,7 @@ function testStatAccess()
     if [ $? -ne 0 ]; then
         failure "Referencing the cluster by name should work."
     else
-        success "  o Unexisting cluster returns error, ok."
+        success "  o Unexisting cluster name returns error, ok."
     fi
     
     s9s node \
