@@ -5767,8 +5767,8 @@ S9sOptions::printHelpAlarm()
 
     printf(
 "Options for the \"alarm\" command:\n"
-"  --list                     List the alarms.\n"
 "  --delete                   Set the alarm to be ignored.\n"
+"  --list                     List the alarms.\n"
 "\n"
     );
 }
@@ -7530,30 +7530,29 @@ S9sOptions::readOptionsAlarm(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp            },
-        { "debug",            no_argument,       0, OptionDebug           },
-        { "verbose",          no_argument,       0, 'v'                   },
-        { "version",          no_argument,       0, 'V'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "password",         required_argument, 0, 'p'                   }, 
-        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
-        { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "long",             no_argument,       0, 'l'                   },
-        { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "help",             no_argument,       0, OptionHelp            },
         { "human-readable",   no_argument,       0, 'h'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0, OptionDelete          },
         
-        /*
-         * Alarm related options.
-         */
+        // Alarm related options.
         { "alarm-id",         required_argument, 0, OptionAlarmId         },
 
         // Cluster information
@@ -7562,9 +7561,6 @@ S9sOptions::readOptionsAlarm(
         { "nodes",            required_argument, 0, OptionNodes           },
         { "output-file",      required_argument, 0, OptionOutputFile      },
         { "input-file",       required_argument, 0, OptionInputFile       },
-        
-        { "batch",            no_argument,       0, OptionBatch           },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         { 0, 0, 0, 0 }
     };

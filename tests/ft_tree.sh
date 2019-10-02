@@ -8,6 +8,8 @@ LOG_OPTION="--wait"
 OPTION_INSTALL=""
 CLUSTER_NAME="galera_001"
 
+export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
+
 cd $MYDIR
 source include.sh
 source shared_test_cases.sh
@@ -1639,8 +1641,7 @@ function deleteContainers()
 # Running the requested tests.
 #
 startTests
-
-reset_config
+create_s9s_config
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then

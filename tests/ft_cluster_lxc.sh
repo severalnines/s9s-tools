@@ -12,6 +12,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -34,11 +35,12 @@ Usage:
  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
-  o createUser       Creates a user to work with.
-  o registerServer   Registers a new container server. No software installed.
-  o createContainer  Creates a container.
-  o createCluster    Creates a cluster.
-  o removeCluster    Drops the cluster, removes containers.
+  o createUser         Creates a user to work with.
+  o testCreateOutsider Creates an outsider user for access right checks.
+  o registerServer     Registers a new container server. No software installed.
+  o createContainer    Creates a container.
+  o createCluster      Creates a cluster.
+  o removeCluster      Drops the cluster, removes containers.
 
 EOF
     exit 1
@@ -299,6 +301,26 @@ function createCluster()
     mys9s node      --stat
 }
 
+function testAlarms()
+{
+    local container_name1="${MYBASENAME}_11_$$"
+    print_title "Checking Alarms"
+
+    s9s container --stop --wait ft_cluster_lxc_11_21765
+    check_exit_code $?
+
+    mysleep 45
+    mys9s alarm --list --long --cluster-id=1 
+    mys9s alarm --list --long 
+    mys9s alarm --list --long --cluster-id=1 --cmon-user=grumio --password=p
+    
+    s9s container --stop --wait ft_cluster_lxc_11_21765
+    check_exit_code $?
+    mysleep 45
+    mys9s alarm --list --long --cluster-id=1 
+    mys9s alarm --list --long 
+}
+
 function removeCluster()
 {
     local container_name1="${MYBASENAME}_11_$$"
@@ -343,6 +365,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createUser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createCluster
 elif [ "$1" ]; then
@@ -351,6 +374,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest createUser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
