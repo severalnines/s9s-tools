@@ -3362,6 +3362,12 @@ S9sRpcReply::printReportTemplateListBrief()
 }
 
 void
+S9sRpcReply::printAlarmStatistics()
+{
+        printJsonFormat();
+}
+
+void
 S9sRpcReply::printAlarmList()
 {
     S9sOptions *options = S9sOptions::instance();

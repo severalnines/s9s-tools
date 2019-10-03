@@ -6797,6 +6797,9 @@ S9sOptions::checkOptionsAlarm()
     if (isDeleteRequested())
         countOptions++;
     
+    if (isStatRequested())
+        countOptions++;
+    
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -7549,8 +7552,9 @@ S9sOptions::readOptionsAlarm(
         { "version",          no_argument,       0, 'V'                   },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0, OptionDelete          },
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
         
         // Alarm related options.
         { "alarm-id",         required_argument, 0, OptionAlarmId         },
@@ -7688,6 +7692,11 @@ S9sOptions::readOptionsAlarm(
             case OptionDelete:
                 // --delete
                 m_options["delete"] = true;
+                break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
                 break;
            
             /*

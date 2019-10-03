@@ -825,7 +825,7 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isAlarmOperation())
     {
-        if (options->isListRequested() || options->isStatRequested())
+        if (options->isListRequested())
         {
             S9sRpcReply reply;
             
@@ -833,6 +833,14 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
             reply = client.reply();
             reply.printAlarmList();
+        } else if (options->isStatRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getAlarmStatistics();
+            client.setExitStatus();
+            reply = client.reply();
+            reply.printAlarmStatistics();
         } else if (options->isDeleteRequested())
         {
             success = client.ignoreAlarm();
