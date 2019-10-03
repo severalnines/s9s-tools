@@ -830,6 +830,7 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
             
             client.getAlarms();
+            client.setExitStatus();
             reply = client.reply();
             reply.printAlarmList();
         } else if (options->isDeleteRequested())

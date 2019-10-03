@@ -3370,7 +3370,8 @@ S9sRpcReply::printAlarmList()
         printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-    else if (options->isLongRequested())
+    else //if (options->isLongRequested())
+        // FIXME: We have no brief list for alarms.
         printAlarmListLong();
     //else
     //    printClusterListBrief();    
