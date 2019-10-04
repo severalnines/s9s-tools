@@ -196,6 +196,8 @@ if [ "$MQTT_SERVER" -a "$MQTT_TOPIC" ]; then
         exit 0
     else
         printError "The mosquitto_pub program was not found."
+        printError "Install with 'sudo apt install mosquitto-clients'..."
+        exit 1
     fi
 fi
 

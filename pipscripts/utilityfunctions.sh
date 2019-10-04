@@ -32,6 +32,9 @@ EMAIL_COLOR="$XTERM_COLOR_PURPLE"
 PROJECT_COLOR="\033[1m\033[38;5;210m"
 TEST_COLOR="\033[2m\033[38;5;190m"
 HOST_COLOR="\033[1m\033[38;5;184m"
+CONTAINER_COLOR="\033[38;5;165m"
+CONTAINER_COLOR_STOPPED="\033[38;5;181m"
+
 INC_COLOR="\033[1m\033[36m"
 QUERY_COLOR="\033[1m\033[36m"
 COMMENT_COLOR="\033[1m\033[38;5;15m"
@@ -40,7 +43,7 @@ FILE_COLOR="\033[38;5;119m"
 GROUP_COLOR="\033[2m\033[38;5;7m"
 DEVICE_COLOR="\033[38;5;135m"
 NUMBER_COLOR="\033[38;5;75m"
-
+IP_COLOR="\033[38;5;162m"
 OK_COLOR="$XTERM_COLOR_GREEN"
 WARN_COLOR="$XTERM_COLOR_YELLOW"
 ERR_COLOR="$XTERM_COLOR_RED"
@@ -121,6 +124,12 @@ function printError()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring ERROR $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.err" \
+        "$*"
 }
 
 #
@@ -139,6 +148,12 @@ function printWarning()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring WARNING $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.warning" \
+        "$*"
 }
 
 #
@@ -158,6 +173,32 @@ function printVerbose()
     if [ "$LOGFILE" ]; then
         echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
     fi
+    
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.notice" \
+        "$*"
+}
+
+function printMessage()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    if [ "$VERBOSE" == "true" ]; then
+        printf "${XTERM_COLOR_GREEN}%-18s${TERM_NORMAL} " "$MYNAME" >&2
+        echo -e "$*" >&2
+    fi
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+    fi
+
+    logger \
+        --id=$$ \
+        --tag="$MYNAME" \
+        --priority="user.notice" \
+        "$*"
 }
 
 #

@@ -21,8 +21,12 @@ TEST_REPORT_URL="www:/var/lib/test-ui/servers"
 #TEST_REPORT_URL="www:/var/www/html/ft_install/"
 #TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
 
-
-source $MYDIR/utilityfunctions.sh
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
 
 #
 # Prints the help text and exits.
@@ -312,7 +316,7 @@ function upload_file()
     local temp_file
     local retcode
 
-    printVerbose "Uploading file"
+    printVerbose "Uploading file."
     printVerbose "  source : '$source_file'"
     printVerbose "  target : '$target_file' "
 

@@ -1,5 +1,6 @@
 man_MANS =            \
 	s9s.1             \
+	s9s-alarm.1       \
 	s9s-job.1         \
 	s9s-log.1         \
 	s9s-cluster.1     \
@@ -16,6 +17,7 @@ man_MANS =            \
 	s9s-event.1       \
 	s9s-script.1      \
 	s9s-replication.1 \
+	s9s-report.1      \
 	s9s-tree.1        \
 	s9s-controller.1  \
 	s9s.conf.5        \

@@ -6,6 +6,8 @@ TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
 
+export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+
 #
 # Convenience variables to use the IP addresses of the created nodes in the
 # tests.
@@ -18,6 +20,7 @@ export FIFTH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
+NUMBER_OF_WARNING_CHECKS=0
 NUMBER_OF_FAILED_CHECKS=0
 NUMBER_OF_PERFORMED_CHECKS=0
 
@@ -60,6 +63,12 @@ function prompt_string
     echo "$USER@$HOSTNAME:$dirname\$"
 }
 
+#
+# Prints the sleep message and also executes it.
+#
+# EXAMPLE:
+#  mysleep 10
+#
 function mysleep()
 {
     local prompt=$(prompt_string)
@@ -92,7 +101,7 @@ function my_command()
         esac
     done
 
-    prompt="$username@$hostname:$dirname\$"
+    prompt="$XTERM_COLOR_GREEN$username@$hostname:$dirname\$$TERM_NORMAL"
 
     the_command="$1"
     shift
@@ -183,6 +192,10 @@ function mys9s_multiline()
     $S9S --color=always "$@"
 }
 
+#
+# Prints the s9s command line and also executes it.
+#   $@   The command line options and arguments for the s9s program.
+#
 function mys9s()
 {
     local n_arguments=0
@@ -227,6 +240,9 @@ function print_title()
     fi
 }
 
+#
+# Same as print_title(), but this is for second level titles.
+#
 function print_subtitle()
 {
     local number
@@ -244,6 +260,9 @@ function print_subtitle()
     fi
 }
 
+#
+# This function should be used as a filter to colorize configuration files.
+#
 function print_ini_file()
 {
      if [ -t 1 ]; then
@@ -282,6 +301,7 @@ function startTests ()
     echo "         VERSION: $VERSION"
     echo "            USER: $USER"
     echo "         OPTIONS: $OPTIONS"
+    echo "  OPTION_INSTALL: $OPTION_INSTALL"
 
     #
     # Doing some checks
@@ -344,7 +364,7 @@ function startTests ()
 
     if [ -f "/etc/cmon-ldap.cnf" ]; then
         echo "Removing '/etc/cmon-ldap.cnf'..."
-        sudo rm -f "/etc/cmon-ldap.cnf"
+        sudo mv "/etc/cmon-ldap.cnf" "/etc/cmon-ldap.cnf.BAK"
     fi
 
 #    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
@@ -375,6 +395,7 @@ function endTests ()
 
         printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
         printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
+        printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
         printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
 
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
@@ -458,6 +479,16 @@ function success()
     echo -e "${XTERM_COLOR_GREEN}$1${TERM_NORMAL}"
 }
 
+#
+# Prints a warning message and registers that an other test caused a warning.
+#
+function warning()
+{
+    let NUMBER_OF_WARNING_CHECKS+=1
+    let NUMBER_OF_PERFORMED_CHECKS+=1
+
+    echo -e "${XTERM_COLOR_YELLOW}$1${TERM_NORMAL}"
+}
 
 #
 # This will check the exit code passed as an argument and print the logs
@@ -607,7 +638,20 @@ function check_log_messages()
         esac
     done
     
+    mys9s log \
+        --cmon-user="$cmon_user" \
+        --password="$password" \
+        --list \
+        --long \
+        --log-format="%I %M\n" \
+        --cluster-id=0
+
+    if [ $? -ne 0 ]; then
+        failure "Failed to get the log messages."
+    fi
+
     for line in "$@"; do
+
         s9s log \
             --cmon-user="$cmon_user" \
             --password="$password" \
@@ -1588,16 +1632,44 @@ function node_created()
 
 function emit_s9s_configuration_file()
 {
+    local hostname="localhost"
     local cmon_port="$OPTION_CMON_PORT"
 
     [ -z "$cmon_port" ] && cmon_port="9556"
     
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --do-not-create)
+                # No need to do anything with this option here. If we are here
+                # we create the configuration anyway.
+                ;;
+
+            --controller)
+                hostname="$2"
+                shift 2
+                ;;
+
+            --port)
+                cmon_port="$2"
+                shift 2
+                ;;
+
+            *)
+                failure "emit_s9s_configuration_file: Unknown option '$1'."
+                return 1;
+        esac
+    done
+
     cat <<EOF
 #
 # This configuration file was created by ${MYNAME} version ${VERSION}.
 #
 [global]
-controller = https://localhost:$cmon_port
+controller    = https://$hostname:$cmon_port
+
+[network]
+client_connection_timeout = 30
 
 [log]
 brief_job_log_format = "%36B:%-5L: %-7S %M\n"
@@ -1605,17 +1677,53 @@ brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
 EOF
 }
 
+#
+# Just for backward compatibility.
+#
 function reset_config()
 {
-    local config_dir="$HOME/.s9s"
-    local config_file="$config_dir/s9s.conf"
+    create_s9s_config $*
+}
+
+#
+# Creates an s9s configuration file that holds the information about the
+# controller. This is crutial for every tests.
+# 
+# If the S9S_USER_CONFIG variable is not empty that holds the full path of the
+# configura6tion file (the s9s program understands this variable too). If the
+# S9S_USER_CONFIG variable is empty the ~/.s9s/s9s.conf path will be used (that
+# is the default for the s9s program too).
+#
+function create_s9s_config()
+{
+    local config_dir
+    local config_file
     local do_not_create
+    local options=$*
+
+    if [ -z "$S9S_USER_CONFIG" ]; then
+        config_dir="$HOME/.s9s"
+        config_file="$config_dir/s9s.conf"
+    else
+        config_file="$S9S_USER_CONFIG"
+        config_dir="$(dirname "$config_file")"
+    fi
 
     while [ "$1" ]; do
         case "$1" in 
             --do-not-create)
                 shift
                 do_not_create="true"
+                ;;
+
+            --controller)
+                # No need to do anything with this option here.
+                shift 2
+                ;;
+
+            --port)
+                # No need to do anything with this option here.
+                shift 2
                 ;;
 
             *)
@@ -1628,13 +1736,9 @@ function reset_config()
     fi
    
     if [ -z "$do_not_create" ]; then
-        print_title "Overwriting s9s Configuration"
+        print_title "Writing s9s Configuration $config_file"
     else
         print_title "Deleting s9s Configuration"
-    fi
-
-    if [ -d "$config_dir" ]; then
-        rm -rf "$config_dir"
     fi
 
     if [ -z "$do_not_create" ]; then
@@ -1642,14 +1746,20 @@ function reset_config()
             mkdir "$config_dir"
         fi
 
-        emit_s9s_configuration_file >$config_file
+        emit_s9s_configuration_file $options >$config_file
 
         # This goes to the standard output.
-        emit_s9s_configuration_file | print_ini_file 
+        emit_s9s_configuration_file $options | print_ini_file
     fi
 
     # FIXME: This should not be here:
     sudo rm -f $HOME/pip-container-create.log 2>/dev/null
+}
+
+function remove_cmon_configs()
+{
+    print_title "Checking Remaining Cmon Configs & Logs"
+    rm -rf /tmp/cmon*
 }
 
 #
@@ -1729,6 +1839,7 @@ function grant_user()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while granting user."
+        return 1
     else 
         success "  o Return code is 0, ok."
     fi

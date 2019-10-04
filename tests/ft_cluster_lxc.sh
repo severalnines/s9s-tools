@@ -12,6 +12,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -34,11 +35,12 @@ Usage:
  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
-  o createUser       Creates a user to work with.
-  o registerServer   Registers a new container server. No software installed.
-  o createContainer  Creates a container.
-  o createCluster    Creates a cluster.
-  o removeCluster    Drops the cluster, removes containers.
+  o createUser         Creates a user to work with.
+  o testCreateOutsider Creates an outsider user for access right checks.
+  o registerServer     Registers a new container server. No software installed.
+  o createContainer    Creates a container.
+  o createCluster      Creates a cluster.
+  o removeCluster      Drops the cluster, removes containers.
 
 EOF
     exit 1
@@ -270,6 +272,11 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    cat <<EOF
+  This test will create a cluster on two new containers that are created on the
+  fly by the cluster creation job.
+
+EOF
 
     mys9s cluster \
         --create \
@@ -292,11 +299,99 @@ function createCluster()
     #
     #
     print_title "Waiting and Printing Lists"
-    sleep 10
+    mysleep 10
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
     mys9s node      --stat
+}
+
+function testAlarms()
+{
+    local container_name1="${MYBASENAME}_11_$$"
+    local line
+
+    print_title "Checking Alarms"
+    cat <<EOF
+  Testing alarms. This test will first stop a container that holds a database
+  node. This will trigger some alarms that should be visible by the owner of
+  the cluste, but should not be visible by an outsider. 
+  
+  At the end the container is restarted, so the cluster recovery should commence
+  and the alarms should disappear.
+
+EOF
+
+    mys9s container --stop --wait "$container_name1"
+    check_exit_code $?
+
+    mysleep 45
+
+    # Check active alarms with the owner using the cluster ID.
+    mys9s alarm --list --long --cluster-id=1 
+    check_exit_code $?
+    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+        success "  o Owner can see the alarm about disconnected nodes, ok."
+    else
+        failure "Owner can't see the alarm?"
+    fi
+
+    # Active alarms, owner, no cluster ID.
+    mys9s alarm --list --long 
+    check_exit_code $?
+    if s9s alarm --list --long | grep -q "disconnected"; then
+        success "  o Owner can see the alarm about disconnected nodes, ok."
+    else
+        failure "Owner can't see the alarm?"
+    fi
+
+    # Active alarms, outsider, cluster ID is provided.
+    mys9s alarm --list --long --cluster-id=1 --cmon-user=grumio --password=p
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should get false return value."
+    else
+        success "  o Outsiders get false return value, ok."
+    fi
+   
+    # Checking stats.
+    mys9s alarm --stat --cluster-id=1
+    if [ $? -eq 0 ]; then
+        success "  o Owner gets a true return value on stats, ok."
+    else
+        failure "Owner got a false return value on stats."
+    fi
+
+    mys9s alarm --stat --cluster-id=1 --cmon-user="grumio" --password="p"
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should get false return value on stats."
+    else
+        success "  o Outsiders get false return value on stats, ok."
+    fi
+
+    #
+    # Starting the node, waiting for a while, alarms should disappear.
+    #
+    s9s container --start --wait "$container_name1"
+    check_exit_code $?
+    mysleep 120
+
+    # No alarms, owner, cluster ID provided.
+    mys9s alarm --list --long --cluster-id=1 
+    check_exit_code $?
+    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+        failure "Alarm should have disappeared already."
+    else
+        success "  o Alarm disappeared, ok."
+    fi
+
+
+    mys9s alarm --list --long 
+    check_exit_code $?
+    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+        failure "Alarm should have disappeared already."
+    else
+        success "  o Alarm disappeared, ok."
+    fi
 }
 
 function removeCluster()
@@ -343,17 +438,21 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createUser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest testAlarms
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
     runFunctionalTest createUser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
+    runFunctionalTest testAlarms
     runFunctionalTest removeCluster
 fi
 

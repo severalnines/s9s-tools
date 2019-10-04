@@ -1,0 +1,78 @@
+.TH S9S-REPORT 1 "August 30, 2019"
+.SH NAME
+s9s-report - Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s report
+.RI [OPTION]...
+
+.\"
+.\" The main options.
+.\"
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B --cat
+Prints the report text to the standard output.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --cat \\
+    --report-id=1 \\
+    --cluster-id=1
+.fi
+
+.TP
+.B --create
+This command line option can be used to create and print a new report. Please
+provide the \fB--type\fP command line option with the report type (that was
+chosen from the template list printed with the \fB--list-templates\fP option)
+and the \fB--cluster-id\fP with the cluster ID.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --create \\
+    --type=testreport \\
+    --cluster-id=1
+.fi
+
+.TP 
+.B --delete
+This option can be used to delete a report that already exsist. The report ID
+should be used to specify which report to delete.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --delete \\
+    --report-id=1
+.fi
+
+.TP
+.B --list
+Lists the reports that already created.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --list \\
+    --long \\
+    --cluster-id=1
+.fi
+
+.TP
+.B --list-templates
+Lists the report templates showing what kind of reports can be created. This
+command line option is usually used together with the \fB--long\fP option.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --list-templates \\
+    --long
+.fi

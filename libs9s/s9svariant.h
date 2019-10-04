@@ -19,8 +19,9 @@
  */
 #pragma once
 
-#include "s9sunion.h"
-#include "S9sString"
+#include <s9sunion.h>
+#include <S9sString>
+#include <S9sFormatter>
 
 class S9sNode;
 class S9sContainer;
@@ -131,6 +132,20 @@ class S9sVariant
         bool contains(const S9sString &key) const;
         bool contains(const char *key) const;
         void clear();
+
+        S9sString toJsonString(
+                int                   depth,
+                const S9sFormatFlags &formatFlags) const;
+
+        const char *ansiColor() const;
+        
+        static S9sString quote(
+                const S9sString &s,
+                const S9sFormatFlags &formatFlags);
+
+        static S9sString indent(
+                int depth, 
+                const S9sFormatFlags &formatFlags);
 
     protected:
         static bool fuzzyCompare(double first, double second);

@@ -96,4 +96,33 @@ EOF
     done
 }
 
+#
+# This is where we create "grumio" an outsider that is not a superuser and not
+# related to the test users we have. So this "grumio" user should not have
+# access to many of the objects the test user creates.
+#
+function testCreateOutsider()
+{
+    print_title "Creating an 'outsider' User"
+    cat <<EOF
+  This test will create a usr called 'grumio' who is an outsider, used in the
+  test to check situations where the user should not have access to various
+  objects.
+
+EOF
+
+    mys9s user \
+        --create \
+        --cmon-user=system \
+        --password=secret \
+        --group="plebs" \
+        --create-group \
+        --generate-key \
+        --first-name="Grumio" \
+        --email-address="grumio@rome.com" \
+        --new-password="p" \
+        grumio
+    
+    check_exit_code_no_job $?
+}
 

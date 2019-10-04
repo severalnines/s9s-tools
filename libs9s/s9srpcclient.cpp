@@ -728,10 +728,10 @@ S9sRpcClient::getConfig(
  * one node.
  */
 bool
-S9sRpcClient::setConfig(
-        const S9sVariantList &hosts)
+S9sRpcClient::setConfig()
 {
     S9sOptions    *options    = S9sOptions::instance();
+    S9sVariantList hosts      = options->nodes();
     S9sString      uri        = "/v2/config/";
     S9sVariantMap  request    = composeRequest();
     S9sVariantList optionList;
@@ -749,8 +749,22 @@ S9sRpcClient::setConfig(
             request["port"] = node.port();
     } else {
         PRINT_ERROR("setConfig only implemented for one host.");
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+
+    if (options->optName().empty())
+    {
+        PRINT_ERROR(
+                "Configuration option name is not provided.\n"
+                "Use the --opt-name command line option to provide"
+                " a configuration option name."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
 
     // 
     // The configuration value: here it is implemented for one value.
@@ -768,6 +782,49 @@ S9sRpcClient::setConfig(
     retval = executeRequest(uri, request);
     return retval;
 }
+
+/**
+ * Sends a call to get the cluster configuration.
+ */
+bool
+S9sRpcClient::getClusterConfig()
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+    bool           retval;
+
+    request["operation"]  = "getConfig";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::setClusterConfig()
+{
+    S9sOptions    *options    = S9sOptions::instance();
+    S9sString      uri        = "/v2/clusters/";
+    S9sVariantMap  request    = composeRequest();
+    S9sVariantList optionList;
+    S9sVariantMap  optionMap;
+    bool           retval;
+
+    request["operation"]  = "setConfig";
+
+    // 
+    // The configuration value: here it is implemented for one value.
+    //
+    optionMap["name"]  = options->optName();
+    optionMap["value"] = options->optValue();
+
+    optionList << optionMap;
+
+    request["configuration"] = optionList;
+
+    retval = executeRequest(uri, request);
+    return retval;
+}
+
 
 bool
 S9sRpcClient::ping()
@@ -1546,6 +1603,10 @@ S9sRpcClient::getLog()
     }
 
     request["cluster_id"] = options->clusterId();
+    
+    if (options->hasClusterNameOption())
+        request["cluster_name"] = options->clusterName();
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -1840,7 +1901,6 @@ S9sRpcClient::generateReport()
 
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
-    // "testreport", "default", "availability", "backup"
     reportMap["report_type"] = reportType;
     reportMap["recipients"]  = "laszlo@severalnines.com";
     reportMap["text_format"] = "AnsiTerminal";
@@ -1866,12 +1926,15 @@ S9sRpcClient::getReport()
     int            reportId  = options->reportId();
     S9sString      uri = "/v2/reports/";
     S9sVariantMap  request;
+    S9sVariantMap  reportMap;
 
     // Building the request.
-    // FIXME: This is different from the deleteReport...
+    reportMap["class_name"]  = "CmonReport";
+    reportMap["text_format"] = "AnsiTerminal";
+    reportMap["report_id"]   = reportId;
 
     request["operation"]     = "getReport";
-    request["report_id"]     = reportId;
+    request["report"]        = reportMap;
 
     if (options->hasClusterIdOption())
     {
@@ -2917,7 +2980,14 @@ S9sRpcClient::getStats(
     request["operation"]  = "statByName";
     request["name"]       = statName;
     request["with_hosts"] = true;
-    request["cluster_id"] = clusterId;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = clusterId;
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
 
     if (!begin.empty())
         request["start_datetime"] = begin;
@@ -6840,8 +6910,6 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
-
-
 bool
 S9sRpcClient::getAccounts()
 {
@@ -7899,7 +7967,7 @@ S9sRpcClient::composeRequest()
     S9sString      clusterName = options->clusterName();
     S9sVariantMap  request;
  
-    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId) || options->hasClusterIdOption())
         request["cluster_id"] = clusterId;
 
     if (!clusterName.empty())

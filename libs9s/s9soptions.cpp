@@ -326,7 +326,9 @@ enum S9sOptionType
     OptionReportId,
     OptionMessageId,
     OptionSetReadOnly,
-    OptionSetReadWrite
+    OptionSetReadWrite,
+
+    OptionUsr1,
 };
 
 /**
@@ -4231,6 +4233,12 @@ S9sOptions::isStopRequested() const
     return getBool("stop");
 }
 
+bool
+S9sOptions::isUsr1Requested() const
+{
+    return getBool("usr1");
+}
+
 /**
  * \returns true if the --start command line option was provided when the
  * program was started.
@@ -5759,12 +5767,15 @@ S9sOptions::printHelpAlarm()
 
     printf(
 "Options for the \"alarm\" command:\n"
-"  --list                     List the alarms.\n"
 "  --delete                   Set the alarm to be ignored.\n"
+"  --list                     List the alarms.\n"
 "\n"
     );
 }
 
+/**
+ * The function that prints the extra help lines for the report mode.
+ */
 void
 S9sOptions::printHelpReport()
 {
@@ -5777,6 +5788,11 @@ S9sOptions::printHelpReport()
 "  --delete                   Deletes one specific report.\n"
 "  --list                     List the reports.\n"
 "  --list-templates           Prints the available report templates.\n"
+"\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --cluster-name=NAME        The name of the cluster (instead the ID).\n"
+"  --report-id=ID             The unique numerical ID of the report.\n"
+"  --type=TYPENAME            The type of the report, AKA 'report-template'.\n"
 "\n"
     );
 }
@@ -6781,6 +6797,9 @@ S9sOptions::checkOptionsAlarm()
     if (isDeleteRequested())
         countOptions++;
     
+    if (isStatRequested())
+        countOptions++;
+    
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -7514,30 +7533,30 @@ S9sOptions::readOptionsAlarm(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp            },
-        { "debug",            no_argument,       0, OptionDebug           },
-        { "verbose",          no_argument,       0, 'v'                   },
-        { "version",          no_argument,       0, 'V'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "password",         required_argument, 0, 'p'                   }, 
-        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
-        { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "long",             no_argument,       0, 'l'                   },
-        { "print-json",       no_argument,       0, OptionPrintJson       },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "help",             no_argument,       0, OptionHelp            },
         { "human-readable",   no_argument,       0, 'h'                   },
+        { "long",             no_argument,       0, 'l'                   },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0, OptionDelete          },
+        { "list",             no_argument,       0, 'L'                   },
+        { "stat",             no_argument,       0, OptionStat            },
         
-        /*
-         * Alarm related options.
-         */
+        // Alarm related options.
         { "alarm-id",         required_argument, 0, OptionAlarmId         },
 
         // Cluster information
@@ -7546,9 +7565,6 @@ S9sOptions::readOptionsAlarm(
         { "nodes",            required_argument, 0, OptionNodes           },
         { "output-file",      required_argument, 0, OptionOutputFile      },
         { "input-file",       required_argument, 0, OptionInputFile       },
-        
-        { "batch",            no_argument,       0, OptionBatch           },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
 
         { 0, 0, 0, 0 }
     };
@@ -7677,6 +7693,11 @@ S9sOptions::readOptionsAlarm(
                 // --delete
                 m_options["delete"] = true;
                 break;
+            
+            case OptionStat:
+                // --stat
+                m_options["stat"] = true;
+                break;
            
             /*
              * Options related to alarms.
@@ -7754,8 +7775,8 @@ S9sOptions::readOptionsReport(
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "type",             required_argument, 0, OptionType            },
         { "report-id",        required_argument, 0, OptionReportId        },
+        { "type",             required_argument, 0, OptionType            },
         
 
         { 0, 0, 0, 0 }
@@ -8462,6 +8483,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isAddNodeRequested())
         countOptions++;
+    
+    if (isChangeConfigRequested())
+        countOptions++;
 
     if (isRemoveNodeRequested())
         countOptions++;
@@ -8493,10 +8517,16 @@ S9sOptions::checkOptionsCluster()
     if (isListDatabasesRequested())
         countOptions++;
     
+    if (isListConfigRequested())
+        countOptions++;
+    
     if (isRegisterRequested())
         countOptions++;
     
     if (isSetReadOnlyRequested())
+        countOptions++;
+    
+    if (isUsr1Requested())
         countOptions++;
 
     if (countOptions > 1)
@@ -10426,6 +10456,7 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
+        { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
@@ -10440,6 +10471,7 @@ S9sOptions::readOptionsCluster(
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "import-config",    no_argument,       0, OptionImportConfig    },
+        { "list-config",      no_argument,       0, OptionListConfig      },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
@@ -10452,6 +10484,7 @@ S9sOptions::readOptionsCluster(
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
+        { "usr1",             no_argument,       0, OptionUsr1            },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -10474,30 +10507,30 @@ S9sOptions::readOptionsCluster(
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
+        { "account",          required_argument, 0, OptionAccount,        },
+        { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
-        { "nodes",            required_argument, 0, OptionNodes           },
-        { "vendor",           required_argument, 0, OptionVendor          },
-        { "provider-version", required_argument, 0, OptionProviderVersion },
-        { "os-user",          required_argument, 0, OptionOsUser          },
-        { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
-        { "db-admin",         required_argument, 0, OptionDbAdmin         },
+        { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
-        { "account",          required_argument, 0, OptionAccount,        },
-        { "with-database",    no_argument,       0, OptionWithDatabase    },
-        { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-name",          required_argument, 0, OptionDbName          },
+        { "donor",            required_argument, 0, OptionDonor           },
+        { "nodes",            required_argument, 0, OptionNodes           },
+        { "no-install",       no_argument,       0, OptionNoInstall       },
         { "objects",          required_argument, 0, OptionObjects         },
-        { "privileges",       required_argument, 0, OptionPrivileges      },
         { "opt-group",        required_argument, 0, OptionOptGroup        },
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
-        { "cluster-format",   required_argument, 0, OptionClusterFormat   }, 
-        { "donor",            required_argument, 0, OptionDonor           },
-        { "config-template",  required_argument, 0, OptionConfigTemplate  },
-        { "no-install",       no_argument,       0, OptionNoInstall       },
+        { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
+        { "os-user",          required_argument, 0, OptionOsUser          },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "provider-version", required_argument, 0, OptionProviderVersion },
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
+        { "vendor",           required_argument, 0, OptionVendor          },
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
        
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -10649,6 +10682,11 @@ S9sOptions::readOptionsCluster(
                 m_options["add_node"] = true;
                 break;
             
+            case OptionChangeConfig:
+                // --change-config
+                m_options["change_config"] = true;
+                break;
+            
             case OptionRemoveNode:
                 // --remove-node
                 m_options["remove_node"] = true;
@@ -10662,6 +10700,11 @@ S9sOptions::readOptionsCluster(
             case OptionStop:
                 // --stop
                 m_options["stop"] = true;
+                break;
+            
+            case OptionUsr1:
+                // --usr1
+                m_options["usr1"] = true;
                 break;
             
             case OptionStart:
@@ -10687,6 +10730,11 @@ S9sOptions::readOptionsCluster(
             case OptionListDatabases:
                 // --list-databases
                 m_options["list_databases"] = true;
+                break;
+            
+            case OptionListConfig:
+                // --list-config
+                m_options["list_config"] = true;
                 break;
             
             case OptionGrant:

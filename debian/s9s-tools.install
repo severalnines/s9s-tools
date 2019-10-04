@@ -1,6 +1,7 @@
 usr/bin/s9s
 etc/bash_completion.d/s9s_completion
 usr/share/man/man1/s9s.1
+usr/share/man/man1/s9s-alarm.1
 usr/share/man/man1/s9s-account.1
 usr/share/man/man1/s9s-backup.1
 usr/share/man/man1/s9s-cluster.1
@@ -13,6 +14,7 @@ usr/share/man/man1/s9s-node.1
 usr/share/man/man1/s9s-process.1
 usr/share/man/man1/s9s-script.1
 usr/share/man/man1/s9s-replication.1
+usr/share/man/man1/s9s-report.1
 usr/share/man/man1/s9s-server.1
 usr/share/man/man1/s9s-tree.1
 usr/share/man/man1/s9s-user.1

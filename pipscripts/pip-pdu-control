@@ -19,6 +19,8 @@ PDU_OPERATION="on"
 MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
 SUM_DEVICES=0
+PINGED_DEVICES=0
+REPLIED_DEVICES=0
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
@@ -66,7 +68,7 @@ Usage:
   --log-file=FILE      Store all the messages in the given file too.
   --print-report       Print a detailed report at the end.
 
-  --discover           Try to contact he device and find information about it.
+  --discover           Try to contact the device and find information about it.
   --list               List the power distribution units.
   --list-measurements  Fetch and list values the devices can measure.
   --list-outlets       List the outlets of the PDU.
@@ -83,11 +85,12 @@ Usage:
 
   --print-files        Print file names instead of names.
   --long               Print the long, detailed list.
+  --ping               Ping the device and print its state in the list.
 
   --outlet=N           The numerical ID of the outlet.
   --group=GROUP        Only PDUs in the given group.
   --all                All the PDUs.
-  --with-power         Lists only the ones that have power mesurements.
+  --with-power         Lists only the ones that have power measurements.
   --with-temperature   Lists only the ones that have temperature sensor.
 
 EOF
@@ -99,8 +102,8 @@ ARGS=$(\
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,print-report,"\
 "list,list-outlets,list-measurements,discover,on,off,toggle,state,\
-power,voltage,current,temperature,humidity,print-files,long,outlet:,group:,\
-all,with-power,with-temperature" \
+power,voltage,current,temperature,humidity,print-files,long,ping,\
+outlet:,group:,all,with-power,with-temperature" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -202,7 +205,6 @@ while true; do
             PDU_OPERATION="humidity"
             ;;
 
-
         --print-files)
             shift
             OPTION_PRINT_FILES="true"
@@ -211,6 +213,11 @@ while true; do
         --long)
             shift
             OPTION_LONG="true"
+            ;;
+        
+        --ping)
+            shift
+            OPTION_PING="true"
             ;;
 
         --group)
@@ -258,7 +265,7 @@ OPTION_DEVICES="$@"
 #
 #LOGFILE="$HOME/.pip.log/${OPTION_DEVICES}.log"
 rm -f $HOME/.pip/*.log
-logger "Log file is: '$LOGFILE'."
+
 [ ! -d "$LOGDIR" ] && mkdir -p "$LOGDIR"
 touch "$LOGFILE"
 
@@ -272,6 +279,24 @@ function print_value()
     else
         echo "$default"
     fi
+}
+
+function device_requested()
+{
+    local this_device
+    local device="$1"
+
+    if [ -z "$OPTION_DEVICES" ]; then
+        return 0
+    fi
+
+    for this_device in $OPTION_DEVICES; do
+        if [ "$device" == "$this_device" ]; then
+            return 0
+        fi
+    done
+
+    return 1
 }
 
 function outlet_requested()
@@ -312,11 +337,7 @@ function switch_apc()
     local outlets
     local tmp
     local retval
-
-    printVerbose "***    PDU_SERVER: $CONF_PDU_SERVER"
-    printVerbose "***   PDU_OUTLETS: $PDU_OUTLETS"
-    printVerbose "*** PDU_OPERATION: $PDU_OPERATION"
-   
+ 
     if [ -n "$OPTION_OUTLET" ]; then
         outlets="$(echo "$OPTION_OUTLET" | tr ',' ' ')"
     elif [ "$PDU_OUTLETS" == "all" ]; then
@@ -324,7 +345,6 @@ function switch_apc()
     else
         outlets=$(echo $PDU_OUTLETS | tr ',' ' ')
     fi
-    printVerbose "***        outlet: $outlet"
 
     case "$PDU_OPERATION" in
         on|off)
@@ -804,6 +824,9 @@ function print_summary()
     printf "\n"
     printf "Summary:\n"
     printf "         Total: %'6d devices\n" "$SUM_DEVICES" 
+    printf "        Pinged: %'6d devices\n" "$PINGED_DEVICES" 
+    printf "       Replied: %'6d devices\n" "$REPLIED_DEVICES" 
+    printf "\n"
 }
 
 function print_measurements_long()
@@ -814,6 +837,10 @@ function print_measurements_long()
         fi
 
         device_name=$(basename "$config_file" .pdu)
+        
+        if ! device_requested "$device_name"; then
+            continue
+        fi
         
         CONF_PDU_NAME=""
         CONF_PDU_SERVER=""
@@ -882,6 +909,11 @@ function print_measurements_long()
     done
 }
 
+function ping_device()
+{
+    ping -q -W 1 -c 1 "$1" >/dev/null 2>/dev/null
+}
+
 #
 # Prints the list of PDU devices in long format.
 #
@@ -901,6 +933,10 @@ function print_device_list_long()
         fi
 
         device_name=$(basename "$config_file" .pdu)
+
+        if ! device_requested "$device_name"; then
+            continue
+        fi
         
         CONF_PDU_NAME=""
         CONF_PDU_SERVER=""
@@ -968,7 +1004,17 @@ function print_device_list_long()
             mode+="-"
         fi
 
-        printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
+        if [ -z "$OPTION_PING" ]; then 
+            printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
+        else
+            let PINGED_DEVICES+=1
+            if ping_device "$CONF_PDU_SERVER"; then
+                printf "$OK_COLOR%-16s$TERM_NORMAL "  "$device_name"
+                let REPLIED_DEVICES+=1
+            else
+                printf "$ERR_COLOR%-16s$TERM_NORMAL "  "$device_name"
+            fi
+        fi
         printf "$TERM_NORMAL%-5s$TERM_NORMAL "    "$mode"
         printf "$NUMBER_COLOR%2d$TERM_NORMAL "     "$n_outlets"
 
@@ -1005,6 +1051,10 @@ function print_device_list_brief()
         fi
 
         device_name=$(basename "$config_file" .pdu)
+        
+        if ! device_requested "$device_name"; then
+            continue
+        fi
         
         CONF_PDU_NAME=""
         CONF_PDU_SERVER=""
@@ -1110,7 +1160,7 @@ EOF
 }
 
 if [ -f "$MQTT_CONFIG_FILE" ]; then
-    printVerbose "Loading '$MQTT_CONFIG_FILE'..."
+    #printVerbose "Loading '$MQTT_CONFIG_FILE'..."
     source "$MQTT_CONFIG_FILE"
 fi
 
@@ -1150,6 +1200,7 @@ if [ -z "$OPTION_DEVICES" ]; then
 fi
 
 for OPTION_DEVICE in $(echo $OPTION_DEVICES | tr ',' ' '); do
+    printMessage "Processing operation '$PDU_OPERATION' on '$OPTION_DEVICE'."
     CONFIG_FILE_PATH="$HOME/.pip/${OPTION_DEVICE}.pdu"
 
     if [ "$PDU_OPERATION" == "toggle" ]; then
@@ -1198,21 +1249,17 @@ for OPTION_DEVICE in $(echo $OPTION_DEVICES | tr ',' ' '); do
 
     source "$CONFIG_FILE_PATH"
 
-    #echo "*** CONF_PDU_OUTLET : $CONF_PDU_OUTLET"
     if [ "$CONF_PDU_OUTLET" ]; then
         PDU_OUTLETS="$CONF_PDU_OUTLET"
     fi
     
-    #echo "***     PDU_OUTLETS : $PDU_OUTLETS"
-
-    printVerbose "      device : '$OPTION_DEVICE'"
-    printVerbose " conf_device : '$CONF_PDU_DEVICE'"
-    printVerbose "      server : '$CONF_PDU_SERVER'"
-    printVerbose "    standard : '$CONF_PDU_STANDARD'"
-    printVerbose "       isMqtt: '$CONF_PDU_MQTT'"
-    printVerbose "   operation : '$PDU_OPERATION'"
-    printVerbose ""
-
+    #printVerbose "      device : '$OPTION_DEVICE'"
+    #printVerbose " conf_device : '$CONF_PDU_DEVICE'"
+    #printVerbose "      server : '$CONF_PDU_SERVER'"
+    #printVerbose "    standard : '$CONF_PDU_STANDARD'"
+    #printVerbose "       isMqtt: '$CONF_PDU_MQTT'"
+    #printVerbose "   operation : '$PDU_OPERATION'"
+    #printVerbose ""
 
     case "$CONF_PDU_STANDARD" in 
         apc)

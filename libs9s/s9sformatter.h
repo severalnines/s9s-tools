@@ -12,6 +12,34 @@ class S9sNode;
 class S9sServer;
 class S9sContainer;
 
+/**
+ * An enum that controls the format while we print things.
+ */
+enum S9sFormatFlags
+{
+    /** Pure strings, e.g. strings we send on the network. */
+    S9sFormatNormal   = 0,
+    /** Indented srings for readability. */
+    S9sFormatIndent   = 1,
+    /** Colored text for readability. */
+    S9sFormatColor    = 2,
+    /** In the debug messages we always print colors and indent. */ 
+    S9sFormatForDebug = 3,
+};
+
+inline S9sFormatFlags 
+operator|(
+        S9sFormatFlags a, 
+        S9sFormatFlags b)
+{
+    return static_cast<S9sFormatFlags>(
+            static_cast<int>(a) | 
+            static_cast<int>(b));
+};
+
+/**
+ * A class that helps printing formatted strings.
+ */
 class S9sFormatter
 {
     public:

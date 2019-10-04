@@ -8,8 +8,11 @@ LOG_OPTION="--wait"
 OPTION_INSTALL=""
 CLUSTER_NAME="galera_001"
 
+export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
+
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -22,14 +25,36 @@ Usage:
 
   $MYNAME - Tests moving objects in the Cmon Directory Tree.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install           Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install           Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
+
+SUPPORTED TESTS:
+  o testCreateUser       Creates a user with normal user privileges.
+  o testCreateSuperuser  Creates a user with superuser privileges.
+  o testCreateOutsider   Creates an outsider user who should not have access.
+  o testLicenseDevice    Reading and writing the license through CDT.
+  o testRegisterServer   Registers a container server.
+  o testCreateContainer  Creates a container.
+  o testCreateCluster    Creates a cluster on the container.
+  o testPingAccess       Tests if outsiders can not ping a cluster.
+  o testJobAccess        Checks if outsiders can not create a job.
+  o testLogAccess        Checks if outsiders can not see the logs of a cluster.
+  o testCreateDatabase   Creates some databases.
+  o testCreateAccount    Creates some database accounts.
+  o testMoveObjects      Moves objects in the tree.
+  o testStats
+  o testAclChroot
+  o testCreateFolder
+  o testManipulate
+  o testTree
+  o testMoveBack
+  o deleteContainers
 
 EOF
     exit 1
@@ -212,6 +237,149 @@ EOF
     #mys9s tree --list --long
 }
 
+function testLicenseDevice()
+{
+    local retCode
+    print_title "Checking Access to the License Device File"
+
+    mys9s tree \
+        --cat \
+        /.runtime/cmon_license 
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Normal user should not have read access to the license file."
+    else
+        success "  o Normal user can't read the license, ok."
+    fi
+
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/cmon_license 
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        success "  o Superuser can read the license file, ok."
+    else
+        failure "Superuser should be able to read the license."
+    fi
+
+    print_title "Uploading License"
+    cat <<EOF
+  This test will try to upload a license to the controller. Both valid and
+  invalid attempts are tested. Here is an example how we do that:
+
+    echo "\$license" | \\
+        s9s tree \\
+            --save \\
+            --cmon-user=system \\
+            --password=secret \\
+            "/.runtime/cmon_license"
+
+EOF
+
+    # 
+    # Trying with an invalid license. 
+    #
+    license=$(cat <<EOF 
+wogICAgImNvbXBhbnkiOiAib25lIiwKICAgICJlbWFpbF9hZGRyZXNzIjogInR3byIsCiAgICAi
+ZXhwaXJhdGlvbl9kYXRlIjogIjIwMjEtMTItMzFUMDA6MDA6MDAuMDAxWiIsCiAgICAibGljZW5z
+ZWRfbm9kZXMiOiAwLAogICAgInR5cGUiOiAiRGVtbyIKfQp7czlzLXNpZ25hdHVyZS1zZXBhcmF0
+b3J9CkYoFPzdyxqj55jO2GMANgYs/YgcSyxvYCcTsGZuj6P+pKMtE8gZbGCifdc2D3Y5pcP6YfKh
+Om44ElVqMbYe9oeiyxZbUvmxZJYTsEX1KTnoaRys2dGQmfixehRIHlvcE9QT/ALoqiSOqkGTdT2G
+Y+pklXhSuGGy+UxWPAeheZ/Gb27rE+VJcouCNXpBeE478ekdnR7ExlPTOX0YBafm3pukcMZ8ddkF
+9zBYXocy3+YkPdRYz6brXvGuuspCW7FGubxNlywOdEofP4R1qD6pdLVnoH1dgmWLlT0CJVeMhgDF
+fLAVrLNNedQ69sAv5JyDmiyrf/T7an3iiSZWHlH31vwY8LdhRQiiycNJ6BRGBIsuPN8Joi4GQosk
+N1OAth0O8lm5SR82YgfrpQB6HFyre1qMQqj6kuHJ4hInPer7BeSLMUr+1XiOU0NKjS7HwVdveDvy
+D6/KcALlH7ifkU89U6O6qR6NF+T5dQJfccnRw1u93lIhItdc3pH+o3+BNcRX1mMmBM1ysDDpVYHY
+7uAov5OmDajW37DXgeNkJYhdYeviPaoXQYeiMJmDaJ0BDqEDPB5AcdFBRLZ3FgdoTJUyRsw6iYck
+0ZXMgNVbL8bNf07K9ooEjByY8Mia9HNCFo8XXEjPQqUVdet3j/KkecoJB8kLXhjsFEvGxaR601+Z
+/JfV
+EOF
+)
+    echo "$license" | \
+        s9s tree \
+            --save \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime/cmon_license
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Invalid license should not be accepted."
+    else
+        success "  o Invalid license is rejected, ok."
+    fi
+    
+    #
+    # Trying with a valid one, but normal user.
+    #
+    license=$(cat <<EOF 
+ewogICAgImNvbXBhbnkiOiAib25lIiwKICAgICJlbWFpbF9hZGRyZXNzIjogInR3byIsCiAgICAi
+ZXhwaXJhdGlvbl9kYXRlIjogIjIwMjEtMTItMzFUMDA6MDA6MDAuMDAxWiIsCiAgICAibGljZW5z
+ZWRfbm9kZXMiOiAwLAogICAgInR5cGUiOiAiRGVtbyIKfQp7czlzLXNpZ25hdHVyZS1zZXBhcmF0
+b3J9CkYoFPzdyxqj55jO2GMANgYs/YgcSyxvYCcTsGZuj6P+pKMtE8gZbGCifdc2D3Y5pcP6YfKh
+Om44ElVqMbYe9oeiyxZbUvmxZJYTsEX1KTnoaRys2dGQmfixehRIHlvcE9QT/ALoqiSOqkGTdT2G
+Y+pklXhSuGGy+UxWPAeheZ/Gb27rE+VJcouCNXpBeE478ekdnR7ExlPTOX0YBafm3pukcMZ8ddkF
+9zBYXocy3+YkPdRYz6brXvGuuspCW7FGubxNlywOdEofP4R1qD6pdLVnoH1dgmWLlT0CJVeMhgDF
+fLAVrLNNedQ69sAv5JyDmiyrf/T7an3iiSZWHlH31vwY8LdhRQiiycNJ6BRGBIsuPN8Joi4GQosk
+N1OAth0O8lm5SR82YgfrpQB6HFyre1qMQqj6kuHJ4hInPer7BeSLMUr+1XiOU0NKjS7HwVdveDvy
+D6/KcALlH7ifkU89U6O6qR6NF+T5dQJfccnRw1u93lIhItdc3pH+o3+BNcRX1mMmBM1ysDDpVYHY
+7uAov5OmDajW37DXgeNkJYhdYeviPaoXQYeiMJmDaJ0BDqEDPB5AcdFBRLZ3FgdoTJUyRsw6iYck
+0ZXMgNVbL8bNf07K9ooEjByY8Mia9HNCFo8XXEjPQqUVdet3j/KkecoJB8kLXhjsFEvGxaR601+Z
+/JfV
+EOF
+)
+    echo "$license" | \
+        s9s tree \
+            --save \
+            /.runtime/cmon_license
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        failure "Normal user should not be able to upload license."
+    else
+        success "  o Normal user can't set license, ok."
+    fi
+   
+    #
+    # Same, valid license, but superuser this time. 
+    #
+    echo "$license" | \
+        s9s tree \
+            --save \
+            --cmon-user=system --password=secret \
+            /.runtime/cmon_license
+
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        success "  o Superuser can read the license file, ok."
+    else
+        failure "Superuser should be able to read the license."
+    fi
+   
+    #
+    #
+    #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/cmon_license 
+
+    json=$(mys9s tree --cat \
+        --cmon-user=system --password=secret \
+        /.runtime/cmon_license)
+
+    if $(echo "$json" | grep -q one); then
+        success "  o The license seems to be updated, ok."
+    else
+        failure "The license seems to be not updated."
+    fi
+}
+
 #####
 # Registering a server.
 #
@@ -256,7 +424,7 @@ EOF
             $CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 object_found="yes"
                 ;;
         esac
@@ -268,7 +436,7 @@ EOF
     fi
 }
 
-#####
+#
 # Creating a container.
 #
 function testCreateContainer()
@@ -287,9 +455,9 @@ function testCreateContainer()
     #
     print_title "Creating a Container"
     cat <<EOF
-This test will create a container outside of the Cmon Controller (manually, 
-by executing a few commands on the server) then it will check if the container
-appears in the list the controller maintains about the containers.
+  Creating a container through the Cmon Contoller, checking that everything is
+  ok and the container is visible through the controller.
+
 EOF
 
     #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
@@ -347,7 +515,7 @@ EOF
                     success "  o group is '$group', ok"
                 fi
 
-                if [ "$mode"  != "crwxrw----" ]; then
+                if [ "$mode"  != "crwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is '$mode', ok" 
@@ -366,7 +534,7 @@ EOF
     fi
 }
 
-#####
+#
 # Creating a Galera cluster.
 #
 function testCreateCluster()
@@ -383,8 +551,9 @@ function testCreateCluster()
     #
     print_title "Creating a Cluster"
     cat <<EOF 
-In this test we create a cluster and check various properties of it (e.g. the
-owner and the group owner). 
+  In this test we create a cluster and check various properties of it (e.g. the
+  owner and the group owner). 
+
 EOF
     mys9s cluster \
         --create \
@@ -398,7 +567,7 @@ EOF
     check_exit_code $?
     
     #
-    # Checking...
+    # Checking the access rights of the cluster.
     #
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME"); do
@@ -424,7 +593,270 @@ EOF
     IFS=$old_ifs    
 }
 
-#####
+function testPingAccess()
+{
+    local retCode
+    print_title "Checking if Outsiders can't Ping Clusters"
+    cat <<EOF
+  This test will check that an outsider can not ping a cluster it can't even
+  see. Then we double check that the owner can actually ping the cluster job.
+
+EOF
+
+    mys9s cluster \
+        --ping \
+        --cluster-id=1 \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to ping a cluster."
+    else
+        success "  o Outsider can not ping a cluster, ok."
+    fi
+    
+    mys9s cluster \
+        --ping \
+        --cluster-name="$CLUSTER_NAME" \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to ping a cluster."
+    else
+        success "  o Outsider can not ping the cluster, ok."
+    fi
+   
+    #
+    # Checking that the owner on the other hand can create a job.
+    #
+    mys9s cluster \
+        --ping \
+        --cluster-id=1 \
+        --log 
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o The owner can ping the cluster, ok."
+    else
+        failure "The owner could not ping the cluster."
+    fi
+}
+
+function testConfigAccess()
+{
+    print_title "Checking Who has Read Access to Configuration"
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        'config_file_path'
+
+    if [ $? -eq 0 ]; then
+        success "  o The owner has access to the configuration, ok."
+    else
+        failure "The owner should have access to the configuration."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        --cmon-user=grumio \
+        --password=p \
+        'config_file_path'
+
+    if [ $? -ne 0 ]; then
+        success "  o Outsiders has no access to the configuration, ok."
+    else
+        failure "Outsiders should have no access to the configuration."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=0 \
+        'config_file_path'
+
+    if [ $? -ne 0 ]; then
+        success "  o Normal users has no access to cluster 0, ok."
+    else
+        failure "Normal users should have no access to cluster 0."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=0 \
+        --cmon-user=system \
+        --password=secret \
+        'config_file_path'
+
+    if [ $? -eq 0 ]; then
+        success "  o System user has access to cluster 0, ok."
+    else
+        failure "The system user should have no access to cluster 0."
+    fi
+
+    #
+    # The write access.
+    #
+    print_title "Checking Who has Write Access to Cluster Configuration"
+    cat <<EOF
+  New we check who has write access to the cluster configuration. The owner
+  should of course be able to change the configuration while the outsider should
+  not.
+
+EOF
+
+    mys9s cluster \
+        --change-config \
+        --cluster-id=1 \
+        --cmon-user="grumio" \
+        --password="p" \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="60"    
+    
+    if [ $? -ne 0 ]; then
+        success "  o The outsider has no write access to cluster 1, ok."
+    else
+        failure "The outsider should have no write access to cluster 1."
+    fi
+
+    mys9s cluster \
+        --change-config \
+        --cluster-id=1 \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="60"    
+    
+    if [ $? -eq 0 ]; then
+        success "  o The owner has write access to cluster 1, ok."
+    else
+        failure "The owner should have write access to cluster 1."
+    fi
+    
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        "host_stats_collection_interval"
+
+    mys9s cluster \
+        --change-config \
+        --cluster-id=1 \
+        --cmon-user="system" \
+        --password="secret" \
+        --opt-name="host_stats_collection_interval" \
+        --opt-value="120"    
+    
+    if [ $? -eq 0 ]; then
+        success "  o The superuser has write access to cluster 1, ok."
+    else
+        failure "The superuser should have write access to cluster 1."
+    fi
+
+    mys9s cluster \
+        --list-config \
+        --cluster-id=1 \
+        "host_stats_collection_interval"
+}
+
+function testJobAccess()
+{
+    local retCode
+    print_title "Checking if Outsiders can't Create Jobs"
+    cat <<EOF
+  This test will check that an outsider can not execute a job on the cluster it
+  can't even see. Then we double check that the owner can actually execute a
+  job.
+
+EOF
+
+    mys9s job \
+        --success \
+        --cluster-id=1 \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create jobs on cluster."
+    else
+        success "  o Outsider can not execute job, ok."
+    fi
+    
+    mys9s job \
+        --success \
+        --cluster-name="$CLUSTER_NAME" \
+        --log \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create jobs on cluster."
+    else
+        success "  o Outsider can not execute job, ok."
+    fi
+   
+    #
+    # Checking that the owner on the other hand can create a job.
+    #
+    mys9s job \
+        --success \
+        --cluster-id=1 \
+        --log 
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o The owner can execute a job, ok."
+    else
+        failure "The owner could not execute a job."
+    fi
+}
+
+function testLogAccess()
+{
+    local retCode
+    print_title "Checking if Outsiders can't See the Logs"
+
+    cat <<EOF
+  This test will check that an outsider can not see the logs of a cluster he
+  can't see. Then we check that the owner can see the logs.
+
+EOF
+
+    mys9s log \
+        --list \
+        --cmon-user=grumio \
+        --password=p \
+        --cluster-id=1 \
+        --limit=10 \
+        --log-format="%i %M\n"
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the logs of the cluster."
+    else
+        success "  o Outsider can not see the log of the cluster, ok."
+    fi
+
+    mys9s log \
+        --list \
+        --cluster-id=1 \
+        --limit=10 \
+        --log-format="%i %M\n"
+    
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        success "  o Owner of the cluster can see the logs, ok."
+    else
+        failure "The owner can't see the logs."
+    fi
+}
+
+#
 # Creating databases.
 #
 function testCreateDatabase()
@@ -501,7 +933,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -524,7 +956,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -547,7 +979,7 @@ EOF
                     success "  o group is $group, ok"
                 fi
                 
-                if [ "$mode"  != "brwxrw----" ]; then
+                if [ "$mode"  != "brwxrwx---" ]; then
                     failure "Mode is '$mode'." 
                 else
                     success "  o mode is $mode, ok"
@@ -569,12 +1001,136 @@ EOF
     fi
 }
 
-#####
+function testDatabaseAccess()
+{
+    local retCode
+    
+    print_title "Checking that Outsider can not Access Databases"
+    cat <<EOF
+  This test checks that an outsider can not create new databases and can not
+  list the existing databases on a cluster.
+
+EOF
+
+    mys9s cluster \
+        --create-database \
+        --cluster-name="$CLUSTER_NAME" \
+        --db-name="grumio" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create databases."
+    else
+        success "  o Outsider can not create database, ok."
+    fi
+
+    mys9s cluster \
+        --create-database \
+        --cluster-id="1" \
+        --db-name="grumio" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create databases."
+    else
+        success "  o Outsider can not create database, ok."
+    fi
+    
+    mys9s cluster \
+        --list-databases \
+        --cluster-id="1" \
+        --cmon-user=grumio \
+        --password=p
+        
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to see databases."
+    else
+        success "  o Outsider can not see databases, ok."
+    fi
+}
+
+function testBackupAccess()
+{
+    local retCode
+
+    print_title "Checking that Outsider can not Access Backups"
+
+    mys9s backup \
+        --list \
+        --long \
+        --cluster-id="1" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see backups."
+    else
+        success "  o Outsider can not see backups, ok."
+    fi
+    
+    mys9s backup \
+        --list \
+        --long \
+        --cluster-name="$CLUSTER_NAME" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see backups."
+    else
+        success "  o Outsider can not see backups, ok."
+    fi
+ 
+    #
+    # Creating a backup that we can try to delete.
+    #
+    mys9s backup \
+        --create \
+        --cluster-id="1" \
+        --backup-dir=/tmp \
+        --nodes="$CONTAINER_IP" \
+        --wait
+    
+    check_exit_code $?
+
+    mys9s backup --list --long 
+
+    #
+    #
+    #
+    mys9s backup \
+        --delete \
+        --backup-id=1 \
+        --cmon-user=grumio \
+        --password=p
+    
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not delete backups."
+    else
+        success "  o Outsider can not delete backups, ok."
+    fi
+}
+
+#
 # Creating a database account.
 #
 function testCreateAccount()
 {
     print_title "Creating Database Account"
+    cat <<EOF
+  This test will create an account on the cluster and checks the return value to
+  see if the operation was indeed successfull.
+
+EOF
+
     mys9s account \
         --create \
         --cluster-name="galera_001" \
@@ -582,6 +1138,177 @@ function testCreateAccount()
         --privileges="*.*:ALL"
 
     check_exit_code_no_job $?
+}
+
+function testConfigController()
+{
+    local controller_name
+
+    print_title "Testing the Configuration of the Controller"
+
+    controller_name=$(\
+        s9s node --list --node-format "%R %A\n" | \
+        grep controller | \
+        awk '{print $2}')
+}
+
+#
+# FIXME: There is an other, a better test for this in ft_cluster_lxc.sh.
+#
+function testAlarmAccess()
+{
+    local retCode
+
+    print_title "Checking if Outsiders can See the Alarms"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s alarm \
+        --list \
+        --long \
+        --cluster-id=1 \
+        --cmon-user="grumio" 
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the alarms."
+    else
+        success "  o Outsider can not see the alarms, ok."
+    fi
+}
+
+function testReportAccess()
+{
+    print_title "Checking Report Creation and Privileges"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s report --create --type=testreport --cluster-id=1
+    mys9s report --create --type=report1    --cluster-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can create a report, ok."
+    else
+        failure "The owner should be able to create a report."
+    fi
+    
+    mys9s report --create --type=testreport --cluster-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to create reports."
+    else
+        success "  o Outsider can not create a report, ok."
+    fi
+
+    #
+    # Listing reports by cluster ID.
+    #
+    mys9s report --list --long --cluster-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can see the reports, ok."
+    else
+        failure "The owner should be able to see the reports."
+    fi
+
+    mys9s report --list --long --cluster-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to see reports."
+    else
+        success "  o Outsider can not see the reports, ok."
+    fi
+
+    #
+    # Viewing the report text.
+    #
+    mys9s report --cat --report-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can see the reports, ok."
+    else
+        failure "The owner should be able to see the reports."
+    fi
+
+    mys9s report --cat --report-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to see reports."
+    else
+        success "  o Outsider can not see the reports, ok."
+    fi
+
+    #
+    # Deleting reports.
+    #
+    mys9s report --delete --report-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to delete reports."
+    else
+        success "  o Outsider can not delete report, ok."
+    fi
+
+    mys9s report --delete --report-id=2 
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can delete a report, ok."
+    else
+        failure "The owner should be able to delete a report."
+    fi
+}
+
+
+
+function testAccountAccess()
+{
+    local retCode
+
+    print_title "Checking if Outsiders can Access Accounts"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s account \
+        --create \
+        --cluster-id=1 \
+        --account="grumio:grumio" \
+        --privileges="*.*:ALL" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create accounts."
+    else
+        success "  o Outsider can not create account, ok."
+    fi
+    
+    mys9s account \
+        --create \
+        --cluster-name="galera_001" \
+        --account="grumio:grumio" \
+        --privileges="*.*:ALL" \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not be able to create accounts."
+    else
+        success "  o Outsider can not create account, ok."
+    fi
+
+    #
+    #  Checking the read access to the accounts.
+    #
+    mys9s account \
+        --list \
+        --long \
+        --cluster-id=1 \
+        --cmon-user=grumio \
+        --password=p
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        warning "Outsiders should not see the accounts."
+    else
+        success "  o Outsider can not see the accounts, ok."
+    fi
 }
 
 #
@@ -638,21 +1365,21 @@ EOF
             /$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
@@ -696,21 +1423,21 @@ EOF
             /home/pipas/$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /home/pipas/$CONTAINER_SERVER)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /home/pipas/$CLUSTER_NAME/databases/domain_names_diff)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrw----" ] && failure "Mode is '$mode'." 
+                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
         esac
@@ -993,8 +1720,7 @@ function deleteContainers()
 # Running the requested tests.
 #
 startTests
-
-reset_config
+create_s9s_config
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then
@@ -1004,9 +1730,20 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testCreateUser
         runFunctionalTest testCreateSuperuser
+        runFunctionalTest testCreateOutsider
+        runFunctionalTest testLicenseDevice
         runFunctionalTest testRegisterServer
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
+        runFunctionalTest testPingAccess
+        runFunctionalTest testConfigAccess
+        runFunctionalTest testJobAccess
+        runFunctionalTest testLogAccess
+        runFunctionalTest testAccountAccess
+        runFunctionalTest testDatabaseAccess
+        runFunctionalTest testBackupAccess
+        runFunctionalTest testAlarmAccess
+        runFunctionalTest testReportAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1015,11 +1752,23 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateSuperuser
+    runFunctionalTest testCreateOutsider
+    runFunctionalTest testLicenseDevice
+
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
+    runFunctionalTest testPingAccess
+    runFunctionalTest testConfigAccess
+    runFunctionalTest testJobAccess
+    runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
+    runFunctionalTest testDatabaseAccess
+    runFunctionalTest testBackupAccess
+    runFunctionalTest testAlarmAccess
+    runFunctionalTest testReportAccess
     runFunctionalTest testCreateAccount
+    runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects
     runFunctionalTest testStats
     runFunctionalTest testAclChroot

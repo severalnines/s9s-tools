@@ -17,6 +17,7 @@ LAST_CONTAINER_NAME=""
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -27,27 +28,28 @@ cat << EOF
 Usage: $MYNAME [OPTION]... [TESTNAME]
  Test script for s9s to check various error conditions.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the server and the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the server and the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
-  o registerServer   Registers a new container server. No software installed.
-  o checkServer      Checking the previously registered server.
-  o createContainer  Creates a new container.
-  o createAsSystem   Create a container as system user.
-  o createFail       A container creation that should fail.
-  o createContainers Creates several new containers with various images.
-  o restartContainer Stop then start the container.
-  o createCluster    Creates a new cluster on containers on the fly.
-  o createServer     Creates a server from the previously created container.
-  o failOnContainers Testing on unexisting containers.
-  o deleteContainer  Deletes the previously created container.
+  o registerServer     Registers a new container server. No software installed.
+  o testCreateOutsider Creates an outsider user for checks.
+  o checkServer        Checking the previously registered server.
+  o createContainer    Creates a new container.
+  o createAsSystem     Create a container as system user.
+  o createFail         A container creation that should fail.
+  o createContainers   Creates several new containers with various images.
+  o restartContainer   Stop then start the container.
+  o createCluster      Creates a new cluster on containers on the fly.
+  o createServer       Creates a server from the previously created container.
+  o failOnContainers   Testing on unexisting containers.
+  o deleteContainer    Deletes the previously created container.
 
 EOF
     exit 1
@@ -137,6 +139,12 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    cat <<EOF
+  This test will simply register a container server and check that the operation
+  was indeed successful (the s9s returns with 0). Then the state and the type of
+  the registered server is checked.
+
+EOF
 
     #
     # Creating a container.
@@ -238,6 +246,98 @@ function checkServer()
         fi
     done
     IFS="$old_ifs"
+}
+
+function checkServerAccess()
+{
+    local container_name="ft_containers_lxc_xx_$$"    
+    local line
+    local retcode
+
+    print_title "Checking the Access to the Server"
+    cat <<EOF
+  Checking the access to the newly registered container server. Checked with the
+  owner and an outsider.
+
+EOF
+
+    # With the owner...
+    mys9s server --list --long
+    line=$(s9s server --list --long | tail -n1)
+
+    check_exit_code_no_job $?
+    if echo "$line" | grep --quiet "1 server"; then
+        success "  o Owner can see the server, ok."
+    else
+        failure "Owner can't see the server."
+    fi
+    
+    # With an outsider...
+    mys9s server --list --long --cmon-user="grumio" --password="p"
+    line=$(s9s server --list --long --cmon-user="grumio" --password="p" \
+        | tail -n1)
+    
+    check_exit_code_no_job $?    
+    if echo "$line" | grep --quiet "0 server"; then
+        success "  o Outsiders can't see the server, ok."
+    else
+        failure "Outsider can see the server."
+    fi
+
+    #
+    #
+    #
+    print_title "Checking the Access to the Containers"
+    cat <<EOF
+  Checking the access to the container list on the newly registered container
+  server. Tested with the user and with an outsider too.
+
+EOF
+
+    mys9s container --list --long
+    line=$(s9s container --list --long | tail -n1)
+
+    check_exit_code_no_job $?
+    if echo "$line" | grep --quiet " 0 container"; then
+        failure "Owner can't see the containers."
+    else
+        success "  o Owner can see the containers, ok."
+    fi
+    
+    # With an outsider...
+    mys9s container --list --long --cmon-user="grumio" --password="p"
+    line=$(s9s container --list --long --cmon-user="grumio" --password="p" \
+        | tail -n1)
+    
+    check_exit_code_no_job $?    
+    if echo "$line" | grep --quiet " 0 container"; then
+        success "  o Outsiders can't see the containers, ok."
+    else
+        warning "Outsider can see the containers."
+    fi
+
+    #
+    #
+    #
+    print_title "Checking that Outsiders can not Create Containers"
+    mys9s container \
+        --create \
+        --template=ubuntu \
+        --servers=$CONTAINER_SERVER \
+        --cmon-user="grumio" \
+        --password="p" \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$container_name"
+   
+    retcode=$?
+
+    if [ "$retcode" -eq 0 ]; then
+        warning "Outsiders should not be able to create a container."
+        mys9s container --delete "$container_name" --cmon-user=grumio --password=p --log
+    else
+        success "  o Outsider can't create a container, ok."
+    fi
 }
 
 #
@@ -632,6 +732,7 @@ function restartContainer()
 function createServer()
 {
     local class
+    local retcode
 
     if [ -z "$CONTAINER_IP" ]; then
         return 0
@@ -670,6 +771,26 @@ function createServer()
     # Unregistering.
     #
     print_title "Unregistering Server"
+    cat <<EOF
+  Unregistering the server. First an outsider tries to unregister it, that
+  should fail, but then the owner does it and that should secceed.
+
+EOF
+
+    mys9s server \
+        --unregister \
+        --servers="lxc://$CONTAINER_IP" \
+        --cmon-user="grumio" \
+        --password="p"
+
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o Outsiders can't unregister the server, ok."
+    else
+        failure "Outsider should not be able to unregister the server."
+    fi
+
+    # And the owner should be able...    
     mys9s server --unregister --servers="lxc://$CONTAINER_IP"
 
     check_exit_code_no_job $?
@@ -687,7 +808,7 @@ function failOnContainers()
     print_title "Trying to Manipulate Unexisting Containers"
 
     #
-    #
+    # Trying to delete a container that does not exists.
     #
     mys9s container \
         --delete \
@@ -698,11 +819,12 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while deleting unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
     
     #
-    #
+    # Trying to stop a container that does not exists.
     #
     mys9s container \
         --stop \
@@ -713,11 +835,12 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while stopping unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
     
     #
-    #
+    # Trying to start a container that does not exists.
     #
     mys9s container \
         --start \
@@ -728,7 +851,8 @@ function failOnContainers()
     retcode=$?
     if [ $retcode -eq 0 ]; then
         failure "Reporting success while starting unexsiting container."
-        exit 1
+    else
+        success "  o Command failed, ok."
     fi
 }
 
@@ -889,15 +1013,19 @@ if [ "$OPTION_INSTALL" ]; then
             runFunctionalTest "$testName"
         done
     else
+        runFunctionalTest testCreateOutsider
         runFunctionalTest registerServer
+        runFunctionalTest checkServerAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest checkServer
+    runFunctionalTest checkServerAccess
 
     runFunctionalTest createContainer
     runFunctionalTest createAsSystem

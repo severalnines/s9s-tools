@@ -1441,6 +1441,182 @@ S9sVariant::clear()
     m_type = Invalid;
 }
 
+/**
+ * \param depth The recursion depth in the data structure beginning with 0 and
+ *   growing bigger as we go into maps and lists.
+ * \param formatFlags The flags controlling the format of the Json string.
+ * \returns The Json string representing the data.
+ *
+ * This is a new way of converting data to Json strings. 
+ */
+S9sString
+S9sVariant::toJsonString(
+        int                   depth,
+        const S9sFormatFlags &formatFlags) const
+{
+    S9sString retval;
+   
+    if (formatFlags & S9sFormatColor)
+        retval += ansiColor();
+
+    switch (m_type)
+    {
+        case Invalid:
+            retval += "null";
+            break;
+
+        case Bool:
+            retval += toString();
+            break;
+
+        case Int:
+        case Double:
+        case Ulonglong:
+            retval += toString();
+            break;
+
+        case String:
+            retval += quote(toString(), formatFlags);
+            break;
+
+        case List:
+            retval += toVariantList().toJsonString(depth, formatFlags);
+            break;
+        
+        case Map:
+            retval += toVariantMap().toJsonString(depth, formatFlags);
+            break;
+
+        case Node:
+        case Container:
+        case Account:
+            retval += toVariantMap().toJsonString(depth, formatFlags);
+            break;
+    }
+           
+    if (formatFlags & S9sFormatColor)
+        retval += TERM_NORMAL;
+
+    //retval += typeName();
+
+    return retval;
+}
+
+/**
+ *
+ */
+S9sString
+S9sVariant::indent(
+        int depth,
+        const S9sFormatFlags &formatFlags)
+{
+    S9sString retval;
+   
+    if (formatFlags & S9sFormatIndent)
+    {
+        for (int n = 0; n < depth; ++n)
+            retval += "  ";
+    }
+
+    return retval;
+}
+
+/**
+ * Helper function to quote a string according to the Json standards.
+ */
+S9sString
+S9sVariant::quote(
+        const S9sString &s,
+        const S9sFormatFlags &formatFlags)
+{
+    S9sString   retval;
+    const char *colorBegin  = "";
+    const char *colorEnd    = "";
+
+    if (formatFlags & S9sFormatColor)
+    {
+        colorBegin = "\033[35m";
+        colorEnd   = "\033[38;5;40m";
+    }
+
+    retval += '"';
+
+    for (uint idx = 0; idx < s.length(); ++idx)
+    {
+        if (s[idx] == '"') 
+        {
+            retval += '\\';
+            retval += '"';
+        } else if (s[idx] == '\n') 
+        {
+            retval += colorBegin;
+            retval += "\\n";
+            retval += colorEnd;
+        } else if (s[idx] == '\r') 
+        {
+            retval += colorBegin;
+            retval += "\\r";
+            retval += colorEnd;
+        } else if (s[idx] == '\t') 
+        {
+            retval += colorBegin;
+            retval += "\\t";
+            retval += colorEnd;
+        } else if (s[idx] == '\\') 
+        {
+            retval += colorBegin;
+            retval += "\\\\";
+            retval += colorEnd;
+        } else 
+        {
+            retval += s[idx];
+        }
+    }
+
+    retval += '"';
+    return retval;
+}
+
+/**
+ * \returns An ANSI terminal coloring sequence based on the type of the variant.
+ * 
+ */
+const char *
+S9sVariant::ansiColor() const
+{
+    switch (m_type)
+    {
+        case Invalid:
+            return "\033[38;5;9m";
+
+        case Bool:
+            return "\033[95m";
+
+        case Int:
+            return "\033[93m";
+
+        case Ulonglong:
+            return "\033[93m";
+
+        case Double:
+            return "\033[93m";
+
+        case String:
+            return "\033[38;5;40m";
+
+        case Map:
+        case List:
+            return "";
+
+        case Node:
+        case Container:
+        case Account:
+            return "\033[38;5;13m";
+    }
+
+    return "\033[38;5;196m";
+}
+
 bool 
 S9sVariant::fuzzyCompare(
         const double first, 

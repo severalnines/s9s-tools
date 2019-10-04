@@ -480,6 +480,7 @@ class S9sOptions
         bool isAddNodeRequested() const;
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;
+        bool isUsr1Requested() const;
         bool isStartRequested() const;
         bool isFailoverRequested() const;
         bool isRestartRequested() const;

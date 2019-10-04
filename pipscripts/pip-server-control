@@ -55,9 +55,10 @@ Usage:
   --wake               Start the server.
 
   --long               Print detailed/long list.
+  --print-containers   Print the permanent containers on the server.
+  --print-files        Print the config files of the servers. 
   --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
-  --print-files        Print file names instead of names.
 
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
@@ -83,7 +84,7 @@ ARGS=$(\
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
 list,wake,shut-down,ping,\
-print-files,user:,wait,all,\
+print-files,print-containers,user:,wait,all,\
 disabled,idle,offline,protected,testing" \
         -- "$@")
 
@@ -170,6 +171,11 @@ while true; do
         --print-files)
             shift
             OPTION_PRINT_FILES="true"
+            ;;
+
+        --print-containers)
+            shift
+            OPTION_PRINT_CONTAINERS="true"
             ;;
 
         --idle)
@@ -458,19 +464,22 @@ function ping_server()
 
 function print_header()
 {
-    echo -en $TERM_BOLD
+    local extra_title
 
+    echo -en $TERM_BOLD
+    
     if [ -n "$OPTION_PRINT_FILES" ]; then
-    cat <<EOF
-SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    CONFIG_FILE
---------------------------------------------------------------------------------
-EOF
+        extra_title="CONFIG_FILE"
+    elif [ -n "$OPTION_PRINT_CONTAINERS" ]; then
+        extra_title="PERMANENT_CONTAINERS"
     else
+        extra_title="DESCRIPTION"
+    fi
+
     cat <<EOF
-SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    DESCRIPTION
+SERVER     GROUP    CORES  MEM    DISK CN   LOAD STATUS    $extra_title
 --------------------------------------------------------------------------------
 EOF
-    fi
 
     echo -en $TERM_NORMAL
 }
@@ -506,6 +515,7 @@ function download_current_data()
 {
     local root_dir=$SERVER_STAT_ROOT
 
+    printVerbose "Downloading current data from $SERVER_STAT_URL..."
     if [ ! -d "$root_dir" ]; then
         printVerbose "Creating directory '$root_dir'."
         mkdir -p "$root_dir"
@@ -539,6 +549,9 @@ function fileAgeInSeconds()
     echo $((`date +%s` - `stat -L --format %Y $1` ))
 }
 
+#
+# This is where we print the detailed list.
+#
 function print_host_list_long()
 {
     local config_file
@@ -546,6 +559,7 @@ function print_host_list_long()
     local category
     local name
 
+    printVerbose "Printing detailed list..."
     print_header
 
     for config_file in $HOME/.pip/*.host; do
@@ -567,6 +581,7 @@ function print_host_list_long()
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
         CONF_HOST_PDU=""
+        CONF_HOST_CONTAINERS=""
 
         HOSTNAME=""
         NUMBER_OF_CORES="0"
@@ -668,17 +683,22 @@ function print_host_list_long()
             printf "%-9s " "$HOST_STATUS"
         fi
 
-        if [ -z "$OPTION_PRINT_FILES" ]; then
-            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
-        else
+        if [ -n "$OPTION_PRINT_FILES" ]; then
             tmp=$(echo "$config_file" | sed -e "s#$HOME/#~/#g")
             printf "$FILE_COLOR%s$TERM_NORMAL"     "$tmp"
+        elif [ -n "$OPTION_PRINT_CONTAINERS" ]; then
+            printf "%s" "$CONF_HOST_CONTAINERS"
+        else
+            printf "$COMMENT_COLOR%s$TERM_NORMAL"  "$STATUS_TEXT"
         fi
 
         printf "\n"
     done
 }
 
+#
+# This is where we print the brief list of hosts.
+#
 function print_host_list_brief()
 {
     local config_file
@@ -686,6 +706,7 @@ function print_host_list_brief()
     local category
     local name
 
+    printVerbose "Printing brief list."
     for config_file in $HOME/.pip/*.host; do
         if [ ! -f "$config_file" ]; then
             continue
@@ -705,6 +726,7 @@ function print_host_list_brief()
         CONF_HOST_PROTECTED=""
         CONF_HOST_URL=""
         CONF_HOST_VIRTUAL=""
+        CONF_HOST_CONTAINERS=""
 
         HOSTNAME=""
         NUMBER_OF_CORES=""
@@ -764,8 +786,17 @@ function print_host_list_brief()
         let SUM_MEMORY+=MEMORY_GIGABYTES
 
         [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
-        
-        printf "%s\n"  "$device_name"
+       
+        if [ -n "$OPTION_PRINT_FILES" ]; then
+            tmp=$(echo "$config_file" | sed -e "s#$HOME/#~/#g")
+            printf "%s\n"     "$tmp"
+        elif [ -n "$OPTION_PRINT_CONTAINERS" ]; then
+            for container in $(echo "$CONF_HOST_CONTAINERS" | tr ',' ' '); do
+                printf "$container\n"
+            done
+        else             
+            printf "%s\n"  "$device_name"
+        fi
     done
 }
 
@@ -789,6 +820,7 @@ function wake_all()
 }
 
 if [ -n "$LIST_OPTION" ]; then
+    printVerbose "Listing servers..."
     download_current_data
     
     if [ -n "$LONG_OPTION" ]; then

@@ -15,6 +15,7 @@ LAST_CONTAINER_NAME=""
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -203,6 +204,76 @@ function createCluster()
     return 0
 }
 
+function testStatAccess()
+{
+    print_title "Checking who has Access to Statistical Data"
+
+    s9s node \
+        --stat \
+        --cluster-id="1" \
+        --density \
+        --graph="sqlqueries" \
+        --cmon-user=grumio \
+        --password=p
+
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should not have access to statistical data."
+    else
+        success "  o Outsiders have no access to stats, ok."
+    fi
+    
+    s9s node \
+        --stat \
+        --cluster-id="10" \
+        --density \
+        --graph="sqlqueries" 
+
+    if [ $? -eq 0 ]; then
+        failure "Unexisting cluster should not return 0."
+    else
+        success "  o Unexisting cluster ID returns error, ok."
+    fi
+    
+    s9s node \
+        --stat \
+        --cluster-name="$CLUSTER_NAME" \
+        --density \
+        --graph="sqlqueries" 
+
+    if [ $? -ne 0 ]; then
+        failure "Referencing the cluster by name should work."
+    else
+        success "  o Unexisting cluster name returns error, ok."
+    fi
+    
+    s9s node \
+        --stat \
+        --cluster-name="NO_SUCH_CLUSTER" \
+        --density \
+        --graph="sqlqueries" 
+
+    if [ $? -eq 0 ]; then
+        failure "Non-existing cluster name should not return 0."
+    else
+        success "  o Unexisting cluster returns error, ok."
+    fi
+
+    s9s node \
+        --stat \
+        --cluster-name="$CLUSTER_NAME" \
+        --density \
+        --graph="sqlqueries" \
+        --cmon-user=grumio \
+        --password=p
+
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should not have access to statistical data."
+    else
+        success "  o Outsiders have no access to stats, ok."
+    fi
+
+}
+
 function testGraphs()
 {
     local graphs
@@ -274,16 +345,26 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest registerServer
-    runFunctionalTest checkServer
-    runFunctionalTest createCluster
+    if [ "$1" ]; then
+        for testName in $*; do
+            runFunctionalTest "$testName"
+        done
+    else
+        runFunctionalTest testCreateOutsider
+        runFunctionalTest registerServer
+        runFunctionalTest createCluster
+        runFunctionalTest testStatAccess
+        runFunctionalTest testGraphs
+    fi
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest testStatAccess
     runFunctionalTest testGraphs
     runFunctionalTest deleteContainer
 fi

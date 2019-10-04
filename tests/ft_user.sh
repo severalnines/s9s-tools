@@ -18,6 +18,7 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -1667,6 +1668,7 @@ else
     runFunctionalTest testCmonGroup
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
+    runFunctionalTest testCreateOutsider
     runFunctionalTest testSystemUsers
     runFunctionalTest testFailNoGroup
     runFunctionalTest testFailWrongPassword
@@ -1681,7 +1683,7 @@ else
     runFunctionalTest testWeirdChar
     runFunctionalTest testDeleteGroup
     runFunctionalTest checkPasswordReset
-
+    
     print_title "Finished"
     mys9s user --list --long
 fi

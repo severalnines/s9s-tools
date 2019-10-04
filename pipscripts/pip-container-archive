@@ -9,11 +9,14 @@ CONTAINER=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 STOP_OPTION=""
-OUTPUT_DIR=""
-OUTPUT_DIR_OPTION=""
-OWNER=""
-STORAGE_URL=""
 GZIP_OPTION=""
+
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
 
 #
 # Prints the software version and exits.
@@ -21,58 +24,6 @@ GZIP_OPTION=""
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)." >&2
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR  $(hostname) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR  $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printWarning()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "WARNING $(hostname) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring WARNING $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" ]; then
-        echo -e "DEBUG   $(hostname) $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG   $(hostname) $MYNAME $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -83,19 +34,19 @@ Usage:
 
   $MYNAME - Creates archives of containers.
 
- -h, --help             Print this help and exit.
- -v, --version          Print version information and exit.
- --verbose              Print more messages.
- --log-file=FILE        Store all the messages in the given file too.
- --server=SERVER        Create the container on remote server.
- --stop                 Stop containers that are running.
- --output-dir=DIRECTORY The directory where the archive files go.
- --owner=USERNAME       Sets the owner of the resulting archive files.
- --storage=URL          The place where the file will be uploaded.
- --gzip                 Compress the archive with gzip.
+  -h, --help             Print this help and exit.
+  -v, --version          Print version information and exit.
+  --verbose              Print more messages.
+  --log-file=FILE        Store all the messages in the given file too.
+  --server=SERVER        Create the container on remote server.
+  --stop                 Stop containers that are running.
+  --gzip                 Compress the archive with gzip.
+
+  --auto                 Execute automatic archiving of a given server.
 
 EXAMPLES:
-  pip-container-archive --server=$server --gzip --verbose "$container"
+  pip-container-archive --server=core1 --gzip --verbose "www"
+  pip-container-archive --auto --server=core1 --verbose
 
 EOF
     exit 0
@@ -104,8 +55,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,stop,output-dir:,owner:,\
-storage:,gzip" \
+        -l "help,verbose,version,log-file:,server:,stop,\
+auto,gzip" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -148,25 +99,9 @@ while true; do
             STOP_OPTION="--stop"
             ;;
 
-        --output-dir)
+        --auto)
             shift
-            OUTPUT_DIR="$(readlink -m "$1")"
-            OUTPUT_DIR_OPTION="--output-dir=\"$1\""
-            shift
-            ;;
-
-        --owner)
-            shift
-            OWNER="$1"
-            OWNER_OPTION="--owner=\"$1\""
-            shift
-            ;;
-
-        --storage)
-            shift
-            STORAGE_URL="$1"
-            STORAGE_OPTION="--storage=\"$1\""
-            shift
+            AUTO_OPTION="true"
             ;;
 
         --gzip)
@@ -191,7 +126,7 @@ CONTAINER="$1"
 #
 # Checking the command line options.
 #
-if [ -z "$CONTAINER" -a -z "$VERSION_OPTION" ]; then
+if [ -z "$CONTAINER" -a -z "$VERSION_OPTION" -a -z "$AUTO_OPTION" ]; then
     printError "The first argument should be the name of the container."
     exit 6
 fi
@@ -218,12 +153,6 @@ function archive_file_name()
 
     if [ "$GZIP_OPTION" ]; then
         tar_file_name+=".gz"
-    fi
-
-    if [ "$OUTPUT_DIR" ]; then
-        tar_file_name="$OUTPUT_DIR/$tar_file_name"
-    else
-        tar_file_name="/var/lib/lxc/$tar_file_name"
     fi
 
     echo "$tar_file_name"
@@ -274,8 +203,7 @@ function archive_one_container()
     fi
         
     #
-    # Archiving into the $OUTPUT_DIR or into /var/lib/lxc if the output dir is
-    # not set.
+    # Archiving into the /var/lib/lxc/ directory.
     #
     cd /var/lib/lxc
 
@@ -303,28 +231,6 @@ function archive_one_container()
     fi
 
     #
-    #
-    #
-#    if [ "$OWNER" ]; then
-#        target_dir="/home/$OWNER"
-#        printVerbose "Moving file to '$target_dir/$tar_basename'."
-#        mv "$tar_file_name" "$target_dir"
-#        chown "$OWNER:$OWNER" "$target_dir/$tar_basename"
-#    fi
-
-    if [ "$STORAGE_URL" ]; then
-        # If we have a storage URL we upload the archive file there.
-        if [ "$OWNER" ]; then
-            sudo -S -u $OWNER -i \
-                /bin/bash -l -c \
-                    "scp \"$tar_file_name\" \"$STORAGE_URL\""
-        else
-            scp "$tar_file_name" "$STORAGE_URL"
-        fi
-
-    fi
-
-    #
     # If we stopped the container, we start it again.
     #
     if [ "$stopped" ]; then
@@ -346,7 +252,6 @@ function check_one_container()
 
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
-            #printWarning "Container '$container' is running (no --stop option)."
             retval=0
         fi
     elif [ "$state" == "STOPPED" ]; then
@@ -386,16 +291,11 @@ function archive_all_containers()
 }
 
 #
-# Doing the job.
+# This is kinda normal operation...
+#   pip-container-archive --server=core1 --gzip --verbose "www"
 #
-if [ -z "$SERVER" ]; then
-    if [ "$VERSION_OPTION" ]; then
-        printVersionAndExit
-        exit 0
-    else
-        archive_all_containers "$EXTRA_OPTIONS"
-    fi
-else
+function create_archive_normal()
+{
     #
     # We received the --server option and so we run the script on a remote
     # server.
@@ -404,30 +304,143 @@ else
     $SSH $SERVER -- \
         sudo $MYNAME \
             $GZIP_OPTION \
-            $VERSION_OPTION $VERBOSE_OPTION \
-            $STOP_OPTION $OUTPUT_DIR_OPTION \
-            $OWNER_OPTION $STORAGE_OPTION \
+            $VERSION_OPTION \
+            $VERBOSE_OPTION \
+            $STOP_OPTION \
             "$EXTRA_OPTIONS"
 
     if [ -n "$SERVER" -a -z "$VERSION_OPTION" ]; then
         for container in $EXTRA_OPTIONS; do
-            tar_file_name="$(archive_file_name "$container")"
+            tar_file_name="/var/lib/lxc/$(archive_file_name "$container")"
             tar_basename="$(basename "$tar_file_name")"
+
             printVerbose "Downloading $tar_file_name"
             printVerbose "  to $tar_basename"
             $SSH $SERVER -- \
                 "sudo cat $tar_file_name" >$tar_basename
         done
     fi
+}
 
-#    if [ "$SERVER" ]; then
-#        for container in $EXTRA_OPTIONS; do
-#            tar_file_name="$(archive_file_name "$container")"
-#            tar_basename="$(basename "$tar_file_name")"
-#            scp \
-#                "$SERVER:$tar_basename" \
-#                .
-#        done
-#    fi
+function create_backup_dir()
+{
+    local server=$1
+    local n=5
+    local nplusone=6
+
+    if [ -z "$server" ]; then
+        printError "create_backup_dir(): Expected server name."
+        exit 1
+    fi
+
+    if [ -d "${server}.${nplusone}" ]; then
+        rm -rf "${server}.${nplusone}"
+    fi
+
+    while true; do
+        if [ $n -eq 0 ]; then
+            break
+        fi
+
+        if [ -d "${server}.${n}" ]; then
+            mv "${server}.${n}" "${server}.${nplusone}"
+        fi
+
+        let nplusone-=1
+        let n-=1
+    done
+
+    if [ -d "$server" ]; then
+        mv "${server}" "${server}.1"
+    fi
+
+    mkdir "$server"
+}
+
+function create_archive_auto_server()
+{
+    local server="$1"
+    local target_dir
+    local containers
+    local container
+    local n_containers
+
+    # Checking arguments.
+    printVerbose "Executing in auto mode..."
+    if [ -z "$server" ]; then
+        printError "create_archive_auto_server(): Expected server name."
+        exit 1
+    fi
+
+    # Finding the target directory.
+    target_dir="$HOME/archives"
+    if [ ! -d "$target_dir" ]; then
+        printError "Directory '$target_dir' is not found..."
+        return 1
+    fi
+
+    # Entering the target directory.
+    printVerbose "Entering directory '$target_dir'..."
+    pushd "$target_dir" 2>/dev/null >/dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to enter directory '$target_directory'."
+        return 1
+    fi
+
+    # Finding out which containers we need to archive.
+    containers=$(pip-server-control --list --print-containers "$server")
+    n_containers=0
+    for container in $containers; do
+        let n_containers+=1
+    done
+
+    if [ $n_containers -gt 0 ]; then
+        printVerbose "Will archive $n_containers container(s)..."
+    else
+        printError "No containers in the server's config file."
+        return 1
+    fi
+
+    # Creating and entering the backup directory for the server.
+    create_backup_dir "$server"
+    
+    printVerbose "Entering directory '$target_dir'..."
+    pushd "$server" 2>/dev/null >/dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to enter directory '$server'."
+        return 1
+    fi
+
+    # Now we can archive the containers one by one.
+    for container in $containers; do
+        printVerbose "Archiving $container in $PWD"
+        pip-container-archive --server=$server --gzip --verbose "$container"
+    done
+
+    popd 2>/dev/null >/dev/null
+    popd 2>/dev/null >/dev/null
+}
+
+function create_archive_auto()
+{
+    local server
+
+    for server in $(echo $SERVER | tr ',' ' '); do
+        create_archive_auto_server "$server"
+    done
+}
+
+#
+# Doing the job.
+#
+if [ "$VERSION_OPTION" ]; then
+    printVersionAndExit
+    exit 0
+elif [ -z "$SERVER" ]; then
+    archive_all_containers "$EXTRA_OPTIONS"
+elif [ -n "$AUTO_OPTION" ]; then
+    create_archive_auto
+else
+    create_archive_normal
 fi
 

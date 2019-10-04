@@ -50,6 +50,7 @@ SUPPORTED TESTS:
   o testStopStartNode    Stopping then starting a node.
   o testConfig           Reading and changing the configuration.
   o testConfigFail       Testing configuration changes that should fail.
+  o testConfigAccess     Checks that outsiders has no access to node config.
   o testCreateDatabase   Creates database and account.
   o testCreateAccount01  Create an account on the cluster.
   o testCreateAccount02  Create and check more accounts on the cluster.
@@ -565,22 +566,23 @@ function testConfig()
     local value
 
     print_title "Checking Configuration"
+    cat <<EOF
+  This test will read and write the configuration of a PostgreSQL node in the
+  newly created cluster.
+
+EOF
 
     #
-    # Listing the configuration values. The exit code should be 0.
+    # Listing the configuration values of a postgresql node. The exit code 
+    # should be 0.
     #
     mys9s node --stat "$FIRST_ADDED_NODE"
 
     mys9s node \
         --list-config \
-        --nodes=$FIRST_ADDED_NODE \
-        >/dev/null
+        --nodes=$FIRST_ADDED_NODE 
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
 
     #
     # Changing a configuration value.
@@ -592,10 +594,7 @@ function testConfig()
         --opt-name=log_line_prefix \
         --opt-value="'%m'"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
     
     #
     # Reading the configuration back. This time we only read one value.
@@ -606,20 +605,33 @@ function testConfig()
             --opt-name=log_line_prefix \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    mys9s node \
+            --batch \
+            --list-config \
+            --opt-name=log_line_prefix \
+            --nodes=$FIRST_ADDED_NODE
 
-    #if [ "$value" != "'%m'" ]; then
-    #    failure "Configuration value should not be '$value'"
-    #fi
+    check_exit_code_no_job $?
+
+    echo "Value is $value"
+    if [ "$value" != "'%m'" ]; then
+        failure "Configuration value should not be '$value'"
+    else
+        success "  o The value is $value, ok."
+    fi
 
     #
     # Pulling a configuration file from a node to the local host.
     #
+    print_title "Pulling the PostgreSql Config File"
+    cat <<EOF
+  This test will pull the configuration file from a PostgreSql node to the
+  local computer.
+
+EOF
+
     rm -rf tmp
+
     mys9s node \
         --pull-config \
         --nodes=$FIRST_ADDED_NODE \
@@ -632,11 +644,73 @@ function testConfig()
         success "  o File 'tmp/postgresql.conf' is found, ok."
     fi
 
-    rm -rf tmp
+    if grep -q data_directory tmp/postgresql.conf; then
+        success "  o The downloaded file seems to be ok."
+    else
+        failure "The downloaded file seems to be incomplete."
+        cat tmp/postgresql.conf | print_ini_file
+    fi
 
+    rm -rf tmp
+}
+
+function testConfigAccess()
+{
+    local retCode
+
+    print_title "Testing Node Config Access Rights"
+    cat <<EOF
+  This test will create an unprimivileged user and try to access the host
+  configuration using this new user. The access for both read and write should
+  be denied by the controller.
+
+EOF
+    #
+    # Creating an outsider user.
+    #
+    mys9s user \
+        --create \
+        --cmon-user=system \
+        --password=secret \
+        --group="staff" \
+        --create-group \
+        --generate-key \
+        --new-password="p" \
+        drevil
+    
+    check_exit_code_no_job $?
+
+    #
+    # Checking the read access.
+    #
     mys9s node \
         --list-config \
+        --cmon-user="drevil" \
         --nodes=$FIRST_ADDED_NODE 
+
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        warning "The user should not have read access to the configuration."
+    else
+        success "  o User has no read access to configuration, ok."
+    fi
+    
+    #
+    # Checking the write access.
+    #
+    mys9s node \
+        --change-config \
+        --cmon-user="drevil" \
+        --nodes=$FIRST_ADDED_NODE \
+        --opt-name=log_line_prefix \
+        --opt-value="'some'"
+    
+    retCode=$?
+    if [ $retCode -eq 0 ]; then
+        warning "The user should not have read access to the configuration."
+    else
+        success "  o User has no write access to configuration, ok."
+    fi
 }
 
 function testConfigFail()
@@ -1225,6 +1299,7 @@ else
 
     runFunctionalTest testConfig
     runFunctionalTest testConfigFail
+    runFunctionalTest testConfigAccess
 
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateAccount01

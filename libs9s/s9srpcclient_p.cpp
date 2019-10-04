@@ -333,7 +333,13 @@ S9sRpcClientPrivate::read(
     if (m_ssl)
     {
         //s9s_log("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
-        retval = SSL_read(m_ssl, buffer, bufSize);
+        do {
+            retval = SSL_read(m_ssl, buffer, bufSize);
+
+            loopCount += 1;
+            if (loopCount > 10)
+                break;
+        } while (retval == -1 && errno == EAGAIN);
     } else {
         do {
             //s9s_log("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);

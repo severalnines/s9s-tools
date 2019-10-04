@@ -102,6 +102,20 @@ S9sBusinessLogic::execute()
             success = client.getDatabases();
             reply = client.reply();
             reply.printDatabaseList();
+            client.setExitStatus();
+        } else if (options->isListConfigRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getClusterConfig();
+            reply = client.reply();
+            reply.printExtendedConfig();
+            client.setExitStatus();
+        } else if (options->isChangeConfigRequested())
+        {
+            success = client.setClusterConfig();
+            client.printMessages("OK.", success);
+            client.setExitStatus();      
         } else if (options->isCheckHostsRequested())
         {
             client.checkHosts();
@@ -303,7 +317,9 @@ S9sBusinessLogic::execute()
             executeConfigList(client);
         } else if (options->isChangeConfigRequested())
         {
-            executeSetConfig(client);
+            success = client.setConfig();
+            client.printMessages("OK.", success);
+            client.setExitStatus();  
         } else if (options->isPullConfigRequested())
         {
             executePullConfig(client);
@@ -381,7 +397,7 @@ S9sBusinessLogic::execute()
                 reply.printObjectTree();
             } else {
                 if (options->isJsonRequested())
-                    printf("%s\n", STR(reply.toString()));
+                    reply.printJsonFormat();
                 else
                     PRINT_ERROR("%s", STR(client.errorString()));
             }
@@ -406,7 +422,8 @@ S9sBusinessLogic::execute()
 
             success = client.getObject();
             reply = client.reply();
-            printf("%s\n", STR(reply.toString()));
+
+            reply.printJsonFormat();
             client.setExitStatus();
         } else if (options->isWatchRequested())
         {
@@ -760,6 +777,7 @@ S9sBusinessLogic::execute()
                 options->isListDatabasesRequested())
         {
             executeBackupList(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createBackup();
@@ -803,16 +821,26 @@ S9sBusinessLogic::execute()
             maybeJobRegistered(client, clusterId, success);
         } else {
             PRINT_ERROR("Unknown backup operation.");
+            options->setExitStatus(S9sOptions::BadOptions);
         }
     } else if (options->isAlarmOperation())
     {
-        if (options->isListRequested() || options->isStatRequested())
+        if (options->isListRequested())
         {
             S9sRpcReply reply;
             
             client.getAlarms();
+            client.setExitStatus();
             reply = client.reply();
             reply.printAlarmList();
+        } else if (options->isStatRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getAlarmStatistics();
+            client.setExitStatus();
+            reply = client.reply();
+            reply.printAlarmStatistics();
         } else if (options->isDeleteRequested())
         {
             success = client.ignoreAlarm();
@@ -926,6 +954,7 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeAccountList(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createAccount();
@@ -946,6 +975,7 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
+            options->setExitStatus(S9sOptions::BadOptions);
         }
     } else if (options->isMaintenanceOperation())
     {
@@ -988,6 +1018,7 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
 
             client.getReports();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReportList();
         } else if (options->isListTemplatesRequested())
@@ -995,12 +1026,14 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
 
             client.getReportTemplates();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReportTemplateList();
         } else if (options->isCreateRequested())
         {
-            success = client.generateReport();
             S9sRpcReply reply;
+            success = client.generateReport();
+            client.setExitStatus();
 
             reply = client.reply();
             reply.printReport();
@@ -1009,6 +1042,7 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
             
             success = client.getReport();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReport();
         } else if (options->isDeleteRequested())
@@ -1101,12 +1135,12 @@ again:
         {
             // well, nothing now
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 reply.printPing();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
 
@@ -1114,7 +1148,7 @@ again:
         }
     } else {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(client.errorString()));
             
@@ -1148,7 +1182,7 @@ S9sBusinessLogic::executeScriptTree(
         reply.printScriptTree();
     } else {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
@@ -1174,7 +1208,7 @@ S9sBusinessLogic::executeClusterList(
         reply.printClusterList();
     } else {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
@@ -1202,6 +1236,8 @@ S9sBusinessLogic::executeNodeGraph(
     }
 
     success = client.getStats(clusterId, S9sCmonGraph::statName(graphTemplate));
+    client.setExitStatus();
+
     if (success)
     {
         reply = client.reply();
@@ -1211,7 +1247,7 @@ S9sBusinessLogic::executeNodeGraph(
             reply.printGraph();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1234,6 +1270,8 @@ S9sBusinessLogic::executeNodeList(
     bool        success;
 
     success = client.getClusters();
+    client.setExitStatus();
+
     if (success)
     {
         reply = client.reply();
@@ -1244,7 +1282,7 @@ S9sBusinessLogic::executeNodeList(
             reply.printNodeList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1265,8 +1303,9 @@ S9sBusinessLogic::executeConfigList(
     S9sRpcReply reply;
     bool        success;
 
-
     success = client.getConfig(options->nodes());
+    client.setExitStatus();            
+    
     if (success)
     {
         reply = client.reply();
@@ -1277,7 +1316,7 @@ S9sBusinessLogic::executeConfigList(
             reply.printConfigList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1343,7 +1382,7 @@ S9sBusinessLogic::executePullConfig(
     if (!success)
     {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(reply.errorString()));
 
@@ -1369,12 +1408,12 @@ S9sBusinessLogic::executeMaintenanceList(
         if (success)
         {
             if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 reply.printMaintenanceList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1399,12 +1438,12 @@ S9sBusinessLogic::executeMetaTypeList(
         if (success)
         {
             if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 reply.printMetaTypeList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1430,62 +1469,18 @@ S9sBusinessLogic::executeMetaTypePropertyList(
         if (success)
         {
             if (options->isJsonRequested())
-                printf("\n%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 reply.printMetaTypePropertyList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
-}
-
-/**
- * \param client A client for the communication.
- */
-void 
-S9sBusinessLogic::executeSetConfig(
-        S9sRpcClient &client)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    S9sRpcReply     reply;
-    S9sVariantList  hosts;
-    S9sString       optName;
-    bool            success;
-
-    hosts = options->nodes();
-    if (hosts.empty())
-    {
-        options->printError(
-                "Node list is empty while setting configuration.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-    
-    optName = options->optName();
-    if (optName.empty())
-    {
-        options->printError(
-                "Configuration option name is not provided.\n"
-                "Use the --opt-name command line option to provide"
-                " a configuration option name."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return;
-    }
-
-    success = client.setConfig(hosts);
-
-    client.printMessages("OK.", success);
-    client.setExitStatus();            
 }
 
 /**
@@ -1779,7 +1774,7 @@ S9sBusinessLogic::executeJobList(
             reply.printJobList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1797,16 +1792,19 @@ S9sBusinessLogic::executeLogList(
     bool        success;
 
     success = client.getLog();
+    client.setExitStatus();
+
     if (success)
     {
         reply = client.reply();
         success = reply.isOk();
+        
         if (success)
         {
             reply.printLogList();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1841,7 +1839,7 @@ S9sBusinessLogic::executeJobLog(
             reply.printJobLog();
         } else {
             if (options->isJsonRequested())
-                printf("%s\n", STR(reply.toString()));
+                reply.printJsonFormat();
             else
                 PRINT_ERROR("%s", STR(reply.errorString()));
         }
@@ -1851,6 +1849,11 @@ S9sBusinessLogic::executeJobLog(
 }
 }
 
+/**
+ * This method should be called when we sent a request that supposed to create a
+ * new job. If a new job is indeed created this will take care of monitoring the
+ * job, if not, the error will be also handled here.
+ */
 void
 S9sBusinessLogic::maybeJobRegistered(
         S9sRpcClient &client,
@@ -1860,17 +1863,23 @@ S9sBusinessLogic::maybeJobRegistered(
     S9sOptions    *options = S9sOptions::instance();
     S9sRpcReply    reply;
 
-    if (success)
+    //S9S_WARNING("success: %s", success ? "true" : "false");
+    client.setExitStatus();
+
+    if (success/* && client.reply().requestStatus() == S9sRpcReply::Ok*/)
     {
         jobRegistered(client, clusterId);
     } else {
         reply = client.reply();
-
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
-        else
+        {
+            reply.printJsonFormat();
+        } else {
             PRINT_ERROR("%s", STR(client.errorString()));
-    }    
+        }
+    
+        client.setExitStatus();
+    }
 }
 
 
@@ -1906,7 +1915,7 @@ S9sBusinessLogic::jobRegistered(
         }
     } else {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(reply.errorString()));
     }
@@ -1968,7 +1977,7 @@ S9sBusinessLogic::waitForJobWithProgress(
             nFailures = 0;
         } else {
             PRINT_ERROR("%s", STR(reply.errorString()));
-            printf("\n\n%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
             ++nFailures;
             if (nFailures > 3)
                 break;
@@ -1981,7 +1990,7 @@ S9sBusinessLogic::waitForJobWithProgress(
         if (options->isJsonRequested())
         {
             reply     = client.reply();
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         
             fflush(stdout); 
             finished = reply.progressLine(progressLine, syntaxHighlight);
@@ -2038,8 +2047,6 @@ S9sBusinessLogic::waitForJobWithProgress(
 
         if (reply.isJobFailed())
             options->setExitStatus(S9sOptions::JobFailed);
-
-        //printf("%s", STR(reply.toString()));
 
         fflush(stdout);
         sleep(1);
@@ -2132,8 +2139,6 @@ S9sBusinessLogic::waitForJobWithLog(
                 PRINT_ERROR("Error while getting job log.");
             }
 
-
-            //printf("\n\n%s\n", STR(reply.toString()));
             ++nFailures;
             if (nFailures > 3)
                 break;
@@ -2644,14 +2649,14 @@ S9sBusinessLogic::executeMaintenanceCreate(
     {
         if (options->isJsonRequested())
         {
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         } else if (!options->isBatchRequested()) 
         {
             printf("%s\n", STR(reply.uuid()));
         }
     } else {
         if (options->isJsonRequested())
-            printf("%s\n", STR(reply.toString()));
+            reply.printJsonFormat();
         else
             PRINT_ERROR("%s", STR(client.errorString()));
     }
