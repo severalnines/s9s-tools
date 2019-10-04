@@ -309,6 +309,8 @@ EOF
 function testAlarms()
 {
     local container_name1="${MYBASENAME}_11_$$"
+    local line
+
     print_title "Checking Alarms"
     cat <<EOF
   Testing alarms. This test will first stop a container that holds a database
@@ -325,6 +327,7 @@ EOF
 
     mysleep 45
 
+    # Check active alarms with the owner using the cluster ID.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
     if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
@@ -333,6 +336,7 @@ EOF
         failure "Owner can't see the alarm?"
     fi
 
+    # Active alarms, owner, no cluster ID.
     mys9s alarm --list --long 
     check_exit_code $?
     if s9s alarm --list --long | grep -q "disconnected"; then
@@ -341,17 +345,37 @@ EOF
         failure "Owner can't see the alarm?"
     fi
 
+    # Active alarms, outsider, cluster ID is provided.
     mys9s alarm --list --long --cluster-id=1 --cmon-user=grumio --password=p
     if [ $? -eq 0 ]; then
         failure "Outsiders should get false return value."
     else
         success "  o Outsiders get false return value, ok."
     fi
-    
+   
+    # Checking stats.
+    mys9s alarm --stat --cluster-id=1
+    if [ $? -eq 0 ]; then
+        success "  o Owner gets a true return value on stats, ok."
+    else
+        failure "Owner got a false return value on stats."
+    fi
+
+    mys9s alarm --stat --cluster-id=1 --cmon-user="grumio" --password="p"
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should get false return value on stats."
+    else
+        success "  o Outsiders get false return value on stats, ok."
+    fi
+
+    #
+    # Starting the node, waiting for a while, alarms should disappear.
+    #
     s9s container --start --wait "$container_name1"
     check_exit_code $?
     mysleep 120
 
+    # No alarms, owner, cluster ID provided.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
     if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
@@ -359,6 +383,7 @@ EOF
     else
         success "  o Alarm disappeared, ok."
     fi
+
 
     mys9s alarm --list --long 
     check_exit_code $?

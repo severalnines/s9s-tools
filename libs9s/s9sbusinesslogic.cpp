@@ -1018,6 +1018,7 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
 
             client.getReports();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReportList();
         } else if (options->isListTemplatesRequested())
@@ -1025,12 +1026,14 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
 
             client.getReportTemplates();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReportTemplateList();
         } else if (options->isCreateRequested())
         {
-            success = client.generateReport();
             S9sRpcReply reply;
+            success = client.generateReport();
+            client.setExitStatus();
 
             reply = client.reply();
             reply.printReport();
@@ -1039,6 +1042,7 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply;
             
             success = client.getReport();
+            client.setExitStatus();
             reply = client.reply();
             reply.printReport();
         } else if (options->isDeleteRequested())

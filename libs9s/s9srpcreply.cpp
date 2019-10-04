@@ -603,6 +603,9 @@ S9sRpcReply::printReportList()
     if (options->isJsonRequested())
     {
         printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
     } else {
         printReportListLong();
     }
@@ -3364,7 +3367,26 @@ S9sRpcReply::printReportTemplateListBrief()
 void
 S9sRpcReply::printAlarmStatistics()
 {
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
         printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        S9sVariantList theList = operator[]("alarm_statistics").toVariantList();
+        for (size_t idx = 0u; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap theMap = theList[idx].toVariantMap();
+            int clusterId = theMap["cluster_id"].toInt();
+            int critical  = theMap["critical"].toInt();
+            int warning   = theMap["warning"].toInt();
+
+            ::printf("%d,%d,%d\n", clusterId, critical, warning);
+        }
+    }
 }
 
 void

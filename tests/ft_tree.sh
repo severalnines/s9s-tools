@@ -1152,6 +1152,9 @@ function testConfigController()
         awk '{print $2}')
 }
 
+#
+# FIXME: There is an other, a better test for this in ft_cluster_lxc.sh.
+#
 function testAlarmAccess()
 {
     local retCode
@@ -1164,8 +1167,8 @@ function testAlarmAccess()
     mys9s alarm \
         --list \
         --long \
-        --cmon-user="grumio" \
-        --password="p"
+        --cluster-id=1 \
+        --cmon-user="grumio" 
 
     retCode=$?
     if [ "$retCode" -eq 0 ]; then
@@ -1174,6 +1177,65 @@ function testAlarmAccess()
         success "  o Outsider can not see the alarms, ok."
     fi
 }
+
+function testReportAccess()
+{
+    print_title "Checking Report Creation and Privileges"
+
+    #
+    # Checking the creating of accounts.
+    #
+    mys9s report --create --type=testreport --cluster-id=1
+    mys9s report --create --type=report1    --cluster-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can create a report, ok."
+    else
+        failure "The owner should be able to create a report."
+    fi
+    
+    mys9s report --create --type=testreport --cluster-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to create reports."
+    else
+        success "  o Outsider can not create a report, ok."
+    fi
+
+    #
+    #
+    #
+    mys9s report --list --long --cluster-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can see the reports, ok."
+    else
+        failure "The owner should be able to see the reports."
+    fi
+
+    mys9s report --list --long --cluster-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to see reports."
+    else
+        success "  o Outsider can not see the repports, ok."
+    fi
+
+    #
+    #
+    #
+    mys9s report --delete --report-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to delete reports."
+    else
+        success "  o Outsider can not delete report, ok."
+    fi
+
+    mys9s report --delete --report-id=2 
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can delete a report, ok."
+    else
+        failure "The owner should be able to delete a report."
+    fi
+}
+
+
 
 function testAccountAccess()
 {
@@ -1664,6 +1726,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testDatabaseAccess
         runFunctionalTest testBackupAccess
         runFunctionalTest testAlarmAccess
+        runFunctionalTest testReportAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1686,6 +1749,7 @@ else
     runFunctionalTest testDatabaseAccess
     runFunctionalTest testBackupAccess
     runFunctionalTest testAlarmAccess
+    runFunctionalTest testReportAccess
     runFunctionalTest testCreateAccount
     runFunctionalTest testAccountAccess
     runFunctionalTest testMoveObjects
