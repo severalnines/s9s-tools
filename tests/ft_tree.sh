@@ -1201,7 +1201,7 @@ function testReportAccess()
     fi
 
     #
-    #
+    # Listing reports by cluster ID.
     #
     mys9s report --list --long --cluster-id=1
     if [ "$?" -eq 0 ]; then
@@ -1214,11 +1214,28 @@ function testReportAccess()
     if [ "$?" -eq 0 ]; then
         warning "Outsiders should not be able to see reports."
     else
-        success "  o Outsider can not see the repports, ok."
+        success "  o Outsider can not see the reports, ok."
     fi
 
     #
+    # Viewing the report text.
     #
+    mys9s report --cat --report-id=1
+    if [ "$?" -eq 0 ]; then
+        success "  o The owner can see the reports, ok."
+    else
+        failure "The owner should be able to see the reports."
+    fi
+
+    mys9s report --cat --report-id=1 --cmon-user=grumio
+    if [ "$?" -eq 0 ]; then
+        warning "Outsiders should not be able to see reports."
+    else
+        success "  o Outsider can not see the reports, ok."
+    fi
+
+    #
+    # Deleting reports.
     #
     mys9s report --delete --report-id=1 --cmon-user=grumio
     if [ "$?" -eq 0 ]; then

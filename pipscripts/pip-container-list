@@ -8,48 +8,19 @@ LOGFILE=""
 SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
 #
 # Prints the software version and exits.
 #
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
-}
-
-#
-# $*: the error message
-#
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$MYNAME($$) $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "$MYNAME($$) $*" >&2
-    fi
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE"
-    fi
 }
 
 function printHelpAndExit()
@@ -60,11 +31,11 @@ Usage:
 
   $MYNAME - .
 
- -h, --help           Print this help and exit.
- -v, --version        Print version information and exit.
- --verbose            Print more messages.
- --log-file=FILE      Store all the messages in the given file too.
- --server=SERVER      List the containers on remote server.
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+  --server=SERVER      List the containers on remote server.
 
 EOF
     exit 0
@@ -120,8 +91,65 @@ while true; do
     esac
 done
 
+function host_name()
+{
+    local ip="$1"
+    local name
+
+    if [ -z "$ip" -o "$ip" == "-" ]; then
+        echo "-"
+        return 1
+    fi
+
+    name=$(nslookup "$ip" | grep "name = " | awk '{print $4}')
+    if [ -z "$name" ]; then
+        name="-"
+    fi
+
+    echo "$name"
+}
+
+function list_containers_long()
+{
+    local oldIfs="$IFS"
+    local lines
+
+    lines=$($SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME)
+    IFS=$'\n'
+    for line in $lines; do
+        name=$(echo $line | awk '{print $1}')
+        state=$(echo $line | awk '{print $2}')
+        autostart=$(echo $line | awk '{print $3}')
+        ip=$(echo $line | awk '{print $5}')
+        dns_name=$(host_name "$ip")
+
+        if [ "$state" == "RUNNING" ]; then
+            printf "$CONTAINER_COLOR%-24s$TERM_NORMAL " $name
+        else
+            printf "$CONTAINER_COLOR_STOPPED%-24s$TERM_NORMAL " $name
+        fi
+
+        if [ "$ip" != "-" ]; then
+            printf "$IP_COLOR%-16s$TERM_NORMAL " $ip
+        else
+            printf "$ERR_COLOR%-16s$TERM_NORMAL " $ip
+        fi
+
+        if [ "$dns_name" != "-" ]; then
+            printf "$OK_COLOR%-20s$TERM_NORMAL " $dns_name
+        else
+            printf "$ERR_COLOR%-20s$TERM_NORMAL " $dns_name
+        fi
+
+        printf "\n"
+    done
+    IFS=$oldIfs
+}
+
 if [ -z "$SERVER" ]; then
-    lxc-ls --fancy | grep -v NAME
-else
-    $SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME
+    printError "Server name is not provided."
+    printError "Use the --server command line option to set the server name."
+    exit 6
 fi
+
+list_containers_long

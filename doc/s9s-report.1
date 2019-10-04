@@ -16,6 +16,15 @@ following:
 
 .TP
 .B --cat
+Prints the report text to the standard output.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --cat \\
+    --report-id=1 \\
+    --cluster-id=1
+.fi
 
 .TP
 .B --create
@@ -42,6 +51,18 @@ should be used to specify which report to delete.
 s9s report \\
     --delete \\
     --report-id=1
+.fi
+
+.TP
+.B --list
+Lists the reports that already created.
+
+.B EXAMPLE
+.nf
+s9s report \\
+    --list \\
+    --long \\
+    --cluster-id=1
 .fi
 
 .TP

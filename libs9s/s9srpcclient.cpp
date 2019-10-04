@@ -1901,7 +1901,6 @@ S9sRpcClient::generateReport()
 
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
-    // "testreport", "default", "availability", "backup"
     reportMap["report_type"] = reportType;
     reportMap["recipients"]  = "laszlo@severalnines.com";
     reportMap["text_format"] = "AnsiTerminal";
@@ -1927,12 +1926,15 @@ S9sRpcClient::getReport()
     int            reportId  = options->reportId();
     S9sString      uri = "/v2/reports/";
     S9sVariantMap  request;
+    S9sVariantMap  reportMap;
 
     // Building the request.
-    // FIXME: This is different from the deleteReport...
+    reportMap["class_name"]  = "CmonReport";
+    reportMap["text_format"] = "AnsiTerminal";
+    reportMap["report_id"]   = reportId;
 
     request["operation"]     = "getReport";
-    request["report_id"]     = reportId;
+    request["report"]        = reportMap;
 
     if (options->hasClusterIdOption())
     {
