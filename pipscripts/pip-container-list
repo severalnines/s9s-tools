@@ -109,8 +109,19 @@ function host_name()
     echo "$name"
 }
 
+function print_header()
+{
+    cat <<EOF
+CONTAINER_NAME           IP               DNS_NAME
+-------------------------------------------------------------------------------
+EOF
+
+}
+
 function list_containers_long()
 {
+    print_header
+
     local oldIfs="$IFS"
     local lines
 
