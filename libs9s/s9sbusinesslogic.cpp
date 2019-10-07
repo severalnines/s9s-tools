@@ -1127,7 +1127,9 @@ S9sBusinessLogic::executePing(
 
 again:
     success = client.ping();
-    options->setExitStatus(S9sOptions::Failed);
+    
+    options->setExitStatus(S9sOptions::ExitOk);
+    client.setExitStatus();
 
     if (success)
     {
