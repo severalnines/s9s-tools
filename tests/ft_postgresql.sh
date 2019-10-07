@@ -386,6 +386,16 @@ EOF
 EOF
 
     #print_log_messages
+    log_format+='%I '
+    log_format+='%c '
+    log_format+='${/log_specifics/job_instance/job_spec/command} '
+    log_format+='\n'
+
+    mys9s log --list \
+        --log-format="$log_format" \
+        --cmon-user=system \
+        --password=secret \
+        --cluster-id=0
 
     # The JobStarted log message.
     message_id=$(get_log_message_id \

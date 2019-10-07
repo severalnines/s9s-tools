@@ -723,6 +723,7 @@ function get_log_message_id()
     local lines
     local log_format
     local job_class
+    local cluster_id=0
 
     while true; do
         case "$1" in 
@@ -751,7 +752,11 @@ function get_log_message_id()
     log_format+='${/log_specifics/job_instance/job_spec/command} '
     log_format+='\n'
 
-    lines=$(s9s log --list --log-format="$log_format")
+    lines=$(s9s log --list \
+        --log-format="$log_format" \
+        --cluster-id="$cluster_id" \
+        --cmon-user=system \
+        --password=secret)
 
     if [ -n "$job_command" ]; then
         lines=$(echo "$lines" | awk "\$3 == \"$job_command\" { print \$0 }")
@@ -770,7 +775,8 @@ function check_log_message()
     local format_string
     local expected_value
     local value
-
+    local cluster_id=0
+    
     while true; do
         case "$1" in 
             --message-id)
@@ -803,10 +809,21 @@ function check_log_message()
             break
         fi
 
-        value=$(s9s \
-            log --list --long \
+        mys9s log \
+            --list --long \
             --log-format="$format_string" \
-            --message-id="$message_id")
+            --message-id="$message_id" \
+            --cmon-user="system" \
+            --password="secret" \
+            --cluster-id="$cluster_id"
+
+        value=$(s9s log \
+            --list --long \
+            --log-format="$format_string" \
+            --message-id="$message_id" \
+            --cmon-user="system" \
+            --password="secret" \
+            --cluster-id="$cluster_id")
 
         if [ "$value" == "$expected_value" ]; then
             success "  o Value for '$format_string' is '$value', ok."
