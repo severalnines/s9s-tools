@@ -829,6 +829,7 @@ S9sRpcClient::setClusterConfig()
 bool
 S9sRpcClient::ping()
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
     S9sString      uri = "/v2/clusters/";
@@ -837,6 +838,14 @@ S9sRpcClient::ping()
 
     request["operation"]       = "ping";
     request["request_created"] = timeString;
+    
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
     
     retval = executeRequest(uri, request);
 
@@ -1919,6 +1928,9 @@ S9sRpcClient::generateReport()
     return executeRequest(uri, request);
 }
 
+/**
+ * Gets one specific report by the record ID.
+ */
 bool
 S9sRpcClient::getReport()
 {
