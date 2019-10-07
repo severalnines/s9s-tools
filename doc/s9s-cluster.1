@@ -185,8 +185,20 @@ s9s cluster \\
 .fi
 
 .TP
-.B \-\-ping
-Check the connection to the controller.
+.B --ping
+Check the connection to the controller. This will send a request to the
+controller, the controller will check that he cluster exists and reply a message
+with some information about the cluster and the controller. Then the s9s program
+will calculate the message turnaround time and print it. The \fB--wait\fP option
+can be used to set the pinging into continuous mode.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --ping \\
+    --cluster-id=1 \\
+    --wait
+.fi
 
 .TP
 .B \-\-promote\-slave
@@ -196,7 +208,7 @@ possible.
 
 .B EXAMPLE:
 .nf
-pipas@t7500:tests$ s9s cluster \\
+s9s cluster \\
     --promote-slave \\
     --nodes=192.168.0.151 \\
     --cluster-id=1 \\

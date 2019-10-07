@@ -1163,18 +1163,25 @@ S9sRpcReply::printJobLog()
     }
 }
 
+/**
+ * This method will print the reply for a ping request.
+ */
 void
-S9sRpcReply::printPing()
+S9sRpcReply::printPing(
+        int &sequenceIndex)
 {
     S9sString requestStatus;
     S9sString requestCreated, replyReceived;
+    static double    minimum;
+    static double    maximum;
+    static double    average;
 
     printDebugMessages();
 
     if (contains("requestStatus"))
-        requestStatus = at("requestStatus").toString().toUpper();
+        requestStatus = at("requestStatus").toString();
     else if (contains("request_status"))
-        requestStatus = at("request_status").toString().toUpper();
+        requestStatus = at("request_status").toString();
     else 
         requestStatus = "UNKNOWN";
 
@@ -1195,12 +1202,27 @@ S9sRpcReply::printPing()
         {
             double millisec = S9sDateTime::milliseconds(end, start);
 
-            printf("%.3f ms", millisec);
-            #if 0
-            printf("\n");
-            printf("%s\n", STR(requestCreated));
-            printf("%s\n", STR(replyReceived));
-            #endif
+            printf("%3.0f ms", millisec);
+            if (sequenceIndex == 0)
+            {
+                minimum = millisec;
+                maximum = millisec;
+                average = millisec;
+            } else {
+                if (minimum > millisec)
+                    minimum = millisec;
+
+                if (maximum < millisec)
+                    maximum = millisec;
+
+                average += millisec;
+                average /= 2.0;
+
+                ::printf(" min/avg/max=%.0f/%.0f/%.0f ms", 
+                        minimum, average, maximum);
+            }
+
+            sequenceIndex++;
         }
     }
 

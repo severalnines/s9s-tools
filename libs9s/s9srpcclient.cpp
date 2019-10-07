@@ -836,6 +836,7 @@ S9sRpcClient::ping()
     S9sVariantMap  request;
     bool           retval;
 
+    S9S_DEBUG("*** request_created: %s", STR(timeString));
     request["operation"]       = "ping";
     request["request_created"] = timeString;
     
@@ -8454,7 +8455,6 @@ S9sRpcClient::doExecuteRequest(
     /*
      * Reading the reply from the server.
      */
-    replyReceived = S9sDateTime::currentDateTime();
     m_priv->clearBuffer();
     
     for (;;)
@@ -8589,6 +8589,7 @@ S9sRpcClient::doExecuteRequest(
         return false;
     }
 
+    replyReceived = S9sDateTime::currentDateTime();
     if (!m_priv->m_reply.parse(STR(m_priv->m_jsonReply)))
     {
         PRINT_VERBOSE("Error in reply: \n%s\n", STR(m_priv->m_jsonReply));

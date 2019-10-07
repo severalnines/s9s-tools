@@ -1123,29 +1123,22 @@ S9sBusinessLogic::executePing(
     bool         continuous = options->isWaitRequested();
     S9sRpcReply  reply;
     bool         success;
+    int          sequenceIndex = 0;
 
 again:
     success = client.ping();
+    options->setExitStatus(S9sOptions::Failed);
+
     if (success)
     {
         reply = client.reply();
 
         success = reply.isOk();
-        if (success)
-        {
-            // well, nothing now
-            if (options->isJsonRequested())
-                reply.printJsonFormat();
-            else
-                reply.printPing();
-        } else {
-            if (options->isJsonRequested())
-                reply.printJsonFormat();
-            else
-                PRINT_ERROR("%s", STR(reply.errorString()));
-
-            options->setExitStatus(S9sOptions::Failed);
-        }
+            
+        if (options->isJsonRequested())
+            reply.printJsonFormat();
+        else
+            reply.printPing(sequenceIndex);
     } else {
         if (options->isJsonRequested())
             reply.printJsonFormat();
@@ -1157,7 +1150,7 @@ again:
 
     if (continuous)
     {
-        usleep(500000);
+        usleep(1000000);
         goto again;
     }
 }
