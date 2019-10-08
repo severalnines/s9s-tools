@@ -22,6 +22,7 @@ JOB_ID="0"
 
 cd $MYDIR
 source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -149,25 +150,6 @@ while true; do
             ;;
     esac
 done
-
-#
-#
-#
-function testPing()
-{
-    print_title "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-    fi
-}
 
 function testUpload()
 {

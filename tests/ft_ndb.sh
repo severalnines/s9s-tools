@@ -18,7 +18,8 @@ CONTAINER_SERVER=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -108,28 +109,6 @@ while true; do
             ;;
     esac
 done
-
-#
-#
-#
-function testPing()
-{
-    print_title "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-        failure "The controller is off line. Further testing is not possible."
-    else
-        failure "The controller is on line."
-    fi
-}
 
 #
 # This test will allocate a few nodes and install a new cluster.

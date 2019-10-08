@@ -1,4 +1,25 @@
 #
+# Pings the controller to check if it is up.
+#
+function testPing()
+{
+    print_title "Pinging Controller."
+
+    #
+    # Pinging. 
+    #
+    mys9s cluster --ping --cluster-id=0 --cmon-user=system --password=secret
+
+    exitCode=$?
+    printVerbose "exitCode = $exitCode"
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while pinging controller."
+    else
+        success "  o Cluster replied to ping, ok."
+    fi
+}
+
+#
 # Creates a secondary controller on which we can test the controller change
 # use-case.
 #

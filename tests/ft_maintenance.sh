@@ -15,6 +15,7 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+source shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -112,27 +113,6 @@ reset_config
 function dateFormat()
 {
     TZ=GMT date -d "$1" "+%Y-%m-%dT%H:%M:%S.000Z"
-}
-
-#
-#
-#
-function testPing()
-{
-    print_title "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-    else
-        success "The controller is on line."
-    fi
 }
 
 #

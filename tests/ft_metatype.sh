@@ -15,7 +15,8 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -116,30 +117,6 @@ function index_table()
 
         let counter+=1
     done
-}
-
-#
-#
-#
-function testPing()
-{
-    print_title "Pinging controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster \
-        --ping \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-    else
-        success "The controller is on line."
-    fi
 }
 
 #

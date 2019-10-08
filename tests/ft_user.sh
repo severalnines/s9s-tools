@@ -128,32 +128,6 @@ function index_table()
 }
 
 #
-# Pinging the controller without authenticating.
-#
-function testPing()
-{
-    print_title "Pinging controller."
-    cat <<EOF
-Checking if the controller is on-line and can be connected.
-EOF
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster \
-        --ping \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE >/dev/null
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-    else
-        success "  o The controller is on line, ok."
-    fi
-}
-
-#
 # Checking that the current user (created in grant_user()) can log in and can
 # view its own public key.
 #

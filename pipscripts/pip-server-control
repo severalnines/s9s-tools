@@ -5,7 +5,7 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.5"
 VERBOSE=""
-LOGFILE="$HOME/.pip/${MYNAME}.log"
+LOGFILE=""
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
 OPTION_USER="pipas"
@@ -325,6 +325,7 @@ function wake_server()
     local macAddress
     local pdu
     local config_file
+    local output
 
     if [ -z "$hostName" ]; then
         return 1
@@ -384,8 +385,10 @@ expect eof
 EOF
         chmod +x "$file"
         
-        $file
+        output=$($file)
+        printWarning "output: $output"
         if [ $? -ne 0 ]; then
+            printWarning "The $file exited with error."
             sleep 5
             $file
         fi

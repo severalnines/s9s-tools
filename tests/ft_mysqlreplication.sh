@@ -19,7 +19,8 @@ nodes=""
 
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -138,26 +139,6 @@ while true; do
             ;;
     esac
 done
-
-#
-#
-#
-function testPing()
-{
-    print_title "Pinging Controller"
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller"
-        exit 1
-    fi
-}
 
 #
 # This test will allocate a few nodes and install a new cluster.

@@ -180,25 +180,6 @@ function ssh_to_controller()
 }
 
 #
-# Pings the controller to check if it is up.
-#
-function testPing()
-{
-    print_title "Pinging Controller."
-
-    #
-    # Pinging. 
-    #
-    mys9s cluster --ping 
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while pinging controller."
-    fi
-}
-
-#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateGalera()
