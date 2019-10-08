@@ -323,7 +323,7 @@ EOF
     check_entry \
         --user         "system"     \
         --group        "admins"     \
-        --acl          "grwxrw----" \
+        --acl          "grwxrwx---" \
         "/groups/TOS"
 
     check_entry \
