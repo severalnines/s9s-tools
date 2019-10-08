@@ -12,6 +12,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 export S9S_SYSTEM_CONFIG="/tmp/cmon_etc/s9s.conf"
+export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
 
 cd $MYDIR
 source include.sh
@@ -140,7 +141,8 @@ function testUser()
 # Running the requested tests.
 #
 startTests
-reset_config --do-not-create
+#reset_config --do-not-create
+create_s9s_config
 
 if [ "$1" ]; then
     for testName in $*; do
