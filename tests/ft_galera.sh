@@ -176,7 +176,7 @@ function testPing()
     #
     # Pinging. 
     #
-    mys9s cluster --ping 
+    mys9s cluster --ping --cluster-id=0 --cmon-user=system --password=secret
 
     exitCode=$?
     printVerbose "exitCode = $exitCode"

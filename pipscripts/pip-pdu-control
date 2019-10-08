@@ -16,7 +16,6 @@ PDU_SERVER=""
 PDU_OUTLETS="all"
 PDU_OPERATION="on"
 
-MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
 SUM_DEVICES=0
 PINGED_DEVICES=0
@@ -28,6 +27,14 @@ else
     echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
     exit 5
 fi
+
+printVerbose "USER = $USER"
+printVerbose "HOME = $HOME"
+
+[ -z "$USER" ] && export USER="pipas"
+[ -z "$HOME" ] && export HOME="/home/pipas"
+
+MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
 #
 # SonOTA: 
@@ -349,7 +356,7 @@ function switch_apc()
     case "$PDU_OPERATION" in
         on|off)
             for outlet in $outlets; do
-                printVerbose "Switching outlet $outlet $PDU_OPERATION"
+                printVerbose "Switching outlet $outlet of ${CONF_PDU_SERVER} ${PDU_OPERATION}."
                 [ "$PDU_OPERATION" == "on" ]  && value=1
                 [ "$PDU_OPERATION" == "off" ] && value=2
                 
@@ -362,6 +369,7 @@ function switch_apc()
                     PowerNet-MIB::sPDUOutletCtl.$outlet integer $value \
                     >/dev/null 2>/dev/null    
                 
+                printVerbose "mosquitto_pub -u \"$MQTT_USER\" -P \"$MQTT_PASSWORD\" -h \"$MQTT_SERVER\" -t \"stat/${CONF_PDU_SERVER}_$outlet/POWER\" -m \"$PDU_OPERATION\""
                 mosquitto_pub \
                     -u "$MQTT_USER" \
                     -P "$MQTT_PASSWORD" \

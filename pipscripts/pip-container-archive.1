@@ -1,0 +1,50 @@
+.TH PIP-SERVER-CONTROL 1 "August 10, 2019"
+.SH NAME
+pip-container-archive - Command line tool to archive containers.
+.SH SYNOPSIS
+.B pip-container-archive
+.RI [OPTION]...
+.RI [CONTAINER_NAME]...
+
+.SH INTRODUCTION
+This man page is incomplete, it only describes the automatic archiving...
+
+.SH OPTIONS
+.SS "Main Option"
+The main options control what the program will do. The main options are one of
+the following:
+
+.TP
+.B --auto
+Creates archives of the containers on the specified server using the default
+settings of the host.
+
+.B EXAMPLE
+
+Let's say there is a file \fB~/.pip/core1.host\fP that contains the following 
+lines:
+
+.nf
+#
+# Server settings for core1.
+#
+CONF_HOST_NAME="core1"
+CONF_HOST_CATEGORY="Cores"
+CONF_HOST_STANDARD="server"
+CONF_HOST_MAC=""
+CONF_HOST_PROTECTED="true"
+CONF_HOST_CONTAINERS="nodered,dns1,mqtt,www,git,ldap,zoneminder"
+.fi
+
+In this file the \fBCONF_HOST_CONTAINERS\fP value holds the names of the
+containers on the host that are important, permanent and will be archived.
+
+Let's say the \fB~/archives/\fP directory exists. This directory will hold the
+archive files of the containers.
+
+Then the following command will archive these containers into the a
+sub-directory under the \fB~/archives/\fP path:
+
+.nf
+$ pip-container-archive --auto --server=core1 
+.fi
