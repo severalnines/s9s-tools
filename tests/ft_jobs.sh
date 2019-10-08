@@ -106,8 +106,7 @@ So now we wait for a few seconds.
 
 EOF
 
-    #my_command sleep 10
-    #sleep 10
+    mysleep 15
 
     #
     #
