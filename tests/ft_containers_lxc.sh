@@ -746,7 +746,7 @@ function createServer()
     mys9s server \
         --create \
         --servers="lxc://$CONTAINER_IP" \
-        $LOG_OPTION \ 
+        $LOG_OPTION \
         $DEBUG_OPTION 
 
     check_exit_code $?
