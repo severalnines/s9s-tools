@@ -22,15 +22,16 @@ function printHelpAndExit()
 {
 cat <<EOF
 Usage:
-  $MYNAME [OPTION]... [CONTAINER_NAME]...
+  $MYNAME [OPTION]... [TEXT_TO_SAY]
 
-  $MYNAME - Creates and starts containers.
+  $MYNAME - Text to speech tool.
 
   -h, --help           Print this help and exit.
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
   --server=SERVER      Create the container on remote server.
+
   --beep               Emit a beep sound.
   --alert              Amit an alert sound.
 
@@ -233,7 +234,3 @@ else
         sudo $MYNAME $OPTIONS 2>/dev/null &
 fi
 
-#
-# I just want to notice the message before the caller continues to do things.
-#
-# sleep 3

@@ -17,6 +17,7 @@ PROVIDER_VERSION="10.2"
 
 cd $MYDIR
 source include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -28,14 +29,14 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
 
  $MYNAME - Test script for s9s to check Galera on LXC.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --print-json     Print the JSON messages sent and received.
- --log            Print the logs while waiting for the job to be ended.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the server and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --server=SERVER  Use the given server to create containers.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --print-json     Print the JSON messages sent and received.
+  --log            Print the logs while waiting for the job to be ended.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the server and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
   o registerServer   Creates a new cmon-cloud container server. 
