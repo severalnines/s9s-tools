@@ -4361,12 +4361,6 @@ S9sRpcClient::addReplicationSlave(
         bool           isMaster = node.property("master").toBoolean();
         bool           isSlave = node.property("slave").toBoolean();
 
-        S9S_DEBUG("[%02u] %5s %s", 
-                idx, 
-                isMaster ? "true" : "false",
-                isSlave  ? "true" : "false",
-                STR(node.hostName()));
-
         if (isSlave)
         {
             nSlaves += 1;
@@ -4982,7 +4976,7 @@ S9sRpcClient::stopNode()
 {
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
-    S9sVariantList hosts     = options->nodes();
+    S9sVariantList nodes     = options->nodes();
     S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job       = composeJob();
     S9sVariantMap  jobData   = composeJobData();
@@ -4990,17 +4984,17 @@ S9sRpcClient::stopNode()
     S9sNode        node;
     bool           retval;
     
-    if (hosts.size() != 1u)
+    if (nodes.size() != 1u)
     {
         PRINT_ERROR("To stop a node exactly one node must be specified.");
         return false;
     } else {
-        node = hosts[0].toNode();
+        node = nodes[0].toNode();
     }
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
-    jobData["node"]       = hosts[0].toVariantMap();
+    jobData["node"]       = nodes[0].toVariantMap();
      
     if (options->force())
         jobData["force_stop"] = true;
@@ -5021,6 +5015,56 @@ S9sRpcClient::stopNode()
 
     return retval;
 }
+
+/**
+ *
+ * { "command": "enable_binary_logging",  "job_data": { "auto_restart": "yes", "expire_logs_days": "1", "master_address": "10.10.10.20:3306" }}
+ */
+bool
+S9sRpcClient::enableBinaryLogging()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList nodes     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sNode        node;
+    bool           retval;
+    
+    if (nodes.size() != 1u)
+    {
+        PRINT_ERROR("To enable binary logging one node must be specified.");
+        return false;
+    } else {
+        node = nodes[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]        = clusterId;
+    //jobData["node"]       = nodes[0].toVariantMap();
+    jobData["master_address"]   = nodes[0].toNode().hostName();
+    jobData["auto_restart"]     = true;
+    jobData["expire_logs_days"] = 1;
+     
+    // The jobspec describing the command.
+    jobSpec["command"]    = "enable_binary_logging";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Enable Binary Logging";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest("/v2/jobs/", request);
+
+    return retval;
+}
+
 
 bool
 S9sRpcClient::setNodeReadOnly()

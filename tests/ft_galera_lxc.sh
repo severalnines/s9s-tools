@@ -1,7 +1,7 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYBASENAME=$(basename $0 .sh)
-MYDIR=$(dirname $0)
+MYNAME=$(basename "$0")
+MYBASENAME=$(basename "$0" .sh)
+MYDIR=$(dirname "$0")
 VERBOSE=""
 VERSION="0.0.3"
 

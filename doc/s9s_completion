@@ -467,7 +467,8 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "node" ]]; then
             main_opt+="--help "
-            main_opt+="--change-config --list-config --list --pull-config "
+            main_opt+="--change-config --enable-binary-logging --list-config "
+            main_opt+="--list --pull-config "
             main_opt+="--push-config --register --restart --set "
             main_opt+="--set-read-only --set-read-write --start --stat "
             main_opt+="--stop --unregister "

@@ -351,7 +351,11 @@ S9sBusinessLogic::execute()
         } else if (options->isSetReadOnlyRequested())
         {
             success = client.setNodeReadOnly();
-            maybeJobRegistered(client, clusterId, success); 
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isEnableBinaryLogging())
+        {
+            success = client.enableBinaryLogging();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetReadWriteRequested())
         {
             success = client.setNodeReadWrite();

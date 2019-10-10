@@ -16,6 +16,47 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B --change-config
+Change configuration values for the given node.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --change-config \\
+    --nodes="192.168.0.72" \\
+    --opt-name="max_connections" \\
+    --opt-group="MYSQLD" \\
+    --opt-value="200"
+.fi
+
+.TP
+.B --enable-binary-logging
+Creates a job to enable the binary logging on a specific node. Not all clusters
+support this feature (MySQL does). One need to enable binary logging in order to
+set up cluster to cluster replication.
+
+.B EXAMPLE
+.nf
+s9s nodes \\
+    --enable-binary-logging \\
+    --nodes="192.168.0.227" \\
+    --cluster-id="1" \\
+    --log 
+.fi
+
+.TP
+.B \-\-list\-config
+List the configuration values for the given node.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --list-config \\
+    --nodes="192.168.0.72" \\
+    'max*'
+.fi
+
+.TP
 .B \-L, \-\^\-list
 List the nodes managed by the controller.
 
@@ -23,6 +64,21 @@ List the nodes managed by the controller.
 .nf
 s9s node --list --long
 .fi
+
+.TP
+.B \-\-pull\-config
+Copy the configuration file(s) from the node to the local computer. Use the 
+\fB\-\-output\-dir\fP to control where the files will be created.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --pull-config \\
+    --nodes="192.168.0.232" \\
+    --output-dir="tmp" \\
+    --batch 
+.fi
+
 
 .TP
 .B \-\-restart
@@ -106,46 +162,6 @@ s9s node \\
     --cluster-id=1 \\
     --nodes=192.168.0.78 \\
     --log
-.fi
-
-.TP
-.B \-\-list\-config
-List the configuration values for the given node.
-
-.B EXAMPLE
-.nf
-s9s node \\
-    --list-config \\
-    --nodes="192.168.0.72" \\
-    'max*'
-.fi
-
-.TP
-.B \-\-change\-config
-Change configuration values for the given node.
-
-.B EXAMPLE
-.nf
-s9s node \\
-    --change-config \\
-    --nodes="192.168.0.72" \\
-    --opt-name="max_connections" \\
-    --opt-group="MYSQLD" \\
-    --opt-value="200"
-.fi
-
-.TP
-.B \-\-pull\-config
-Copy the configuration file(s) from the node to the local computer. Use the 
-\fB\-\-output\-dir\fP to control where the files will be created.
-
-.B EXAMPLE
-.nf
-s9s node \\
-    --pull-config \\
-    --nodes="192.168.0.232" \\
-    --output-dir="tmp" \\
-    --batch 
 .fi
 
 .\"

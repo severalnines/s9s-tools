@@ -1197,6 +1197,23 @@ function proxysql_node_name()
 
 function galera_node_name()
 {
+    local cluster_id=""
+    local cluster_id_option=""
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster-id)
+                cluster_id="$2"
+                cluster_id_option=" --cluster-id=$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
     s9s node --list --long --batch | \
         grep '^g' | \
         head -n1  | \

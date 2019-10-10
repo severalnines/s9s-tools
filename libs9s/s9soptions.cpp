@@ -328,6 +328,7 @@ enum S9sOptionType
     OptionSetReadOnly,
     OptionSetReadWrite,
 
+    OptionEnableBinaryLogging,
     OptionUsr1,
 };
 
@@ -4146,10 +4147,23 @@ S9sOptions::isImportConfigRequested() const
     return getBool("import_config");
 }
 
+/**
+ * \returns True if the --enable-ssl command line option was provided.
+ */
 bool
 S9sOptions::isEnableSslRequested() const
 {
     return getBool("enable_ssl");
+}
+
+/**
+ * \returns True if the --enable-binary-logging command line option was
+ * provided.
+ */
+bool
+S9sOptions::isEnableBinaryLogging() const
+{
+    return getBool("enable_binary_logging");
 }
 
 bool
@@ -5540,6 +5554,7 @@ S9sOptions::printHelpNode()
     printf(
 "Options for the \"node\" command:\n"
 "  --change-config            Change the configuration for a node.\n"
+"  --enable-binary-logging    Enables binary logs on a node.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --list                     List the jobs found on the controller.\n"
 "  --pull-config              Copy configuration files from a node.\n"
@@ -5855,6 +5870,7 @@ S9sOptions::readOptionsNode(
          * Main Option
          */
         { "change-config",    no_argument,       0, OptionChangeConfig    },
+        { "enable-binary-logging", no_argument,  0, OptionEnableBinaryLogging },
         { "inspect",          no_argument,       0, OptionInspect         },
         { "list-config",      no_argument,       0, OptionListConfig      },
         { "list",             no_argument,       0, 'L'                   },
@@ -6013,6 +6029,11 @@ S9sOptions::readOptionsNode(
             case OptionChangeConfig:
                 // --change-config
                 m_options["change_config"] = true;
+                break;
+
+            case OptionEnableBinaryLogging:
+                // --enable-binary-logging
+                m_options["enable_binary_logging"] = true;
                 break;
 
             case OptionInspect:
@@ -8684,6 +8705,9 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isSetReadWriteRequested())
+        countOptions++;
+    
+    if (isEnableBinaryLogging())
         countOptions++;
 
     if (countOptions > 1)

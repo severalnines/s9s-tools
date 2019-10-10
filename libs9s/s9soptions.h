@@ -473,6 +473,7 @@ class S9sOptions
         bool isImportConfigRequested() const;
         bool isCollectLogsRequested() const;
         bool isEnableSslRequested() const;
+        bool isEnableBinaryLogging() const;
         bool isDisableSslRequested() const;
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
