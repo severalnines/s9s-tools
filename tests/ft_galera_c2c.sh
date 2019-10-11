@@ -6,7 +6,7 @@ VERBOSE=""
 VERSION="0.0.3"
 
 LOG_OPTION="--wait"
-DEBUG_OPTION="--debug"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -209,6 +209,10 @@ function createCluster()
 
     wait_for_cluster_started "$cluster_name"
     mys9s cluster --list --long
+
+    if [ -n "$master_cluster_id_option" ]; then
+        mys9s replication --list
+    fi
 }
 
 function testEnableBinaryLogging()
@@ -229,15 +233,94 @@ function testEnableBinaryLogging()
             --enable-binary-logging \
             --nodes=$node_name \
             --cluster-id=1 \
-            --log
+            $LOG_OPTION \
+            $DEBUG_OPTION
 
         check_exit_code $?
     else
         failure "No cluster was created?"
         return 1
     fi
+        
+    mys9s replication --list
+}
 
-    #mysleep 120
+function testFailover()
+{
+    local master_node
+    local slave_node
+
+    print_title "Testing failover"
+    master_node=$(galera_node_name --cluster-id 1)
+    slave_node=$(galera_node_name --cluster-id 2)
+
+    if [ -n "$master_node" ]; then
+        success "  o Master is $master_node, ok."
+    else
+        failure "Could not find master."
+        return 1
+    fi
+
+    if [ -n "$slave_node" ]; then 
+        success "  o Slave node is $slave_node, ok."
+    else
+        failure "Could not find slave."
+        return 1
+    fi
+
+    mys9s replication \
+        --failover \
+        --master=$master_node:3306 \
+        --slave=$slave_node:3306 \
+        --cluster-id=2 \
+        --remote-cluster-id=1 \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+        
+    check_exit_code $?
+    mys9s replication --list
+    mysleep 60
+    mys9s replication --list
+}
+
+function testBack()
+{
+    local master_node
+    local slave_node
+
+    print_title "Testing Switch Back After Failover"
+    master_node=$(galera_node_name --cluster-id 2)
+    slave_node=$(galera_node_name --cluster-id 1)
+
+    if [ -n "$master_node" ]; then
+        success "  o Master is $master_node, ok."
+    else
+        failure "Could not find master."
+        return 1
+    fi
+
+    if [ -n "$slave_node" ]; then 
+        success "  o Slave node is $slave_node, ok."
+    else
+        failure "Could not find slave."
+        return 1
+    fi
+
+    mys9s replication \
+        --failover \
+        --master=$master_node:3306 \
+        --slave=$slave_node:3306 \
+        --cluster-id=1 \
+        --remote-cluster-id=2 \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+        
+    check_exit_code $?
+    mys9s replication --list
+    mysleep 60
+    mys9s replication --list
+
+    mys9s node --list --long
 }
 
 #
@@ -267,6 +350,8 @@ else
     runFunctionalTest createCluster
     runFunctionalTest testEnableBinaryLogging
     runFunctionalTest createCluster
+    runFunctionalTest testFailover
+    runFunctionalTest testBack
 fi
 
 endTests

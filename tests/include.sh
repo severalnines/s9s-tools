@@ -1214,7 +1214,7 @@ function galera_node_name()
         esac
     done
 
-    s9s node --list --long --batch | \
+    s9s node --list --long --batch$cluster_id_option | \
         grep '^g' | \
         head -n1  | \
         awk '{print $5 }'
