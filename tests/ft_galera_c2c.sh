@@ -18,6 +18,7 @@ OPTION_NUMBER_OF_NODES="1"
 
 N_CONTAINERS=0
 N_CLUSTERS=0
+MY_CONTAINERS=""
 
 cd $MYDIR
 source ./include.sh
@@ -132,6 +133,10 @@ if [ -z "$CONTAINER_SERVER" ]; then
     exit 6
 fi
 
+#
+# This is where we create a cluster. This test is called multiple times, so
+# there will be more than one of these clusters.
+#
 function createCluster()
 {
     local node_name
@@ -165,6 +170,7 @@ function createCluster()
             nodes+=";"
         fi
 
+        MY_CONTAINERS+=" $node_name"
         nodes+="$node_name"
         let n+=1
     done
@@ -323,6 +329,18 @@ function testBack()
     mys9s node --list --long
 }
 
+function testDeleteContainers()
+{
+    local container_name
+
+    print_title "Deleting Containers"
+
+    for container_name in $MY_CONTAINERS; do
+        mys9s container --delete $container_name --wait
+        check_exit_code $?
+    done
+}
+
 #
 # Running the requested tests.
 #
@@ -352,6 +370,7 @@ else
     runFunctionalTest createCluster
     runFunctionalTest testFailover
     runFunctionalTest testBack
+    runFunctionalTest testDeleteContainers
 fi
 
 endTests
