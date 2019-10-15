@@ -12,6 +12,9 @@ CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 
+PROVIDER_VERSION="5.7"
+OPTION_VENDOR="percona"
+
 cd $MYDIR
 source include.sh
 
@@ -35,6 +38,9 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
 
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=VERSION The SQL server provider version.
+
 SUPPORTED TESTS:
   o createUser       Creates a user to work with.
   o registerServer   Registers a new container server. No software installed.
@@ -49,7 +55,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,print-commands,install,reset-config,\
-server:" \
+provider-version:,vendor:,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -99,6 +105,17 @@ while true; do
         --server)
             shift
             CONTAINER_SERVER="$1"
+            shift
+            ;;
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
             shift
             ;;
 
@@ -216,8 +233,8 @@ function createCluster()
         --password="$CMON_USER_PASSWORD" \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
-        --vendor="percona" \
+        --provider-version="$PROVIDER_VERSION" \
+        --vendor="$OPTION_VENDOR" \
         --cloud="lxc" \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \

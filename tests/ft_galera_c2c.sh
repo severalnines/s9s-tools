@@ -13,12 +13,18 @@ CONTAINER_IP=""
 CLUSTER_NAME=""
 LAST_CONTAINER_NAME=""
 OPTION_VENDOR="mariadb"
-PROVIDER_VERSION="10.2"
+PROVIDER_VERSION="10.3"
 OPTION_NUMBER_OF_NODES="1"
 
 N_CONTAINERS=0
 N_CLUSTERS=0
 MY_CONTAINERS=""
+
+node_ip11=""
+node_ip12=""
+node_ip13=""
+
+node_ip23=""
 
 cd $MYDIR
 source ./include.sh
@@ -44,10 +50,18 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
 
-SUPPORTED TESTS:
-  o registerServer   Creates a new cmon-cloud container server. 
-  o createCluster    Creates a cluster on VMs created on the fly.
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=VERSION The SQL server provider version.
 
+SUPPORTED TESTS:
+  o registerServer      Creates a new cmon-cloud container server. 
+  o createMasterCluster Creates a cluster to be user as a master cluster.
+  o testBinaryLog       Enabled the binary logging on all the servers.
+  o testBinaryLog       
+  o testFailover        Testing failover between clusters.
+  o testBack            Testing failover between clusters.
+  o testFinalize        Deleting containers.
+  
 EOF
     exit 1
 }
@@ -55,7 +69,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -109,6 +123,18 @@ while true; do
             shift
             ;;
 
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -134,46 +160,33 @@ if [ -z "$CONTAINER_SERVER" ]; then
 fi
 
 #
-# This is where we create a cluster. This test is called multiple times, so
-# there will be more than one of these clusters.
 #
-function createCluster()
+#
+function createMasterCluster()
 {
-    local node_name
-    local cluster_name
+    local node_name1
+    local node_name2
+    local node_name3
+    local cluster_name="master_cluster"
     local nodes
     local n
     local master_cluster_id_option
 
-    print_title "Creating a Cluster"
-
-
-    #
-    # The cluster name.
-    #
-    let N_CLUSTERS+=1
-    cluster_name=$(printf "cluster_%03d" $N_CLUSTERS)
-    
-    if [ "$N_CLUSTERS" -gt 1 ]; then
-        master_cluster_id_option="--remote-cluster-id=1"
-    fi
+    print_title "Creating the Master Cluster"
 
     #
     # Composing a list of container names.
     #
-    n=0
-    while [ "$n" -lt "$OPTION_NUMBER_OF_NODES" ]; do
-        let N_CONTAINERS+=1
-        node_name=$(printf "%s_%02d_%06d" "${MYBASENAME}" "$N_CONTAINERS" "$$")
+    node_name1=$(printf "%s_11_%06d" "${MYBASENAME}" "$$")
+    node_ip11=$(create_node --autodestroy --template="ubuntu" $node_name1)
 
-        if [ -n "$nodes" ]; then
-            nodes+=";"
-        fi
+    node_name2=$(printf "%s_12_%06d" "${MYBASENAME}" "$$")
+    node_ip12=$(create_node --autodestroy --template="ubuntu" $node_name2)
 
-        MY_CONTAINERS+=" $node_name"
-        nodes+="$node_name"
-        let n+=1
-    done
+    node_name3=$(printf "%s_13_%06d" "${MYBASENAME}" "$$")
+    node_ip13=$(create_node --autodestroy --template="ubuntu" $node_name3)
+
+    nodes="$node_ip11;$node_ip12;$node_ip13"
 
     #
     # Creating a Cluster.
@@ -186,8 +199,6 @@ function createCluster()
         --provider-version="$PROVIDER_VERSION" \
         --vendor=$OPTION_VENDOR \
         --nodes="$nodes" \
-        --containers="$nodes" \
-        $master_cluster_id_option \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -211,8 +222,6 @@ function createCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    check_container_ids --galera-nodes
-
     wait_for_cluster_started "$cluster_name"
     mys9s cluster --list --long
 
@@ -221,20 +230,82 @@ function createCluster()
     fi
 }
 
-function testEnableBinaryLogging()
+#
+#
+#
+function createSlaveCluster()
+{
+    local node_name1
+    local cluster_name="slave_cluster"
+    local nodes
+    local master_cluster_id_option
+
+    print_title "Creating the Slave Cluster"
+
+    #
+    # Composing a list of container names.
+    #
+    node_name1=$(printf "%s_21_%06d" "${MYBASENAME}" "$$")
+    node_ip21=$(create_node --autodestroy --template="ubuntu" $node_name1)
+    
+    nodes="$node_ip21"
+    
+    #
+    # Creating a Cluster.
+    #
+    mys9s cluster \
+        --create \
+        --template="ubuntu" \
+        --cluster-name="$cluster_name" \
+        --cluster-type=galera \
+        --provider-version="$PROVIDER_VERSION" \
+        --vendor=$OPTION_VENDOR \
+        --nodes="$nodes" \
+        --remote-cluster-id=1 \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+
+    while true; do 
+        CLUSTER_ID=$(find_cluster_id $cluster_name)
+        
+        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
+            break;
+        fi
+
+        echo "Cluster '$cluster_name' not found."
+        s9s cluster --list --long
+        sleep 5
+    done
+
+    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$cluster_name"
+
+    mys9s cluster --list --long
+    if [ -n "$master_cluster_id_option" ]; then
+        mys9s replication --list
+    fi
+}
+
+function testBinaryLog()
 {
     local node_name
+    local node_list
 
     print_title "Enabling Binary Logging"
 
-    if [ "$N_CLUSTERS" -gt 0 ]; then
-        node_name=$(galera_node_name --cluster-id 1)
-        if [ -n "$node_name" ]; then
-            success "  o Will enable binary logging on $node_name, ok."
-        else
-            failure "Could not find node in cluster 1."
-        fi
+    node_list=$(s9s node \
+        --list --cluster-id=1 --long --batch | \
+        grep ^g | \
+        awk '{ print $5}')
 
+    for node_name in $node_list; do
         mys9s nodes \
             --enable-binary-logging \
             --nodes=$node_name \
@@ -243,41 +314,21 @@ function testEnableBinaryLogging()
             $DEBUG_OPTION
 
         check_exit_code $?
-    else
-        failure "No cluster was created?"
-        return 1
-    fi
+    done
         
     mys9s replication --list
 }
 
 function testFailover()
 {
-    local master_node
-    local slave_node
+    print_title "Testing Failover"
 
-    print_title "Testing failover"
-    master_node=$(galera_node_name --cluster-id 1)
-    slave_node=$(galera_node_name --cluster-id 2)
-
-    if [ -n "$master_node" ]; then
-        success "  o Master is $master_node, ok."
-    else
-        failure "Could not find master."
-        return 1
-    fi
-
-    if [ -n "$slave_node" ]; then 
-        success "  o Slave node is $slave_node, ok."
-    else
-        failure "Could not find slave."
-        return 1
-    fi
+    mys9s node --list --long
 
     mys9s replication \
         --failover \
-        --master=$master_node:3306 \
-        --slave=$slave_node:3306 \
+        --master=$node_ip12:3306 \
+        --slave=$slave_ip21:3306 \
         --cluster-id=2 \
         --remote-cluster-id=1 \
         $LOG_OPTION \
@@ -291,33 +342,16 @@ function testFailover()
 
 function testBack()
 {
-    local master_node
-    local slave_node
-
     print_title "Testing Switch Back After Failover"
-    master_node=$(galera_node_name --cluster-id 2)
-    slave_node=$(galera_node_name --cluster-id 1)
-
-    if [ -n "$master_node" ]; then
-        success "  o Master is $master_node, ok."
-    else
-        failure "Could not find master."
-        return 1
-    fi
-
-    if [ -n "$slave_node" ]; then 
-        success "  o Slave node is $slave_node, ok."
-    else
-        failure "Could not find slave."
-        return 1
-    fi
+    
+    mys9s node --list --long
 
     mys9s replication \
         --failover \
-        --master=$master_node:3306 \
-        --slave=$slave_node:3306 \
-        --cluster-id=1 \
-        --remote-cluster-id=2 \
+        --master=$node_ip11:3306 \
+        --slave=$node_ip21:3306 \
+        --cluster-id=2 \
+        --remote-cluster-id=1 \
         $LOG_OPTION \
         $DEBUG_OPTION
         
@@ -327,18 +361,6 @@ function testBack()
     mys9s replication --list
 
     mys9s node --list --long
-}
-
-function testDeleteContainers()
-{
-    local container_name
-
-    print_title "Deleting Containers"
-
-    for container_name in $MY_CONTAINERS; do
-        mys9s container --delete $container_name --wait
-        check_exit_code $?
-    done
 }
 
 #
@@ -355,9 +377,11 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest registerServer
-        runFunctionalTest createCluster
-        runFunctionalTest testEnableBinaryLogging
-        runFunctionalTest createCluster
+        runFunctionalTest createMasterCluster
+        runFunctionalTest testBinaryLog
+        runFunctionalTest createSlaveCluster
+        runFunctionalTest testFailover
+        runFunctionalTest testBack
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -365,12 +389,11 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest registerServer
-    runFunctionalTest createCluster
-    runFunctionalTest testEnableBinaryLogging
-    runFunctionalTest createCluster
+    runFunctionalTest createMasterCluster
+    runFunctionalTest testBinaryLog
+    runFunctionalTest createSlaveCluster
     runFunctionalTest testFailover
     runFunctionalTest testBack
-    runFunctionalTest testDeleteContainers
 fi
 
 endTests

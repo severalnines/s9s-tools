@@ -47,11 +47,12 @@ Usage:
   --print-commands Do not print unit test info, print the executed commands.
   --install        Just install the cluster and exit.
   --reset-config   Remove and re-generate the ~/.s9s directory.
-  --vendor=STRING  Use the given Galera vendor.
   --leave-nodes    Do not destroy the nodes at exit.
   --enable-ssl     Enable the SSL once the cluster is created.
   
+  --vendor=STRING  Use the given Galera vendor.
   --provider-version=VERSION The SQL server provider version.
+
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:

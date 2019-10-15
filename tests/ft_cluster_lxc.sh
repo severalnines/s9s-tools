@@ -283,7 +283,7 @@ EOF
         --cluster-name="$CLUSTER_NAME" \
         --template="ubuntu" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="5.7" \
         --vendor=percona \
         --cloud=lxc \
         --nodes="$container_name1;$container_name2" \

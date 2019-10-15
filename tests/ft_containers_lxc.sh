@@ -46,7 +46,6 @@ SUPPORTED TESTS:
   o createFail         A container creation that should fail.
   o createContainers   Creates several new containers with various images.
   o restartContainer   Stop then start the container.
-  o createCluster      Creates a new cluster on containers on the fly.
   o createServer       Creates a server from the previously created container.
   o failOnContainers   Testing on unexisting containers.
   o deleteContainer    Deletes the previously created container.
@@ -315,6 +314,8 @@ EOF
     else
         warning "Outsider can see the containers."
     fi
+    
+    s9s tree --list --long --recursive --full-path
 
     #
     #
@@ -326,9 +327,10 @@ EOF
         --servers=$CONTAINER_SERVER \
         --cmon-user="grumio" \
         --password="p" \
-        $LOG_OPTION \
-        $DEBUG_OPTION \
+        --log --debug \
         "$container_name"
+        
+    #$LOG_OPTION $DEBUG_OPTION \
    
     retcode=$?
 
@@ -432,6 +434,16 @@ function createAsSystem()
     local template
 
     print_title "Creating Container as System User"
+    cat <<EOF
+  This test will create a container using the system user when authenticating.
+  The owner of the container will be the system user so the various checks has
+  to be made by the same user, others won't see this container.
+
+  PLease note that the system user is creating the container, but we also pass
+  the --os-user option, so the user $USER will also have an account on the
+  created container.
+
+EOF
 
     #
     # Creating a container.
@@ -458,22 +470,30 @@ function createAsSystem()
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        exit 1
+        return 1
+    else 
+        success "  o The container created, ok."
     fi
 
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "The container got no IP."
         s9s container --list --long
-        exit 1
+        return 1
+    else
+        success "  o The container has the IP $CONTAINER_IP, ok."
     fi
 
     owner=$(\
-        s9s container --list --long --batch "$container_name" | \
+        s9s container --list --long --batch \
+        --cmon-user=system --password=secret \
+        "$container_name" | \
         awk '{print $4}')
 
     if [ "$owner" != "system" ]; then
         failure "The owner of '$container_name' is '$owner', should be 'system'"
-        exit 1
+        return 1
+    else
+        success "  o The owner is $OWNER, ok."
     fi
    
     #
@@ -482,21 +502,25 @@ function createAsSystem()
     print_title "Checking SSH Access"
     if ! is_server_running_ssh "$CONTAINER_IP" "$USER"; then
         failure "User $USER can not log in to $CONTAINER_IP"
-        exit 1
+        return 1
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        success "  o SSH access granted for user '$USER' on $CONTAINER_IP, ok."
     fi
 
     #
     # Checking the template.
     #
     template=$(\
-        s9s container --list --long --batch "$container_name" | \
+        s9s container --list --long --batch \
+        --cmon-user=system --password=secret \
+        "$container_name" | \
         awk '{print $3}')
 
     if [ "$template" != "ubuntu" ]; then
         failure "The template is '$template', should be 'ubuntu'"
-        exit 1
+        return 1
+    else
+        success "  o The template is $template, ok."
     fi
 }
 
@@ -857,121 +881,6 @@ function failOnContainers()
 }
 
 #
-# This will create a cluster on containers and add a node in the next job
-# creating a new container.
-#
-function createCluster()
-{
-    local node001="ft_containers_lxc_21_$$"
-    local node002="ft_containers_lxc_22_$$"
-    local node003="ft_containers_lxc_23_$$"
-    local node_ip
-    local container_id
-
-    #
-    # Creating a Cluster.
-    #
-    print_title "Creating a Cluster"
-    mys9s cluster \
-        --create \
-        --cluster-name="$CLUSTER_NAME" \
-        --cluster-type=galera \
-        --provider-version="5.6" \
-        --vendor=percona \
-        --nodes="$node001" \
-        --containers="$node001" \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-
-    check_exit_code $?
-    remember_cmon_container "$node001"
-
-    while true; do 
-        CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-        
-        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
-            break;
-        fi
-
-        echo "Cluster '$CLUSTER_NAME' not found."
-        s9s cluster --list --long
-        sleep 5
-    done
-
-    if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
-    else
-        failure "Cluster ID '$CLUSTER_ID' is invalid"
-    fi
-
-    check_container_ids --galera-nodes
-
-    #
-    # Adding a proxysql node.
-    #
-    print_title "Adding a ProxySql Node"
-
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="proxysql://$node002" \
-        --containers="$node002" \
-        $LOG_OPTION \
-        $DEBUG_OPTION 
-
-    check_exit_code $?
-    remember_cmon_container "$node002"
-    
-    #
-    # Checking the proxysql node.
-    #
-    print_title "Checking the ProxySql Node"
-
-    node_ip=$(proxysql_node_name)
-    container_id=$(node_container_id "$node_ip")
-
-    echo "       node_ip: $node_ip"
-    echo "  container_id: $container_id"
-    if [ -z "$node_ip" ]; then
-        failure "The ProxySql node name was not found."
-    fi
-
-    if [ -z "$container_id" ]; then
-        failure "The ProxySql container ID was not found."
-    fi
-
-    if [ "$container_id" == "-" ]; then
-        failure "The ProxySql container ID is '-'."
-    fi
-
-    if ! is_server_running_ssh "$node_ip" "$USER"; then
-        failure "Could not SSH into the ProxySql node."
-    fi
-
-    #
-    # We had a bug that was caused by the "node" property not being handled in 
-    # replaceNodesWithContainers().
-    #
-    print_title "Adding a Database Node"
-    
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$node003" \
-        --containers="$node003" \
-        $LOG_OPTION \
-        $DEBUG_OPTION 
-
-    check_exit_code $?
-    remember_cmon_container "$node003"
-
-    sleep 30
-    mys9s node --list --long
-
-    return 0
-}
-
-#
 # This will delete the containers we created before.
 #
 function deleteContainer()
@@ -1034,7 +943,6 @@ else
     runFunctionalTest restartContainer
     runFunctionalTest createServer
     runFunctionalTest failOnContainers
-    runFunctionalTest createCluster
     runFunctionalTest deleteContainer
 fi
 

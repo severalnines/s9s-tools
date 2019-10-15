@@ -1431,6 +1431,8 @@ function get_container_ip()
         --list \
         --long \
         --batch \
+        --cmon-user="system" \
+        --password="secret" \
         "$container_name" \
     | \
         awk '{print $6}'
