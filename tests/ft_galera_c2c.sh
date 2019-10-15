@@ -24,7 +24,7 @@ node_ip11=""
 node_ip12=""
 node_ip13=""
 
-node_ip23=""
+node_ip21=""
 
 cd $MYDIR
 source ./include.sh
@@ -328,7 +328,7 @@ function testFailover()
     mys9s replication \
         --failover \
         --master=$node_ip12:3306 \
-        --slave=$slave_ip21:3306 \
+        --slave=$node_ip21:3306 \
         --cluster-id=2 \
         --remote-cluster-id=1 \
         $LOG_OPTION \
