@@ -93,6 +93,7 @@ enum S9sOptionType
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
+    OptionReset,
     OptionDemoteNode,
     OptionHelp,
     OptionTimeStyle,
@@ -4247,6 +4248,17 @@ S9sOptions::isStopRequested() const
     return getBool("stop");
 }
 
+
+/**
+ * \returns true if the --stop command line option was provided when the program
+ *   was started.
+ */
+bool
+S9sOptions::isResetRequested() const
+{
+    return getBool("reset");
+}
+
 bool
 S9sOptions::isUsr1Requested() const
 {
@@ -6911,6 +6923,9 @@ S9sOptions::checkOptionsReplication()
     
     if (isFailoverRequested())
         countOptions++;
+
+    if (isResetRequested())
+        countOptions++;
     
     if (countOptions > 1)
     {
@@ -8024,6 +8039,7 @@ S9sOptions::readOptionsReplication(
         { "failover",         no_argument,       0, OptionFailover        },
         { "list",             no_argument,       0, 'L'                   },
         { "promote",          no_argument,       0, OptionPromoteSlave    },
+        { "reset",            no_argument,       0, OptionReset           },
         { "stage",            no_argument,       0, OptionStage           },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
@@ -8180,6 +8196,11 @@ S9sOptions::readOptionsReplication(
             case OptionPromoteSlave:
                 // --promote
                 m_options["promote_slave"] = true;
+                break;
+
+             case OptionReset:
+                // --reset
+                m_options["reset"] = true;
                 break;
             
             case OptionStage:
