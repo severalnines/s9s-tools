@@ -300,7 +300,7 @@ EOF
         --cluster-type=postgresql \
         --nodes="$nodes" \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version="9.3" \
+        --provider-version="9.5" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --generate-key \
