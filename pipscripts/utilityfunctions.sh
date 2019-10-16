@@ -755,11 +755,17 @@ function printProgressBar()
 }
 
 #
-# This is the function we use to collect the number of containers. Here is a
-# problematic command:
+# This is the function we use to collect the number of containers. This function
+# is called from pip-monitor-system and from pip-host-control and so usually
+# called from the crontab.
+# 
+# But it seems if the lxc-ls is executed while we create a container the
+# container creation fails with a weird error message. Here is a problematic 
+# command:
 #
 # lxc-create -t download -n 'testnode' 2>&1 -- --dist ubuntu --release xenial --arch amd64
 #
+# So the solution is that we do not use lxc-ls here.
 #
 function get_number_of_containers()
 {
