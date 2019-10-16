@@ -405,7 +405,7 @@ function testRestoreCluster()
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
 
-    sleep 10
+    mysleep 10
     wait_for_cluster_started --system "$CLUSTER_NAME"
     retcode=$?
 
@@ -426,9 +426,19 @@ function testRestoreCluster()
         success "  o The cluster is in started state, ok"
     fi
 
+    #
+    # Checking the configuration file.
+    #
     config_file="/tmp/cmon_2.cnf"
+
     print_subtitle "Cluster Config in $config_file"
-    cat $config_file 
+    if [ -f "$config_file" ]; then
+        success "  o The '$config_file' file exists, ok."
+    else
+        failure "File '$config_file' was not found."
+    fi
+
+    cat $config_file | print_ini_file
 }
 
 function cleanup()
