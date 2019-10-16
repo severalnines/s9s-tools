@@ -709,9 +709,6 @@ function printProgressBar()
         if [ $c -lt $percent_ms ]; then
             echo -en "█"
         elif [ $percent_ms -eq $c ]; then
-            #echo " "
-            #echo "-> $percent_ls"
-
             case "$percent_ls" in 
                 0)
                     echo -en " "
