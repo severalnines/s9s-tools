@@ -754,18 +754,26 @@ function printProgressBar()
     printf "%3d%% " "$percent"
 }
 
+#
+# This is the function we use to collect the number of containers. Here is a
+# problematic command:
+#
+# lxc-create -t download -n 'testnode' 2>&1 -- --dist ubuntu --release xenial --arch amd64
+#
+#
 function get_number_of_containers()
 {
-    local name
-    local retval=0
-
-    if [ "$(which lxc-ls)" ]; then
-        for name in $(sudo lxc-ls); do
-            let retval+=1
-        done
-    fi
-
-    echo "$retval"
+#    local name
+#    local retval=0
+#
+#    if [ "$(which lxc-ls)" ]; then
+#        for name in $(sudo lxc-ls); do
+#            let retval+=1
+#        done
+#    fi
+#
+#    echo "$retval"
+    sudo ls -l /var/lib/lxc | grep ^d | wc -l
 }
 
 function STR_DIRNAME()
