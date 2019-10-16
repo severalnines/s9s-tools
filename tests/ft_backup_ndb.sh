@@ -30,14 +30,14 @@ Usage:
  
   $MYNAME - Test script for s9s to check backup in ndb clusters.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
- --log            Print the logs while waiting for the job to be ended.
- --server=SERVER  The name of the server that will hold the containers.
- --print-commands Do not print unit test info, print the executed commands.
- --install        Just install the cluster and exit.
- --reset-config   Remove and re-generate the ~/.s9s directory.
- --provider-version=STRING The SQL server provider version.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --log            Print the logs while waiting for the job to be ended.
+  --server=SERVER  The name of the server that will hold the containers.
+  --print-commands Do not print unit test info, print the executed commands.
+  --install        Just install the cluster and exit.
+  --reset-config   Remove and re-generate the ~/.s9s directory.
+  --provider-version=STRING The SQL server provider version.
 
 EXAMPLE
  ./ft_galera.sh --print-commands --server=storage01 --reset-config --install
@@ -269,34 +269,46 @@ function testCreateBackup01()
     
     check_exit_code $?
 
+    #
+    #
+    #
     print_title "Checking the Properties of the Backup"
-    #mys9s backup --list --long
+   
+    mys9s backup --list --long
     #mys9s backup --list-databases --long
     #mys9s backup --list-files --long
     #mys9s backup --list --print-json
 
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
-        failure "There should be 1 backup in the output"
-        exit 1
+        failure "There should be 1 backup in the output."
+        return 1
+    else
+        success "  o There is 1 backup, ok."
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $6}')
     if [ "$value" != "COMPLETED" ]; then
-        failure "The backup should be completed"
-        exit 1
+        failure "The backup should be completed."
+        return 1
+    else
+        success "  o The backup is completed, ok."
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
         failure "The owner of the backup should be '$USER'"
-        exit 1
+        return 1
+    else
+        success "  o The owner of the backup is $USER, ok."
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
     if [ "$value" != "1" ]; then
         failure "The cluster ID for the backup should be '1'."
-        exit 1
+        return 1
+    else
+        success "  o The cluster ID of the backup 1, ok."
     fi
 
     # Checking the path.
@@ -304,9 +316,12 @@ function testCreateBackup01()
         s9s backup --list-files --full-path --backup-id=1 | \
         grep '^/tmp/BACKUP-1/' | \
         wc -l)
-    if [ "$value" != 3 ]; then
-        failure "Three files should be listed in '/tmp/BACKUP-1/'"
+
+    if [ "$value" -lt 2 ]; then
+        failure "Two files should be listed in '/tmp/BACKUP-1/'"
         mys9s backup --list-files --full-path --backup-id=1
+    else
+        success "  o There are at least two files, ok"
     fi
 
     #
