@@ -357,6 +357,7 @@ class S9sRpcClient
         bool startNode();
         bool startSlave();
         bool promoteReplicationSlave();
+        bool resetSlave();
         
         bool stopNode();
         bool stopSlave();

@@ -1085,7 +1085,11 @@ S9sBusinessLogic::execute()
         } else if (options->isPromoteSlaveRequested())
         {
             success = client.promoteReplicationSlave();
-            maybeJobRegistered(client, clusterId, success); 
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isResetRequested())
+        {
+            success = client.resetSlave();
+            maybeJobRegistered(client, clusterId, success);             
         } else {
             PRINT_ERROR("Unknown replication operation.");
         }
