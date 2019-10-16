@@ -382,6 +382,8 @@ function startTests ()
 #
 function endTests ()
 {
+    local exit_code=0
+
     if isSuccess; then
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "SUCCESS: $(basename $0 .sh)"
@@ -393,14 +395,9 @@ function endTests ()
             echo ""
         fi
 
-        printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
-        printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
-        printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
-        printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
-
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
-        exit 0
+        exit_code=0
     else
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             echo "FAILURE: $(basename $0 .sh)"
@@ -413,8 +410,15 @@ function endTests ()
         fi
     
         pip-host-control --status="Failed '$TEST_SUITE_NAME'."
-        exit 1
+        exit_code=1
     fi
+
+    printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
+    printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
+    printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
+    printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
+
+    exit $exit_code
 }
 
 #
