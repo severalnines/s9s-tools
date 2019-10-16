@@ -11,7 +11,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
-PROVIDER_VERSION="9.3"
+PROVIDER_VERSION="9.5"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
