@@ -252,7 +252,9 @@ function testStopMaster()
 
     if [ $? -eq 0 ]; then
         failure "The controller should have protected master agains restart."
-        exit 1
+        return 1
+    else
+        success "  o The controller protected the master, ok."
     fi
 
     #
