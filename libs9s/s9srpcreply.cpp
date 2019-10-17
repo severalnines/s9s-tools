@@ -2297,7 +2297,7 @@ S9sRpcReply::printLogBrief()
     if (variantList.empty() && contains("log_entry"))
         variantList << operator[]("log_entry").toVariantMap();
 
-    std::reverse(std::begin(variantList), std::end(variantList));
+    std::reverse(variantList.begin(), variantList.end());
 
     for (uint idx = 0; idx < variantList.size(); ++idx)
     {
