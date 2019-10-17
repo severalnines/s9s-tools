@@ -2338,7 +2338,7 @@ S9sRpcReply::printLogLong()
         theList << message;
     }
     
-    std::reverse(std::begin(theList), std::end(theList));
+    std::reverse(theList.begin(), theList.end());
 
     // FIXME:
     // The implementation of the long format is just a formatstring, the same
