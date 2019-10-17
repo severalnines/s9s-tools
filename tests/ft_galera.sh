@@ -529,6 +529,9 @@ function testCreateAccount()
     
     check_exit_code_no_job $?
 
+    s9s account --list --cluster-id=$CLUSTER_ID 
+    s9s account --list --cluster-id=$CLUSTER_ID john_doe
+
     #
     # Checking if the account is created.
     #
