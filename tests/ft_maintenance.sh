@@ -140,7 +140,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version="9.6" \
         $LOG_OPTION
 
     exitCode=$?
