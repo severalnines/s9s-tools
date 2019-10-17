@@ -71,7 +71,7 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 - New patch release
 * Fri Apr 20 2018 David Kedves <kedazo@severalnines.com> 1.6.20180420
 - New clustercontrol release, 1.6.0
-* Thu Mar  2 2018 David Kedves <kedazo@severalnines.com> 1.5.20180302
+* Fri Mar  2 2018 David Kedves <kedazo@severalnines.com> 1.5.20180302
 - PostgreSQL cluster creation
 * Thu Mar  1 2018 David Kedves <kedazo@severalnines.com> 1.5.20180301
 - New patch release
@@ -81,7 +81,7 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 - Releasing with clustercontrol-controller 1.5.0
 * Wed Oct 18 2017 David Kedves <kedazo@severalnines.com> 1.5.20171018
 - Version up, to match with the upcoming clustercontrol release
-* Wed Oct  3 2017 David Kedves <kedazo@severalnines.com> 0.1.20171003
+* Tue Oct  3 2017 David Kedves <kedazo@severalnines.com> 0.1.20171003
 - Fixing RPM building issue
 * Wed Jan 25 2017 David Kedves <kedazo@severalnines.com> 0.1.20170125
 - Initial RPM release
