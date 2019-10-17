@@ -18,7 +18,7 @@ CONTAINER_SERVER=""
 
 OPTION_INSTALL=""
 OPTION_NUMBER_OF_NODES="1"
-PROVIDER_VERSION="5.6"
+PROVIDER_VERSION="5.7"
 OPTION_VENDOR="percona"
 
 # The IP of the node we added first and last. Empty if we did not.
