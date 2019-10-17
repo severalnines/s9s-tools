@@ -14,6 +14,7 @@ BuildRequires: automake
 BuildRequires: gcc-c++
 BuildRequires: openssl-devel
 BuildRequires: flex
+BuildRequires: gdb
 
 %description
 Severalnines ClusterControl CLI Tools
