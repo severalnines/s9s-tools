@@ -155,6 +155,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    wait_for_cluster_started "$CLUSTER_NAME"
 }
 
 #

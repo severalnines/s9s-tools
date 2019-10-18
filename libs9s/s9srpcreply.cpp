@@ -2297,7 +2297,7 @@ S9sRpcReply::printLogBrief()
     if (variantList.empty() && contains("log_entry"))
         variantList << operator[]("log_entry").toVariantMap();
 
-    std::reverse(std::begin(variantList), std::end(variantList));
+    std::reverse(variantList.begin(), variantList.end());
 
     for (uint idx = 0; idx < variantList.size(); ++idx)
     {
@@ -2338,7 +2338,7 @@ S9sRpcReply::printLogLong()
         theList << message;
     }
     
-    std::reverse(std::begin(theList), std::end(theList));
+    std::reverse(theList.begin(), theList.end());
 
     // FIXME:
     // The implementation of the long format is just a formatstring, the same

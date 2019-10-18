@@ -16,6 +16,7 @@ SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
+N_CONTAINERS=0
 
 cd $MYDIR
 source include.sh
@@ -176,9 +177,15 @@ function testCreateCluster()
     local nodes
     local nodeName
     local exitCode
+    local container_name
+
 
     print_title "Creating a PostgreSQL Cluster"
-    nodeName=$(create_node --autodestroy)
+
+    let N_CONTAINERS+=1
+    container_name=$(printf "${MYBASENAME}_%02d_$$" "$N_CONTAINERS")
+    nodeName=$(create_node --autodestroy "$container_name")
+
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
     
@@ -192,7 +199,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.3" \
+        --provider-version="9.5" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -210,9 +217,13 @@ function testCreateCluster()
 #
 function testAddNode()
 {
+    local container_name
+    
     print_title "Adding a Node"
 
-    LAST_ADDED_NODE=$(create_node --autodestroy)
+    let N_CONTAINERS+=1
+    container_name=$(printf "${MYBASENAME}_%02d_$$" "$N_CONTAINERS")    
+    LAST_ADDED_NODE=$(create_node --autodestroy "$container_name")
 
     #
     # Adding a node to the cluster.
@@ -252,14 +263,19 @@ function testStopMaster()
 
     if [ $? -eq 0 ]; then
         failure "The controller should have protected master agains restart."
-        exit 1
+        return 1
+    else
+        success "  o The controller protected the master, ok."
     fi
 
     #
     # Stopping it manually.
     #
     print_title "Stopping postgresql Directly on $FIRST_ADDED_NODE"
-    $SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
+
+    #echo "$SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop"
+    #$SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
+    $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 9.5 main stop
 
     while true; do
         if [ "$timeLoop" -gt 60 ]; then
@@ -273,6 +289,7 @@ function testStopMaster()
             grep --quiet "Failover to a New Master"; 
         then
             mys9s job --list
+            success "  o The failover job is finished, ok."
             break
         fi
 

@@ -145,8 +145,6 @@ function get_disk_throughput()
     local read_kilo
     local write_kilo
 
-    #printVerbose "lines: $lines"
-
     write_kilo=$(\
         echo "$lines" | grep "Actual DISK WRITE" | tail -n 1 | \
         awk '{print $10}')

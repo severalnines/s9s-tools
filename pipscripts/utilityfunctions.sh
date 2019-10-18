@@ -709,9 +709,6 @@ function printProgressBar()
         if [ $c -lt $percent_ms ]; then
             echo -en "█"
         elif [ $percent_ms -eq $c ]; then
-            #echo " "
-            #echo "-> $percent_ls"
-
             case "$percent_ls" in 
                 0)
                     echo -en " "
@@ -754,18 +751,32 @@ function printProgressBar()
     printf "%3d%% " "$percent"
 }
 
+#
+# This is the function we use to collect the number of containers. This function
+# is called from pip-monitor-system and from pip-host-control and so usually
+# called from the crontab.
+# 
+# But it seems if the lxc-ls is executed while we create a container the
+# container creation fails with a weird error message. Here is a problematic 
+# command:
+#
+# lxc-create -t download -n 'testnode' 2>&1 -- --dist ubuntu --release xenial --arch amd64
+#
+# So the solution is that we do not use lxc-ls here.
+#
 function get_number_of_containers()
 {
-    local name
-    local retval=0
-
-    if [ "$(which lxc-ls)" ]; then
-        for name in $(sudo lxc-ls); do
-            let retval+=1
-        done
-    fi
-
-    echo "$retval"
+#    local name
+#    local retval=0
+#
+#    if [ "$(which lxc-ls)" ]; then
+#        for name in $(sudo lxc-ls); do
+#            let retval+=1
+#        done
+#    fi
+#
+#    echo "$retval"
+    sudo ls -l /var/lib/lxc | grep ^d | wc -l
 }
 
 function STR_DIRNAME()

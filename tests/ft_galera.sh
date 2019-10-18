@@ -529,15 +529,17 @@ function testCreateAccount()
     
     check_exit_code_no_job $?
 
+    mys9s account --list --cluster-id=$CLUSTER_ID 
+    mys9s account --list --cluster-id=$CLUSTER_ID john_doe
+
     #
     # Checking if the account is created.
     #
     userName=$(s9s account --list --cluster-id=$CLUSTER_ID john_doe)
     if [ "$userName" != "john_doe" ]; then
-        failure "Account is not in the account list."
+        failure "Account is not in the account list ($userName)."
         mys9s account --list --long --cluster-id=$CLUSTER_ID
-        mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
-        exit 1
+        mys9s account --list --cluster-id=$CLUSTER_ID john_doe
     fi
 
     echo "Before granting."

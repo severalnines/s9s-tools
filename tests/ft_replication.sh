@@ -233,6 +233,10 @@ function testStageSlave()
 EOF
 
     mys9s replication --list --long
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
 
     mys9s replication \
         --stage \
@@ -243,8 +247,9 @@ EOF
         $LOG_OPTION
     
     check_exit_code $?
-    mys9s replication --list --long
-    
+
+    mysleep 60
+    mys9s replication --list --long 
     check_replication_state \
         --cluster-name   "$CLUSTER_NAME" \
         --slave          "$THIRD_ADDED_NODE" \
@@ -378,9 +383,11 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         --log 
 
-        #$LOG_OPTION
-    
-    check_exit_code $?
+    if [ $? -eq 0 ]; then
+        success "  o The cluster is stopped, ok."
+    else
+        warning "The drop cluster job has failed."
+    fi
 }
 
 #
