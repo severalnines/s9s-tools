@@ -453,6 +453,10 @@ function testStageSlave()
 EOF
 
     mys9s replication --list --long
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
 
     mys9s replication \
         --stage \
@@ -463,9 +467,15 @@ EOF
         $LOG_OPTION
     
     check_exit_code $?
-    mys9s replication --list --long
-    
-    print_log_messages
+
+    mysleep 60
+    mys9s replication --list --long 
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$THIRD_ADDED_NODE" \
+        --state          "Online"
+
+    #print_log_messages
 }
 
 function testPromoteSlave()
