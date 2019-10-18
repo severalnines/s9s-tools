@@ -5837,6 +5837,7 @@ S9sOptions::printHelpReplication()
 "  --stage                    Stage/rebuild a replication slave.\n"
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
+"  --reset                    Reset the slave functionality.\n"
 "\n"
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
