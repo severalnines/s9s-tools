@@ -383,9 +383,11 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         --log 
 
-        #$LOG_OPTION
-    
-    check_exit_code $?
+    if [ $? -eq 0 ]; then
+        success "  o The cluster is stopped, ok."
+    else
+        warning "The drop cluster job has failed."
+    fi
 }
 
 #
