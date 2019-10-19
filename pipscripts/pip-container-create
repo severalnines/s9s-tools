@@ -71,20 +71,6 @@ Usage:
   --vendor=VENDOR      Download and install the given distribution.
   --release=RELEASE    Download and install the given release.
 
-       VENDOR                    RELEASE
-       ----------------------------------------------------------------
-       ubuntu      bionic   cosmic   disco    eoan     trusty    xenial
-       ubuntu      artful   bionic   trusty   xenial   zesty
-       debian      buster   jessie   sid      stretch  wheezy
-       alpine      3.4      3.5      3.6      3.7      edge
-       centos      6        7
-       fedora      25       26       27
-       opensuse    42.2     42.3
-       oracle      6        7
-       plamo       5.x      6.x
-       archlinux   current
-       gentoo      current
-
 EXAMPLES:
   pip-container-create --server=host01
   pip-container-create --verbose --server=core1 --vendor=ubuntu --release=xenial
@@ -374,7 +360,7 @@ function install_package_in_container()
             APT_UPDATED="true"
         fi
 
-        printVerbose "Installing package '$package_name'"
+        printVerbose "Installing package '$package_name' with apt-get."
         lxc-attach -n "$container_name" -- \
             apt-get -y --force-yes install "$package_name" \
             >>"$LOGFILE" 2>>"$LOGFILE"
@@ -395,6 +381,17 @@ function install_package_in_container()
 
             lxc-attach -n "$container_name" -- \
                 cat /etc/network/interfaces \
+                >>"$LOGFILE" 2>>"$LOGFILE"
+        fi
+    elif [ -f "$container_rootfs/usr/bin/yum" ]; then
+        printVerbose "Installing package '$package_name' with yum."
+        lxc-attach -n "$container_name" -- \
+            yum install -y "$package_name" \
+            >>"$LOGFILE" 2>>"$LOGFILE"
+
+        if [ "$package_name" == "openssh-server" ]; then
+            lxc-attach -n "$container_name" -- \
+                service sshd start \
                 >>"$LOGFILE" 2>>"$LOGFILE"
         fi
     else
@@ -535,17 +532,45 @@ function create_container()
     # Starting the container. 
     #
     lxc-start -n "$new_name"
+    
+    #
+    # Waiting for IP.
+    #
+    while [ -z $ip ]; do
+        ip=$(lxc-info -n "$new_name" -i | awk '{print $2}')
+
+        if [ "$ip" == "-" ]; then
+            ip=""
+        fi
+
+        if [ -z "$ip" ]; then
+            printVerbose "Waiting for $new_name to get an IP."
+            sleep 1
+        fi
+    done
    
     #
     # Checking and installing packages.
     #
+    if [ ! -f "$container_rootfs/usr/bin/sudo" ]; then
+        printVerbose "Container has no sudo, attempting to install."
+        install_package_in_container "$new_name" "sudo"
+
+        retval=$?
+        if [ "$retval" -ne 0 ]; then
+            #return "$retval"
+            printWarning "Failed to install."
+        fi
+    fi
+    
     if [ ! -f "$container_rootfs/usr/sbin/sshd" ]; then
         printVerbose "Container has no sshd, attempting to install."
         install_package_in_container "$new_name" "openssh-server"
 
         retval=$?
         if [ "$retval" -ne 0 ]; then
-            return "$retval"
+            printWarning "Failed to install."
+            #return "$retval"
         fi
     fi
     
@@ -620,21 +645,6 @@ function create_container()
     #
     #lxc-start -n "$new_name"
 
-    #
-    # 
-    #
-    while [ -z $ip ]; do
-        ip=$(lxc-info -n "$new_name" -i | awk '{print $2}')
-
-        if [ "$ip" == "-" ]; then
-            ip=""
-        fi
-
-        if [ -z "$ip" ]; then
-            printVerbose "Waiting for $new_name to get an IP."
-            sleep 1
-        fi
-    done
 
     echo $ip
     wait_for_server_ssh $ip $OWNER
@@ -784,6 +794,12 @@ else
                 $EXTRA_OPTIONS)
 
         printVerbose "Finished executing on server '$chosen_server'."
+        printVerbose "IP address is '$container_ip'..."
+
+        if [ -z "$container_ip" ]; then
+            printError "No IP address..."
+            exit 5
+        fi
 
         wait_for_server_ssh "$container_ip" "$OWNER"
 
