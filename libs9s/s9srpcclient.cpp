@@ -5290,7 +5290,7 @@ S9sRpcClient::resetSlave()
     
     if (!options->hasSlave())
     {
-        PRINT_ERROR("To start replication the slave must be specified.");
+        PRINT_ERROR("To reset the slave, the slave must be specified.");
         PRINT_ERROR("Use the --slave or --replication-slave option.");
         return false;
     } else {
