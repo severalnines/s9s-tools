@@ -14,7 +14,15 @@ RELEASE_NAME=""
 OWNER=${USER}
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_NO_SSH_TEST=""
+LIST_IMAGES_OPTION=""
 APT_UPDATED=""
+
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
 
 #
 # Prints the software version and exits.
@@ -22,41 +30,6 @@ APT_UPDATED=""
 function printVersionAndExit()
 {
     echo "$MYNAME Version $VERSION on $(hostname)" >&2
-}
-
-#
-# $*: the error message
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "ERROR $*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
-}
-
-#
-# $*: the message
-#
-# Prints all the arguments but only if the program is in the verbose mode.
-#
-function printVerbose()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    if [ "$VERBOSE" == "true" ]; then
-        echo -e "DEBUG $*" >&2
-    fi
-
-    #if [ "$LOGFILE" ]; then
-    #    echo -e "$datestring DEBUG $MYNAME($$) $*" >>"$LOGFILE" 2>/dev/null
-    #fi
 }
 
 #
@@ -73,6 +46,8 @@ function printVerbose()
 # echo 360000 > /proc/sys/vm/dirty_expire_centisecs
 # echo 360000 > /proc/sys/vm/dirty_writeback_centisecs
 
+# /usr/share/lxc/templates/lxc-download --list
+
 function printHelpAndExit()
 {
 cat <<EOF
@@ -81,20 +56,24 @@ Usage:
 
   $MYNAME - Creates and starts containers.
 
- -h, --help           Print this help and exit.
- -v, --version        Print version information and exit.
- --verbose            Print more messages.
- --log-file=FILE      Store all the messages in the given file too.
- --server=SERVER      Create the container on remote server.
- --owner=USERNAME     The name of the user to be created.
- --no-ssh-test        Do not test the ssh connection to the container.
- --tmp                Create temporary container.
- --template=CONTAINER Use container as a template for the new container.
- --vendor=VENDOR      Download and install the given distribution.
- --release=RELEASE    Download and install the given release.
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+
+  --list-images        Lists the images available for download.
+
+  --server=SERVER      Create the container on remote server.
+  --owner=USERNAME     The name of the user to be created.
+  --no-ssh-test        Do not test the ssh connection to the container.
+  
+  --template=CONTAINER Use container as a template for the new container.
+  --vendor=VENDOR      Download and install the given distribution.
+  --release=RELEASE    Download and install the given release.
 
        VENDOR                    RELEASE
-       ---------------------------------------------------------
+       ----------------------------------------------------------------
+       ubuntu      bionic   cosmic   disco    eoan     trusty    xenial
        ubuntu      artful   bionic   trusty   xenial   zesty
        debian      buster   jessie   sid      stretch  wheezy
        alpine      3.4      3.5      3.6      3.7      edge
@@ -108,15 +87,20 @@ Usage:
 
 EXAMPLES:
   pip-container-create --server=host01
+  pip-container-create --verbose --server=core1 --vendor=ubuntu --release=xenial
 
 EOF
     exit 0
 }
 
+
+
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,owner:,no-ssh-test,tmp,\
+        -l "help,verbose,version,log-file:,\
+list-images,\
+server:,owner:,no-ssh-test,tmp,\
 template:,vendor:,release:" \
         -- "$@")
 
@@ -147,6 +131,11 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
+            ;;
+
+        --list-images)
+            shift
+            LIST_IMAGES_OPTION="--list-images"
             ;;
 
         --server)
@@ -327,7 +316,7 @@ function wait_for_server_ssh()
 
     while true; do
         if is_server_running_ssh "$serverName" $owner; then
-            printVerbose "Server '$serverName' is started."
+            printVerbose "Server '$serverName' is started, SSH ready."
             return 0
         fi
 
@@ -432,6 +421,7 @@ function create_container()
     local container_rootfs
     local ip
     local retval
+    local temp_file
 
     #
     # Checking the command line options.
@@ -512,14 +502,16 @@ function create_container()
         # The network configuration is in 
         # /etc/lxc/default.conf
         #
-        printVerbose "Creating cointainer with $vendor_name distribution."
+        temp_file=$(mktemp)
+
+        printVerbose "Creating cointainer with $vendor_name $release_name."
         lxc-create \
             -t download --name="$new_name" \
                 -- \
                 --dist "$vendor_name" \
                 --release "$release_name" \
                 --arch amd64 \
-                >/dev/null 2>/dev/null
+                >>$temp_file 2>>$temp_file
     fi
    
     container_root="/var/lib/lxc/$new_name"
@@ -527,7 +519,16 @@ function create_container()
 
     if [ ! -d "$container_root" ]; then
         printError "Failed to create '$new_name' container."
+        if [ -f "$temp_file" ]; then
+            cat "$temp_file" >&2
+            rm -f "$temp_file"
+        fi
+
         return 1
+    else
+        if [ -f "$temp_file" ]; then
+            rm -f "$temp_file"
+        fi
     fi
 
     # 
@@ -641,6 +642,49 @@ function create_container()
     return 0
 }
 
+function list_images_long()
+{
+    local old_ifs="$IFS"
+    local line
+    local distribution
+    local version
+    local old_distribution
+    local old_version
+
+    IFS=$'\n'
+    for line in $(/usr/share/lxc/templates/lxc-download --list | \
+        grep -v "Setting up"  | \
+        grep -v "Downloading" | \
+        grep -v "^DIST" | \
+        grep -v "^$" | \
+        grep '^[a-zA-Z]')
+    do
+        distribution=$(echo "$line" | awk '{print $1}')
+        version=$(echo "$line" | awk '{print $2}')
+
+        if [ "$old_version" == "$version" ]; then
+            continue
+        else
+            old_version="$version"
+        fi
+
+        #echo "-> $line"
+        if [ -z "$old_distribution" ]; then
+            printf "${DIST_COLOR}%-10s${TERM_NORMAL} " "$distribution"
+            old_distribution="$distribution"
+        elif [ "$distribution" != "$old_distribution" ]; then
+            printf "\n"
+            printf "${DIST_COLOR}%-10s${TERM_NORMAL} " "$distribution"
+            old_distribution="$distribution"
+        fi
+
+        printf "${VERSION_COLOR}%-11s${TERM_NORMAL} " "$version"
+    done
+    IFS="$old_ifs"
+
+    printf "\n"
+}
+
 #
 # Checking command line arguments.
 #
@@ -649,7 +693,7 @@ EXTRA_OPTIONS=$*
 #
 # Checking root privileges.
 #
-if [ -z "$SERVER" ]; then
+if [ -z "$SERVER" -a -z "$LIST_IMAGES_OPTION" ]; then
     if [ "$EUID" -ne 0 ]; then 
         printError "This script has to have root privileges."
         exit 5
@@ -674,6 +718,8 @@ if [ -z "$SERVER" ]; then
     if [ "$VERSION_OPTION" ]; then
         printVersionAndExit
         exit 0
+    elif [ -n "$LIST_IMAGES_OPTION" ]; then
+        list_images_long
     else
         #
         # The log file.
@@ -709,16 +755,36 @@ else
 
     if [ "$chosen_server" ]; then
         printVerbose "Executing on server '$chosen_server'."
+        if [ -n "$LIST_IMAGES_OPTION" ]; then
+            $SSH \
+                $chosen_server -- \
+                sudo $MYNAME \
+                    --owner="$OWNER" \
+                    --no-ssh-test \
+                    $VERSION_OPTION $VERBOSE_OPTION \
+                    $PARENT_NAME_OPTION \
+                    $VENDOR_NAME_OPTION \
+                    $RELEASE_NAME_OPTION \
+                    $LIST_IMAGES_OPTION \
+                    $EXTRA_OPTIONS
+            
+            exit $?
+        fi
+
         container_ip=$($SSH \
             $chosen_server -- \
             sudo $MYNAME \
                 --owner="$OWNER" \
                 --no-ssh-test \
                 $VERSION_OPTION $VERBOSE_OPTION \
-                $PARENT_NAME_OPTION $VENDOR_NAME_OPTION $RELEASE_NAME_OPTION \
+                $PARENT_NAME_OPTION \
+                $VENDOR_NAME_OPTION \
+                $RELEASE_NAME_OPTION \
+                $LIST_IMAGES_OPTION \
                 $EXTRA_OPTIONS)
 
-        printVerbose "Executed on server '$chosen_server'."
+        printVerbose "Finished executing on server '$chosen_server'."
+
         wait_for_server_ssh "$container_ip" "$OWNER"
 
         echo "$container_ip"

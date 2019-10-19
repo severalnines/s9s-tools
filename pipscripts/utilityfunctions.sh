@@ -49,6 +49,8 @@ WARN_COLOR="$XTERM_COLOR_YELLOW"
 ERR_COLOR="$XTERM_COLOR_RED"
 NORM_COLOR="$XTERM_COLOR_BLUE"
 DATE_COLOR="\033[1m\033[38;5;215m"
+DIST_COLOR="\033[1m\033[38;5;93m"
+VERSION_COLOR="\033[1m\033[38;5;190m"
 
 #
 # Various utility functions that are used (or should be used) in many scrips.
