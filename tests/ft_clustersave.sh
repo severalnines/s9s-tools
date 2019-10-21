@@ -374,7 +374,7 @@ EOF
     check_exit_code_no_job $?
     
     # Restoring the cluster on the remote controller.
-    s9s backup \
+    mys9s backup \
         --restore-cluster-info \
         --input-file=$remote_file \
         --controller=$SECONDARY_CONTROLLER_URL \

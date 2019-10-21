@@ -688,7 +688,7 @@ function list_images_long()
             old_distribution="$distribution"
         fi
 
-        printf "${VERSION_COLOR}%-11s${TERM_NORMAL} " "$version"
+        printf "${VERSION_COLOR}%-9s${TERM_NORMAL} " "$version"
     done
     IFS="$old_ifs"
 
