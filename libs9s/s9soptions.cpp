@@ -1418,7 +1418,19 @@ S9sOptions::outputFile() const
 S9sString
 S9sOptions::logFile() const 
 {
-    return getString("log_file");
+    S9sString retval;
+
+    if (m_options.contains("log_file"))
+    {
+        retval = m_options.at("log_file").toString();
+    } else {
+        retval = m_userConfig.variableValue("log_file");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("log_file");
+    }
+
+    return retval;
 }
 
 /**
@@ -1526,7 +1538,6 @@ S9sOptions::vendor() const
         if (retval.empty())
             retval = m_systemConfig.variableValue("vendor");
     }
-
 
     return retval;
 }

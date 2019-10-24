@@ -168,7 +168,7 @@ S9sRpcClientPrivate::connect()
 
             // errno: 111 connection refused.
             // errno: 115 timeout
-            PRINT_LOG("errno: %d", errno);
+            //PRINT_LOG("errno: %d", errno);
             if (errno == 115)
             {
                 int timeout = S9sOptions::instance()->clientConnectionTimeout();
@@ -210,6 +210,8 @@ S9sRpcClientPrivate::connect()
         return connect();
     } else if (!success)
     {
+        m_authenticated = false;
+        PRINT_VERBOSE("Connect failed, giving up.");
         return false;
     }
 
@@ -281,8 +283,10 @@ S9sRpcClientPrivate::close()
     if (m_socketFd < 0)
         return;
 
+    PRINT_LOG("Closing connection.");
     if (m_ssl)
     {
+        PRINT_LOG("Shutting down SSL connection.");
         SSL_shutdown(m_ssl);
         SSL_free(m_ssl);
         m_ssl = 0;
@@ -290,6 +294,7 @@ S9sRpcClientPrivate::close()
 
     if (m_sslContext)
     {
+        PRINT_LOG("Freeing SSL context.");
         SSL_CTX_free(m_sslContext);
         m_sslContext = 0;
     }
@@ -329,10 +334,10 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
-    PRINT_LOG("%p->read()", this);
+    PRINT_LOG("Reading from server.");
     if (m_ssl)
     {
-        PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
+        //PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
         do {
             retval = SSL_read(m_ssl, buffer, bufSize);
 
@@ -351,7 +356,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EINTR);
     }
 
-    PRINT_LOG("retval: %zd", retval);
+    PRINT_LOG("Received %zd bytes from server.", retval);
     return retval;
 }
 
@@ -560,14 +565,18 @@ S9sRpcClientPrivate::loadRedirect()
     S9sOptions    *options = S9sOptions::instance();    
     S9sVariantList redirects;
     S9sVariantMap  redirect;
-    S9sString      key = "redirects";
-    bool           found = true;
+    S9sString      key   = "redirects";
+    bool           found = false;
 
     PRINT_LOG("Loading controllers from state file for %s.",
             STR(options->controllerUrl()));
 
     redirects = options->getState(key).toVariantList();
-    PRINT_LOG("redirects: %s", STR(options->getState(key).toString()));
+    if (!redirects.empty())
+    {
+        PRINT_LOG("redirects: %s", STR(options->getState(key).toString()));
+    }
+
     for (uint idx = 0u; idx < redirects.size(); ++idx)
     {
         S9sVariantMap tmp = redirects[idx].toVariantMap();
@@ -592,6 +601,8 @@ S9sRpcClientPrivate::loadRedirect()
 
             m_servers << controller;
         }
+    } else {
+        PRINT_LOG("No redirects found.");
     }
 
     return found;
@@ -605,27 +616,31 @@ S9sRpcClientPrivate::setConnectFailed(
     if (m_servers.empty())
         loadRedirect();
 
-    PRINT_LOG("Setting controller %s:%d to failed.", STR(hostName), port);
-    PRINT_LOG("IDX   STATE    NAME            PORT");
-    PRINT_LOG("-----------------------------------");
+    PRINT_LOG("Setting controller %s:%d state to failed.", STR(hostName), port);
 
-    for (uint idx = 0u; idx < m_servers.size(); ++idx)
+    if (!m_servers.empty())
     {
-        S9sController &controller = m_servers[idx];
+        PRINT_LOG("IDX   STATE    NAME            PORT");
+        PRINT_LOG("-----------------------------------");
 
-        if (controller.hostName() == hostName && 
-                controller.port() == port)
+        for (uint idx = 0u; idx < m_servers.size(); ++idx)
         {
-            controller.setConnectFailed();
-        }
+            S9sController &controller = m_servers[idx];
+
+            if (controller.hostName() == hostName && 
+                    controller.port() == port)
+            {
+                controller.setConnectFailed();
+            }
         
-        PRINT_LOG("[%03u] %s %12s %6d", 
-                idx, 
-                controller.connectFailed() ? "failed  " : "untested",
-                STR(controller.hostName()), controller.port());
-    }
+            PRINT_LOG("[%03u] %s %12s %6d", 
+                    idx, 
+                    controller.connectFailed() ? "failed  " : "untested",
+                    STR(controller.hostName()), controller.port());
+        }
     
-    PRINT_LOG("-----------------------------------");
+        PRINT_LOG("-----------------------------------");
+    }
 }
 
 bool
@@ -649,6 +664,7 @@ S9sRpcClientPrivate::tryNextHost()
         }
     }
 
+    PRINT_LOG("No other controller to try.");
     return false;
 }
 

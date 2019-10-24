@@ -142,7 +142,7 @@ S9sCommander::main()
              * reasons too.
              */
             authenticated = m_client.isAuthenticated();
-            PRINT_LOG("   authenticated: %s", authenticated ? "yes" : "no");
+            //PRINT_LOG("   authenticated: %s", authenticated ? "yes" : "no");
             
             while (!authenticated)
             {
@@ -1005,8 +1005,6 @@ S9sCommander::printFooter()
         fieldSize = 6;
 
     format.sprintf("%%s%%2u%%s%%-%ds%%s", fieldSize);
-    PRINT_LOG("format: %s", STR(format));
-
     if (m_editor.isVisible() && !m_editor.isReadonly())
     {
         labels << 

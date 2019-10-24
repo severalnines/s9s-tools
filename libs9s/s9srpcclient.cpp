@@ -8461,6 +8461,7 @@ S9sRpcClient::doExecuteRequest(
     size_t       payloadSize = 0;
     bool         isJSonStream = false;
 
+    PRINT_LOG("Preparing to send request to %s.", STR(uri));
     PRINT_VERBOSE("Preparing to send request.");
 
     if (!m_priv->m_path.empty())
@@ -8475,6 +8476,7 @@ S9sRpcClient::doExecuteRequest(
 
     if (!m_priv->connect())
     {
+        PRINT_LOG("%s", STR(m_priv->m_errorString));
         PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));
         options->setExitStatus(S9sOptions::ConnectionError);
 
