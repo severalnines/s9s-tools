@@ -1,3 +1,9 @@
+s9s-tools (1.7.20191024-release1) UNRELEASED; urgency=medium
+
+  * Release for the upcoming 1.7.4 release
+
+ -- David Kedves <kedazo@severalnines.com>  Thu, 24 Oct 2019 10:30:35 +0200
+
 s9s-tools (1.7.20191017-release1) UNRELEASED; urgency=medium
 
   * New release for clustercontrol 1.7.3 release (and for the next soon)
