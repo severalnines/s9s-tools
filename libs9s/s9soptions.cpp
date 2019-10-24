@@ -515,22 +515,22 @@ S9sOptions::loadStateFile()
     S9sFile   file(fileName);
     S9sString content;
 
-    s9s_log("Loading state file '%s'.", STR(fileName));
+    PRINT_LOG("Loading state file '%s'.", STR(fileName));
     if (!file.exists())
     {
-        s9s_log("File '%s' no exists, ok.", STR(fileName));
+        PRINT_LOG("File '%s' no exists, ok.", STR(fileName));
         return false;
     }
 
     if (!file.readTxtFile(content))
     {
-        s9s_log("%s.", STR(file.errorString()));
+        PRINT_LOG("%s.", STR(file.errorString()));
         return false;
     }
 
     if (!m_state.parse(STR(content)))
     {
-        s9s_log("Error parsing state file.");
+        PRINT_LOG("Error parsing state file.");
         return false;
     }
 
@@ -545,11 +545,11 @@ S9sOptions::writeStateFile()
     S9sString content = m_state.toString();
     bool      success;
 
-    s9s_log("Writing state file '%s'.", STR(fileName));
+    PRINT_LOG("Writing state file '%s'.", STR(fileName));
     success = file.writeTxtFile(content);
     if (!success)
     {
-        s9s_log("ERROR: %s", STR(file.errorString()));
+        PRINT_LOG("ERROR: %s", STR(file.errorString()));
     }
 
     return success;
@@ -1412,6 +1412,9 @@ S9sOptions::outputFile() const
     return getString("output_file");
 }
 
+/**
+ * \returns The argument for the command line option --log-file.
+ */
 S9sString
 S9sOptions::logFile() const 
 {

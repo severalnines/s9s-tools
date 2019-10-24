@@ -142,11 +142,11 @@ S9sCommander::main()
              * reasons too.
              */
             authenticated = m_client.isAuthenticated();
-            //s9s_log("   authenticated: %s", authenticated ? "yes" : "no");
+            PRINT_LOG("   authenticated: %s", authenticated ? "yes" : "no");
             
             while (!authenticated)
             {
-                s9s_log("Not authenticated, need to do it.");
+                PRINT_LOG("Not authenticated, need to do it.");
                 m_client.maybeAuthenticate();
 
                 authenticated = m_client.isAuthenticated();
@@ -232,9 +232,9 @@ S9sCommander::renameMove(
     S9sRpcReply      reply;
     bool             success;
 
-    s9s_log("Renaming/moving an entry.");
-    s9s_log(" sourcePath: %s", STR(sourcePath));
-    s9s_log(" targetPath: %s", STR(targetPath));
+    PRINT_LOG("Renaming/moving an entry.");
+    PRINT_LOG(" sourcePath: %s", STR(sourcePath));
+    PRINT_LOG(" targetPath: %s", STR(targetPath));
 
     m_communicating   = true;
     if (targetPath.contains("/"))
@@ -263,7 +263,7 @@ S9sCommander::createFolder(
     S9sRpcReply      reply;
     bool             success;
    
-    s9s_log("Creating a folder.");
+    PRINT_LOG("Creating a folder.");
 
     m_communicating   = true;
     m_client.mkdir(fullPath);
@@ -288,7 +288,7 @@ S9sCommander::createFile(
     S9sRpcReply      reply;
     bool             success;
 
-    s9s_log("Creating a folder.");
+    PRINT_LOG("Creating a folder.");
     m_communicating   = true;
     m_client.mkfile(fullPath);
     reply = m_client.reply();
@@ -336,7 +336,7 @@ S9sCommander::saveContent(
     S9sRpcReply      reply;
     bool             success;
 
-    s9s_log("Saving CDT file '%s'.", STR(fullPath));
+    PRINT_LOG("Saving CDT file '%s'.", STR(fullPath));
     m_communicating   = true;
     m_client.setContent(fullPath, content);
     reply = m_client.reply();
@@ -576,8 +576,8 @@ void
 S9sCommander::processKey(
         int key)
 {
-    s9s_log("S9sCommander::processKey():");
-    s9s_log("*** key: %0x", key);
+    PRINT_LOG("S9sCommander::processKey():");
+    PRINT_LOG("*** key: %0x", key);
 
     #if 0
     // 
@@ -587,9 +587,9 @@ S9sCommander::processKey(
     char shift_state = 6;
     if (ioctl(0, TIOCLINUX, &shift_state) < 0) 
     {
-        s9s_log("ioctl TIOCLINUX 6 (get shift state) error: %m");
+        PRINT_LOG("ioctl TIOCLINUX 6 (get shift state) error: %m");
     } else {
-        s9s_log("%02x", shift_state);
+        PRINT_LOG("%02x", shift_state);
     }
     #endif
 
@@ -616,7 +616,7 @@ S9sCommander::processKey(
     {
         m_dialog->processKey(key);
 
-        s9s_log(" isOkPressed: %s", 
+        PRINT_LOG(" isOkPressed: %s", 
                 m_dialog->isOkPressed() ? "yes" : "no");
 
         if (m_dialog->isCancelPressed())
@@ -654,8 +654,8 @@ S9sCommander::processKey(
 
                 success = deleteEntry(path);
             } else {
-                s9s_log("Unhandled dialog type.");
-                s9s_log(" type: '%s'", 
+                PRINT_LOG("Unhandled dialog type.");
+                PRINT_LOG(" type: '%s'", 
                         STR(m_dialog->userData("type").toString()));
             }
 
@@ -780,7 +780,7 @@ S9sCommander::processKey(
         case S9S_KEY_SHIFT_F4:
             if (m_dialog == NULL)
             {
-                s9s_log("Creating make file dialog.");
+                PRINT_LOG("Creating make file dialog.");
                 m_dialog = new S9sEntryDialog(this);
                 m_dialog->setTitle("Create File");
                 m_dialog->setMessage("Enter file name:");
@@ -795,9 +795,9 @@ S9sCommander::processKey(
                 S9sString      sourceFilePath = sourceFullPath();
                 S9sString      targetDirPath = targetPath();
 
-                s9s_log("Creating rename/move file dialog.");
-                s9s_log("  sourcePath: '%s'", STR(sourceFilePath));
-                s9s_log("  targetPath: '%s'", STR(targetDirPath));
+                PRINT_LOG("Creating rename/move file dialog.");
+                PRINT_LOG("  sourcePath: '%s'", STR(sourceFilePath));
+                PRINT_LOG("  targetPath: '%s'", STR(targetDirPath));
                 
                 m_dialog = new S9sEntryDialog(this);
                 m_dialog->setTitle("Rename/move File");
@@ -812,7 +812,7 @@ S9sCommander::processKey(
         case S9S_KEY_F7:
             if (m_dialog == NULL)
             {
-                s9s_log("Creating mkdir dialog.");
+                PRINT_LOG("Creating mkdir dialog.");
                 m_dialog = new S9sEntryDialog(this);
                 m_dialog->setTitle("Create Folder");
                 m_dialog->setMessage("Enter folder name:");
@@ -822,20 +822,20 @@ S9sCommander::processKey(
             break;
 
         case S9S_KEY_F8:
-            s9s_log("F8");
+            PRINT_LOG("F8");
             if (m_dialog == NULL)
             {
                 S9sString fullPath = sourceFullPath();
                 S9sString baseName = S9sFile::basename(fullPath);
                 S9sString message;
 
-                s9s_log("Creating delete dialog.");
+                PRINT_LOG("Creating delete dialog.");
                 message.sprintf(
                         "Delete CDT entry\n"
                         "\"%s\"?",
                         STR(baseName));
 
-                s9s_log("*** fullPath: %s", STR(fullPath));
+                PRINT_LOG("*** fullPath: %s", STR(fullPath));
 
                 m_dialog = new S9sQuestionDialog(this);
                 m_dialog->setTitle("Delete");
@@ -1005,7 +1005,7 @@ S9sCommander::printFooter()
         fieldSize = 6;
 
     format.sprintf("%%s%%2u%%s%%-%ds%%s", fieldSize);
-    //s9s_log("format: %s", STR(format));
+    PRINT_LOG("format: %s", STR(format));
 
     if (m_editor.isVisible() && !m_editor.isReadonly())
     {
@@ -1067,9 +1067,9 @@ S9sCommander::entryActivated(
         const S9sString   &path,
         const S9sTreeNode &node)
 {
-    s9s_log("Activated '%s'.", STR(path));
-    s9s_log("     isFile: %s", node.isFile() ? "true" : "false");
-    s9s_log(" executable: %s", node.isExecutable() ? "true" : "false");
+    PRINT_LOG("Activated '%s'.", STR(path));
+    PRINT_LOG("     isFile: %s", node.isFile() ? "true" : "false");
+    PRINT_LOG(" executable: %s", node.isExecutable() ? "true" : "false");
 
     if (node.isFile() && node.isExecutable())
     {
@@ -1083,7 +1083,7 @@ S9sCommander::entryActivated(
         reply   = m_client.reply();
         success = reply.isOk();
 
-        s9s_log("  success: %s\n", success ? "true" : "true");
+        PRINT_LOG("  success: %s\n", success ? "true" : "true");
         
         waitForJobWithLog(0, reply.jobId(), m_client);
         //sleep(10);

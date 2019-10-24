@@ -52,9 +52,9 @@ void
 S9sEntryDialog::refreshScreen()
 {
     #if 0
-    s9s_log("S9sDialog::refreshScreen()");
-    s9s_log("***      y(): %d", y());
-    s9s_log("*** height(): %d", height());
+    PRINT_LOG("S9sDialog::refreshScreen()");
+    PRINT_LOG("***      y(): %d", y());
+    PRINT_LOG("*** height(): %d", height());
     #endif
 
     alignCenter();
@@ -76,7 +76,7 @@ void
 S9sEntryDialog::processKey(
         int key)
 {
-    s9s_log("S9sEntryDialog::processKey()");
+    PRINT_LOG("S9sEntryDialog::processKey()");
     switch (key)
     {
         case S9S_KEY_ESC:

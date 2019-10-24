@@ -113,7 +113,7 @@ void
 S9sDialog::processKey(
         int key)
 {
-    s9s_log("S9sDialog::processKey()");
+    PRINT_LOG("S9sDialog::processKey()");
     switch (key)
     {
         case S9S_KEY_ESC:

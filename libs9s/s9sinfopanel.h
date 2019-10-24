@@ -65,6 +65,8 @@ class S9sInfoPanel :
     private:
         void printLinePreview(int lineIndex);
         void printLinePreviewReply(int lineIndex);
+
+        void ensurePreviewLinesCached();
         void printLinePreviewCached(int lineIndex);
         void printLinePreviewJson(int lineIndex);
         void printLinePreviewJson(int lineIndex, S9sRpcReply &reply);

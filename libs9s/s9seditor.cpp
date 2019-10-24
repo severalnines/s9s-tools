@@ -105,7 +105,7 @@ S9sEditor::processKey(
     S9sString thisLine;
     S9sString subString;
 
-    s9s_log("S9sEditor::processKey()");
+    PRINT_LOG("S9sEditor::processKey()");
 
     // FIXME: We should still be able to scroll.
     //if (isReadonly())
@@ -114,14 +114,14 @@ S9sEditor::processKey(
     switch (key)
     {
         case S9S_KEY_DOWN:
-            s9s_log(" isReadOnly: %s", isReadonly() ? "true" : "false");
+            PRINT_LOG(" isReadOnly: %s", isReadonly() ? "true" : "false");
             if (isReadonly())
             {
                 if (m_lineOffset <= numberOfLines() - height())
                     m_lineOffset++;
 
-                s9s_log("numberOfLines: %d", numberOfLines());
-                s9s_log(" m_lineOffset: %d", m_lineOffset);
+                PRINT_LOG("numberOfLines: %d", numberOfLines());
+                PRINT_LOG(" m_lineOffset: %d", m_lineOffset);
             } else {
                 ++m_cursorY;
                 if (m_cursorY >= 0 && m_cursorY > (int)m_lines.size() - 1)
@@ -208,8 +208,8 @@ S9sEditor::processKey(
             if (m_cursorX > 0)
             {
                 thisLine = lineAt(m_cursorY);
-                s9s_log("  thisLine: '%s'", STR(thisLine));
-                s9s_log(" m_cursorX: %d", m_cursorX);
+                PRINT_LOG("  thisLine: '%s'", STR(thisLine));
+                PRINT_LOG(" m_cursorX: %d", m_cursorX);
 
                 if (m_cursorX - 1 < (int) thisLine.length())
                 {
@@ -234,7 +234,7 @@ S9sEditor::processKey(
             break;
 
         case S9S_KEY_F2:
-            s9s_log("Save requested.");
+            PRINT_LOG("Save requested.");
             m_saveRequested = true;
             break;
     }
@@ -291,7 +291,7 @@ S9sEditor::processKey(
         else
             line.insert((size_t) m_cursorX, (size_t) 1, key);
 
-        s9s_log("line: '%s'", STR(line));
+        PRINT_LOG("line: '%s'", STR(line));
         m_lines[m_cursorY] = line;
 
         ++m_cursorX;
@@ -368,7 +368,7 @@ S9sEditor::printLine(
     } else {
         printChar("║");
 
-        //s9s_log("m_lineOffset: %d", m_lineOffset);
+        //PRINT_LOG("m_lineOffset: %d", m_lineOffset);
         lineIndex -= 1;
         lineIndex += m_lineOffset;
             

@@ -46,11 +46,14 @@ s9s_print_message (
 
 void
 s9s_log(
-        const char        *formatstring,
+        const char    *file,
+        const int      line,
+        const char    *formatstring,
         ...)
 {
     S9sOptions *options = S9sOptions::instance();
     S9sString   fileName = options->logFile();
+    S9sString   logLine;
 
     if (!fileName.empty())
     {
@@ -62,8 +65,8 @@ s9s_log(
             return;
 
         va_start(args, formatstring);
-        vfprintf(stream, formatstring, args);
-        fprintf(stream, "\n");
+        logLine.vsprintf(formatstring, args);
+        fprintf(stream, "%20s:%5d %s\n", file, line, STR(logLine));
         fflush(stream);
         va_end(args);
         

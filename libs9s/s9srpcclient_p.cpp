@@ -57,11 +57,12 @@ void
 S9sRpcClientPrivate::ensureHasBuffer(
         size_t   size)
 {
-    //s9s_log("-----------------------------------");
-    //s9s_log(" ensuring buffer size");
-    //s9s_log("          size: %zd", size);
-    //s9s_log("  m_bufferSize: %zd", m_bufferSize);
-    //s9s_log("      m_buffer: %p",  m_buffer);
+    //PRINT_LOG("-----------------------------------");
+    //PRINT_LOG(" ensuring buffer size");
+    //PRINT_LOG("          size: %zd", size);
+    //PRINT_LOG("  m_bufferSize: %zd", m_bufferSize);
+    //PRINT_LOG("      m_buffer: %p",  m_buffer);
+
     if (size > m_bufferSize)
     {
         if (m_buffer == NULL)
@@ -73,7 +74,7 @@ S9sRpcClientPrivate::ensureHasBuffer(
             m_bufferSize = size;
         }
     }
-    //s9s_log("      m_buffer: %p",  m_buffer);
+    //PRINT_LOG("      m_buffer: %p",  m_buffer);
 }
 
 void
@@ -98,8 +99,7 @@ S9sRpcClientPrivate::connect()
     struct sockaddr_in server;
     bool   success;
 
-    s9s_log("");
-    s9s_log("Connecting to '%s:%d'.", STR(m_hostName), m_port);
+    PRINT_LOG("Connecting to '%s:%d'.", STR(m_hostName), m_port);
 
     /*
      * disconnect first if there is a previous connection
@@ -168,12 +168,12 @@ S9sRpcClientPrivate::connect()
 
             // errno: 111 connection refused.
             // errno: 115 timeout
-            //s9s_log("errno: %d", errno);
+            PRINT_LOG("errno: %d", errno);
             if (errno == 115)
             {
                 int timeout = S9sOptions::instance()->clientConnectionTimeout();
 
-                s9s_log("Connect to %s:%d failed: Timeout (%ds).", 
+                PRINT_LOG("Connect to %s:%d failed: Timeout (%ds).", 
                         STR(m_hostName), m_port, timeout);
 
                 m_errorString.sprintf(
@@ -182,7 +182,7 @@ S9sRpcClientPrivate::connect()
                 
                 PRINT_VERBOSE("%s", STR(m_errorString));
             } else {
-                s9s_log("Connect to %s:%d failed(%d): %m.", 
+                PRINT_LOG("Connect to %s:%d failed(%d): %m.", 
                         STR(m_hostName), m_port,
                         errno);
 
@@ -216,7 +216,7 @@ S9sRpcClientPrivate::connect()
     /*
      *
      */
-    s9s_log("Connected.");
+    PRINT_LOG("Connected.");
     PRINT_VERBOSE("Connected.");
     if (m_useTls)
     {
@@ -329,10 +329,10 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
-    //s9s_log("%p->read()", this);
+    PRINT_LOG("%p->read()", this);
     if (m_ssl)
     {
-        //s9s_log("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
+        PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
         do {
             retval = SSL_read(m_ssl, buffer, bufSize);
 
@@ -342,7 +342,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EAGAIN);
     } else {
         do {
-            //s9s_log("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
+            PRINT_LOG("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
             retval = ::read(m_socketFd, buffer, bufSize);
 
             loopCount += 1;
@@ -351,7 +351,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EINTR);
     }
 
-    //s9s_log("retval: %zd", retval);
+    PRINT_LOG("retval: %zd", retval);
     return retval;
 }
 
@@ -508,7 +508,7 @@ S9sRpcClientPrivate::rememberRedirect()
     S9sString      key = "redirects";
     bool           found = false;
 
-    s9s_log("Processing redirect.");
+    PRINT_LOG("Processing redirect.");
 
     /*
      * Collecting the controllers into a list that is stored in the object.
@@ -545,13 +545,11 @@ S9sRpcClientPrivate::rememberRedirect()
         redirects << redirect;
 
     // Saving the state file.
-    #if 0
-    s9s_log("Setting '%s' in state as: \n%s\n", 
+    PRINT_LOG("Setting '%s' in state as: \n%s\n", 
             STR(key),
             STR(S9sVariant(redirects).toString()));
 
-    s9s_log("m_controllers: %s", STR(S9sVariant(m_controllers).toString()));
-    #endif
+    PRINT_LOG("m_controllers: %s", STR(S9sVariant(m_controllers).toString()));
 
     options->setState(key, redirects);
 }
@@ -565,16 +563,16 @@ S9sRpcClientPrivate::loadRedirect()
     S9sString      key = "redirects";
     bool           found = true;
 
-    s9s_log("Loading controllers from state file for %s.",
+    PRINT_LOG("Loading controllers from state file for %s.",
             STR(options->controllerUrl()));
 
     redirects = options->getState(key).toVariantList();
-    //s9s_log("redirects: %s", STR(options->getState(key).toString()));
+    PRINT_LOG("redirects: %s", STR(options->getState(key).toString()));
     for (uint idx = 0u; idx < redirects.size(); ++idx)
     {
         S9sVariantMap tmp = redirects[idx].toVariantMap();
 
-        //s9s_log("tmp: %s", STR(tmp.toString()));
+        PRINT_LOG("tmp: %s", STR(tmp.toString()));
         if (tmp["url"] != options->controllerUrl())
             continue;
 
@@ -585,7 +583,7 @@ S9sRpcClientPrivate::loadRedirect()
     m_servers.clear();
     if (found)
     {
-        //s9s_log("Loaded redirect: %s", STR(redirect.toString()));
+        PRINT_LOG("Loaded redirect: %s", STR(redirect.toString()));
         S9sVariantList controllers = redirect["controllers"].toVariantList();
 
         for (uint idx = 0u; idx < controllers.size(); ++idx)
@@ -607,9 +605,9 @@ S9sRpcClientPrivate::setConnectFailed(
     if (m_servers.empty())
         loadRedirect();
 
-    s9s_log("Setting controller %s:%d to failed.", STR(hostName), port);
-    s9s_log("IDX   STATE    NAME            PORT");
-    s9s_log("-----------------------------------");
+    PRINT_LOG("Setting controller %s:%d to failed.", STR(hostName), port);
+    PRINT_LOG("IDX   STATE    NAME            PORT");
+    PRINT_LOG("-----------------------------------");
 
     for (uint idx = 0u; idx < m_servers.size(); ++idx)
     {
@@ -621,13 +619,13 @@ S9sRpcClientPrivate::setConnectFailed(
             controller.setConnectFailed();
         }
         
-        s9s_log("[%03u] %s %12s %6d", 
+        PRINT_LOG("[%03u] %s %12s %6d", 
                 idx, 
                 controller.connectFailed() ? "failed  " : "untested",
                 STR(controller.hostName()), controller.port());
     }
     
-    s9s_log("-----------------------------------");
+    PRINT_LOG("-----------------------------------");
 }
 
 bool
@@ -645,7 +643,7 @@ S9sRpcClientPrivate::tryNextHost()
             m_hostName = controller.hostName();
             m_port     = controller.port();
 
-            s9s_log("Next controller to try %s:%d.",
+            PRINT_LOG("Next controller to try %s:%d.",
                     STR(m_hostName), m_port);
             return true;
         }

@@ -405,7 +405,7 @@ S9sRpcClient::authenticate()
     S9sOptions    *options = S9sOptions::instance();
     bool           retval = false;
 
-    s9s_log("Authenticating...");
+    PRINT_LOG("Authenticating...");
     if (options->hasPassword())
         retval = authenticateWithPassword();
     else if (!options->password().empty())
@@ -414,9 +414,9 @@ S9sRpcClient::authenticate()
         retval = authenticateWithKey();
 
     if (retval)
-        s9s_log("Authenticated.");
+        PRINT_LOG("Authenticated.");
     else
-        s9s_log("Authentication failed.");
+        PRINT_LOG("Authentication failed.");
 
     return retval;
 }
@@ -8369,7 +8369,7 @@ S9sRpcClient::executeRequest(
             S9sVariantMap        controller;
             S9sVector<S9sString> keys;
 
-            s9s_log("Redirect notification received.");
+            PRINT_LOG("Redirect notification received.");
             PRINT_VERBOSE("Redirect notification received.");
 
             controllers = m_priv->m_reply["controllers"].toVariantMap();
@@ -8412,7 +8412,7 @@ S9sRpcClient::executeRequest(
     
             //S9S_WARNING("Trying %s:%d", STR(hostName), port);
             PRINT_VERBOSE("Redirected to %s:%d.", STR(hostName), port);
-            s9s_log("Redirected to %s:%d.", STR(hostName), port);
+            PRINT_LOG("Redirected to %s:%d.", STR(hostName), port);
 
             m_priv->close();
             m_priv->m_hostName = hostName;
@@ -8423,7 +8423,7 @@ S9sRpcClient::executeRequest(
             ++nTry;
             if (nTry > 15) 
             {
-                s9s_log("Too many redirects (%d), aborting.", nTry);
+                PRINT_LOG("Too many redirects (%d), aborting.", nTry);
                 PRINT_VERBOSE("Too many redirects (%d), aborting.", nTry);
                 break;
             }
@@ -8467,8 +8467,8 @@ S9sRpcClient::doExecuteRequest(
         myUri = m_priv->m_path + uri;
 
     PRINT_VERBOSE("URI is '%s'", STR(myUri));
-    //s9s_log("     uri: %s\n", STR(myUri));
-    //s9s_log(" request: \n%s\n", STR(payload));
+    //PRINT_LOG("     uri: %s\n", STR(myUri));
+    //PRINT_LOG(" request: \n%s\n", STR(payload));
 
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
@@ -8665,7 +8665,7 @@ S9sRpcClient::doExecuteRequest(
                 printf("Reply: \n%s\n", STR(m_priv->m_jsonReply));
             }
 
-            //s9s_log("    reply: \n%s\n", STR(m_priv->m_jsonReply));
+            //PRINT_LOG("    reply: \n%s\n", STR(m_priv->m_jsonReply));
         }
     } else {
         m_priv->m_errorString.sprintf(

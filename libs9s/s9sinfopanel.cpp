@@ -337,14 +337,6 @@ void
 S9sInfoPanel::printLinePreview(
         int lineIndex)
 {
-    #if 0
-    if (!m_lastReply.requestStatusAsString().empty() &&
-            !m_lastReply.isOk())
-    {
-        printLinePreviewJson(lineIndex, m_lastReply);
-    }
-    #endif
-
     if (m_node.name() == "..")
     {
         // This is the "up-dir". We don't have this on the controller.
@@ -368,8 +360,8 @@ S9sInfoPanel::printLinePreview(
     {
         // The node is set, but this is an old one, we are waiting for the
         // information about the node.
-        //s9s_log("       m_objectPath: '%s'", STR(m_objectPath));
-        //s9s_log("  m_node.fullPath(): '%s'", STR(m_node.fullPath()));
+        //PRINT_LOG("       m_objectPath: '%s'", STR(m_objectPath));
+        //PRINT_LOG("  m_node.fullPath(): '%s'", STR(m_node.fullPath()));
         if (lineIndex == 0)
         {
             printChar("║");
@@ -385,7 +377,6 @@ S9sInfoPanel::printLinePreview(
     {
         printLinePreviewReply(lineIndex);
     } else {
-        // Not handled cases, we print JSon.
         printLinePreviewCached(lineIndex);
     }
 }
@@ -412,128 +403,154 @@ S9sInfoPanel::printLinePreviewReply(
 }
 
 void
+S9sInfoPanel::ensurePreviewLinesCached()
+{
+    // A non-empty cache is always a valid cache, we invalidate it by deleting
+    // the lines.
+    if (!m_previewLines.empty())
+        return;
+
+    if (showJson())
+    {
+        S9sString      text  = m_object.toString();
+        m_previewLines = text.split("\n");
+    } else if (
+            m_object.contains("class_name") &&
+            m_object.contains("type") &&
+            m_object["class_name"] == "CmonCdtEntry" &&
+            m_object["type"] == "CmonCdtFile")
+    {
+        S9sString text = m_object["content"].toString();
+        m_previewLines = text.split("\n", true);
+    } else if (
+            m_object.contains("class_name") &&
+            m_object["class_name"] == "CmonClusterInfo")
+    {
+        S9sCluster cluster(m_object);
+        S9sString  text;
+
+        text = cluster.toString(false,
+                "       Name: <b>%N</b>\n"
+                "   CDT path: <b>%P</b>\n"
+                "       Type: <b>%-12T</b> Vendor: <b>%V</b>\n"
+                "      State: <b>%S\n"
+                "     Status: <b>%M\n"
+                "         ID: <b>%I\n"
+                "     Config: '<b>%C</b>'\n"
+                );
+        m_previewLines = text.split("\n");
+    } else if (
+            m_object.contains("class_name") &&
+            (m_object["class_name"] == "CmonLxcServer" ||
+             m_object["class_name"] == "CmonCloudServer"))
+    {
+        S9sServer  server(m_object);
+        S9sString  text;
+
+        text = server.toString(false,
+                "       Name: <b>%-12N</b>\n"
+                "   CDT path: <b>%h</b>\n"
+                "      Class: <b>%z</b>\n"
+                "         IP: <b>%A</b>\n"
+                "     Status: <b>%-12S</b>\n"
+                "       Type: <b>%-12T</b> Version: <b>%V</b>\n"
+                "      Model: <b>%m</b>\n"
+                "      State: <b>%S\n"
+                "     Status: <b>%M\n"
+                "         ID: <b>%I\n"
+                );
+        m_previewLines = text.split("\n");
+    } else if (
+            m_object.contains("class_name") &&
+            (m_object["class_name"] == "CmonHost" ||
+             m_object["class_name"] == "CmonController" ||
+             m_object["class_name"].toString().contains("Host")))
+    {
+        S9sNode    node(m_object);
+        S9sString  text;
+
+        text = node.toString(false,
+                "       Name: <b>%-12N</b>   Port: <b>%P</b>\n"
+                "   CDT path: <b>%h</b>\n"
+                "      Class: <b>%z</b>\n"
+                "         IP: <b>%A</b>\n"
+                "     Status: <b>%-12S</b>   Role: <b>%R</b>\n"
+                "       Type: <b>%-12T</b> Vendor: <b>%V</b>\n"
+                "      State: <b>%-12S</b>    PID: <b>%p</b>\n"
+                "     Status: <b>%M\n"
+                "         ID: <b>%I\n"
+                "     Config: '<b>%C</b>'\n"
+                "   Data Dir: '<b>%D</b>'\n"
+                "   Log File: '<b>%g</b>'\n"
+                "   PID File: '<b>%d</b>'\n"
+                );
+        m_previewLines = text.split("\n");
+    } else if (
+            m_object.contains("class_name") &&
+            m_object["class_name"] == "CmonContainer")
+    {
+        S9sContainer container(m_object);
+        S9sString    text;
+
+        text = container.toString(false,
+                "       Name: <b>%N</b>\n"
+                "      Class: <b>%z</b>\n"
+                "      Cloud: <b>%c</b>\n"
+                "       IpV4: <b>%-12A</b>  PrivateIp: <b>%a</b>\n"
+                "       Type: <b>%-12T</b>\n"
+                "      State: <b>%S</b>\n"
+                "         ID: <b>%I</b>\n"
+                "     Subnet: <b>%U</b>\n"
+                "     Server: <b>%P</b>\n"
+                "     Config: '<b>%C</b>'\n"
+                );
+        m_previewLines = text.split("\n");
+    } else if (
+            m_object.contains("class_name") &&
+            m_object["class_name"] == "CmonUser")
+    {
+        S9sUser   user(m_object);
+        S9sString text;
+
+        text = user.toString(false,
+                "       Name: <b>%N</b>\n"
+                "   CDT path: <b>%P</b>\n"
+                "         ID: <b>%I</b>\n"
+                "   Fullname: <b>%F</b>\n"
+                "      Email: <b>%M</b>\n"
+                "     Groups: <b>%G</b>\n"
+                );
+
+        m_previewLines = text.split("\n");
+    } else if (m_object.contains("class_name") &&
+            m_object["class_name"] == "CmonCdtEntry")
+    {
+        S9sString text;
+
+        text = m_object.toString(false,
+                "       Name: <b>${name}</b>\n"
+                "   CDT path: <b>${cdt_path}</b>\n"
+                "       Type: <b>${type}</b>\n"
+                "      Owner: <b>${owner_user_name}</b>/<b>"
+                "${owner_group_name}</b>\n");
+        
+        m_previewLines = text.split("\n");
+    } else {
+        S9sString      text  = m_object.toString();
+
+        m_previewLines = text.split("\n");
+    }
+}
+
+/**
+ * The panels preview lines are cached for speed. This method is printing one of
+ * the cached lines as requested.
+ */
+void
 S9sInfoPanel::printLinePreviewCached(
         int lineIndex)
 {
-    if (m_previewLines.empty())
-    {
-        if (showJson())
-        {
-            S9sString      text  = m_object.toString();
-            m_previewLines = text.split("\n");
-        } else if (
-                m_object.contains("class_name") &&
-                m_object.contains("type") &&
-                m_object["class_name"] == "CmonCdtEntry" &&
-                m_object["type"] == "CmonCdtFile")
-        {
-            S9sString text = m_object["content"].toString();
-            m_previewLines = text.split("\n", true);
-        } else if (
-                m_object.contains("class_name") &&
-                m_object["class_name"] == "CmonClusterInfo")
-        {
-            S9sCluster cluster(m_object);
-            S9sString  text;
-
-            text = cluster.toString(false,
-                    "       Name: <b>%N</b>\n"
-                    "   CDT path: <b>%P</b>\n"
-                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
-                    "      State: <b>%S\n"
-                    "     Status: <b>%M\n"
-                    "         ID: <b>%I\n"
-                    "     Config: '<b>%C</b>'\n"
-                    );
-            m_previewLines = text.split("\n");
-        } else if (
-                m_object.contains("class_name") &&
-                (m_object["class_name"] == "CmonLxcServer" ||
-                 m_object["class_name"] == "CmonCloudServer"))
-        {
-            S9sServer  server(m_object);
-            S9sString  text;
-
-            text = server.toString(false,
-                    "       Name: <b>%-20N</b>\n"
-                    "   CDT path: <b>%h</b>\n"
-                    "      Class: <b>%z</b>\n"
-                    "         IP: <b>%A</b>\n"
-                    "     Status: <b>%-20S</b>\n"
-                    "       Type: <b>%-20T</b> Version: <b>%V</b>\n"
-                    "      Model: <b>%m</b>\n"
-                    "      State: <b>%S\n"
-                    "     Status: <b>%M\n"
-                    "         ID: <b>%I\n"
-                    );
-            m_previewLines = text.split("\n");
-        } else if (
-                m_object.contains("class_name") &&
-                (m_object["class_name"] == "CmonHost" ||
-                 m_object["class_name"] == "CmonController" ||
-                 m_object["class_name"].toString().contains("Host")))
-        {
-            S9sNode    node(m_object);
-            S9sString  text;
-
-            text = node.toString(false,
-                    "       Name: <b>%-20N</b>   Port: <b>%P</b>\n"
-                    "   CDT path: <b>%h</b>\n"
-                    "      Class: <b>%z</b>\n"
-                    "         IP: <b>%A</b>\n"
-                    "     Status: <b>%-20S</b>   Role: <b>%R</b>\n"
-                    "       Type: <b>%-20T</b> Vendor: <b>%V</b>\n"
-                    "      State: <b>%-20S</b>    PID: <b>%p</b>\n"
-                    "     Status: <b>%M\n"
-                    "         ID: <b>%I\n"
-                    "     Config: '<b>%C</b>'\n"
-                    "   Data Dir: '<b>%D</b>'\n"
-                    "   Log File: '<b>%g</b>'\n"
-                    "   PID File: '<b>%d</b>'\n"
-                    );
-            m_previewLines = text.split("\n");
-        } else if (
-                m_object.contains("class_name") &&
-                m_object["class_name"] == "CmonContainer")
-        {
-            S9sContainer container(m_object);
-            S9sString    text;
-
-            text = container.toString(false,
-                    "       Name: <b>%N</b>\n"
-                    "      Class: <b>%z</b>\n"
-                    "      Cloud: <b>%c</b>\n"
-                    "       IpV4: <b>%-20A</b>  PrivateIp: <b>%a</b>\n"
-                    "       Type: <b>%-20T</b>\n"
-                    "      State: <b>%S</b>\n"
-                    "         ID: <b>%I</b>\n"
-                    "     Subnet: <b>%U</b>\n"
-                    "     Server: <b>%P</b>\n"
-                    "     Config: '<b>%C</b>'\n"
-                    );
-            m_previewLines = text.split("\n");
-        } else if (
-                m_object.contains("class_name") &&
-                m_object["class_name"] == "CmonUser")
-        {
-            S9sUser   user(m_object);
-            S9sString text;
-
-            text = user.toString(false,
-                    "       Name: <b>%N</b>\n"
-                    "   CDT path: <b>%P</b>\n"
-                    "         ID: <b>%I</b>\n"
-                    "   Fullname: <b>%F</b>\n"
-                    "      Email: <b>%M</b>\n"
-                    "     Groups: <b>%G</b>\n"
-                    );
-            m_previewLines = text.split("\n");
-        } else {
-            S9sString      text  = m_object.toString();
-
-            m_previewLines = text.split("\n");
-        }
-    }
+    ensurePreviewLinesCached();
 
     /*
      * Printing the line of the preview we are supposed to print.
@@ -546,7 +563,6 @@ S9sInfoPanel::printLinePreviewCached(
 
     printChar(" ", width() - 1);
     printChar("║");
-
 }
 
 void

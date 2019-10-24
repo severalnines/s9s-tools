@@ -139,7 +139,7 @@ S9sBrowser::processKey(
                 {
                     S9sString parentBasename;
 
-                    s9s_log("Up dir...");
+                    PRINT_LOG("Up dir...");
 
                     parentBasename = S9sFile::basename(m_path);
                     m_path = S9sFile::dirname(m_path);
@@ -214,22 +214,25 @@ S9sBrowser::printLine(
     S9sFormat   column3Format;
     S9sFormat   column4Format;
 
+    // "Name"
     header1Format.setCenterJustify();
     header1Format.setWidth(width() - 2 - 31);
     column1Format.setWidth(width() - 2 - 31);
     column1Format.setEllipsize();
     
+    // "User"
     header2Format.setCenterJustify();
     header2Format.setWidth(9);
     column2Format.setWidth(9);
     column2Format.setEllipsize();
 
-    
+    // "Group"
     header3Format.setCenterJustify();
     header3Format.setWidth(9);
     column3Format.setWidth(9);
     column3Format.setEllipsize();
-    
+   
+    // "Mode"
     header4Format.setCenterJustify();
     header4Format.setWidth(10);
     column4Format.setWidth(10);
@@ -287,10 +290,14 @@ S9sBrowser::printLine(
         
         while (m_nChars < width() - 1)
         {
-            if (m_nChars == column1 || m_nChars == column2 || m_nChars == column3)
+            if (m_nChars == column1 || 
+                    m_nChars == column2 || 
+                    m_nChars == column3)
+            {
                 ::printf("┴"); 
-            else
+            } else {
                 ::printf("─");
+            }
 
             ++m_nChars;
         }

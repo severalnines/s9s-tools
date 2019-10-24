@@ -193,9 +193,18 @@ s9s_print_message (
         const char       *formatstring,
         ...);
 
+#define PRINT_LOG(...) \
+    s9s_log(__FILE__, __LINE__, __VA_ARGS__)
+
+/**
+ * Printf messages to the s9s log file. This file is for debugging the s9s
+ * program, it is not about the controller's log.
+ */
 void
 s9s_log(
-        const char        *formatstring,
+        const char    *file,
+        const int      line,
+        const char    *formatstring,
         ...);
 
 
