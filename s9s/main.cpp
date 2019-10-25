@@ -86,16 +86,18 @@ main(int argc, char **argv)
         goto finalize;
     }
   
-    PRINT_LOG("+++ Program started +++++++++");
-    PRINT_LOG("Command line: %s", STR(options->commandLine()));
-    PRINT_LOG("Command line options processed.");
-    PRINT_VERBOSE("Command line options processed.");
-
     if (getenv("S9S_IGNORE_CONFIG") == NULL)
     {
         options->createConfigFiles();
         options->loadConfigFiles();
     }
+
+    // We can create log files after the command line options are processed and
+    // the configuration file is loaded. Both can define the log file.
+    PRINT_LOG("+++ Program started +++++++++");
+    PRINT_LOG("Command line: %s", STR(options->commandLine()));
+    PRINT_LOG("Command line options processed.");
+    PRINT_VERBOSE("Command line options processed.");
     
     if (options->useSyntaxHighlight())
         atexit(enable_cursor);
