@@ -218,7 +218,7 @@ S9sRpcClientPrivate::connect()
     /*
      *
      */
-    PRINT_LOG("Connected.");
+    //PRINT_LOG("Connected.");
     PRINT_VERBOSE("Connected.");
     if (m_useTls)
     {
@@ -283,7 +283,7 @@ S9sRpcClientPrivate::close()
     if (m_socketFd < 0)
         return;
 
-    PRINT_LOG("Closing connection.");
+    //PRINT_LOG("Closing connection.");
     if (m_ssl)
     {
         //PRINT_LOG("Shutting down SSL connection.");
