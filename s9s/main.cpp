@@ -96,7 +96,6 @@ main(int argc, char **argv)
     // the configuration file is loaded. Both can define the log file.
     PRINT_LOG("+++ Program started +++++++++");
     PRINT_LOG("Command line: %s", STR(options->commandLine()));
-    PRINT_LOG("Command line options processed.");
     PRINT_VERBOSE("Command line options processed.");
     
     if (options->useSyntaxHighlight())
@@ -115,6 +114,7 @@ finalize:
     exitStatus = options->exitStatus();
     PRINT_VERBOSE("Exiting with exitcode %d.", exitStatus);
     S9S_DEBUG("Exiting with exitcode %d.", exitStatus);
+    PRINT_LOG("+++ Exiting with %d +++++++++", exitStatus);
 
     S9sOptions::uninit();
 

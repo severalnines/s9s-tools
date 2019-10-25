@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2016 severalnines.com
+ * Copyright (C) 2011-present severalnines.com
  */
 #include "s9srpcclient_p.h"
  
@@ -99,7 +99,7 @@ S9sRpcClientPrivate::connect()
     struct sockaddr_in server;
     bool   success;
 
-    PRINT_LOG("Connecting to '%s:%d'.", STR(m_hostName), m_port);
+    PRINT_LOG("%p: Connecting to '%s:%d'.", this, STR(m_hostName), m_port);
 
     /*
      * disconnect first if there is a previous connection
@@ -127,6 +127,8 @@ S9sRpcClientPrivate::connect()
         PRINT_VERBOSE("ERROR: %s", STR(m_errorString));
         return false;
     }
+    
+    PRINT_LOG("%p: Created socket %d.", this, m_socketFd);
 
     /*
      * Setting up a read and write timeout values (otherwise it hangs on
@@ -283,7 +285,7 @@ S9sRpcClientPrivate::close()
     if (m_socketFd < 0)
         return;
 
-    //PRINT_LOG("Closing connection.");
+    PRINT_LOG("%p: Closing connection on socket %d.", this, m_socketFd);
     if (m_ssl)
     {
         //PRINT_LOG("Shutting down SSL connection.");
@@ -301,6 +303,7 @@ S9sRpcClientPrivate::close()
 
     ::shutdown(m_socketFd, SHUT_RDWR);
     ::close(m_socketFd);
+    m_socketFd = -1;
 }
 
 /**

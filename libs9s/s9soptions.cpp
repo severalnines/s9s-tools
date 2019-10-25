@@ -515,19 +515,17 @@ S9sOptions::loadStateFile()
     S9sFile   file(fileName);
     S9sString content;
 
-    PRINT_LOG("Loading state file '%s'.", STR(fileName));
     if (!file.exists())
-    {
-        PRINT_LOG("File '%s' no exists, ok.", STR(fileName));
         return false;
-    }
 
+    PRINT_LOG("Loading state file '%s'.", STR(fileName));
     if (!file.readTxtFile(content))
     {
         PRINT_LOG("%s.", STR(file.errorString()));
         return false;
     }
 
+    PRINT_LOG("State file: %s", STR(content));
     if (!m_state.parse(STR(content)))
     {
         PRINT_LOG("Error parsing state file.");

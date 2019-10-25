@@ -8461,7 +8461,7 @@ S9sRpcClient::doExecuteRequest(
     size_t       payloadSize = 0;
     bool         isJSonStream = false;
 
-    PRINT_LOG("Preparing to send request to %s.", STR(uri));
+    PRINT_LOG("Sending request to '%s'.", STR(uri));
     PRINT_VERBOSE("Preparing to send request.");
 
     if (!m_priv->m_path.empty())
