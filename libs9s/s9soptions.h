@@ -91,8 +91,9 @@ class S9sOptions
         };
 
         bool readOptions(int *argc, char *argv[]);
-        bool executeInfoRequest();
+        const S9sString &commandLine() const;
 
+        bool executeInfoRequest();
         void createConfigFiles();
         bool loadConfigFiles();
 
@@ -677,6 +678,8 @@ class S9sOptions
         S9sConfigFile        m_systemConfig;
         S9sVector<S9sString> m_extraArguments;
         S9sVariantMap        m_state;
+        /* Reconstructed command line for debugging purposes. */
+        S9sString            m_allOptions;
 
     friend class UtS9sOptions;
     friend class UtS9sRpcClient;

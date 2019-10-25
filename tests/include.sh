@@ -3108,6 +3108,8 @@ function cmon_container_list()
 #
 function runFunctionalTest ()
 {
+    local client_log_file="$HOME/s9s.log"
+
     TEST_NAME=$1
 
     if ! isSuccess; then
@@ -3128,6 +3130,10 @@ function runFunctionalTest ()
         else 
             printf "  %-26s: SUCCESS\n" "$TEST_NAME"
         fi
+    fi
+
+    if [ -f "$client_log_file" ]; then
+        echo -n "" >"$client_log_file"
     fi
 }
 

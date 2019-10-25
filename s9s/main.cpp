@@ -85,7 +85,12 @@ main(int argc, char **argv)
 
         goto finalize;
     }
-   
+  
+    PRINT_LOG("+++ Program started +++++++++");
+    PRINT_LOG("Command line: %s", STR(options->commandLine()));
+    PRINT_LOG("Command line options processed.");
+    PRINT_VERBOSE("Command line options processed.");
+
     if (getenv("S9S_IGNORE_CONFIG") == NULL)
     {
         options->createConfigFiles();
@@ -95,9 +100,6 @@ main(int argc, char **argv)
     if (options->useSyntaxHighlight())
         atexit(enable_cursor);
 
-    PRINT_VERBOSE("Command line options processed.");
-    
-    PRINT_LOG("Command line options processed.");
     options->loadStateFile();
 
     finished = options->executeInfoRequest();

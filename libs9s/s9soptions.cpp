@@ -4780,8 +4780,21 @@ S9sOptions::printError(
 }
 
 /**
+ * \returns The command line for debugging.
+ *
+ */
+const S9sString &
+S9sOptions::commandLine() const
+{
+    return m_allOptions;
+}
+
+
+/**
  * \returns true if everything was ok, false if there was some errors with the
  *   command line options.
+ *
+ * This is where we actually read and interpret the command line options.
  */
 bool
 S9sOptions::readOptions(
@@ -4790,7 +4803,16 @@ S9sOptions::readOptions(
 {
     bool retval = true;
 
-    S9S_DEBUG("");
+    // Reconstructing the command line from argv[]. This is used for debugging.
+    m_allOptions = "";
+    for (int idx = 0; argv[idx] != NULL; ++idx)
+    {
+        if (!m_allOptions.empty())
+            m_allOptions += " ";
+
+        m_allOptions += argv[idx];
+    }
+
     if (*argc < 2)
     {
         m_errorMessage = "Missing command line options.";
