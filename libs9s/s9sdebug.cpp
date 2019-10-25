@@ -1,6 +1,7 @@
 #include "s9sdebug.h"
 
 #include "S9sOptions"
+#include "S9sDateTime"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -51,10 +52,10 @@ s9s_log(
         const char    *formatstring,
         ...)
 {
-    static int  sequence = 0;
     S9sOptions *options = S9sOptions::instance();
     S9sString   fileName = options->logFile();
     S9sString   logLine;
+    time_t      now = time(NULL);
 
     if (!fileName.empty())
     {
@@ -67,16 +68,12 @@ s9s_log(
 
         va_start(args, formatstring);
         logLine.vsprintf(formatstring, args);
-        fprintf(stream, "%05d %20s:%5d DEBUG %s\n", 
-                sequence, file, line, STR(logLine));
+        fprintf(stream, "%s %20s:%5d DEBUG %s\n", 
+                S9S_TIME_T(now), file, line, STR(logLine));
         fflush(stream);
         va_end(args);
         
         fclose(stream);
-
-        ++sequence;
-        if (sequence > 99999)
-            sequence = 0;
     }
 }
 
