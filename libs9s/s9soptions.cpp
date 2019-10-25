@@ -13669,9 +13669,11 @@ S9sOptions::readOptionsNoMode(
     int           c;
     struct option long_options[] =
     {
-        { "help",          no_argument,       0, OptionHelp },
-        { "verbose",       no_argument,       0, 'v' },
-        { "version",       no_argument,       0, 'V' },
+        { "help",             no_argument,       0, OptionHelp               },
+        { "verbose",          no_argument,       0, 'v'                      },
+        { "version",          no_argument,       0, 'V'                      },
+        
+        { "color",            optional_argument, 0, OptionColor              },
         { 0, 0, 0, 0 }
     };
 
@@ -13695,6 +13697,14 @@ S9sOptions::readOptionsNoMode(
             
             case 'V':
                 m_options["print-version"] = true;
+                break;
+            
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
                 break;
 
             case '?':
