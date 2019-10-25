@@ -286,7 +286,7 @@ S9sRpcClientPrivate::close()
     PRINT_LOG("Closing connection.");
     if (m_ssl)
     {
-        PRINT_LOG("Shutting down SSL connection.");
+        //PRINT_LOG("Shutting down SSL connection.");
         SSL_shutdown(m_ssl);
         SSL_free(m_ssl);
         m_ssl = 0;
@@ -294,7 +294,7 @@ S9sRpcClientPrivate::close()
 
     if (m_sslContext)
     {
-        PRINT_LOG("Freeing SSL context.");
+        //PRINT_LOG("Freeing SSL context.");
         SSL_CTX_free(m_sslContext);
         m_sslContext = 0;
     }
