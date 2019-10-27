@@ -28,6 +28,7 @@ Usage:
   --log-file=FILE      Store all the messages in the given file too.
  
   --all                Try to SSH to all known servers.
+  --idle               SSH to the idle server(s).
   --online             SSH to all online servers.
   --server=LIST        SSH to the given server(s).
 
@@ -39,7 +40,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,blades,all,online" \
+        -l "help,verbose,version,log-file:,server:,blades,all,idle,online" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -86,6 +87,11 @@ while true; do
             shift
             ONLINE_OPTION="true"
             ;;
+        
+        --idle)
+            shift
+            IDLE_OPTION="true"
+            ;;
 
         --blades)
             shift
@@ -119,6 +125,12 @@ if [ -n "$ALL_OPTION" ]; then
     option_found="true"
 elif [ -n "$ONLINE_OPTION" ]; then
     for server in $(pip-server-control --list --online); do
+        command_line+=" $server"
+    done
+
+    option_found="true"
+elif [ -n "$IDLE_OPTION" ]; then
+    for server in $(pip-server-control --list --idle); do
         command_line+=" $server"
     done
 
