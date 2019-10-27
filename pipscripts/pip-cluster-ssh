@@ -7,10 +7,39 @@ VERBOSE=""
 LOGFILE=""
 SERVER=""
 
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... 
+
+  $MYNAME - Concurrent ssh to multiple servers.
+
+  -h, --help           Print this help and exit.
+  -v, --version        Print version information and exit.
+  --verbose            Print more messages.
+  --log-file=FILE      Store all the messages in the given file too.
+ 
+  --all                Try to SSH to all known servers.
+  --online             SSH to all online servers.
+  --server=LIST        SSH to the given server(s).
+
+EOF
+    exit 0
+}
+
+
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,blades" \
+        -l "help,verbose,version,log-file:,server:,blades,all,online" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -48,6 +77,16 @@ while true; do
             shift
             ;;
 
+        --all)
+            shift
+            ALL_OPTION="true"
+            ;;
+
+        --online)
+            shift
+            ONLINE_OPTION="true"
+            ;;
+
         --blades)
             shift
             if [ -f "$HOME/.pip/blades" ]; then
@@ -70,8 +109,26 @@ while true; do
 done
 
 command_line="clusterssh"
-for server in $(echo $SERVER | tr ',' ' '); do
-    command_line+=" $server"
-done
+option_found=""
+
+if [ -n "$ALL_OPTION" ]; then
+    for server in $(pip-server-control --list); do
+        command_line+=" $server"
+    done
+
+    option_found="true"
+elif [ -n "$ONLINE_OPTION" ]; then
+    for server in $(pip-server-control --list --online); do
+        command_line+=" $server"
+    done
+
+    option_found="true"
+elif [ -n "$SERVER" ]; then
+    for server in $(echo $SERVER | tr ',' ' '); do
+        command_line+=" $server"
+    done
+
+    option_found="true"
+fi
 
 $command_line
