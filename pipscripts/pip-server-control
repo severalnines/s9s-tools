@@ -67,6 +67,7 @@ Usage:
   --disabled           Process only the disabled servers.
   --idle               Process only the idle servers.
   --offline            Process only the servers that are off-line.
+  --online             Process only the servers that are on-line.
   --protected          Process only the servers that are protected.
   --testing            Process only the servers that are testing.
 
@@ -85,7 +86,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
 list,wake,shut-down,ping,\
 print-files,print-containers,user:,wait,all,\
-disabled,idle,offline,protected,testing" \
+disabled,idle,offline,online,protected,testing" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -191,6 +192,11 @@ while true; do
         --offline)
             shift
             OPTION_STATE_FILTER="OFF-LINE"
+            ;;
+        
+        --online)
+            shift
+            OPTION_STATE_FILTER="ON-LINE"
             ;;
 
         --disabled)
@@ -630,7 +636,11 @@ function print_host_list_long()
         fi
        
         if [ "$OPTION_STATE_FILTER" ]; then 
-            if [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
+            if [ "$OPTION_STATE_FILTER" == "ON-LINE" ]; then
+                if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+                    continue
+                fi
+            elif [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
                 continue
             fi
         fi
@@ -780,7 +790,11 @@ function print_host_list_brief()
         fi
 
         if [ "$OPTION_STATE_FILTER" ]; then 
-            if [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
+            if [ "$OPTION_STATE_FILTER" == "ON-LINE" ]; then
+                if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+                    continue
+                fi
+            elif [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
                 continue
             fi
         fi
