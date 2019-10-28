@@ -147,3 +147,69 @@ EOF
     check_exit_code_no_job $?
 }
 
+function testRegisterLxcServer()
+{
+    local class
+
+    print_title "Registering Container Server"
+
+    #
+    # Creating a container.
+    #
+    mys9s server \
+        --register \
+        --servers="lxc://$CONTAINER_SERVER" 
+
+    check_exit_code_no_job $?
+
+    mys9s server --list --long
+    check_exit_code_no_job $?
+
+    #
+    # Checking the class is very important.
+    #
+    class=$(\
+        s9s server --stat "$CONTAINER_SERVER" \
+        | grep "Class:" | awk '{print $2}')
+
+    if [ "$class" != "CmonLxcServer" ]; then
+        failure "Created server has a '$class' class and not 'CmonLxcServer'."
+        return 1
+    else
+        success "  o The container server has class $class, ok."
+    fi
+    
+    #
+    # Checking the state... TBD
+    #
+    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+}
+
+#
+# This will delete the containers we created before.
+#
+function testDeleteTestContainers()
+{
+    local containers=$(cmon_container_list)
+    local container
+
+    print_title "Deleting Containers Created by the Test"
+
+    #
+    # Deleting all the containers we created.
+    #
+    for container in $containers; do
+        mys9s container \
+            --cmon-user=system \
+            --password=secret \
+            --delete \
+            $LOG_OPTION \
+            $DEBUG_OPTION \
+            "$container"
+    
+        check_exit_code $?
+    done
+
+    #mys9s job --list
+}
+

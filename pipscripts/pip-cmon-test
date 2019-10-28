@@ -1016,7 +1016,6 @@ function run_test()
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
-                --log \
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!

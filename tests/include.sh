@@ -1859,6 +1859,19 @@ function grant_user()
     [ -z "$cmon_port" ] && cmon_port="9556"
 
     print_title "Creating the First User"
+    cat <<EOF
+  This is where we create the initial Cmon user. It is the initial because there
+  is no user defined in the s9s configuration file and in the command line
+  either. When this happens the s9s will access the controller through SSH and
+  push the user creation command through a named pipe the Cmon Controller
+  provided for exactly this reason. So there is a passwordless ssh and
+  a passwordless sudo is behind this. If these are not possible you need to ssh
+  to the controller host and do this as root.
+
+  After the initial user created we also register a public key so that the Cmon
+  user account can be used without password. 
+
+EOF
 
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
@@ -1897,6 +1910,15 @@ function grant_user()
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
 
+    print_subtitle "The $HOME/.s9s/s9s.conf"
+    cat <<EOF
+  The creation of the initial user changes the configuration file. The s9s
+  program automatically puts the username into the configuration file so that
+  next time it can be used without passing the account name in the command line.
+
+EOF
+
+    cat $HOME/.s9s/s9s.conf | print_ini_file
     #mys9s user --list-keys
     #mys9s server --list --long
     #mys9s server --unregister --servers=cmon-cloud://localhost
