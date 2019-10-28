@@ -6385,6 +6385,32 @@ S9sRpcClient::getControllers()
  * \code
    #s9s container --create --log --debug
  * \endcode
+ *
+ * Here is an example of what we send:
+ * \code
+ * {
+ *     "job": 
+ *     {
+ *         "class_name": "CmonJobInstance",
+ *         "job_spec": 
+ *         {
+ *             "command": "create_container",
+ *             "job_data": 
+ *             {
+ *                 "container": 
+ *                 {
+ *                     "class_name": "CmonContainer",
+ *                     "parent_server": "core2"
+ *                 }
+ *             }
+ *         },
+ *         "title": "Create Container"
+ *     },
+ *     "operation": "createJobInstance",
+ *     "request_created": "2019-10-28T06:40:58.472Z",
+ *     "request_id": 3
+ * }
+ * \endcode
  */
 bool
 S9sRpcClient::createContainerWithJob()
@@ -6404,7 +6430,10 @@ S9sRpcClient::createContainerWithJob()
     S9sVariantMap  jobSpec;
     S9sContainer   container;
     S9sString      uri = "/v2/jobs/";
-   
+  
+    /*
+     * Setting up a container object from the command line options.
+     */
     if (!templateName.empty())
         container.setTemplate(templateName);
     
@@ -8121,6 +8150,7 @@ S9sRpcClient::composeJobData(
     S9sString      osUserName   = options->osUser(false);
     S9sString      osKeyFile    = options->osKeyFile();
     S9sString      osPassword   = options->osPassword();
+    S9sVariantList servers      = options->servers();
 
     S9sVariantMap  jobData;
     S9sVariantList containers;
@@ -8161,6 +8191,15 @@ S9sRpcClient::composeJobData(
 
             if (!volumes.empty())
                 container.setVolumes(volumes);
+    
+            if (servers.size() > 1)
+            {
+                PRINT_ERROR("Currently only one server can be"
+                        " defined for containers.");
+            } else if (servers.size() == 1) 
+            {
+                container.setParentServerName(servers[0u].toNode().hostName());
+            }
 
             containers << container.toVariantMap();
         }
