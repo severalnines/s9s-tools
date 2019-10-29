@@ -155,7 +155,7 @@ function testRegisterLxcServer()
     cat <<EOF | paragraph
   Here we register an LXC server that will be used to create containers. No
   software will be installed, just the registration is done here, the server
-  should be fully prepared to run LXC containers.
+  should be fully prepared to run LXC containers already.
 
 EOF
 
@@ -170,7 +170,7 @@ EOF
 
     check_exit_code_no_job $?
 
-    mys9s server --list --long
+    mys9s server --stat "$CONTAINER_SERVER"
     check_exit_code_no_job $?
 
     #
@@ -182,7 +182,6 @@ EOF
 
     if [ "$class" != "CmonLxcServer" ]; then
         failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        return 1
     else
         success "  o The container server has class $class, ok."
     fi

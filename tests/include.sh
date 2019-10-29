@@ -1937,6 +1937,11 @@ EOF
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
 
+    end_verbatim
+
+    #
+    #
+    #
     print_subtitle "The $HOME/.s9s/s9s.conf"
     cat <<EOF | paragraph
   The creation of the initial user changes the configuration file. The s9s
@@ -1946,11 +1951,6 @@ EOF
 EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
-    end_verbatim
-
-    #mys9s user --list-keys
-    #mys9s server --list --long
-    #mys9s server --unregister --servers=cmon-cloud://localhost
 }
 
 function get_user_group()
