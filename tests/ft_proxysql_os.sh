@@ -27,7 +27,7 @@ OPTION_VENDOR="mariadb"
 
 NUMBER_OF_CREATED_CONTAINERS="0"
 LAST_CONTAINER_IP=""
-OPTION_CONTAINER_IMAGE="centos_7"
+OPTION_CONTAINER_IMAGE="centos_6"
 
 cd $MYDIR
 source ./include.sh
@@ -139,7 +139,7 @@ if [ -z "$CONTAINER_SERVER" ]; then
     exit 6
 fi
 
-function createContainer()
+function createContainerFromImage()
 {
     local container_name
     local container_ip
@@ -170,13 +170,15 @@ EOF
 
     check_exit_code $?
     remember_cmon_container "$container_name"
+    
+    mys9s container --stat "$container_name"
+
     check_container "$container_name"
     container_ip=$(container_ip "$container_name")
     if [ -n "$container_ip" ]; then
         success "  o Container with IP $container_ip created, ok."
     else
         failure "Failed to get an IP?"
-        return 1
     fi
 
     LAST_CONTAINER_IP=$container_ip
@@ -190,24 +192,26 @@ function testCreateCluster()
     local ip2
     local ip3
 
-    createContainer
+    createContainerFromImage
     ip1=$LAST_CONTAINER_IP
     [ -z "$ip1" ] && return 1
 
-    createContainer
+    createContainerFromImage
     ip2=$LAST_CONTAINER_IP
     [ -z "$ip2" ] && return 1
     
-    createContainer
+    createContainerFromImage
     ip3=$LAST_CONTAINER_IP
     [ -z "$ip3" ] && return 1
 
     print_title "Creating Galera Cluster"
-    cat <<EOF 
+    cat <<EOF | paragraph
   This test will create a three node Galera cluster on the containers created
   previously.
 
 EOF
+
+    begin_verbatim
 
     #
     # Creating a Galera cluster.
@@ -225,23 +229,26 @@ EOF
     
     check_exit_code $?
     wait_for_cluster_started "$CLUSTER_NAME"     
+
+    end_verbatim
 }
 
 function testAddProxySql()
 {
     local ip
 
-    createContainer
+    createContainerFromImage
     ip=$LAST_CONTAINER_IP
     [ -z "$ip" ] && return 1
 
     print_title "Adding a ProxySQL Node"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test installs a ProxySQL node on the previously created container as a
   part of the previously created cluster.
 
 EOF
 
+    begin_verbatim
     mys9s cluster \
         --add-node --cluster-id=1 \
         --nodes="proxysql://$ip" \
@@ -250,6 +257,7 @@ EOF
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
