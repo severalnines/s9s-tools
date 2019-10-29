@@ -285,19 +285,12 @@ function testCreateCluster()
     local prefix
 
     print_title "Creating a PostgreSQL Cluster"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will create a PostgreSQL cluster and check its state.
 
 EOF
 
-#    for server in $(echo $CONTAINER_SERVER | tr ',' ' '); do
-#        [ "$servers" ] && servers+=";"
-#        servers+="lxc://$server"
-#    done
-#
-#    if [ "$servers" ]; then
-#        mys9s server --register --servers=$servers
-#    fi
+    begin_verbatim
 
     #
     # Creating containers.
@@ -339,7 +332,6 @@ EOF
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
-        exit 1
     fi
 
     mys9s cluster --stat
@@ -375,19 +367,11 @@ EOF
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
 
-    #
-    # Checking what log messages were created while the cluster was created.
-    # These are not the job messages, these are actual log messages.
-    #
-    print_subtitle "Checking Log Messages"
-    cat <<EOF
-  Checking what log messages were filed while the cluster was created.
-
-EOF
+    end_verbatim
 
     #
     # FIXME:
-    # Here is the thing: These log tests arejust too complicated for this test
+    # Here is the thing: These log tests are just too complicated for this test
     # script. So we shall have a separate test to check the log subsystem, but
     # we should not fail the main postgresql test script because of some changes
     # in the log code.
@@ -395,6 +379,16 @@ EOF
     # We keep the code for now, then we can move it to a separate script.
     #
     return 0
+
+    #
+    # Checking what log messages were created while the cluster was created.
+    # These are not the job messages, these are actual log messages.
+    #
+    print_subtitle "Checking Log Messages"
+    cat <<EOF | paragraph
+  Checking what log messages were filed while the cluster was created.
+
+EOF
 
     log_format+='%I '
     log_format+='%c '
@@ -472,13 +466,15 @@ function testAddNode()
     local node="ft_postgresql_02_$$"
 
     print_title "Adding a New Node"
-    cat <<EOF
+    cat <<EOF | paragraph
 This test will add a new node as slave to the cluster created in the previous
 test as a single node postgresql cluster.
 
 EOF
 
     LAST_ADDED_NODE=$(create_node --autodestroy "$node")
+
+    begin_verbatim
 
     #
     # Adding a node to the cluster.
@@ -504,6 +500,7 @@ EOF
         --no-maint
     
     print_log_messages
+    end_verbatim
 }
 
 #
@@ -516,6 +513,8 @@ function testStopStartNode()
     local message_id
 
     print_title "Stopping and Starting a Node"
+
+    begin_verbatim
 
     #
     # First stop the node.
@@ -574,6 +573,8 @@ function testStopStartNode()
     else
         failure "JobEnded message was not found."
     fi
+
+    end_verbatim
 }
 
 #
@@ -586,11 +587,13 @@ function testConfig()
     local value
 
     print_title "Checking Configuration"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will read and write the configuration of a PostgreSQL node in the
   newly created cluster.
 
 EOF
+    
+    begin_verbatim
 
     #
     # Listing the configuration values of a postgresql node. The exit code 
@@ -672,6 +675,8 @@ EOF
     fi
 
     rm -rf tmp
+
+    end_verbatim
 }
 
 function testConfigAccess()
@@ -679,12 +684,15 @@ function testConfigAccess()
     local retCode
 
     print_title "Testing Node Config Access Rights"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will create an unprimivileged user and try to access the host
   configuration using this new user. The access for both read and write should
   be denied by the controller.
 
 EOF
+
+    begin_verbatim
+
     #
     # Creating an outsider user.
     #
@@ -731,6 +739,8 @@ EOF
     else
         success "  o User has no write access to configuration, ok."
     fi
+
+    end_verbatim
 }
 
 function testConfigFail()
@@ -739,12 +749,14 @@ function testConfigFail()
     local value
 
     print_title "Checking Configuration with Failed Settings"
-    cat <<EOF
+    cat <<EOF | paragraph
 This test will check some use-cases where the --change-config should fail. We
 send a string instead of an integer and we also check what happens when an 
 invalid/non-existing hostname is send (we had a crash).
 
 EOF
+
+    begin_verbatim
 
     mys9s node \
         --change-config \
@@ -777,6 +789,8 @@ EOF
     else
         success "  o Request failed, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -785,6 +799,8 @@ EOF
 function testCreateDatabase()
 {
     print_title "Creating Databases"
+
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -802,6 +818,7 @@ function testCreateDatabase()
         --account-name       "postmaster" \
         --account-password   "passwd12" 
 
+    end_verbatim
     return 0
 
     # These doesn't work. Previously the controller reported ok, but it did not
@@ -845,11 +862,13 @@ function testCreateDatabase()
 function testCreateAccount01()
 {
     print_title "Testing Account Management"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will create an account with special privileges. Then the account is
   tested by contacting the SQL server and executing SQL queries.
 
 EOF
+
+    begin_verbatim
 
     #
     # This command will create a new account on the cluster.
@@ -883,6 +902,7 @@ EOF
     fi
 
     mys9s account --list --long
+    end_verbatim
 }
 
 function testCreateAccount02()

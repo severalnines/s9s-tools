@@ -313,6 +313,8 @@ function startTests ()
     #
     # Printing some info
     #
+    begin_verbatim
+
     echo "Starting test $TEST_SUITE_NAME"
     if [ -n "$COMMAND_LINE_OPTIONS" ]; then
         echo "  Command line: $COMMAND_LINE_OPTIONS"
@@ -396,6 +398,8 @@ function startTests ()
         echo "* $TEST_SUITE_NAME"
         echo "***********************"
 #    fi
+
+    end_verbatim
 }
 
 #
