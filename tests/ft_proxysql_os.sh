@@ -164,8 +164,7 @@ EOF
         --create \
         --image="$OPTION_CONTAINER_IMAGE" \
         --servers=$CONTAINER_SERVER \
-        $LOG_OPTION \
-        $DEBUG_OPTION \
+        --log \
         "$container_name"    
 
     check_exit_code $?
