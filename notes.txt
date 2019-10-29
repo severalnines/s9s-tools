@@ -99,6 +99,17 @@
        47.16 GBytes 38.83 GBytes 192.168.1.127
 
 
+       ------------------------------------------------------------------------
+       Here is a reminder about how I run the tests on the servers. This shoul
+       be more automatic though.
+
+       This is pretty automatic, but it has to be started manually:
+       pipas@www:~$ pip-test-daemon --continuous
+
+       Starting a test that was not executed before is kinda complicated:
+       pipas@www:/var/www/html/ft_install$ cd /var/www/html/ft_install/
+       pipas@www:/var/www/html/ft_install$ ./schedule_test.sh --s9s ft_proxysql_os.sh
+       ------------------------------------------------------------------------
 
 s9s server --create --servers="lxc://storage01?hostgrouppath=myservers"
 s9s server --create --servers="lxc://core1?hostgrouppath=myservers"
