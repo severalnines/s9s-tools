@@ -204,6 +204,8 @@ function testDeleteTestContainers()
 
     print_title "Deleting Containers Created by the Test"
 
+    begin_verbatim
+
     #
     # Deleting all the containers we created.
     #
@@ -219,6 +221,6 @@ function testDeleteTestContainers()
         check_exit_code $?
     done
 
-    #mys9s job --list
+    end_verbatim
 }
 
