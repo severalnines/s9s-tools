@@ -259,7 +259,7 @@ function end_verbatim()
 function paragraph()
 {
     [ ! -t 1 ] && echo -n "<p>"
-    cat | sed -i 's/^  //g'
+    cat | sed -e 's/^  //g'
     [ ! -t 1 ] && echo -ne "</p>\n\n" 
 }
 
@@ -1935,7 +1935,7 @@ EOF
         --public-key-name="The_SSH_key"
 
     print_subtitle "The $HOME/.s9s/s9s.conf"
-    cat <<EOF
+    cat <<EOF | paragraph
   The creation of the initial user changes the configuration file. The s9s
   program automatically puts the username into the configuration file so that
   next time it can be used without passing the account name in the command line.
@@ -3066,16 +3066,24 @@ function clean_up_after_test()
         print_title "Leaving the Containers"
         echo "The --leave-nodes option was provided, not destroying the "
         echo "containers."
+        
+        begin_verbatim
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
+        end_verbatim
     elif [ "$OPTION_INSTALL" ]; then
         print_title "Leaving the Containers"
         echo "The --install option was provided, not destroying the "
         echo "containers."
+        
+        begin_verbatim
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
+        end_verbatim
     elif [ "$all_created_ip" ]; then
         print_title "Destroying the Containers"
+        
+        begin_verbatim
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
 
@@ -3085,6 +3093,7 @@ function clean_up_after_test()
             >/dev/null 2>/dev/null
         
         echo "    retcode : $?"
+        end_verbatim
     fi
 
     # Destroying the container list file.

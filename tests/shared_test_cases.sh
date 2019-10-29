@@ -152,6 +152,12 @@ function testRegisterLxcServer()
     local class
 
     print_title "Registering Container Server"
+    cat <<EOF | paragraph
+  Here we register an LXC server that will be used to create containers. No
+  software will be installed, just the registration is done here, the server
+  should be fully prepared to run LXC containers.
+
+EOF
 
     begin_verbatim
 

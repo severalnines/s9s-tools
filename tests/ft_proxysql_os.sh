@@ -27,6 +27,7 @@ OPTION_VENDOR="mariadb"
 
 NUMBER_OF_CREATED_CONTAINERS="0"
 LAST_CONTAINER_IP=""
+OPTION_CONTAINER_IMAGE="centos_7"
 
 cd $MYDIR
 source ./include.sh
@@ -149,11 +150,11 @@ function createContainer()
         $NUMBER_OF_CREATED_CONTAINERS \
         "$$")
 
-    print_title "Creating a Centos 7 Container"
+    print_title "Creating a Container"
     cat <<EOF | paragraph
   This test actually implements a subtask. It is creating a container on the
-  registered container server with Centos 7 OS on it. Since the test might ned
-  multiple containers this might be executed several times. 
+  registered container server. Since the test might ned multiple containers this
+  might be executed several times. 
 
 EOF
 
@@ -161,7 +162,7 @@ EOF
 
     mys9s container \
         --create \
-        --image=centos_7 \
+        --image="$OPTION_CONTAINER_IMAGE" \
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         $DEBUG_OPTION \
