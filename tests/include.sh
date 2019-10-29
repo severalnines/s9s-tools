@@ -233,11 +233,34 @@ function print_title()
 -------------------------------------------------------------------------------\
 -\033[0;39m"
     else
-        echo "</pre>"
+        #echo "</pre>"
+        echo ""
+        echo ""
         echo ""
         echo "<h3>$number $*</h3>"
+        #echo "<pre>"
+    fi
+}
+
+function begin_verbatim()
+{
+    if [ ! -t 1 ]; then
         echo "<pre>"
     fi
+}
+
+function end_verbatim()
+{
+    if [ ! -t 1 ]; then
+        echo "</pre>"
+    fi
+}
+
+function paragraph()
+{
+    [ ! -t 1 ] && echo -n "<p>"
+    cat | sed -i 's/^  //g'
+    [ ! -t 1 ] && echo -ne "</p>\n\n" 
 }
 
 #
@@ -253,10 +276,10 @@ function print_subtitle()
         echo ""
         echo -e "$TERM_COLOR_TITLE$number $*\033[0;39m"
     else
-        echo "</pre>"
+        #echo "</pre>"
         echo ""
         echo "<h4>$number $*</h4>"
-        echo "<pre>"
+        #echo "<pre>"
     fi
 }
 
@@ -1859,7 +1882,7 @@ function grant_user()
     [ -z "$cmon_port" ] && cmon_port="9556"
 
     print_title "Creating the First User"
-    cat <<EOF
+    cat <<EOF | paragraph
   This is where we create the initial Cmon user. It is the initial because there
   is no user defined in the s9s configuration file and in the command line
   either. When this happens the s9s will access the controller through SSH and
@@ -1872,6 +1895,8 @@ function grant_user()
   user account can be used without password. 
 
 EOF
+
+    begin_verbatim
 
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
@@ -1894,7 +1919,6 @@ EOF
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while granting user."
-        return 1
     else 
         success "  o Return code is 0, ok."
     fi
@@ -1919,6 +1943,8 @@ EOF
 EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
+    end_verbatim
+
     #mys9s user --list-keys
     #mys9s server --list --long
     #mys9s server --unregister --servers=cmon-cloud://localhost

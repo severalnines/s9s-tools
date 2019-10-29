@@ -153,6 +153,8 @@ function testRegisterLxcServer()
 
     print_title "Registering Container Server"
 
+    begin_verbatim
+
     #
     # Creating a container.
     #
@@ -183,6 +185,8 @@ function testRegisterLxcServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+
+    end_verbatim
 }
 
 #

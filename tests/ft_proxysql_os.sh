@@ -150,12 +150,14 @@ function createContainer()
         "$$")
 
     print_title "Creating a Centos 7 Container"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test actually implements a subtask. It is creating a container on the
   registered container server with Centos 7 OS on it. Since the test might ned
   multiple containers this might be executed several times. 
 
 EOF
+
+    begin_verbatim
 
     mys9s container \
         --create \
@@ -177,6 +179,8 @@ EOF
     fi
 
     LAST_CONTAINER_IP=$container_ip
+
+    end_verbatim
 }
 
 function testCreateCluster()
