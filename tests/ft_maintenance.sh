@@ -126,6 +126,8 @@ function testCreateCluster()
 
     print_title "Creating a cluster"
 
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
@@ -142,12 +144,8 @@ function testCreateCluster()
         --db-admin-passwd="passwd12" \
         --provider-version="9.6" \
         $LOG_OPTION
-
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    
+    check_exit_code_no_job $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -155,6 +153,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    end_verbatim
 }
 
 #
@@ -416,11 +416,7 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
 
     end_verbatim
     return 0
