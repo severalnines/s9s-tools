@@ -193,6 +193,8 @@ function testCreateMaintenance()
         failure "The maintenance not found with reason '$reason'."
     fi
 
+    mys9s cluster --list --print-json
+
     #
     # But it should disappear in a jiffy.
     #
