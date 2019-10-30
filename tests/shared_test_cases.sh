@@ -3,7 +3,9 @@
 #
 function testPing()
 {
-    print_title "Pinging Controller."
+    print_title "Pinging The Controller"
+
+    begin_verbatim
 
     #
     # Pinging. 
@@ -17,6 +19,8 @@ function testPing()
     else
         success "  o Cluster replied to ping, ok."
     fi
+
+    end_verbatim
 }
 
 #
