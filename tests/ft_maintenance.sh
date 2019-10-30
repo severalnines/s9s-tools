@@ -210,6 +210,14 @@ function testCreateMaintenance()
 function testCreateTwoPeriods()
 {
     print_title "Testing overlapping maintenance periods"
+    cat <<EOF | paragraph 
+  This test will create two overlapping maintenance periods. Then the test will
+  wait for a little while and checks that one of the maintenance periods expire,
+  the other remains.
+
+EOF
+
+    begin_verbatim
 
     #
     # Creating a maintenance period that expires real soon and an other one that
@@ -222,6 +230,8 @@ function testCreateTwoPeriods()
         --end="$(dateFormat "now + 1 min")" \
         --reason="longer_$$" \
         --batch
+    
+    check_exit_code_no_job $?
 
     mys9s maintenance \
         --create \
@@ -231,17 +241,12 @@ function testCreateTwoPeriods()
         --reason="shorter_$$" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code_no_job $?
+    mys9s maintenance --list --long
 
     #
     # The maintenance periods should be there now.
     #
-    #printVerbose "Maintenance immediately:"
-    #s9s maintenance --list --long
     if ! s9s maintenance --list --long | grep --quiet "shorter"; then
         failure "The shorter maintenance was not found."
     fi
@@ -253,9 +258,9 @@ function testCreateTwoPeriods()
     #
     # But the short one should disappear in a jiffy.
     #
-    sleep 15
-    #printVerbose "After 15 seconds:"
-    #s9s maintenance --list --long --batch
+    mysleep 15
+    mys9s maintenance --list --long
+
     if s9s maintenance --list --long | grep --quiet "shorter"; then
         failure "The shorter maintenance is still found."
     fi
@@ -264,6 +269,7 @@ function testCreateTwoPeriods()
         failure "The longer maintenance was not found."
     fi
 
+    end_verbatim
     return 0
 }
 
@@ -276,6 +282,12 @@ function testDeletePeriods()
     # Creating maintenance periods.
     #
     print_title "Testing deleting of maintenance"
+    cat <<EOF | paragraph 
+  This test will create three maintenance periods then delete them one by one.
+
+EOF
+    
+    begin_verbatim
 
     mys9s \
         maintenance --create \
@@ -285,11 +297,7 @@ function testDeletePeriods()
         --reason="test_1_$$" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating maintenance."
-    fi
+    check_exit_code_no_job $?
 
     mys9s \
         maintenance --create \
@@ -299,11 +307,7 @@ function testDeletePeriods()
         --reason="test_2_$$" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating maintenance."
-    fi
+    check_exit_code_no_job $?
     
     mys9s \
         maintenance --create \
@@ -313,31 +317,26 @@ function testDeletePeriods()
         --reason="test_3_$$" \
         --batch
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating maintenance."
-    fi
+    check_exit_code_no_job $?
+    mys9s maintenance --list --long
 
     #
     # The maintenance periods should be there now, so we can remove them.
     #
-    #printVerbose "Maintenance immediately:"
-    mys9s maintenance --list --long
-    
     for uuid in $(s9s maintenance --list --batch); do
         mys9s maintenance --delete --uuid=$uuid --batch 
-        if [ "$exitCode" -ne 0 ]; then
-            failure "Exit code is not 0 while removing maintenance."
-        fi
+        check_exit_code_no_job $?
     done
 
     n_maintenances=$(s9s maintenance --list --batch | wc -l)
     if [ "$n_maintenances" -ne 0 ]; then
         failure "There are $n_maintenances remains after the delete."
+    else
+        success "  o Maintenance periods are deleted, ok."
     fi
 
     mys9s maintenance --list --long
+    end_verbatim
 
     return 0
 }
@@ -348,12 +347,19 @@ function testDeletePeriods()
 function testClusterMaintenance()
 {
     local reason="cluster_maintenance_$$"
-
-    
+ 
     #
     # Creating a maintenance period that expires real soon.
     #
     print_title "Creating a maintenance period that expires real soon"
+    cat <<EOF
+  This test will create a cluster maintenance period and wait for a short while
+  for it to expire.
+
+EOF
+
+    begin_verbatim
+
     mys9s \
         maintenance --create \
         --cluster-id=$CLUSTER_ID \
@@ -362,33 +368,32 @@ function testClusterMaintenance()
         --reason="$reason" \
         --batch
  
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating maintenance."
-    fi
+    check_exit_code_no_job $?
 
     #
     # The maintenance periods should be there now.
     #
-    #printVerbose "Maintenance immediately:"
     mys9s maintenance --list --long
 
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found: '$reason'."
+    else
+        success "  o Maintenance found, ok."
     fi
    
     #
     # And should disappear in a few seconds.
     #
-    sleep 10
-    #printVerbose "After 15 seconds:"
+    mysleep 10
     mys9s maintenance --list --long
 
     if s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance should have expired: '$reason'."
+    else
+        success "  o Maintenance expired, ok."
     fi
 
+    end_verbatim
     return 0
 }
 
@@ -400,6 +405,8 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the cluster"
+
+    begin_verbatim
 
     #
     # Dropping the cluster.
@@ -414,6 +421,9 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
+    return 0
 }
 
 #
