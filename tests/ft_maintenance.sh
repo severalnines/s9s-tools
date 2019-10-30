@@ -154,6 +154,8 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
+    mys9s cluster --list --print-json
+
     end_verbatim
 }
 
@@ -167,6 +169,8 @@ function testCreateMaintenance()
 
     print_title "Creating maintenance expiration"
 
+    begin_verbatim
+    
     #
     # Creating a maintenance period that expires real soon.
     #
@@ -176,12 +180,8 @@ function testCreateMaintenance()
         --start="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
         --reason="$reason" 
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating maintenance."
-    fi
+
+    check_exit_code_no_job $?
     
     #
     # The maintenance period should be there now.
@@ -204,6 +204,7 @@ function testCreateMaintenance()
         failure "The maintenance should have expired: '$reason'."
     fi
 
+    end_verbatim
     return 0
 }
 

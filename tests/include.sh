@@ -440,10 +440,12 @@ function endTests ()
         exit_code=1
     fi
 
+    begin_verbatim
     printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
     printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
     printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
     printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
+    end_verbatim
 
     exit $exit_code
 }
