@@ -235,6 +235,7 @@ function testCreateCluster()
 
 EOF
 
+    begin_verbatim
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -284,7 +285,6 @@ EOF
         failure "Failed to get into STARTED state."
         mys9s cluster --stat
         mys9s job --list 
-        return 1
     fi
 
     check_remote_config_file \
@@ -292,11 +292,14 @@ EOF
         --file-name "/etc/mysql/my.cnf" \
         "user=mysql" "port=3306"
 
+    end_verbatim
+
     #
     # Checking the controller, the nodes and the cluster.
     #
     print_subtitle "Checking the State of the Cluster&Nodes"
 
+    begin_verbatim
     mys9s cluster --stat
 
     check_controller \
@@ -328,13 +331,15 @@ EOF
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
 
+    end_verbatim
+
     #
     # One more thing: if the option is given we enable the SSL here, so we test
     # everything with this feature.
     #
     if [ -n "$OPTION_ENABLE_SSL" ]; then
         print_title "Enabling SSL"
-        cat <<EOF
+        cat <<EOF | paragraph
   This test will enable SSL on a cluster, then the cluster will be stopped and 
   started. Then the test will check if the cluster is indeed started.
 EOF
@@ -366,6 +371,8 @@ function testStopNode()
    
     print_title "Stopping the Node ($FIRST_ADDED_NODE)"
 
+    begin_verbatim
+
     #
     # First stop.
     #
@@ -382,17 +389,20 @@ function testStopNode()
         --host-name "$FIRST_ADDED_NODE" \
         --file-name "/etc/mysql/my.cnf" \
         "user=mysql" "port=3306"
+
+    end_verbatim
 }
 
 function testCreateBackup()
 {
     print_title "Creating xtrabackupfull Backup"
-    cat <<EOF
+    cat <<EOF | paragraph
   In this test we try to create an xtrabackup backup. It may fail, it doesn't
   matter, what we do is we are checking the mysql configuration file after the
   backup job ended.
-
 EOF
+
+    begin_verbatim
 
     #
     # Creating the backup.
@@ -413,6 +423,8 @@ EOF
         --host-name "$FIRST_ADDED_NODE" \
         --file-name "/etc/mysql/my.cnf" \
         "user=mysql" "port=3306"
+
+    end_verbatim
 }
 
 #
