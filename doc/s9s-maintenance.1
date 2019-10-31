@@ -15,9 +15,22 @@ The application should always be started using a main option that sets what
 operation should be performed. This "main option" should be one of the
 following:
 
+\"
+\"
+\"
 .TP
 .B \-\-create
 Create a new maintenance period.
+
+.B EXAMPLE
+.nf
+s9s maintenance \\
+    --create \\
+    --nodes="192.168.0.244" \\
+    --start="2019-10-30T13:48:07.000Z" \\
+    --end="2019-10-30T13:48:17.000Z" \\
+    --reason="Memory upgrade." 
+.fi
 
 .TP
 .B \-\-delete
@@ -27,6 +40,10 @@ Delete an existing maintenance period.
 .B \-L, \-\-list
 List the registered maintenance periods from the ClusterControl controller. 
 
+
+\"
+\"
+\"
 .SS Generic Options
 
 .TP

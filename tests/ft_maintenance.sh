@@ -125,6 +125,10 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating a cluster"
+    cat <<EOF | paragraph
+  Creating a cluster for testing. Any cluster will do, a one node PostgreSQL
+  cluster is created fast.
+EOF
 
     begin_verbatim
 
@@ -153,8 +157,6 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
-
-    mys9s cluster --list --print-json
 
     end_verbatim
 }
@@ -192,8 +194,6 @@ function testCreateMaintenance()
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found with reason '$reason'."
     fi
-
-    mys9s cluster --list --print-json
 
     #
     # But it should disappear in a jiffy.
@@ -322,6 +322,7 @@ EOF
     
     check_exit_code_no_job $?
     mys9s maintenance --list --long
+    mys9s maintenance --list --long --batch
 
     #
     # The maintenance periods should be there now, so we can remove them.
