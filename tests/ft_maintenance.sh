@@ -190,6 +190,7 @@ function testCreateMaintenance()
     #
     printVerbose "Maintenance immediately:"
     mys9s maintenance --list --long
+    mys9s maintenance --list --print-json
 
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found with reason '$reason'."

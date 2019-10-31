@@ -19,7 +19,7 @@ following:
 \"
 \"
 .TP
-.B \-\-create
+.B --create
 Create a new maintenance period.
 
 .B EXAMPLE
@@ -33,12 +33,29 @@ s9s maintenance \\
 .fi
 
 .TP
-.B \-\-delete
-Delete an existing maintenance period.
+.B --delete
+Delete an existing maintenance period. The maintenance periods are identified by
+their UUID strings. The UUID stings by default shown in an abbreviated format.
+When the \fB\-\-full\-uuid\fP command line option is provided the full length
+UUID strings will be shown.
+
+.B EXAMPLE
+.nf
+s9s maintenance \\
+    --delete \\
+    --uuid="6b55b1c5-74cb-4c74-ae3d-c41583005b95" \\
+    --batch
+.fi
 
 .TP
 .B \-L, \-\-list
 List the registered maintenance periods from the ClusterControl controller. 
+
+.B EXAMPLE
+.nf
+s9s maintenance --list --long
+.fi
+
 
 
 \"
