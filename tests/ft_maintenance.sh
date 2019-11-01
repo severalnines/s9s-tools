@@ -199,7 +199,7 @@ function testCreateMaintenance()
     #
     # But it should disappear in a jiffy.
     #
-    sleep 15
+    mysleep 15
     printVerbose "After 15 seconds '$(date)':"
     mys9s maintenance --list --long
 

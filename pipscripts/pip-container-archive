@@ -417,7 +417,25 @@ function create_archive_auto_server()
         pip-container-archive --server=$server --gzip --verbose "$container"
     done
 
+    # Deleting the archive files that are made empty.
+    for file in *; do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+
+        if [ ! -s "$file" ]; then
+            rm -f "$file"
+        fi
+    done
+
+    # Out from the "$server" directory.
     popd 2>/dev/null >/dev/null
+    
+    # If we did not create files (deleted the empty files) we can remove the
+    # directory, if not this will silently fail.
+    rmdir "$server" 2>/dev/null
+
+    # Out from the target directory.
     popd 2>/dev/null >/dev/null
 }
 
