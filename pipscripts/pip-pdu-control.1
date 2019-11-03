@@ -36,3 +36,45 @@ List the outlets of the devices and their state.
 .nf
 pip-pdu-control --list-outlets pdu01 pdu02
 .fi
+
+.B TASMOTA
+Here is what a tasmota 6.4.1 sends when the device is turned on.
+
+.nf
+tele/sonoff12/LWT = Online (retained)
+cmnd/sonoff12/POWER = 
+tele/sonoff12/INFO1 = {"Module":"Sonoff S2X","Version":"6.4.1(sonoff)","FallbackTopic":"cmnd/DVES_134D72_fb/","GroupTopic":"sonoffs"}
+tele/sonoff12/INFO2 = {"WebServerMode":"Admin","Hostname":"sonoff12-3442","IPAddress":"192.168.2.16"}
+tele/sonoff12/INFO3 = {"RestartReason":"Power on"}
+stat/sonoff12/RESULT = {"POWER":"OFF"}
+stat/sonoff12/POWER = OFF
+tele/sonoff12/STATE = {"Time":"1970-01-01T00:00:14","Uptime":"0T00:00:14","Vcc":3.399,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"POWER":"OFF","Wifi":{"AP":2,"SSId":"pipas2","BSSId":"E0:B9:4D:C3:B5:80","Channel":9,"RSSI":100}}
+.fi
+
+Same tasmota 6.4.1 on turning on/off manually.
+.nf
+stat/sonoff12/RESULT = {"POWER":"ON"}
+stat/sonoff12/POWER = ON
+stat/sonoff12/RESULT = {"POWER":"OFF"}
+stat/sonoff12/POWER = OFF
+.fi
+
+
+Same sonoff with tasmota 6.7.1 on turning on and switching on/off:
+.nf
+tele/sonoff12/LWT = Online (retained)
+cmnd/sonoff12/POWER = 
+tele/sonoff12/INFO1 = {"Module":"Sonoff S2X","Version":"6.7.1(sonoff)","FallbackTopic":"cmnd/DVES_134D72_fb/","GroupTopic":"sonoffs"}
+tele/sonoff12/INFO2 = {"WebServerMode":"Admin","Hostname":"sonoff12-3442","IPAddress":"192.168.2.16"}
+tele/sonoff12/INFO3 = {"RestartReason":"Software/System restart"}
+stat/sonoff12/RESULT = {"POWER":"OFF"}
+stat/sonoff12/POWER = OFF
+tele/sonoff12/STATE = {"Time":"1970-01-01T00:00:15","Uptime":"0T00:00:17","UptimeSec":17,"Heap":27,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":1,"POWER":"OFF","Wifi":{"AP":2,"SSId":"pipas2","BSSId":"E0:B9:4D:C3:B5:80","Channel":9,"RSSI":100,"LinkCount":1,"Downtime":"0T00:00:06"}}
+.fi
+
+.nf
+stat/sonoff12/RESULT = {"POWER":"ON"}
+stat/sonoff12/POWER = ON
+stat/sonoff12/RESULT = {"POWER":"OFF"}
+stat/sonoff12/POWER = OFF
+.fi

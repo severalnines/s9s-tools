@@ -360,6 +360,8 @@ function create_backup_dir()
 function create_archive_auto_server()
 {
     local server="$1"
+    local server_status
+    local server_new_status
     local target_dir
     local containers
     local container
@@ -370,6 +372,18 @@ function create_archive_auto_server()
     if [ -z "$server" ]; then
         printError "create_archive_auto_server(): Expected server name."
         exit 1
+    fi
+
+    server_status=$(pip-server-control --ping "$server")
+    if [ "$server_status" == "off" ]; then
+        printVerbose "Server '$server' is shut down, trying to start it."
+        timeout --signal=9 15m pip-server-control --wake --wait "$server"
+
+        server_new_status=$(pip-server-control --ping "$server")
+        if [ "$server_new_status" == "off" ]; then
+            printError "Could not wake up the server, giving up."
+            return 1
+        fi
     fi
 
     # Finding the target directory.
@@ -404,7 +418,7 @@ function create_archive_auto_server()
     # Creating and entering the backup directory for the server.
     create_backup_dir "$server"
     
-    printVerbose "Entering directory '$target_dir'..."
+    printVerbose "Entering directory '$server'..."
     pushd "$server" 2>/dev/null >/dev/null
     if [ $? -ne 0 ]; then
         printVerbose "Failed to enter directory '$server'."
@@ -416,6 +430,12 @@ function create_archive_auto_server()
         printVerbose "Archiving $container in $PWD"
         pip-container-archive --server=$server --gzip --verbose "$container"
     done
+
+    # If the server was off, we can stop it again.
+    if [ "$server_status" == "off" ]; then
+        printVerbose "The server '$server' was off, stopping it again."
+        pip-server-control --shut-down "$server"
+    fi
 
     # Deleting the archive files that are made empty.
     for file in *; do

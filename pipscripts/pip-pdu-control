@@ -923,6 +923,71 @@ function ping_device()
 }
 
 #
+#
+#    payload.title = payload.hostName + " (" + payload.name + ")";
+#    payload.description = payload.ipAddress;
+#    payload.icon_name = "signal_wifi_2_bar";
+#
+function device_mqtt_string()
+{
+    local device
+    local ip
+    local long_name
+    local title=""
+    local standard=""
+    local icon_name="signal_wifi_2_bar"
+    local description
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --device)
+                device="$2"
+                shift 2
+                ;;
+
+            --ip)
+                ip="$2"
+                shift 2
+                ;;
+
+            --long-name)
+                long_name="$2"
+                shift 2
+                ;;
+
+            --standard)
+                standard="$2"
+                shift 2
+                [ "$standard" == "tasmota" ] && icon_name="signal_wifi_2_bar"
+                [ "$standard" == "apc" ]     && icon_name="power"
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    title="$long_name"
+    description="$device ($ip)"
+    echo -n "{"
+    echo -n "\"name\": \"$device\", "
+    echo -n "\"icon_name\": \"$icon_name\", "
+    echo -n "\"title\": \"$title\", "
+    echo -n "\"description\": \"$description\", "
+    echo -n "\"ip\": \"$ip\""
+    echo -n "}"
+    echo 
+
+}
+
+function device_mqtt_topic()
+{
+    local device_name=$1
+
+    echo "pip/pdu-control/discover/$device_name"
+}
+
 # Prints the list of PDU devices in long format.
 #
 function print_device_list_long()
@@ -931,6 +996,8 @@ function print_device_list_long()
     local name
     local mode
     local n_outlets
+    local topic
+    local message
 
     printVerbose "print_device_list_long()"
     print_header
@@ -1012,6 +1079,7 @@ function print_device_list_long()
             mode+="-"
         fi
 
+        # Printing the device name, pinging it if requested.
         if [ -z "$OPTION_PING" ]; then 
             printf "$DEVICE_COLOR%-16s$TERM_NORMAL "  "$device_name"
         else
@@ -1023,6 +1091,7 @@ function print_device_list_long()
                 printf "$ERR_COLOR%-16s$TERM_NORMAL "  "$device_name"
             fi
         fi
+
         printf "$TERM_NORMAL%-5s$TERM_NORMAL "    "$mode"
         printf "$NUMBER_COLOR%2d$TERM_NORMAL "     "$n_outlets"
 
@@ -1039,6 +1108,22 @@ function print_device_list_long()
         printf "\n"
 
         let SUM_DEVICES+=1
+
+        topic=$(device_mqtt_topic "$device_name")
+        message=$(device_mqtt_string \
+            --device    "$device_name" \
+            --ip        "$CONF_PDU_SERVER" \
+            --long-name "$CONF_PDU_NAME" \
+            --standard  "$CONF_PDU_STANDARD")
+
+        #echo "$topic: $message"
+        #echo "$CONF_PDU_STANDARD"
+        mosquitto_pub \
+            -u "$MQTT_USER" \
+            -P "$MQTT_PASSWORD" \
+            -h "$MQTT_SERVER" \
+            -t "$topic" \
+            -m "$message"
     done
 
     print_summary
