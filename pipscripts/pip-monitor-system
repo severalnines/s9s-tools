@@ -49,7 +49,7 @@ Usage:
   --log-file=FILE      Store all the messages in the given file too.
   --id=INTEGER         Set the host ID.
 
-EXAMPLES:
+
 
 EOF
     exit 0
@@ -173,6 +173,12 @@ function get_cpu_temp()
 {
     local temp
     
+    temp=$(which sensors)
+    if [ -z "$temp" ]; then
+        echo 0
+        return 1
+    fi
+
     temp=$(sensors | \
         grep Core | \
         awk -F: '{print $2}' | \
@@ -254,9 +260,10 @@ function local_resources_to_mqtt()
     local message=$(get_resources)
     local retcode
 
-    printVerbose "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
-    printVerbose "    topic: $topic"
-    printVerbose "  message: $message"
+    echo "------------------------------------"
+    echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
+    echo "    topic: $topic"
+    echo "  message: $message"
     mosquitto_pub \
         -u "$MQTT_USER" \
         -P "$MQTT_PASSWORD" \
@@ -266,7 +273,7 @@ function local_resources_to_mqtt()
         -m "$message"
 
     retcode=$?
-    echo "  retcode: $retcode"
+    #echo "  retcode: $retcode"
 }
 
 function get_disk_stats()
@@ -297,6 +304,7 @@ function get_hw_info()
     local manufacturer=$(cat /sys/class/dmi/id/board_vendor | head -n1)
 
     model=$(echo ${model%%+([[:space:]])})
+    manufacturer=$(echo ${manufacturer%%+([[:space:]])})
     cat <<EOF
 { "hostname": "$hostname", "model": "$model", "manufacturer": "$manufacturer"}
 EOF
@@ -492,8 +500,10 @@ function run_checks()
 
     emit=""
     if [ ! -f "$rc_file" -o ! -f "$check_file" ]; then
+        printVerbose "Not found: $rc_file $check_file"
         emit="true"
     elif [ "$MYFULLNAME" -nt "$rc_file" ]; then
+        printVerbose "$MYFULLNAME -nt $rc_file"
         emit="true"
     fi
 

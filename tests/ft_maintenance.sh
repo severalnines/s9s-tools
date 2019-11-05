@@ -35,6 +35,7 @@ Usage:
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
+  --install        Leave the cluster and the nodes.
 
 SUPPORTED TESTS:
   o testPing                 Pings the controller.
@@ -51,7 +52,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,reset-config,server:" \
+        -l "help,verbose,print-json,log,print-commands,reset-config,server:,\
+install" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -98,8 +100,17 @@ while true; do
             shift
             ;;
 
+        --install)
+            shift
+            OPTION_INSTALL="--install"
+            ;;
+
         --)
             shift
+            break
+            ;;
+
+        *)
             break
             ;;
     esac
@@ -132,7 +143,7 @@ EOF
 
     begin_verbatim
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$MYBASENAME_01_$$")
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
     
@@ -402,6 +413,53 @@ EOF
     return 0
 }
 
+function testScheduledJob()
+{
+    local tag="testScheduledJob"
+
+    print_title "Checking Scheduled Job"
+    cat <<EOF | paragraph
+  This test screates a job that is sceduled, checks it, then waits a while for
+  the job to be triggered and executed. Then the test checks if the job is
+  indeed executed.
+EOF
+
+    begin_verbatim
+
+    #
+    # Creating the sceduled job.
+    #
+    mys9s job \
+        --success \
+        --schedule="$(dateFormat "now + 10 sec")" \
+        --job-tags=testScheduledJob 
+
+    check_exit_code_no_job $?
+    mys9s job --list --job-tags=$tag
+
+    state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
+    if [ "$state" == "SCHEDULED" ]; then
+        success "  o The job is in scheduled state, ok."
+    else
+        failure "The job should be in scheduled state."
+    fi
+
+    #
+    # Waiting and checking if the job is triggered.
+    #
+    mysleep 20
+    mys9s job --list --job-tags=$tag
+    
+    state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
+    if [ "$state" == "FINISHED" ]; then
+        success "  o The job is in finished state, ok."
+    else
+        failure "The job should be in finished state."
+    fi
+
+    end_verbatim
+}
+
 #
 # Dropping the cluster from the controller.
 #
@@ -412,6 +470,11 @@ function testDrop()
     print_title "Dropping the cluster"
 
     begin_verbatim
+
+    if [ -n "$OPTION_INSTALL" ]; then
+        echo "The --install option was provided, not dropping the cluster."
+        return 0
+    fi
 
     #
     # Dropping the cluster.
@@ -444,6 +507,7 @@ else
     runFunctionalTest testCreateTwoPeriods
     runFunctionalTest testDeletePeriods
     runFunctionalTest testClusterMaintenance
+    runFunctionalTest testScheduledJob
     runFunctionalTest testDrop
 fi
 

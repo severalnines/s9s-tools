@@ -458,6 +458,28 @@ EOF
         "#{$prefix/job_spec/job_data/sudo_password}"    "xxxxxxxxx" 
 }
 
+function testRemoveNodeFail()
+{
+    local ret_code
+
+    printVerbose "Trying to Remove Last Node"
+
+    mys9s cluster \
+        --remove-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$FIRST_ADDED_NODE:8089" \
+        --log
+
+#        $LOG_OPTION $DEBUG_OPTION
+    ret_code="$?"
+
+    if [ "$ret_code" -eq 0 ]; then
+        failure "Removing the only database node should not be possible."
+    else
+        success "Removing the only database node failed, ok."
+    fi
+}
+
 #
 # This test will add one new node to the cluster.
 #
@@ -1334,6 +1356,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
+    runFunctionalTest testRemoveNodeFail
     runFunctionalTest testAddNode
     runFunctionalTest testStopStartNode
 
