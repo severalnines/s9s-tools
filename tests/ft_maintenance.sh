@@ -143,7 +143,7 @@ EOF
 
     begin_verbatim
 
-    nodeName=$(create_node --autodestroy "$MYBASENAME_01_$$")
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_01_$$")
     nodes+="$nodeName;"
     FIRST_NODENAME="$nodeName"
     
@@ -432,7 +432,7 @@ EOF
     mys9s job \
         --success \
         --schedule="$(dateFormat "now + 10 sec")" \
-        --job-tags=testScheduledJob 
+        --job-tags=$tag 
 
     check_exit_code_no_job $?
     mys9s job --list --job-tags=$tag
@@ -456,6 +456,67 @@ EOF
     else
         failure "The job should be in finished state."
     fi
+
+    end_verbatim
+}
+
+function testRecurringJob()
+{
+    local tag="testRecurringJob"
+
+    print_title "Checking Recurring Jobs"
+    cat <<EOF | paragraph
+  This test screates a job that is recurring, executed in every 2 minutes. Then
+  the test will wait and check tha indeed the job is executed later. The
+  recurring jobs are implemented so that the orginal job remains in scheduled
+  state and every time a recuurence occures a new instance will be created and
+  that instance will be executed.
+
+EOF
+
+    begin_verbatim
+
+    #
+    # Creating the sceduled job.
+    #
+    mys9s job \
+        --success \
+        --cluster-id=1 \
+        --recurrence="*/2 * * * *" \
+        --job-tags=$tag
+
+    check_exit_code_no_job $?
+    mys9s job --list --job-tags=$tag
+
+    state=$(s9s job --list --job-tags=$tag --batch | head -n 1 | awk '{print $3}')
+    if [ "$state" == "SCHEDULED" ]; then
+        success "  o The job is in scheduled state, ok."
+    else
+        failure "The job should be in scheduled state."
+    fi
+
+    #
+    # Waiting and checking if the job is triggered.
+    #
+    mysleep 180
+    mys9s job --list --job-tags="$tag,recurrence"
+    
+    state=$(s9s job --list --job-tags=$tag,recurrence --batch | head -n 1 | awk '{print $3}')
+    if [ "$state" == "FINISHED" ]; then
+        success "  o The recurring job is in finished state, ok."
+    else
+        failure "The recurring job should be in finished state."
+    fi
+
+    state=$(s9s job --list --job-tags=$tag --batch | grep SCHEDULED | awk '{print $3}')
+    if [ "$state" == "SCHEDULED" ]; then
+        success "  o The original job is in scheduled state, ok."
+    else
+        failure "The original job should be in scheduled state."
+    fi
+
+    mysleep 120
+    mys9s job --list --job-tags="$tag,recurrence" --long
 
     end_verbatim
 }
@@ -508,6 +569,7 @@ else
     runFunctionalTest testDeletePeriods
     runFunctionalTest testClusterMaintenance
     runFunctionalTest testScheduledJob
+    runFunctionalTest testRecurringJob
     runFunctionalTest testDrop
 fi
 
