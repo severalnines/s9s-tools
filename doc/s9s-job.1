@@ -185,29 +185,29 @@ accepted as specified in the strftime(3) man page.
 .\" Options Related to Newly Created Jobs
 .\"
 .SS Options Related to Newly Created Jobs
-Some operations will start a job on the controller. The following command line
-options can be used in relation to these jobs:
+Some operations will create job on the controller. The following command line
+options can be used in relation to these newly created jobs:
 
 .TP 
-.BI \-\^\-job\-tags= LIST 
+.BI --job-tags= LIST 
 List of one of more strings separated by either ',' or ';' to be added as tags
 to a newly created job if a job is indeed created.
 
 .TP
-.B \-\-log
+.B --log
 If the s9s application created a job and this command line option is provided it
 will wait until the job is executed. While waiting the job logs will be shown
 unless the silent mode is set.
 
 .TP 
-.BI \-\^\-recurrence= CRONTABSTRING
+.BI --recurrence= CRONTABSTRING
 This option can be used to create recurring jobs, jobs that are repeated over
 and over again until they are manually deleted. Every time the job is repeated a
 new job will be instantiated by copying the original recurring job and starting
 the copy. The option argument is a crontab style string defining the recurrence
 of the job. 
 
-The crontab string must have exactly five space separated fiels as follows:
+The crontab string must have exactly five space separated fields as follows:
 
 .nf
           \fBfield          value
@@ -220,13 +220,16 @@ The crontab string must have exactly five space separated fiels as follows:
 .fi
 
 All the fields may be a simple expression or a list of simple expression
-separated by a comma (,). The simple expression is either a star (*)
-representing "all the possible values", an integer number representing the given
-minute, hour, day or month (e.g. 5 for the fifth day of the month), or two
-numbers separated by a dash representing an interval (e.g. 8-16 representing
-every hour from 8 to 16). The simple expression can also define a "step" value,
-so for example "*/2" might stand for "every other hour" or "8-16/2" might stand
-for "every other hour between 8 and 16.
+separated by a comma (,). So to clarify the fields are separeted by space can
+contain subfields separated by comma.
+
+The simple expression is either a star (*) representing "all the possible
+values", an integer number representing the given minute, hour, day or month
+(e.g. 5 for the fifth day of the month), or two numbers separated by a dash
+representing an interval (e.g. 8-16 representing every hour from 8 to 16). The
+simple expression can also define a "step" value, so for example "*/2" might
+stand for "every other hour" or "8-16/2" might stand for "every other hour
+between 8 and 16 or "*/2" might say "every other hours".
 
 Please check crontab(5) for more details.
 

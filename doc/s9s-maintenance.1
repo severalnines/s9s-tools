@@ -127,22 +127,22 @@ is
 .BR never ", " always ", or " auto .
 
 .TP
-.B \-\-batch
+.B --batch
 Print no messages. If the application created a job print only the job ID number
 and exit. If the command prints data do not use syntax highlight, headers,
 totals, only the pure table to be processed using filters.
 
 .TP
-.B \-\-no\-header
+.B --no-header
 Do not print headers for tables.
 
 .TP
-.BR \-\^\-date\-format =\fIFORMATSTRING\fP "]
+.BR --date-format =\fIFORMATSTRING\fP "]
 Set the date and time format for the output of the program. The format string 
 is as it is specified for the strftime() standard C library function. 
 
 .TP
-.B \-\-full-uuid
+.B --full-uuid
 Print the full UUID string in the output, do not abbreviate it.
 
 .\"
@@ -151,21 +151,21 @@ Print the full UUID string in the output, do not abbreviate it.
 .SS Options Related to the Maintenance
 
 .TP
-.BI \-\^\-nodes= NODE
+.BI --nodes= NODE
 The node for which the maintenance period will be registered. 
 
 .TP
-.BI \-\^\-start= DATETIME
+.BI --start= DATETIME
 A string representation of the date and time when the maintenance period will
 start.
 
 .TP
-.BI \-\^\-end= DATETIME
+.BI --end= DATETIME
 A string representation of the date and time when the maintenance period will
 end.
 
 .TP
-.BI \-\^\-reason= STRING
+.BI --reason= STRING
 A short, human readable string descibing why the maintenance period is created.
 This will help the users to understand what happens.
 
