@@ -350,9 +350,12 @@ class S9sRpcClient
         bool registerCluster();
         bool createNode();
         bool removeNode();
+
         bool stopCluster();
         bool startCluster();
         bool dropCluster();
+
+        bool createMaintenanceWithJob();
 
         bool startNode();
         bool startSlave();

@@ -521,6 +521,32 @@ EOF
     end_verbatim
 }
 
+function testMaintenanceJob1()
+{
+    print_title "Creating Maintenance Starting Now with Job "
+    mys9s maintenance \
+        --create-with-job \
+        --cluster-id=1 \
+        --reason="testMaintenanceJob1" \
+        --minutes=60 \
+        --log 
+
+    check_exit_code $?
+
+    print_title "Creating Maintenance Starting Later with Job "
+    mys9s maintenance \
+        --create-with-job \
+        --cluster-id=1 \
+        --reason="testMaintenanceJob2" \
+        --start="$(dateFormat "now + 10 sec")" \
+        --end="$(dateFormat "now + 43 sec")" \
+        --log 
+    
+    check_exit_code $?
+
+    mys9s maintenance --list --long
+}
+
 #
 # Dropping the cluster from the controller.
 #
@@ -570,6 +596,7 @@ else
     runFunctionalTest testClusterMaintenance
     runFunctionalTest testScheduledJob
     runFunctionalTest testRecurringJob
+    runFunctionalTest testMaintenanceJob1
     runFunctionalTest testDrop
 fi
 

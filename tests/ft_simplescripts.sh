@@ -45,29 +45,6 @@ Usage:
   --provider-version=STRING The SQL server provider version.
   --leave-nodes    Do not destroy the nodes at exit.
 
-SUPPORTED TESTS:
-  o testPing             Pings the controller.
-  o testCreateCluster    Creates a Galera cluster.
-  o testSetupAudit       Sets up audit logging.
-  o testSetConfig01      Changes some configuration values for the cluster.
-  o testSetConfig02      More configuration checks.
-  o testRestartNode      Restarts one node of the cluster.
-  o testStopStartNode    Stops, then starts a node.
-  o testCreateAccount    Creates an account on the cluster.
-  o testCreateDatabase   Creates a database on the cluster.
-  o testUploadData       If test data is found uploads data to the cluster.
-  o testAddNode          Adds a new database node.
-  o testAddProxySql      Adds a ProxySql node to the cluster.
-  o testAddRemoveHaProxy Adds, then removes a HaProxy node.
-  o testAddHaProxy       Adds a HaProxy server to the cluster.
-  o testRemoveNode       Removes a data node from the cluster.
-  o testRollingRestart   Executes a rolling restart on the cluster.
-  o testCreateBackup     Creates a backup.
-  o testRestoreBackup    Restores the previously created backup.
-  o testRemoveBackup     Removes the backup previously created.
-  o testStop             Stops the cluster.
-  o testStart            Starts the cluster.
-
 EXAMPLE
  ./$MYNAME --print-commands --server=storage01 --reset-config --install
 

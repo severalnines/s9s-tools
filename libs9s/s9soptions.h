@@ -124,6 +124,8 @@ class S9sOptions
 
         bool setNodes(const S9sString &value);
 
+        bool hasJobOptions() const;
+
         bool setSlave(const S9sString &value);
         S9sVariant slave() const;
         bool hasSlave() const;
@@ -160,6 +162,10 @@ class S9sOptions
         S9sString vendor() const;
         bool hasProviderVersion() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
+
+        bool hasMinutes() const;
+        int minutes() const;
+        
         S9sString osSudoPassword() const;
 
         bool hasSshCredentials();
@@ -441,6 +447,7 @@ class S9sOptions
 
 
         bool isCreateRequested() const;
+        bool isCreateWithJobRequested() const;
         bool isStageRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
@@ -521,8 +528,10 @@ class S9sOptions
 
         S9sString timeStyle() const;
 
+        bool hasStart() const;
         S9sString start() const;
         S9sString begin() const;
+        bool hasEnd() const;
         S9sString end() const;
         S9sString reason() const;
         S9sString uuid() const;

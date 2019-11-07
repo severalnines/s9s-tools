@@ -994,6 +994,10 @@ S9sBusinessLogic::execute()
             success = client.deleteMaintenance();
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+        } else if (options->isCreateWithJobRequested())
+        {
+            success = client.createMaintenanceWithJob();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Unknown maintenance operation.");
         }

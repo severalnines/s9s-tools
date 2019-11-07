@@ -351,27 +351,31 @@ function wake_server()
         CONF_HOST_PROTECTED=""
         CONF_HOST_VIRTUAL=""
         CONF_HOST_PDU=""
+        CONF_HOST_ILOM=""
         
         source "$config_file"
     fi
 
     pip-say --beep "Starting up ${hostname}."
 
+    pip-say "Powering on server $CONF_HOST_NAME through the PDU."
     if [ -n "$CONF_HOST_PDU" ]; then
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
-            echo "Switching on PDU $pdu."
+            printVerbose "Switching on PDU $pdu."
             pip-pdu-control --on $pdu
         done
 
-        sleep 2
+        sleep 6
     fi
 
-    if [ "$hostName" == "core2" ]; then
+    if [ -n "$CONF_HOST_ILOM" ]; then
+        printVerbose "Will use ILOM of ${CONF_HOST_NAME}."
+        pip-say "Will use integrated lights out manager on ${CONF_HOST_NAME}."
         # ILOM needs to start...
-        sleep 15
+        sleep 30
 
-        echo "Using ILOM to start server."
-        printVerbose "Using ILOM to start server."
+        pip-say "Calling ILOM to start ${CONF_HOST_NAME}."
+        printVerbose "Using ILOM to start ${CONF_HOST_NAME}."
         file="/tmp/ilom.expect"
 
         sudo rm -f "$file"
@@ -391,12 +395,19 @@ expect eof
 EOF
         chmod +x "$file"
         
-        output=$($file)
-        printWarning "output: $output"
+        output=$(timeout 15 $file)
         if [ $? -ne 0 ]; then
+            pip-say "ILOM request failed, attempting to compensate."
+            printWarning "output: $output"
             printWarning "The $file exited with error."
-            sleep 5
-            $file
+            sleep 30
+            timeout 15 $file
+
+            if [ $? -ne 0 ]; then
+                pip-say "The second ILOM request is failed, server is off-line."
+            fi
+        else
+            pip-say "ILOM request suceeded, server is fully powered now."
         fi
 
         rm -f $file
@@ -404,11 +415,12 @@ EOF
         macAddress=$(mac_for_server "$hostName")
         if [ -z "$macAddress" ]; then
             printError "MAC address for $hostName was not found."
+            pip-say "MAC address for $hostName was not found."
             return 1
         fi
 
         printVerbose "Waking server ${hostName} on ${macAddress}."
-        echo "Sending wake up message to host ${hostName}."
+        pip-say "Sending wake up message to host ${hostName}."
         wakeonlan "$macAddress" >/dev/null 2>/dev/null
     fi
 

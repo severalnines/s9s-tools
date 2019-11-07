@@ -4854,10 +4854,8 @@ S9sRpcClient::stopCluster()
     
     title = "Stopping Cluster";
 
-    // The job_data describing the cluster.
-    jobData["force"]               = false;
-    if (options && options->hasForceOption())
-        jobData["force"]               = options->forceOption();
+    // The job_data.
+    jobData["force"]               = options->forceOption();
     jobData["stop_timeout"]        = 1800;
     jobData["maintenance_minutes"] = 0;
     jobData["reason"]              = "Cluster is stopped.";
@@ -7958,6 +7956,56 @@ S9sRpcClient::createMaintenance()
     }
 
     return success;
+}
+
+/**
+ * This is the function that 
+ */
+bool
+S9sRpcClient::createMaintenanceWithJob()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantMap  request     = composeRequest();
+    S9sVariantMap  job         = composeJob();
+    S9sVariantMap  jobData     = composeJobData();
+    S9sVariantList hosts       = options->nodes();
+    S9sVariantMap  jobSpec;
+    S9sString      title;
+    S9sString      uri         = "/v2/jobs/";
+    bool           retval;
+    
+    title = "Registering Maintenance";
+   
+    if (options->hasStart())
+        jobData["begin"] = options->start();
+    
+    if (options->hasEnd())
+        jobData["end"] = options->end();
+
+    //jobData["force"]               = options->forceOption();
+    jobData["reason"]              = options->reason();
+    
+    if (options->hasMinutes())
+        jobData["maintenance_minutes"] = options->minutes();
+        
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "create_maintenance";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
 }
 
 /**

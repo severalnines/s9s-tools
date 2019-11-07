@@ -79,6 +79,7 @@ enum S9sOptionType
     OptionProperties,
     OptionVendor,
     OptionCreate,
+    OptionCreateWithJob,
     OptionStage,
     OptionDelete,
     OptionClone,
@@ -196,6 +197,7 @@ enum S9sOptionType
     OptionLinkFormat,
     OptionGraph,
     OptionBegin,
+    OptionMinutes,
     OptionOnlyAscii,
     OptionDensity,
     OptionRollingRestart,
@@ -1308,6 +1310,19 @@ S9sOptions::setSlave(
     return true;
 }
 
+bool
+S9sOptions::hasJobOptions() const
+{
+    return 
+        m_options.contains("job_tags") ||
+        m_options.contains("log") ||
+        m_options.contains("recurrence") ||
+        m_options.contains("schedule") ||
+        m_options.contains("timeout") ||
+        m_options.contains("wait");
+
+}
+
 /**
  * \returns True if the --slave (or --replication-slave) command line option was
  *   provided.
@@ -1540,6 +1555,12 @@ S9sOptions::vendor() const
     return retval;
 }
 
+bool
+S9sOptions::hasStart() const
+{
+    return m_options.contains("start");
+}
+
 /**
  * \returns The option argument passed to the --start command line option.
  */
@@ -1567,6 +1588,12 @@ S9sOptions::end() const
     return getString("end");
 }
 
+bool
+S9sOptions::hasEnd() const
+{
+    return m_options.contains("end");
+}
+
 /**
  * \returns The option argument passed to the --from command line option.
  */
@@ -1585,6 +1612,9 @@ S9sOptions::until() const
     return getString("until");
 }
 
+/**
+ * \returns The command line option argument for the --reason option.
+ */
 S9sString
 S9sOptions::reason() const
 {
@@ -1625,6 +1655,25 @@ S9sOptions::providerVersion(
 
     return retval;
 }
+
+/**
+ * \returns True if the --minutes option is provided.
+ */
+bool
+S9sOptions::hasMinutes() const
+{
+    return m_options.contains("minutes");    
+}
+
+/**
+ * \returns The option argument for the --minutes option.
+ */
+int
+S9sOptions::minutes() const
+{
+    return getInt("minutes");
+}
+
 
 /**
  * \returns the value of the --os-sudo-password command line option or the 
@@ -1986,10 +2035,16 @@ S9sOptions::remoteClusterId() const
     return getInt("remote_cluster_id");
 }
 
+/**
+ * \returns True if the --force option is defined.
+ */
 bool
 S9sOptions::forceOption() const
 {
-    return m_options.at("force").toBoolean();
+    if (m_options.contains("force"))
+        return m_options.at("force").toBoolean();
+
+    return false;
 }
 
 bool
@@ -3805,6 +3860,16 @@ bool
 S9sOptions::isCreateRequested() const
 {
     return getBool("create");
+}
+
+/**
+ * \returns true if the --create-with-job command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isCreateWithJobRequested() const
+{
+    return getBool("create_with_job");
 }
 
 /**
@@ -8805,6 +8870,9 @@ S9sOptions::checkOptionsMaintenance()
     
     if (isDeleteRequested())
         countOptions++;
+    
+    if (isCreateWithJobRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -10091,17 +10159,27 @@ S9sOptions::readOptionsMaintenance(
         { "full-uuid",        no_argument,       0, OptionFullUuid        },
 
         // Main Option
-        { "list",             no_argument,       0, 'L'                   },
         { "create",           no_argument,       0, OptionCreate          },
+        { "create-with-job",  no_argument,       0, OptionCreateWithJob   },
         { "delete",           no_argument,       0, OptionDelete          },
+        { "list",             no_argument,       0, 'L'                   },
        
         // Options about the maintenance period.
         { "cluster-id",       required_argument, 0, 'i'                   },
-        { "nodes",            required_argument, 0, OptionNodes           },
-        { "start",            required_argument, 0, OptionStart           },
         { "end",              required_argument, 0, OptionEnd             },
+        { "minutes",          required_argument, 0, OptionMinutes         },
+        { "nodes",            required_argument, 0, OptionNodes           },
         { "reason",           required_argument, 0, OptionReason          },
+        { "start",            required_argument, 0, OptionStart           },
         { "uuid",             required_argument, 0, OptionUuid            },
+        
+        
+        { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "log",              no_argument,       0, 'G'                   },
+        { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "schedule",         required_argument, 0, OptionSchedule        },
+        { "timeout",          required_argument, 0, OptionTimeout         },
+        { "wait",             no_argument,       0, OptionWait            },
 
         { 0, 0, 0, 0 }
     };
@@ -10218,6 +10296,11 @@ S9sOptions::readOptionsMaintenance(
                 m_options["create"] = true;
                 break;
             
+            case OptionCreateWithJob:
+                // --create-with-job
+                m_options["create_with_job"] = true;
+                break;
+            
             case OptionDelete:
                 // --delete
                 m_options["delete"] = true;
@@ -10243,6 +10326,11 @@ S9sOptions::readOptionsMaintenance(
                 // --end=DATE
                 m_options["end"] = optarg;
                 break;
+
+            case OptionMinutes:
+                // --minutes=INTEGER
+                m_options["minutes"] = optarg;
+                break;
             
             case OptionReason:
                 // --reason=DATE
@@ -10253,7 +10341,40 @@ S9sOptions::readOptionsMaintenance(
                 // --uuid=UUID
                 m_options["uuid"] = optarg;
                 break;
+           
+            /*
+             * Job related options.
+             */
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+ 
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
             
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+                
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -10282,9 +10403,9 @@ S9sOptions::readOptionsMetaType(
     {
         // Main Option
         { "help",             no_argument,       0, OptionHelp            },
+        { "list-cluster-types", no_argument,     0, OptionListClusterTypes },
         { "list",             no_argument,       0, 'L'                   },
         { "list-properties",  no_argument,       0, OptionListProperties  },
-        { "list-cluster-types", no_argument,     0, OptionListClusterTypes },
 
         // Generic Options
         { "debug",            no_argument,       0, OptionDebug           },
