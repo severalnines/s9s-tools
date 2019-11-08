@@ -7940,26 +7940,33 @@ S9sRpcClient::createMaintenance()
 {
     S9sOptions    *options = S9sOptions::instance();
     bool           success;
+    S9sString      begin, end;
 
+    if (options->hasBegin())
+        begin = options->begin();
+    else if (options->hasStart())
+        // Only for backward compatibility.
+        begin = options->start();
+
+    end = options->end();
     /*
      * Two ways: host maintenance or cluster maintenance.
      */
     if (options->hasClusterIdOption())
     {
         success = createMaintenance(
-                options->clusterId(), options->start(), options->end(),
-                options->reason());
+                options->clusterId(), begin, end, options->reason());
     } else {
         success = createMaintenance(
-                options->nodes(), options->start(), options->end(),
-                options->reason());
+                options->nodes(), begin, end, options->reason());
     }
 
     return success;
 }
 
 /**
- * This is the function that 
+ * This is the function that creates a job that is made for registering
+ * maintenance periods.
  */
 bool
 S9sRpcClient::createMaintenanceWithJob()
@@ -7975,8 +7982,12 @@ S9sRpcClient::createMaintenanceWithJob()
     bool           retval;
     
     title = "Registering Maintenance";
-   
-    if (options->hasStart())
+  
+    if (options->hasBegin())
+        jobData["begin"] = options->begin();
+    else if (options->hasBeginRelative())
+        jobData["begin_relative"] = options->beginRelative();
+    else if (options->hasStart())
         jobData["begin"] = options->start();
     
     if (options->hasEnd())

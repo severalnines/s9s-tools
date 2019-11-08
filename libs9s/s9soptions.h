@@ -530,9 +530,16 @@ class S9sOptions
 
         bool hasStart() const;
         S9sString start() const;
+        
         S9sString begin() const;
+        bool hasBegin() const;
+        
+        S9sString beginRelative() const;
+        bool hasBeginRelative() const;
+
         bool hasEnd() const;
         S9sString end() const;
+
         S9sString reason() const;
         S9sString uuid() const;
 

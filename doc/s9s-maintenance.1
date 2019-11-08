@@ -155,13 +155,18 @@ Print the full UUID string in the output, do not abbreviate it.
 .SS Options Related to the Maintenance
 
 .TP
+.BI --begin= DATETIME
+A string representation of the date and time when the maintenance period will
+start. 
+
+.TP
 .BI --nodes= NODE
 The node for which the maintenance period will be registered. 
 
 .TP
 .BI --start= DATETIME
 A string representation of the date and time when the maintenance period will
-start.
+start. This option is deprecated, please use the \fB--begin\fP option instead.
 
 .TP
 .BI --end= DATETIME
@@ -228,39 +233,3 @@ A short human readable description showing why the maintenance is required.
 The s9s application will read and consider a number of environment variables.
 Please check s9s(1) for more information.
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-Here is an example that shows how to create a new maintenance period for a given
-host.
-
-.nf
-# \fBs9s maintenance \\
-    --create \\
-    --nodes=192.168.1.121 \\
-    --start="$(date -d 'now + 1 day' '+%Y-%m-%d %H:%M:%S')" \\
-    --end="$(date -d 'now + 1 day + 1 hour' '+%Y-%m-%d %H:%M:%S')" \\
-    --reason="Upgrading software."\fR
-.fi
-
-The next line will show all the maintenance periods printing only the date (and
-not the date and time) for the start and end of the periods.
-
-.nf
-# \fBs9s maintenance \\
-    --list \\
-    --long \\
-    --date-format="%F"\fR
-.fi
-
-Deleting the maintenance period by providing the first few characters of the
-maintenance period.
-
-.nf
-# \fBs9s maintenance \\
-    --delete \\
-    --uuid=77262b6\fR
-.fi

@@ -197,6 +197,7 @@ enum S9sOptionType
     OptionLinkFormat,
     OptionGraph,
     OptionBegin,
+    OptionBeginRelative,
     OptionMinutes,
     OptionOnlyAscii,
     OptionDensity,
@@ -1555,6 +1556,12 @@ S9sOptions::vendor() const
     return retval;
 }
 
+/**
+ * \returns True if the --start command line option was provided.
+ *
+ * We use this option for example to set the start date&time for a maintenance
+ * period.
+ */
 bool
 S9sOptions::hasStart() const
 {
@@ -1563,11 +1570,21 @@ S9sOptions::hasStart() const
 
 /**
  * \returns The option argument passed to the --start command line option.
+ *
+ * We used the --start option to pass start time for maintenance and possible
+ * for other things. This is a mistake, the --start should be a main option and
+ * the --begin should be used for timestamps.
  */
 S9sString
 S9sOptions::start() const
 {
     return getString("start");
+}
+
+bool
+S9sOptions::hasBegin() const
+{
+    return m_options.contains("begin");
 }
 
 /**
@@ -1577,6 +1594,22 @@ S9sString
 S9sOptions::begin() const
 {
     return getString("begin");
+}
+
+bool
+S9sOptions::hasBeginRelative() const
+{
+    return m_options.contains("begin_relative");
+}
+
+/**
+ * \returns The option argument passed to the --begin-relative command line
+ *   option.
+ */
+S9sString
+S9sOptions::beginRelative() const
+{
+    return getString("begin_relative");
 }
 
 /**
@@ -5438,12 +5471,14 @@ S9sOptions::printHelpMaintenance()
 "  --delete                   Delete a maintenance period.\n"
 "  --list                     List the maintenance periods.\n"
 "\n"
+"  --begin=DATE&TIME          The start time of the maintenance period.\n"
+"  --begin-relative=DURATION  ISO8601 duration string specifying the start.\n"
 "  --cluster-id=ID            The cluster for cluster maintenances.\n"
 "  --end=DATE&TIME            The end of the maintenance period.\n"
 "  --full-uuid                Print the full UUID.\n"
 "  --nodes=NODELIST           The nodes for the node maintenances.\n"
 "  --reason=STRING            The reason for the maintenance.\n"
-"  --start=DATE&TIME          The start of the maintenance period.\n"
+"  --start=DATE&TIME          Deprecated, same as the --begin option.\n"
 "  --uuid=UUID                The UUID to identify the maintenance period.\n"
 "\n"
     );
@@ -10165,14 +10200,15 @@ S9sOptions::readOptionsMaintenance(
         { "list",             no_argument,       0, 'L'                   },
        
         // Options about the maintenance period.
+        { "begin-relative",   required_argument, 0, OptionBeginRelative   },
+        { "begin",            required_argument, 0, OptionBegin           },
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "end",              required_argument, 0, OptionEnd             },
         { "minutes",          required_argument, 0, OptionMinutes         },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "reason",           required_argument, 0, OptionReason          },
         { "start",            required_argument, 0, OptionStart           },
-        { "uuid",             required_argument, 0, OptionUuid            },
-        
+        { "uuid",             required_argument, 0, OptionUuid            }, 
         
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
@@ -10316,8 +10352,19 @@ S9sOptions::readOptionsMaintenance(
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
                 break;
+            
+            case OptionBeginRelative:
+                // --begin-relative=ISO8601_DURATION
+                m_options["begin_relative"] = optarg;
+                break;
+
+            case OptionBegin:
+                // --begin=DATE
+                m_options["begin"] = optarg;
+                break;
 
             case OptionStart:
+                // This is deprecated, use the --begin instead.
                 // --start=DATE
                 m_options["start"] = optarg;
                 break;

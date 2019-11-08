@@ -190,7 +190,7 @@ function testCreateMaintenance()
     mys9s maintenance \
         --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
         --reason="$reason" 
 
@@ -241,7 +241,7 @@ EOF
     mys9s maintenance \
         --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 1 min")" \
         --reason="longer_$$" \
         --batch
@@ -251,7 +251,7 @@ EOF
     mys9s maintenance \
         --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 10 sec")" \
         --reason="shorter_$$" \
         --batch
@@ -307,7 +307,7 @@ EOF
     mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 1 day")" \
         --reason="test_1_$$" \
         --batch
@@ -317,7 +317,7 @@ EOF
     mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 1 day")" \
         --reason="test_2_$$" \
         --batch
@@ -327,7 +327,7 @@ EOF
     mys9s \
         maintenance --create \
         --nodes=$FIRST_NODENAME \
-        --start="$(dateFormat "now + 1 day")" \
+        --begin="$(dateFormat "now + 1 day")" \
         --end="$(dateFormat "now + 2 days")" \
         --reason="test_3_$$" \
         --batch
@@ -379,7 +379,7 @@ EOF
     mys9s \
         maintenance --create \
         --cluster-id=$CLUSTER_ID \
-        --start="$(dateFormat "now")" \
+        --begin="$(dateFormat "now")" \
         --end="$(dateFormat "now + 5 seconds")" \
         --reason="$reason" \
         --batch
@@ -447,7 +447,7 @@ EOF
     #
     # Waiting and checking if the job is triggered.
     #
-    mysleep 20
+    mysleep 30
     mys9s job --list --job-tags=$tag
     
     state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
@@ -538,8 +538,19 @@ function testMaintenanceJob1()
         --create-with-job \
         --cluster-id=1 \
         --reason="testMaintenanceJob2" \
-        --start="$(dateFormat "now + 10 sec")" \
+        --begin="$(dateFormat "now + 10 sec")" \
         --end="$(dateFormat "now + 43 sec")" \
+        --log 
+    
+    check_exit_code $?
+    
+    print_title "Creating Maintenance with Relative Start"
+    mys9s maintenance \
+        --create-with-job \
+        --cluster-id=1 \
+        --reason="testMaintenanceJob3" \
+        --begin-relative="P1D" \
+        --minutes=120 \
         --log 
     
     check_exit_code $?
