@@ -2128,10 +2128,22 @@ S9sRpcReply::printCurrentMaintenance() const
     {
         printJsonFormat();
         return;
-    }
+    } else {
+        bool      found     = false;
+        S9sString uiString;
 
-    //printDebugMessages();
-    printJsonFormat();
+        if (contains("found_maintenance"))
+            found = at("found_maintenance").toBoolean();
+
+        if (contains("ui_string"))
+            uiString = at("ui_string").toString();
+
+        if (found && !uiString.empty())
+            ::printf("%s\n", STR(uiString));
+
+        //printDebugMessages();
+        //printJsonFormat();
+    }
 }
 
 void 
@@ -2143,10 +2155,22 @@ S9sRpcReply::printNextMaintenance() const
     {
         printJsonFormat();
         return;
-    }
+    } else {
+        bool      found     = false;
+        S9sString uiString;
 
-    //printDebugMessages();
-    printJsonFormat();
+        if (contains("found_maintenance"))
+            found = at("found_maintenance").toBoolean();
+
+        if (contains("ui_string"))
+            uiString = at("ui_string").toString();
+
+        if (found && !uiString.empty())
+            ::printf("%s\n", STR(uiString));
+
+        //printDebugMessages();
+        //printJsonFormat();
+    }
 }
 
 /**

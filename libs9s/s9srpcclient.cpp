@@ -8150,11 +8150,13 @@ S9sRpcClient::getMaintenance()
 bool
 S9sRpcClient::getCurrentMaintenance()
 {
+    S9sOptions    *options     = S9sOptions::instance();
     S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"] = "getCurrentMaintenance";
+    request["operation"]   = "getCurrentMaintenance";
+    request["cluster_id"]  = options->clusterId();
     retval = executeRequest(uri, request);
 
     return retval;
@@ -8163,11 +8165,13 @@ S9sRpcClient::getCurrentMaintenance()
 bool
 S9sRpcClient::getNextMaintenance()
 {
+    S9sOptions    *options     = S9sOptions::instance();
     S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
 
     request["operation"] = "getNextMaintenance";
+    request["cluster_id"]  = options->clusterId();
     retval = executeRequest(uri, request);
 
     return retval;
