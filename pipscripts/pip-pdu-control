@@ -360,9 +360,6 @@ function switch_apc()
                 [ "$PDU_OPERATION" == "on" ]  && value=1
                 [ "$PDU_OPERATION" == "off" ] && value=2
                 
-                [ "$PDU_OPERATION" == "on" ]  && value1=true
-                [ "$PDU_OPERATION" == "off" ] && value1=false
-
                 snmpset \
                     -v 1 \
                     -c private "$CONF_PDU_SERVER" \

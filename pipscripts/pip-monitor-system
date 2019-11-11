@@ -215,8 +215,8 @@ function get_resources()
     local temp=$(get_cpu_temp)
     local memory=$(get_memory_measurements)
     local nproc=$(nproc)
-    local n_containers=$(get_number_of_containers)
-    local throughput=$(get_disk_throughput)
+    local n_containers=$(get_number_of_containers 2>/dev/null)
+    local throughput=$(get_disk_throughput 2>/dev/null)
     local message
 
     message="{\
@@ -258,7 +258,6 @@ function local_resources_to_mqtt()
     local hostname=$(hostname)
     local topic="stat/${hostname}/resources"
     local message=$(get_resources)
-    local retcode
 
     echo "------------------------------------"
     echo "     mqtt: mqtt://$MQTT_SERVER:$MQTT_PORT"
@@ -271,9 +270,6 @@ function local_resources_to_mqtt()
         -p "$MQTT_PORT" \
         -t "$topic" \
         -m "$message"
-
-    retcode=$?
-    #echo "  retcode: $retcode"
 }
 
 function get_disk_stats()
@@ -300,8 +296,16 @@ function get_disk_stats()
 function get_hw_info()
 {
     local hostname=$(hostname)    
-    local model=$(cat /sys/class/dmi/id/product_name | head -n1)
-    local manufacturer=$(cat /sys/class/dmi/id/board_vendor | head -n1)
+    local model
+    local manufacturer
+   
+    if [ -f "/sys/class/dmi/id/product_name" ]; then
+        model=$(cat /sys/class/dmi/id/product_name | head -n1)
+    fi
+
+    if [ -f "/sys/class/dmi/id/board_vendor" ]; then
+        manufacturer=$(cat /sys/class/dmi/id/board_vendor | head -n1)
+    fi
 
     model=$(echo ${model%%+([[:space:]])})
     manufacturer=$(echo ${manufacturer%%+([[:space:]])})

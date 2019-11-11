@@ -122,6 +122,8 @@ class S9sRpcReply : public S9sVariantMap
         void printGroupList();
         void printAccountList();
         void printDatabaseList();
+        void printCurrentMaintenance() const;
+        void printNextMaintenance() const;
         void printMaintenanceList();
         void printMetaTypeList();
         void printMetaTypePropertyList();

@@ -983,7 +983,15 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isMaintenanceOperation())
     {
-        if (options->isListRequested())
+        if (options->isCurrentRequested())
+        {
+            success = client.getCurrentMaintenance();
+            client.reply().printCurrentMaintenance();
+        } else if (options->isNextRequested())
+        {
+            success = client.getNextMaintenance();
+            client.reply().printNextMaintenance();
+        } else if (options->isListRequested())
         {
             executeMaintenanceList(client);
         } else if (options->isCreateRequested())

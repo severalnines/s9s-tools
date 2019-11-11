@@ -398,6 +398,8 @@ class S9sOptions
 
         bool isHelpRequested() const;
         bool isListRequested() const;
+        bool isCurrentRequested() const;
+        bool isNextRequested() const;
         bool isEnableCmonHaRequested() const;
         bool isCreateSnapshotRequested() const;
         bool isListPartitionsRequested() const;

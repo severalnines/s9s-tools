@@ -398,7 +398,8 @@ class S9sRpcClient
                 const S9sString      &uuid);
 
         bool getMaintenance();
-
+        bool getCurrentMaintenance();
+        bool getNextMaintenance();
         bool createFailJob();
         bool createSuccessJob();
 

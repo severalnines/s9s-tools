@@ -2120,6 +2120,39 @@ S9sRpcReply::printGroupList()
 }
 
 void 
+S9sRpcReply::printCurrentMaintenance() const
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    //printDebugMessages();
+    printJsonFormat();
+}
+
+void 
+S9sRpcReply::printNextMaintenance() const
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    //printDebugMessages();
+    printJsonFormat();
+}
+
+/**
+ * Prints the maintenance list in either a brief or a long format.
+ */
+void 
 S9sRpcReply::printMaintenanceList()
 {
     S9sOptions *options = S9sOptions::instance();

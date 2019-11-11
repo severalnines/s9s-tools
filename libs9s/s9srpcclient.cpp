@@ -8142,13 +8142,36 @@ S9sRpcClient::getMaintenance()
     bool           retval;
 
     request["operation"] = "getMaintenance";
-    //request["including_hosts"] = "192.168.1.101;192.168.1.102;192.168.1.104";
-    
     retval = executeRequest(uri, request);
 
     return retval;
 }
 
+bool
+S9sRpcClient::getCurrentMaintenance()
+{
+    S9sString      uri = "/v2/maintenance/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getCurrentMaintenance";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::getNextMaintenance()
+{
+    S9sString      uri = "/v2/maintenance/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getNextMaintenance";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 S9sVariantMap 
 S9sRpcClient::composeRequest() 

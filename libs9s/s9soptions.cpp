@@ -334,6 +334,8 @@ enum S9sOptionType
 
     OptionEnableBinaryLogging,
     OptionUsr1,
+    OptionNext,
+    OptionCurrent,
 };
 
 /**
@@ -3490,6 +3492,25 @@ S9sOptions::isListRequested() const
 {
     return getBool("list");
 }
+
+/**
+ * \returns true if the --current option was provided.
+ */
+bool
+S9sOptions::isCurrentRequested() const
+{
+    return getBool("current");
+}
+
+/**
+ * \returns true if the --next option was provided.
+ */
+bool
+S9sOptions::isNextRequested() const
+{
+    return getBool("next");
+}
+
 
 bool
 S9sOptions::isEnableCmonHaRequested() const
@@ -8900,6 +8921,12 @@ S9sOptions::checkOptionsMaintenance()
     if (isListRequested())
         countOptions++;
     
+    if (isCurrentRequested())
+        countOptions++;
+    
+    if (isNextRequested())
+        countOptions++;
+    
     if (isCreateRequested())
         countOptions++;
     
@@ -10165,6 +10192,9 @@ S9sOptions::readOptionsAccount(
     return true;
 }
 
+/**
+ * Reads the command line options for the maintenance mode.
+ */
 bool
 S9sOptions::readOptionsMaintenance(
         int    argc,
@@ -10196,8 +10226,10 @@ S9sOptions::readOptionsMaintenance(
         // Main Option
         { "create",           no_argument,       0, OptionCreate          },
         { "create-with-job",  no_argument,       0, OptionCreateWithJob   },
+        { "current",          no_argument,       0, OptionCurrent         },
         { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
+        { "next",             no_argument,       0, OptionNext            },
        
         // Options about the maintenance period.
         { "begin-relative",   required_argument, 0, OptionBeginRelative   },
@@ -10322,11 +10354,6 @@ S9sOptions::readOptionsMaintenance(
                 m_options["print_json"] = true;
                 break;
             
-            case 'L': 
-                // --list
-                m_options["list"] = true;
-                break;
-            
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
@@ -10336,12 +10363,30 @@ S9sOptions::readOptionsMaintenance(
                 // --create-with-job
                 m_options["create_with_job"] = true;
                 break;
-            
+
+            case OptionCurrent:
+                // --current
+                m_options["current"] = true;
+                break;
+
             case OptionDelete:
                 // --delete
                 m_options["delete"] = true;
                 break;
             
+            case 'L': 
+                // --list
+                m_options["list"] = true;
+                break;
+            
+            case OptionNext:
+                // --next
+                m_options["next"] = true;
+                break;
+            
+            /*
+             *
+             */
             case OptionNodes:
                 // --nodes=LIST
                 if (!setNodes(optarg))
