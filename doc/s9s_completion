@@ -365,7 +365,7 @@ function _s9s()
             fi
         elif [[ ${COMP_WORDS[i]} == "maintenance" ]]; then
             main_opt="--help "
-            main_opt+="--list --create --delete "
+            main_opt+="--list --create --delete --current --next "
 
             if ! _s9s_has_options $main_opt; then
                 opts=$main_opt
