@@ -534,12 +534,15 @@ function testMaintenanceJob1()
         --log 
 
     check_exit_code $?
+
+    mys9s maintenance --current --cluster-id=1
     end_verbatim
 
     #
     #
     #
     print_title "Creating Maintenance Starting Later with Job "
+    begin_verbatim
     mys9s maintenance \
         --create-with-job \
         --cluster-id=1 \
@@ -549,8 +552,14 @@ function testMaintenanceJob1()
         --log 
     
     check_exit_code $?
-    
+    mys9s maintenance --next --cluster-id=1
+    end_verbatim
+   
+    #
+    #
+    #
     print_title "Creating Maintenance with Relative Start"
+    begin_verbatim
     mys9s maintenance \
         --create-with-job \
         --cluster-id=1 \
@@ -560,8 +569,14 @@ function testMaintenanceJob1()
         --log 
     
     check_exit_code $?
-    
+    mys9s maintenance --next --cluster-id=1
+    end_verbatim
+   
+    #
+    #
+    #
     print_title "Creating Maintenance with Nodes"
+    begin_verbatim
     mys9s maintenance \
         --create-with-job \
         --cluster-id=1 \
@@ -572,11 +587,15 @@ function testMaintenanceJob1()
         --log --debug
     
     check_exit_code $?
+    
+    end_verbatim
 
-    mys9s maintenance --list --long
-    #mys9s maintenance --list --long --verbose --print-json
 
+    #
+    #
+    #
     print_title "Creating Maintenance with Recurring Job"
+    begin_verbatim
     mys9s maintenance \
         --create-with-job \
         --cluster-id=1 \
@@ -587,6 +606,9 @@ function testMaintenanceJob1()
         --job-tags="testMaintenanceJob5"
 
     mys9s job --list --long --job-tags="testMaintenanceJob5"
+    mys9s maintenance --next --cluster-id=1 --nodes="$FIRST_NODENAME"
+    mys9s maintenance --current --cluster-id=1 --nodes="$FIRST_NODENAME"
+    end_verbatim
 }
 
 #

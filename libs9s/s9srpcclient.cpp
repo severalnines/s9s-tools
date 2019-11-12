@@ -35,7 +35,7 @@
 #include <iostream> 
 
 //#define DEBUG
-//#define WARNING
+#define WARNING
 #include "s9sdebug.h"
 
 #define READ_SIZE 10240
@@ -8151,12 +8151,25 @@ bool
 S9sRpcClient::getCurrentMaintenance()
 {
     S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList hosts       = options->nodes();
     S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
 
+    S9S_DEBUG("Number of hosts: %zu", hosts.size());
+    if (hosts.size() > 1)
+    {
+        PRINT_ERROR("Only one no name is supported for this request.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     request["operation"]   = "getCurrentMaintenance";
     request["cluster_id"]  = options->clusterId();
+    
+    if (hosts.size() > 0)
+        request["hostname"] = hosts[0].toNode().hostName();
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -8166,12 +8179,24 @@ bool
 S9sRpcClient::getNextMaintenance()
 {
     S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantList hosts       = options->nodes();
     S9sString      uri = "/v2/maintenance/";
     S9sVariantMap  request;
     bool           retval;
+    
+    if (hosts.size() > 1)
+    {
+        PRINT_ERROR("Only one no name is supported for this request.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
 
     request["operation"] = "getNextMaintenance";
     request["cluster_id"]  = options->clusterId();
+    
+    if (hosts.size() > 0)
+        request["hostname"] = hosts[0].toNode().hostName();
+
     retval = executeRequest(uri, request);
 
     return retval;
