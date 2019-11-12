@@ -33,6 +33,16 @@ s9s maintenance \\
 .fi
 
 .TP
+.B --current
+Prints the active maintenance for a cluster or for a host. Prints nothing if no
+maintenance period is active.
+
+.B EXAMPLE
+.nf
+s9s maintenance --current --cluster-id=1
+.fi
+
+.TP
 .B --delete
 Delete an existing maintenance period. The maintenance periods are identified by
 their UUID strings. The UUID stings by default shown in an abbreviated format.
@@ -52,7 +62,7 @@ s9s maintenance \\
 .fi
 
 .TP
-.B \-L, \-\-list
+.B -L, --list
 List the registered maintenance periods from the ClusterControl controller. 
 
 .B EXAMPLE
@@ -60,7 +70,19 @@ List the registered maintenance periods from the ClusterControl controller.
 s9s maintenance --list --long
 .fi
 
+.TP
+.B --next
+Prints information about the very next maintenance period for a cluster or for a
+host. Prints nothing if no maintenance is registered to be started in the
+future.
 
+.B EXAMPLE
+.nf
+s9s maintenance \\
+    --next \\
+    --cluster-id="1" \\
+    --nodes="192.168.0.227" 
+.fi
 
 \"
 \"
