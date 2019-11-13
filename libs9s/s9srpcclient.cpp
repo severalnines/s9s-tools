@@ -8033,8 +8033,9 @@ S9sRpcClient::disableRecoveryWithJob()
     bool           retval;
     
     title = "Disable Recovery";
-   
-    jobData["reason"]              = options->reason();
+  
+    if (!options->reason().empty())
+        jobData["reason"] = options->reason();
     
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
@@ -8074,7 +8075,7 @@ S9sRpcClient::enableRecoveryWithJob()
     
     title = "Enable Recovery";
    
-    jobData["reason"]              = options->reason();
+    //jobData["reason"]              = options->reason();
     
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
