@@ -140,6 +140,14 @@ S9sBusinessLogic::execute()
         {
             success = client.rollingRestart();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isEnableRecoveryRequested())
+        {
+            success = client.enableRecoveryWithJob();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDisableRecoveryRequested())
+        {
+            success = client.disableRecoveryWithJob();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetReadOnlyRequested())
         {
             success = client.setClusterReadOnly();

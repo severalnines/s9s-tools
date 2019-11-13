@@ -202,6 +202,8 @@ enum S9sOptionType
     OptionOnlyAscii,
     OptionDensity,
     OptionRollingRestart,
+    OptionDisableRecovery,
+    OptionEnableRecovery,
     OptionCollectLogs,
     OptionImportConfig,
     OptionEnableSsl,
@@ -4260,6 +4262,27 @@ S9sOptions::isRollingRestartRequested() const
 }
 
 /**
+ * \returns true if the --disable-recovery command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isDisableRecoveryRequested() const
+{
+    return getBool("disable_recovery");
+}
+
+/**
+ * \returns true if the --enable-recovery command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isEnableRecoveryRequested() const
+{
+    return getBool("enable_recovery");
+}
+
+
+/**
  * \returns true if the --collect-logs command line option was provided when
  *   the program was started.
  */
@@ -5489,8 +5512,10 @@ S9sOptions::printHelpMaintenance()
     printf(
 "Options for the \"maintenance\" command:\n"
 "  --create                   Create a new maintenance period.\n"
+"  --current                  Print information about the active maintenance.\n"
 "  --delete                   Delete a maintenance period.\n"
 "  --list                     List the maintenance periods.\n"
+"  --next                     Print Information about the next maintenance.\n"
 "\n"
 "  --begin=DATE&TIME          The start time of the maintenance period.\n"
 "  --begin-relative=DURATION  ISO8601 duration string specifying the start.\n"
@@ -8724,6 +8749,12 @@ S9sOptions::checkOptionsCluster()
     if (isSetReadOnlyRequested())
         countOptions++;
     
+    if (isEnableRecoveryRequested())
+        countOptions++;
+    
+    if (isDisableRecoveryRequested())
+        countOptions++;
+    
     if (isUsr1Requested())
         countOptions++;
 
@@ -10778,6 +10809,8 @@ S9sOptions::readOptionsCluster(
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
         { "usr1",             no_argument,       0, OptionUsr1            },
+        { "enable-recovery",  no_argument,       0, OptionEnableRecovery  },
+        { "disable-recovery", no_argument,       0, OptionDisableRecovery },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -10998,6 +11031,16 @@ S9sOptions::readOptionsCluster(
             case OptionUsr1:
                 // --usr1
                 m_options["usr1"] = true;
+                break;
+            
+            case OptionEnableRecovery:
+                // --enable-recovery
+                m_options["enable_recovery"] = true;
+                break;
+            
+            case OptionDisableRecovery:
+                // --disable-recovery
+                m_options["disable_recovery"] = true;
                 break;
             
             case OptionStart:

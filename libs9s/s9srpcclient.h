@@ -356,6 +356,8 @@ class S9sRpcClient
         bool dropCluster();
 
         bool createMaintenanceWithJob();
+        bool disableRecoveryWithJob();
+        bool enableRecoveryWithJob();
 
         bool startNode();
         bool startSlave();

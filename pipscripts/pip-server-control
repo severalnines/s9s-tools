@@ -358,7 +358,7 @@ function wake_server()
 
     pip-say --beep "Starting up ${hostname}."
 
-    pip-say "Powering on server $CONF_HOST_NAME through the PDU."
+    pip-say "Powering on server $CONF_HOST_NAME through the power distribution unit."
     if [ -n "$CONF_HOST_PDU" ]; then
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
             printVerbose "Switching on PDU $pdu."

@@ -150,6 +150,7 @@ function _s9s()
             main_opt+="--remove-node --rolling-restart --setup-audit-logging "
             main_opt+="--import-config --collect-logs "
             main_opt+="--start --stat --stop "
+            main_opt+="--enable-recovery --disable-recovery"
 
             if ! _s9s_has_options $main_opt; then
                 opts="$main_opt "

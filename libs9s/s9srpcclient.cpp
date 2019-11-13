@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2018  Severalnines AB
+ * Copyright (C) 2018-present  Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -8004,6 +8004,86 @@ S9sRpcClient::createMaintenanceWithJob()
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_maintenance";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::disableRecoveryWithJob()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantMap  request     = composeRequest();
+    S9sVariantMap  job         = composeJob();
+    S9sVariantMap  jobData     = composeJobData();
+    S9sVariantList hosts       = options->nodes();
+    S9sVariantMap  jobSpec;
+    S9sString      title;
+    S9sString      uri         = "/v2/jobs/";
+    bool           retval;
+    
+    title = "Disable Recovery";
+   
+    jobData["reason"]              = options->reason();
+    
+    if (options->hasMinutes())
+        jobData["maintenance_minutes"] = options->minutes();
+        
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "disable_recovery";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::enableRecoveryWithJob()
+{
+    S9sOptions    *options     = S9sOptions::instance();
+    S9sVariantMap  request     = composeRequest();
+    S9sVariantMap  job         = composeJob();
+    S9sVariantMap  jobData     = composeJobData();
+    S9sVariantList hosts       = options->nodes();
+    S9sVariantMap  jobSpec;
+    S9sString      title;
+    S9sString      uri         = "/v2/jobs/";
+    bool           retval;
+    
+    title = "Enable Recovery";
+   
+    jobData["reason"]              = options->reason();
+    
+    if (options->hasMinutes())
+        jobData["maintenance_minutes"] = options->minutes();
+        
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "enable_recovery";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.

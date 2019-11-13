@@ -480,6 +480,8 @@ class S9sOptions
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;
         bool isRollingRestartRequested() const;
+        bool isDisableRecoveryRequested() const;
+        bool isEnableRecoveryRequested() const;
         bool isImportConfigRequested() const;
         bool isCollectLogsRequested() const;
         bool isEnableSslRequested() const;
