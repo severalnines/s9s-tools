@@ -5647,8 +5647,10 @@ S9sOptions::printHelpCluster()
 "  --delete-account           Delete a user account on the cluster.\n"
 "  --demote-node              Demote a node to slave.\n"
 "  --deploy-agents            Starts a job to deploy agents to the nodes.\n"
+"  --disable-recovery         Disable automatic recovery from a job.\n"
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --enable-recovery          Enable automatic recovery from a job.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --import-config            Collects configuration files from the nodes.\n"
 "  --list-databases           List the databases found on the cluster.\n"
@@ -5663,6 +5665,7 @@ S9sOptions::printHelpCluster()
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
+
 "\n"
 "  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
 "  --cloud=PROVIDER           The name of the cloud provider.\n"
@@ -10456,7 +10459,7 @@ S9sOptions::readOptionsMaintenance(
                 break;
             
             case OptionReason:
-                // --reason=DATE
+                // --reason=STRING
                 m_options["reason"] = optarg;
                 break;
 
@@ -10876,6 +10879,10 @@ S9sOptions::readOptionsCluster(
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate        },
+        
+        // Options for maintenance
+        { "maintenance-minutes", required_argument, 0, OptionMinutes       },
+        { "reason",              required_argument, 0, OptionReason        },
         { 0, 0, 0, 0 }
     };
 
@@ -11411,6 +11418,19 @@ S9sOptions::readOptionsCluster(
             case OptionVpcId:
                 // --vpc-id=ID
                 m_options["vpc_id"] = optarg;
+                break;
+
+            /*
+             * Options for maintenance.
+             */
+            case OptionMinutes:
+                // --maintenance-minutes=INTEGER
+                m_options["minutes"] = optarg;
+                break;
+            
+            case OptionReason:
+                // --reason=STRING
+                m_options["reason"] = optarg;
                 break;
 
             case '?':

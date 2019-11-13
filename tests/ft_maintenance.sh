@@ -611,6 +611,38 @@ function testMaintenanceJob1()
     end_verbatim
 }
 
+function testRecoveryJob()
+{
+    print_title "Disabling Recovery from Job"
+    
+    begin_verbatim
+
+    mys9s cluster \
+        --disable-recovery \
+        --log \
+        --cluster-id=1 \
+        --maintenance-minutes=60 \
+        --reason="testRecoveryJob"
+
+    check_exit_code $?
+
+    mys9s maintenance --current --cluster-id=1
+    end_verbatim
+
+    print_title "Enabling Recovery from Job"
+    begin_verbatim
+
+    mys9s cluster \
+        --enable-recovery \
+        --log \
+        --cluster-id=1 
+
+    check_exit_code $?
+
+    mys9s maintenance --current --cluster-id=1
+    end_verbatim
+}
+
 #
 # Dropping the cluster from the controller.
 #
@@ -655,6 +687,7 @@ else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateMaintenance
+    runFunctionalTest testRecoveryJob
     runFunctionalTest testCreateTwoPeriods
     runFunctionalTest testDeletePeriods
     runFunctionalTest testClusterMaintenance
