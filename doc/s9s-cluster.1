@@ -119,7 +119,7 @@ possible to specify \fB\-\-mask-passwords\fP command line option,
 or \fBmask_password\fP=true in the s9s configuration file.
 
 .TP
-.B \-\-delete-account
+.B --delete-account
 Delete an existing account from the cluster. Deleting accounts is also 
 possible using the \fBaccount\fP mode, check s9s-account(1) for further details.
 
@@ -131,8 +131,26 @@ s9s cluster \\
     --account=tmpaccount@192.168.0.127
 .fi
 
+.TP 
+.B --disable-recovery
+This command line option will create a new job that will disable the
+autorecovery for the cluster (both cluster autorecovery and node autorecovery).
+The job can optionally be used to also register a maintenance period for the
+cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --disable-recovery \\
+    --log \\
+    --cluster-id="1" \\
+    --maintenance-minutes="60" \\
+    --reason="testRecoveryJob" 
+.fi
+
+
 .TP
-.B \-\^\-drop
+.B --drop
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
 
@@ -144,8 +162,21 @@ s9s cluster \\
     --wait 
 .fi
 
+.TP 
+.B --enable-recovery
+Creates a job that will enable the autorecovery for both the cluster and the
+nodes in the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --enable-recovery \\
+    --log \\
+    --cluster-id="1" 
+.fi
+
 .TP
-.B \-\^\-import\-config
+.B --import-config
 Creates a job that will import all the logfiles from the nodes of the cluster.
 
 .B EXAMPLE
