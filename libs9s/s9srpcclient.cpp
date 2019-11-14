@@ -4857,8 +4857,12 @@ S9sRpcClient::stopCluster()
     // The job_data.
     jobData["force"]               = options->forceOption();
     jobData["stop_timeout"]        = 1800;
-    jobData["maintenance_minutes"] = 0;
-    jobData["reason"]              = "Cluster is stopped.";
+    
+    if (options->hasMinutes())
+        jobData["maintenance_minutes"] = options->minutes();
+
+    if (!options->reason().empty())
+        jobData["reason"] = options->reason();
     
     // The jobspec describing the command.
     jobSpec["command"]    = "stop_cluster";
