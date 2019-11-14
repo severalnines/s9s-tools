@@ -164,6 +164,8 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+
+    begin_verbatim
     mys9s cluster \
         --create \
         --template="ubuntu" \
@@ -187,14 +189,19 @@ function createCluster()
     mys9s node --stat
     mys9s cluster --list --long
     mys9s cluster --stat
+   
+    end_verbatim
 }
 
 function stopCluster()
 {
     print_title "Stopping the Cluster"
+
+    begin_verbatim
     mys9s cluster --stop --log --cluster-id=1
 
     mys9s maintenance --list --long
+    end_verbatim
     #MySQLReplication.cpp:6377 : FAILURE Aborting start cluster job, as no server was specified.
 }
 
@@ -242,32 +249,39 @@ function enableRecovery()
 
 function stopContainers()
 {
-    print_title "Stopping Containers"
     
     local node001="${MYBASENAME}_01_$$"
     local node002="${MYBASENAME}_02_$$"
     local node003="${MYBASENAME}_03_$$"
 
+    print_title "Stopping Containers"
+
+    begin_verbatim
     for container in $node001 $node002 $node003; do
         mys9s container --stop $container --wait
     done
 
     mys9s container --list --long
+    end_verbatim
 }
 
 function startContainers()
 {
-    print_title "Stopping Containers"
     
     local node001="${MYBASENAME}_01_$$"
     local node002="${MYBASENAME}_02_$$"
     local node003="${MYBASENAME}_03_$$"
 
+    print_title "Stopping Containers"
+
+    begin_verbatim
     for container in $node001 $node002 $node003; do
         mys9s container --start $container --wait
     done
 
     mys9s container --list --long
+    mysleep 120
+    end_verbatim
 }
 
 #

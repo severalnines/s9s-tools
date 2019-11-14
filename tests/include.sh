@@ -2692,8 +2692,12 @@ function check_container_server()
         esac
     done
 
+    #
+    #
+    #
     print_title "Checking Server $container_server"
-
+    
+    begin_verbatim 
     if [ -z "$container_server" ]; then
         failure "check_container_server(): No server name."
         return 1
@@ -2930,6 +2934,8 @@ function check_container_server()
     if [ "$n_names_found" -lt 1 ]; then
         failure "No templates found."
     fi
+
+    end_verbatim
 }
 
 function check_entry()
