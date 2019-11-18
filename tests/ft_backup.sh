@@ -154,6 +154,7 @@ function testCreateCluster()
 
     print_title "Creating a Galera Cluster"
 
+    begin_verbatim
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
         container_name="$(printf "ft_backup_%08d_node0%02d" "$$" "$n")"
@@ -198,6 +199,7 @@ function testCreateCluster()
     #mys9s cluster --list --long
     #sleep 60
     #mys9s cluster --list --long
+    end_verbatim
 }
 
 function testCreateClusterFromBackup()

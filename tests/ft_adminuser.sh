@@ -125,6 +125,7 @@ function testUser()
     # 
     #
     print_title "Testing --whoami"
+    begin_verbatim
 
     mys9s user --whoami
     myself=$(s9s user --whoami)
@@ -135,6 +136,7 @@ function testUser()
     fi
 
     mys9s user --list --long
+    end_verbatim
 }
 
 #
