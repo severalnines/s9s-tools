@@ -124,6 +124,8 @@ function checkTreeAccess()
     local file
 
     print_title "Checking Access Rights"
+
+    begin_verbatim
     mys9s tree --tree --all
     mys9s tree --list --long --all --recursive --full-path
 
@@ -184,6 +186,8 @@ function checkTreeAccess()
             exit 1
         fi
     done
+
+    end_verbatim
 }
 
 function checkList()
@@ -200,6 +204,8 @@ function checkList()
     #
     #
     print_title "Checking Tree List"
+    
+    begin_verbatim
     IFS=$'\n'
     for line in $(s9s tree --list --long --all --recursive --full-path --batch)
     do
@@ -292,6 +298,8 @@ function checkList()
     if [ "$n_object_found" -lt 10 ]; then
         failure "Some special files were not found."
     fi
+
+    end_verbatim
 }
 
 function testClusterManager()
@@ -327,6 +335,8 @@ function testHostManager()
     local file="/.runtime/host_manager"
 
     print_title "Checking $file"
+
+    begin_verbatim
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -346,6 +356,8 @@ function testHostManager()
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
     done 
+
+    end_verbatim
 }
 
 function testJobManager()
@@ -354,6 +366,8 @@ function testJobManager()
     local file="/.runtime/job_manager"
 
     print_title "Checking $file"
+
+    begin_verbatim
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -373,6 +387,8 @@ function testJobManager()
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
     done 
+
+    end_verbatim
 }
 
 function testProcessManager()
@@ -381,6 +397,8 @@ function testProcessManager()
     local file="/.runtime/process_manager"
 
     print_title "Checking $file"
+
+    begin_verbatim
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -400,6 +418,8 @@ function testProcessManager()
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
     done 
+
+    end_verbatim
 }
 
 function testServerManager()
@@ -408,6 +428,8 @@ function testServerManager()
     local file="/.runtime/server_manager"
 
     print_title "Checking $file"
+
+    begin_verbatim
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -427,6 +449,8 @@ function testServerManager()
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
     done 
+
+    end_verbatim
 }
 
 function testUserManager()
@@ -436,6 +460,8 @@ function testUserManager()
     local n_names_found=0
 
     print_title "Checking $file"
+
+    begin_verbatim
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -463,6 +489,7 @@ function testUserManager()
     done 
 
     echo "  n_names_found: $n_names_found"
+    end_verbatim
 }
 
 #
