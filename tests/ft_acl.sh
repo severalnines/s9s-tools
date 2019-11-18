@@ -93,6 +93,7 @@ function testCreateUsers()
 {
     print_title "Creating a User"
 
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -128,11 +129,9 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
-        exit 1
     fi
 
-    #mys9s tree --tree
-    return 0
+    end_verbatim
 }
 
 function checkTree01()
@@ -141,6 +140,8 @@ function checkTree01()
     local lines
 
     print_title "Checking Tree List"
+
+    begin_verbatim
     mys9s tree --cmon-user=supervisor --list --long --directory /
 
     # The root directory owned by the system user.
@@ -183,13 +184,14 @@ function checkTree01()
         exit 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 function checkTree02()
 {
     print_title "Checking Access Rights"
 
+    begin_verbatim
     mys9s tree --access --privileges="rwx" --cmon-user="supervisor" /
     if [ $? -ne 0 ]; then
         failure "User 'supervisor' ha no access to '/'"
@@ -202,7 +204,7 @@ function checkTree02()
         exit 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -216,6 +218,7 @@ function testMkdir()
 
     print_title "Creating a Folder"
 
+    begin_verbatim
     # Creating a folder.
     mys9s tree --mkdir /home
 
@@ -235,7 +238,7 @@ function testMkdir()
         exit 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -250,6 +253,9 @@ function testAcl()
     # Checking the default ACL entries.
     #
     print_title "Checking Default ACL Entries"
+
+
+    begin_verbatim
     mys9s tree --get-acl /home
     
     lines=$(s9s tree --get-acl /home)
@@ -282,7 +288,6 @@ function testAcl()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while adding ACL entry."
-        exit 1
     fi
     
     mys9s tree --get-acl /home
@@ -290,7 +295,6 @@ function testAcl()
     expected="^user:nobody:r-x$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
     fi
     
     #
@@ -311,6 +315,8 @@ function testAcl()
         failure "Expected line not found: '$expected'"
         exit 1
     fi
+
+    end_verbatim
 }
 
 #
@@ -324,6 +330,7 @@ function testRmdir()
 
     print_title "Removing the Folder"
 
+    begin_verbatim
     mys9s tree --rmdir /home
 
     exitCode=$?
@@ -332,7 +339,7 @@ function testRmdir()
         exit 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
