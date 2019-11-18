@@ -184,6 +184,7 @@ This test will create a Galera cluster with $OPTION_NUMBER_OF_NODES node(s).
 
 EOF
 
+    begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -204,7 +205,6 @@ EOF
         let node_serial+=1
     done
      
-    begin_verbaim
 
     #
     # Creating a Galera cluster.
