@@ -629,6 +629,9 @@ function testRecoveryJob()
     mys9s maintenance --current --cluster-id=1
     end_verbatim
 
+    #
+    #
+    #
     print_title "Enabling Recovery from Job"
     begin_verbatim
 

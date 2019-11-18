@@ -30,7 +30,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Tests stopping and starting a mysqlreplication cluster.
+  $MYNAME - Tests disabling and enabling recovery.
 
   -h, --help       Print this help and exit.
   --verbose        Print more messages.
@@ -48,6 +48,13 @@ Usage:
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
+    testRegisterServer   - Registering an LXC server.
+    createCluster        - Creating a server.
+    disableRecovery      - Disabling recofery.
+    stopContainers       - Stops all the containers holding the nodes.
+    startContainers      - Starts all the containers holding the nodes.
+    enableRecovery       - Enables recovery on the cluster.
+
 
 EXAMPLE
  ./$MYNAME --print-commands --server=core1 --reset-config --install
@@ -197,48 +204,46 @@ function createCluster()
     end_verbatim
 }
 
-function stopCluster()
+function disableRecovery()
 {
-    print_title "Stopping the Cluster"
-
+    print_title "Disabling Recovery from Job"
+    
     begin_verbatim
-    mys9s job --list
-    mys9s cluster --stop --log --cluster-id=1
+
+    mys9s cluster \
+        --disable-recovery \
+        --log \
+        --cluster-id=1 \
+        --maintenance-minutes=60 \
+        --reason="testRecoveryJob"
+
     check_exit_code $?
 
-    #mys9s maintenance --list --long
-    mys9s job --list
-    mys9s cluster --stat
-    mys9s node --list --long
-    #mys9s node --stat
-
-    mysleep 120
-    mys9s job --list
-    mys9s cluster --stat
-    mys9s node --list --long
-    
-    mysleep 120
-    mys9s job --list
-    mys9s cluster --stat
-    mys9s node --list --long
-
-    end_verbatim
-    #MySQLReplication.cpp:6377 : FAILURE Aborting start cluster job, as no server was specified.
+    mys9s maintenance --current --cluster-id=1
+    end_verbatim    
 }
 
-function startCluster()
+function enableRecovery()
 {
-    print_title "Starting the Cluster"
-
+    #
+    #
+    #
+    print_title "Enabling Recovery from Job"
     begin_verbatim
-    mys9s node --stat
 
-    mys9s cluster --start --log --cluster-id=1
+    mys9s cluster \
+        --enable-recovery \
+        --log \
+        --cluster-id=1 
+
     check_exit_code $?
 
-    mys9s maintenance --list --long
+    mysleep 120
+    mys9s job --list 
+    mys9s cluster --list --long
+    #mys9s maintenance --current --cluster-id=1
+    wait_for_cluster_started "$CLUSTER_NAME"
     end_verbatim
-    #MySQLReplication.cpp:6377 : FAILURE Aborting start cluster job, as no server was specified.
 }
 
 function stopContainers()
@@ -320,12 +325,10 @@ else
     runFunctionalTest testRegisterServer
     runFunctionalTest createCluster
 
-    runFunctionalTest stopCluster
-    #runFunctionalTest stopContainers
-    #runFunctionalTest startContainers
-    #runFunctionalTest startCluster
-
-    #runFunctionalTest deleteContainers
+    runFunctionalTest disableRecovery
+    runFunctionalTest stopContainers
+    runFunctionalTest startContainers
+    runFunctionalTest enableRecovery
 fi
 
 endTests

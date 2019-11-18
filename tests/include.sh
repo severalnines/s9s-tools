@@ -1741,11 +1741,16 @@ controller    = https://$hostname:$cmon_port
 client_connection_timeout = 30
 
 [log]
-brief_job_log_format = "%36B:%-5L: %-7S %M\n"
-brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
+#brief_job_log_format = "%36B:%-5L: %-7S %M\n"
+#brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
 
 #brief_job_log_format = "%-8S %M\n"
 #brief_log_format     = "%-8S %M\n"
+
+brief_job_log_format = "%C %-8S %M\n"
+brief_log_format     = "%C %-8S %M\n"
+
+
 log_file             = "$HOME/s9s.log"
 
 EOF

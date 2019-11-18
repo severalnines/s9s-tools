@@ -472,8 +472,10 @@ containers.
 
 EOF
 
+    begin_verbatim
     mys9s server --register --servers="lxc://$CONTAINER_SERVER"
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testRunJsJobContainers()
