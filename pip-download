@@ -1,0 +1,55 @@
+#/bin/bash
+
+export today=$(date "+%Y-%m-%d" 2>/dev/null)
+export ymd=$(echo "$today" | tr '-' '_')
+
+function print_header()
+{
+    cat <<EOF
+                                 TEST_NAME   COMMITTED        STATUS
+--------------------------------------------------------------------
+EOF
+}
+
+function download_html_file()
+{
+
+    [ ! -d "$ymd" ] && mkdir "$ymd"
+
+    test_name="$1"
+    html_file="$ymd/$(basename $test_name .sh).html"
+
+
+    wget \
+        --user=pipas \
+        --password=subeta12 \
+        --no-check-certificate \
+        "https://89.133.67.120/ft_install/?page=test&test_name=$test_name" \
+        --output-document=$html_file 2>/dev/null
+
+    git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
+    status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+
+    if [ "$git_date" != "$today" ]; then
+        rm -f $html_file
+        return 0
+    fi
+
+    printf "%42s " "$test_name"
+    printf "%12s " "$git_date"
+    printf "%12s " "$status"
+    printf "\n"
+}
+
+tests=""
+tests+="ft_mysqlreplicationstartstop.sh "
+tests+="ft_access.sh "
+tests+="ft_acl.sh "
+tests+="ft_adminuser.sh "
+
+print_header
+for testname in $tests; do
+    download_html_file "$testname"
+done
+
+tar czf "${ymd}.tar.gz" "$ymd"
