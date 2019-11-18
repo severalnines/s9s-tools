@@ -44,10 +44,11 @@ function download_html_file()
 }
 
 tests=""
-tests+="ft_mysqlreplicationstartstop.sh "
 tests+="ft_access.sh "
 tests+="ft_acl.sh "
 tests+="ft_adminuser.sh "
+tests+="ft_cat.sh "
+tests+="ft_cdt.sh "
 
 print_header
 for testname in $tests; do

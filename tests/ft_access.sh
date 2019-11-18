@@ -147,6 +147,7 @@ will perform most of the steps in these tests.
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -160,13 +161,9 @@ EOF
         --new-password="pipas" \
         "pipas"
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
-    return 0
+    end_verbatim
 }
 
 
@@ -174,7 +171,6 @@ function testCreateCluster()
 {
     local nodes
     local node_ip
-    local exitCode
     local node_serial=1
     local node_name
 
@@ -219,13 +215,7 @@ EOF
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating cluster."
-        mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -255,6 +245,7 @@ user group.
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --create \
         --group=users \
@@ -274,6 +265,7 @@ EOF
     fi
 
     user_should_not_see_the_cluster
+    end_verbatim
 
     #
     #
@@ -285,9 +277,13 @@ user previously created can see the cluster because of this ACL entry.
 
 EOF
 
+    begin_verbatim
+    
     mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
+
+    end_verbatim
 
     #
     #
@@ -299,10 +295,12 @@ see the cluster at all.
 
 EOF
 
+    begin_verbatim
     mys9s tree --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
-    
+    end_verbatim
+
     #
     #
     #
@@ -313,10 +311,12 @@ user previously created can see the cluster because of this ACL entry.
 
 EOF
 
+    begin_verbatim
     mys9s tree --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
-    
+    end_verbatim
+
     #
     #
     #
@@ -326,10 +326,12 @@ We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
 
 EOF
-
+    
+    begin_verbatim
     mys9s tree --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
+    end_verbatim
 }
 
 function testAddGroup()
@@ -344,6 +346,7 @@ checked.
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --add-to-group \
         --group=admins \
@@ -360,6 +363,7 @@ EOF
     fi
 
     user_should_see_the_cluster
+    end_verbatim
 
     #
     #
@@ -370,6 +374,7 @@ Removing user from the 'admins' group, checking the access rights.
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --remove-from-group \
         --group=admins \
@@ -377,13 +382,14 @@ EOF
 
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
+    end_verbatim
 }
 
 function testChOwn()
 {
-
     print_title "Changing the Ownership"
 
+    begin_verbatim
     s9s tree \
         --chown \
         --recursive \
@@ -401,12 +407,14 @@ function testChOwn()
 
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
+    end_verbatim
 }
 
 function testDeleteUser()
 {
     print_title "Deleting User"
-    
+   
+    begin_verbatim
     mys9s tree \
         --chown \
         --recursive \
@@ -440,6 +448,8 @@ function testDeleteUser()
         --cluster    "$CLUSTER_NAME" \
         --owner      "system" \
         --group      "users" 
+
+    end_verbatim
 }
 
 
