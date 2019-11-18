@@ -1,4 +1,4 @@
-#/bin/bash
+#! /bin/bash
 
 export today=$(date "+%Y-%m-%d" 2>/dev/null)
 export ymd=$(echo "$today" | tr '-' '_')

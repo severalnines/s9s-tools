@@ -179,10 +179,11 @@ function testCreateCluster()
     local node_name
 
     print_title "Creating a Galera Cluster"
-    cat <<EOF
+    cat <<EOF | paragraph
 This test will create a Galera cluster with $OPTION_NUMBER_OF_NODES node(s).
 
 EOF
+
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -203,6 +204,8 @@ EOF
         let node_serial+=1
     done
      
+    begin_verbaim
+
     #
     # Creating a Galera cluster.
     #
@@ -238,6 +241,8 @@ EOF
         --owner           "pipas" \
         --group           "admins" \
         --cdt-path        "/"
+
+    end_verbatim
 }
 
 function testOtherUser()
