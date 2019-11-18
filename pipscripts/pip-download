@@ -3,6 +3,8 @@
 export today=$(date "+%Y-%m-%d" 2>/dev/null)
 export ymd=$(echo "$today" | tr '-' '_')
 
+password="$1"
+
 function print_header()
 {
     cat <<EOF
@@ -22,7 +24,7 @@ function download_html_file()
 
     wget \
         --user=pipas \
-        --password=subeta12 \
+        --password="$password" \
         --no-check-certificate \
         "https://89.133.67.120/ft_install/?page=test&test_name=$test_name" \
         --output-document=$html_file 2>/dev/null
