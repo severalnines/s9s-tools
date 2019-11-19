@@ -1303,11 +1303,14 @@ EOF
     check_extended_privileges \
         --can-execute-job \
         --can-create-cluster
-   
+  
+    end_verbatim
+
     #
     #
     #
     print_subtitle "Denying by User ACL Entry"
+    begin_verbatim
     check_extended_privileges \
         --cmon-user          "kirk"  \
         --can-execute-job            \
@@ -1327,11 +1330,13 @@ EOF
     check_extended_privileges \
         --cmon-user          "kirk"  
 
+    end_verbatim
 
     #
     # Denying by group ACL.
     #
     print_subtitle "Denying by a Group ACL Entry"
+    begin_verbatim
     check_extended_privileges \
         --cmon-user          "worf"  \
         --can-execute-job            \
@@ -1349,7 +1354,6 @@ EOF
     check_extended_privileges \
         --cmon-user          "worf"  
 
-    return 0
     mys9s tree --access --privileges="r-x" /.runtime/jobs/jobExecutor
     mys9s tree --access --privileges="r-x" /.runtime/jobs/jobExecutorCreateCluster
 
