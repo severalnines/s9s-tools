@@ -73,7 +73,7 @@ Usage:
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
   --unit-tests            Run all the unit tests.
-  --functional-tests      Run the functional tests.
+  --functional-tests      Run all the functional tests.
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
@@ -1337,6 +1337,10 @@ function print_main_screen()
 }
 
 LAST_USED_SERVER=""
+
+#
+#
+#
 function find_idle_server()
 {
     local server
@@ -1355,8 +1359,6 @@ function find_idle_server()
             continue
         fi
 
-        #print_main_screen
-
         if ! is_server_running_ssh "$server"; then
             printVerbose "Server '$server' is off-line."
             REMOTE_SERVER_STATE[$server]="OFF-LINE"
@@ -1369,8 +1371,6 @@ function find_idle_server()
                 -o StrictHostKeyChecking=no \
                 -o LogLevel=quiet \
                 "$server" -- pip-cmon-test --pid)
-
-        #print_main_screen
 
         printVerbose "server     : '$server'"
         printVerbose "lock_file  : '$lock_file'"
@@ -1392,7 +1392,7 @@ function wait_for_idle_server()
 {
     local idle_server
 
-    printVerbose "Trying to find an idle server"
+    printVerbose "Trying to find an idle server..."
     while true; do
         idle_server=$(find_idle_server)
   

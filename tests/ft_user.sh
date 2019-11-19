@@ -408,6 +408,8 @@ function testFailWrongPassword()
 EOF
 
     begin_verbatim
+    mys9s user --whoami --cmon-user=system --password=wrongone
+
     output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
@@ -434,11 +436,15 @@ EOF
     # Checking the logs.
     check_log_messages \
         "failed to log in with password"
+    
+    end_verbatim
 
     #
     # Using the wrong username.
     #
     print_subtitle "Trying a Wrong Username"
+
+    begin_verbatim
     output=$(s9s user --whoami --cmon-user=sys --password=secret 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then

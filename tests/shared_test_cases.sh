@@ -136,6 +136,7 @@ function testCreateOutsider()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user=system \
@@ -149,6 +150,7 @@ EOF
         grumio
     
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testRegisterLxcServer()
