@@ -312,7 +312,7 @@ function deleteContainers()
     local node002="${MYBASENAME}_02_$$"
     local node003="${MYBASENAME}_03_$$"
 
-    print_title "Deleting Container"
+    print_title "Deleting Containers"
     cat <<EOF | paragraph
   At the end we destroy the containers. 
 EOF
