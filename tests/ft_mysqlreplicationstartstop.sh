@@ -200,6 +200,10 @@ function createCluster()
 function stopCluster()
 {
     print_title "Stopping the Cluster"
+    cat <<EOF | paragraph
+  The most important part of this test is here, where we stop the cluster with
+  the --stop option.
+EOF
 
     begin_verbatim
     mys9s job --list
@@ -223,7 +227,7 @@ function stopCluster()
 EOF
 
     begin_verbatim
-    mysleep 120
+    mysleep 60
     mys9s job --list
     mys9s cluster --stat
     mys9s node --list --long
@@ -234,6 +238,10 @@ EOF
 function startCluster()
 {
     print_title "Starting the Cluster"
+    cat <<EOF | paragraph
+  Starting the cluster we stopped before.
+
+EOF
 
     begin_verbatim
     mys9s node --stat
@@ -256,6 +264,11 @@ function stopContainers()
     local node003="${MYBASENAME}_03_$$"
 
     print_title "Stopping Containers"
+    cat <<EOF
+  We put the nodes into containers so that now we can stop the conatiners of the
+  cluster that we just stopped.
+
+EOF
 
     begin_verbatim
     for container in $node001 $node002 $node003; do
@@ -273,7 +286,10 @@ function startContainers()
     local node002="${MYBASENAME}_02_$$"
     local node003="${MYBASENAME}_03_$$"
 
-    print_title "Stopping Containers"
+    print_title "Starting Containers"
+    cat <<EOF
+  Starting the containers that we just stopped.
+EOF
 
     begin_verbatim
     for container in $node001 $node002 $node003; do
@@ -292,7 +308,10 @@ function deleteContainers()
     local node002="${MYBASENAME}_02_$$"
     local node003="${MYBASENAME}_03_$$"
 
-    print_title "Stopping Containers"
+    print_title "Deleting Container"
+    cat <<EOF | paragraph
+  At the end we destroy the containers. 
+EOF
 
     begin_verbatim
     for container in $node001 $node002 $node003; do

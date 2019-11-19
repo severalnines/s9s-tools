@@ -1,4 +1,12 @@
 #! /bin/bash
+MYNAME=$(basename $0)
+MYDIR=$(dirname $0)
+MYDIR=$(readlink -m $MYDIR)
+VERSION="0.0.7"
+VERBOSE=""
+LOGFILE="$HOME/pip-cmon-test.log"
+EXITCODE=0
+COMMAND_LINE_OPTIONS="$0 $*"
 
 export WWW_PASSWORD="$PASSWORD"
 export REPORT_FILE=""
@@ -12,6 +20,73 @@ if [ -z "$WWW_PASSWORD" ]; then
 fi
 
 REPORT_FILE="${ymd}.text"
+
+source $MYDIR/utilityfunctions.sh
+
+function printHelpAndExit()
+{
+cat <<EOF
+
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - File downloader script.
+
+  -h, --help              Print this help and exit.
+  -v, --version           Print version information and exit.
+  --verbose               Print more messages.
+  --log-file=FILE         Store all the messages in the given file too.
+ 
+EOF
+
+  exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvj: \
+        -l "help,verbose,version,log-file:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            printError "Unhandled option $1"
+            exit 1
+            ;;
+    esac
+done
 
 function print_header()
 {
@@ -68,9 +143,13 @@ EOF
 tests=$(test_names);
 
 [ -f "$REPORT_FILE" ] && rm -f $REPORT_FILE
+
+echo "{code}"
 print_header | tee --append $REPORT_FILE
 for testname in $tests; do
     download_html_file "$testname"
 done
+echo "{code}"
+
 
 tar czf "${ymd}.tar.gz" "$ymd"
