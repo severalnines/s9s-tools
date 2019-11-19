@@ -1097,7 +1097,8 @@ EOF
     fi
 
     mys9s user --stat sisko
-    print_log_messages
+    #print_log_messages
+    begin_verbatim
 
     #
     # Adding the user again should fail.
@@ -1108,6 +1109,7 @@ EOF
   an error.
 EOF
 
+    begin_verbatim
     mys9s user \
         --add-to-group \
         --group=admins \
@@ -1123,7 +1125,8 @@ EOF
         success "  o adding to the same group failed, ok"
     fi
 
-    print_log_messages
+    #print_log_messages
+    end_verbatim
 
     #
     # Removing the user from the group.
@@ -1134,6 +1137,7 @@ Here we remove the user $user_name from the admins group and check if the user
 was indeed removed and the special privileges are revoked.
 EOF
 
+    begin_verbatim
     mys9s user \
         --remove-from-group \
         --group=admins \
@@ -1652,7 +1656,7 @@ EOF
         "Created password reset token" \
         "Password reset token is validated"
 
-    print_log_messages
+    #print_log_messages
     end_verbatim
 }
 
