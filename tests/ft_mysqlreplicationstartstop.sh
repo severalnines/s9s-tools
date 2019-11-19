@@ -211,19 +211,24 @@ function stopCluster()
     mys9s cluster --stat
     mys9s node --list --long
     #mys9s node --stat
+    end_verbatim
 
+    #
+    #
+    #
+    print_title "Waiting for a while"
+    cat <<EOF | paragraph
+  The test will now wait for a while to see if the cluster remains in stopped
+  state.
+EOF
+
+    begin_verbatim
     mysleep 120
     mys9s job --list
     mys9s cluster --stat
     mys9s node --list --long
     
-    mysleep 120
-    mys9s job --list
-    mys9s cluster --stat
-    mys9s node --list --long
-
     end_verbatim
-    #MySQLReplication.cpp:6377 : FAILURE Aborting start cluster job, as no server was specified.
 }
 
 function startCluster()
@@ -236,9 +241,11 @@ function startCluster()
     mys9s cluster --start --log --cluster-id=1
     check_exit_code $?
 
-    mys9s maintenance --list --long
+    #mys9s maintenance --list --long
+    mys9s cluster --stat
+    mys9s node --list --long
+    wait_for_cluster_started "$CLUSTER_NAME"
     end_verbatim
-    #MySQLReplication.cpp:6377 : FAILURE Aborting start cluster job, as no server was specified.
 }
 
 function stopContainers()
@@ -323,7 +330,7 @@ else
     runFunctionalTest stopCluster
     #runFunctionalTest stopContainers
     #runFunctionalTest startContainers
-    #runFunctionalTest startCluster
+    runFunctionalTest startCluster
 
     #runFunctionalTest deleteContainers
 fi

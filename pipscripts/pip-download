@@ -49,6 +49,7 @@ function test_names()
 {
     cat <<EOF
 ft_user.sh 
+ft_mysqlreplicationstartstop.sh
 ft_access.sh 
 ft_acl.sh 
 ft_adminuser.sh 
