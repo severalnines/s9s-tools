@@ -32,23 +32,31 @@ function download_html_file()
     git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
 
-    if [ "$git_date" != "$today" ]; then
-        rm -f $html_file
-        return 0
-    fi
-
     printf "%42s " "$test_name"
     printf "%12s " "$git_date"
     printf "%12s " "$status"
+
+    if [ "$git_date" != "$today" ]; then
+        rm -f $html_file
+        printf "NOT TODAY\n"
+        return 0
+    fi
+
     printf "\n"
 }
 
-tests=""
-tests+="ft_access.sh "
-tests+="ft_acl.sh "
-tests+="ft_adminuser.sh "
-tests+="ft_cat.sh "
-tests+="ft_cdt.sh "
+function test_names()
+{
+    cat <<EOF
+ft_access.sh 
+ft_acl.sh 
+ft_adminuser.sh 
+ft_cat.sh 
+ft_cdt.sh 
+EOF
+}
+
+tests=$(test_names);
 
 print_header
 for testname in $tests; do

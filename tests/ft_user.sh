@@ -145,6 +145,7 @@ Checking that the authenticated user is what it is expected and it can reach
 information about itself. Checking if the keys are ok.
 EOF
 
+    begin_verbatim
     mys9s user --whoami
     myself=$(s9s user --whoami)
     if [ "$myself" != "$userName" ]; then
@@ -164,12 +165,7 @@ EOF
         success "  o the keys are there, ok"
     fi
 
-    print_subtitle "Checking Logs"
-
-    check_log_messages \
-        "Configuration loaded" \
-        "Checked tables" \
-        "License is"
+    end_verbatim
 }
 
 #
@@ -184,8 +180,9 @@ function testStat()
     #
     #
     print_title "Testing the --stat option"
-    lines=$(s9s user --stat "$userName")
 
+    begin_verbatim
+    lines=$(s9s user --stat "$userName")
     mys9s user --stat "$userName"
 
     if ! echo "$lines" | grep -q "Name: $userName"; then
@@ -212,6 +209,8 @@ function testStat()
         failure "Owner is not 'pipas/admin' in --stat."
         return 1
     fi
+
+    end_verbatim
 }
 
 function testCmonGroup()
@@ -225,6 +224,7 @@ This test will list the properties of the CmonGroup class and check that the
 property list is indeed the same as we expect.
 EOF
 
+    begin_verbatim
     mys9s metatype --list-properties --type=CmonGroup --long
 
     IFS=$'\n'
@@ -281,6 +281,8 @@ EOF
     else
         success "  o found $found_names properties, ok"
     fi
+
+    end_verbatim
 }
 
 #
@@ -302,6 +304,7 @@ EOF
 
     # This command 
     #$S9S user --list --long 
+    begin_verbatim
     text=$($S9S user --list --long --batch --color=never)
 
     row=1
@@ -379,6 +382,8 @@ EOF
     check_user \
         --user-name  "admin" \
         --group      "admins" 
+
+    end_verbatim
 }
 
 #
@@ -402,6 +407,7 @@ function testFailWrongPassword()
 
 EOF
 
+    begin_verbatim
     output=$(s9s user --whoami --cmon-user=system --password=wrongone 2>&1)
     exitCode=$?
     if [ "$exitCode" -ne 3 ]; then
@@ -447,10 +453,8 @@ EOF
     else
         success "  o output is '$output', ok"
     fi
-    
-    # Checking the logs.
-    check_log_messages \
-        "User 'sys' is not found"
+   
+    end_verbatim
 }
 
 #
@@ -463,6 +467,7 @@ function testFailNoGroup()
 
     print_title "Creating User without Group"
 
+    begin_verbatim
     #
     # Yes, this is a problem, we can't get an error message back from the pipe.
     # The group here does not exists and we did not request the creation of the
@@ -508,12 +513,7 @@ function testFailNoGroup()
         --password     "secret" \
         --email        "kirk@enterprise.com"
     
-    check_log_messages \
-        "Creating new cmon user 'kirk'"
-
-    #mys9s user --list --long
-    
-    return 0
+    end_verbatim
 }
 
 #
@@ -530,6 +530,7 @@ function testCreateUsers()
 
 EOF
 
+    begin_verbatim
     #
     # Let's add some users so that we have something to work on.
     #
@@ -698,7 +699,7 @@ EOF
         return 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -712,6 +713,7 @@ function testSetUser()
 
     print_title "Testing --set option"
 
+    begin_verbatim
     #
     # Setting the email address for a user and checking if it set.
     #
@@ -756,7 +758,7 @@ function testSetUser()
         return 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -770,6 +772,8 @@ function testSetOtherUser()
     local exitCode
 
     print_title "Testing --set on Other User"
+
+    begin_verbatim
 
     #
     # Setting the email address for a user and checking if it set.
@@ -827,7 +831,7 @@ function testSetOtherUser()
         success "  o Exit code is $exitCode, ok."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -842,6 +846,7 @@ function testChangePassword()
 
     print_title "Testing the Changing of the Password"
 
+    begin_verbatim
     #
     # The 'system' user changes the password for nobody.
     #
@@ -890,6 +895,8 @@ function testChangePassword()
     else
         success "  o The second password works, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -904,6 +911,7 @@ function testPrivateKey()
 
     print_title "Testing keys"
 
+    begin_verbatim
     #
     # We are re-using keys here created in some previous test, so we check if
     # the files exists.
@@ -956,6 +964,8 @@ function testPrivateKey()
     else
         printVerbose "   myself : '$myself'"
     fi 
+
+    end_verbatim
 }
 
 #
@@ -976,6 +986,8 @@ function testSetGroup()
   $group_name by calling the s9s with the --set-group command line option.
   
 EOF
+
+    begin_verbatim
     mys9s user \
         --set-group \
         --group=admins \
@@ -994,6 +1006,7 @@ EOF
 
     mys9s user --list --long
     mys9s user --stat "$USER"
+    end_verbatim
 }
 
 function testAcl()
@@ -1007,6 +1020,7 @@ given user) and check if the ACL is properly printed in the stat page of the
 user object.
 EOF
 
+    begin_verbatim
     mys9s tree --add-acl --acl="user:${USER}:rwx" /sisko
     check_exit_code_no_job $?
 
@@ -1021,6 +1035,8 @@ EOF
     else
         success "  o ACL in short is '$acl', ok"
     fi
+
+    end_verbatim
 }
 
 function testAddToGroup()
@@ -1036,6 +1052,7 @@ groups after the call. Then the privileges will be checked to see if the
 second group is considered when checking access rights.
 EOF
 
+    begin_verbatim
     #
     # Checking the access rights.
     #
@@ -1140,6 +1157,8 @@ EOF
     else
         success "  o group is now 'ds9', ok"
     fi
+
+    end_verbatim
 }
 
 function check_extended_privileges()
@@ -1263,6 +1282,8 @@ function checkExtendedPrivileges()
   entry.
 
 EOF
+
+    begin_verbatim
     my_command  s9s user --whoami --print-json \| jq .user_extended_privileges
     s9s user --whoami --print-json | jq .user_extended_privileges
 
@@ -1337,6 +1358,8 @@ EOF
     else
         failure "The user should be able to create clusters."
     fi
+
+    end_verbatim
 }
 
 function testUserSelfAdmin()
@@ -1352,6 +1375,7 @@ function testUserSelfAdmin()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --create \
         --generate-key \
@@ -1417,12 +1441,15 @@ EOF
     else
         failure "The group for 'student' does not look ok."
     fi
+
+    end_verbatim
 }
 
 function testWeirdChar()
 {
-    print_title "Creating a User and a Group With #"
-        
+    print_title "Creating a User and a Group With '#'"
+    
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -1445,6 +1472,8 @@ function testWeirdChar()
         --group-name   "Group#1"  \
         --owner-name   "system"   \
         --group-owner  "admins" 
+
+    end_verbatim
 }
 
 function testDeleteGroup()
@@ -1457,6 +1486,8 @@ function testDeleteGroup()
   can actually be deleted.
 
 EOF
+
+    begin_verbatim
 
     #
     #
@@ -1525,6 +1556,8 @@ EOF
     else
         success "  o The group is actually deleted, ok."
     fi
+
+    end_verbatim
 }
 
 function checkPasswordReset()
@@ -1538,7 +1571,8 @@ function checkPasswordReset()
   set and then checked.
 
 EOF
-
+    
+    begin_verbatim
     rm -rf "/tmp/cmon/emails/outgoing/"
     mys9s user --password-reset --cmon-user admin 
 
@@ -1619,6 +1653,7 @@ EOF
         "Password reset token is validated"
 
     print_log_messages
+    end_verbatim
 }
 
 
