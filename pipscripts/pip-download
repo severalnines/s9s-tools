@@ -26,8 +26,7 @@ function download_html_file()
         --user=pipas \
         --password="$password" \
         --no-check-certificate \
-        "https://89.133.67.120/ft_install/?page=test&test_name=$test_name&\
-full_screen=true" \
+        "https://89.133.67.120/ft_install/?page=test&test_name=$test_name&full_screen=true" \
         --output-document=$html_file 2>/dev/null
 
     git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')

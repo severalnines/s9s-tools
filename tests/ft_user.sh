@@ -1104,7 +1104,7 @@ EOF
 
     mys9s user --stat sisko
     #print_log_messages
-    begin_verbatim
+    end_verbatim
 
     #
     # Adding the user again should fail.
