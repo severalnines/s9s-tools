@@ -1706,9 +1706,6 @@ else
     runFunctionalTest testWeirdChar
     runFunctionalTest testDeleteGroup
     runFunctionalTest checkPasswordReset
-    
-    print_title "Finished"
-    mys9s user --list --long
 fi
 
 endTests
