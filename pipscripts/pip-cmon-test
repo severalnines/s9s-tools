@@ -98,7 +98,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
-no-git-pull,no-compile,shut-down-after" \
+no-git-pull,no-compile,shut-down-after,wait" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -250,6 +250,11 @@ while true; do
             shift
             SHUT_DOWN_AFTER="true"
             SHUT_DOWN_AFTER_OPTION="--shut-down-after"
+            ;;
+
+        --wait)
+            shift
+            WAIT_OPTION="--wait"
             ;;
 
         --)
@@ -1346,7 +1351,7 @@ function find_idle_server()
     local server
     local host_state
    
-    printVerbose "find_idle_server()"
+    #printVerbose "find_idle_server()"
 
     for server in $SERVER; do
         lock_file=$(lockFile)
@@ -1365,16 +1370,15 @@ function find_idle_server()
             continue
         fi
 
-
         other_pid=$( \
             ssh -o UserKnownHostsFile=/dev/null \
                 -o StrictHostKeyChecking=no \
                 -o LogLevel=quiet \
                 "$server" -- pip-cmon-test --pid)
 
-        printVerbose "server     : '$server'"
-        printVerbose "lock_file  : '$lock_file'"
-        printVerbose "other_pid  : '$other_pid'"
+        #printVerbose "server     : '$server'"
+        #printVerbose "lock_file  : '$lock_file'"
+        #printVerbose "other_pid  : '$other_pid'"
         if [ "$other_pid" ]; then
             REMOTE_SERVER_STATE[$server]="TESTING "
             continue
@@ -1392,7 +1396,7 @@ function wait_for_idle_server()
 {
     local idle_server
 
-    printVerbose "Trying to find an idle server..."
+    printVerbose "Waiting for an idle server..."
     while true; do
         idle_server=$(find_idle_server)
   
@@ -1448,6 +1452,12 @@ function run_tests_remote()
                             --sqlversion=$version \
                             --test="$test_name" \
                             >/dev/null 2>/dev/null &
+
+                    if [ -n "$WAIT_OPTION" ]; then
+                        printVerbose "Waiting until the test ends."
+                        waitForProcessesToEnd 0
+                        printVerbose "Test ended..."
+                    fi
 
                     already_compiled[$idle_server]="yes"
                     sleep 2

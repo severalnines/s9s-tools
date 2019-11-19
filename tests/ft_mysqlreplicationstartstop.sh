@@ -328,11 +328,11 @@ else
     runFunctionalTest createCluster
 
     runFunctionalTest stopCluster
-    #runFunctionalTest stopContainers
-    #runFunctionalTest startContainers
+    runFunctionalTest stopContainers
+    runFunctionalTest startContainers
     runFunctionalTest startCluster
 
-    #runFunctionalTest deleteContainers
+    runFunctionalTest deleteContainers
 fi
 
 endTests

@@ -1,9 +1,17 @@
 #! /bin/bash
 
+export WWW_PASSWORD="$PASSWORD"
+export REPORT_FILE=""
+
 export today=$(date "+%Y-%m-%d" 2>/dev/null)
 export ymd=$(echo "$today" | tr '-' '_')
 
-password="$1"
+if [ -z "$WWW_PASSWORD" ]; then
+    echo "The 'PASSWORD' environment variable should be present."
+    exit 1
+fi
+
+REPORT_FILE="${ymd}.text"
 
 function print_header()
 {
@@ -21,10 +29,9 @@ function download_html_file()
     test_name="$1"
     html_file="$ymd/$(basename $test_name .sh).html"
 
-
     wget \
         --user=pipas \
-        --password="$password" \
+        --password="$WWW_PASSWORD" \
         --no-check-certificate \
         "https://89.133.67.120/ft_install/?page=test&test_name=$test_name&full_screen=true" \
         --output-document=$html_file 2>/dev/null
@@ -32,17 +39,17 @@ function download_html_file()
     git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
 
-    printf "%42s " "$test_name"
-    printf "%12s " "$git_date"
-    printf "%12s " "$status"
+    printf "%42s " "$test_name" | tee --append $REPORT_FILE
+    printf "%12s " "$git_date" | tee --append $REPORT_FILE
+    printf "%12s " "$status" | tee --append $REPORT_FILE
 
     if [ "$git_date" != "$today" ]; then
         rm -f $html_file
-        printf "NOT TODAY\n"
+        printf "NOT TODAY\n" | tee --append $REPORT_FILE
         return 0
     fi
 
-    printf "\n"
+    printf "\n" | tee --append $REPORT_FILE
 }
 
 function test_names()
@@ -60,7 +67,8 @@ EOF
 
 tests=$(test_names);
 
-print_header
+[ -f "$REPORT_FILE" ] && rm -f $REPORT_FILE
+print_header | tee --append $REPORT_FILE
 for testname in $tests; do
     download_html_file "$testname"
 done
