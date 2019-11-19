@@ -211,9 +211,9 @@ EOF
     check_exit_code $?
 
     #mys9s maintenance --list --long
-    mys9s job --list
+    #mys9s job --list
     mys9s cluster --stat
-    mys9s node --list --long
+    mys9s node --stat
     #mys9s node --stat
     end_verbatim
 
@@ -228,9 +228,10 @@ EOF
 
     begin_verbatim
     mysleep 60
-    mys9s job --list
+    
+    #mys9s job --list
     mys9s cluster --stat
-    mys9s node --list --long
+    mys9s node --stat
     
     end_verbatim
 }
@@ -242,17 +243,19 @@ function startCluster()
   Starting the cluster we stopped before.
 
 EOF
-
     begin_verbatim
+   
     mys9s node --stat
+    mys9s cluster --stat
 
     mys9s cluster --start --log --cluster-id=1
     check_exit_code $?
 
     #mys9s maintenance --list --long
     mys9s cluster --stat
-    mys9s node --list --long
+    mys9s node --stat
     wait_for_cluster_started "$CLUSTER_NAME"
+
     end_verbatim
 }
 
@@ -296,8 +299,9 @@ EOF
         mys9s container --start $container --wait
     done
 
-    mys9s container --list --long
-    #mysleep 120
+    #mys9s container --list --long
+    mysleep 120
+    mys9s node --stat
     end_verbatim
 }
 
