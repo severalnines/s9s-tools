@@ -265,7 +265,7 @@ EOF
 
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[0].maintenance_mode')
-    if [ "$tmp" == "host,cluster" ]; then
+    if [ "$tmp" == '"host,cluster"' ]; then
         success "  o Host 1 maintenance_mode is '$tmp', ok."
     else
         failure "Host 1 maintenance_mode is '$tmp', should be 'host,cluster'."
@@ -273,7 +273,7 @@ EOF
 
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[0].maintenance_mode')
-    if [ "$tmp" == "cluster" ]; then
+    if [ "$tmp" == '"cluster"' ]; then
         success "  o Host 2 maintenance_mode is '$tmp', ok."
     else
         failure "Host 2 maintenance_mode is '$tmp', should be 'cluster'."
