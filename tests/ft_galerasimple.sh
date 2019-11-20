@@ -162,6 +162,7 @@ function check_remote_config_file()
 
     print_subtitle "Checking Configuration File"
 
+    begin_verbatim
     while [ -n "$1" ]; do
         case "$1" in
             --hostname|--host-name|--host)
@@ -189,14 +190,12 @@ function check_remote_config_file()
         success "  o Will check host $hostname, ok."
     else
         failure "check_remote_config_file(): Host name expected."
-        return 1
     fi
     
     if [ -n "$filename" ]; then
         success "  o Will check host $filename, ok."
     else
         failure "check_remote_config_file(): File name expected."
-        return 1
     fi
 
     text=$($SSH $hostname -- cat "$filename")
@@ -212,7 +211,8 @@ function check_remote_config_file()
     if [ -n "$show_file" ]; then
         echo "$text" | print_ini_file
     fi
-
+    
+    end_verbatim
 }
 
 #
@@ -236,6 +236,10 @@ function testCreateCluster()
 EOF
 
     begin_verbatim
+    
+    #
+    # Creating a Galera cluster.
+    #
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -255,9 +259,6 @@ EOF
         let node_serial+=1
     done
      
-    #
-    # Creating a Galera cluster.
-    #
     mys9s cluster \
         --create \
         --job-tags="createCluster" \
@@ -286,13 +287,14 @@ EOF
         mys9s cluster --stat
         mys9s job --list 
     fi
+    
+    end_verbatim
 
     check_remote_config_file \
         --host-name "$FIRST_ADDED_NODE" \
         --file-name "/etc/mysql/my.cnf" \
         "user=mysql" "port=3306"
 
-    end_verbatim
 
     #
     # Checking the controller, the nodes and the cluster.
@@ -384,13 +386,12 @@ function testStopNode()
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
     
     check_remote_config_file \
         --host-name "$FIRST_ADDED_NODE" \
         --file-name "/etc/mysql/my.cnf" \
         "user=mysql" "port=3306"
-
-    end_verbatim
 }
 
 function testCreateBackup()
@@ -452,7 +453,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     runFunctionalTest testStopNode
-    runFunctionalTest testCreateBackup
+    #runFunctionalTest testCreateBackup
 fi
 
 endTests

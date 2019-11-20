@@ -263,6 +263,11 @@ EOF
     mys9s maintenance --list --long
     #s9s node --list --print-json 
 
+
+    tmp=$(s9s node --list --print-json | \
+        jq '.clusters[0].hosts[0].hostname')
+    success "Hostname is $tmp."
+
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[0].maintenance_mode')
     if [ "$tmp" == '"host,cluster"' ]; then
@@ -272,7 +277,10 @@ EOF
     fi
 
     tmp=$(s9s node --list --print-json | \
-        jq '.clusters[0].hosts[0].maintenance_mode')
+        jq '.clusters[0].hosts[1].hostname')
+    success "Hostname is $tmp."
+    tmp=$(s9s node --list --print-json | \
+        jq '.clusters[0].hosts[1].maintenance_mode')
     if [ "$tmp" == '"cluster"' ]; then
         success "  o Host 2 maintenance_mode is '$tmp', ok."
     else
