@@ -2207,9 +2207,7 @@ S9sRpcReply::printNodeList()
     {
         printJsonFormat();
         printDebugMessages();
-    }
-
-    if (!isOk())
+    } else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else if (options->isStatRequested())
         printNodesStat();
