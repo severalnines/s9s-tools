@@ -224,7 +224,10 @@ function testCreateMaintenance()
 
 function testCreateTwoPeriods()
 {
+    local tmp
+
     print_title "Testing overlapping maintenance periods"
+
     cat <<EOF | paragraph 
   This test will create two overlapping maintenance periods. Then the test will
   wait for a little while and checks that one of the maintenance periods expire,
@@ -258,6 +261,23 @@ EOF
     
     check_exit_code_no_job $?
     mys9s maintenance --list --long
+    #s9s node --list --print-json 
+
+    tmp=$(s9s node --list --print-json | \
+        jq '.clusters[0].hosts[0].maintenance_mode')
+    if [ "$tmp" == "host,cluster" ]; then
+        success "  o Host 1 maintenance_mode is '$tmp', ok."
+    else
+        failure "Host 1 maintenance_mode is '$tmp', should be 'host,cluster'."
+    fi
+
+    tmp=$(s9s node --list --print-json | \
+        jq '.clusters[0].hosts[0].maintenance_mode')
+    if [ "$tmp" == "cluster" ]; then
+        success "  o Host 2 maintenance_mode is '$tmp', ok."
+    else
+        failure "Host 2 maintenance_mode is '$tmp', should be 'cluster'."
+    fi
 
     #
     # The maintenance periods should be there now.
@@ -553,6 +573,7 @@ function testMaintenanceJob1()
     
     check_exit_code $?
     mys9s maintenance --next --cluster-id=1
+
     end_verbatim
    
     #
