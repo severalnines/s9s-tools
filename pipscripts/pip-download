@@ -1,18 +1,26 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYDIR=$(dirname $0)
-MYDIR=$(readlink -m $MYDIR)
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.7"
 VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
+
 COMMAND_LINE_OPTIONS="$0 $*"
+OPTION_MAIL_LIST=""
+OPTION_NO_MAIL=""
+MAIL_LIST_FILE=""
 
-export WWW_PASSWORD="$PASSWORD"
-export REPORT_FILE=""
+WWW_PASSWORD="$PASSWORD"
+REPORT_FILE=""
 
-export today=$(date "+%Y-%m-%d" 2>/dev/null)
-export ymd=$(echo "$today" | tr '-' '_')
+today=$(date "+%Y-%m-%d" 2>/dev/null)
+ymd=$(echo "$today" | tr '-' '_')
+gzfile="${ymd}.tar.gz"
+
+N_TESTS_PASSED=0
+N_TESTS_FAILED=0
 
 if [ -z "$WWW_PASSWORD" ]; then
     echo "The 'PASSWORD' environment variable should be present."
@@ -36,7 +44,9 @@ Usage:
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
- 
+  --mail-list=NAME        The name of the mail list.
+  --no-mail               Do not send mail.
+  
 EOF
 
   exit 0
@@ -45,7 +55,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:" \
+        -l "help,verbose,version,log-file:,
+no-mail,mail-list:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -76,6 +87,16 @@ while true; do
             shift
             ;;
 
+        --mail-list)
+            OPTION_MAIL_LIST="$2"
+            shift 2
+            ;;
+
+        --no-mail)
+            OPTION_NO_MAIL="true"
+            shift
+            ;;
+
         --)
             shift
             break
@@ -92,7 +113,19 @@ function print_header()
 {
     cat <<EOF
                                  TEST_NAME   COMMITTED        STATUS
---------------------------------------------------------------------
+====================================================================
+EOF
+}
+
+function print_footer()
+{
+    cat <<EOF
+====================================================================
+
+Summary:
+     passed: $N_TESTS_PASSED test(s)
+     failed: $N_TESTS_FAILED test(s)
+
 EOF
 }
 
@@ -113,6 +146,12 @@ function download_html_file()
 
     git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+
+    if [ "$status" == "SUCCESS" ]; then
+        let N_TESTS_PASSED+=1
+    elif [ "$status" == "FAILURE" ]; then
+        let N_TESTS_FAILED+=1
+    fi
 
     printf "%42s " "$test_name" | tee --append $REPORT_FILE
     printf "%12s " "$git_date" | tee --append $REPORT_FILE
@@ -140,16 +179,100 @@ ft_galerasimple.sh
 EOF
 }
 
-tests=$(test_names);
+function email_body()
+{
+    local subject
+
+    if [ "$N_TESTS_FAILED" == "0" ]; then
+        subject="Daily s9s test results (all green)."
+    elif [ "$N_TESTS_FAILED" == "1" ]; then
+        subject="Daily s9s test results (1 failure)."
+    else
+        subject="Daily s9s test results ($N_TESTS_FAILED failures)."
+    fi
+
+    echo -en "Subject: ${subject}.\r\n"
+    echo -en "Mime-Version: 1.0\r\n"
+    echo -en "Subject: Subject_heading\r\n"
+    echo -en "Content-Type: multipart/mixed; boundary=\"-\"\r\n"
+    echo -en "\r\n"
+    
+    echo -en "---\r\n"
+    echo -en "Content-Type: text/html; charset=utf-8\r\n"
+    echo -en "\r\n"
+    echo "<html>"
+    echo "  <body>"
+    echo "    <h1>Daily cmon/s9s test results</h1>"
+    echo "    <p>Please find the attached test results of the s9s functional "
+    echo "tests that are selected for daily testing. Only tests that contain "
+    echo "git commit date in the last day is presented here.</p>"
+    echo "    <pre>"
+    cat $REPORT_FILE
+    echo "    </pre>"
+    echo "  </body>"
+    echo "</html>"
+    echo ""
+
+    echo -en "---\r\n"
+    echo -en "Content-Type: application/octet-stream; name=\"$gzfile\"\r\n"
+    echo -en "Content-Transfer-Encoding: base64\r\n"
+    echo -en "Content-Disposition: inline; filename=\"$gzfile\"\r\n"
+    echo -en "\r\n"
+    
+    uuencode --base64 $gzfile /dev/stdout
+    echo -en "\r\n"
+    echo -en "---\r\n"
+}
+
+function send_mail_to_list()
+{
+    local recipient
+
+    if [ -n "$OPTION_NO_MAIL" ]; then
+        return 0
+    fi
+
+    for recipient in $(cat "$MAIL_LIST_FILE"); do
+        printVerbose "Sending email to ${recipient}..."
+        email_body | ssmtp "$recipient"
+    done
+}
+
+#
+# Checking the command line option.
+#
+if [ -z "$OPTION_MAIL_LIST" -a -z "$OPTION_NO_MAIL" ]; then
+    printError "One of the --mail-list or --no-mail options is mandatory."
+    exit 5
+fi
+
+if [ -n "$OPTION_MAIL_LIST" ]; then
+    MAIL_LIST_FILE="$HOME/.pip/${OPTION_MAIL_LIST}.list"
+    if [ ! -f "$MAIL_LIST_FILE" ]; then
+        printError "File '$MAIL_LIST_FILE' was not found..."
+        exit 5
+    fi
+fi
+
+
+tests=$(test_names)
 
 [ -f "$REPORT_FILE" ] && rm -f $REPORT_FILE
 
 echo "{code}"
+
 print_header | tee --append $REPORT_FILE
 for testname in $tests; do
     download_html_file "$testname"
 done
+print_footer | tee --append $REPORT_FILE
 echo "{code}"
 
+if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
+    printError "Found no test results."
+    exit 6
+fi
 
-tar czf "${ymd}.tar.gz" "$ymd"
+tar czf "${gzfile}" "$ymd"
+send_mail_to_list
+

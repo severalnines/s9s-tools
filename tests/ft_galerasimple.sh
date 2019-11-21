@@ -443,8 +443,6 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
-        runFunctionalTest testStopNode
-        runFunctionalTest testCreateBackup
     fi
 elif [ "$1" ]; then
     for testName in $*; do

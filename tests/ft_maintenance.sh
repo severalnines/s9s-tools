@@ -266,7 +266,7 @@ EOF
 
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[0].hostname')
-    success "Hostname is $tmp."
+    success "  o Hostname is $tmp."
 
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[0].maintenance_mode')
@@ -278,7 +278,7 @@ EOF
 
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[1].hostname')
-    success "Hostname is $tmp."
+    success "  o Hostname is $tmp."
     tmp=$(s9s node --list --print-json | \
         jq '.clusters[0].hosts[1].maintenance_mode')
     if [ "$tmp" == '"cluster"' ]; then
