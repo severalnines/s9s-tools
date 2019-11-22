@@ -1,0 +1,218 @@
+#! /bin/bash
+MYNAME=$(basename "$0")
+MYDIR=$(dirname "$0")
+MYDIR=$(readlink -m "$MYDIR")
+VERSION="0.0.1"
+VERBOSE="true"
+LOGFILE="$HOME/pip-cmon-test.log"
+EXITCODE=0
+COMMAND_LINE_OPTIONS="$0 $*"
+
+export LC_ALL="en_US"
+TEST_SERVER="core3"
+TEST_USER="$USER"
+OPTION_START_SERVER=""
+OPTION_STOP_SERVER=""
+OPTION_N_TESTS=""
+
+source $MYDIR/utilityfunctions.sh
+
+function printHelpAndExit()
+{
+cat <<EOF
+
+Usage:
+  $MYNAME [OPTION]...
+
+  $MYNAME - File downloader script.
+
+  -h, --help              Print this help and exit.
+  -v, --version           Print version information and exit.
+  --verbose               Print more messages.
+  --log-file=FILE         Store all the messages in the given file too.
+  --start-server          Start the test server if necessary.
+  --stop-server           Stop the server after the test.
+  --number-of-tests=N     The maximum number of tests.
+
+EOF
+
+  exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvj: \
+        -l "help,verbose,version,log-file:,start-server,stop-server,\
+number-of-tests:" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            ;;
+
+        -v|--version)
+            shift
+            printVersionAndExit
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE=$(readlink -m "$1")
+            shift
+            ;;
+
+        --start-server)
+            shift
+            OPTION_START_SERVER="true"
+            ;;
+
+        --stop-server)
+            shift
+            OPTION_STOP_SERVER="true"
+            ;;
+
+        --number-of-tests)
+            OPTION_N_TESTS="$2"
+            shift 2
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            printError "Unhandled option $1"
+            exit 1
+            ;;
+    esac
+done
+
+function start_test_server()
+{
+    local server_status
+
+    printVerbose "Checking that $TEST_SERVER is on-line."
+    server_status=$(pip-server-control --ping "$TEST_SERVER")
+    if [ "$server_status" == "on" ]; then
+        return 0
+    fi
+
+    #
+    # We start the test server here.
+    #
+    if [ -n "$OPTION_START_SERVER" ]; then
+        printVerbose "Starting $TEST_SERVER..."
+        pip-server-control --wake --wait "$TEST_SERVER"
+    fi
+
+    server_status=$(pip-server-control --ping "$TEST_SERVER")
+    if [ "$server_status" == "on" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+function stop_test_server()
+{
+    if [ -n "$OPTION_STOP_SERVER" ]; then
+        printVerbose "Shutting down server ${TEST_SERVER}."
+        pip-server-control --shut-down "$TEST_SERVER"
+    fi
+}
+
+function run_s9s_test()
+{
+    local test_name
+    local build_options="--no-git-pull --no-compile"
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --test-name)
+                test_name=$2
+                shift 2
+                ;;
+
+            --build)
+                build_options=""
+                shift
+                ;;
+
+            --)
+                break
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    printVerbose "Test name: $test_name"
+    printVerbose "     Date: $(date)"
+    pip-cmon-test \
+        --verbose \
+        --user=pipas \
+        --s9s \
+        --server="$TEST_SERVER" \
+        --test="$test_name" \
+        --wait \
+        $build_options
+}
+
+#https://unix.stackexchange.com/questions/363814/simplest-way-to-send-one-line-mail-out-via-command-line-using-gmail
+#laszlo@severalnines.com
+#sub.2
+
+function daily_test_names()
+{
+    cat <<EOF
+ft_user.sh 
+ft_adminuser.sh 
+ft_access.sh 
+ft_acl.sh 
+ft_cat.sh 
+ft_cdt.sh 
+ft_galerasimple.sh
+EOF
+}
+
+tests=$(daily_test_names)
+
+if ! start_test_server; then
+    printError "Test server $TEST_SERVER is off-line."
+    exit 1
+fi
+
+n_tests_executed=0
+for test_name in $tests; do
+    if [ "$n_tests_executed" -eq 0 ]; then
+        run_s9s_test --build --test-name "$test_name"
+    else
+        run_s9s_test --test-name "$test_name"
+    fi
+
+    let n_tests_executed+=1
+    if [ -n "$OPTION_N_TESTS" ]; then
+        if [ "$n_tests_executed" -ge "$OPTION_N_TESTS" ]; then
+            printVerbose "Maximum number of tests reached, aborting."
+            break
+        fi
+    fi
+done
+
+stop_test_server

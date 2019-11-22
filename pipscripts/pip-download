@@ -16,6 +16,8 @@ WWW_PASSWORD="$PASSWORD"
 REPORT_FILE=""
 
 today=$(date "+%Y-%m-%d" 2>/dev/null)
+YESTERDAY=$(date "+%Y-%m-%d" -d "yesterday" 2>/dev/null)
+
 ymd=$(echo "$today" | tr '-' '_')
 gzfile="${ymd}.tar.gz"
 
@@ -38,7 +40,7 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]...
 
-  $MYNAME - File downloader script.
+  $MYNAME - Downloads test results from my server. :)
 
   -h, --help              Print this help and exit.
   -v, --version           Print version information and exit.
@@ -46,7 +48,11 @@ Usage:
   --log-file=FILE         Store all the messages in the given file too.
   --mail-list=NAME        The name of the mail list.
   --no-mail               Do not send mail.
-  
+ 
+EXAMPLES:
+  PASSWORD="SSSSSSS" pip-download --verbose --no-mail
+  PASSWORD="SSSSSSS" pip-download --verbose --mail-list=myself
+
 EOF
 
   exit 0
@@ -112,15 +118,15 @@ done
 function print_header()
 {
     cat <<EOF
-                                 TEST_NAME   COMMITTED        STATUS
-====================================================================
+                       TEST_NAME STATUS     COMMITTED                 ELAPSED  GIT HASH
+=======================================================================================================================
 EOF
 }
 
 function print_footer()
 {
     cat <<EOF
-====================================================================
+=======================================================================================================================
 
 Summary:
      passed: $N_TESTS_PASSED test(s)
@@ -131,21 +137,48 @@ EOF
 
 function download_html_file()
 {
+    local test_name
+    local html_file
+    local git_date
+    local git_time
+    local git_timezone
+    local elapsed
+    local url
 
     [ ! -d "$ymd" ] && mkdir "$ymd"
 
     test_name="$1"
     html_file="$ymd/$(basename $test_name .sh).html"
 
+    url="https://89.133.67.120/ft_install/"
+    url+="?page=test&test_name=$test_name&full_screen=true"
+
+    #
+    # We download the test results from the web, this way the reports are nicely
+    # formatted for easy use.
+    #
     wget \
-        --user=pipas \
+        --user=$USER \
         --password="$WWW_PASSWORD" \
         --no-check-certificate \
-        "https://89.133.67.120/ft_install/?page=test&test_name=$test_name&full_screen=true" \
+        "$url" \
         --output-document=$html_file 2>/dev/null
 
+    #
+    # The downloaded file has these fields embedded in a HTML comment so that we
+    # can have everything in one single HTML file.
+    #
     git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
+    git_time=$(cat $html_file | grep "^p42di 121" | awk '{print $3}')
+    gittimezone=$(cat $html_file | grep "^p42di 122" | awk '{print $3}')
+    git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
+    elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+    
+    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
+        rm -f $html_file
+        return 0
+    fi
 
     if [ "$status" == "SUCCESS" ]; then
         let N_TESTS_PASSED+=1
@@ -153,13 +186,17 @@ function download_html_file()
         let N_TESTS_FAILED+=1
     fi
 
-    printf "%42s " "$test_name" | tee --append $REPORT_FILE
-    printf "%12s " "$git_date" | tee --append $REPORT_FILE
-    printf "%12s " "$status" | tee --append $REPORT_FILE
+    printf "%32s "  "$test_name"   | tee --append $REPORT_FILE
+    printf "%-10s " "$status"      | tee --append $REPORT_FILE
+    printf "%10s "  "$git_date"    | tee --append $REPORT_FILE
+    printf "%8s "   "$git_time"    | tee --append $REPORT_FILE
+    printf "%5s "   "$gittimezone" | tee --append $REPORT_FILE
+    printf "%8s "   "$elapsed"     | tee --append $REPORT_FILE
+    printf "%12s "  "$git_hash"    | tee --append $REPORT_FILE
 
-    if [ "$git_date" != "$today" ]; then
+    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
         rm -f $html_file
-        printf "NOT TODAY\n" | tee --append $REPORT_FILE
+        printf "OLD\n" | tee --append $REPORT_FILE
         return 0
     fi
 
@@ -176,6 +213,7 @@ ft_acl.sh
 ft_cat.sh 
 ft_cdt.sh 
 ft_galerasimple.sh
+ft_mysqlreplicationstartstop.sh
 EOF
 }
 
@@ -202,10 +240,12 @@ function email_body()
     echo -en "\r\n"
     echo "<html>"
     echo "  <body>"
-    echo "    <h1>Daily cmon/s9s test results</h1>"
+    echo "    <h1>Daily s9s test results</h1>"
     echo "    <p>Please find the attached test results of the s9s functional "
     echo "tests that are selected for daily testing. Only tests that contain "
-    echo "git commit date in the last day is presented here.</p>"
+    echo "git commit date in the last day or today are presented here.</p>"
+    echo "    <p>These test scrips can be found in the s9s-tools source "
+    echo "under the tests/ subdirectory.</p>"
     echo "    <pre>"
     cat $REPORT_FILE
     echo "    </pre>"
