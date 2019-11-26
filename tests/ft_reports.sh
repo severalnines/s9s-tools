@@ -150,69 +150,6 @@ while true; do
     esac
 done
 
-function check_remote_config_file()
-{
-    local hostname="$FIRST_ADDED_NODE"
-    local filename
-    local show_file
-    local text
-    local line
-
-    print_subtitle "Checking Configuration File"
-
-    begin_verbatim
-    while [ -n "$1" ]; do
-        case "$1" in
-            --hostname|--host-name|--host)
-                hostname="$2"
-                shift 2
-                ;;
-
-            --file|--file-name)
-                filename="$2"
-                shift 2
-                ;;
-
-            --show-file)
-                show_file="true"
-                shift
-                ;;
-
-            *)
-                break
-                ;;
-        esac
-    done
-
-    if [ -n "$hostname" ]; then
-        success "  o Will check host $hostname, ok."
-    else
-        failure "check_remote_config_file(): Host name expected."
-    fi
-    
-    if [ -n "$filename" ]; then
-        success "  o Will check host $filename, ok."
-    else
-        failure "check_remote_config_file(): File name expected."
-    fi
-
-    text=$($SSH $hostname -- cat "$filename")
-
-    for line in "$@"; do
-        if echo "$text" | grep --quiet "$line"; then
-            success "  o Expresson '$line' found, ok."
-        else
-            failure "Expression '$line' was not found."
-        fi
-    done
-    
-    if [ -n "$show_file" ]; then
-        echo "$text" | print_ini_file
-    fi
-    
-    end_verbatim
-}
-
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -299,6 +236,8 @@ EOF
 
     begin_verbatim
     mys9s report --list-templates --long
+    check_exit_code_no_job $?
+
     lines=$(s9s report --list-templates --long)
 
     expected=""
@@ -326,9 +265,14 @@ EOF
 
     begin_verbatim
     mys9s report --create --type=testreport --cluster-id=1
+    check_exit_code_no_job $?
 
     mys9s report --list --long
+    check_exit_code_no_job $?
+
     mys9s report --cat --report-id=1
+    check_exit_code_no_job $?
+
     end_verbatim
 }
 
@@ -340,7 +284,10 @@ function testDeleteReport()
 
     begin_verbatim
     mys9s report --delete --report-id=1
+    check_exit_code_no_job $?
+
     mys9s report --list --long
+    check_exit_code_no_job $?
 
     mys9s report --cat --report-id=1
     retCode=$?
