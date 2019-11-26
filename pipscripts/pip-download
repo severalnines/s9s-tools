@@ -10,6 +10,9 @@ EXITCODE=0
 COMMAND_LINE_OPTIONS="$0 $*"
 OPTION_MAIL_LIST=""
 OPTION_NO_MAIL=""
+OPTION_TESTS=""
+
+
 MAIL_LIST_FILE=""
 
 WWW_PASSWORD="$PASSWORD"
@@ -38,7 +41,7 @@ function printHelpAndExit()
 cat <<EOF
 
 Usage:
-  $MYNAME [OPTION]...
+  $MYNAME [OPTION]... [TEST_NAME]...
 
   $MYNAME - Downloads test results from my server. :)
 
@@ -114,6 +117,9 @@ while true; do
             ;;
     esac
 done
+
+OPTION_TESTS="$*"
+
 
 function print_header()
 {
@@ -207,6 +213,11 @@ function download_html_file()
 
 function test_names()
 {
+    if [ -n "$OPTION_TESTS" ]; then
+        echo $OPTION_TESTS
+        return 0
+    fi
+
     cat <<EOF
 ft_user.sh 
 ft_adminuser.sh 

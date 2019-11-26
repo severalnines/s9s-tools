@@ -14,6 +14,7 @@ TEST_USER="$USER"
 OPTION_START_SERVER=""
 OPTION_STOP_SERVER=""
 OPTION_N_TESTS=""
+OPTION_TESTS=""
 
 source $MYDIR/utilityfunctions.sh
 
@@ -22,7 +23,7 @@ function printHelpAndExit()
 cat <<EOF
 
 Usage:
-  $MYNAME [OPTION]...
+  $MYNAME [OPTION]... [TEST_NAME]...
 
   $MYNAME - File downloader script.
 
@@ -100,6 +101,8 @@ while true; do
             ;;
     esac
 done
+
+OPTION_TESTS="$*"
 
 function start_test_server()
 {
@@ -180,6 +183,11 @@ function run_s9s_test()
 
 function daily_test_names()
 {
+    if [ -n "$OPTION_TESTS" ]; then
+        echo $OPTION_TESTS
+        return 0
+    fi
+
     cat <<EOF
 ft_user.sh 
 ft_adminuser.sh 
