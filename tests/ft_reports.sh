@@ -318,7 +318,6 @@ function testCreateReport()
    
     begin_verbatim
     mys9s report --create --type=testreport --cluster-id=1
-    end_verbatim
 
     mys9s report --list --long
     mys9s report --cat --report-id=1
