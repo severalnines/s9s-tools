@@ -334,12 +334,22 @@ EOF
 
 function testDeleteReport()
 {
+    local retCode
+
     print_title "Deleting report"
 
     begin_verbatim
     mys9s report --delete --report-id=1
     mys9s report --list --long
+
     mys9s report --cat --report-id=1
+    retCode=$?
+    if [ "$retCode" != "0" ]; then
+        success "  o Report ID 1 was not found, ok."
+    else
+        warning "The return code should not be 0."
+    fi
+
     end_verbatim
 }
 
