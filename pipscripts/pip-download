@@ -144,13 +144,15 @@ function download_html_file()
     local git_timezone
     local elapsed
     local url
+    local server="www"
+    # 89.133.67.120
 
     [ ! -d "$ymd" ] && mkdir "$ymd"
 
     test_name="$1"
     html_file="$ymd/$(basename $test_name .sh).html"
 
-    url="https://89.133.67.120/ft_install/"
+    url="https://$server/ft_install/"
     url+="?page=test&test_name=$test_name&full_screen=true"
 
     #
@@ -162,7 +164,7 @@ function download_html_file()
         --password="$WWW_PASSWORD" \
         --no-check-certificate \
         "$url" \
-        --output-document=$html_file 2>/dev/null
+        --output-document=$html_file #2>/dev/null
 
     #
     # The downloaded file has these fields embedded in a HTML comment so that we
