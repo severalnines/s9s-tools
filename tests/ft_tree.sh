@@ -614,9 +614,6 @@ EOF
     done
     IFS=$old_ifs    
 
-    print_subtitle "The s9s.log Log File"
-    cat $HOME/s9s.log
-
     end_verbatim
 }
 
