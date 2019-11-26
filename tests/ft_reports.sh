@@ -292,6 +292,10 @@ function testReportTemplates()
     local lines
 
     print_title "Checking Report Templates"
+    cat <<EOF | paragraph
+  This test lists the report templates and checks if all expected templates are
+  there in the list.
+EOF
 
     begin_verbatim
     mys9s report --list-templates --long
@@ -315,7 +319,11 @@ function testReportTemplates()
 function testCreateReport()
 {
     print_title "Creating a report"
-   
+    cat <<EOF
+  This test will create a test report. The test report is designed to check the
+  report subsystem in functional tests. The ID of the created report will be 1.
+EOF
+
     begin_verbatim
     mys9s report --create --type=testreport --cluster-id=1
 
@@ -326,7 +334,7 @@ function testCreateReport()
 
 function testDeleteReport()
 {
-    print_verbose "Deleting report"
+    print_title "Deleting report"
 
     begin_verbatim
     mys9s report --delete --report-id=1
@@ -334,7 +342,6 @@ function testDeleteReport()
     mys9s report --cat --report-id=1
     end_verbatim
 }
-
 
 #
 # Running the requested tests.
