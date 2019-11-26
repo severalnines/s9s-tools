@@ -139,7 +139,12 @@ function testCreateUser()
     local old_ifs="$IFS"
     local columns_found=0
 
+    #
+    #
+    #
     print_title "Creating a Normal User"
+
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -206,6 +211,8 @@ function testCreateUser()
         esac
     done
     IFS=$old_ifs
+
+    end_verbatim
 }
 
 #####
@@ -221,6 +228,7 @@ This test will create a user with superuser privileges under the name
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -234,14 +242,19 @@ EOF
         "superuser"
 
     check_exit_code_no_job $?
-    #mys9s tree --list --long
+    end_verbatim
 }
 
 function testLicenseDevice()
 {
     local retCode
+
+    #
+    #
+    #
     print_title "Checking Access to the License Device File"
 
+    begin_verbatim
     mys9s tree \
         --cat \
         /.runtime/cmon_license 
@@ -378,6 +391,8 @@ EOF
     else
         failure "The license seems to be not updated."
     fi
+
+    end_verbatim
 }
 
 #####
@@ -394,6 +409,8 @@ function testRegisterServer()
     local group
 
     print_title "Registering a Container Server"
+
+    begin_verbatim
     cat <<EOF
 This test will register a container server and check if it properly shows in the
 tree.
@@ -434,6 +451,8 @@ EOF
     if [ -z "$object_found" ]; then
         failure "Object was not found."
     fi
+
+    end_verbatim
 }
 
 #
@@ -460,8 +479,7 @@ function testCreateContainer()
 
 EOF
 
-    #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_001
-    #pip-container-destroy --server="$CONTAINER_SERVER" ft_tree_002
+    begin_verbatim
 
     mys9s container \
         --create \
@@ -532,6 +550,8 @@ EOF
     else
         success "  o the new container is found, ok"
     fi
+
+    end_verbatim
 }
 
 #
@@ -555,6 +575,8 @@ function testCreateCluster()
   owner and the group owner). 
 
 EOF
+
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-type=galera \
@@ -594,6 +616,8 @@ EOF
 
     print_subtitle "The s9s.log Log File"
     cat $HOME/s9s.log
+
+    end_verbatim
 }
 
 function testPingAccess()
@@ -606,6 +630,7 @@ function testPingAccess()
 
 EOF
 
+    begin_verbatim
     mys9s cluster \
         --ping \
         --cluster-id=1 \
@@ -648,12 +673,15 @@ EOF
     else
         failure "The owner could not ping the cluster."
     fi
+
+    end_verbatim
 }
 
 function testConfigAccess()
 {
     print_title "Checking Who has Read Access to Configuration"
 
+    begin_verbatim
     mys9s cluster \
         --list-config \
         --cluster-id=1 \
@@ -762,11 +790,17 @@ EOF
         --list-config \
         --cluster-id=1 \
         "host_stats_collection_interval"
+
+    end_verbatim
 }
 
 function testJobAccess()
 {
     local retCode
+
+    #
+    #
+    #
     print_title "Checking if Outsiders can't Create Jobs"
     cat <<EOF
   This test will check that an outsider can not execute a job on the cluster it
@@ -775,6 +809,7 @@ function testJobAccess()
 
 EOF
 
+    begin_verbatim
     mys9s job \
         --success \
         --cluster-id=1 \
@@ -817,6 +852,8 @@ EOF
     else
         failure "The owner could not execute a job."
     fi
+
+    end_verbatim
 }
 
 function testLogAccess()
@@ -830,6 +867,7 @@ function testLogAccess()
 
 EOF
 
+    begin_verbatim
     mys9s log \
         --list \
         --cmon-user=grumio \
@@ -857,6 +895,8 @@ EOF
     else
         failure "The owner can't see the logs."
     fi
+
+    end_verbatim
 }
 
 #
@@ -882,6 +922,7 @@ appear in the tree with the right properties.
 
 EOF
 
+    begin_verbatim
     mys9s cluster \
         --create-database \
         --cluster-name="$CLUSTER_NAME" \
@@ -1002,6 +1043,8 @@ EOF
     else
         success "  o all $n_objects_found databases found, ok"
     fi
+
+    end_verbatim
 }
 
 function testDatabaseAccess()
@@ -1015,6 +1058,7 @@ function testDatabaseAccess()
 
 EOF
 
+    begin_verbatim
     mys9s cluster \
         --create-database \
         --cluster-name="$CLUSTER_NAME" \
@@ -1055,6 +1099,8 @@ EOF
     else
         success "  o Outsider can not see databases, ok."
     fi
+
+    end_verbatim
 }
 
 function testBackupAccess()
@@ -1063,6 +1109,7 @@ function testBackupAccess()
 
     print_title "Checking that Outsider can not Access Backups"
 
+    begin_verbatim
     mys9s backup \
         --list \
         --long \
@@ -1120,6 +1167,8 @@ function testBackupAccess()
     else
         success "  o Outsider can not delete backups, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -1134,6 +1183,7 @@ function testCreateAccount()
 
 EOF
 
+    begin_verbatim
     mys9s account \
         --create \
         --cluster-name="galera_001" \
@@ -1141,6 +1191,7 @@ EOF
         --privileges="*.*:ALL"
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testConfigController()
@@ -1149,10 +1200,12 @@ function testConfigController()
 
     print_title "Testing the Configuration of the Controller"
 
+    begin_verbatim
     controller_name=$(\
         s9s node --list --node-format "%R %A\n" | \
         grep controller | \
         awk '{print $2}')
+    end_verbatim
 }
 
 #
@@ -1163,6 +1216,8 @@ function testAlarmAccess()
     local retCode
 
     print_title "Checking if Outsiders can See the Alarms"
+
+    begin_verbatim
 
     #
     # Checking the creating of accounts.
@@ -1179,11 +1234,15 @@ function testAlarmAccess()
     else
         success "  o Outsider can not see the alarms, ok."
     fi
+
+    end_verbatim
 }
 
 function testReportAccess()
 {
     print_title "Checking Report Creation and Privileges"
+
+    begin_verbatim
 
     #
     # Checking the creating of accounts.
@@ -1253,6 +1312,8 @@ function testReportAccess()
     else
         failure "The owner should be able to delete a report."
     fi
+
+    end_verbatim
 }
 
 
@@ -1262,6 +1323,8 @@ function testAccountAccess()
     local retCode
 
     print_title "Checking if Outsiders can Access Accounts"
+
+    begin_verbatim
 
     #
     # Checking the creating of accounts.
@@ -1312,6 +1375,8 @@ function testAccountAccess()
     else
         success "  o Outsider can not see the accounts, ok."
     fi
+
+    begin_verbatim
 }
 
 #
@@ -1341,6 +1406,7 @@ environment.
 
 EOF
 
+    begin_verbatim
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
@@ -1452,12 +1518,15 @@ EOF
     else
         success "  o all objects were found"
     fi
+
+    end_verbatim
 }
 
 function testStats()
 {
     print_title "Checking CDT Path of Objects"
 
+    begin_verbatim
     mys9s user --stat "$USER"
     
     mys9s server --stat
@@ -1466,6 +1535,7 @@ function testStats()
     mys9s cluster --stat
 
     mys9s server --list --long
+    end_verbatim
 }
 
 #
@@ -1474,6 +1544,8 @@ function testStats()
 function testAclChroot()
 {
     print_title "Checking getAcl replies"
+
+    begin_verbatim
 
     THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
@@ -1522,6 +1594,8 @@ function testAclChroot()
     else
         success "The name is '$THE_NAME', ok"
     fi
+
+    end_verbatim
 }
 
 #####
@@ -1530,11 +1604,14 @@ function testAclChroot()
 function testCreateFolder()
 {
     print_title "Creating directory"
+
+    begin_verbatim
     mys9s tree \
         --mkdir \
         /tmp
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 #####
@@ -1544,6 +1621,7 @@ function testManipulate()
 {
     print_title "Adding an ACL Entry"
 
+    begin_verbatim
     mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
     check_exit_code_no_job $?
 
@@ -1568,6 +1646,8 @@ function testManipulate()
     else
         success "  o the group is $GROUP, ok"
     fi
+
+    end_verbatim
 }
 
 #####
@@ -1579,7 +1659,8 @@ function testTree()
     local n_object_found=0
 
     print_title "Printing and Checking Tree"
-
+    
+    begin_verbatim
     mys9s tree --list 
     mys9s tree --list --long
 
@@ -1607,6 +1688,8 @@ function testTree()
     if [ "$n_object_found" -lt 4 ]; then
         failure "Some objects were not found."
     fi
+
+    end_verbatim
 }
 
 function testMoveBack()
@@ -1617,6 +1700,8 @@ Here the superuser moves the objects back into the root directory out from the
 chroot environment of the other user. The other user should not see the 
 objects.
 EOF
+
+    begin_verbatim
     mys9s tree --tree --all --cmon-user=system --password=secret
 
     mys9s tree \
@@ -1688,8 +1773,7 @@ EOF
         mys9s server --list --long --cmon-user=system --password=secret
     fi
 
-    #mys9s server --list --long
-    #mys9s server --list --long --cmon-user=system --password=secret
+    end_verbatim
 }
 
 #
@@ -1702,6 +1786,7 @@ function deleteContainers()
 
     print_title "Deleting Containers"
 
+    begin_verbatim
     #
     # Deleting all the containers we created.
     #
@@ -1716,7 +1801,7 @@ function deleteContainers()
         check_exit_code $?
     done
 
-    #mys9s job --list
+    end_verbatim
 }
 
 #
