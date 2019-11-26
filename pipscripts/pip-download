@@ -228,6 +228,7 @@ ft_cdt.sh
 ft_galerasimple.sh
 ft_mysqlreplicationstartstop.sh
 ft_tree.sh
+ft_reports.sh
 EOF
 }
 
