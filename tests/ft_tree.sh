@@ -1373,7 +1373,7 @@ function testAccountAccess()
         success "  o Outsider can not see the accounts, ok."
     fi
 
-    begin_verbatim
+    end_verbatim
 }
 
 #
