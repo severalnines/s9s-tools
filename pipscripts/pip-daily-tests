@@ -196,6 +196,7 @@ ft_acl.sh
 ft_cat.sh 
 ft_cdt.sh 
 ft_galerasimple.sh
+ft_tree.sh
 EOF
 }
 
