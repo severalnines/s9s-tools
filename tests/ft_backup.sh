@@ -567,7 +567,7 @@ function testCreateBackup04()
     #check_exit_code $retcode
 
     mys9s backup --list --long
-    begin_verbatim
+    end_verbatim
 }
 
 function testCreateBackup05()

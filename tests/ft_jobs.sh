@@ -106,13 +106,16 @@ So now we wait for a few seconds.
 
 EOF
 
+    begin_verbatim
     mysleep 15
+    end_verbatim
 
     #
     #
     #
     print_title "Testing Simple Jobs"
 
+    begin_verbatim
     # A job that destined to be a success.
     mys9s job --success --job-tags=success,test --wait
     exit_code=$?
@@ -159,7 +162,7 @@ EOF
         failure "There should be 2 jobs altogether."
     fi
 
-    return 0
+    end_verbatim
 }
 
 function testAbortSuccess()
@@ -168,13 +171,14 @@ function testAbortSuccess()
     local state
     print_title "Aborting Job"
 
+    begin_verbatim
     mys9s job --success --timeout=120
-    sleep 5
+    mysleep 5
 
     mys9s job --list
 
     mys9s job --kill --job-id=$job_id
-    sleep 3
+    mysleep 3
     mys9s job --list
 
     state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
@@ -183,6 +187,7 @@ function testAbortSuccess()
     else
         failure "Job $job_id state is $state, not ABORTED."
     fi
+    end_verbatim
 }
 
 function testAbortFail()
@@ -191,13 +196,14 @@ function testAbortFail()
     local state
     print_title "Aborting Job"
 
+    begin_verbatim
     mys9s job --fail --timeout=120
-    sleep 5
+    mysleep 5
 
     mys9s job --list
 
     mys9s job --kill --job-id=$job_id
-    sleep 3
+    mysleep 3
     mys9s job --list
     state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
     if [ "$state" == "ABORTED" ]; then
@@ -205,6 +211,7 @@ function testAbortFail()
     else
         failure "Job $job_id state is $state, not ABORTED."
     fi
+    end_verbatim
 }
 
 #
