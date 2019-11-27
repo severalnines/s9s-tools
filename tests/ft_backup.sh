@@ -214,6 +214,7 @@ function testCreateClusterFromBackup()
 
     print_title "Creating a Galera Cluster from Backup"
 
+    begin_verbatim
     for ((n=0;n<nNodes;++n)); do
         echo "Creating container #${n}."
         container_name="$(printf "ft_backup_%08d_node1%02d" "$$" "$n")"
@@ -236,6 +237,7 @@ function testCreateClusterFromBackup()
 
     check_exit_code $?
     wait_for_cluster_started "$cluster_name"
+    end_verbatim
 }
 
 #
@@ -247,6 +249,7 @@ function testCreateAccount()
 
     print_title "Testing account creation."
 
+    begin_verbatim
     #
     # This command will create a new account on the cluster.
     #
@@ -270,8 +273,8 @@ function testCreateAccount()
     userName="$(s9s account --list --cluster-id=1 "$DATABASE_USER")"
     if [ "$userName" != "$DATABASE_USER" ]; then
         failure "Failed to create user '$DATABASE_USER'."
-        exit 1
     fi
+    end_verbatim
 }
 
 #
@@ -282,6 +285,8 @@ function testCreateDatabase()
     local userName
 
     print_title "Testing database creation."
+
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -323,7 +328,7 @@ function testCreateDatabase()
     fi
 
     mys9s account --list --cluster-id=1 --long "$DATABASE_USER"
-    return 0
+    end_verbatim
 }
 
 #
@@ -337,6 +342,7 @@ function testCreateBackup01()
 
     print_title "Creating a Backup"
 
+    begin_verbatim
     #
     # Creating the backup.
     #
@@ -429,14 +435,16 @@ function testCreateBackup01()
 
     mys9s backup --list-databases
     mys9s backup --list-databases --long
+    end_verbatim
 }
 
 function testCreateBackup02()
 {
     local container_name
     local node
-    print_title "Creating Another Backup"
 
+    print_title "Creating Another Backup"
+    begin_verbatim
     #
     # Creating the backup.
     # Using gzip this time.
@@ -466,6 +474,8 @@ function testCreateBackup02()
         --test-server="$node" \
         $LOG_OPTION \
         $DEBUG_OPTION
+
+    end_verbatim
 }
 
 #
@@ -478,6 +488,7 @@ function testCreateBackup03()
 
     print_title "Trying to Rewrite Backup"
 
+    begin_verbatim
     #
     # Creating the backup.
     #
@@ -506,10 +517,10 @@ function testCreateBackup03()
     retcode=$?
     if [ "$retcode" -eq 0 ]; then
         failure "Overwriting of backup directory should not be possible"
-        exit 1
     else
         success "  o No overwrite of the backups, ok."
     fi
+    end_verbatim
 }
 
 #
@@ -522,6 +533,8 @@ function testCreateBackup04()
     local retcode
 
     print_title "Creating and Verifying a Backup"
+
+    begin_verbatim
     container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "1")"
     node=$(create_node --autodestroy "$container_name")
 
@@ -554,6 +567,7 @@ function testCreateBackup04()
     #check_exit_code $retcode
 
     mys9s backup --list --long
+    begin_verbatim
 }
 
 function testCreateBackup05()
@@ -564,6 +578,7 @@ function testCreateBackup05()
 
     print_title "Creating xtrabackupfull Backup"
 
+    begin_verbatim
     #
     # Creating the backup.
     # Using xtrabackup this time.
@@ -597,14 +612,17 @@ function testCreateBackup05()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 function testCreateBackup06()
 {
     local container_name
     local node
+
     print_title "Creating PITR Compatible Backup"
 
+    begin_verbatim
     #
     # Creating the backup.
     # Using gzip this time.
@@ -622,12 +640,14 @@ function testCreateBackup06()
     check_exit_code $?
 
     mys9s backup --list --long
+    end_verbatim
 }
 
 function testRestore()
 {
     print_title "Restoring Backup 1"
 
+    begin_verbatim
     mys9s backup --list --long 
     mys9s backup \
         --restore \
@@ -680,6 +700,7 @@ function testRestore()
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 function testDeleteBackup()
@@ -688,6 +709,7 @@ function testDeleteBackup()
     
     print_title "Deleting Existing Backup"
 
+    begin_verbatim
     #
     # Getting the backup ID of the first backup
     #
@@ -709,7 +731,7 @@ function testDeleteBackup()
         mys9s backup --list --long
     fi
    
-    return 0
+    end_verbatim
 }
 
 function testDeleteOld()
@@ -720,6 +742,8 @@ function testDeleteOld()
     # we just created these backups.
     #
     print_title "Deleting Old Backups (No Old Backups)"
+
+    begin_verbatim
     mys9s backup --delete-old --cluster-id=1 --job-tags=no_old_found --dry --log
     job_id=$(\
         s9s job --list --batch --with-tags=no_old_found | \
@@ -774,6 +798,7 @@ function testDeleteOld()
     #
     print_title "Deleting Old Backups (Again)"
     mys9s backup --delete-old --cluster-id=1 --backup-retention=0 --safety-copies=3 --log 
+    end_verbatim
 }
 
 #

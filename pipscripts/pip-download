@@ -170,7 +170,7 @@ function download_html_file()
         --password="$WWW_PASSWORD" \
         --no-check-certificate \
         "$url" \
-        --output-document=$html_file #2>/dev/null
+        --output-document=$html_file 2>/dev/null
 
     #
     # The downloaded file has these fields embedded in a HTML comment so that we
