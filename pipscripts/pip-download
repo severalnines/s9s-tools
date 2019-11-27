@@ -15,7 +15,6 @@ OPTION_TESTS=""
 
 MAIL_LIST_FILE=""
 
-WWW_PASSWORD="$PASSWORD"
 REPORT_FILE=""
 
 today=$(date "+%Y-%m-%d" 2>/dev/null)
@@ -26,11 +25,6 @@ gzfile="${ymd}.tar.gz"
 
 N_TESTS_PASSED=0
 N_TESTS_FAILED=0
-
-if [ -z "$WWW_PASSWORD" ]; then
-    echo "The 'PASSWORD' environment variable should be present."
-    exit 1
-fi
 
 REPORT_FILE="${ymd}.text"
 
@@ -166,7 +160,7 @@ function download_html_file()
     # formatted for easy use.
     #
     wget \
-        --user=$USER \
+        --user=$WWW_USER \
         --password="$WWW_PASSWORD" \
         --no-check-certificate \
         "$url" \
@@ -221,12 +215,12 @@ function test_names()
     cat <<EOF
 ft_user.sh 
 ft_adminuser.sh 
+ft_jobs.sh
 ft_access.sh 
 ft_acl.sh 
 ft_cat.sh 
 ft_cdt.sh 
 ft_galerasimple.sh
-ft_mysqlreplicationstartstop.sh
 ft_tree.sh
 ft_reports.sh
 EOF
@@ -296,6 +290,8 @@ function send_mail_to_list()
 #
 # Checking the command line option.
 #
+pip-say "It is $(date +%R)."
+pip-say "Preparing to send notifications about daily tests."
 if [ -z "$OPTION_MAIL_LIST" -a -z "$OPTION_NO_MAIL" ]; then
     printError "One of the --mail-list or --no-mail options is mandatory."
     exit 5
@@ -307,6 +303,35 @@ if [ -n "$OPTION_MAIL_LIST" ]; then
         printError "File '$MAIL_LIST_FILE' was not found..."
         exit 5
     fi
+fi
+
+if [ ! -d "$HOME/tests" ]; then
+    mkdir $HOME/tests
+fi
+
+cd "$HOME/tests"
+if [ "$PWD" != "$HOME/tests" ]; then
+    pip-say "Downloading test results failed, directory was not found."
+    printError "Could not create '$HOME/tests'..."
+    exit 1
+fi
+
+#
+#
+#
+pip-say "Downloading daily test results."
+
+export WWW_PASSWORD="$PASSWORD"
+export WWW_USER="pipas"
+
+if [ -z "$WWW_PASSWORD" ]; then
+    pip-say "The 'PASSWORD' environment variable should be present."
+    exit 1
+fi
+
+if [ -z "$WWW_USER" ]; then
+    pip-say "The 'WWW_USER' environment variable should be present."
+    exit 1
 fi
 
 
@@ -324,10 +349,11 @@ print_footer | tee --append $REPORT_FILE
 echo "{code}"
 
 if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
-    printError "Found no test results."
+    pip-say "Found no test results."
     exit 6
 fi
 
 tar czf "${gzfile}" "$ymd"
 send_mail_to_list
 
+pip-say "Daily test results are sent to all the recipients."
