@@ -135,31 +135,45 @@ EOF
     #
     # Checking some output.
     #
-    mys9s job --list --long 
 
+    mys9s job --list --long --show-failed
     n_lines=$(s9s job --list --batch --show-failed | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be one failed job."
+    else
+        success "  o There is one failed job, ok."
     fi
     
+    mys9s job --list --long --show-finished
     n_lines=$(s9s job --list --batch --show-finished | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be one finished job ('$n_lines')."
+    else
+        success "  o There is one finished job, ok."
     fi
 
+    mys9s job --list --long --with-tags=test
     n_lines=$(s9s job --list --batch --with-tags=test | wc -l)
     if [ "$n_lines" -ne 2 ]; then
         failure "There should be 2 jobs with the tag 'test'."
+    else
+        success "  o Two jobs with tag #test, ok."
     fi
     
+    mys9s job --list --long --with-tags=success
     n_lines=$(s9s job --list --batch --with-tags=success | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be 1 jobs with the tag 'success'."
+    else
+        success "  o One job with that #success, ok."
     fi
     
+    mys9s job --list --long 
     n_lines=$(s9s job --list --batch | wc -l)
     if [ "$n_lines" -ne 2 ]; then
         failure "There should be 2 jobs altogether."
+    else
+        success "  o There are 2 jobs altogether."
     fi
 
     end_verbatim
