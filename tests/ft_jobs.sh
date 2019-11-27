@@ -136,7 +136,7 @@ EOF
     # Checking some output.
     #
 
-    mys9s job --list --long --show-failed
+    mys9s job --list --show-failed
     n_lines=$(s9s job --list --batch --show-failed | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be one failed job."
@@ -144,7 +144,7 @@ EOF
         success "  o There is one failed job, ok."
     fi
     
-    mys9s job --list --long --show-finished
+    mys9s job --list --show-finished
     n_lines=$(s9s job --list --batch --show-finished | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be one finished job ('$n_lines')."
@@ -152,7 +152,7 @@ EOF
         success "  o There is one finished job, ok."
     fi
 
-    mys9s job --list --long --with-tags=test
+    mys9s job --list --with-tags=test
     n_lines=$(s9s job --list --batch --with-tags=test | wc -l)
     if [ "$n_lines" -ne 2 ]; then
         failure "There should be 2 jobs with the tag 'test'."
@@ -160,7 +160,7 @@ EOF
         success "  o Two jobs with tag #test, ok."
     fi
     
-    mys9s job --list --long --with-tags=success
+    mys9s job --list --with-tags=success
     n_lines=$(s9s job --list --batch --with-tags=success | wc -l)
     if [ "$n_lines" -ne 1 ]; then
         failure "There should be 1 jobs with the tag 'success'."
@@ -168,7 +168,7 @@ EOF
         success "  o One job with that #success, ok."
     fi
     
-    mys9s job --list --long 
+    mys9s job --list  
     n_lines=$(s9s job --list --batch | wc -l)
     if [ "$n_lines" -ne 2 ]; then
         failure "There should be 2 jobs altogether."
