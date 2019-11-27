@@ -196,9 +196,10 @@ ft_access.sh
 ft_acl.sh 
 ft_cat.sh 
 ft_cdt.sh 
-ft_galerasimple.sh
 ft_tree.sh
 ft_reports.sh
+ft_galerasimple.sh
+ft_postgresqlsimple.sh
 EOF
 }
 

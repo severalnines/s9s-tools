@@ -581,6 +581,7 @@ function check_exit_code()
         if [ "$do_not_exit" ]; then
             return 1
         else
+            end_verbatim
             exit $exitCode
         fi
     else

@@ -223,6 +223,7 @@ ft_cdt.sh
 ft_galerasimple.sh
 ft_tree.sh
 ft_reports.sh
+ft_postgresqlsimple.sh
 EOF
 }
 
