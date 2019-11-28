@@ -176,10 +176,6 @@ function check_postgresql_account()
         esac
     done
     
-    cat <<EOF
-    PGPASSWORD="$account_password" psql -t --username="$account_name" --host="$hostname" --port="$port" --dbname="$database_name" --command="select 41 + 1;"
-EOF
-
     if [ -n "$hostname" ]; then
         success "  o Test host is '$hostname', ok."
     else
@@ -191,7 +187,6 @@ EOF
         success "  o Test account is '$account_name', ok."
     else
         failure "Account name required."
-        return 1
     fi
 
     lines=$(PGPASSWORD="$account_password" \
@@ -218,7 +213,7 @@ EOF
     if [ "$lines" == "42" ]; then
         success "  o The result is '$lines', ok."
     else
-        failure "The result is '$lines'."
+        failure "The result for 'select 41 + 1;' is '$lines'."
     fi
 
     if [ -n "$create_table" ]; then
@@ -247,6 +242,7 @@ EOF
     #
     # Printing the databases.
     #
+    return 0
     PGPASSWORD="$account_password" \
         psql \
             -P pager=off \
