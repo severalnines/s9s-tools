@@ -352,6 +352,7 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest registerServer
+        runFunctionalTest createCluster
     fi
 elif [ "$1" ]; then
     for testName in $*; do
