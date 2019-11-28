@@ -299,11 +299,16 @@ EOF
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+   
+    end_verbatim
+
     #
     #
     #
     print_title "Waiting until the Cluster Started"
+
+    begin_verbatim
+
     wait_for_cluster_started "$CLUSTER_NAME"
     if [ $? -ne 0 ]; then
         failure "The cluster failed to start."
@@ -395,7 +400,6 @@ EOF
         --status     "CmonHostOnline" \
         --no-maint
     
-    print_log_messages
     end_verbatim
 }
 
@@ -425,6 +429,7 @@ function testCreateDatabase()
         --account-password   "passwd12" 
 
     end_verbatim
+
     return 0
 
     # These doesn't work. Previously the controller reported ok, but it did not
@@ -467,6 +472,9 @@ function testCreateDatabase()
 #
 function testDrop()
 {
+    #
+    # 
+    #
     print_title "Dropping the Cluster"
     cat <<EOF
   We are at the end of the test script, we now drop the cluster that we created
@@ -474,12 +482,7 @@ function testDrop()
 
 EOF
 
-    print_subtitle "Printing the Logs"
-    s9s log --list --log-format="%4I %-14h %18c %36B:%-5L %M\n"
-
-    #
-    # 
-    #
+    begin_verbatim
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
@@ -487,6 +490,7 @@ EOF
         $DEBUG_OPTION
     
     check_exit_code $?    
+    end_verbatim
 }
 
 #
