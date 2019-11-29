@@ -157,7 +157,7 @@ EOF
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.6" \
+        --provider-version="11" \
         $LOG_OPTION
     
     check_exit_code_no_job $?

@@ -215,9 +215,9 @@ function testAddProxySql()
         --nodes="proxySql://$CONTAINER_NAME9" \
         --template="ubuntu" \
         --containers="$CONTAINER_NAME9" \
-        --log \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
         $OPTION_POXYSQL_VERSION \
-        --debug
     
     check_exit_code $?
 

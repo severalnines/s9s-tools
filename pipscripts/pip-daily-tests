@@ -189,17 +189,19 @@ function daily_test_names()
     fi
 
     cat <<EOF
-ft_user.sh 
-ft_adminuser.sh 
-ft_jobs.sh
 ft_access.sh 
 ft_acl.sh 
+ft_adminuser.sh 
 ft_cat.sh 
 ft_cdt.sh 
-ft_tree.sh
-ft_reports.sh
 ft_galerasimple.sh
+ft_jobs.sh
+ft_maintenance.sh
+ft_postgresqlsimple_11.sh
 ft_postgresqlsimple.sh
+ft_reports.sh
+ft_tree.sh
+ft_user.sh 
 EOF
 }
 
