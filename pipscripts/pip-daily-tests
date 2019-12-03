@@ -251,7 +251,7 @@ for test_name in $tests; do
         fi
     fi
 
-    echo "Execut ${test_name}, ${n_tests_executed} of ${n_tests_planned}..."
+    echo "Executed ${test_name}, ${n_tests_executed} of ${n_tests_planned}..."
 done
 
 pip-say "Daily tests are ready for download."
