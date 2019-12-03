@@ -3,7 +3,7 @@ MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
-VERBOSE="true"
+VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
 COMMAND_LINE_OPTIONS="$0 $*"
@@ -202,6 +202,7 @@ ft_postgresqlsimple.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 
+ft_scripts.sh
 EOF
 }
 
@@ -226,10 +227,16 @@ if ! start_test_server; then
     exit 1
 fi
 
+n_tests_planned=0
+for test_name in $tests; do
+    let n_tests_planned+=1
+done
 
 pip-say "Daily tests are processed now..."
 n_tests_executed=0
 for test_name in $tests; do
+    echo "Executing ${test_name}..."
+
     if [ "$n_tests_executed" -eq 0 ]; then
         run_s9s_test --build --test-name "$test_name"
     else
@@ -243,6 +250,8 @@ for test_name in $tests; do
             break
         fi
     fi
+
+    echo "Execut ${test_name}, ${n_tests_executed} of ${n_tests_planned}..."
 done
 
 pip-say "Daily tests are ready for download."
