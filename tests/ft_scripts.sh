@@ -171,11 +171,16 @@ EOF
     mysleep 3
 
     mys9s job --kill --job-id=$JOB_ID
-    mysleep 2
+
+    mysleep 5
     mys9s job --list
    
     mys9s job --log --job-id=$JOB_ID --debug
-    check_job --job-id $JOB_ID --state ABORTED
+    check_job \
+        --warning \
+        --job-id  $JOB_ID \
+        --state  "ABORTED"
+
     end_verbatim
 }
 
@@ -197,16 +202,19 @@ EOF
     mysleep 3
 
     mys9s job --kill --job-id=$JOB_ID
-    mysleep 3
-    mys9s job --list
-    
 
+    mysleep 5
+    mys9s job --list
     mys9s job --log --job-id=$JOB_ID
 
     echo "ps aux | grep bash | grep s9s_tmp"
     ps aux | grep bash | grep s9s_tmp
     
-    check_job --job-id $JOB_ID --state ABORTED
+    check_job \
+        --warning \
+        --job-id $JOB_ID \
+        --state ABORTED
+
     end_verbatim
 }
 

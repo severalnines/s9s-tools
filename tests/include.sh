@@ -605,11 +605,15 @@ function check_exit_code_no_job()
     return 0
 }
 
+#
+# This function is for checking a job, most importantly its state.
+#
 function check_job()
 {
     local job_id
     local state
     local required_state
+    local do_warning
 
     while true; do
         case "$1" in 
@@ -625,6 +629,11 @@ function check_job()
                 shift
                 ;;
 
+            --warning)
+                shift
+                do_warning="true"
+                ;;
+
             *)
                 break
                 ;;
@@ -635,7 +644,11 @@ function check_job()
     if [ "$state" == "$required_state" ]; then
         success "  o Job $job_id is $state, ok"
     else
-        failure "Job $job_id state is $state, not $required_state."
+        if [ -n "$do_warning" ]; then
+            warning "Job $job_id state is $state, not $required_state."
+        else
+            failure "Job $job_id state is $state, not $required_state."
+        fi
     fi
 }
 
