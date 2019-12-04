@@ -168,7 +168,6 @@ function run_s9s_test()
     printVerbose "Test name: $test_name"
     printVerbose "     Date: $(date)"
     pip-cmon-test \
-        --verbose \
         --user=pipas \
         --s9s \
         --server="$TEST_SERVER" \
