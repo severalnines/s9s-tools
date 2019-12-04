@@ -138,7 +138,8 @@ function testUpload()
 the next tests.
 
 EOF
-
+    
+    begin_verbatim
     mys9s tree --mkdir --batch /tests
 
     for file in scripts/test-scripts/*.js scripts/test-scripts/*.sh; do
@@ -149,6 +150,7 @@ EOF
         mys9s tree --access --privileges="rwx" "/tests/$basename"
         check_exit_code_no_job $?
     done
+    end_verbatim
 }
 
 function testAbortJs()
@@ -162,6 +164,7 @@ script should be aborted, the job should be in ABORTED state.
 
 EOF
 
+    begin_verbatim
     mys9s tree --cat "$file"
     mys9s script --run "$file"
     let JOB_ID+=1
@@ -173,6 +176,7 @@ EOF
    
     mys9s job --log --job-id=$JOB_ID --debug
     check_job --job-id $JOB_ID --state ABORTED
+    end_verbatim
 }
 
 function testAbortSh()
@@ -185,7 +189,8 @@ function testAbortSh()
 the script is running. Then the job ischecked, it should be aborted.
 
 EOF
-
+    
+    begin_verbatim
     mys9s tree --cat "$file"
     mys9s script --run --timeout=15 "$file"
     let JOB_ID+=1
@@ -202,6 +207,7 @@ EOF
     ps aux | grep bash | grep s9s_tmp
     
     check_job --job-id $JOB_ID --state ABORTED
+    end_verbatim
 }
 
 
@@ -221,12 +227,15 @@ function testRunJsJob()
 script is finished successfully, the job is not failing.
 
 EOF
+
+        begin_verbatim
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
         exit_code=$?
         let JOB_ID+=1
         
         check_exit_code $exit_code
+        end_verbatim
     done
 }
 
@@ -245,12 +254,15 @@ function testRunShJob()
 script is finished successfully, the job is not failing.
 
 EOF
+        
+        begin_verbatim
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
         exit_code=$?
         let JOB_ID+=1
         
         check_exit_code $exit_code
+        end_verbatim
     done
 }
 
@@ -271,6 +283,7 @@ fail/abort at the end.
 
 EOF
 
+        begin_verbatim
         mys9s tree --cat /tests/$file
         mys9s script --run --log --timeout=5 /tests/$file --log-format="%M\n"
         exit_code=$?
@@ -281,6 +294,7 @@ EOF
         else
             success "  o Job is failed/aborted, ok"
         fi
+        end_verbatim
     done
 }
 
@@ -298,6 +312,7 @@ function testRunShJobFailure()
 fail/abort at the end.
 EOF
 
+        begin_verbatim
         mys9s tree --cat /tests/$file
         mys9s script --run --log --timeout=15 /tests/$file --log-format="%M\n"
         exit_code=$?
@@ -308,6 +323,7 @@ EOF
         else
             success "  o Job is failed/aborted, ok"
         fi
+        end_verbatim
     done
 }
 
@@ -322,7 +338,7 @@ function testCreateCluster()
 
     print_title "Creating a Galera Cluster"
 
-    echo "Creating node #0"
+    begin_verbatim
     nodeName=$(create_node --autodestroy ft_scripts_$$_node0)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -355,6 +371,7 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testScript01()
@@ -373,6 +390,7 @@ is expected.
 
 EOF
 
+    begin_verbatim
     mys9s script --execute --cluster-id=1 "$script"
 
     for printout in $(s9s script --execute --cluster-id=1 $script); do
@@ -414,12 +432,14 @@ EOF
     if [ "$n_values" -ne 3 ]; then
         failure "Expected 3 values, found $n_values."
     fi
+    end_verbatim
 }
 
 function testUploadCluster()
 {
     print_title "Uploading Scripts for Cluster $CLUSTER_NAME"
 
+    begin_verbatim
     mys9s tree --mkdir --batch /$CLUSTER_NAME/tests
     for file in scripts/test-scripts-cluster/*.js; do
         basename=$(basename $file)
@@ -429,7 +449,7 @@ function testUploadCluster()
         mys9s tree --access --privileges="rwx" "/$CLUSTER_NAME/tests/$basename"
         check_exit_code_no_job $?
     done
-    
+    end_verbatim
 }
 
 #
@@ -454,12 +474,15 @@ function testRunJsJobCluster()
   check if the script is finished successfully, the job is not failing.
 
 EOF
+
+        begin_verbatim
         mys9s tree --cat /$CLUSTER_NAME/tests/$file
         mys9s script --run --log /$CLUSTER_NAME/tests/$file --log-format="%M\n"
         exit_code=$?
         let JOB_ID+=1
         
         check_exit_code $exit_code
+        end_verbatim
     done
 }
 
@@ -493,12 +516,15 @@ function testRunJsJobContainers()
 is finished successfully, the job is not failing.
 
 EOF
+
+        begin_verbatim
         mys9s tree --cat /tests/$file
         mys9s script --run --log /tests/$file --log-format="%M\n"
         exit_code=$?
         let JOB_ID+=1
         
         check_exit_code $exit_code
+        end_verbatim
     done
 }
 
