@@ -180,7 +180,14 @@ function testCreateMaintenance()
 {
     local reason="test_$$_maintenance"
 
+    #
+    #
+    #
     print_title "Creating maintenance expiration"
+    cat <<EOF | paragraph
+  This test will create a really short maintenance period, wait for a while and
+  check if the maintenance period expires.
+EOF
 
     begin_verbatim
     
@@ -205,6 +212,8 @@ function testCreateMaintenance()
 
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found with reason '$reason'."
+    else
+        success "The maintenance period is found."
     fi
 
     #
@@ -216,6 +225,8 @@ function testCreateMaintenance()
 
     if s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance should have expired: '$reason'."
+    else
+        success "The maintenance period expired."
     fi
 
     end_verbatim
@@ -324,7 +335,7 @@ function testDeletePeriods()
     #
     # Creating maintenance periods.
     #
-    print_title "Testing deleting of maintenance"
+    print_title "Testing the deletion of maintenance"
     cat <<EOF | paragraph 
   This test will create three maintenance periods then delete them one by one.
 
@@ -449,7 +460,8 @@ function testScheduledJob()
     cat <<EOF | paragraph
   This test screates a job that is sceduled, checks it, then waits a while for
   the job to be triggered and executed. Then the test checks if the job is
-  indeed executed.
+  indeed executed. This job has nothing to do with the maintenance, we just
+  check the scheduling of it.
 EOF
 
     begin_verbatim
@@ -552,6 +564,12 @@ EOF
 function testMaintenanceJob1()
 {
     print_title "Creating Maintenance Starting Now with Job "
+    cat <<EOF | paragraph
+  Part of a set of tests that checks how the start of a maintenance period is
+  controlled in the create-maintenance jobs. Here the maintenance period starts
+  immediately.
+
+EOF
 
     begin_verbatim
     mys9s maintenance \
@@ -569,7 +587,14 @@ function testMaintenanceJob1()
     #
     #
     #
-    print_title "Creating Maintenance Starting Later with Job "
+    print_title "Creating Maintenance in Advance"
+    cat <<EOF | paragraph
+  In this job we create a maintenance that starts later. The job starts at one
+  time, then it immediately creates a maintenance period, but that period starts
+  later. This way the users will have information about the maintenance in
+  advance.
+EOF
+
     begin_verbatim
     mys9s maintenance \
         --create-with-job \
@@ -588,6 +613,12 @@ function testMaintenanceJob1()
     #
     #
     print_title "Creating Maintenance with Relative Start"
+    cat <<EOF | paragraph
+  Again, creating a maintenance period from a job in advance, but now we define
+  the start of the maintenance period relatively to start one day from the
+  creation of the job.
+EOF
+
     begin_verbatim
     mys9s maintenance \
         --create-with-job \
@@ -605,6 +636,10 @@ function testMaintenanceJob1()
     #
     #
     print_title "Creating Maintenance with Nodes"
+    cat <<EOF | paragraph
+  Creating a maintenance period with relative start but for a node this time.
+EOF
+
     begin_verbatim
     mys9s maintenance \
         --create-with-job \
@@ -624,6 +659,14 @@ function testMaintenanceJob1()
     #
     #
     print_title "Creating Maintenance with Recurring Job"
+    cat <<EOF
+  Creating a maintenance period from a job that is recurring (repeated again and
+  again indefinitely until it is deleted). The maintenance period has to be
+  relative, because the job is recurring. In this instance we run the job every
+  Friday at 6:00 and the maintenance will start two hours later, so that the
+  users will have 2 hours to prepare.
+EOF
+
     begin_verbatim
     mys9s maintenance \
         --create-with-job \
@@ -643,7 +686,12 @@ function testMaintenanceJob1()
 function testRecoveryJob()
 {
     print_title "Disabling Recovery from Job"
-    
+    cat <<EOF | paragraph
+  This test will disable the recovery from a job created for this purpose. The
+  job will also register a maintenance period for the cluster by specifying the
+  reason and the duration of the maintenance period.
+EOF
+
     begin_verbatim
 
     mys9s cluster \
@@ -662,6 +710,10 @@ function testRecoveryJob()
     #
     #
     print_title "Enabling Recovery from Job"
+    cat <<EOF | paragraph
+  Enabling the recovery again.
+EOF
+
     begin_verbatim
 
     mys9s cluster \
@@ -683,6 +735,10 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the cluster"
+    cat <<EOF | paragraph
+  This just cleans up after the tests, dropping the cluster. This is not really
+  important, it is just an extra thing to check.
+EOF
 
     begin_verbatim
 
