@@ -200,7 +200,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="11" \
+        --provider-version="9.5" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -278,8 +278,6 @@ function testStopMaster()
     #
     print_title "Stopping postgresql Directly on $FIRST_ADDED_NODE"
 
-    #echo "$SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop"
-    #$SSH "$FIRST_ADDED_NODE" sudo /etc/init.d/postgresql stop
     $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 9.5 main stop
 
     while true; do
