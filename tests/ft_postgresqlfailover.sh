@@ -289,8 +289,8 @@ EOF
     $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 9.5 main stop
 
     while true; do
-        if [ "$timeLoop" -gt 90 ]; then
-            failure "No failover job that is finished."
+        if [ "$timeLoop" -gt 300 ]; then
+            failure "No failover job that is finished after $timeLoop seconds."
             mys9s job --list
             break;
         fi
@@ -305,7 +305,7 @@ EOF
         fi
 
         sleep 5
-        let timeLoop+=1
+        let timeLoop+=5
     done
 
     end_verbatim
