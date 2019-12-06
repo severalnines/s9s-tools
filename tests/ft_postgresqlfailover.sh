@@ -182,6 +182,7 @@ function testCreateCluster()
 
     print_title "Creating a PostgreSQL Cluster"
 
+    begin_verbatim
     let N_CONTAINERS+=1
     container_name=$(printf "${MYBASENAME}_%02d_$$" "$N_CONTAINERS")
     nodeName=$(create_node --autodestroy "$container_name")
@@ -199,7 +200,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.5" \
+        --provider-version="11" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -210,6 +211,7 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -221,6 +223,7 @@ function testAddNode()
     
     print_title "Adding a Node"
 
+    begin_verbatim
     let N_CONTAINERS+=1
     container_name=$(printf "${MYBASENAME}_%02d_$$" "$N_CONTAINERS")    
     LAST_ADDED_NODE=$(create_node --autodestroy "$container_name")
@@ -237,6 +240,7 @@ function testAddNode()
     check_exit_code $?
 
     mys9s node --stat --cluster-id=$CLUSTER_ID
+    end_verbatim
 }
 
 #
@@ -255,6 +259,7 @@ function testStopMaster()
     print_title "Stopping node on $FIRST_ADDED_NODE"
     #mys9s node --list --long 
 
+    begin_verbatim
     mys9s node \
         --stop \
         --cluster-id=$CLUSTER_ID \
@@ -297,7 +302,7 @@ function testStopMaster()
         let timeLoop+=1
     done
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -307,6 +312,7 @@ function testDrop()
 {
     print_title "Dropping the Cluster"
 
+    begin_verbatim
     #
     # Starting the cluster.
     #
@@ -316,6 +322,7 @@ function testDrop()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -340,12 +347,6 @@ else
     runFunctionalTest testStopMaster
     
     runFunctionalTest testDrop
-fi
-
-if [ "$FAILED" == "no" ]; then
-    echo "The test script is now finished. No errors were detected."
-else
-    echo "The test script is now finished. Some failures were detected."
 fi
 
 endTests
