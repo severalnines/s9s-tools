@@ -7,7 +7,7 @@ pip-pdu-control - Command line tool to control power distribution units.
 .RI [DEVICE]...
 
 .SH OPTIONS
-.SS "Main Option"
+.SS "Main Options"
 The main options control what the program will do. The main options are one of
 the following:
 
@@ -23,10 +23,23 @@ pip-pdu-control --discover 192.168.2.32
 
 .TP
 .B --list
-List the devices and their poperties.
+List the devices and their poperties. By default this just prints the names of
+the devices, together with the \fB--long\fP option a detailed list is printed.
+
+.B EXAMPLE
+.nf
+pip-pdu-control --list --long
+.fi
 
 .TP
 .B --list-measurements
+Prints only the PDUs that has measurements, gets the current measurement from
+them and prints them in a detailed list.
+
+.B EXAMPLE
+.nf
+pip-pdu-control --list-measurements
+.fi
 
 .TP
 .B --list-outlets
@@ -36,6 +49,20 @@ List the outlets of the devices and their state.
 .nf
 pip-pdu-control --list-outlets pdu01 pdu02
 .fi
+
+\"
+\"
+\"
+.SS "Format specifiers"
+.TP --long
+Print a detailed list instead of a brief list. One line for every PDU device.
+
+.B EXAMPLE
+.nf
+pip-pdu-control --list --long
+.fi
+
+
 
 .B TASMOTA
 Here is what a tasmota 6.4.1 sends when the device is turned on.

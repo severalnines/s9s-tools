@@ -83,17 +83,17 @@ Usage:
   --on                 Turn the socket on.
   --state              Check the state of the socket.
   --toggle             Toggle the socket.
+  
+  --long               Print the long, detailed list.
+  --ping               Ping the device and print its state in the list.
+  --print-files        Print file names instead of names.
 
   --power              Read the current power in watts.
   --voltage            Measure the voltage on the PDU.
   --current            Measure the current on the PDU.
   --temperature        Read the temperature from the PDU.
   --humidity           Read the humidity percent from the PDU.
-
-  --print-files        Print file names instead of names.
-  --long               Print the long, detailed list.
-  --ping               Ping the device and print its state in the list.
-
+  
   --outlet=N           The numerical ID of the outlet.
   --group=GROUP        Only PDUs in the given group.
   --all                All the PDUs.
