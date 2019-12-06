@@ -272,19 +272,26 @@ function testStopMaster()
     else
         success "  o The controller protected the master, ok."
     fi
+    
+    end_verbatim
 
     #
     # Stopping it manually.
     #
     print_title "Stopping postgresql Directly on $FIRST_ADDED_NODE"
+    cat <<EOF | paragraph
+  In this test we execute the pg_ctlcluster command to stop the postgresql on a
+  node and then check that the failover job is executed and finished.
+EOF
+
+    begin_verbatim
 
     $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 9.5 main stop
 
     while true; do
-        if [ "$timeLoop" -gt 60 ]; then
-            failure "No failover job finished."
+        if [ "$timeLoop" -gt 90 ]; then
+            failure "No failover job that is finished."
             mys9s job --list
-            return 1
         fi
 
         if s9s job --list | \

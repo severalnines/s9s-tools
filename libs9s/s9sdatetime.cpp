@@ -94,6 +94,8 @@ S9sDateTime::operator-=(
 
 /**
  * \param rhs The right-hand-side of the operator.
+ *
+ * Normal assignment operator that copies the date & time.
  */
 S9sDateTime &
 S9sDateTime::operator=(
