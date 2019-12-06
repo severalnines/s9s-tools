@@ -292,6 +292,7 @@ EOF
         if [ "$timeLoop" -gt 90 ]; then
             failure "No failover job that is finished."
             mys9s job --list
+            break;
         fi
 
         if s9s job --list | \
