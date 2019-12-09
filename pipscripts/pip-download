@@ -228,6 +228,8 @@ ft_tree.sh
 ft_user.sh 
 ft_scripts.sh
 ft_postgresqlfailover.sh
+ft_galera.sh
+ft_galera_mariadb_10.4.sh
 EOF
 }
 
