@@ -226,6 +226,8 @@ ft_postgresqlsimple.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 
+ft_scripts.sh
+ft_postgresqlfailover.sh
 EOF
 }
 

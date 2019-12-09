@@ -1113,6 +1113,11 @@ S9sDateTime::parseTzFormat(
     return retval;
 }
 
+/**
+ * \param elapsedSeconds The number of elapsed seconds.
+ * \returns The human readable format string of the elapsed seconds as HH:MM:SS.
+ *
+ */
 S9sString 
 S9sDateTime::elapsedTime(
         time_t elapsedSeconds)
