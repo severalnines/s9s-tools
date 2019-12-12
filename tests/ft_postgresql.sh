@@ -471,7 +471,7 @@ function testRemoveNodeFail()
 
 EOF
 
-    begin_verbose
+    begin_verbatim
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
