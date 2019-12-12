@@ -315,17 +315,19 @@ EOF
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     print_title "Waiting until the Cluster Started"
+
+    begin_verbatim
     wait_for_cluster_started "$CLUSTER_NAME"
     if [ $? -ne 0 ]; then
         failure "The cluster failed to start."
         mys9s cluster --stat
     fi
-
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -462,22 +464,27 @@ function testRemoveNodeFail()
 {
     local ret_code
 
-    printVerbose "Trying to Remove Last Node"
+    print_title "Trying to Remove Last Node"
+    cat <<EOF | paragraph
+  This test tries to remove the only node the cluster has. This should fail,
+  the controller should protect the one node the cluster has.
 
+EOF
+
+    begin_verbose
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE:8089" \
         --log
 
-#        $LOG_OPTION $DEBUG_OPTION
     ret_code="$?"
-
     if [ "$ret_code" -eq 0 ]; then
         failure "Removing the only database node should not be possible."
     else
-        success "Removing the only database node failed, ok."
+        success "  o Removing the only database node failed, ok."
     fi
+    end_verbatim
 }
 
 #
@@ -521,7 +528,6 @@ EOF
         --status     "CmonHostOnline" \
         --no-maint
     
-    print_log_messages
     end_verbatim
 }
 
@@ -535,6 +541,10 @@ function testStopStartNode()
     local message_id
 
     print_title "Stopping and Starting a Node"
+    cat <<EOF | paragraph
+  This test will remove a node from the cluster and check if the cluster state
+  is changed. Then the cluster state should again be changed.
+EOF
 
     begin_verbatim
 
@@ -553,6 +563,8 @@ function testStopStartNode()
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
+    else
+        success "  o The cluster state is $state, OK."
     fi
     
     # The JobEnded log message.
@@ -562,7 +574,6 @@ function testStopStartNode()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi
@@ -591,7 +602,6 @@ function testStopStartNode()
 
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
-        #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
     fi

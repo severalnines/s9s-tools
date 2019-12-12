@@ -230,6 +230,8 @@ ft_scripts.sh
 ft_postgresqlfailover.sh
 ft_galera.sh
 ft_galera_mariadb_10.4.sh
+ft_cmonhabasic1
+ft_cmonhabasic
 EOF
 }
 
