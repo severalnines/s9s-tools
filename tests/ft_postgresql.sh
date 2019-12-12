@@ -675,6 +675,8 @@ EOF
         success "  o The value is $value, ok."
     fi
 
+    end_verbatim
+
     #
     # Pulling a configuration file from a node to the local host.
     #
@@ -685,6 +687,7 @@ EOF
 
 EOF
 
+    begin_verbatim
     rm -rf tmp
 
     mys9s node \
@@ -949,6 +952,8 @@ function testCreateAccount02()
 
 EOF
 
+    begin_verbatim
+
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
@@ -962,6 +967,8 @@ EOF
         --port               "8089" \
         --account-name       "$username" \
         --account-password   "$password"
+
+    end_verbatim
 }
 
 function testCreateAccount03()
@@ -978,6 +985,7 @@ function testCreateAccount03()
 
 EOF
 
+    begin_verbatim
     privileges+="CREATEDB,REPLICATION,SUPER"
 
     mys9s cluster \
@@ -996,6 +1004,8 @@ EOF
         --port               "8089" \
         --account-name       "$username" \
         --account-password   "$password"
+
+    end_verbatim
 }
 
 function testCreateAccount04()
@@ -1012,6 +1022,7 @@ function testCreateAccount04()
 
 EOF
 
+    begin_verbatim
     privileges+="testcreatedatabase:CREATE,CONNECT"
 
     mys9s cluster \
@@ -1030,6 +1041,8 @@ EOF
         --port               "8089" \
         --account-name       "$username" \
         --account-password   "$password"
+
+    end_verbatim
 }
 
 function testCreateAccount05()
@@ -1046,6 +1059,7 @@ function testCreateAccount05()
 
 EOF
 
+    begin_verbatim
     privileges+="CREATEDB,REPLICATION,SUPER"
     privileges+=";testcreatedatabase:CREATE,CONNECT"
 
@@ -1068,6 +1082,8 @@ EOF
         --table-name         "testCreateAccount04" \
         --database-name      "testcreatedatabase" \
         --create-table
+
+    end_verbatim
 }
 
 function testCreateAccount06()
@@ -1087,6 +1103,7 @@ function testCreateAccount06()
 
 EOF
 
+    begin_verbatim
     privileges+="CREATEDB,REPLICATION,SUPER"
     privileges+=";testcreatedatabase.testCreateAccount04:SELECT,INSERT"
 
@@ -1107,6 +1124,8 @@ EOF
         --account-name       "$username" \
         --account-password   "$password" \
         --database-name      "testcreatedatabase" 
+
+    end_verbatim
 }
 
 
@@ -1120,6 +1139,7 @@ function testCreateBackup()
 
     print_title "Creating Backups"
 
+    begin_verbatim
     #
     # Creating a backup using the cluster ID to reference the cluster.
     #
@@ -1173,6 +1193,8 @@ function testCreateBackup()
     else
         failure "JobEnded message was not found."
     fi
+
+    end_verbatim
 }
 
 #
@@ -1185,6 +1207,7 @@ function testRestoreBackup()
 
     print_title "Restoring a Backup"
 
+    begin_verbatim
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
         head -n1 | \
@@ -1213,6 +1236,8 @@ function testRestoreBackup()
     else
         failure "JobEnded message was not found."
     fi
+
+    end_verbatim
 }
 
 #
@@ -1224,6 +1249,7 @@ function testRemoveBackup()
 
     print_title "Removing a Backup"
 
+    begin_verbatim
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID |\
         head -n1 | \
@@ -1239,7 +1265,8 @@ function testRemoveBackup()
         $LOG_OPTION \
         $DEBUG_OPTION
     
-    check_exit_code $?    
+    check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -1253,6 +1280,7 @@ function testRunScript()
 
     print_title "Running a Script"
     
+    begin_verbatim
     cat $script_file
 
     #
@@ -1281,6 +1309,7 @@ function testRunScript()
     fi
 
     rm $output_file
+    end_verbatim
 }
 
 #
@@ -1291,6 +1320,8 @@ function testRollingRestart()
     local message_id
 
     print_title "Performing Rolling Restart"
+
+    begin_verbatim
 
     #
     # Calling for a rolling restart.
@@ -1314,6 +1345,8 @@ function testRollingRestart()
     else
         failure "JobEnded message was not found."
     fi
+
+    end_verbatim
 }
 
 #
@@ -1329,6 +1362,8 @@ function testDrop()
 EOF
 
     print_subtitle "Printing the Logs"
+
+    begin_verbatim
     s9s log --list --log-format="%4I %-14h %18c %36B:%-5L %M\n"
 
     #
@@ -1341,6 +1376,7 @@ EOF
         $DEBUG_OPTION
     
     check_exit_code $?    
+    end_verbatim
 }
 
 #
