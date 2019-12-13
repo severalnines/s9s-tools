@@ -81,6 +81,11 @@ class S9sAccount
                 const S9sString &value,
                 S9sString       &result) const;
 
+        bool parseUrlEncodedChar(
+                const S9sString &input,
+                size_t          &location,
+                char            &theChar);
+
     private:
         S9sVariantMap    m_properties;
 
