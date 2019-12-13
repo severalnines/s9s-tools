@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2018 Severalnines AB
+ * Copyright (C) 2018-present Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -5190,7 +5190,7 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Earth)\n",
+        printf("%s Version %s (Europe)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
 
         /*
