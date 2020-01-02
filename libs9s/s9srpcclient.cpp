@@ -840,7 +840,6 @@ S9sRpcClient::pingCluster()
     S9sVariantMap  request;
     bool           retval;
 
-    S9S_DEBUG("*** request_created: %s", STR(timeString));
     request["operation"]       = "ping";
     request["request_created"] = timeString;
     
@@ -854,6 +853,22 @@ S9sRpcClient::pingCluster()
     
     retval = executeRequest(uri, request);
 
+    return retval;
+}
+
+bool
+S9sRpcClient::pingController()
+{
+    S9sDateTime    now = S9sDateTime::currentDateTime();
+    S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
+    S9sString      uri = "/v2/controller/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]       = "ping";
+    request["request_created"] = timeString;
+
+    retval = executeRequest(uri, request);
     return retval;
 }
 

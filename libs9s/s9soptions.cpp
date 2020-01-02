@@ -13089,6 +13089,7 @@ S9sOptions::readOptionsController(
         { "create-snapshot",  no_argument,       0, OptionCreateSnaphot   },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "list",             no_argument,       0, 'L'                   },
+        { "ping",             no_argument,       0, OptionPing            },
         { "stat",             no_argument,       0, OptionStat            },
        
         // FIXME: remove this.
@@ -13226,6 +13227,11 @@ S9sOptions::readOptionsController(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionPing:
+                // --ping
+                m_options["ping"] = true;
                 break;
 
             case OptionStat:
@@ -13848,6 +13854,9 @@ S9sOptions::checkOptionsController()
         countOptions++;
 
     if (isListRequested())
+        countOptions++;
+    
+    if (isPingRequested())
         countOptions++;
     
     if (isStatRequested())

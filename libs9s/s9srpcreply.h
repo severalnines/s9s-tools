@@ -127,7 +127,8 @@ class S9sRpcReply : public S9sVariantMap
         void printMaintenanceList();
         void printMetaTypeList();
         void printMetaTypePropertyList();
-        void printPing(int &sequenceIndex);
+        void printClusterPing(int &sequenceIndex);
+        void printControllerPing(int &sequenceIndex);
         void printServers();
         void printServersLong();
         void printServersBrief();

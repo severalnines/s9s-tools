@@ -148,6 +148,7 @@ class S9sRpcClient
         bool setConfig();
 
         bool pingCluster();
+        bool pingController();
 
         bool setHost();
         

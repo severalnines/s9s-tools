@@ -1163,18 +1163,46 @@ S9sRpcReply::printJobLog()
     }
 }
 
+void
+S9sRpcReply::printControllerPing(
+        int &sequenceIndex)
+{
+    S9sOptions      *options = S9sOptions::instance();
+    S9sString        requestStatus;
+    S9sString        requestCreated, replyReceived;
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    } 
+
+    printDebugMessages();
+    printJsonFormat();
+}
+
 /**
+ * \param sequenceIndex Just so that we know if this is the first ping of a
+ *   sequence.
+ *
  * This method will print the reply for a ping request.
  */
 void
-S9sRpcReply::printPing(
+S9sRpcReply::printClusterPing(
         int &sequenceIndex)
 {
-    S9sString requestStatus;
-    S9sString requestCreated, replyReceived;
+    S9sOptions      *options = S9sOptions::instance();
+    S9sString        requestStatus;
+    S9sString        requestCreated, replyReceived;
     static double    minimum;
     static double    maximum;
     static double    average;
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    } 
 
     printDebugMessages();
 
