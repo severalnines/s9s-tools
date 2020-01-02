@@ -45,7 +45,7 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
-.B \-\-create-snapshot
+.B --create-snapshot
 Creates job that will create a controller to controller snapshot of the Cmon HA
 subsystem. 
 
@@ -61,7 +61,7 @@ s9s controller \\
 .fi
 
 .TP
-.B \-\-enable\-cmon\-ha
+.B --enable-cmon-ha
 Enabled the Cmon HA subsystem. By default Cmon HA is not enabled for
 compatibility reasons, so this command line option is implemented to enable the
 controller to controller communication.
@@ -94,7 +94,7 @@ echo "true" | \\
 .fi
 
 .TP
-.B \-\-list
+.B --list
 Lists the CmonController type objects known to the controller. If the Cmon HA is
 not enabled there will be no such objects, if it is enabled one or more
 controllers will be listed.
@@ -110,10 +110,27 @@ s9s controller \\
 .fi
 
 .TP
-.B \-\-stat
+.B --ping
+Sends a ping request to the controller and prints the information received. 
+
+Please note that there is an other ping request for the clusters, but this ping
+request is quite different from that. This request does not need a cluster, it
+is never redirected (follower controllers will also reply to this request) and
+it is eplied with some basic information about the Cmon HA subsystem.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --ping \\
+    --print-json \\
+    --json-format='status: ${controller_status}\\n'
+.fi
+
+.TP
+.B --stat
 Prints more details about the controller objects.
 
-.B
+.B EXAMPLE
 .nf
 s9s controller \\
     --stat

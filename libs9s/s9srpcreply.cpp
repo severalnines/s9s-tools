@@ -1085,7 +1085,7 @@ S9sRpcReply::printSupportedClusterListBrief()
 
 /**
  * Prints the reply in Json string format. Uses syntax highlight when
- * applicable.
+ * requested.
  */
 void
 S9sRpcReply::printJsonFormat() const
@@ -1093,11 +1093,26 @@ S9sRpcReply::printJsonFormat() const
     S9sOptions     *options = S9sOptions::instance();
     bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sFormatFlags  format  = S9sFormatIndent;
-
+        
     if (syntaxHighlight)
         format = format | S9sFormatColor;
+
+    if (options->hasJSonFormat())
+    {
+        S9sString formatString = options->jsonFormat();
+        S9sString theString;
+
+        theString = toString(syntaxHighlight, formatString);
+        // FIXME: These does not look nice at all...
+        theString.replace("\\n", "\n");
+        theString.replace("\\r", "\r");
+        theString.replace("\\t", "\t");
+
+        printf("%s", STR(theString));
+    } else {
+        printf("%s\n", STR(toJsonString(format)));
+    }
         
-    printf("%s\n", STR(toJsonString(format)));
 }
 
 /**
@@ -1163,6 +1178,11 @@ S9sRpcReply::printJobLog()
     }
 }
 
+/**
+ * Prints the reply that we got for a controller ping (a ping that sent to get
+ * the information about the controller and the Cmon HA). There is an other ping
+ * for the clusters.
+ */
 void
 S9sRpcReply::printControllerPing(
         int &sequenceIndex)

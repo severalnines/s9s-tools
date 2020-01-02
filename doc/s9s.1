@@ -14,25 +14,41 @@ deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
 General options for \fBs9s\fP:
 
 .TP
-.B \-\-help
-Print the help message and exist.
+.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
+The host name of the Cmon Controller. The protocol and port is also accepted as
+part of the hostname. 
+
+The controller host and port can also be set in the s9s configuration file (see
+s9s.conf(5) for more information), so this command line option is usually not
+needed. 
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --list \\
+    --controller="https://localhost:9556"
+.fi
 
 .TP
-.B \-\-debug
+.B --help
+Print the help message and exit. 
+
+.B EXAMPLE
+.nf
+s9s user --help
+.fi
+
+.TP
+.B --debug
 Print even the debug level messages.
 
 .TP
-.B \-v, \-\-verbose
+.B -v, --verbose
 Print more messages than normally.
 
 .TP
 .B \-V, \-\-version
 Print version information and exit.
-
-.TP
-.BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
-The host name of the Cmon Controller. The port is also accepted as part of the
-hostname.
 
 .TP
 .BI \-P " PORT" "\fR,\fP \-\^\-controller-port=" PORT
