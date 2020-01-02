@@ -825,9 +825,13 @@ S9sRpcClient::setClusterConfig()
     return retval;
 }
 
-
+/**
+ * This method implements the cluster ping request. We send a request with a
+ * given cluster ID and expect a simple reply from the controller telling us
+ * that the controller is up and we have access to the cluster.
+ */
 bool
-S9sRpcClient::ping()
+S9sRpcClient::pingCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();

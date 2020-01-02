@@ -1154,7 +1154,7 @@ S9sBusinessLogic::executePing(
     int          sequenceIndex = 0;
 
 again:
-    success = client.ping();
+    success = client.pingCluster();
     
     options->setExitStatus(S9sOptions::ExitOk);
     client.setExitStatus();
