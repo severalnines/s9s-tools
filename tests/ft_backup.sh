@@ -357,7 +357,6 @@ function testCreateBackup01()
         --use-pigz \
         --parallellism=5 \
         --encrypt-backup \
-        --debug \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -408,10 +407,14 @@ function testCreateBackup01()
         mys9s backup --list-files --full-path 
     fi
 
+    end_verbatim
+
     #
     #
     #
     print_title "Verifying Backup 1"
+
+    begin_verbatim
     container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "2")"
     node=$(create_node --autodestroy "$container_name")
 
@@ -423,10 +426,14 @@ function testCreateBackup01()
         $LOG_OPTION \
         $DEBUG_OPTION
 
+    end_verbatim
+
     #
     #
     #
     print_title "Printing some info"
+    begin_verbatim
+
     mys9s backup --list
     mys9s backup --list --long
 
@@ -459,11 +466,14 @@ function testCreateBackup02()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 
     #
     # Verifying the backup.
     #
     print_title "Verifying Backup 2"
+
+    begin_verbatim
     container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "3")"
     node=$(create_node --autodestroy "$container_name")
 
@@ -576,9 +586,13 @@ function testCreateBackup05()
         return 0
     fi
 
+    #
+    #
+    #
     print_title "Creating xtrabackupfull Backup"
 
     begin_verbatim
+
     #
     # Creating the backup.
     # Using xtrabackup this time.
@@ -594,8 +608,13 @@ function testCreateBackup05()
         $DEBUG_OPTION
     
     check_exit_code $?
-    
+    end_verbatim
+
+    #
+    #
+    #
     print_title "Creating xtrabackupincr Backup"
+    begin_verbatim
 
     #
     # Creating the backup.
@@ -621,8 +640,8 @@ function testCreateBackup06()
     local node
 
     print_title "Creating PITR Compatible Backup"
-
     begin_verbatim
+
     #
     # Creating the backup.
     # Using gzip this time.
@@ -657,13 +676,15 @@ function testRestore()
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     if [ "$PROVIDER_VERSION" != "10.3" ]; then
         print_title "Restoring Backup 7"
     
+        begin_verbatim
         mys9s backup \
             --restore \
             --backup-id=7 \
@@ -671,12 +692,14 @@ function testRestore()
             $LOG_OPTION \
 
         check_exit_code $?
+        end_verbatim
     fi
     
     #
     #
     #
     print_title "Restoring Backup 2"
+    begin_verbatim
 
     mys9s backup \
         --restore \
@@ -686,12 +709,13 @@ function testRestore()
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     print_title "Restoring Backup 6"
-
+    begin_verbatim
     mys9s backup \
         --restore \
         --backup-id=6 \
