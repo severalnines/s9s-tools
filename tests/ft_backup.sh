@@ -184,7 +184,6 @@ function testCreateCluster()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -236,6 +235,9 @@ function testCreateClusterFromBackup()
         --log
 
     check_exit_code $?
+    
+    mys9s cluster --list --long
+
     wait_for_cluster_started "$cluster_name"
     end_verbatim
 }
@@ -301,7 +303,6 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        exit 1
     fi
 
     mys9s cluster \
@@ -324,7 +325,6 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while granting privileges."
-        exit 1
     fi
 
     mys9s account --list --cluster-id=1 --long "$DATABASE_USER"
@@ -365,25 +365,21 @@ function testCreateBackup01()
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
         failure "There should be 1 backup in the output."
-        exit 1
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $6}')
     if [ "$value" != "COMPLETED" ]; then
         failure "The backup should be completed."
-        exit 1
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
         failure "The owner of the backup should be '$USER'."
-        exit 1
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
     if [ "$value" != "1" ]; then
         failure "The cluster ID for the backup should be '1'."
-        exit 1
     fi
 
     # Checking the path.
@@ -571,7 +567,6 @@ function testCreateBackup04()
         failure "Creating and verifying backup failed"
         mys9s job --list 
         mys9s backup --list --long 
-        exit 1
     fi
 
     #check_exit_code $retcode
@@ -588,7 +583,7 @@ function testCreateBackup05()
 
     #
     #
-    #
+    
     print_title "Creating xtrabackupfull Backup"
 
     begin_verbatim

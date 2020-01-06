@@ -246,6 +246,7 @@ ft_scripts.sh
 ft_postgresqlfailover.sh
 ft_galera.sh
 ft_galera_mariadb_10.4.sh
+ft_backup.sh
 ft_cmonhabasic
 ft_cmonhabasic1
 ft_cmonhasimple
