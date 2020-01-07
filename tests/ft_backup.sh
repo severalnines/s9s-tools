@@ -232,7 +232,8 @@ function testCreateClusterFromBackup()
         --cluster-name="$cluster_name" \
         --provider-version=$PROVIDER_VERSION \
         --backup-id=2 \
-        --log
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
