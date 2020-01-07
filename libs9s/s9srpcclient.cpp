@@ -6723,21 +6723,18 @@ S9sRpcClient::createBackup()
         return false;
     }
 
-    if (hosts.size() != 1u)
+    // There can be 1 or 0 nodes specified.
+    if (hosts.size() > 1u)
     {
-        PRINT_ERROR("To create a new backup one node must be specified.");
+        PRINT_ERROR("Multiple nodes are specified while creating a backup.");
         return false;
+    } else if (hosts.size() == 1u)
+    {
+        backupHost = hosts[0].toNode();
+        jobData["hostname"]          = backupHost.hostName();
     }
 
-    backupHost = hosts[0].toNode();
-
-
     // The job_data describing how the backup will be created.
-    #if 0
-    jobData["nodes"] = nodesField(hosts);
-    #else
-    jobData["hostname"]          = backupHost.hostName();
-    #endif
     jobData["description"]       = "Backup created by s9s-tools.";
 
     if (backupHost.hasPort())
