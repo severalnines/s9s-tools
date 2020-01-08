@@ -159,15 +159,6 @@ function download_html_file()
     # We download the test results from the web, this way the reports are nicely
     # formatted for easy use.
     #
-cat <<EOF
-    wget \
-        --user=$WWW_USER \
-        --password="$WWW_PASSWORD" \
-        --no-check-certificate \
-        "$url" \
-        --output-document=$html_file #2>/dev/null
-EOF
-
     wget \
         --user=$WWW_USER \
         --password="$WWW_PASSWORD" \
@@ -179,7 +170,7 @@ EOF
         exit 1
     fi
 
-    ls -lha $html_file
+    #ls -lha $html_file
 
     #
     # The downloaded file has these fields embedded in a HTML comment so that we
@@ -229,6 +220,7 @@ function test_names()
     fi
 
     cat <<EOF
+ft_backup.sh
 ft_access.sh 
 ft_acl.sh 
 ft_adminuser.sh 
@@ -246,7 +238,6 @@ ft_scripts.sh
 ft_postgresqlfailover.sh
 ft_galera.sh
 ft_galera_mariadb_10.4.sh
-ft_backup.sh
 ft_cmonhabasic
 ft_cmonhabasic1
 ft_cmonhasimple
