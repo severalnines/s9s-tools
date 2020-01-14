@@ -112,6 +112,7 @@ class S9sDisplay :
             int            lastKeyCode;
         } m_lastKeyCode;
 
+        /** Shows which line we are in, counting printing newlines. */
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;

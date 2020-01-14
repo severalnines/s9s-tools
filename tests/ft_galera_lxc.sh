@@ -6,7 +6,7 @@ VERBOSE=""
 VERSION="0.0.3"
 
 LOG_OPTION="--wait"
-DEBUG_OPTION="--debug"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -209,51 +209,71 @@ function testAlarms()
     local node002="ft_galera_lxc_02_$$"
     local n_alarms
 
-    print_title "Check Alarms"
-    cat <<EOF
-    Alarms before doing anything nasty:
-EOF
+    print_title "Check for Degraded Cluster"
+    cat <<EOF | paragraph
+  This test will stop a container then check if that is noticed by the
+  controller, the state of the cluster is changed, the alarm is created, the
+  incident report is created and so on.
 
+EOF
+    begin_verbatim
+
+    mys9s cluster --stat
     mys9s alarm --list --long 
-    echo ""
-    echo ""
     
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -gt 0 ]; then
         failure "There are $n_alarms, there should be none."
+    else
+        success "  o There are no alarms, ok."
     fi
 
+    #
     # Stopping a container.
-    echo "Stopping one container holding a node, then checking the alarms."
-    echo "There should be an alarm because we just shut down a node."
-    echo ""
+    #
     mys9s container --stop "$node002" --wait
-    sleep 60
+    mysleep 15
+    
+    wait_for_cluster_state "$CLUSTER_NAME" "DEGRADED"
 
+    mys9s report --list --cluster-id=1 --long
     mys9s alarm --list --long 
-    echo ""
-    echo ""
 
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -lt 1 ]; then
         failure "There are $n_alarms, there should be at least one."
+    else
+        success "  o There is at least one alarm, ok."
     fi
 
-    # Starting a container.
-    echo "Starting the node again. The alarms should disappear, we solved "
-    echo "the issue that caused trouble."
-    echo ""
+    end_verbatim
+
+    #
+    # Starting the container.
+    #
+    print_title "Starting the Container Again"
+    cat <<EOF | paragraph
+  Here we start the container again, check that the cluster goes into started
+  state again and the alarm disappears.
+EOF
+
+    begin_verbatim
+
     mys9s container --start "$node002"
-    sleep 60
+    wait_for_cluster_state "$CLUSTER_NAME" "STARTED"
+    #mysleep 60
 
     mys9s alarm --list --long 
-    echo ""
-    echo ""
-    
+    mys9s cluster --stat
+
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -gt 0 ]; then
         failure "There are $n_alarms, there should be none."
+    else
+        success "  o The alarm disappeared, ok."
     fi
+
+    end_verbatim
 }
 
 function dropCluster()
@@ -353,6 +373,7 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest registerServer
         runFunctionalTest createCluster
+        runFunctionalTest testAlarms
     fi
 elif [ "$1" ]; then
     for testName in $*; do
