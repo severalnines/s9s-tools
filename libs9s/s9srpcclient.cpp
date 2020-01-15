@@ -4519,15 +4519,15 @@ S9sRpcClient::addProxySql(
     bool           retval;
 
     S9sNode::selectByProtocol(hosts, proxyNodes, otherNodes, "proxysql");
-    if (proxyNodes.size() != 1u)
+    if (proxyNodes.size() < 1u)
     {
         PRINT_ERROR(
-                "To add a ProxySql one needs to specify exactly"
-                " one ProxySql node.");
-
+               "To add a ProxySql one needs to specify"
+               " one or more ProxySql nodes.");
+         
         return false;
     }
-
+    
     if (otherNodes.size() > 1u)
     {
         PRINT_ERROR(
@@ -4549,7 +4549,15 @@ S9sRpcClient::addProxySql(
     // turned on later, after a few releases passed.
     jobData["node"]     = proxyNodes[0].toVariantMap();
     #else
-    jobData["hostname"] = proxyNodes[0].toNode().hostName();
+    // If we have one proxysql node, send it as ususal
+    // but if we have more, create a nodes array and
+    // use that in the job.    
+    
+    if (proxyNodes.size() == 1u)
+        jobData["hostname"] = proxyNodes[0].toNode().hostName();
+    else
+        jobData["nodes"]     = nodesField(proxyNodes);
+
     #endif  
     /*
      * Some information:
