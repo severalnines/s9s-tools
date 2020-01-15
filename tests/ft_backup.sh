@@ -184,7 +184,6 @@ function testCreateCluster()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -233,9 +232,13 @@ function testCreateClusterFromBackup()
         --cluster-name="$cluster_name" \
         --provider-version=$PROVIDER_VERSION \
         --backup-id=2 \
-        --log
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
+    
+    mys9s cluster --list --long
+
     wait_for_cluster_started "$cluster_name"
     end_verbatim
 }
@@ -301,7 +304,6 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        exit 1
     fi
 
     mys9s cluster \
@@ -324,7 +326,6 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while granting privileges."
-        exit 1
     fi
 
     mys9s account --list --cluster-id=1 --long "$DATABASE_USER"
@@ -357,7 +358,6 @@ function testCreateBackup01()
         --use-pigz \
         --parallellism=5 \
         --encrypt-backup \
-        --debug \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -366,25 +366,21 @@ function testCreateBackup01()
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
         failure "There should be 1 backup in the output."
-        exit 1
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $6}')
     if [ "$value" != "COMPLETED" ]; then
         failure "The backup should be completed."
-        exit 1
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
         failure "The owner of the backup should be '$USER'."
-        exit 1
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
     if [ "$value" != "1" ]; then
         failure "The cluster ID for the backup should be '1'."
-        exit 1
     fi
 
     # Checking the path.
@@ -408,10 +404,14 @@ function testCreateBackup01()
         mys9s backup --list-files --full-path 
     fi
 
+    end_verbatim
+
     #
     #
     #
     print_title "Verifying Backup 1"
+
+    begin_verbatim
     container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "2")"
     node=$(create_node --autodestroy "$container_name")
 
@@ -423,10 +423,14 @@ function testCreateBackup01()
         $LOG_OPTION \
         $DEBUG_OPTION
 
+    end_verbatim
+
     #
     #
     #
     print_title "Printing some info"
+    begin_verbatim
+
     mys9s backup --list
     mys9s backup --list --long
 
@@ -459,11 +463,14 @@ function testCreateBackup02()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 
     #
     # Verifying the backup.
     #
     print_title "Verifying Backup 2"
+
+    begin_verbatim
     container_name="$(printf "ft_backup_%08d_verify%02d" "$$" "3")"
     node=$(create_node --autodestroy "$container_name")
 
@@ -561,7 +568,6 @@ function testCreateBackup04()
         failure "Creating and verifying backup failed"
         mys9s job --list 
         mys9s backup --list --long 
-        exit 1
     fi
 
     #check_exit_code $retcode
@@ -576,9 +582,13 @@ function testCreateBackup05()
         return 0
     fi
 
+    #
+    #
+    
     print_title "Creating xtrabackupfull Backup"
 
     begin_verbatim
+
     #
     # Creating the backup.
     # Using xtrabackup this time.
@@ -594,8 +604,13 @@ function testCreateBackup05()
         $DEBUG_OPTION
     
     check_exit_code $?
-    
+    end_verbatim
+
+    #
+    #
+    #
     print_title "Creating xtrabackupincr Backup"
+    begin_verbatim
 
     #
     # Creating the backup.
@@ -621,8 +636,8 @@ function testCreateBackup06()
     local node
 
     print_title "Creating PITR Compatible Backup"
-
     begin_verbatim
+
     #
     # Creating the backup.
     # Using gzip this time.
@@ -657,13 +672,15 @@ function testRestore()
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     if [ "$PROVIDER_VERSION" != "10.3" ]; then
         print_title "Restoring Backup 7"
     
+        begin_verbatim
         mys9s backup \
             --restore \
             --backup-id=7 \
@@ -671,12 +688,14 @@ function testRestore()
             $LOG_OPTION \
 
         check_exit_code $?
+        end_verbatim
     fi
     
     #
     #
     #
     print_title "Restoring Backup 2"
+    begin_verbatim
 
     mys9s backup \
         --restore \
@@ -686,12 +705,13 @@ function testRestore()
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     print_title "Restoring Backup 6"
-
+    begin_verbatim
     mys9s backup \
         --restore \
         --backup-id=6 \

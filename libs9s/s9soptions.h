@@ -270,6 +270,9 @@ class S9sOptions
         
         bool hasUserFormat() const;
         S9sString userFormat() const;
+        
+        bool hasJSonFormat() const;
+        S9sString jsonFormat() const;
 
         S9sString graph() const;
 

@@ -68,6 +68,9 @@ S9sBusinessLogic::execute()
         //
         // We do not authenticate here, we simply do process an input file.
         //
+    } else if (options->isControllerOperation() && options->isPingRequested())
+    {
+        // No auth here...
     } else if (options->isPasswordResetRequested())
     {
         //
@@ -91,7 +94,7 @@ S9sBusinessLogic::execute()
          */
         if (options->isPingRequested())
         {
-            executePing(client);
+            executeClusterPing(client);
         } else if (options->isListRequested() || options->isStatRequested())
         {
             executeClusterList(client);
@@ -503,7 +506,10 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isControllerOperation())
     {
-        if (options->isCreateSnapshotRequested())
+        if (options->isPingRequested())
+        {
+            executeControllerPing(client);            
+        } else if (options->isCreateSnapshotRequested())
         {
             // s9s controller --create-snapshot
             success = client.createSnapshotJob();
@@ -1144,7 +1150,7 @@ S9sBusinessLogic::waitForJob(
 }
 
 void
-S9sBusinessLogic::executePing(
+S9sBusinessLogic::executeClusterPing(
         S9sRpcClient &client)
 {
     S9sOptions  *options = S9sOptions::instance();
@@ -1154,7 +1160,7 @@ S9sBusinessLogic::executePing(
     int          sequenceIndex = 0;
 
 again:
-    success = client.ping();
+    success = client.pingCluster();
     
     options->setExitStatus(S9sOptions::ExitOk);
     client.setExitStatus();
@@ -1163,12 +1169,46 @@ again:
     {
         reply = client.reply();
 
-        success = reply.isOk();
-            
+        success = reply.isOk();    
+        reply.printClusterPing(sequenceIndex);
+    } else {
         if (options->isJsonRequested())
             reply.printJsonFormat();
         else
-            reply.printPing(sequenceIndex);
+            PRINT_ERROR("%s", STR(client.errorString()));
+            
+        options->setExitStatus(S9sOptions::Failed);
+    }
+
+    if (continuous)
+    {
+        usleep(1000000);
+        goto again;
+    }
+}
+
+void
+S9sBusinessLogic::executeControllerPing(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    bool         continuous = options->isWaitRequested();
+    S9sRpcReply  reply;
+    bool         success;
+    int          sequenceIndex = 0;
+
+again:
+    success = client.pingController();
+    
+    options->setExitStatus(S9sOptions::ExitOk);
+    client.setExitStatus();
+
+    if (success)
+    {
+        reply = client.reply();
+
+        success = reply.isOk();    
+        reply.printControllerPing(sequenceIndex);
     } else {
         if (options->isJsonRequested())
             reply.printJsonFormat();

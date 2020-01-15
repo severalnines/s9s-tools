@@ -155,7 +155,7 @@ UtS9sRpcClient::testPing()
     S9sRpcClientTester client;
     S9sVariantMap      payload;
 
-    S9S_VERIFY(client.ping());
+    S9S_VERIFY(client.pingCluster());
     S9S_COMPARE(client.uri(0u), "/v2/clusters/");
     
     payload = client.lastPayload();

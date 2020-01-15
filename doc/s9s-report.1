@@ -76,3 +76,23 @@ s9s report \\
     --list-templates \\
     --long
 .fi
+
+.\"
+.\"
+.\"
+.SS "Options for Reports"
+The following command line options are related to the operational reports.
+
+.TP
+.BI --report-id= ID
+This command line option passes the numerical ID of the report to manage. When a
+report is deleted (\fB--delete\fP option) or printed (\fB--cat\fP option) this
+option is mandatory.
+
+.TP
+.BI --type= NAME
+This command line option controls the type of the report. Use the
+\fB--list-templates\fP to list what types are available.
+
+
+

@@ -404,16 +404,20 @@ bool
 S9sAccount::parseStringRep(
         const S9sString &input)
 {
-    int        c;
+    char       c;
+    char       cDecoded;
     ParseState state = StartState;
     S9sString  userName, hostName, password;
 
     S9S_DEBUG("*** input: %s", STR(input));
     m_properties.clear();
 
-    for (int n = 0;;)
+    for (size_t n = 0;;)
     {
         c = input.c_str()[n];
+        if (!parseUrlEncodedChar(input, n, cDecoded))
+            cDecoded = c;
+
         S9S_DEBUG("*** n = %02d c = '%c'", n, c);
         
         switch (state)
@@ -442,7 +446,7 @@ S9sAccount::parseStringRep(
                     n++;
                     state = HostNameStart;
                 } else {
-                    userName += c;
+                    userName += cDecoded;
                     n++;
                 }
                 break;
@@ -460,7 +464,7 @@ S9sAccount::parseStringRep(
                 } else 
                 {
                     ++n;
-                    password += c;
+                    password += cDecoded;
                 } 
                 break;
 
@@ -482,7 +486,7 @@ S9sAccount::parseStringRep(
                     setPassword(password);
                     return true;
                 } else {
-                    hostName += c;
+                    hostName += cDecoded;
                     ++n;
                 }
                 break;
@@ -497,7 +501,7 @@ S9sAccount::parseStringRep(
                     n++;
                     state = UserNameEnd;
                 } else {
-                    userName += c;
+                    userName += cDecoded;
                     n++;
                 }
                 break;
@@ -531,7 +535,7 @@ S9sAccount::parseStringRep(
                     setPassword(password);
                     return true;
                 } else {
-                    hostName += c;
+                    hostName += cDecoded;
                     n++;
                 }
                 break;
@@ -541,3 +545,42 @@ S9sAccount::parseStringRep(
     return false;
 }
 
+bool 
+S9sAccount::parseUrlEncodedChar(
+        const S9sString &input,
+        size_t          &location,
+        char            &theChar)
+{
+    char c;
+
+    if (input[location] != '%' || 
+            input[location + 1] == '\0' || 
+            input[location + 2] == '\0')
+    {
+        return 0;
+    }
+
+    ++location;
+    c = input[location];
+
+    if (c >= '0' && c <= '9')
+        theChar = c - '0';
+    else if (c >= 'A' && c <= 'Z')
+        theChar = c - 'A' + 10;
+    else 
+        theChar = c - 'a' + 10;
+
+    theChar *= 16;
+    
+    ++location;
+    c = input[location];
+
+    if (c >= '0' && c <= '9')
+        theChar += c - '0';
+    else if (c >= 'A' && c <= 'Z')
+        theChar += c - 'A' + 10;
+    else 
+        theChar += c - 'a' + 10;
+
+    return true;
+}

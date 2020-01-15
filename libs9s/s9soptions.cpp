@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2018 Severalnines AB
+ * Copyright (C) 2018-present Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -193,6 +193,7 @@ enum S9sOptionType
     OptionNodeFormat,
     OptionBackupFormat,
     OptionUserFormat,
+    OptionJSonFormat,
     OptionContainerFormat,
     OptionLinkFormat,
     OptionGraph,
@@ -2425,6 +2426,25 @@ S9sString
 S9sOptions::userFormat() const
 {
     return getString("user_format");
+}
+
+/**
+ * \returns True if the --json-format command line option was provided.
+ */
+bool
+S9sOptions::hasJSonFormat() const
+{
+    return m_options.contains("json_format");
+}
+
+/**
+ * \returns The command line option argument for the --json-format option or
+ *   the empty string if the option was not used.
+ */
+S9sString
+S9sOptions::jsonFormat() const
+{
+    return getString("json_format");
 }
 
 /**
@@ -5190,7 +5210,7 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Earth)\n",
+        printf("%s Version %s (Europe)\n",
             PACKAGE_NAME, PACKAGE_VERSION);
 
         /*
@@ -5363,15 +5383,15 @@ S9sOptions::printHelpGeneric()
 "       user - to manage users.\n"
 "\n"
 "Generic options:\n"
-"  --help                     Show help message and exit.\n" 
-"  -v, --verbose              Print more messages than normally.\n"
-"  -V, --version              Print version information and exit.\n"
 "  -c, --controller=URL       The URL where the controller is found.\n"
+"  --help                     Show help message and exit.\n" 
 "  -P, --controller-port INT  The port of the controller.\n"
-"  --rpc-tls                  Use TLS encryption to controller.\n"
-"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
 "  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --private-key-file=FILE    The name of the file for authentication.\n"
+"  --rpc-tls                  Use TLS encryption to controller.\n"
+"  -u, --cmon-user=USERNAME   The username on the Cmon system.\n"
+"  -v, --verbose              Print more messages than normally.\n"
+"  -V, --version              Print version information and exit.\n"
 "\n"
 "Formatting:\n"
 "  --batch                    No colors, no human readable, pure data.\n"
@@ -5861,6 +5881,7 @@ S9sOptions::printHelpController()
 "  --create-snapshot          Creates a controller to controller snapshot.\n"
 "  --enable-cmon-ha           Enables the Cmon HA mode.\n"
 "  --list                     List the registered controllers.\n"
+"  --ping                     Pings the controller, prints status.\n"
 "  --stat                     Prints details about the controllers.\n"
 ""
 "\n"
@@ -13076,6 +13097,7 @@ S9sOptions::readOptionsController(
         { "batch",            no_argument,       0, OptionBatch           },
         { "only-ascii",       no_argument,       0, OptionOnlyAscii       },
         { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "json-format",      required_argument, 0, OptionJSonFormat      },
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -13089,6 +13111,7 @@ S9sOptions::readOptionsController(
         { "create-snapshot",  no_argument,       0, OptionCreateSnaphot   },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "list",             no_argument,       0, 'L'                   },
+        { "ping",             no_argument,       0, OptionPing            },
         { "stat",             no_argument,       0, OptionStat            },
        
         // FIXME: remove this.
@@ -13187,6 +13210,11 @@ S9sOptions::readOptionsController(
                 m_options["no_header"] = true;
                 break;
             
+            case OptionJSonFormat:
+                // --json-format=FORMATSTRING
+                m_options["json_format"] = optarg;
+                break;
+            
             case OptionOnlyAscii:
                 // --only-ascii
                 m_options["only_ascii"] = true;
@@ -13226,6 +13254,11 @@ S9sOptions::readOptionsController(
             case 'L': 
                 // --list
                 m_options["list"] = true;
+                break;
+            
+            case OptionPing:
+                // --ping
+                m_options["ping"] = true;
                 break;
 
             case OptionStat:
@@ -13848,6 +13881,9 @@ S9sOptions::checkOptionsController()
         countOptions++;
 
     if (isListRequested())
+        countOptions++;
+    
+    if (isPingRequested())
         countOptions++;
     
     if (isStatRequested())

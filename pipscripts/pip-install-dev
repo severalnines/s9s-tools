@@ -28,6 +28,7 @@ Usage:
   --install-mongodb  Checks and installs the mongodb driver and mongo-c.
   --install-mariadb  Checks and installs the MariaDb library.
   --install-mysql    Installs the mysql server with root password.
+  --install-postgre  Installs the postgresql stuff.
   --update-libssh    Installs the new version of the libssh package.
   --update-packages  Updates packages of the server.
 
@@ -41,8 +42,8 @@ ARGS=$(\
     getopt \
         -o hv \
         -l "help,verbose,version,log-file:,all,\
-install-mongodb,install-mariadb,install-mysql,update-libssh,update-packages,\
-no-containers" \
+install-mongodb,install-mariadb,install-mysql,install-postgre,update-libssh,\
+update-packages,no-containers" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -91,6 +92,11 @@ while true; do
         --install-mysql)
             shift
             OPTION_INSTALL_MYSQL="true"
+            ;;
+
+        --install-postgre)
+            shift
+            OPTION_INSTALL_POSTGRE="true"
             ;;
 
         --update-libssh)
@@ -170,6 +176,41 @@ function install_mysql_server()
         sudo debconf-set-selections
 
     install_package mysql-server
+}
+
+function install_postgresql()
+{
+    if [ -f /opt/postgresql/include/libpq-fe.h ]; then
+        echo "* (custom) postgresql is installed."
+    elif [ -f /usr/include/postgresql/libpq-fe.h ]; then
+        echo "* (system) postgresql is installed."
+    else
+        if ! [ -f postgresql-11.1.tar.bz2 ]; then
+            echo "* downloading postgresql."
+            wget --no-check-certificate \
+            https://ftp.postgresql.org/pub/source/v11.1/postgresql-11.1.tar.bz2 \
+            -O postgresql-11.1.tar.bz2 || exit $?
+        fi
+        echo "* installing postgresql."
+        tar -xvjpf postgresql-11.1.tar.bz2 || exit $?
+
+        pushd postgresql-11.1
+        ./configure \
+            --without-ldap \
+            --without-bonjour \
+            --without-gssapi \
+            --without-perl \
+            --without-python \
+            --without-readline \
+            --with-openssl \
+            --without-pam \
+            --prefix=/opt/postgresql || exit $?
+
+        sudo mkdir -p /opt/postgresql || exit $?;
+        sudo chown -R ${USER} /opt/postgresql || exit $?;
+        make -j5 && sudo make -j5 install || exit $?
+        popd
+    fi    
 }
 
 #
@@ -539,6 +580,9 @@ elif [ -n "$OPTION_INSTALL_MONGODB" ]; then
     [ $? -ne 0 ] && exit 1
 elif [ -n "$OPTION_INSTALL_MARIADB" ]; then
     install_mariadb
+    [ $? -ne 0 ] && exit 1
+elif [ -n "$OPTION_INSTALL_POSTGRE" ]; then
+    install_postgresql
     [ $? -ne 0 ] && exit 1
 else
     echo "Nothing to do, no command line option is provided with tasks."

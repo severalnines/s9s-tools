@@ -54,7 +54,8 @@ pip-pdu-control --list-outlets pdu01 pdu02
 \"
 \"
 .SS "Format specifiers"
-.TP --long
+.TP
+.B --long
 Print a detailed list instead of a brief list. One line for every PDU device.
 
 .B EXAMPLE
@@ -62,6 +63,12 @@ Print a detailed list instead of a brief list. One line for every PDU device.
 pip-pdu-control --list --long
 .fi
 
+.TP
+.B --ping
+Ping the device to check that it is on-line and reachable. Print the name of the
+device in either green (reachable) or red (unreachable).
+
+.B EXAMPLE
 
 
 .B TASMOTA

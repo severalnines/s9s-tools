@@ -3,7 +3,7 @@
 # Author: David Kedves <kedazo@severalnines.com>
 REPONAME='home:kedazo/s9s-tools'
 CURRDIR=`pwd`
-SRCDIR=${CURRDIR}/build
+SRCDIR=${CURRDIR}/../build
 
 if ! test -f .git/config; then
   echo "You must start this script inside the s9s-tools source directory."

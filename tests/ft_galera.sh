@@ -180,7 +180,8 @@ function testCreateCluster()
     local node_name
 
     print_title "Creating a Galera Cluster"
-    
+
+    begin_verbatim
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -218,7 +219,7 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -230,14 +231,16 @@ function testCreateCluster()
         failure "Failed to get into STARTED state."
         mys9s cluster --stat
         mys9s job --list 
-        return 1
     fi
+    
+    end_verbatim
 
     #
     # Checking the controller, the nodes and the cluster.
     #
     print_subtitle "Checking the State of the Cluster&Nodes"
 
+    begin_verbatim
     mys9s cluster --stat
 
     check_controller \
@@ -269,6 +272,8 @@ function testCreateCluster()
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
 
+    end_verbatim
+
     #
     # One more thing: if the option is given we enable the SSL here, so we test
     # everything with this feature.
@@ -279,6 +284,7 @@ function testCreateCluster()
   This test will enable SSL on a cluster, then the cluster will be stopped and 
   started. Then the test will check if the cluster is indeed started.
 EOF
+        begin_verbatim
         mys9s cluster --enable-ssl --cluster-id=$CLUSTER_ID \
             $LOG_OPTION \
             $DEBUG_OPTION
@@ -298,12 +304,15 @@ EOF
         check_exit_code $?
     
         wait_for_cluster_started "$CLUSTER_NAME" 
+        end_verbatim
     fi
 }
 
 function testSetupAudit()
 {
     print_title "Setting up Audit Logging"
+
+    begin_verbatim
     mys9s cluster \
         --setup-audit-logging \
         --cluster-id=1 \
@@ -311,6 +320,7 @@ function testSetupAudit()
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -325,6 +335,8 @@ function testSetConfig01()
     local name
 
     printVerbose "Checking the configuration"
+    
+    begin_verbatim
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -333,11 +345,7 @@ function testSetConfig01()
         --list-config \
         --nodes=$FIRST_ADDED_NODE 
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
 
     #
     # Changing a configuration value.
@@ -352,11 +360,7 @@ function testSetConfig01()
         --opt-group=MYSQLD \
         --opt-value=$newValue
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
     
     #
     # Reading the configuration back. This time we only read one value.
@@ -367,20 +371,20 @@ function testSetConfig01()
             --opt-name=$name \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
 
     if [ "$value" != "$newValue" ]; then
         failure "Configuration value should be $newValue not $value"
+    else
+        success "  o Configuration value is $value, ok."
     fi
 
     mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         $name
+
+    end_verbatim
 }
 
 #
@@ -394,6 +398,7 @@ function testSetConfig02()
     local newValue="64M"
     local name="max_heap_table_size"
 
+    begin_verbatim
     #
     # Changing a configuration value.
     #
@@ -403,12 +408,8 @@ function testSetConfig02()
         --opt-name=$name \
         --opt-group=MYSQLD \
         --opt-value=$newValue
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code_no_job $?
     
     #
     # Reading the configuration back. This time we only read one value.
@@ -419,20 +420,20 @@ function testSetConfig02()
             --opt-name=$name \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
 
     if [ "$value" != "$newValue" ]; then
         failure "Configuration value should be $newValue not $value"
+    else
+        success "  o Configuration value is $value, ok."
     fi
 
     mys9s node \
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         'max*'
+
+    end_verbatim
 }
 
 #
@@ -443,7 +444,9 @@ function testRestartNode()
     local exitCode
 
     print_title "Restarting Node"
-    
+   
+    begin_verbatim
+
     #
     # Restarting a node. 
     #
@@ -454,13 +457,9 @@ function testRestartNode()
         $LOG_OPTION \
         $DEBUG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        mys9s job --log --job-id=4
-        mys9s job --log --job-id=5
-    fi
+    check_exit_code $?
+
+    end_verbatim
 }
 
 #
@@ -471,6 +470,7 @@ function testStopStartNode()
 {
     local exitCode
 
+    begin_verbatim
     #
     # First stop.
     #
@@ -480,12 +480,8 @@ function testStopStartNode()
         --nodes=$FIRST_ADDED_NODE \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code $?
     
     #
     # Then start.
@@ -497,11 +493,9 @@ function testStopStartNode()
         $LOG_OPTION \
         $DEBUG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
+
+    end_verbatim
 }
 
 #
@@ -512,13 +506,15 @@ function testCreateAccount()
     local userName
 
     print_title "Testing account creation."
+    begin_verbatim
 
     #
     # This command will create a new account on the cluster.
     #
     if [ -z "$CLUSTER_ID" ]; then
         failure "No cluster ID found."
-        return 1
+    else
+        success "  o Cluster ID is $CLUSTER_ID, ok."
     fi
 
     mys9s account \
@@ -540,6 +536,8 @@ function testCreateAccount()
         failure "Account is not in the account list ($userName)."
         mys9s account --list --long --cluster-id=$CLUSTER_ID
         mys9s account --list --cluster-id=$CLUSTER_ID john_doe
+    else
+        success "  o Account found, ok."
     fi
 
     echo "Before granting."
@@ -573,9 +571,11 @@ function testCreateAccount()
     if [ "$userName" ]; then
         failure "The account 'john_doe' still exists."
         mys9s account --list --long --cluster-id=$CLUSTER_ID john_doe
-        exit 1
+    else
+        success "  o Accound disappeared, ok."
     fi
 
+    end_verbatim
 }
 
 
@@ -587,6 +587,7 @@ function testCreateDatabase()
     local userName
 
     print_title "Creating Database"
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -596,13 +597,8 @@ function testCreateDatabase()
         --cluster-id=$CLUSTER_ID \
         --db-name="testCreateDatabase" \
         --batch
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
+
+    check_exit_code_no_job $?
     
     #
     # This command will create a new account on the cluster and grant some
@@ -623,7 +619,8 @@ function testCreateDatabase()
     userName=$(s9s account --list --cluster-id=1 pipas)
     if [ "$userName" != "pipas" ]; then
         failure "Failed to create user 'pipas'."
-        exit 1
+    else
+        success "  o User $userName was created, ok."
     fi
 
     #
@@ -638,6 +635,7 @@ function testCreateDatabase()
     check_exit_code_no_job $?
 
     mys9s account --list --long
+    end_verbatim
 }
 
 #
@@ -653,6 +651,7 @@ function testUploadData()
     local count=0
 
     print_title "Testing data upload on cluster."
+    begin_verbatim
 
     #
     # Creating a new database on the cluster.
@@ -660,12 +659,8 @@ function testUploadData()
     mys9s cluster \
         --create-database \
         --db-name=$db_name
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
+
+    check_exit_code_no_job $?
 
     #
     # Creating a new account on the cluster.
@@ -675,11 +670,7 @@ function testUploadData()
         --account="$user_name:$password" \
         --privileges="$db_name.*:ALL"
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
     #
     # Executing a simple SQL statement using the account we created.
@@ -696,6 +687,8 @@ function testUploadData()
 
     if [ "$reply" != "42" ]; then
         failure "Cluster failed to execute an SQL statement: '$reply'."
+    else
+        success "  o The classic 'SELECT 41+1' returned 42, ok."
     fi
 
     #
@@ -716,6 +709,8 @@ function testUploadData()
         if [ "$exitCode" -ne 0 ]; then
             failure "Exit code is $exitCode while uploading data."
             break
+        else
+            success "  o Uploaded data, ok."
         fi
 
         let count+=1
@@ -723,6 +718,8 @@ function testUploadData()
             break
         fi
     done
+
+    end_verbatim
 }
 
 #
@@ -733,6 +730,7 @@ function testAddNode()
     local nodes
 
     print_title "Adding a node"
+    begin_verbatim
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
     nodes+="$LAST_ADDED_NODE"
@@ -748,6 +746,7 @@ function testAddNode()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -759,7 +758,7 @@ function testAddProxySql()
     local nodes
 
     print_title "Adding a ProxySQL Node"
-
+    begin_verbatim
     nodeName=$(create_node --autodestroy)
     nodes+="proxySql://$nodeName"
 
@@ -778,6 +777,8 @@ function testAddProxySql()
     mys9s node \
         --list-config \
         --nodes=$nodeName 
+
+    end_verbatim
 }
 
 #
@@ -792,6 +793,7 @@ function testAddRemoveHaProxy()
     local nodes
     
     print_title "Adding and removing HaProxy node"
+    begin_verbatim
     mys9s node --list --long 
 
     node=$(\
@@ -829,6 +831,7 @@ function testAddRemoveHaProxy()
     check_exit_code $?
     
     mys9s node --list --long --color=always
+    end_verbatim
 }
 
 #
@@ -840,7 +843,7 @@ function testAddHaProxy()
     local nodes
     
     print_title "Adding a HaProxy Node"
-
+    begin_verbatim
     node=$(create_node --autodestroy)
     nodes+="haProxy://$node"
 
@@ -855,6 +858,7 @@ function testAddHaProxy()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -867,7 +871,8 @@ function testRemoveNode()
     fi
     
     print_title "The test to remove node is starting now."
-    
+    begin_verbatim
+
     #
     # Removing the last added node. We do this by cluster name for that is the
     # more complicated one.
@@ -880,6 +885,7 @@ function testRemoveNode()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -896,6 +902,8 @@ function testRollingRestart()
   checked in consequite tests.
 
 EOF
+    
+    begin_verbatim
 
     #
     # Calling for a rolling restart.
@@ -918,6 +926,7 @@ EOF
     fi
     
     wait_for_cluster_started "$CLUSTER_NAME" 
+    end_verbatim
 }
 
 #
@@ -926,6 +935,7 @@ EOF
 function testStop()
 {
     print_title "Stopping Cluster"
+    begin_verbatim
 
     #
     # Stopping the cluster.
@@ -937,6 +947,7 @@ function testStop()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -945,6 +956,7 @@ function testStop()
 function testStart()
 {
     print_title "Starting Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -956,6 +968,7 @@ function testStart()
         $DEBUG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #

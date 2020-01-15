@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(s9s, 1.7.3)
+AC_INIT(s9s, 1.7.5)
 AC_CONFIG_SRCDIR([libs9s/library.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])

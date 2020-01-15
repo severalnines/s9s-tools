@@ -825,9 +825,13 @@ S9sRpcClient::setClusterConfig()
     return retval;
 }
 
-
+/**
+ * This method implements the cluster ping request. We send a request with a
+ * given cluster ID and expect a simple reply from the controller telling us
+ * that the controller is up and we have access to the cluster.
+ */
 bool
-S9sRpcClient::ping()
+S9sRpcClient::pingCluster()
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sDateTime    now = S9sDateTime::currentDateTime();
@@ -836,7 +840,6 @@ S9sRpcClient::ping()
     S9sVariantMap  request;
     bool           retval;
 
-    S9S_DEBUG("*** request_created: %s", STR(timeString));
     request["operation"]       = "ping";
     request["request_created"] = timeString;
     
@@ -850,6 +853,22 @@ S9sRpcClient::ping()
     
     retval = executeRequest(uri, request);
 
+    return retval;
+}
+
+bool
+S9sRpcClient::pingController()
+{
+    S9sDateTime    now = S9sDateTime::currentDateTime();
+    S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
+    S9sString      uri = "/v2/controller/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]       = "ping";
+    request["request_created"] = timeString;
+
+    retval = executeRequest(uri, request);
     return retval;
 }
 
@@ -6712,21 +6731,18 @@ S9sRpcClient::createBackup()
         return false;
     }
 
-    if (hosts.size() != 1u)
+    // There can be 1 or 0 nodes specified.
+    if (hosts.size() > 1u)
     {
-        PRINT_ERROR("To create a new backup one node must be specified.");
+        PRINT_ERROR("Multiple nodes are specified while creating a backup.");
         return false;
+    } else if (hosts.size() == 1u)
+    {
+        backupHost = hosts[0].toNode();
+        jobData["hostname"]          = backupHost.hostName();
     }
 
-    backupHost = hosts[0].toNode();
-
-
     // The job_data describing how the backup will be created.
-    #if 0
-    jobData["nodes"] = nodesField(hosts);
-    #else
-    jobData["hostname"]          = backupHost.hostName();
-    #endif
     jobData["description"]       = "Backup created by s9s-tools.";
 
     if (backupHost.hasPort())

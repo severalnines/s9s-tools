@@ -670,6 +670,11 @@ function print_host_list_long()
                 let SUM_SERVERS+=1
                 ;;
 
+            HALTED)
+                let SUM_OFF_LINE_SERVERS+=1
+                let SUM_SERVERS+=1
+                ;;
+
             TESTING)
                 let SUM_TESTING_SERVERS+=1
                 let SUM_SERVERS+=1
@@ -701,6 +706,8 @@ function print_host_list_long()
         elif [ "$HOST_STATUS" == "TESTING" ]; then
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "HALTED" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "PROTECTED" ]; then
             printf "$XTERM_COLOR_RED%-9s$TERM_NORMAL " "$HOST_STATUS"

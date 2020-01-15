@@ -166,6 +166,12 @@ function download_html_file()
         "$url" \
         --output-document=$html_file 2>/dev/null
 
+    if [ $? -ne 0 ]; then 
+        exit 1
+    fi
+
+    #ls -lha $html_file
+
     #
     # The downloaded file has these fields embedded in a HTML comment so that we
     # can have everything in one single HTML file.
@@ -178,6 +184,7 @@ function download_html_file()
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
     
     if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
+        printVerbose "Git date is '$git_date', not recent."
         rm -f $html_file
         return 0
     fi
@@ -213,6 +220,7 @@ function test_names()
     fi
 
     cat <<EOF
+ft_backup.sh
 ft_access.sh 
 ft_acl.sh 
 ft_adminuser.sh 
@@ -226,6 +234,14 @@ ft_postgresqlsimple.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 
+ft_scripts.sh
+ft_postgresqlfailover.sh
+ft_galera.sh
+ft_galera_mariadb_10.4.sh
+ft_cmonhabasic
+ft_cmonhabasic1
+ft_cmonhasimple
+ft_cmonhalxc
 EOF
 }
 

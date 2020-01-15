@@ -98,7 +98,7 @@ class S9sDisplay :
                 bool interactive,
                 bool rawTerminal);
 
-        int kbhit();
+        bool kbhit();
 
     protected:
         bool                         m_rawTerminal;
@@ -106,11 +106,13 @@ class S9sDisplay :
         S9sMutex                     m_mutex;
         int                          m_refreshCounter;
         
+        /** Contains information about the last keyboard/mouse event. */
         union {
             unsigned char  inputBuffer[6];
-            int   lastKeyCode;
+            int            lastKeyCode;
         } m_lastKeyCode;
 
+        /** Shows which line we are in, counting printing newlines. */
         int                          m_lineCounter;
         S9sFile                      m_outputFile;
         S9sString                    m_outputFileName;

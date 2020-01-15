@@ -99,7 +99,7 @@ program. If the program creates a list of objects this option will change its
 format to show more details.
 
 .TP
-.B \-\^\-print-json
+.B --print-json
 The JSON strings will be printed while communicating with the controller. This 
 option is for debugging purposes.
 
@@ -126,10 +126,16 @@ Do not print headers for tables.
 .SS Account Options
 
 .TP
-.BI \-\^\-account= USERNAME[:PASSWORD][@HOSTNAME]
+.BI --account= USERNAME[:PASSWORD][@HOSTNAME]
 The account to be used or created on the cluster. The command line option
 argument may contain a username, a password for the user and a hostname
 identifying the host from where the user may log in.
+
+The s9s command line tool will handle the command line option argument as an URL
+encoded string, so if the password for example contains an '@' character, it
+should be encoded as '%40'. Url encoded parts are supported anywhere in the
+string, usernames and passwords (and even hostnames) may also have special 
+characters.
 
 .TP
 .BI \-\^\-with-database

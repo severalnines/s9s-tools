@@ -132,6 +132,24 @@ UtS9sAccount::testParse05()
     S9S_COMPARE(account.password(),  "pwd");
     S9S_COMPARE(account.hostAllow(), "1.2.3.4");
 
+    success = account.parseStringRep("pipas:pwd%40next@1.2.3.4");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(),  "pipas");
+    S9S_COMPARE(account.password(),  "pwd@next");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+    
+    success = account.parseStringRep("pipas%24:pwd@1.2.3.4");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(),  "pipas$");
+    S9S_COMPARE(account.password(),  "pwd");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+    
+    success = account.parseStringRep("laszlo%20pere:pwd@1.2.3.4");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(),  "laszlo pere");
+    S9S_COMPARE(account.password(),  "pwd");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+
     return true;
 }
 

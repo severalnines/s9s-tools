@@ -147,7 +147,8 @@ class S9sRpcClient
         bool getConfig(const S9sVariantList &hosts);
         bool setConfig();
 
-        bool ping();
+        bool pingCluster();
+        bool pingController();
 
         bool setHost();
         

@@ -164,6 +164,7 @@ function testCreateCluster()
     print_title "Creating a Galera Cluster"
     cat <<EOF | paragraph
   This test will create a Galera cluster that we use for testing.
+
 EOF
 
     begin_verbatim

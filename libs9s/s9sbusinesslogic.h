@@ -72,7 +72,8 @@ class S9sBusinessLogic
                 S9sString       &publicKey);
 
         void executeClusterList(S9sRpcClient &client);
-        void executePing(S9sRpcClient &client);
+        void executeClusterPing(S9sRpcClient &client);
+        void executeControllerPing(S9sRpcClient &client);
 
         void executeNodeList(S9sRpcClient &client);
         void executeNodeGraph(S9sRpcClient &client);
