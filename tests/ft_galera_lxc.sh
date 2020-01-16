@@ -219,6 +219,7 @@ EOF
     begin_verbatim
 
     mys9s cluster --stat
+    mys9s report --list --cluster-id=1 --long
     mys9s alarm --list --long 
     
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
