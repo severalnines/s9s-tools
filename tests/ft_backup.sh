@@ -212,6 +212,9 @@ function testCreateClusterFromBackup()
 
 
     print_title "Creating a Galera Cluster from Backup"
+    cat <<EOF | paragraph
+  This test will create a new galera cluster from an existing backup.
+EOF
 
     begin_verbatim
     for ((n=0;n<nNodes;++n)); do
@@ -220,6 +223,10 @@ function testCreateClusterFromBackup()
         nodeName=$(create_node --autodestroy $container_name)
         nodes+="$nodeName;"
     done
+
+    mys9s debug --list --long
+    mys9s cluster --list --long 
+    mys9s node --list --long
        
     #
     # Creating a Galera cluster.
