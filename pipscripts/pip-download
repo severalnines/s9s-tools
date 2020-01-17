@@ -242,6 +242,7 @@ ft_cmonhabasic
 ft_cmonhabasic1
 ft_cmonhasimple
 ft_cmonhalxc
+ft_haproxy.sh
 EOF
 }
 

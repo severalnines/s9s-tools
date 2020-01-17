@@ -132,6 +132,7 @@ function registerServer()
     local file
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -141,6 +142,7 @@ function registerServer()
         --servers="lxc://$container_server" 
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function createCluster()
@@ -149,6 +151,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -162,6 +165,7 @@ function createCluster()
         $LOG_OPTION 
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -170,7 +174,13 @@ function createCluster()
 function testAddHaProxy()
 {
     print_title "Adding a HaProxy Node"
-    
+    cat <<EOF | paragraph
+  In this test we add a HaProxy node to the previously created cluster. The
+  HaProxy will be installed on a container that is created by the same job.
+EOF
+
+    begin_verbatim
+
     #
     # Adding haproxy to the cluster.
     #
@@ -182,11 +192,14 @@ function testAddHaProxy()
         $LOG_OPTION
     
     check_exit_code $?
+    end_verbatim
 
     #
     #
     #
     print_title "Checking HaProxy State"
+    begin_verbatim
+
     HAPROXY_IP=$(haproxy_node_name)
 
     wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
@@ -195,8 +208,11 @@ function testAddHaProxy()
         mys9s node --list --long
         mys9s node --stat $HAPROXY_IP
     else
+        success " o HaProxy $HAPROXY_IP is in CmonHostOnline state."
         mys9s node --stat $HAPROXY_IP
     fi
+
+    end_verbatim
 }
 
 function testStopHaProxy()
@@ -204,15 +220,24 @@ function testStopHaProxy()
     #
     #
     #
-    print_title "Stopping Node"
+    print_title "Stopping HaProxy Node"
+    cat <<EOF | paragraph
+  In this test we stop the HapRoxy node and check the the node status is changed
+  on the Cmon Controller. 
+EOF
+
+    begin_verbatim
 
     mys9s container --stop --wait "$CONTAINER_NAME9"
     check_exit_code $?
+    end_verbatim
 
     #
     # Checking that the HaProxy goes into offline state.
     #
     print_title "Waiting HapProxy to go Off-line"
+    begin_verbatim
+
     wait_for_node_state "$HAPROXY_IP" "CmonHostOffLine"
 
     if [ $? -ne 0 ]; then
@@ -220,8 +245,11 @@ function testStopHaProxy()
         mys9s node --list --long
         mys9s node --stat $HAPROXY_IP
     else
+        success "  o HaProxy $HAPROXY_IP is in CmonHostOffLine state."
         mys9s node --stat $HAPROXY_IP
     fi
+
+    end_verbatim
 }
 
 function testStartHaProxy()
@@ -230,23 +258,28 @@ function testStartHaProxy()
     #
     #
     print_title "Starting Node"
+    begin_verbatim
 
     mys9s container --start --wait "$CONTAINER_NAME9"
     check_exit_code $?
+    end_verbatim
 
     #
     # Checking that the HaProxy goes into offline state.
     #
     print_title "Waiting HapProxy to go On-line"
+    begin_verbatim
     wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
 
     if [ $? -ne 0 ]; then
-        failure "HaProxy $HAPROXY_IP is not in CmonHostOnLine state"
+        failure "HaProxy $HAPROXY_IP is not in CmonHostOnLine state."
         mys9s node --list --long
         mys9s node --stat $HAPROXY_IP
     else
+        success "  o HaProxy $HAPROXY_IP is in CmonHostOnLine state, ok."
         mys9s node --stat $HAPROXY_IP
     fi
+    end_verbatim
 }
 
 function destroyContainers()
@@ -255,9 +288,15 @@ function destroyContainers()
     #
     #
     print_title "Destroying Containers"
+    begin_verbatim
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
+    check_exit_code $?
+
     mys9s container --delete --wait "$CONTAINER_NAME9"
+    check_exit_code $?
+
+    end_verbatim
 }
 
 #
