@@ -4,7 +4,9 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -36,6 +38,7 @@ Usage:
   --verbose           Print more messages.
   --print-json        Print the JSON messages sent and received.
   --log               Print the logs while waiting for the job to be ended.
+  --debug             Print more messages.
   --print-commands    Do not print unit test info, print the executed commands.
   --install           Just install the cluster and haproxy, then exit.
   --reset-config      Remove and re-generate the ~/.s9s directory.
@@ -47,8 +50,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,print-commands,install,reset-config,\
-server:" \
+        -l "help,verbose,print-json,log,debug,print-commands,install,\
+reset-config,server:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -72,6 +75,11 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            ;;
+
+        --debug)
+            shift
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -162,7 +170,8 @@ function createCluster()
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
-        $LOG_OPTION 
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     end_verbatim
@@ -189,7 +198,7 @@ EOF
         --cluster-id=1 \
         --nodes="haProxy://$CONTAINER_NAME9" \
         --containers="$CONTAINER_NAME9" \
-        $LOG_OPTION
+        $LOG_OPTION $DEBUG_OPTION
     
     check_exit_code $?
     end_verbatim
@@ -228,7 +237,7 @@ EOF
 
     begin_verbatim
 
-    mys9s container --stop --wait "$CONTAINER_NAME9"
+    mys9s container --stop "$CONTAINER_NAME9" $LOG_OPTION $DEBUG_OPTION
     check_exit_code $?
     end_verbatim
 
@@ -260,7 +269,7 @@ function testStartHaProxy()
     print_title "Starting Node"
     begin_verbatim
 
-    mys9s container --start --wait "$CONTAINER_NAME9"
+    mys9s container --start "$CONTAINER_NAME9" $LOG_OPTION $DEBUG_OPTION
     check_exit_code $?
     end_verbatim
 
@@ -290,10 +299,10 @@ function destroyContainers()
     print_title "Destroying Containers"
     begin_verbatim
 
-    mys9s container --delete --wait "$CONTAINER_NAME1"
+    mys9s container --delete "$CONTAINER_NAME1" $LOG_OPTION $DEBUG_OPTION
     check_exit_code $?
 
-    mys9s container --delete --wait "$CONTAINER_NAME9"
+    mys9s container --delete "$CONTAINER_NAME9" $LOG_OPTION $DEBUG_OPTION
     check_exit_code $?
 
     end_verbatim
