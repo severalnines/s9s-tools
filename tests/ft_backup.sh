@@ -737,10 +737,11 @@ function testDeleteBackup()
     print_title "Deleting Existing Backup"
 
     begin_verbatim
+
     #
     # Getting the backup ID of the first backup
     #
-    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
+    id=$(s9s backup --list --long --backup-format="%I\n" --cluster-id=1 | head -n 1)
 
     if [ "$id" != "1" ]; then
         failure "Backup with id 1 was not found"
@@ -750,9 +751,9 @@ function testDeleteBackup()
     #
     # Deleting the backup that we found.
     #
-    mys9s backup --delete --backup-id=1
+    mys9s backup --delete --backup-id=1 --cluster-id=1
 
-    id=$(s9s backup --list --long --backup-format="%I\n" | head -n 1)
+    id=$(s9s backup --list --long --backup-format="%I\n" --cluster-id=1 | head -n 1)
     if [ "$id" == "1" ]; then
         failure "Backup with id 1 still exists"
         mys9s backup --list --long
