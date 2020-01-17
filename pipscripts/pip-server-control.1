@@ -11,6 +11,9 @@ pip-server-control - Command line tool to control servers.
 The main options control what the program will do. The main options are one of
 the following:
 
+\"
+\"
+\"
 .TP
 .B --list
 List the servers and their properties.
@@ -20,6 +23,9 @@ List the servers and their properties.
 pip-server-control --list --long
 .fi
 
+\"
+\"
+\"
 .TP
 .B --ping
 Check if the server is running, reachable and print the result.
@@ -29,6 +35,9 @@ Check if the server is running, reachable and print the result.
 pip-server-control --ping --print-json core1
 .fi
 
+\"
+\"
+\"
 .TP
 .B --shut-down
 Shut down the server.
@@ -38,6 +47,9 @@ Shut down the server.
 pip-server-control --shut-down host01
 .fi
 
+\"
+\"
+\"
 .TP
 .B --wake
 Start the server.
@@ -45,6 +57,39 @@ Start the server.
 .B EXAMPLE
 .nf
 pip-server-control --wake --wait host01
+.fi
+
+\"
+\" List specifiers tell the script what to list.
+\"
+.SS "List Specifiers"
+The list specifier command line options tell the program what to list.
+
+\"
+\"
+\"
+.TP 
+.B --print-containers
+Print the permanent containers of the server. The permanent containers should be
+enumerated in the server configuration file under the name 
+\fBCONF_HOST_CONTAINERS\fP.
+
+.B EXAMPLE
+.nf
+pip-server-control --list --print-containers core1
+.fi
+
+\"
+\"
+\"
+.TP 
+.B --print-files
+Print the configuration files of the servers. This makes it easy to find and
+then perhaps modify the configuration file of a server.
+
+.B EXAMPLE
+.nf
+pip-server-control --list --print-files
 .fi
 
 .\" 
@@ -90,16 +135,6 @@ creates.
 .TP 
 .B --long
 Print a detailed list, one server in every line.
-
-.TP
-.B --print-containers
-Print the list of the managed containers, containers that should be on the
-server and should be managed (e.g. archived).
-
-.TP 
-.B --print-files
-Print the configuration files of the servers. This makes it easy to find and
-then perhaps modify the configuration file of a server.
 
 .TP
 .B --print-json

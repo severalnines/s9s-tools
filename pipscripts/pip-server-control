@@ -44,26 +44,33 @@ Usage:
 
   $MYNAME - Lists and controls servers.
 
+  GENERAL OPTIONS
   -h, --help           Print this help and exit.
   -v, --version        Print version information and exit.
   --verbose            Print more messages.
   --log-file=FILE      Store all the messages in the given file too.
   
+  MAIN OPTIONS
   --list               List the power distribution units.
   --ping               Check if the server is up.
   --shut-down          Shut down the server.
   --wake               Start the server.
 
+  LIST SPECIFIERS
+  --print-containers   Print the permanent containers on the server(s).
+  --print-files        Print the config files of the server(s). 
+
+  FORMAT SPECIFIERS
   --long               Print detailed/long list.
-  --print-containers   Print the permanent containers on the server.
-  --print-files        Print the config files of the servers. 
   --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
-
+  
+  
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
   --all                Turn on or off all the servers.
 
+  FILTER OPTIONS
   --disabled           Process only the disabled servers.
   --idle               Process only the idle servers.
   --offline            Process only the servers that are off-line.
@@ -863,7 +870,11 @@ if [ -n "$LIST_OPTION" ]; then
         print_host_list_long
         print_summary
     else
-        print_host_list_brief | column -s' '
+        if [ -t 1 ]; then
+            print_host_list_brief | column -s' '
+        else
+            print_host_list_brief
+        fi
     fi
 
     exit 0

@@ -11,6 +11,9 @@ SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel
 STOP_OPTION=""
 GZIP_OPTION=""
 
+OPTION_DRY=""
+OPTION_ARCHIVE_DIRECTORY="$HOME/archives"
+
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
 else
@@ -38,12 +41,13 @@ Usage:
   -v, --version          Print version information and exit.
   --verbose              Print more messages.
   --log-file=FILE        Store all the messages in the given file too.
-  --server=SERVER        Create the container on remote server.
+  --dry                  Do not do actual archiving.
+  --server=SERVER        Archive containers found on the server(s).
   --stop                 Stop containers that are running.
   --gzip                 Compress the archive with gzip.
 
   --auto                 Execute automatic archiving of a given server.
-
+  
 EXAMPLES:
   pip-container-archive --server=core1 --gzip --verbose "www"
   pip-container-archive --auto --server=core1 --verbose
@@ -86,6 +90,11 @@ while true; do
             shift
             LOGFILE="$(readlink -m "$1")"
             shift
+            ;;
+
+        --dry)
+            shift
+            OPTION_DRY="true"
             ;;
 
         --server)
@@ -197,8 +206,12 @@ function archive_one_container()
             printWarning "Archiving on the fly."
         else
             printVerbose "Stopping container '$container'."
-            lxc-stop -n "$container"
-            stopped=$?
+            if [ -n "$OPTION_DRY" ]; then
+                echo "DRY: Not stopping container '$container'."
+            else
+                lxc-stop -n "$container"
+                stopped=$?
+            fi
         fi
     fi
         
@@ -214,20 +227,34 @@ function archive_one_container()
     old_tar_file_name="${tar_file_name}.BAK"
 
     if [ -f "$tar_file_name" ]; then
-        printVerbose "Renaming old archive file."
-        mv "$tar_file_name" "$old_tar_file_name"
+        if [ -n "$OPTION_DRY" ]; then
+            echo "DRY: Not renaming '$tar_file_name' -> '$old_tar_file_name'"
+        else
+            printVerbose "Renaming old archive file."
+            mv "$tar_file_name" "$old_tar_file_name"
+        fi
     fi
     
     if [ -f "$tar_file_name" ]; then
-        printError "Failed to move '$tar_file_name' aside."
-        return 1
+        if [ -z "$OPTION_DRY" ]; then
+            printError "Failed to move '$tar_file_name' aside."
+            return 1
+        fi
     fi
 
     printVerbose "Archiving into '$tar_file_name'."
     if [ "$GZIP_OPTION" ]; then
-        tar --numeric-owner -czf "$tar_file_name" "$container"
+        if [ -n "$OPTION_DRY" ]; then
+            echo "DRY: tar --numeric-owner -czf $tar_file_name $container"
+        else
+            tar --numeric-owner -czf "$tar_file_name" "$container"
+        fi
     else
-        tar --numeric-owner -cf "$tar_file_name" "$container"
+        if [ -n "$OPTION_DRY" ]; then
+            echo "DRY: tar --numeric-owner -cf $tar_file_name $container"
+        else
+            tar --numeric-owner -cf "$tar_file_name" "$container"
+        fi
     fi
 
     #
@@ -235,7 +262,11 @@ function archive_one_container()
     #
     if [ "$stopped" ]; then
         printVerbose "Starting container '$container'."
-        lxc-start -n "$container"
+        if [ -n "$OPTION_DRY" ]; then
+            echo "DRY: lxc-start -n $container"
+        else
+            lxc-start -n "$container"
+        fi
     fi
 
     printVerbose "Done archiving '$container'..."
@@ -374,6 +405,7 @@ function create_archive_auto_server()
         exit 1
     fi
 
+    # Checking if the server is on, maybe starting it if not.
     server_status=$(pip-server-control --ping "$server")
     if [ "$server_status" == "off" ]; then
         printVerbose "Server '$server' is shut down, trying to start it."
@@ -386,11 +418,15 @@ function create_archive_auto_server()
         fi
     fi
 
-    # Finding the target directory.
-    target_dir="$HOME/archives"
+    # Finding the target directory. Maybe creating one.
+    target_dir="$OPTION_ARCHIVE_DIRECTORY"
     if [ ! -d "$target_dir" ]; then
-        printError "Directory '$target_dir' is not found..."
-        return 1
+        mkdir -p "$target_dir" 2>/dev/null
+
+        if [ ! -d "$target_dir" ]; then
+            printError "Directory '$target_dir' is not found..."
+            return 1
+        fi
     fi
 
     # Entering the target directory.
