@@ -25,7 +25,7 @@ cat <<EOF
 Usage:
   $MYNAME [OPTION]... [TEST_NAME]...
 
-  $MYNAME - File downloader script.
+  $MYNAME - Executes daily tests.
 
   -h, --help              Print this help and exit.
   -v, --version           Print version information and exit.
