@@ -6963,6 +6963,28 @@ S9sRpcClient::getBackups(
 }
 
 /**
+ * Gets the list of backup schedules from the controller.
+ */
+bool
+S9sRpcClient::getBackupSchedules(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getBackupSchedules";
+
+    if (clusterId > 0)
+        request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+/**
  * \param backupId The ID of the backup to delete.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

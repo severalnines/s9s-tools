@@ -230,6 +230,7 @@ enum S9sOptionType
     OptionListPartitions,
     OptionListProcessors,
     OptionListMemory,
+    OptionListSchedules,
     OptionGetAcl,
     OptionCat,
     OptionAddAcl,
@@ -3595,6 +3596,16 @@ S9sOptions::isListMemoryRequested() const
 }
 
 /**
+ * \returns True if the --list-schedules command line option is provided.
+ */
+bool
+S9sOptions::isListSchedulesRequested() const
+{
+    return getBool("list_schedules");
+}
+
+
+/**
  * \returns True if the --get-acl command line option is provided.
  */
 bool
@@ -5487,6 +5498,7 @@ S9sOptions::printHelpBackup()
 "  --list-databases           List the backups in database format.\n"
 "  --list-files               List the backups in backup file format.\n"
 "  --list                     List the backups.\n"
+"  --list-schedules           List the backup schedules.\n"
 "  --restore-cluster-info     Restores a saved cluster object.\n"
 "  --restore-controller       Restores the controller from a file.\n"
 "  --restore                  Restore an existing backup.\n"
@@ -6482,6 +6494,7 @@ S9sOptions::readOptionsBackup(
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-schedules",   no_argument,       0, OptionListSchedules   },
         { "restore-cluster-info", no_argument,   0, OptionRestoreCluster  },
         { "restore-controller", no_argument,     0, OptionRestoreController },
         { "restore",          no_argument,       0, OptionRestore         },
@@ -6616,6 +6629,11 @@ S9sOptions::readOptionsBackup(
             case OptionListFiles:
                 // --list-files
                 m_options["list_files"] = true;
+                break;
+            
+            case OptionListSchedules:
+                // --list-schedules
+                m_options["list_schedules"] = true;
                 break;
             
             case OptionListDatabases:
@@ -8553,6 +8571,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isRestoreControllerRequested())
+        countOptions++;
+
+    if (isListSchedulesRequested())
         countOptions++;
 
     if (countOptions > 1)

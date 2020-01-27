@@ -796,6 +796,10 @@ S9sBusinessLogic::execute()
         {
             executeBackupList(client);
             client.setExitStatus();
+        } else if (options->isListSchedulesRequested())
+        {
+            printBackupSchedules(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createBackup();
@@ -1727,6 +1731,25 @@ S9sBusinessLogic::executePrintKeys(
     {
         reply = client.reply();
         reply.printKeys();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::printBackupSchedules(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getBackupSchedules(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printBackupSchedules();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

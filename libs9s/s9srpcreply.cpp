@@ -1818,6 +1818,23 @@ S9sRpcReply::printJobList()
 }
 
 void 
+S9sRpcReply::printBackupSchedules()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        // Formatted output is not yet implemented.
+        printJsonFormat();
+    }
+}
+
+void 
 S9sRpcReply::printBackupList()
 {
     S9sOptions *options = S9sOptions::instance();

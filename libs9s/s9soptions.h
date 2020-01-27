@@ -411,6 +411,7 @@ class S9sOptions
         bool isListSubnetsRequested() const;
         bool isListTemplatesRequested() const;
         bool isListMemoryRequested() const;
+        bool isListSchedulesRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;
