@@ -6703,18 +6703,17 @@ bool
 S9sRpcClient::createBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
-    S9sString       clusterName  = options->clusterName();
     S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
     S9sString       schedule     = options->schedule();
     S9sString       databases    = options->databases();
     S9sVariantMap   request      = composeRequest();
-    S9sNode         backupHost;
-    S9sString       title;
     S9sVariantMap   job          = composeJob();
     S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
+    S9sNode         backupHost;
+    S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
