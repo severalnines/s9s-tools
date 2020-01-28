@@ -6705,24 +6705,11 @@ S9sRpcClient::createBackup()
     S9sOptions     *options      = S9sOptions::instance();
     S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
-    S9sString       backupDir    = options->backupDir();
-    S9sString       schedule     = options->schedule();
-    S9sString       databases    = options->databases();
     S9sVariantMap   request      = composeRequest();
-    S9sVariantMap   job          = composeJob();
-    S9sVariantMap   jobData      = composeJobData();
-    S9sVariantMap   jobSpec;
+    S9sVariantMap   job          = composeBackupJob();
     S9sNode         backupHost;
-    S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
-
-    if (!backupMethod.empty())
-    {
-        title.sprintf("Create %s Backup", STR(backupMethod));
-    } else {
-        title = "Create Backup";
-    }
 
     if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
     {
@@ -6735,88 +6722,7 @@ S9sRpcClient::createBackup()
     {
         PRINT_ERROR("Multiple nodes are specified while creating a backup.");
         return false;
-    } else if (hosts.size() == 1u)
-    {
-        backupHost = hosts[0].toNode();
-        jobData["hostname"]          = backupHost.hostName();
     }
-
-    // The job_data describing how the backup will be created.
-    jobData["description"]       = "Backup created by s9s-tools.";
-
-    if (backupHost.hasPort())
-        jobData["port"]          = backupHost.port();
-
-    if (!backupDir.empty())
-        jobData["backupdir"]     = backupDir;
-
-    if (!options->subDirectory().empty())
-        jobData["backupsubdir"]  = options->subDirectory();
-
-    if (!backupMethod.empty())
-        jobData["backup_method"] = backupMethod;
-   
-    if (!options->backupUser().empty())
-        jobData["backup_user"] = options->backupUser();
-
-    if (!options->backupPassword().empty())
-        jobData["backup_user_password"] = options->backupPassword();
-
-    if (!databases.empty())
-        jobData["include_databases"] = databases;
-
-    if (options->pitrCompatible())
-        jobData["pitr_compatible"] = true;
-
-    if (options->noCompression())
-        jobData["compression"]   = false;
-
-    if (options->usePigz())
-        jobData["use_pigz"]      = true;
-
-    if (options->onNode())
-        jobData["cc_storage"]    = false;
-
-    // or just else branch of onNode ?
-    if (options->onController())
-        jobData["cc_storage"]    = true;
-
-    if (options->hasParallellism())
-        jobData["xtrabackup_parallellism"] = options->parallellism();
-
-    if (options->encryptBackup())
-        jobData["encrypt_backup"] = true;
-
-    // 0: prefer global setting, -1: never delete, >0 delete after N days
-    if (options->hasBackupRetention())
-        jobData["backup_retention"] = options->backupRetention();
-
-    if (!options->title().empty())
-        jobData["backup_title"] = options->title();
-
-    if (options->toIndividualFiles())
-        jobData["backup_individual_schemas"] = true;
-
-    if (!options->testServer().empty())
-    {
-        S9sVariantMap tmpMap;
-
-        tmpMap["disable_firewall"] = true;
-        tmpMap["disable_selinux"]  = true;
-        tmpMap["install_software"] = !options->noInstall();
-        tmpMap["server_address"]   = options->testServer();
-        
-        jobData["verify_backup"]   = tmpMap;
-        jobData["terminate_db_server"] = true;
-    }
-
-    // The jobspec describing the command.
-    jobSpec["command"]    = "backup";
-    jobSpec["job_data"]   = jobData;
-
-    // The job instance describing how the job will be executed.
-    job["title"]          = title;
-    job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -6825,6 +6731,29 @@ S9sRpcClient::createBackup()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+bool
+S9sRpcClient::createBackupSchedule()
+{
+    S9sOptions     *options      = S9sOptions::instance();    
+    S9sVariantMap   schedule;
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeBackupJob();
+    S9sString       uri = "/v2/backup/";
+
+    job.erase("recurrence");
+
+    schedule["class_name"] = "CmonBackupSchedule";
+    schedule["enabled"]    = true;
+    schedule["job"]        = job;
+    // For some reasong the CmonBackupSchedule calls the recurrence "schedule".
+    schedule["schedule"]   = options->recurrence();
+
+    request["operation"]   = "scheduleBackup";
+    request["schedule"]    = schedule;
+    
+    return executeRequest(uri, request);
 }
 
 bool
@@ -8353,13 +8282,103 @@ S9sVariantMap
 S9sRpcClient::composeBackupJob()
 {
     S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
+    S9sString       backupDir    = options->backupDir();
+    S9sString       databases    = options->databases();
+    S9sNode         backupHost;
+    S9sString       title;
+
     S9sVariantMap   job          = composeJob();
     S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
-    
+   
+    if (!backupMethod.empty())
+    {
+        title.sprintf("Create %s Backup", STR(backupMethod));
+    } else {
+        title = "Create Backup";
+    }
+
+    // Composing jobData
+    // There can be 1 or 0 nodes specified.
+    if (hosts.size() > 0u)
+    {
+        backupHost = hosts[0].toNode();
+        jobData["hostname"]          = backupHost.hostName();
+    }
+
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
+    
+    // The job_data describing how the backup will be created.
+    jobData["description"]       = "Backup created by s9s-tools.";
+
+    if (backupHost.hasPort())
+        jobData["port"]          = backupHost.port();
+
+    if (!backupDir.empty())
+        jobData["backupdir"]     = backupDir;
+
+    if (!options->subDirectory().empty())
+        jobData["backupsubdir"]  = options->subDirectory();
+
+    if (!backupMethod.empty())
+        jobData["backup_method"] = backupMethod;
+   
+    if (!options->backupUser().empty())
+        jobData["backup_user"] = options->backupUser();
+
+    if (!options->backupPassword().empty())
+        jobData["backup_user_password"] = options->backupPassword();
+
+    if (!databases.empty())
+        jobData["include_databases"] = databases;
+
+    if (options->pitrCompatible())
+        jobData["pitr_compatible"] = true;
+
+    if (options->noCompression())
+        jobData["compression"]   = false;
+
+    if (options->usePigz())
+        jobData["use_pigz"]      = true;
+
+    if (options->onNode())
+        jobData["cc_storage"]    = false;
+    
+    // or just else branch of onNode ?
+    if (options->onController())
+        jobData["cc_storage"]    = true;
+
+    if (options->hasParallellism())
+        jobData["xtrabackup_parallellism"] = options->parallellism();
+
+    if (options->encryptBackup())
+        jobData["encrypt_backup"] = true;
+    
+    // 0: prefer global setting, -1: never delete, >0 delete after N days
+    if (options->hasBackupRetention())
+        jobData["backup_retention"] = options->backupRetention();
+
+    if (!options->title().empty())
+        jobData["backup_title"] = options->title();
+
+    if (options->toIndividualFiles())
+        jobData["backup_individual_schemas"] = true;
+    
+    if (!options->testServer().empty())
+    {
+        S9sVariantMap tmpMap;
+
+        tmpMap["disable_firewall"] = true;
+        tmpMap["disable_selinux"]  = true;
+        tmpMap["install_software"] = !options->noInstall();
+        tmpMap["server_address"]   = options->testServer();
+        
+        jobData["verify_backup"]   = tmpMap;
+        jobData["terminate_db_server"] = true;
+    }
     
     // The jobspec describing the command.
     jobSpec["command"]    = "backup";
@@ -8367,6 +8386,7 @@ S9sRpcClient::composeBackupJob()
 
     // The job instance describing how the job will be executed.
     job["job_spec"]       = jobSpec;
+    job["title"]          = title;
     
     return job;
 }

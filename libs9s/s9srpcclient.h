@@ -187,6 +187,7 @@ class S9sRpcClient
          * Backup related methods.
          */
         bool createBackup();
+        bool createBackupSchedule();
         bool verifyBackup();
         bool restoreBackup();
         bool deleteOldBackups();

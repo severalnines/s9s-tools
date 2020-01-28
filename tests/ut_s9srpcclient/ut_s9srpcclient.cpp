@@ -112,6 +112,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddNode,             retval);
     PERFORM_TEST(testComposeBackupJob,    retval);
     PERFORM_TEST(testBackup,              retval);
+    PERFORM_TEST(testBackupSchedule,      retval);
 
     return retval;
 }
@@ -675,12 +676,92 @@ UtS9sRpcClient::testComposeBackupJob()
     job = client.composeBackupJob();
     jobData = job.valueByPath("job_spec/job_data").toVariantMap();
     jsonString = job.toString();
-    ::printf("\n%s\n", STR(jsonString));
+    //::printf("\n%s\n", STR(jsonString));
 
     // 
     S9S_COMPARE(
+            jobData.valueByPath("backup_individual_schemas"),
+            true);
+
+    S9S_COMPARE(
             jobData.valueByPath("backup_method"),
             "mybackupmethod");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("backup_retention"),
+            8);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("backup_user"),
+            "backupuser");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("backup_user_password"),
+            "backuppassword");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("backupdir"),
+            "/backupdir");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("backupsubdir"),
+            "subdir");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("cc_storage"),
+            false);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("description"),
+            "Backup created by s9s-tools.");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("encrypt_backup"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("hostname"),
+            "node1");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("include_databases"),
+            "databases");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("pitr_compatible"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("port"),
+            43);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("terminate_db_server"),
+            true);
+
+    S9S_COMPARE(
+            jobData.valueByPath("use_pigz"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("verify_backup/disable_firewall"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("verify_backup/disable_selinux"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("verify_backup/install_software"),
+            "true");
+
+    S9S_COMPARE(
+            jobData.valueByPath("verify_backup/server_address"),
+            "testserver1.com");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("xtrabackup_parallellism"),
+            10);
 
     return true;
 }
@@ -815,11 +896,47 @@ UtS9sRpcClient::testBackup()
     
     S9S_COMPARE(
             jobData.valueByPath("xtrabackup_parallellism"),
-            "10");
+            10);
     
     S9S_COMPARE(
             payload.valueByPath("operation"),
             "createJobInstance");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testBackupSchedule()
+{
+    S9sOptions         *options = S9sOptions::instance();    
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+  
+    options->setNodes("node1:43");
+    options->m_options["cluster_id"]          = 42;    
+    options->m_options["backup_method"]       = "mybackupmethod1";
+    options->m_options["backup_directory"]    = "/backupdir1";
+    options->m_options["subdirectory"]        = "subdir1";
+    options->m_options["backup_user"]         = "backupuser1";
+    options->m_options["backup_password"]     = "backuppassword1";
+    options->m_options["databases"]           = "databases1";
+    options->m_options["pitr_compatible"]     = true;
+    options->m_options["no_compression"]      = false;
+    options->m_options["use_pigz"]            = true;
+    options->m_options["on_node"]             = true;
+    options->m_options["on_controller"]       = false;
+    options->m_options["parallellism"]        = 10;
+    options->m_options["encrypt_backup"]      = true;
+    options->m_options["backup_retention"]    = 8;
+    options->m_options["to_individual_files"] = true;
+    options->m_options["test_server"]         = "testserver1.com";
+    options->m_options["recurrence"]          = "0 12 * * 5";
+
+    S9S_VERIFY(client.createBackupSchedule());
+    payload = client.lastPayload();
+
+    //if (isVerbose())
+        ::printf("\n%s\n", STR(payload.toString()));
 
     return true;
 }
