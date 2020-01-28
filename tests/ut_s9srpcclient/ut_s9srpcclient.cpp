@@ -103,13 +103,15 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateSuccessJob,    retval);
     PERFORM_TEST(testRollingRestart,      retval);
     PERFORM_TEST(testRegisterServers,     retval);
-    PERFORM_TEST(testUnregisterServers,     retval);
+    PERFORM_TEST(testUnregisterServers,   retval);
     PERFORM_TEST(testCreateServer,        retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
     PERFORM_TEST(testCreateReplication,   retval);
     PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
+    PERFORM_TEST(testComposeBackupJob,    retval);
+    PERFORM_TEST(testBackup,              retval);
 
     return retval;
 }
@@ -160,7 +162,7 @@ UtS9sRpcClient::testPing()
     
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "ping");
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -176,7 +178,7 @@ UtS9sRpcClient::testGetMateTypes()
     
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getMetaTypes");
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -193,7 +195,7 @@ UtS9sRpcClient::testGetMetaTypeProps()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getMetaTypeInfo");
     S9S_COMPARE(payload["type-name"],  "typename");
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -210,7 +212,7 @@ UtS9sRpcClient::testGetJobInstance()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getJobInstance");
     S9S_COMPARE(payload["job_id"],     42);
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -227,7 +229,7 @@ UtS9sRpcClient::testDeleteJobInstance()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "deleteJobInstance");
     S9S_COMPARE(payload["job_id"],     42);
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -248,7 +250,7 @@ UtS9sRpcClient::testGetJobLog()
     S9S_COMPARE(payload["limit"],      10);
     S9S_COMPARE(payload["offset"],     25);
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -265,7 +267,7 @@ UtS9sRpcClient::testGetAlarm()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getAlarm");
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -282,7 +284,7 @@ UtS9sRpcClient::testGetAlarmStatistics()
     payload = client.lastPayload();
     S9S_COMPARE(payload["operation"],  "getStatistics");
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -309,7 +311,7 @@ UtS9sRpcClient::testCreateFailJob()
     S9S_COMPARE(payload["job"]["job_spec"]["command"],  "fail");
     S9S_COMPARE(payload["job"]["job_spec"]["job_data"]["timeout"],  100);
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -336,7 +338,7 @@ UtS9sRpcClient::testCreateSuccessJob()
     S9S_COMPARE(payload["job"]["job_spec"]["command"],  "success");
     S9S_COMPARE(payload["job"]["job_spec"]["job_data"]["timeout"],  100);
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -361,7 +363,7 @@ UtS9sRpcClient::testRollingRestart()
     S9S_COMPARE(payload["job"]["title"], "Rolling Restart");
     S9S_COMPARE(payload["job"]["job_spec"]["command"],  "rolling_restart");
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -389,7 +391,7 @@ UtS9sRpcClient::testRegisterServers()
     S9S_COMPARE(payload["servers"][1]["hostname"],   "10.10.2.4");
     S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -417,7 +419,7 @@ UtS9sRpcClient::testUnregisterServers()
     S9S_COMPARE(payload["servers"][1]["hostname"],   "10.10.2.4");
     S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
 
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -452,7 +454,7 @@ UtS9sRpcClient::testCreateServer()
     S9S_COMPARE(jobData["server"]["hostname"],   "10.10.2.3");
     S9S_COMPARE(jobData["server"]["protocol"],   "lxc");
     
-    S9S_VERIFY(payload["request_created"].toString().startsWith("201"));
+    S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
     return true;
 }
@@ -631,9 +633,6 @@ UtS9sRpcClient::testAddNode()
     uri     = client.uri(0u);
     payload = client.payload(0u);
 
-    S9S_DEBUG("*** uri     : %s", STR(uri));
-    S9S_DEBUG("*** payload : %s", STR(payload));
-    
     S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"addnode\""));
     S9S_VERIFY(payload.contains("\"disable_firewall\": true"));
@@ -645,5 +644,47 @@ UtS9sRpcClient::testAddNode()
     return true;
 }
 
+bool
+UtS9sRpcClient::testComposeBackupJob()
+{
+    S9sOptions         *options = S9sOptions::instance();    
+    S9sRpcClientTester  client;
+    S9sVariantMap       theMap;
+    S9sString           jsonString;
+
+    options->m_options["backup_method"] = "mybackupmethod";
+
+    // Composing the backup job.
+    theMap = client.composeBackupJob();
+    jsonString = theMap.toString();
+    ::printf("\n%s\n", STR(jsonString));
+
+    // 
+    S9S_COMPARE(
+            theMap.valueByPath("job_spec/job_data/backup_method"),
+            "mybackupmethod");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testBackup()
+{
+    S9sOptions         *options = S9sOptions::instance();    
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["backup_method"]    = "mybackupmethod1";
+    options->m_options["backup_directory"] = "/backupdir1";
+    options->m_options["subdirectory"]     = "subdir1";
+
+    S9S_VERIFY(client.createBackup());
+    payload = client.lastPayload();
+
+    //if (isVerbose())
+        ::printf("\n%s\n", STR(payload.toString()));
+
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sRpcClient)

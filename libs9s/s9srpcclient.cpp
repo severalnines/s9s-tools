@@ -8350,6 +8350,28 @@ S9sRpcClient::composeRequest()
     return request;
 }
 
+S9sVariantMap
+S9sRpcClient::composeBackupJob()
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sString       backupMethod = options->backupMethod();
+    S9sVariantMap   job          = composeJob();
+    S9sVariantMap   jobData      = composeJobData();
+    S9sVariantMap   jobSpec;
+    
+    if (!backupMethod.empty())
+        jobData["backup_method"] = backupMethod;
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "backup";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"]       = jobSpec;
+    
+    return job;
+}
+
 /**
  * This will compose the skeleton job specification map that holds generic
  * information every job specification can hold.
@@ -9136,9 +9158,9 @@ S9sRpcClient::serversField(
 }
 
 /**
- * Returns the current controller's version the client communicates
- * with, please note this method will give valid value after any
- * RPC request has been made (eg.: authenticate())
+ * Returns the current controller's version the client communicates with, please
+ * note this method will give valid value after any RPC request has been made
+ * (eg.: authenticate()).
  */
 S9sString
 S9sRpcClient::serverVersion() const

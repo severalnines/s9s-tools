@@ -412,6 +412,7 @@ class S9sOptions
         bool isListTemplatesRequested() const;
         bool isListMemoryRequested() const;
         bool isListSchedulesRequested() const;
+        bool isCreateScheduleRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;

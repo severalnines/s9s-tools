@@ -413,8 +413,9 @@ class S9sRpcClient
         virtual S9sVariantMap composeJob() const;
         virtual S9sVariantMap composeJobData(
                 bool argumentsAreContainers = false) const;
+        virtual S9sVariantMap composeBackupJob();
         virtual S9sVariantMap composeJobDataOneContainer() const;
-
+        
         virtual bool
             executeRequest(
                 const S9sString &uri,

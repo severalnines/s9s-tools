@@ -231,6 +231,7 @@ enum S9sOptionType
     OptionListProcessors,
     OptionListMemory,
     OptionListSchedules,
+    OptionCreateSchedule,
     OptionGetAcl,
     OptionCat,
     OptionAddAcl,
@@ -3604,6 +3605,14 @@ S9sOptions::isListSchedulesRequested() const
     return getBool("list_schedules");
 }
 
+/**
+ * \returns True if the --create-schedule command line option is provided.
+ */
+bool
+S9sOptions::isCreateScheduleRequested() const
+{
+    return getBool("list_schedules");
+}
 
 /**
  * \returns True if the --get-acl command line option is provided.
@@ -6489,6 +6498,7 @@ S9sOptions::readOptionsBackup(
 
         // Main Option
         { "create",           no_argument,       0, OptionCreate          },
+        { "create-schedule",  no_argument,       0, OptionCreateSchedule  },
         { "delete",           no_argument,       0, OptionDelete          },
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
@@ -6669,6 +6679,11 @@ S9sOptions::readOptionsBackup(
             case OptionCreate:
                 // --create
                 m_options["create"] = true;
+                break;
+
+            case OptionCreateSchedule:
+                // --create-schedule
+                m_options["create_schedule"] = true;
                 break;
  
             case OptionRestoreCluster:
@@ -8574,6 +8589,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
 
     if (isListSchedulesRequested())
+        countOptions++;
+    
+    if (isCreateScheduleRequested())
         countOptions++;
 
     if (countOptions > 1)
