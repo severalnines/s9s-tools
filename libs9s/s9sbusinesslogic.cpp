@@ -796,6 +796,11 @@ S9sBusinessLogic::execute()
         {
             executeBackupList(client);
             client.setExitStatus();
+        } else if (options->isCreateScheduleRequested())
+        {
+            success = client.createBackupSchedule();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
         } else if (options->isListSchedulesRequested())
         {
             printBackupSchedules(client);

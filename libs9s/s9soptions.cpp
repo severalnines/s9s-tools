@@ -3611,7 +3611,7 @@ S9sOptions::isListSchedulesRequested() const
 bool
 S9sOptions::isCreateScheduleRequested() const
 {
-    return getBool("list_schedules");
+    return getBool("create_schedule");
 }
 
 /**

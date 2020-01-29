@@ -6711,6 +6711,7 @@ S9sRpcClient::createBackup()
     S9sString       uri = "/v2/jobs/";
     bool            retval;
 
+    // The cluster must be specified.
     if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
     {
         PRINT_ERROR("The cluster ID or the cluster name must be specified.");
@@ -6740,13 +6741,28 @@ S9sRpcClient::createBackupSchedule()
     S9sVariantMap   schedule;
     S9sVariantMap   request      = composeRequest();
     S9sVariantMap   job          = composeBackupJob();
-    S9sString       uri = "/v2/backup/";
+    S9sString       uri          = "/v2/backup/";
 
+    // The cluster must be specified.
+    if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
+    {
+        PRINT_ERROR("The cluster ID or the cluster name must be specified.");
+        return false;
+    }
+
+    if (options->recurrence().empty())
+    {
+        PRINT_ERROR("The recurrence must be specified.");
+        return false;
+    }
+
+
+    // The recurrence is not for the job, it is for the backup here.
     job.erase("recurrence");
 
     schedule["class_name"] = "CmonBackupSchedule";
     schedule["enabled"]    = true;
-    schedule["job"]        = job;
+    schedule["job"]        = job["job_spec"].toVariantMap();
     // For some reasong the CmonBackupSchedule calls the recurrence "schedule".
     schedule["schedule"]   = options->recurrence();
 
