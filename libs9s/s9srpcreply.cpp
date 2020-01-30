@@ -1925,7 +1925,7 @@ S9sRpcReply::printBackupSchedulesLong()
         enabled = scheduleMap["enabled"].toBoolean() ? "ENABLED" : "DISABLED";
         if (syntaxHighlight)
         {
-            if (scheduleMap["enabled"].toBoolean())
+            if (!scheduleMap["enabled"].toBoolean())
             {
                 statusColorBegin = XTERM_COLOR_RED;
                 statusColorEnd   = TERM_NORMAL;
