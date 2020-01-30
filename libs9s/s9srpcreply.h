@@ -111,6 +111,7 @@ class S9sRpcReply : public S9sVariantMap
         void printBackupList();
         
         void printBackupSchedules();
+        void printBackupSchedulesBrief();
         void printBackupSchedulesLong();
 
         void printKeys();

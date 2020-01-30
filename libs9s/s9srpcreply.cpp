@@ -1833,10 +1833,30 @@ S9sRpcReply::printBackupSchedules()
         printBackupSchedulesLong();
     } else {
         // Formatted output is not yet implemented.
-        printJsonFormat();
+        printBackupSchedulesBrief();
     }
 }
 
+/**
+ * Prints the scheduled backups in brief format.
+ */
+void
+S9sRpcReply::printBackupSchedulesBrief()
+{
+    S9sVariantList schedules = operator[]("backup_schedules").toVariantList();
+
+    for (uint idx = 0u; idx < schedules.size(); ++idx)
+    {
+        S9sVariantMap scheduleMap = schedules[idx].toVariantMap();
+        int           scheduleId  = scheduleMap["id"].toInt();
+
+        ::printf("%d\n", scheduleId);
+    }
+}
+
+/**
+ * Prints the scheduled backups in long format.
+ */
 void
 S9sRpcReply::printBackupSchedulesLong()
 {
@@ -1928,7 +1948,7 @@ S9sRpcReply::printBackupSchedulesLong()
     }
     
     if (!options->isBatchRequested())
-        printf("Total: %d scheduled backup(s)\n", nLines);
+        ::printf("Total: %d scheduled backup(s)\n", nLines);
 }
 
 void 
