@@ -1828,10 +1828,107 @@ S9sRpcReply::printBackupSchedules()
     } else if (!isOk())
     {
         PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested())
+    {
+        printBackupSchedulesLong();
     } else {
         // Formatted output is not yet implemented.
         printJsonFormat();
     }
+}
+
+void
+S9sRpcReply::printBackupSchedulesLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList schedules = operator[]("backup_schedules").toVariantList();
+    S9sFormat      idFormat;
+    S9sFormat      clusterIdFormat;
+    S9sFormat      scheduleFormat;
+    S9sFormat      enabledFormat;
+    S9sFormat      descriptionFormat;
+    int            nLines = 0;
+    const char     *statusColorBegin = "";
+    const char     *statusColorEnd   = "";
+
+    for (uint idx = 0u; idx < schedules.size(); ++idx)
+    {
+        S9sVariantMap scheduleMap = schedules[idx].toVariantMap();
+        S9sVariantMap jobMap      = scheduleMap["job"].toVariantMap();
+        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
+        int           scheduleId  = scheduleMap["id"].toInt();
+        int           clusterId   = scheduleMap["cluster_id"].toInt();
+        S9sString     schedule    = scheduleMap["schedule"].toString();
+        S9sString     description = jobDataMap["description"].toString();
+        S9sString     enabled;
+
+        enabled = scheduleMap["enabled"].toBoolean() ? "ENABLED" : "DISABLED";
+
+        idFormat.widen(scheduleId);
+        clusterIdFormat.widen(clusterId);
+        scheduleFormat.widen(schedule);
+        enabledFormat.widen(enabled);
+        descriptionFormat.widen(description);
+        ++nLines;
+    }
+    
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        idFormat.widen("ID");
+        clusterIdFormat.widen("CID");
+        scheduleFormat.widen("REPEAT");
+        enabledFormat.widen("STATUS");
+        descriptionFormat.widen("DESCRIPTION");
+        
+        printf("%s", headerColorBegin());
+        idFormat.printf("ID");
+        clusterIdFormat.printf("CID");
+        scheduleFormat.printf("REPEAT");
+        enabledFormat.printf("STATUS");
+        descriptionFormat.printf("DESCRIPTION");
+        printf("%s", headerColorEnd());
+        printf("\n");        
+    }
+    
+    for (uint idx = 0u; idx < schedules.size(); ++idx)
+    {
+        S9sVariantMap scheduleMap = schedules[idx].toVariantMap();
+        S9sVariantMap jobMap      = scheduleMap["job"].toVariantMap();
+        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
+        int           scheduleId  = scheduleMap["id"].toInt();
+        int           clusterId   = scheduleMap["cluster_id"].toInt();
+        S9sString     schedule    = scheduleMap["schedule"].toString();
+        S9sString     description = jobDataMap["description"].toString();
+        S9sString     enabled;
+        
+        enabled = scheduleMap["enabled"].toBoolean() ? "ENABLED" : "DISABLED";
+        if (syntaxHighlight)
+        {
+            if (scheduleMap["enabled"].toBoolean())
+            {
+                statusColorBegin = XTERM_COLOR_RED;
+                statusColorEnd   = TERM_NORMAL;
+            } else {
+                statusColorBegin = XTERM_COLOR_GREEN;
+                statusColorEnd   = TERM_NORMAL;
+            }
+        }
+
+        idFormat.printf(scheduleId);
+        clusterIdFormat.printf(clusterId);
+        scheduleFormat.printf(schedule);
+
+        ::printf("%s", statusColorBegin);
+        enabledFormat.printf(enabled);
+        ::printf("%s", statusColorEnd);
+
+        descriptionFormat.printf(description);
+        ::printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+        printf("Total: %d scheduled backup(s)\n", nLines);
 }
 
 void 

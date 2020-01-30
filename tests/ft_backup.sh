@@ -665,6 +665,18 @@ function testCreateBackup06()
     end_verbatim
 }
 
+function testScheduledBackup()
+{
+    print_title "Testing Scheduled Backups"
+    begin_verbatim
+    
+    s9s backup --create-schedule --cluster-id=1 --recurrence="0 12 * * 5"
+    check_exit_code $?
+
+    s9s backup --list-schedules
+    end_verbatim
+}
+
 function testRestore()
 {
     print_title "Restoring Backup 1"
@@ -855,6 +867,7 @@ else
     runFunctionalTest testCreateBackup04
     runFunctionalTest testCreateBackup05
     runFunctionalTest testCreateBackup06
+    runFunctionalTest testScheduledBackup
     runFunctionalTest testCreateClusterFromBackup
     runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup

@@ -20,7 +20,7 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
-.B \-\^\-create
+.B --create
 Creates a new backup. This command line option will initiate a new job that will
 create a new backup.
 
@@ -33,6 +33,22 @@ s9s backup \\
     --backup-dir=/tmp \\
     --wait
 .fi
+
+.TP
+.B --create-schedule
+This command line option will create a backup schedule, a backup that is
+repeated. Please note that there are two ways to create a repeated backup. A job
+that creates a backup can be scheduled and repeated and with this option a
+backup schedule can be created to repeat the creation of a backup.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --create-schedule \\
+    --cluster-id=1 \\
+    --recurrence="0 12 * * 5"
+.fi
+
 
 .TP
 .B \-\^\-delete
@@ -162,7 +178,18 @@ identify the backup.
 .\"
 
 .TP
-.B \-\^\-restore\-cluster\-info 
+.B --list-schedules
+Lists the backup schedules.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-schedules \\
+    --long
+.fi
+
+.TP
+.B --restore-cluster-info 
 Restores the information the controller has about a cluster from a previously 
 created archive file.
 

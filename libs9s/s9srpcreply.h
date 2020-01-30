@@ -109,7 +109,10 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeList();
         void printJobList();
         void printBackupList();
+        
         void printBackupSchedules();
+        void printBackupSchedulesLong();
+
         void printKeys();
         void printSupportedClusterList();
         

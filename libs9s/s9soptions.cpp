@@ -5502,6 +5502,7 @@ S9sOptions::printHelpBackup()
     printf(
 "Options for the \"backup\" command:\n"
 "  --create                   Create a new backup.\n"
+"  --create-schedule          Crate a backup schedule.\n"
 "  --delete                   Delete a previously created backup.\n"
 "  --delete-old               Delete old backups.\n"
 "  --list-databases           List the backups in database format.\n"
