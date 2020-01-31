@@ -163,7 +163,8 @@ function testCreateLdapConfig()
   
   Here is the configuration we created:
 EOF
-    
+   
+    begin_verbatim
     ldap_config | \
         sudo tee $filename  | \
         print_ini_file
@@ -275,6 +276,8 @@ EOF
     else
         failure "CDT '/.runtime/LDAP/configuration' is not proper."
     fi
+
+    end_verbatim
 }
 
 function testLdapSupport()
@@ -285,6 +288,7 @@ function testLdapSupport()
 
 EOF
 
+    begin_verbatim
     #
     # The controller info file.
     #
@@ -305,12 +309,14 @@ EOF
         failure "No LDAP support."
     fi
 
+    end_verbatim
 }
 
 function testCmonDbUser()
 {
     print_title "Testing User with CmonDb Origin"
 
+    begin_verbatim
     mys9s user --stat pipas
 
     check_user \
@@ -319,6 +325,8 @@ function testCmonDbUser()
         --group        "testgroup" \
         --dn           "-" \
         --origin       "CmonDb"    
+
+    end_verbatim
 }
 
 function testAuthFail()
@@ -332,6 +340,7 @@ function testAuthFail()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -344,6 +353,7 @@ EOF
     else
         failure "The command should have failed."
     fi
+    end_verbatim
 }
 
 function testAuthSuccess()
@@ -354,7 +364,8 @@ function testAuthSuccess()
   authentication should work.
 
 EOF
-
+    
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -378,6 +389,8 @@ EOF
         --group        "LDAPUsers" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapGroup()
@@ -391,6 +404,7 @@ function testLdapGroup()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -414,6 +428,8 @@ EOF
         --group        "users" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapConfigOk()
@@ -428,6 +444,7 @@ function testLdapConfigOk()
 
 EOF
 
+    begin_verbatim
     #ls -lha $filename
     ldap_config_ok | \
         s9s tree --save \
@@ -458,11 +475,14 @@ EOF
     #    --cmon-user=system \
     #    --password=secret \
     #    /.runtime/LDAP/configuration
+    end_verbatim
 }
 
 function testLdapConfigDisabled()
 {
     print_title "Creating an LDAP Config that is Disabled"
+
+    begin_verbatim
 
     ls -lha /etc/cmon-ldap.cnf
     ldap_config_disabled | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
@@ -478,6 +498,8 @@ function testLdapConfigDisabled()
         /.runtime/LDAP/configuration
 
     cat /etc/cmon-ldap.cnf | print_ini_file
+
+    end_verbatim
 }
 
 #
