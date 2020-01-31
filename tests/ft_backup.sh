@@ -245,6 +245,8 @@ EOF
     check_exit_code $?
     
     mys9s cluster --list --long
+    mys9s nodes   --list --long
+    mys9s job     --list
 
     wait_for_cluster_started "$cluster_name"
     end_verbatim
