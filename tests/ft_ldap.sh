@@ -146,6 +146,8 @@ function testLdapSupport()
   This test checks if the controller has LDAP support.
 
 EOF
+    
+    begin_verbatim
 
     mys9s tree \
         --cat \
@@ -163,12 +165,15 @@ EOF
     else
         failure "No LDAP support."
     fi
+
+    end_verbatim
 }
 
 function testCmonDbUser()
 {
     print_title "Testing User with CmonDb Origin"
 
+    begin_verbatim
     mys9s user --stat pipas
 
     check_user \
@@ -177,6 +182,8 @@ function testCmonDbUser()
         --group        "testgroup" \
         --dn           "-" \
         --origin       "CmonDb"    
+
+    end_verbatim
 }
 
 function testLdapUser()
@@ -189,6 +196,8 @@ function testLdapUser()
   Cmon Controller needs and will also guarantee a unique user ID.
 
 EOF
+
+    begin_verbatim
 
     mys9s user \
         --list \
@@ -214,6 +223,8 @@ EOF
         --group        "LDAPUsers" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapUserSimple()
@@ -226,6 +237,7 @@ function testLdapUserSimple()
   the first login, the existing CmonDb shadow will be found and identified.
 
 EOF
+    begin_verbatim
 
     mys9s user \
         --list \
@@ -244,6 +256,8 @@ EOF
 
     check_exit_code_no_job $?
 
+    end_verbatim
+
     #
     #
     #
@@ -253,6 +267,7 @@ EOF
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --change-password \
         --cmon-user="system" \
@@ -266,6 +281,8 @@ EOF
     else
         failure "Changing the password for an LDAP user should have failed."
     fi
+
+    end_verbatim
 }
 
 function testLdapUserSecond()
@@ -279,6 +296,7 @@ function testLdapUserSecond()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -295,6 +313,7 @@ EOF
         username
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testLdapUserSimpleFirst()
@@ -306,6 +325,7 @@ function testLdapUserSimpleFirst()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -330,6 +350,8 @@ EOF
         --group        "LDAPUsers" \
         --dn           "cn=pipas1,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapObject()
@@ -342,6 +364,7 @@ function testLdapObject()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -365,6 +388,8 @@ EOF
         --group        "LDAPUsers" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapGroup()
@@ -378,6 +403,7 @@ function testLdapGroup()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -401,6 +427,8 @@ EOF
         --group        "LDAPUsers,ldapgroup" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    end_verbatim
 }
 
 function testLdapFailures()
@@ -408,6 +436,8 @@ function testLdapFailures()
     local retcode
 
     print_title "Testing Failed Logins"
+
+    begin_verbatim
 
     #
     # Invalid/non-existing username.
@@ -459,6 +489,8 @@ function testLdapFailures()
     else
         failure "This command should have failed."
     fi
+
+    end_verbatim
 }
 
 #
