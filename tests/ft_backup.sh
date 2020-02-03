@@ -672,10 +672,10 @@ function testScheduledBackup()
     print_title "Testing Scheduled Backups"
     begin_verbatim
     
-    s9s backup --create-schedule --cluster-id=1 --recurrence="0 12 * * 5"
+    mys9s backup --create-schedule --cluster-id=1 --recurrence="0 12 * * 5"
     check_exit_code $?
 
-    s9s backup --list-schedules
+    mys9s backup --list-schedules
     end_verbatim
 }
 

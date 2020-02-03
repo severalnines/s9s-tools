@@ -243,6 +243,10 @@ ft_cmonhabasic1
 ft_cmonhasimple
 ft_cmonhalxc
 ft_haproxy.sh
+ft_ldap.sh
+ft_ldaperror.sh
+ft_ldapgroups.sh
+ft_ldapnogroups.sh
 EOF
 }
 
