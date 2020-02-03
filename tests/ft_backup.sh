@@ -675,7 +675,7 @@ function testScheduledBackup()
     mys9s backup --create-schedule --cluster-id=1 --recurrence="0 12 * * 5"
     check_exit_code $?
 
-    mys9s backup --list-schedules
+    mys9s backup --list-schedules --long
     end_verbatim
 }
 
