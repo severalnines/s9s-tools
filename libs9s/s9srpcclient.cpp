@@ -4464,18 +4464,22 @@ S9sRpcClient::addHaProxy(
 
     S9sNode::selectByProtocol(hosts, haProxyNodes, otherNodes, "haproxy");
 
-    if (haProxyNodes.size() != 1u)
+    if (haProxyNodes.size() < 1u)
     {
         PRINT_ERROR(
-                "To add a HaProxy one needs to specify exactly"
-                " one HaProxy node.");
-
+            "To add a HAProxy one needs to specify"
+            " one or more HAProxy nodes.");
+        
         return false;
     }
-
+    
     // The job_data describing the cluster.
     jobData["action"]          = "setupHaProxy";
-    jobData["haproxy_address"] = haProxyNodes[0].toNode().hostName();
+    
+    if (haProxyNodes.size() == 1u)
+        jobData["haproxy_address"] = haProxyNodes[0].toNode().hostName();
+    else
+        jobData["nodes"]     = nodesField(haProxyNodes);        
     
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
