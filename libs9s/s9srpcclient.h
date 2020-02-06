@@ -506,27 +506,21 @@ class S9sRpcClient
         // Low level methods that create/install a new node and add it to a
         // cluster.
         bool addNode(
-                const int             clusterId,
                 const S9sVariantList &hosts);
         
         bool addReplicationSlave(
-                const int             clusterId,
                 const S9sVariantList &hosts);
 
         bool addHaProxy(
-                const int             clusterId,
                 const S9sVariantList &hosts);
         
         bool addProxySql(
-                const int             clusterId,
                 const S9sVariantList &hosts);
 
         bool addMaxScale(
-                const int             clusterId,
                 const S9sVariantList &hosts);
 
         bool addMongoNode(
-                const int             clusterId,
                 const S9sVariantList &hosts);
 
         static S9sVariant 

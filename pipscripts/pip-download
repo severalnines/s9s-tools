@@ -220,7 +220,6 @@ function test_names()
     fi
 
     cat <<EOF
-ft_backup.sh
 ft_access.sh 
 ft_acl.sh 
 ft_adminuser.sh 

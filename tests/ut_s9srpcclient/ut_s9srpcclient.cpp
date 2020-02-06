@@ -629,7 +629,7 @@ UtS9sRpcClient::testAddNode()
 
     hosts << S9sNode("192.168.1.191");
     options->m_options["cluster_id"] = clusterId;
-    S9S_VERIFY(client.addNode(clusterId, hosts));
+    S9S_VERIFY(client.addNode(hosts));
 
     uri     = client.uri(0u);
     payload = client.payload(0u);

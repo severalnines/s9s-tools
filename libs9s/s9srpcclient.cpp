@@ -4142,7 +4142,6 @@ bool
 S9sRpcClient::createNode()
 {
     S9sOptions    *options   = S9sOptions::instance();
-    int            clusterId = options->clusterId();
     S9sVariantList hosts;
     S9sRpcReply    reply;
     bool           hasHaproxy  = false;
@@ -4227,16 +4226,16 @@ S9sRpcClient::createNode()
         return false;
     } else if (hasProxySql)
     {
-        success = addProxySql(clusterId, hosts);
+        success = addProxySql(hosts);
     } else if (hasHaproxy)
     {
-        success = addHaProxy(clusterId, hosts);
+        success = addHaProxy(hosts);
     } else if (hasMaxScale)
     {
-        success = addMaxScale(clusterId, hosts);
+        success = addMaxScale(hosts);
     } else if (hasMongo)
     {
-        success = addMongoNode(clusterId, hosts);
+        success = addMongoNode(hosts);
     } else {
         int nSlaves  = 0;
         int nMasters = 0;
@@ -4261,9 +4260,9 @@ S9sRpcClient::createNode()
         }
         
         if (nSlaves == 0 || nMasters == 0)
-            success = addNode(clusterId, hosts);
+            success = addNode(hosts);
         else
-            success = addReplicationSlave(clusterId, hosts);
+            success = addReplicationSlave(hosts);
     }
 
     return success;
@@ -4282,7 +4281,6 @@ S9sRpcClient::createNode()
  */
 bool
 S9sRpcClient::addNode(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
@@ -4324,21 +4322,7 @@ S9sRpcClient::addNode(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = clusterId;
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    } else {
-        PRINT_ERROR(
-                "Either the --cluster-id or the --cluster-name command line "
-                "option has to be provided.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-    
+ 
     retval = executeRequest(uri, request);
 
     return retval;
@@ -4356,7 +4340,6 @@ S9sRpcClient::addNode(
  */
 bool
 S9sRpcClient::addReplicationSlave(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
@@ -4423,19 +4406,6 @@ S9sRpcClient::addReplicationSlave(
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
 
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = clusterId;
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    } else {
-        PRINT_ERROR(
-                "Either the --cluster-id or the --cluster-name command line "
-                "option has to be provided.");
-        return false;
-    }
-    
     retval = executeRequest(uri, request);
 
     return retval;
@@ -4449,7 +4419,6 @@ S9sRpcClient::addReplicationSlave(
  */
 bool
 S9sRpcClient::addHaProxy(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sVariantMap  request;
@@ -4512,7 +4481,6 @@ S9sRpcClient::addHaProxy(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -4528,11 +4496,10 @@ S9sRpcClient::addHaProxy(
  */
 bool
 S9sRpcClient::addProxySql(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
@@ -4610,7 +4577,6 @@ S9sRpcClient::addProxySql(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -4626,7 +4592,6 @@ S9sRpcClient::addProxySql(
  */
 bool
 S9sRpcClient::addMaxScale(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
@@ -4697,7 +4662,6 @@ S9sRpcClient::addMaxScale(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -4715,7 +4679,6 @@ S9sRpcClient::addMaxScale(
  */
 bool
 S9sRpcClient::addMongoNode(
-        const int             clusterId,
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
@@ -4778,19 +4741,6 @@ S9sRpcClient::addMongoNode(
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = clusterId;
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    } else {
-        PRINT_ERROR(
-                "Either the --cluster-id or the --cluster-name command line "
-                "option has to be provided.");
-        return false;
-    }
 
     retval = executeRequest(uri, request);
 

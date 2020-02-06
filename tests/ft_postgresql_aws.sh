@@ -13,6 +13,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 OPTION_VENDOR="mariadb"
 PROVIDER_VERSION="9.6"
+MY_NODES=""
 
 cd $MYDIR
 source include.sh
@@ -118,7 +119,9 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+   
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy $container_name)
 
     #
@@ -132,16 +135,22 @@ function createServer()
     check_exit_code_no_job $?
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    end_verbatim
 }
 
 function createCluster()
 {
     local node001="ft_postgresql_aws_01_$$"
 
+#        --image="centos7" \
     #
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on AWS"
+    begin_verbatim
+
+    MY_CONTAINER+=" $node001"
+
     mys9s cluster \
         --create \
         --cluster-type=postgresql \
@@ -149,8 +158,9 @@ function createCluster()
         --provider-version="$PROVIDER_VERSION" \
         --nodes="$node001" \
         --containers="$node001" \
-        --image="centos7" \
         --cloud=aws \
+        --os-user=s9s \
+        --generate-key \
         $LOG_OPTION
 
     check_exit_code $?
@@ -160,12 +170,12 @@ function createCluster()
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
-        exit 1
     fi
 
     mys9s node --list --long 
     echo "  Public Ip: $(container_ip $node001)"
     echo "    Private: $(container_ip --private $node001)"
+    end_verbatim
 }
 
 #
@@ -178,6 +188,9 @@ function testAddNode()
     local node002="ft_postgresql_aws_02_$$"
 
     print_title "Adding a New Node"
+    begin_verbatim
+
+    MY_CONTAINERS+=" $node002"
 
     #
     # Adding a node to the cluster.
@@ -188,10 +201,30 @@ function testAddNode()
         --nodes="$node001_ip?master;$node002?slave" \
         --containers="$node002" \
         --image="centos7" \
-        --cloud=aws \
         $LOG_OPTION
     
-    check_exit_code $?    
+    check_exit_code $?
+    end_verbatim
+}
+
+function testAddHaproxy()
+{
+    local node003="ft_postgresql_aws_03_$$"
+
+    print_title "Creating a HaProxy Node"
+    begin_verbatim
+
+    MY_CONTAINERS+=" $node003"
+
+    # --os-user=s9s \
+
+    mys9s cluster --add-node \
+        --nodes="haproxy://$node003" \
+        --container="$node003" \
+        --cluster-id=$CLUSTER_ID \
+        $LOG_OPTION
+
+    end_verbatim
 }
 
 #
@@ -199,12 +232,15 @@ function testAddNode()
 #
 function deleteContainer()
 {
-    local containers
+    local containers="$MY_CONTAINERS"
     local container
 
-    containers+="ft_postgresql_aws_01_$$ "
+#    containers+="ft_postgresql_aws_01_$$ "
+#    containers+="ft_postgresql_aws_02_$$ "
+#    containers+="ft_postgresql_aws_03_$$ "
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -221,6 +257,7 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 function unregisterServer()
@@ -228,11 +265,13 @@ function unregisterServer()
     if [ -n "$CMON_CLOUD_CONTAINER_SERVER" ]; then
         print_title "Unregistering Cmon-cloud server"
         
+        begin_verbatim
         mys9s server \
             --unregister \
             --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
 
         check_exit_code_no_job $?
+        end_verbatim
     fi
 }
 
@@ -247,6 +286,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
     runFunctionalTest createCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testAddHaproxy
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -255,6 +295,7 @@ else
     runFunctionalTest createServer
     runFunctionalTest createCluster
     runFunctionalTest testAddNode
+    runFunctionalTest testAddHaproxy
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
 fi

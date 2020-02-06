@@ -211,7 +211,7 @@ function testAddProxySql()
     #
     mys9s cluster \
         --add-node \
-        --cluster-id=1 \
+        --cluster-name="$CLUSTER_NAME" \
         --nodes="proxySql://$CONTAINER_NAME9" \
         --template="ubuntu" \
         --containers="$CONTAINER_NAME9" \

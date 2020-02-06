@@ -142,8 +142,9 @@ function registerServer()
   This test will simply register a container server and check that the operation
   was indeed successful (the s9s returns with 0). Then the state and the type of
   the registered server is checked.
-
 EOF
+
+    begin_verbatim
 
     #
     # Creating a container.
@@ -161,6 +162,8 @@ EOF
         --class        CmonLxcServer \
         --server-name  "$CONTAINER_SERVER" \
         --cloud        "lxc"
+
+    end_verbatim
 }
 
 #
@@ -182,6 +185,9 @@ function checkServer()
     #
     #
     print_title "Checking Subnets"
+
+    begin_verbatim
+
     mys9s server --list-subnets --long
 
     IFS=$'\n'
@@ -205,25 +211,17 @@ function checkServer()
             failure "The hostname is '$hostname' instead of '$myhostname'."
         fi
 
-# FIXME: This is very different on every test server... :(
-#        if [ "$vpc" == "vpc-region1" ]; then
-#            if [ "$id" != "${hostname}-br0" ]; then
-#                failure "Public id is '$id' instead of '${hostname}-br0'"
-#            fi
-#        else
-#            if [ "$id" != "${hostname}-lxcbr0" ]; then
-#                failure "Private id is '$id' instead of '${hostname}-lxcbr0'"
-#            fi
-#        fi
-
-        #echo "line: $line"
     done
     IFS="$old_ifs"
+    
+    end_verbatim
 
     #
     #
     #
     print_title "Check templates"
+    begin_verbatim
+
     mys9s server --list-templates --long
     
     IFS=$'\n'
@@ -245,6 +243,8 @@ function checkServer()
         fi
     done
     IFS="$old_ifs"
+
+    end_verbatim
 }
 
 function checkServerAccess()
@@ -257,8 +257,9 @@ function checkServerAccess()
     cat <<EOF
   Checking the access to the newly registered container server. Checked with the
   owner and an outsider.
-
 EOF
+
+    begin_verbatim
 
     # With the owner...
     mys9s server --list --long
@@ -282,6 +283,8 @@ EOF
     else
         failure "Outsider can see the server."
     fi
+    
+    end_verbatim
 
     #
     #
@@ -290,8 +293,9 @@ EOF
     cat <<EOF
   Checking the access to the container list on the newly registered container
   server. Tested with the user and with an outsider too.
-
 EOF
+
+    begin_verbatim
 
     mys9s container --list --long
     line=$(s9s container --list --long | tail -n1)
@@ -317,10 +321,14 @@ EOF
     
     s9s tree --list --long --recursive --full-path
 
+    end_verbatim
+
     #
     #
     #
     print_title "Checking that Outsiders can not Create Containers"
+    begin_verbatim
+
     mys9s container \
         --create \
         --template=ubuntu \
@@ -340,6 +348,8 @@ EOF
     else
         success "  o Outsider can't create a container, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -353,6 +363,7 @@ function createContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -393,14 +404,17 @@ function createContainer()
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
         exit 1
     fi
-   
+
+    end_verbatim
+
     #
     # Checking if the user can actually log in through ssh.
     #
     print_title "Checking SSH Access"
+
+    begin_verbatim
     if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
         failure "User $owner can not log in to $CONTAINER_IP"
-        exit 1
     else
         echo "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
@@ -414,13 +428,13 @@ function createContainer()
 
     if [ "$template" != "ubuntu" ]; then
         failure "The template is '$template', should be 'ubuntu'"
-        exit 1
     fi
 
     #
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME=$container_name
+    end_verbatim
 }
 
 #
@@ -444,6 +458,8 @@ function createAsSystem()
   created container.
 
 EOF
+
+    begin_verbatim
 
     #
     # Creating a container.
@@ -470,7 +486,6 @@ EOF
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        return 1
     else 
         success "  o The container created, ok."
     fi
@@ -478,7 +493,6 @@ EOF
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "The container got no IP."
         s9s container --list --long
-        return 1
     else
         success "  o The container has the IP $CONTAINER_IP, ok."
     fi
@@ -491,7 +505,6 @@ EOF
 
     if [ "$owner" != "system" ]; then
         failure "The owner of '$container_name' is '$owner', should be 'system'"
-        return 1
     else
         success "  o The owner is $OWNER, ok."
     fi
@@ -518,10 +531,11 @@ EOF
 
     if [ "$template" != "ubuntu" ]; then
         failure "The template is '$template', should be 'ubuntu'"
-        return 1
     else
         success "  o The template is $template, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -540,6 +554,9 @@ function createFail()
     # Creating a container.
     #
     print_title "Creating Container with Duplicate Name"
+
+    begin_verbatim
+
     mys9s container \
         --create \
         $LOG_OPTION \
@@ -573,10 +590,14 @@ function createFail()
         success "  o Container creation failed, ok."
     fi
     
+    end_verbatim
+
     #
     # Creating a container with invalid subnet.
     #
     print_title "Creating Container with Invalid Subnet"
+
+    begin_verbatim
     mys9s container \
         --create \
         --subnet-id="no_such_subnet" \
@@ -591,6 +612,8 @@ function createFail()
         success "  o Container creation failed, ok."
     fi
 
+    end_verbatim
+
     # FIXME: well, this invalid subnet issue is only recognized after the
     # container was created.
     #mys9s container --delete $LOG_OPTION "node101"
@@ -599,6 +622,8 @@ function createFail()
     # Creating a container with invalid image.
     #
     print_title "Creating Container with Invalid Image"
+
+    begin_verbatim
     mys9s container \
         --create \
         --image="no_such_image" \
@@ -613,6 +638,8 @@ function createFail()
     else
         success "  o Container creation failed, ok."
     fi
+
+    end_verbatim
 }
 #
 # This will create a container and check if the user can actually log in through
@@ -634,18 +661,20 @@ function createContainers()
     #
     # Creating a container Centos 7.
     #
-    print_title "Creating Centos 7 Container"
-    mys9s container \
-        --create \
-        --image=centos_7 \
-        --servers=$CONTAINER_SERVER \
-        $LOG_OPTION \
-        $DEBUG_OPTION \
-        "$container_name1"
-   
-    check_exit_code $?
-    remember_cmon_container "$container_name1"
-    check_container "$container_name1"
+#    print_title "Creating Centos 7 Container"
+#
+#    begin_verbatim
+#    mys9s container \
+#        --create \
+#        --image=centos_7 \
+#        --servers=$CONTAINER_SERVER \
+#        $LOG_OPTION \
+#        $DEBUG_OPTION \
+#        "$container_name1"
+#   
+#    check_exit_code $?
+#    remember_cmon_container "$container_name1"
+#    check_container "$container_name1"
 
     #
     # Creating a container Centos 6.
@@ -662,22 +691,7 @@ function createContainers()
     check_exit_code $?
     remember_cmon_container "$container_name2"
     check_container "$container_name2"
-    
-    #
-    # Creating a container Debian Wheezy.
-    #
-#    print_title "Creating Debian Wheezy Container"
-#    mys9s container \
-#        --create \
-#        --image=debian_wheezy \
-#        --servers=$CONTAINER_SERVER \
-#        $LOG_OPTION \
-#        "$container_name3"
-#    
-#    check_exit_code $?
-#    remember_cmon_container "$container_name3"
-#    check_container "$container_name3"
-    
+ 
     #
     # Creating a container Debian Stretch.
     #
@@ -693,6 +707,8 @@ function createContainers()
     check_exit_code $?
     remember_cmon_container "$container_name4"
     check_container "$container_name4"
+
+    begin_verbatim
 }
 
 #
@@ -711,6 +727,8 @@ function restartContainer()
     # Stopping the previously created continer. 
     #
     print_title "Stopping Container"
+    
+    begin_verbatim
 
     mys9s container --stop \
         $LOG_OPTION \
@@ -724,13 +742,16 @@ function restartContainer()
 
     if [ "$status_field" != "s" ]; then
         failure "Status is '$status_field' instead of '-'."
-        exit 1
     fi
+    
+    end_verbatim
 
     #
     # Starting the container we just stopped.
     #
     print_title "Starting Container"
+    
+    begin_verbatim
 
     mys9s container --start \
         $LOG_OPTION \
@@ -744,8 +765,9 @@ function restartContainer()
     
     if [ "$status_field" != "u" ]; then
         failure "Status is '$status_field' instead of 'u'."
-        exit 1
     fi
+
+    end_verbatim
 }
 
 #
@@ -763,6 +785,8 @@ function createServer()
     fi
 
     print_title "Creating a Server on a Container"
+    
+    begin_verbatim
 
     #
     # Creating a new server, installing software and everything.
@@ -783,13 +807,14 @@ function createServer()
 
     if [ "$class" != "CmonLxcServer" ]; then
         failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
     fi
 
     #
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_IP/.runtime/state
+
+    end_verbatim
 
     #
     # Unregistering.
@@ -798,8 +823,9 @@ function createServer()
     cat <<EOF
   Unregistering the server. First an outsider tries to unregister it, that
   should fail, but then the owner does it and that should secceed.
-
 EOF
+
+    begin_verbatim
 
     mys9s server \
         --unregister \
@@ -819,6 +845,8 @@ EOF
 
     check_exit_code_no_job $?
     mys9s server --list --long 
+
+    end_verbatim
 }
 
 #
@@ -830,6 +858,8 @@ function failOnContainers()
     local retcode
 
     print_title "Trying to Manipulate Unexisting Containers"
+
+    begin_verbatim
 
     #
     # Trying to delete a container that does not exists.
@@ -878,6 +908,8 @@ function failOnContainers()
     else
         success "  o Command failed, ok."
     fi
+
+    end_verbatim
 }
 
 #
@@ -889,6 +921,7 @@ function deleteContainer()
     local container
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -906,6 +939,7 @@ function deleteContainer()
     done
 
     #mys9s job --list
+    end_verbatim
 }
 
 
