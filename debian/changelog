@@ -1,3 +1,9 @@
+s9s-tools (1.7.20200205-release1) UNRELEASED; urgency=medium
+
+  * Release for testing (pre-release)
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 05 Feb 2020 14:09:18 +0100
+
 s9s-tools (1.7.20191213-release1) UNRELEASED; urgency=medium
 
   * Release for the upcoming 1.7.5 release
