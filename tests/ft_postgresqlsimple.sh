@@ -118,142 +118,6 @@ while true; do
 done
 
 #
-# A function to do various checks on a PostgreSQL database accound.
-#
-function check_postgresql_account()
-{
-    local hostname
-    local port
-    local account_name
-    local account_password
-    local database_name="template1"
-    local table_name
-    local create_table
-    local query
-    local lines
-    local retcode
-
-    while [ -n "$1" ]; do
-        case "$1" in
-            --hostname)
-                hostname="$2"
-                shift 2
-                ;;
-
-            --port)
-                port="$2"
-                shift 2
-                ;;
-
-            --account-name)
-                account_name="$2"
-                shift 2
-                ;;
-
-            --account-password)
-                account_password="$2"
-                shift 2
-                ;;
-
-            --database-name)
-                database_name="$2"
-                shift 2
-                ;;
-
-            --table-name)
-                table_name="$2"
-                shift 2
-                ;;
-
-            --create-table)
-                create_table="yes"
-                shift
-                ;;
-
-            *)
-                break
-                ;;
-        esac
-    done
-    
-    if [ -n "$hostname" ]; then
-        success "  o Test host is '$hostname', ok."
-    else
-        failure "PostgreSQL host name required."
-        return 1
-    fi
-    
-    if [ -n "$account_name" ]; then
-        success "  o Test account is '$account_name', ok."
-    else
-        failure "Account name required."
-    fi
-
-    lines=$(PGPASSWORD="$account_password" \
-        psql \
-            -t \
-            --username="$account_name" \
-            --host="$hostname" \
-            --port="$port" \
-            --dbname="$database_name" \
-            --command="select 41 + 1;")
-
-    retcode="$?"
-    #echo "$lines"
-
-    lines=$(echo "$lines" | tail -n 1);
-    lines=$(echo $lines);
-    
-    if [ "$retcode" -eq 0 ]; then
-        success "  o The return code is 0, ok."
-    else
-        failure "The return code is '$retcode'."
-    fi
-
-    if [ "$lines" == "42" ]; then
-        success "  o The result is '$lines', ok."
-    else
-        failure "The result for 'select 41 + 1;' is '$lines'."
-    fi
-
-    if [ -n "$create_table" ]; then
-        query="CREATE TABLE $table_name( \
-            NAME           CHAR(50) NOT NULL,\
-            VALUE          INT      NOT NULL \
-        );"
-
-        PGPASSWORD="$account_password" \
-            psql \
-                -t \
-                --username="$account_name" \
-                --host="$hostname" \
-                --port="$port" \
-                --dbname="$database_name" \
-                --command="$query"
-
-        retcode="$?" 
-        if [ "$retcode" -eq 0 ]; then
-            success "  o Create table '$database_name.$table_name' is ok."
-        else
-            failure "Create table failed."
-        fi
-    fi
-   
-    #
-    # Printing the databases.
-    #
-    return 0
-    PGPASSWORD="$account_password" \
-        psql \
-            -P pager=off \
-            --username="$account_name" \
-            --host="$hostname" \
-            --port="$port" \
-            --dbname="$database_name" \
-            --command="SELECT datname, datacl FROM pg_database;"
-}
-
-#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster()
@@ -405,6 +269,10 @@ EOF
 function testCreateDatabase()
 {
     print_title "Creating Databases"
+    cat <<EOF | paragraph
+  This test will create a database with the default database account and perform
+  some checks on them.
+EOF
 
     begin_verbatim
 
@@ -420,14 +288,22 @@ function testCreateDatabase()
     
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
-        --port               "8089" \
+        --port               "8089"       \
         --account-name       "postmaster" \
-        --account-password   "passwd12" 
+        --account-password   "passwd12"   \
+        --create-table                    \
+        --insert-into                     \
+        --select                          \
+        --drop-table
 
     end_verbatim
 
-    return 0
+    #
+    #
+    #
+    print_title "Creating a PostreSQL Database Account"
 
+    begin_verbatim
     # These doesn't work. Previously the controller reported ok, but it did not
     # work then either.
 
@@ -445,10 +321,23 @@ function testCreateDatabase()
     
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
-        --port               "8089" \
-        --account-name       "pipas" \
-        --account-password   "password" 
-    
+        --port               "8089"       \
+        --account-name       "pipas"      \
+        --account-password   "password"   \
+        --create-table                    \
+        --insert-into                     \
+        --select                          \
+        --drop-table
+   
+    end_verbatim
+
+
+    #
+    #
+    #
+    print_title "Granting Privilege on PostreSQL Database Account"
+
+    begin_verbatim
     #
     # This command will create a new account on the cluster and grant some
     # rights to the just created database.
@@ -461,6 +350,10 @@ function testCreateDatabase()
         --batch 
     
     check_exit_code_no_job $?
+    
+    mys9s account --list --long
+
+    end_verbatim
 }
 
 #
@@ -504,7 +397,8 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
-        runFunctionalTest testAddNode
+        runFunctionalTest testCreateDatabase
+        #runFunctionalTest testAddNode
     fi
 elif [ "$1" ]; then
     for testName in $*; do

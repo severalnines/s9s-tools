@@ -505,6 +505,7 @@ class S9sOptions
         bool isResetRequested() const;
         bool isCreateAccountRequested() const; 
         bool isGrantRequested() const;
+        bool isRevokeRequested() const;
         bool isCheckHostsRequested() const;
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 

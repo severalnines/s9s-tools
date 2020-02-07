@@ -224,6 +224,14 @@ S9sBusinessLogic::execute()
 
             client.printMessages("Grant.", success);
             client.setExitStatus();
+        } else if (options->isRevokeRequested())
+        {
+            success = client.revokePrivileges(
+                    options->account(), 
+                    options->privileges());
+
+            client.printMessages("Revoke.", success);
+            client.setExitStatus();
         } else if (options->isDeleteAccountRequested())
         {
             success = client.deleteAccount();
@@ -994,6 +1002,14 @@ S9sBusinessLogic::execute()
                     options->privileges());
 
             client.printMessages("Grant.", success);
+            client.setExitStatus();
+        } else if (options->isRevokeRequested())
+        {
+            success = client.revokePrivileges(
+                    options->account(), 
+                    options->privileges());
+
+            client.printMessages("Revoke.", success);
             client.setExitStatus();
         } else if (options->isDeleteRequested())
         {

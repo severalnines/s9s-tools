@@ -7164,15 +7164,27 @@ S9sRpcClient::grantPrivileges(
 {
     S9sString      uri     = "/v2/clusters/";
     S9sVariantMap  request = composeRequest();
-    bool           retval;
 
     request["operation"]  = "grantPrivileges";
     request["account"]    = account;
     request["privileges"] = privileges;
 
-    retval = executeRequest(uri, request);
+    return executeRequest(uri, request);
+}
 
-    return retval;
+bool
+S9sRpcClient::revokePrivileges(
+        const S9sAccount &account,
+        const S9sString  &privileges)
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+
+    request["operation"]  = "revokePrivileges";
+    request["account"]    = account;
+    request["privileges"] = privileges;
+
+    return executeRequest(uri, request);
 }
 
 bool

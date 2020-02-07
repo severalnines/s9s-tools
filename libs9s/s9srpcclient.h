@@ -224,6 +224,10 @@ class S9sRpcClient
                 const S9sAccount &account,
                 const S9sString  &privileges);
 
+        bool revokePrivileges(
+                const S9sAccount &account,
+                const S9sString  &privileges);
+
         bool subscribeEvents(
                 S9sJSonHandler  callbackFunction,
                 void           *userData);

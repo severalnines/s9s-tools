@@ -157,6 +157,7 @@ enum S9sOptionType
     OptionEdit,
     OptionCreateAccount,
     OptionGrant,
+    OptionRevoke,
     OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
@@ -4509,6 +4510,16 @@ S9sOptions::isGrantRequested() const
 }
 
 /**
+ * \returns true if the --revoke command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isRevokeRequested() const
+{
+    return getBool("revoke");
+}
+
+/**
  * \returns true if the --check-hosts command line option was provided when
  *   the program was started.
  */
@@ -5666,6 +5677,7 @@ S9sOptions::printHelpAccount()
 "  --delete                   Remove the account from the cluster.\n"
 "  --grant                    Grant privileges for the account.\n"
 "  --list                     List the accounts on the cluster.\n"
+"  --revoke                   Revoke privileges of the account.\n"
 "\n"
 "  --privileges=PRIVILEGES    The privileges for the account.\n"
 "  --account=ACCOUNT          The account itself.\n"
@@ -9194,6 +9206,9 @@ S9sOptions::checkOptionsAccount()
     if (isGrantRequested())
         countOptions++;
     
+    if (isRevokeRequested())
+        countOptions++;
+    
     if (isDeleteRequested())
         countOptions++;
     
@@ -10031,9 +10046,10 @@ S9sOptions::readOptionsAccount(
 
         // Main Option
         { "create",           no_argument,       0, OptionCreate          },
-        { "list",             no_argument,       0, 'L'                   },
         { "delete",           no_argument,       0, OptionDelete          },
         { "grant",            no_argument,       0, OptionGrant           },
+        { "list",             no_argument,       0, 'L'                   },
+        { "revoke",           no_argument,       0, OptionRevoke          },
         
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -10186,6 +10202,11 @@ S9sOptions::readOptionsAccount(
             case OptionGrant:
                 // --grant
                 m_options["grant"] = true;
+                break;
+            
+            case OptionRevoke:
+                // --revoke
+                m_options["revoke"] = true;
                 break;
 
             case OptionDelete:
@@ -10858,6 +10879,7 @@ S9sOptions::readOptionsCluster(
         { "drop",             no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
+        { "revoke",           no_argument,       0, OptionRevoke          },
         { "import-config",    no_argument,       0, OptionImportConfig    },
         { "list-config",      no_argument,       0, OptionListConfig      },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
@@ -11144,6 +11166,11 @@ S9sOptions::readOptionsCluster(
             case OptionGrant:
                 // --grant
                 m_options["grant"] = true;
+                break;
+            
+            case OptionRevoke:
+                // --revoke
+                m_options["revoke"] = true;
                 break;
             
             case OptionCheckHosts:

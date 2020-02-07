@@ -3228,6 +3228,259 @@ function runFunctionalTest ()
     fi
 }
 
+#
+# A function to do various checks on a PostgreSQL database accound.
+#
+function check_postgresql_account()
+{
+    local hostname
+    local port
+    local account_name
+    local account_password
+    local database_name="template1"
+    local table_name="testtable"
+    local create_table
+    local insert_into
+    local drop_table
+    local select
+    local query
+    local lines
+    local retcode
+    local tmp
+    local log_file=check_postgresql_account.log
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --hostname)
+                hostname="$2"
+                shift 2
+                ;;
+
+            --port)
+                port="$2"
+                shift 2
+                ;;
+
+            --account-name)
+                account_name="$2"
+                shift 2
+                ;;
+
+            --account-password)
+                account_password="$2"
+                shift 2
+                ;;
+
+            --database-name)
+                database_name="$2"
+                shift 2
+                ;;
+
+            --table-name)
+                table_name="$2"
+                shift 2
+                ;;
+
+            --create-table)
+                create_table="yes"
+                shift
+                ;;
+
+            --insert-into)
+                insert_into="yes"
+                shift
+                ;;
+
+            --select)
+                select="true"
+                shift
+                ;;
+
+            --drop-table)
+                drop_table="yes"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    if [ -n "$hostname" ]; then
+        success "  o Test host is '$hostname', ok."
+    else
+        failure "PostgreSQL host name required."
+        return 1
+    fi
+    
+    if [ -n "$database_name" ]; then
+        success "  o Test database is '$database_name', ok."
+    fi
+    
+    if [ -n "$account_name" ]; then
+        success "  o Test account is '$account_name', ok."
+        tmp=$(s9s account --list --cluster-id=1 "$account_name")
+        if [ "$tmp" == "$account_name" ]; then
+            success "  o Account $account_name found in the list, ok."
+        else
+            failure "Account $account_name was not found in the list."
+            #failure "tmp = '$tmp'"
+            mys9s account --list --long
+        fi
+    else
+        failure "Account name required."
+    fi
+
+    # We do this all the time, not just when it is requested.
+    success "  o Executing SELECT 41 + 1, ok."
+    lines=$(PGPASSWORD="$account_password" \
+        psql \
+            -t \
+            --username="$account_name" \
+            --host="$hostname" \
+            --port="$port" \
+            --dbname="$database_name" \
+            --command="select 41 + 1;")
+
+    retcode="$?"
+    #echo "$lines"
+
+    lines=$(echo "$lines" | tail -n 1);
+    lines=$(echo $lines);
+    
+    if [ "$retcode" -eq 0 ]; then
+        success "  o The return code is 0, ok."
+    else
+        failure "The return code is '$retcode'."
+    fi
+
+    if [ "$lines" == "42" ]; then
+        success "  o The result is '$lines', ok."
+    else
+        failure "The result for 'select 41 + 1;' is '$lines'."
+    fi
+
+    #
+    # Testing the CREATE TABLE command.
+    #
+    if [ -n "$create_table" ]; then
+        success "  o Testing of CREATE TABLE is requested, ok."
+        query="CREATE TABLE $table_name( \
+            NAME           CHAR(50) NOT NULL,\
+            VALUE          INT      NOT NULL \
+        );"
+
+        [ -f "$log_file" ] && rm "$log_file"
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query" >>"$log_file" 2>>"$log_file"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Create table '$database_name.$table_name' is ok."
+        else
+            failure "Create table failed."
+            cat "$log_file"
+        fi
+    fi
+
+    #
+    # 
+    #
+    if [ -n "$insert_into" ]; then
+        success "  o Testing of INSERT INTO is requested, ok."
+        query="INSERT INTO $table_name VALUES('ten', 10);"
+
+        [ -f "$log_file" ] && rm "$log_file"
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query" >>"$log_file" 2>>"$log_file"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Insert into '$database_name.$table_name' is ok."
+        else
+            failure "Insert into failed."
+            cat "$log_file"
+        fi
+    fi
+    
+    #
+    # 
+    #
+    if [ -n "$select" ]; then
+        success "  o Testing of SELECT is requested, ok."
+        query="SELECT * FROM $table_name;"
+
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query" >>"$log_file" 2>>"$log_file"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Select '$database_name.$table_name' is ok."
+        else
+            failure "Select failed."
+            cat "$log_file"
+        fi
+    fi
+
+    #
+    # 
+    #
+    if [ -n "$drop_table" ]; then
+        success "  o Testing of DROP TABLE is requested, ok."
+        query="DROP TABLE $table_name;"
+
+        PGPASSWORD="$account_password" \
+            psql \
+                -t \
+                --username="$account_name" \
+                --host="$hostname" \
+                --port="$port" \
+                --dbname="$database_name" \
+                --command="$query" >>"$log_file" 2>>"$log_file"
+
+        retcode="$?" 
+        if [ "$retcode" -eq 0 ]; then
+            success "  o Drop table '$database_name.$table_name' is ok."
+        else
+            failure "Drop table failed."
+            cat "$log_file"
+        fi
+    fi
+   
+    #
+    # Printing the databases.
+    #
+    #return 0
+    PGPASSWORD="$account_password" \
+        psql \
+            -P pager=off \
+            --username="$account_name" \
+            --host="$hostname" \
+            --port="$port" \
+            --dbname="$database_name" \
+            --command="SELECT datname, datacl FROM pg_database;"
+}
+
+
 
 trap clean_up_after_test EXIT
 
