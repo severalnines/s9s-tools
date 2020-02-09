@@ -129,6 +129,8 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     NODES+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -164,6 +166,7 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
