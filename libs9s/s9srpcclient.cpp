@@ -3353,7 +3353,7 @@ S9sRpcClient::createMySqlReplication(
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
+    S9sVariantMap   job     = composeJob();
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
