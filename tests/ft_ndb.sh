@@ -218,7 +218,7 @@ function testCreateBackup()
         $LOG_OPTION
     
     check_exit_code $?
-    end_replication
+    end_verbatim
 }
 
 #
@@ -229,7 +229,7 @@ function testAddNode()
     local nodes
     local exitCode
 
-    print_title "The test to add node is starting now."
+    print_title "Adding Node to Cluster"
     begin_verbatim
 
     printVerbose "Creating Node..."
@@ -248,12 +248,8 @@ function testAddNode()
         --nodes="$nodes" \
         $DEBUG_OPTION \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+   
+    check_exit_code $?
 
     end_verbatim
 }
@@ -280,11 +276,7 @@ function testRemoveNode()
         $DEBUG_OPTION \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     end_verbatim
 }
@@ -329,11 +321,7 @@ function testDrop()
         $DEBUG_OPTION \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     end_verbatim
 }

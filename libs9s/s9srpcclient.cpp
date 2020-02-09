@@ -4343,9 +4343,9 @@ S9sRpcClient::addReplicationSlave(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -4500,8 +4500,8 @@ S9sRpcClient::addProxySql(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request   = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList proxyNodes;
@@ -4682,7 +4682,7 @@ S9sRpcClient::addMongoNode(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job     = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
