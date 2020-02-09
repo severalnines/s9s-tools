@@ -137,6 +137,7 @@ function testCreateCluster()
     #
     #
     print_title "Creating MySql Replication Cluster."
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy "${MYBASENAME}_00_$$")
     nodes+="$nodeName?master;"
@@ -221,6 +222,8 @@ function testCreateCluster()
         --cluster-name   "$CLUSTER_NAME" \
         --slave          "$LAST_ADDED_NODE" \
         --state          "Online"
+
+    end_replication
 }
 
 function testStageSlave()
@@ -231,6 +234,7 @@ function testStageSlave()
   then check if the job was properly executed.
 
 EOF
+    begin_replication
 
     mys9s replication --list --long
     check_replication_state \
@@ -254,6 +258,8 @@ EOF
         --cluster-name   "$CLUSTER_NAME" \
         --slave          "$THIRD_ADDED_NODE" \
         --state          "Online"
+
+    end_replication
 }
 
 #
@@ -269,6 +275,7 @@ function testUploadData()
     local count=0
 
     print_title "Testing data upload on cluster."
+    begin_replication
 
     #
     # Creating a new database on the cluster.
@@ -342,6 +349,8 @@ function testUploadData()
             break
         fi
     done
+
+    end_replication
 }
 
 #
@@ -352,6 +361,7 @@ function testStop()
     local exitCode
 
     print_title "Stopping cluster"
+    begin_replication
 
     #
     # Stopping the cluster.
@@ -366,6 +376,8 @@ function testStop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_replication
 }
 
 #
@@ -374,6 +386,7 @@ function testStop()
 function testDrop()
 {
     print_title "Dropping cluster"
+    begin_replication
 
     #
     # Starting the cluster.
@@ -388,6 +401,8 @@ function testDrop()
     else
         warning "The drop cluster job has failed."
     fi
+
+    end_replication
 }
 
 #
