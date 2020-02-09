@@ -199,6 +199,7 @@ function createContainer()
     local owner
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -235,7 +236,7 @@ function createContainer()
     if [ $? -ne 0 ]; then
         failure "User $USER can not log in to $CONTAINER_IP"
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        success "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
     
     #
@@ -260,6 +261,8 @@ function createContainer()
 
     mys9s container --delete $LOG_OPTION "$container_name"
     check_exit_code $?
+
+    end_verbatim
 }
 
 function createCluster()
@@ -277,7 +280,8 @@ function createCluster()
   fly by the cluster creation job.
 
 EOF
-
+    
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -294,16 +298,19 @@ EOF
 
     check_exit_code $?
     check_container_ids --galera-nodes
+    end_verbatim
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
+    begin_verbatim
     mysleep 10
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
     mys9s node      --stat
+    end_verbatim
 }
 
 function testAlarms()
@@ -321,7 +328,8 @@ function testAlarms()
   and the alarms should disappear.
 
 EOF
-
+    
+    begin_verbatim
     mys9s container --stop --wait "$container_name1"
     check_exit_code $?
 
@@ -392,6 +400,8 @@ EOF
     else
         success "  o Alarm disappeared, ok."
     fi
+
+    end_verbatim
 }
 
 function removeCluster()
@@ -403,6 +413,8 @@ function removeCluster()
     # Dropping and deleting.
     #
     print_title "Dropping Cluster"
+    begin_verbatim
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     mys9s cluster \
@@ -424,6 +436,8 @@ function removeCluster()
     
     mys9s container --delete $LOG_OPTION "$container_name2"
     check_exit_code $?
+
+    end_verbatim
 }
 
 #
