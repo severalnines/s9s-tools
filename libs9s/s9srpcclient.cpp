@@ -4421,7 +4421,7 @@ bool
 S9sRpcClient::addHaProxy(
         const S9sVariantList &hosts)
 {
-    S9sVariantMap  request;
+    S9sVariantMap  request = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
