@@ -3424,7 +3424,6 @@ bool
 S9sRpcClient::registerMySqlReplication(
         const S9sVariantList &hosts,
         const S9sString      &osUserName)
-
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
