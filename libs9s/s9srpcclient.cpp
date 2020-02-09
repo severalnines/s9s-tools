@@ -1477,7 +1477,7 @@ S9sRpcClient::getJobLog(
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
-    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  request;
     bool           retval;
 
     // Building the request.
@@ -3410,7 +3410,7 @@ S9sRpcClient::createMySqlReplication(
     //
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
-    request["cluster_id"] = 0;
+    //request["cluster_id"] = 0;
     
     retval = executeRequest(uri, request);
 
