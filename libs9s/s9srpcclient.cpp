@@ -4595,7 +4595,7 @@ S9sRpcClient::addMaxScale(
         const S9sVariantList &hosts)
 {
     S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
