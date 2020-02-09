@@ -121,6 +121,8 @@ function testCreateCluster()
     local node_names
 
     print_title "Creating an NDB Cluster."
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy "${MYBASENAME}_node001_$$")
     node_names+="$nodeName "
     FIRST_ADDED_NODE="$nodeName"
@@ -195,11 +197,14 @@ function testCreateCluster()
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
+
+    end_verbatim
 }
 
 function testCreateBackup()
 {
     print_title "Creating Backups"
+    begin_verbatim
 
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -213,6 +218,7 @@ function testCreateBackup()
         $LOG_OPTION
     
     check_exit_code $?
+    end_replication
 }
 
 #
@@ -224,6 +230,8 @@ function testAddNode()
     local exitCode
 
     print_title "The test to add node is starting now."
+    begin_verbatim
+
     printVerbose "Creating Node..."
     nodeName=$(create_node --autodestroy)
     LAST_ADDED_NODE=$nodeName
@@ -246,6 +254,8 @@ function testAddNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 #
@@ -258,7 +268,8 @@ function testRemoveNode()
     fi
     
     print_title "The test to remove node is starting now."
-    
+    begin_verbatim
+
     #
     # Removing the last added node.
     #
@@ -274,6 +285,8 @@ function testRemoveNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 #
@@ -282,6 +295,7 @@ function testRemoveNode()
 function testRollingRestart()
 {
     print_title "The test of rolling restart is starting now."
+    begin_verbatim
 
     #
     # Calling for a rolling restart.
@@ -293,6 +307,7 @@ function testRollingRestart()
         $LOG_OPTION
    
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -303,6 +318,7 @@ function testDrop()
     local exitCode
 
     print_title "The test to drop the cluster is starting now."
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -318,6 +334,8 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 #
