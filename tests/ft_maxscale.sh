@@ -132,6 +132,7 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -163,6 +164,7 @@ function registerServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 function createCluster()
@@ -171,6 +173,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -185,6 +188,7 @@ function createCluster()
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -201,7 +205,8 @@ function createCluster()
 function testAddMaxScale()
 {
     print_title "Adding a MaxScale Node"
-    
+    begin_verbatim
+
     #
     # Adding maxscale to the cluster.
     #
@@ -238,13 +243,16 @@ function testAddMaxScale()
 
     mys9s node --list --long
     MAXSCALE_IP=$(maxscale_node_name)
+    end_verbatim
 
     #
     #
     #
     print_subtitle "Checking MaxScale State"
+    begin_verbatim
 
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
+    end_verbatim
 }
 
 function testStopContainer()
@@ -262,7 +270,8 @@ function testStopContainer()
   Then the test will check if the controller realizes the MaxScale is down.
 
 EOF
-
+    
+    begin_verbatim
     mys9s container \
         --stop \
         $LOG_OPTION \
@@ -271,6 +280,7 @@ EOF
 
     check_exit_code $?
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOffLine"
+    end_verbatim
 }
 
 function testStartContainer()
@@ -283,6 +293,7 @@ function testStartContainer()
     #
     #
     print_title "Starting Container"
+    begin_verbatim
     cat <<EOF
   This test will re-start the container which holds the MaxScale process and
   check if the controller figures out the MaxScale is back again.
@@ -297,6 +308,7 @@ EOF
 
     check_exit_code $?
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
+    end_verbatim
 }
 
 function unregisterMaxScale()
@@ -311,7 +323,7 @@ function unregisterMaxScale()
   and check if the node is properly re-added to the cluster.
 
 EOF
-
+    begin_verbatim
     node_ip=$(maxscale_node_name)
    
     #
@@ -370,6 +382,7 @@ EOF
 
     wait_for_node_state "$node_ip" "CmonHostOnline"
     mys9s node --list --long
+    end_verbatim
 }
 
 function testStopMaxScale()
@@ -381,6 +394,7 @@ function testStopMaxScale()
   This test will stop the MaxScale service and check if the node changed state.
 
 EOF
+    begin_verbatim
 
     node_ip=$(maxscale_node_name)
     if [ -n "$node_ip" ]; then
@@ -400,6 +414,7 @@ EOF
     
     check_exit_code $?    
     wait_for_node_state "$MAXSCALE_IP" "CmonHostShutDown"
+    end_verbatim
 }
 
 function testStartMaxScale()
@@ -413,6 +428,7 @@ function testStartMaxScale()
 
 EOF
 
+    begin_verbatim
     node_ip=$(maxscale_node_name)
     if [ -n "$node_ip" ]; then
         success "  o Found the MaxScale node, ok."
@@ -431,6 +447,7 @@ EOF
     
     check_exit_code $?    
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
+    end_verbatim
 }
 
 
@@ -438,11 +455,13 @@ function destroyContainers()
 {
     print_title "Destroying Containers"
 
+    begin_verbatim
     mys9s container --delete --wait "$CONTAINER_NAME1"
 
     if [ -z "$OPTION_COLOCATE" ]; then
         mys9s container --delete --wait "$CONTAINER_NAME9"
     fi
+    end_verbatim
 }
 
 #
