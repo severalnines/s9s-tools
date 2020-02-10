@@ -182,6 +182,7 @@ function installCmonCloud()
     if [ -z "$container_ip" ]; then
         failure "The container '$container_name' was not created or got no IP."
         s9s container --list --long
+        end_verbatim
         return 1
     fi
 
@@ -201,6 +202,8 @@ function installCmonCloud()
     if s9s server --stat "$container_ip" | grep --quiet "CmonHostOffLine"; then
         failure "The server is off-line."
         this_failed="true"
+        end_verbatim
+        return 1
     else
         success "The server on $image is on-line."
     fi
@@ -245,13 +248,19 @@ function testInstall()
     local image
     local counter=0
     local images="ubuntu_xenial \
-      debian_buster debian_sid debian_stretch debian_jessie \
+      debian_buster debian_stretch debian_jessie \
       centos_7 oracle_7"
 
+    # 
     # these has issues with /etc/sudoers: fedora_26 fedora_27
-    # these has issues with ssh: opensuse_42.3 gentoo_current
-    # these has other issues: ubuntu_trusty debian_wheezy centos_6 oracle_6
+    images+=" fedora_26 fedora_27"
 
+    # these has issues with ssh: opensuse_42.3 gentoo_current
+    images+=" opensuse_42.3 gentoo_current"
+
+    # these has other issues: ubuntu_trusty debian_wheezy centos_6 oracle_6 debian_sid
+    images+=" ubuntu_trusty debian_wheezy centos_6 oracle_6 debian_sid"
+    
     for image in $images; do
         installCmonCloud --image "$image"
         if [ $? -ne 0 ]; then
@@ -271,8 +280,10 @@ function testInstall()
     done
 
     print_title "Summary of Tests"
+    begin_verbatim
     cat "$tmp_file"
     rm -f "$tmp_file"
+    end_verbatim
 }
 
 #
