@@ -136,6 +136,7 @@ function createCluster()
     local exitCode
 
     print_title "Testing the creation of a Galera cluster"
+    begin_verbatim
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy "ft_multiserver_$$_node001")
@@ -163,6 +164,8 @@ function createCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    end_verbatim
 }
 
 function createServer()
@@ -171,6 +174,7 @@ function createServer()
     local nodeName="$FIRST_ADDED_NODE"
 
     print_title "Creating a Container Server"
+    begin_verbatim
 
     #
     # Creating a server.
@@ -204,7 +208,6 @@ function createServer()
 
     if [ "$class" != "CmonCloudServer" ]; then
         failure "Created server has a '$class' class and not 'CmonCloudServer'."
-        exit 1
     fi
     
     #
@@ -213,6 +216,8 @@ function createServer()
     mys9s tree --cat /$nodeName/.runtime/state
 
     TESTED_CONTAINER_SERVER="$nodeName"
+
+    end_verbatim
 }
 
 #
@@ -226,6 +231,7 @@ function createContainer()
     local template
 
     print_title "Creating a Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -265,7 +271,6 @@ function createContainer()
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
         mys9s container --list --long --batch "$container_name"
-        exit 1
     fi
    
     #
@@ -286,6 +291,8 @@ function createContainer()
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME=$container_name
+
+    end_verbatim
 }
 
 function recreateServer()
@@ -297,6 +304,8 @@ function recreateServer()
     # installed.
     #
     print_title "Unregistering and Re-registering Server"
+
+    begin_verbatim
     serverName="$FIRST_ADDED_NODE"
 
     mys9s server \
@@ -314,7 +323,7 @@ function recreateServer()
         --log
     
     mys9s server --list --long
-    
+    end_verbatim
 }
 
 #
@@ -328,7 +337,7 @@ function deleteContainer()
     containers="$LAST_CONTAINER_NAME"
 
     print_title "Deleting Containers"
-
+    begin_verbatim
     mys9s container --list --long
 
     #
@@ -347,6 +356,7 @@ function deleteContainer()
 
     mys9s job --list
     mys9s container --list --long
+    end_verbatim
 }
 
 
