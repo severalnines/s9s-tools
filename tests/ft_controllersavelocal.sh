@@ -186,6 +186,8 @@ function testCreateGalera()
     #
     #
     print_title "Creating a Galera Cluster"
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_gnode%03d_$$" "$node_serial")
 
@@ -224,7 +226,6 @@ function testCreateGalera()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_GALERA)
@@ -235,6 +236,7 @@ function testCreateGalera()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME_GALERA"
+    end_verbatim
 }
 
 
@@ -254,6 +256,8 @@ function testCreatePostgre()
     #
     #
     print_title "Creating a PostgreSQL Cluster"
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_pnode%03d_$$" "$node_serial")
 
@@ -293,7 +297,6 @@ function testCreatePostgre()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME_POSTGRESQL)
@@ -304,6 +307,7 @@ function testCreatePostgre()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME_POSTGRESQL"
+    end_verbatim
 }
 
 #
@@ -322,6 +326,7 @@ ${OUTPUT_DIR}/${OUTPUT_FILE}.
 
 EOF
 
+    begin_verbatim
     mys9s cluster --list --long
 
     mys9s backup \
@@ -351,6 +356,7 @@ EOF
     done
 
     rm -fr "$temp_dir"
+    end_verbatim
 }
 
 #
@@ -365,6 +371,7 @@ the saved file.
 
 EOF
 
+    begin_verbatim
     mys9s cluster \
         --drop \
         --cluster-id=1 \
@@ -376,6 +383,8 @@ EOF
         --drop \
         --cluster-id=2 \
         $LOG_OPTION
+
+    end_verbatim
 }
 
 function testRestore()
@@ -388,6 +397,8 @@ function testRestore()
 Here we restore the saved controller from the previously created file.
 
 EOF
+
+    begin_verbatim
 
     # Restoring the cluster on the remote controller.
     mys9s backup \
@@ -404,7 +415,7 @@ EOF
     # Checking the cluster state after it is restored.
     #
     print_title "Waiting until Cluster(s) Started"
-    sleep 20
+    mysleep 20
     s9s cluster \
         --list \
         --long \
@@ -449,11 +460,14 @@ EOF
         --long \
         --cmon-user=system \
         --password=secret
+
+    end_verbatim
 }
 
 function cleanup()
 {
     print_title "Cleaning Up"
+    begin_verbatim
 
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
@@ -470,6 +484,8 @@ function cleanup()
         --drop \
         --cluster-id=2 \
         $LOG_OPTION
+
+    end_verbatim
 }
 
 #
