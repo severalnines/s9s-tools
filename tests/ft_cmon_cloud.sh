@@ -163,6 +163,8 @@ function installCmonCloud()
     #
     print_title "Installing Cmon-cloud on $container_image"
 
+    begin_verbatim
+
     container_name=$(printf "${MYBASENAME}_${image}_%02d_$$" $N_CONTAINERS)
     let N_CONTAINERS+=1
 
@@ -200,13 +202,17 @@ function installCmonCloud()
         failure "The server is off-line."
         this_failed="true"
     else
-        echo "The server on $image is on-line."
+        success "The server on $image is on-line."
     fi
+
+    end_verbatim
 
     #
     # Cleaning up after the test.
     #
     print_title "Unregistering Cmon-cloud Server on $image"
+    begin_verbatim
+
     mys9s server \
         --unregister \
         --servers="cmon-cloud://$container_ip"
@@ -223,11 +229,12 @@ function installCmonCloud()
     check_exit_code $?
 
     if [ "$this_failed" ]; then
-        echo "Installing cmon-cloud on $image failed."
-        return 1
+        failure "Installing cmon-cloud on $image failed."
+    else 
+        success "Installing cmon-cloud on $image worked."
     fi
 
-    echo "Installing cmon-cloud on $image worked."
+    end_verbatim
     return 0
 }
 
