@@ -174,6 +174,12 @@ function createServer()
     local nodeName="$FIRST_ADDED_NODE"
 
     print_title "Creating a Container Server"
+    cat <<EOF | paragraph
+  This test creates a container server on the same IP that is already holding
+  a galera node. In order to distinguish between these two host objects the
+  controller needs the container server to have a port set in the request.
+EOF
+
     begin_verbatim
 
     #
@@ -181,7 +187,7 @@ function createServer()
     #
     mys9s server \
         --create \
-        --servers="cmon-cloud://$nodeName" \
+        --servers="cmon-cloud://$nodeName:9518" \
         $LOG_OPTION
 
     check_exit_code $?
@@ -319,9 +325,11 @@ function recreateServer()
     #
     mys9s server \
         --create \
-        --servers="cmon-cloud://$serverName" \
+        --servers="cmon-cloud://$serverName:9518" \
         --log
     
+    check_exit_code $?
+
     mys9s server --list --long
     end_verbatim
 }
