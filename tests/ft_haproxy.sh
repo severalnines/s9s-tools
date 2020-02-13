@@ -14,6 +14,7 @@ CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 OPTION_INSTALL=""
 HAPROXY_IP=""
+HAPROXY_IPS=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
@@ -247,17 +248,19 @@ EOF
     print_title "Checking HaProxy State"
     begin_verbatim
 
-    HAPROXY_IP=$(haproxy_node_name)
-
-    wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
-    if [ $? -ne 0 ]; then
-        failure "HaProxy $HAPROXY_IP is not in CmonHostOnline state"
-        mys9s node --list --long
-        mys9s node --stat $HAPROXY_IP
-    else
-        success "  o HaProxy $HAPROXY_IP is in CmonHostOnline state."
-        mys9s node --stat $HAPROXY_IP
-    fi
+    HAPROXY_IPS=$(haproxy_node_name)
+    
+    for HAPROXY_IP in $HAPROXY_IPS; do
+        wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
+        if [ $? -ne 0 ]; then
+            failure "HaProxy $HAPROXY_IP is not in CmonHostOnline state"
+            mys9s node --list --long
+            mys9s node --stat $HAPROXY_IP
+        else
+            success "  o HaProxy $HAPROXY_IP is in CmonHostOnline state."
+            mys9s node --stat $HAPROXY_IP
+        fi
+    done
 
     mys9s node --list --long
     end_verbatim
@@ -268,22 +271,24 @@ function testHaProxyConnect()
     print_title "Testing the HaProxy Server"
 
     begin_verbatim
-    if [ -n "$HAPROXY_IP" ]; then
-        success "  o HaProxy IP is $HAPROXY_IP, ok."
+    if [ -n "$HAPROXY_IPS" ]; then
+        success "  o HaProxy IPs found, ok."
     else
         failure "No HaProxy address."
     fi
 
-    check_mysql_account \
-        --hostname          "$HAPROXY_IP" \
-        --port              "3307" \
-        --account-name      "pipas" \
-        --account-password  "pipas" \
-        --database-name     "testdatabase" \
-        --create-table      \
-        --insert-into \
-        --select \
-        --drop-table
+    for HAPROXY_IP in $HAPROXY_IPS; do
+        check_mysql_account \
+            --hostname          "$HAPROXY_IP" \
+            --port              "3307" \
+            --account-name      "pipas" \
+            --account-password  "pipas" \
+            --database-name     "testdatabase" \
+            --create-table      \
+            --insert-into \
+            --select \
+            --drop-table
+    done
 
     end_verbatim
 }

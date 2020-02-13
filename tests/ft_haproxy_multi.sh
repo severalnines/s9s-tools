@@ -14,12 +14,14 @@ CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 OPTION_INSTALL=""
 HAPROXY_IP=""
+HAPROXY_IPS=""
 
-CONTAINER_NAME1="${MYBASENAME}_11_$$"
-CONTAINER_NAME2="${MYBASENAME}_12_$$"
-CONTAINER_NAME3="${MYBASENAME}_13_$$"
+CONTAINER_NAME1="${MYBASENAME}_node_1_$$"
+CONTAINER_NAME2="${MYBASENAME}_node_2_$$"
+CONTAINER_NAME3="${MYBASENAME}_node_3_$$"
 
-CONTAINER_NAME9="${MYBASENAME}_19_$$"
+CONTAINER_NAME_HAPROXY_1="${MYBASENAME}_haproxy_1_$$"
+CONTAINER_NAME_HAPROXY_2="${MYBASENAME}_haproxy_2_$$"
 
 
 cd $MYDIR
@@ -233,8 +235,8 @@ EOF
     mys9s cluster \
         --add-node \
         --cluster-id=1 \
-        --nodes="haProxy://$CONTAINER_NAME9" \
-        --containers="$CONTAINER_NAME9" \
+        --nodes="haProxy://$CONTAINER_NAME_HAPROXY_1;haProxy://$CONTAINER_NAME_HAPROXY_2" \
+        --containers="$CONTAINER_NAME_HAPROXY_1;$CONTAINER_NAME_HAPROXY_2" \
         $LOG_OPTION $DEBUG_OPTION
     
     check_exit_code $?
@@ -248,17 +250,19 @@ EOF
     print_title "Checking HaProxy State"
     begin_verbatim
 
-    HAPROXY_IP=$(haproxy_node_name)
+    HAPROXY_IPS=$(haproxy_node_name)
 
-    wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
-    if [ $? -ne 0 ]; then
-        failure "HaProxy $HAPROXY_IP is not in CmonHostOnline state"
-        mys9s node --list --long
-        mys9s node --stat $HAPROXY_IP
-    else
-        success "  o HaProxy $HAPROXY_IP is in CmonHostOnline state."
-        mys9s node --stat $HAPROXY_IP
-    fi
+    for HAPROXY_IP in $HAPROXY_IPS; do
+        wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
+        if [ $? -ne 0 ]; then
+            failure "HaProxy $HAPROXY_IP is not in CmonHostOnline state"
+            mys9s node --list --long
+            mys9s node --stat $HAPROXY_IP
+        else
+            success "  o HaProxy $HAPROXY_IP is in CmonHostOnline state."
+            mys9s node --stat $HAPROXY_IP
+        fi
+    done
 
     mys9s node --list --long
     end_verbatim
@@ -269,22 +273,24 @@ function testHaProxyConnect()
     print_title "Testing the HaProxy Server"
 
     begin_verbatim
-    if [ -n "$HAPROXY_IP" ]; then
-        success "  o HaProxy IP is $HAPROXY_IP, ok."
+    if [ -n "$HAPROXY_IPS" ]; then
+        success "  o HaProxy IP found, ok."
     else
         failure "No HaProxy address."
     fi
 
-    check_mysql_account \
-        --hostname          "$HAPROXY_IP" \
-        --port              "3307" \
-        --account-name      "pipas" \
-        --account-password  "pipas" \
-        --database-name     "testdatabase" \
-        --create-table      \
-        --insert-into \
-        --select \
-        --drop-table
+    for HAPROXY_IP in $HAPROXY_IPS; do    
+        check_mysql_account \
+            --hostname          "$HAPROXY_IP" \
+            --port              "3307" \
+            --account-name      "pipas" \
+            --account-password  "pipas" \
+            --database-name     "testdatabase" \
+            --create-table      \
+            --insert-into \
+            --select \
+            --drop-table
+    done
 
     end_verbatim
 }
@@ -300,7 +306,9 @@ function destroyContainers()
     mys9s container --delete "$CONTAINER_NAME1" $LOG_OPTION $DEBUG_OPTION
     check_exit_code $?
 
-    mys9s container --delete "$CONTAINER_NAME9" $LOG_OPTION $DEBUG_OPTION
+    mys9s container --delete \
+        "$CONTAINER_NAME_HAPROXY_1" $LOG_OPTION $DEBUG_OPTION
+
     check_exit_code $?
 
     end_verbatim
