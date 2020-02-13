@@ -17,6 +17,7 @@ HAPROXY_IP=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
+CONTAINER_NAME3="${MYBASENAME}_13_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
 
@@ -159,8 +160,14 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    cat <<EOF | paragraph
+  Here we create a cluster on which the HaProxy will be tested. The cluster will
+  be created on the LXC server usng LXC containers.
+EOF
+
     begin_verbatim
 
+    # Creating the cluster.
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -174,6 +181,35 @@ function createCluster()
         $DEBUG_OPTION
 
     check_exit_code $?
+
+    # Creating the database
+    mys9s cluster \
+        --create-database \
+        --cluster-name="$CLUSTER_NAME" \
+        --db-name="testdatabase" \
+    
+    check_exit_code $?
+
+    # Creating an account.
+    mys9s account \
+        --create \
+        --cluster-name="$CLUSTER_NAME" \
+        --account="pipas:pipas" \
+        --privileges="*.*:ALL"
+
+    node_name=$(galera_node_name --cluster-id 1)
+    check_mysql_account \
+        --hostname          "$node_name" \
+        --port              "3306" \
+        --account-name      "pipas" \
+        --account-password  "pipas" \
+        --database-name     "testdatabase" \
+        --create-table      \
+        --insert-into \
+        --select \
+        --drop-table
+
+
     end_verbatim
 }
 
@@ -201,6 +237,8 @@ EOF
         $LOG_OPTION $DEBUG_OPTION
     
     check_exit_code $?
+    mys9s node --list --long
+
     end_verbatim
 
     #
@@ -217,9 +255,35 @@ EOF
         mys9s node --list --long
         mys9s node --stat $HAPROXY_IP
     else
-        success " o HaProxy $HAPROXY_IP is in CmonHostOnline state."
+        success "  o HaProxy $HAPROXY_IP is in CmonHostOnline state."
         mys9s node --stat $HAPROXY_IP
     fi
+
+    mys9s node --list --long
+    end_verbatim
+}
+
+function testHaProxyConnect()
+{
+    print_title "Testing the HaProxy Server"
+
+    begin_verbatim
+    if [ -n "$HAPROXY_IP" ]; then
+        success "  o HaProxy IP is $HAPROXY_IP, ok."
+    else
+        failure "No HaProxy address."
+    fi
+
+    check_mysql_account \
+        --hostname          "$HAPROXY_IP" \
+        --port              "3307" \
+        --account-name      "pipas" \
+        --account-password  "pipas" \
+        --database-name     "testdatabase" \
+        --create-table      \
+        --insert-into \
+        --select \
+        --drop-table
 
     end_verbatim
 }
@@ -319,6 +383,7 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddHaProxy
+    runFunctionalTest testHaProxyConnect
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -327,6 +392,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddHaProxy
+    runFunctionalTest testHaProxyConnect
     runFunctionalTest testStopHaProxy
     runFunctionalTest testStartHaProxy
     runFunctionalTest destroyContainers

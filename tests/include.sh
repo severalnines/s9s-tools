@@ -3228,6 +3228,142 @@ function runFunctionalTest ()
     fi
 }
 
+function check_mysql_account()
+{
+    local hostname
+    local port
+    local account_name
+    local account_password
+    local database_name=""
+    local table_name="testtable"
+    local create_table
+    local insert_into
+    local drop_table
+    local select
+    local query
+    local lines
+    local retcode
+    local tmp
+    local log_file=check_mysql_account.log
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --hostname)
+                hostname="$2"
+                shift 2
+                ;;
+
+            --port)
+                port="$2"
+                shift 2
+                ;;
+
+            --account-name)
+                account_name="$2"
+                shift 2
+                ;;
+
+            --account-password)
+                account_password="$2"
+                shift 2
+                ;;
+
+            --database-name)
+                database_name="$2"
+                shift 2
+                ;;
+
+            --table-name)
+                table_name="$2"
+                shift 2
+                ;;
+
+            --create-table)
+                create_table="yes"
+                shift
+                ;;
+
+            --insert-into)
+                insert_into="yes"
+                shift
+                ;;
+
+            --select)
+                select="true"
+                shift
+                ;;
+
+            --drop-table)
+                drop_table="yes"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    if [ -n "$hostname" ]; then
+        success "  o Test host is '$hostname', ok."
+    else
+        failure "MySQL host name required."
+        return 1
+    fi
+
+    if [ -n "$database_name" ]; then
+        success "  o Test database is '$database_name', ok."
+    fi
+
+    if [ -n "$account_name" ]; then
+        success "  o Test account is '$account_name', ok."
+        tmp=$(s9s account --list --cluster-id=1 "$account_name")
+        if [ "$tmp" == "$account_name" ]; then
+            success "  o Account $account_name found in the list, ok."
+        else
+            failure "Account $account_name was not found in the list."
+            #failure "tmp = '$tmp'"
+            mys9s account --list --long
+        fi
+    else
+        failure "Account name required."
+    fi
+
+    cat <<EOF
+    mysql --disable-auto-rehash --batch -h$hostname -P$port -u$account_name -p$account_password $database_name -e "SELECT 41+1"
+
+EOF
+
+    lines=$(\
+            mysql \
+                --disable-auto-rehash \
+                --batch \
+                -h$hostname \
+                -P$port \
+                -u$account_name \
+                -p$account_password \
+                $database_name \
+                -e "SELECT 41+1")
+
+    retcode="$?"
+
+    lines=$(echo "$lines" | tail -n +2);
+    lines=$(echo $lines);
+
+    if [ "$retcode" -eq 0 ]; then
+        success "  o The return code is 0, ok."
+    else
+        warning "The return code is '$retcode'."
+    fi
+
+    if [ "$lines" == "42" ]; then
+        success "  o The result is '$lines', ok."
+    else
+        warning "The result for 'select 41 + 1;' is '$lines'."
+    fi
+
+}
+
 #
 # A function to do various checks on a PostgreSQL database accound.
 #
@@ -3346,19 +3482,20 @@ function check_postgresql_account()
     retcode="$?"
     #echo "$lines"
 
-    lines=$(echo "$lines" | tail -n 1);
-    lines=$(echo $lines);
+    clean_lines=$(echo "$lines" | tail -n 1);
+    clean_lines=$(echo $clean_lines);
     
     if [ "$retcode" -eq 0 ]; then
         success "  o The return code is 0, ok."
     else
-        failure "The return code is '$retcode'."
+        warning "The return code is '$retcode'."
     fi
 
     if [ "$lines" == "42" ]; then
         success "  o The result is '$lines', ok."
     else
-        failure "The result for 'select 41 + 1;' is '$lines'."
+        warning "The result for 'select 41 + 1;' is '$lines'."
+        echo "$lines"
     fi
 
     #
