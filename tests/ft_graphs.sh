@@ -128,6 +128,7 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -157,6 +158,7 @@ function registerServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 function createCluster()
@@ -169,6 +171,8 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -194,20 +198,20 @@ function createCluster()
     done
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
     check_container_ids --galera-nodes
-
-    return 0
+    end_verbatim
 }
 
 function testStatAccess()
 {
     print_title "Checking who has Access to Statistical Data"
 
+    begin_verbatim
     s9s node \
         --stat \
         --cluster-id="1" \
@@ -234,7 +238,7 @@ function testStatAccess()
         success "  o Unexisting cluster ID returns error, ok."
     fi
     
-    s9s node \
+    mys9s node \
         --stat \
         --cluster-name="$CLUSTER_NAME" \
         --density \
@@ -246,7 +250,7 @@ function testStatAccess()
         success "  o Unexisting cluster name returns error, ok."
     fi
     
-    s9s node \
+    mys9s node \
         --stat \
         --cluster-name="NO_SUCH_CLUSTER" \
         --density \
@@ -258,7 +262,7 @@ function testStatAccess()
         success "  o Unexisting cluster returns error, ok."
     fi
 
-    s9s node \
+    mys9s node \
         --stat \
         --cluster-name="$CLUSTER_NAME" \
         --density \
@@ -271,7 +275,7 @@ function testStatAccess()
     else
         success "  o Outsiders have no access to stats, ok."
     fi
-
+    end_verbatim
 }
 
 function testGraphs()
@@ -280,10 +284,13 @@ function testGraphs()
     local graph
 
     print_title "Waiting for a while"
+    begin_verbatim
     echo "So that we have some data collected..."
-    sleep 300
+    mysleep 300
+    end_verbatim
 
     print_title "Testing Graphs"
+    begin_verbatim
     graphs+="cpuuser diskfree diskreadspeed diskreadwritespeed diskwritespeed "
     graphs+="diskutilization memfree memutil neterrors netreceivedspeed "
     graphs+="netreceiveerrors nettransmiterrors netsentspeed netspeed "
@@ -305,6 +312,7 @@ function testGraphs()
         check_exit_code_no_job $?
         sleep 10
     done
+    end_verbatim
 }
 
 #
@@ -318,6 +326,7 @@ function deleteContainer()
     containers="ft_containers_lxc_11_$$"
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -334,6 +343,7 @@ function deleteContainer()
     done
 
     #mys9s job --list
+    end_verbatim
 }
 
 

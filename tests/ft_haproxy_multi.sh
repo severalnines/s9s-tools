@@ -303,11 +303,20 @@ function destroyContainers()
     print_title "Destroying Containers"
     begin_verbatim
 
-    mys9s container --delete "$CONTAINER_NAME1" $LOG_OPTION $DEBUG_OPTION
+    mys9s container --delete \
+        "$CONTAINER_NAME1" $LOG_OPTION $DEBUG_OPTION
+
     check_exit_code $?
 
     mys9s container --delete \
-        "$CONTAINER_NAME_HAPROXY_1" $LOG_OPTION $DEBUG_OPTION
+        "$CONTAINER_NAME_HAPROXY_1" \
+        $LOG_OPTION $DEBUG_OPTION
+    
+    check_exit_code $?
+    
+    mys9s container --delete \
+        "$CONTAINER_NAME_HAPROXY_2" \
+        $LOG_OPTION $DEBUG_OPTION
 
     check_exit_code $?
 

@@ -90,8 +90,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonCloudServer";
         else if (m_url.protocol().toLower() == "haproxy")
             m_properties["class_name"] = "CmonHaProxyHost";
-
-        m_properties["protocol"] = m_url.protocol();
+        else
+            m_properties["protocol"] = m_url.protocol();
     }
 
     if (!m_properties.contains("class_name"))
