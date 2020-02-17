@@ -94,8 +94,10 @@ S9sNode::S9sNode(
             m_properties["protocol"] = m_url.protocol();
     }
 
-    if (!m_properties.contains("class_name"))
-        m_properties["class_name"] = "CmonHost";
+    // The new argument passing allows the class_name left out, but does not
+    // allow a missleading class name as an argument.
+    //if (!m_properties.contains("class_name"))
+    //    m_properties["class_name"] = "CmonHost";
 }
 
 S9sNode::~S9sNode()

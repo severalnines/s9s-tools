@@ -4442,12 +4442,8 @@ S9sRpcClient::addHaProxy(
     }
     
     // The job_data describing the cluster.
-    jobData["action"]          = "setupHaProxy";
-    
-    if (haProxyNodes.size() == 1u)
-        jobData["haproxy_address"] = haProxyNodes[0].toNode().hostName();
-    else
-        jobData["nodes"]     = nodesField(haProxyNodes);        
+    jobData["action"]   = "setupHaProxy";
+    jobData["nodes"]    = nodesField(haProxyNodes);        
     
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
