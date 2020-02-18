@@ -4528,22 +4528,8 @@ S9sRpcClient::addProxySql(
     if (options->hasProviderVersion())
         jobData["version"] = options->providerVersion();
         
-    #if 0
-    // FIXME: This certainly works on the current version of the controller, but
-    // not necessarily compatible with the older versions. So this should be
-    // turned on later, after a few releases passed.
-    jobData["node"]     = proxyNodes[0].toVariantMap();
-    #else
-    // If we have one proxysql node, send it as ususal
-    // but if we have more, create a nodes array and
-    // use that in the job.    
-    
-    if (proxyNodes.size() == 1u)
-        jobData["hostname"] = proxyNodes[0].toNode().hostName();
-    else
-        jobData["nodes"]     = nodesField(proxyNodes);
+    jobData["nodes"]     = nodesField(proxyNodes);
 
-    #endif  
     /*
      * Some information:
         "db_database": "*.*",
