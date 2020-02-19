@@ -202,9 +202,6 @@ ft_tree.sh
 ft_user.sh 
 ft_scripts.sh
 ft_ldap.sh
-ft_ldaperror.sh
-ft_ldapgroups.sh
-ft_ldapnogroups.sh
 EOF
 }
 

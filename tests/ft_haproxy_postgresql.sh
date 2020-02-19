@@ -179,8 +179,8 @@ EOF
         --provider-version=$PROVIDER_VERSION \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --nodes="$CONTAINER_NAME1;haProxy://$CONTAINER_NAME_HAPROXY_1" \
-        --containers="$CONTAINER_NAME1;$CONTAINER_NAME_HAPROXY_1" \
+        --nodes="$CONTAINER_NAME1;HaProxy://$CONTAINER_NAME_HAPROXY_1" \
+        --containers="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME_HAPROXY_1" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -199,12 +199,12 @@ EOF
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --account="pipas:pipas" \
-        --privileges="*.*:ALL"
+        --privileges="testdatabase.*:ALL"
 
-    node_name=$(galera_node_name --cluster-id 1)
-    check_mysql_account \
+    node_name=$(postgresql_node_name --cluster-id 1)
+    check_postgresql_account \
         --hostname          "$node_name" \
-        --port              "3306" \
+        --port              "3307" \
         --account-name      "pipas" \
         --account-password  "pipas" \
         --database-name     "testdatabase" \
@@ -255,9 +255,9 @@ function testHaProxyConnect()
     fi
 
     for HAPROXY_IP in $HAPROXY_IPS; do    
-        check_mysql_account \
+        check_postgresql_account \
             --hostname          "$HAPROXY_IP" \
-            --port              "3307" \
+            --port              "5432" \
             --account-name      "pipas" \
             --account-password  "pipas" \
             --database-name     "testdatabase" \

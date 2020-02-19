@@ -184,7 +184,7 @@ function download_html_file()
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
     
     if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
-        printVerbose "Git date is '$git_date', not recent."
+        printVerbose "Git date for '$test_name' is '$git_date', not recent."
         rm -f $html_file
         return 0
     fi

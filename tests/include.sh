@@ -1267,6 +1267,31 @@ function galera_node_name()
         awk '{print $5 }'
 }
 
+function postgresql_node_name()
+{
+    local cluster_id=""
+    local cluster_id_option=""
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster-id)
+                cluster_id="$2"
+                cluster_id_option=" --cluster-id=$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    s9s node --list --long --batch$cluster_id_option | \
+        grep '^p' | \
+        head -n1  | \
+        awk '{print $5 }'
+}
+
 # $1: Name of the node.
 # Returns the "container_id" property for the given node.
 function node_container_id()
