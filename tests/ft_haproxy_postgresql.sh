@@ -186,6 +186,9 @@ EOF
 
     check_exit_code $?
 
+    mys9s node --list --long
+    mys9s node --stat
+
     # Creating the database
     mys9s cluster \
         --create-database \
