@@ -3494,7 +3494,11 @@ function check_postgresql_account()
     fi
 
     # We do this all the time, not just when it is requested.
-    success "  o Executing SELECT 41 + 1, ok."
+    success "  o Will execute SELECT 41 + 1, ok."
+    cat <<EOF
+psql -t --username="$account_name" --host="$hostname" --port="$port" --dbname="$database_name" --command="select 41 + 1;"
+EOF
+
     lines=$(PGPASSWORD="$account_password" \
         psql \
             -t \

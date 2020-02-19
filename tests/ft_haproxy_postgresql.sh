@@ -207,7 +207,7 @@ EOF
     node_name=$(postgresql_node_name --cluster-id 1)
     check_postgresql_account \
         --hostname          "$node_name" \
-        --port              "3307" \
+        --port              "5432" \
         --account-name      "pipas" \
         --account-password  "pipas" \
         --database-name     "testdatabase" \
@@ -260,7 +260,7 @@ function testHaProxyConnect()
     for HAPROXY_IP in $HAPROXY_IPS; do    
         check_postgresql_account \
             --hostname          "$HAPROXY_IP" \
-            --port              "5432" \
+            --port              "3307" \
             --account-name      "pipas" \
             --account-password  "pipas" \
             --database-name     "testdatabase" \
