@@ -69,7 +69,6 @@ SUPPORTED TESTS:
   o testAddNode          Adds a new database node.
   o testAddProxySql      Adds a ProxySql node to the cluster.
   o testAddRemoveHaProxy Adds, then removes a HaProxy node.
-  o testAddHaProxy       Adds a HaProxy server to the cluster.
   o testRemoveNode       Removes a data node from the cluster.
   o testRollingRestart   Executes a rolling restart on the cluster.
   o testStop             Stops the cluster.
@@ -804,35 +803,30 @@ function testAddRemoveHaProxy()
     local node
     local nodes
     
-    print_title "Adding and removing HaProxy node"
+    print_title "Adding and Removing HaProxy node"
     begin_verbatim
-    mys9s node --list --long 
-
-    node=$(\
-        $S9S node --list --long --batch | \
-        grep ^g | \
-        tail -n1 | \
-        awk '{print $5}')
+    
+    node=$(create_node --autodestroy)
 
     #
-    # Adding a node to the cluster.
+    # Adding a HaProxy node to the cluster.
     #
-    printVerbose "Adding haproxy at '$node'."
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="haProxy://$node" \
+        --nodes="haProxy://$node:9600" \
         $LOG_OPTION \
         $DEBUG_OPTION
     
     check_exit_code $?
-   
+    mysleep 15
+
     mys9s node --list --long --color=always
 
     #
     # Remove a node from the cluster.
     #
-    printVerbose "Removing haproxy at '$node:9600'."
+    printVerbose "Removing HaProxy at '$node:9600'."
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
@@ -843,33 +837,7 @@ function testAddRemoveHaProxy()
     check_exit_code $?
     
     mys9s node --list --long --color=always
-    end_verbatim
-}
 
-#
-# This test will add a HaProxy node.
-#
-function testAddHaProxy()
-{
-    local node
-    local nodes
-    
-    print_title "Adding a HaProxy Node"
-    begin_verbatim
-    node=$(create_node --autodestroy)
-    nodes+="haProxy://$node"
-
-    #
-    # Adding haproxy to the cluster.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-    
-    check_exit_code $?
     end_verbatim
 }
 
@@ -1021,7 +989,6 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddRemoveHaProxy
-    #runFunctionalTest testAddHaProxy
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop
