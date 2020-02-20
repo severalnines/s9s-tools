@@ -757,7 +757,7 @@ function testAddProxySql()
     local node
     local nodes
 
-    print_title "Adding a ProxySQL Node"
+    print_title "Adding and Removing a ProxySQL Node"
     begin_verbatim
     nodeName=$(create_node --autodestroy)
     nodes+="proxySql://$nodeName"
@@ -774,9 +774,21 @@ function testAddProxySql()
     
     check_exit_code $?
 
-    mys9s node \
-        --list-config \
-        --nodes=$nodeName 
+    mysleep 15
+    mys9s node --list --long
+
+    mys9s cluster \
+        --remove-node
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodeName:6032" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+
+#    mys9s node \
+#        --list-config \
+#        --nodes=$nodeName 
 
     end_verbatim
 }
