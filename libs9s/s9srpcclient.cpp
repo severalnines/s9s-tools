@@ -4143,10 +4143,11 @@ S9sRpcClient::createNode()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts;
     S9sRpcReply    reply;
-    bool           hasHaproxy  = false;
-    bool           hasProxySql = false;
-    bool           hasMaxScale = false;
-    bool           hasMongo    = false;
+    bool           hasHaproxy   = false;
+    bool           hasPgBouncer = false;
+    bool           hasProxySql  = false;
+    bool           hasMaxScale  = false;
+    bool           hasMongo     = false;
     bool           success;
 
     hosts = options->nodes();
@@ -4168,6 +4169,9 @@ S9sRpcClient::createNode()
         if (protocol == "haproxy")
         {
             hasHaproxy = true;
+	} else if (protocol == "pgbouncer")
+        {
+            hasPgBouncer = true;
         } else if (protocol == "proxysql")
         {
             hasProxySql = true;
@@ -4202,7 +4206,14 @@ S9sRpcClient::createNode()
     /*
      * Running the request on the controller.
      */
-    if (hasHaproxy && hasProxySql) 
+    if (hasPgBouncer && hasProxySql) 
+    {
+        PRINT_ERROR(
+                "It is not possible to add a PgBouncer and a ProxySql node "
+                "in one call.");
+
+        return false;
+    } else if (hasHaproxy && hasProxySql) 
     {
         PRINT_ERROR(
                 "It is not possible to add a HaProxy and a ProxySql node "
@@ -4229,6 +4240,9 @@ S9sRpcClient::createNode()
     } else if (hasHaproxy)
     {
         success = addHaProxy(hosts);
+    } else if (hasPgBouncer)
+    {
+        success = addPgBouncer(hosts);
     } else if (hasMaxScale)
     {
         success = addMaxScale(hosts);
@@ -4471,6 +4485,57 @@ S9sRpcClient::addHaProxy(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add HaProxy to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::addPgBouncer(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pgbouncer");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To add a PgBouncer one needs to specify"
+            " one or more PgBouncer nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setup";
+    jobData["nodes"]    = nodesField(nodes);        
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pgbouncer";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add PgBouncer to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
