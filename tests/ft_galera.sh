@@ -759,7 +759,6 @@ function testAddProxySql()
     print_title "Adding and Removing a ProxySQL Node"
     begin_verbatim
     nodeName=$(create_node --autodestroy)
-    nodes+="proxySql://$nodeName"
 
     #
     # Adding a node to the cluster.
@@ -767,7 +766,7 @@ function testAddProxySql()
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodes" \
+        --nodes="proxySql://$node:6032" \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -777,18 +776,13 @@ function testAddProxySql()
     mys9s node --list --long
 
     mys9s cluster \
-        --remove-node
+        --remove-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="$nodeName:6032" \
+        --nodes="proxySql://$node:6032" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
     check_exit_code $?
-
-#    mys9s node \
-#        --list-config \
-#        --nodes=$nodeName 
-
     end_verbatim
 }
 
@@ -824,13 +818,55 @@ function testAddRemoveHaProxy()
     mys9s node --list --long --color=always
 
     #
-    # Remove a node from the cluster.
+    # Remove a HaProxy node from the cluster.
     #
     printVerbose "Removing HaProxy at '$node:9600'."
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$node:9600" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?
+    
+    mys9s node --list --long --color=always
+
+    end_verbatim
+}
+
+function testAddRemoveMaxScale()
+{
+    local node
+    
+    print_title "Adding and Removing MaxScale node"
+    begin_verbatim
+    
+    node=$(create_node --autodestroy)
+
+    #
+    # Adding a MaxScale node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="maxScale://$node:6603" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?
+    mysleep 15
+
+    mys9s node --list --long --color=always
+
+    #
+    # Remove a MaxScale node from the cluster.
+    #
+    printVerbose "Removing MaxScale at '$node:6603'."
+    mys9s cluster \
+        --remove-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$node:6603" \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -989,6 +1025,7 @@ else
     runFunctionalTest testAddNode
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddRemoveHaProxy
+    runFunctionalTest testAddRemoveMaxScale
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop
