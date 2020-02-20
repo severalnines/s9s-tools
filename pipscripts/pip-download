@@ -246,6 +246,7 @@ ft_ldap.sh
 ft_ldaperror.sh
 ft_ldapgroups.sh
 ft_ldapnogroups.sh
+ft_ndb.sh
 EOF
 }
 

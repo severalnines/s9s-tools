@@ -105,9 +105,10 @@ function testCreateCluster()
 {
     local nodes
     local nodeName
-    local exitCode
 
-    ft_registerpostgresql.sh "The test to create PostgreSQL cluster is starting now."
+    print_title "The test to create PostgreSQL cluster is starting now."
+
+    begin_verbatim
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
@@ -125,18 +126,15 @@ function testCreateCluster()
         --provider-version="10" \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -144,9 +142,8 @@ function testCreateCluster()
 #
 function testDrop()
 {
-    local exitCode
-
-    ft_registerpostgresql.sh "The test to drop the cluster is starting now."
+    print_title "The test to drop the cluster is starting now."
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -156,18 +153,15 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
+
+    end_verbatim
 }
 
 function testRegister()
 {
-    local exitCode 
-
-    ft_registerpostgresql.sh "The test to register a cluster is starting."
+    print_title "The test to register a cluster is starting."
+    begin_verbatim
 
     #
     # Registering the cluester that we just created and dropped.
@@ -179,14 +173,11 @@ function testRegister()
         --cluster-name=my_cluster \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     s9s cluster --list --long
     s9s node --list --long
+    end_verbatim
 }
 
 #
