@@ -4772,12 +4772,11 @@ S9sRpcClient::removeNode()
     hostName = host.hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
-    // The job_data describing the cluster.
-    jobData["host"]       = hostName;
-    if (host.hasPort())
-        jobData["port"]   = host.port();
+    // The job_data...
+    jobData["nodes"]      = nodesField(hosts);
+    
     if (options->hasForceOption())
-        jobData["force"] = options->force();
+        jobData["force"]  = options->force();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
