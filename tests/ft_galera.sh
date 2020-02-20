@@ -333,7 +333,7 @@ function testSetConfig01()
     local newValue
     local name
 
-    printVerbose "Checking the configuration"
+    print_title "Checking the configuration"
     
     begin_verbatim
 
@@ -754,11 +754,10 @@ function testAddNode()
 function testAddProxySql()
 {
     local node
-    local nodes
 
     print_title "Adding and Removing a ProxySQL Node"
     begin_verbatim
-    nodeName=$(create_node --autodestroy)
+    node=$(create_node --autodestroy)
 
     #
     # Adding a node to the cluster.
@@ -795,7 +794,6 @@ function testAddProxySql()
 function testAddRemoveHaProxy()
 {
     local node
-    local nodes
     
     print_title "Adding and Removing HaProxy node"
     begin_verbatim
@@ -816,11 +814,14 @@ function testAddRemoveHaProxy()
     mysleep 15
 
     mys9s node --list --long --color=always
+    end_verbatim
 
     #
     # Remove a HaProxy node from the cluster.
     #
-    printVerbose "Removing HaProxy at '$node:9600'."
+    print_title "Removing HaProxy at '$node:9600'."
+    begin_verbatim
+
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
@@ -858,11 +859,15 @@ function testAddRemoveMaxScale()
     mysleep 15
 
     mys9s node --list --long --color=always
+    end_verbatim
 
     #
     # Remove a MaxScale node from the cluster.
     #
-    printVerbose "Removing MaxScale at '$node:6603'."
+    print_title "Removing MaxScale at '$node:6603'."
+
+    begin_verbatim
+
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
