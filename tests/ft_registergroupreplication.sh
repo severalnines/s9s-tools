@@ -101,6 +101,7 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy)
     NODES+="$nodeName;"
@@ -124,25 +125,20 @@ function testCreateCluster()
         --provider-version=5.7 \
         $LOG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-        mys9s job --log --job-id=1
-        return 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "  o Cluster ID is $CLUSTER_ID, ok."
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    echo "testCreateCluster(): "
     s9s cluster --list --long
     s9s node --list --long
     s9s node --list --node-format="%12R %N\n"
+    end_verbatim
 }
 
 #
@@ -153,6 +149,7 @@ function testDrop()
     local exitCode
 
     print_title "The test to drop the cluster is starting now."
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -162,11 +159,8 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testRegister()
@@ -174,6 +168,7 @@ function testRegister()
     local exitCode 
 
     print_title "The test to register a cluster is starting."
+    begin_verbatim
 
     #
     # Registering the cluester that we just created and dropped.
@@ -186,16 +181,12 @@ function testRegister()
         --cluster-name=my_cluster_$$ \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
-
-    echo "testRegister(): "
+    check_exit_code $?
+    
     s9s cluster --list --long
     s9s node --list --long
     s9s node --list --node-format="%12R %N\n"
+    end_verbatim
 }
 
 #
