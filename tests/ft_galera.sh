@@ -56,23 +56,23 @@ Usage:
   --number-of-nodes=N        The number of nodes in the initial cluster.
 
 SUPPORTED TESTS:
-  o testPing             Pings the controller.
-  o testCreateCluster    Creates a Galera cluster.
-  o testSetupAudit       Sets up audit logging.
-  o testSetConfig01      Changes some configuration values for the cluster.
-  o testSetConfig02      More configuration checks.
-  o testRestartNode      Restarts one node of the cluster.
-  o testStopStartNode    Stops, then starts a node.
-  o testCreateAccount    Creates an account on the cluster.
-  o testCreateDatabase   Creates a database on the cluster.
-  o testUploadData       If test data is found uploads data to the cluster.
-  o testAddNode          Adds a new database node.
-  o testAddProxySql      Adds a ProxySql node to the cluster.
-  o testAddRemoveHaProxy Adds, then removes a HaProxy node.
-  o testRemoveNode       Removes a data node from the cluster.
-  o testRollingRestart   Executes a rolling restart on the cluster.
-  o testStop             Stops the cluster.
-  o testStart            Starts the cluster.
+  o testPing              Pings the controller.
+  o testCreateCluster     Creates a Galera cluster.
+  o testSetupAudit        Sets up audit logging.
+  o testSetConfig01       Changes some configuration values for the cluster.
+  o testSetConfig02       More configuration checks.
+  o testRestartNode       Restarts one node of the cluster.
+  o testStopStartNode     Stops, then starts a node.
+  o testCreateAccount     Creates an account on the cluster.
+  o testCreateDatabase    Creates a database on the cluster.
+  o testUploadData        If test data is found uploads data to the cluster.
+  o testAddNode           Adds a new database node.
+  o testAddRemoveProxySql Adds a ProxySql node to the cluster.
+  o testAddRemoveHaProxy  Adds, then removes a HaProxy node.
+  o testRemoveNode        Removes a data node from the cluster.
+  o testRollingRestart    Executes a rolling restart on the cluster.
+  o testStop              Stops the cluster.
+  o testStart             Starts the cluster.
 
 EXAMPLE
  ./$MYNAME --print-commands --server=core1 --reset-config --install
@@ -751,7 +751,7 @@ function testAddNode()
 #
 # This test will add a proxy sql node.
 #
-function testAddProxySql()
+function testAddRemoveProxySql()
 {
     local node
 
@@ -1028,7 +1028,7 @@ else
     runFunctionalTest testCreateDatabase
 
     runFunctionalTest testAddNode
-    runFunctionalTest testAddProxySql
+    runFunctionalTest testAddRemoveProxySql
     runFunctionalTest testAddRemoveHaProxy
     runFunctionalTest testAddRemoveMaxScale
     runFunctionalTest testRemoveNode

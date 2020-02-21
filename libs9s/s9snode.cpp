@@ -90,6 +90,12 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonCloudServer";
         else if (m_url.protocol().toLower() == "haproxy")
             m_properties["class_name"] = "CmonHaProxyHost";
+        else if (m_url.protocol().toLower() == "proxysql")
+            m_properties["class_name"] = "CmonProxySqlHost";
+        else if (m_url.protocol().toLower() == "proxysql")
+            m_properties["class_name"] = "CmonProxySqlHost";
+        else if (m_url.protocol().toLower() == "maxscale")
+            m_properties["class_name"] = "CmonMaxScaleHost";
         else
             m_properties["protocol"] = m_url.protocol();
     }
