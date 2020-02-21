@@ -96,6 +96,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonProxySqlHost";
         else if (m_url.protocol().toLower() == "maxscale")
             m_properties["class_name"] = "CmonMaxScaleHost";
+        else if (m_url.protocol().toLower() == "keepalived")
+            m_properties["class_name"] = "CmonKeepalivedHost";
         else
             m_properties["protocol"] = m_url.protocol();
     }

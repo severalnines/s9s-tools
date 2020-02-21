@@ -830,14 +830,9 @@ function testAddRemoveHaProxy()
 
     mys9s node --list --long
 
-    end_verbatim
-
     #
     # Remove a HaProxy node from the cluster.
     #
-    print_title "Removing HaProxy at '$node:9600'."
-    begin_verbatim
-
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
@@ -878,15 +873,10 @@ function testAddRemoveMaxScale()
     mysleep 15
 
     mys9s node --list --long
-    end_verbatim
-
+    
     #
     # Remove a MaxScale node from the cluster.
     #
-    print_title "Removing MaxScale at '$node:6603'."
-
-    begin_verbatim
-
     mys9s cluster \
         --remove-node \
         --cluster-id=$CLUSTER_ID \
