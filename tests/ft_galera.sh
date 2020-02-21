@@ -726,12 +726,13 @@ function testUploadData()
 #
 function testAddNode()
 {
+    local node_name="${MYBASENAME}_addednode_$$"
     local nodes
 
     print_title "Adding a node"
     begin_verbatim
 
-    LAST_ADDED_NODE=$(create_node --autodestroy)
+    LAST_ADDED_NODE=$(create_node --autodestroy "$node_name")
     nodes+="$LAST_ADDED_NODE"
 
     #
@@ -753,15 +754,26 @@ function testAddNode()
 #
 function testAddRemoveProxySql()
 {
+    local node_name="${MYBASENAME}_proxysql_$$"
     local node
 
     print_title "Adding and Removing a ProxySQL Node"
+    cat <<EOF | paragraph
+  This test will add a ProxySQL node to the previously created cluster. Then the
+  test will remove the ProxySQL node. It seems removing is only possible when
+  the --force option is provided, because the controller can not stop the
+  proxysql process for some reason.
+
+EOF
+
     begin_verbatim
-    node=$(create_node --autodestroy)
+    
+    node=$(create_node --autodestroy "$node_name")
 
     #
     # Adding a node to the cluster.
     #
+    mys9s node --list --long
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -794,16 +806,18 @@ function testAddRemoveProxySql()
 #
 function testAddRemoveHaProxy()
 {
+    local node_name="${MYBASENAME}_haproxy_$$"
     local node
     
     print_title "Adding and Removing HaProxy node"
     begin_verbatim
     
-    node=$(create_node --autodestroy)
+    node=$(create_node --autodestroy "$node_name")
 
     #
     # Adding a HaProxy node to the cluster.
     #
+    mys9s node --list --long
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -814,7 +828,8 @@ function testAddRemoveHaProxy()
     check_exit_code $?
     mysleep 15
 
-    mys9s node --list --long --color=always
+    mys9s node --list --long
+
     end_verbatim
 
     #
@@ -839,16 +854,19 @@ function testAddRemoveHaProxy()
 
 function testAddRemoveMaxScale()
 {
+    local node_name="${MYBASENAME}_maxscale_$$"
     local node
     
     print_title "Adding and Removing MaxScale node"
     begin_verbatim
     
-    node=$(create_node --autodestroy)
+    node=$(create_node --autodestroy "$node_name")
 
     #
     # Adding a MaxScale node to the cluster.
     #
+    mys9s node --list --long
+
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -859,7 +877,7 @@ function testAddRemoveMaxScale()
     check_exit_code $?
     mysleep 15
 
-    mys9s node --list --long --color=always
+    mys9s node --list --long
     end_verbatim
 
     #
