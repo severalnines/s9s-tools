@@ -4839,10 +4839,7 @@ S9sRpcClient::removeNode()
 
     // The job_data...
     jobData["nodes"]      = nodesField(hosts);
-    
-    if (options->hasForceOption())
-        jobData["force"]  = options->force();
-   
+     
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
     jobSpec["job_data"]   = jobData;
@@ -4881,7 +4878,6 @@ S9sRpcClient::stopCluster()
     title = "Stopping Cluster";
 
     // The job_data.
-    jobData["force"]               = options->forceOption();
     jobData["stop_timeout"]        = 1800;
     
     if (options->hasMinutes())
@@ -5329,9 +5325,6 @@ S9sRpcClient::resetSlave()
     jobData["clusterid"]  = clusterId;
     jobData["replication_slave"] = node.toVariantMap();
      
-    if (options->force())
-        jobData["force"] = true;
-
     // The jobspec describing the command.
     jobSpec["command"]    = "reset_replication_slave";
     jobSpec["job_data"]   = jobData;
@@ -7996,7 +7989,6 @@ S9sRpcClient::createMaintenanceWithJob()
     if (options->hasEnd())
         jobData["end"] = options->end();
 
-    //jobData["force"]               = options->forceOption();
     jobData["reason"]              = options->reason();
     
     if (options->hasMinutes())
@@ -8591,6 +8583,9 @@ S9sRpcClient::composeJobData(
 
     if (!options->configTemplate().empty())
         jobData["config_template"] = options->configTemplate();
+    
+    if (options->hasForceOption())
+        jobData["force"]  = options->force();
 
     return jobData;
 }

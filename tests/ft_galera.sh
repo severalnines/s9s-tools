@@ -778,6 +778,7 @@ function testAddRemoveProxySql()
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="proxySql://$node:6032" \
+        --force \
         $LOG_OPTION \
         $DEBUG_OPTION
 
