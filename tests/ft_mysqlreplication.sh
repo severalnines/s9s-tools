@@ -152,6 +152,8 @@ function testCreateCluster()
     local node_name
 
     print_title "Creating MySQL Replication Cluster"
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -260,6 +262,7 @@ function testCreateCluster()
         --state          "Online"
 
     print_log_messages
+    end_verbatim
 }
 
 function testStopStartReplication()
@@ -272,6 +275,8 @@ function testStopStartReplication()
   This test will stop then start the replication on a replication slave.
 
 EOF
+
+    begin_verbatim
 
     #
     # Preliminary checks.
@@ -352,6 +357,7 @@ EOF
     check_cluster \
         --cluster        "$CLUSTER_NAME" \
         --state          "STARTED" 
+    end_verbatim
 }
 
 #
@@ -367,6 +373,7 @@ function testUploadData()
     local count=0
 
     print_title "Testing data upload on cluster."
+    begin_verbatim
 
     #
     # Creating a new database on the cluster.
@@ -440,6 +447,7 @@ function testUploadData()
             break
         fi
     done
+    end_verbatim
 }
 
 
@@ -451,6 +459,8 @@ function testStageSlave()
   then check if the job was properly executed.
 
 EOF
+
+    begin_verbatim
 
     mys9s replication --list --long
     check_replication_state \
@@ -476,6 +486,7 @@ EOF
         --state          "Online"
 
     #print_log_messages
+    end_verbatim
 }
 
 function testPromoteSlave()
@@ -487,6 +498,7 @@ function testPromoteSlave()
   back to the original master, make it a replication master again.
 
 EOF
+    begin_verbatim
 
     check_replication_state \
         --cluster-name   "$CLUSTER_NAME" \
@@ -552,6 +564,8 @@ EOF
     check_cluster \
         --cluster        "$CLUSTER_NAME" \
         --state          "STARTED"
+    
+    end_verbatim
 }
 
 #
@@ -567,6 +581,8 @@ function testCreateDatabase()
   back a success.
 
 EOF
+    
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -582,11 +598,13 @@ EOF
     done
 
     s9s cluster --list-databases --long --cluster-id=$CLUSTER_ID
+    end_verbatim
 }
 
 function testCreateBackup()
 {
     print_title "Creating Backups"
+    begin_verbatim
 
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -599,6 +617,7 @@ function testCreateBackup()
         $LOG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 
@@ -613,6 +632,7 @@ function testRestartNode()
     local exitCode
 
     print_title "Restarting node"
+    begin_verbatim
 
     #
     # Restarting a node. 
@@ -629,6 +649,7 @@ function testRestartNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    end_verbatim
 }
 
 #
@@ -643,6 +664,7 @@ function testStopStartNode()
     local exitCode
 
     print_title "Stopping&starting non-master node"
+    begin_verbatim
 
     mys9s node --list --long 
 
@@ -683,6 +705,7 @@ function testStopStartNode()
     #    s9s job  --list
     #    sleep 10
     #done
+    end_verbatim
 }
 
 #
@@ -693,6 +716,7 @@ function testCreateAccount()
     local master_hostname
 
     print_title "Creating Account"
+    begin_verbatim
 
     #
     #
@@ -744,6 +768,7 @@ function testCreateAccount()
         mys9s node --stat
         exit 1
     fi
+    end_verbatim
 }
 
 #
@@ -752,6 +777,7 @@ function testCreateAccount()
 function createDeleteAccount()
 {
     print_title "Creating then Deleting Account"
+    begin_verbatim
 
     mys9s cluster \
         --create-account \
@@ -772,6 +798,7 @@ function createDeleteAccount()
     if mys9s account --list --long | grep --quiet "tmpaccount"; then
         failure "The 'tmpaccount' account is still there."
     fi
+    end_verbatim
 }
 
 #
@@ -782,7 +809,8 @@ function testAddNode()
     local nodes
 
     print_title "Adding a New Node"
-    
+    begin_verbatim
+
     LAST_ADDED_NODE=$(create_node --autodestroy "${MYNAME}_11_$$")
     nodes+="$LAST_ADDED_NODE"
 
@@ -799,6 +827,7 @@ function testAddNode()
 
     mys9s node --list --long
     mys9s cluster --stat
+    end_verbatim
 }
 
 #
@@ -809,6 +838,7 @@ function testAddMaster()
     local exitCode
 
     print_title "Adding a master node"
+    begin_verbatim
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
 
@@ -822,6 +852,7 @@ function testAddMaster()
         $LOG_OPTION
     
     check_exit_code $? 
+    end_verbatim
 }
 
 
@@ -832,6 +863,7 @@ function testAddMaster()
 function testRemoveNode()
 {
     print_title "Removing Data Node"
+    begin_verbatim
 
     if [ -z "$LAST_ADDED_NODE" ]; then
         echo "Skipping test."
@@ -847,6 +879,7 @@ function testRemoveNode()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -857,6 +890,7 @@ function testStop()
     local exitCode
 
     print_title "Stopping the cluster"
+    begin_verbatim
 
     #
     # Stopping the cluster.
@@ -871,6 +905,7 @@ function testStop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    end_verbatim
 }
 
 #
@@ -881,6 +916,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -895,6 +931,7 @@ function testDrop()
         mys9s job --list 
         check_exit_code $?
     fi
+    end_verbatim
 }
 
 #
