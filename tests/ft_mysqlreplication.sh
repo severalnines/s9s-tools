@@ -831,7 +831,7 @@ function testAddMaster()
 #
 function testRemoveNode()
 {
-    print_title "Removing node"
+    print_title "Removing Data Node"
 
     if [ -z "$LAST_ADDED_NODE" ]; then
         echo "Skipping test."
@@ -845,14 +845,8 @@ function testRemoveNode()
         --cluster-id=$CLUSTER_ID \
         --nodes="$LAST_ADDED_NODE" \
         $LOG_OPTION
-    
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        mys9s job --log --job-id=6
-        exit 1
-    fi
+
+    check_exit_code $?
 }
 
 #
@@ -930,6 +924,12 @@ else
     runFunctionalTest testUploadData
     runFunctionalTest testStageSlave
     runFunctionalTest testPromoteSlave
+
+    runFunctionalTest testAddRemoveProxySql
+    runFunctionalTest testAddRemoveHaProxy
+    runFunctionalTest testAddRemoveMaxScale
+    # This is not yet functional...
+    #runFunctionalTest testAddRemoveKeepalived
 
     runFunctionalTest testCreateDatabase
     runFunctionalTest testCreateBackup

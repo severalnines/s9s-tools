@@ -21,7 +21,8 @@ FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./shared_test_cases.sh
 
 #
 # Prints usage information and exits.
@@ -390,6 +391,59 @@ EOF
     
     end_verbatim
 }
+
+function testAddRemoveNode()
+{
+    local node="ft_postgresql_03_$$"
+    local nodeIp
+
+    print_title "Adding and Removing Data Node"
+    cat <<EOF | paragraph
+  Here we add a database node, then immediately removing it from the cluster.
+  Both the adding and the removing should of course succeed.
+EOF
+
+    nodeIp=$(create_node --autodestroy "$node")
+
+    begin_verbatim
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$FIRST_ADDED_NODE?master;$nodeIp?slave" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $? 
+
+    check_node \
+        --node       "$nodeIp" \
+        --ip-address "$nodeIp" \
+        --port       "5432" \
+        --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
+        --status     "CmonHostOnline" \
+        --no-maint
+    
+    #
+    # Removing the node from the cluster.
+    #
+    mys9s cluster \
+        --remove-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodeIp" \
+        --log
+
+    check_exit_code $?
+
+    end_verbatim
+}
+
 
 #
 # This test will first call a --stop then a --start on a node. Pretty basic
@@ -1264,7 +1318,11 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testRemoveNodeFail
     runFunctionalTest testAddNode
+    runFunctionalTest testAddRemoveNode
     runFunctionalTest testStopStartNode
+
+    # Only Galera and replication clusters are supported.
+    # runFunctionalTest testAddRemoveProxySql
 
     runFunctionalTest testConfig
     runFunctionalTest testConfigFail

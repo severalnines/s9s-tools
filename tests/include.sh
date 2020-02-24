@@ -1228,6 +1228,21 @@ function haproxy_node_name()
         awk '{print $5 }'
 }
 
+function check_number_of_haproxy_nodes()
+{
+    local numberOfNodes
+    local expected="$1"
+
+    mys9s node --list --long
+
+    numberOfNodes=$(s9s node --list --long --batch | grep '^h' | wc -l)
+    if [ "$numberOfNodes" -eq "$expected" ]; then
+        success "o Number of HaProxy nodes is $numberOfNodes, ok."
+    else
+        failure "The number of HaProxy nodes should be $expected."
+    fi    
+}
+
 function maxscale_node_name()
 {
     s9s node --list --long --batch |\
@@ -1235,11 +1250,41 @@ function maxscale_node_name()
         awk '{print $5 }'
 }
 
+function check_number_of_maxscale_nodes()
+{
+    local numberOfNodes
+    local expected="$1"
+
+    mys9s node --list --long
+
+    numberOfNodes=$(s9s node --list --long --batch | grep '^x' | wc -l)
+    if [ "$numberOfNodes" -eq "$expected" ]; then
+        success "o Number of MaxScale nodes is $numberOfNodes, ok."
+    else
+        failure "The number of MaxScale nodes should be $expected."
+    fi    
+}
+
 function proxysql_node_name()
 {
     s9s node --list --long --batch |\
         grep '^y' | \
         awk '{print $5 }'
+}
+
+function check_number_of_proxysql_nodes()
+{
+    local numberOfNodes
+    local expected="$1"
+
+    mys9s node --list --long
+
+    numberOfNodes=$(s9s node --list --long --batch | grep '^y' | wc -l)
+    if [ "$numberOfNodes" -eq "$expected" ]; then
+        success "o Number of ProxySql nodes is $numberOfNodes, ok."
+    else
+        failure "The number of ProxySql nodes should be $expected."
+    fi    
 }
 
 function galera_node_name()

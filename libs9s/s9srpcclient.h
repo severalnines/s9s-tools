@@ -517,6 +517,9 @@ class S9sRpcClient
 
         bool addHaProxy(
                 const S9sVariantList &hosts);
+        
+        bool addKeepalived(
+                const S9sVariantList &hosts);
 
         bool addPgBouncer(
                 const S9sVariantList &hosts);

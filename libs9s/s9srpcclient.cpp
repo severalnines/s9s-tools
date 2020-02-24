@@ -4143,11 +4143,12 @@ S9sRpcClient::createNode()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts;
     S9sRpcReply    reply;
-    bool           hasHaproxy   = false;
-    bool           hasPgBouncer = false;
-    bool           hasProxySql  = false;
-    bool           hasMaxScale  = false;
-    bool           hasMongo     = false;
+    bool           hasHaproxy    = false;
+    bool           hasKeepalived = false;
+    bool           hasPgBouncer  = false;
+    bool           hasProxySql   = false;
+    bool           hasMaxScale   = false;
+    bool           hasMongo      = false;
     bool           success;
 
     hosts = options->nodes();
@@ -4169,7 +4170,10 @@ S9sRpcClient::createNode()
         if (protocol == "haproxy")
         {
             hasHaproxy = true;
-	} else if (protocol == "pgbouncer")
+        } else if (protocol == "keepalived")
+        {
+            hasKeepalived = true;
+    	} else if (protocol == "pgbouncer")
         {
             hasPgBouncer = true;
         } else if (protocol == "proxysql")
@@ -4240,6 +4244,9 @@ S9sRpcClient::createNode()
     } else if (hasHaproxy)
     {
         success = addHaProxy(hosts);
+    } else if (hasKeepalived)
+    {
+        success = addKeepalived(hosts);
     } else if (hasPgBouncer)
     {
         success = addPgBouncer(hosts);
@@ -4449,8 +4456,7 @@ S9sRpcClient::addHaProxy(
     if (haProxyNodes.size() < 1u)
     {
         PRINT_ERROR(
-            "To add a HAProxy one needs to specify"
-            " one or more HAProxy nodes.");
+            "To add a HAProxy one needs to specify one or more HAProxy nodes.");
         
         return false;
     }
@@ -4485,6 +4491,72 @@ S9sRpcClient::addHaProxy(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add HaProxy to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+bool
+S9sRpcClient::addKeepalived(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList keepalivedNodes;
+    S9sVariantList otherNodes;
+    S9sString      nodeAddresses;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, keepalivedNodes, otherNodes, "keepalived");
+
+    if (keepalivedNodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To add a Keepalived one needs to specify one or more"
+            " Keepalived nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setupKeepalived";
+    jobData["nodes"]    = nodesField(keepalivedNodes);        
+    
+    for (uint idx = 0u; idx < otherNodes.size(); ++idx)
+    {
+        int       port;
+        S9sNode   node;
+        S9sString tmp;
+
+        node = otherNodes[idx].toNode();
+        port = node.hasPort() ? node.port() : 3306;
+
+        tmp.sprintf("%s:%d:%s", STR(node.hostName()), port, "active");
+
+        if (!nodeAddresses.empty())
+            nodeAddresses += ";";
+
+        nodeAddresses += tmp;
+    }
+
+    if (!nodeAddresses.empty())
+        jobData["node_addresses"] = nodeAddresses;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "keepalived";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add Keepalived to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
