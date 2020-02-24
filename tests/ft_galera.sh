@@ -895,10 +895,13 @@ else
     runFunctionalTest testCreateDatabase
 
     runFunctionalTest testAddNode
+
     runFunctionalTest testAddRemoveProxySql
     runFunctionalTest testAddRemoveHaProxy
     runFunctionalTest testAddRemoveMaxScale
+    # This is not yet functional...
     #runFunctionalTest testAddRemoveKeepalived
+
     runFunctionalTest testRemoveNode
     runFunctionalTest testRollingRestart
     runFunctionalTest testStop

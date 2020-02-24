@@ -433,7 +433,7 @@ S9sRpcClient::authenticateWithPassword()
     request["user_name"]    = options->userName();
     request["password"]     = options->password();
     
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString();
     if (!retval)
     {
@@ -498,12 +498,12 @@ S9sRpcClient::authenticateWithKey()
     request["operation"]    = "authenticate";
 
     /*
-     * Please keep this as 'username' to be compatible with
-     * clustercontrol-controller 1.4.1 and 1.4.2
+     * Please keep this as 'username' to be compatible with clustercontrol
+     * controller 1.4.1 and 1.4.2.
      */
     request["username"]     = options->userName();
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -529,14 +529,14 @@ S9sRpcClient::authenticateWithKey()
     request["signature"]    = signature;
 
     /*
-     * For backward compatibility, if we know that we communicate
-     * with a controller < 1.4.3, use the old method name
+     * For backward compatibility, if we know that we communicate with a
+     * controller < 1.4.3, use the old method name.
      */
     if (serverVersion().startsWith("1.4.2") ||
         serverVersion().startsWith("1.4.1"))
         request["operation"] = "response";
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -1381,14 +1381,11 @@ S9sRpcClient::getJobInstance(
 {
     S9sString      uri = "/v2/jobs/";
     S9sVariantMap  request;
-    bool           retval;
 
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
 
-    retval = executeRequest(uri, request);
-
-    return retval;
+    return executeRequest(uri, request, false);
 }
 
 /**
@@ -8715,6 +8712,10 @@ S9sRpcClient::composeJobDataOneContainer() const
 }
 
 /**
+ * \param uri The URI where we send the request.
+ * \param request The request we send.
+ * \param important If it is true and the requests are printed in debug messages
+ *   this request is going to be included in the debug output.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
@@ -8756,13 +8757,17 @@ S9sRpcClient::composeJobDataOneContainer() const
 bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
-        S9sVariantMap   &request)
+        S9sVariantMap   &request,
+        bool             important)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
     bool           retval;
     int            nTry = 0;
     S9sVariantMap  triedKeys;
+   
+    if (important)
+        printRequestForDebug(request);
 
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
@@ -9115,6 +9120,25 @@ S9sRpcClient::doExecuteRequest(
 
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
     return true;
+}
+
+void
+S9sRpcClient::printRequestForDebug(
+        S9sVariantMap &request)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            isBatch = options->isBatchRequested();
+
+    if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL && !isBatch)
+    {
+        bool            syntaxHighlight = options->useSyntaxHighlight();
+        S9sFormatFlags  format  = S9sFormatIndent;
+
+        if (syntaxHighlight)
+            format = format | S9sFormatColor;
+
+        ::fprintf(stderr, "%s\n", STR(request.toJsonString(format)));
+    }
 }
 
 /**

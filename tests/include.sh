@@ -2028,6 +2028,7 @@ EOF
     #
     mys9s user \
         --add-key \
+        --batch \
         --password="p" \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
@@ -3387,7 +3388,7 @@ function check_mysql_account()
 
     if [ -n "$account_name" ]; then
         success "  o Test account is '$account_name', ok."
-        tmp=$(s9s account --list --cluster-id=1 "$account_name")
+        tmp=$(s9s account --list --batch --cluster-id=1 "$account_name")
         if [ "$tmp" == "$account_name" ]; then
             success "  o Account $account_name found in the list, ok."
         else

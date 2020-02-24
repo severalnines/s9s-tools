@@ -424,7 +424,8 @@ class S9sRpcClient
         virtual bool
             executeRequest(
                 const S9sString &uri,
-                S9sVariantMap   &request);
+                S9sVariantMap   &request,
+                bool             important = true);
 
         virtual bool 
             doExecuteRequest(
@@ -434,6 +435,9 @@ class S9sRpcClient
         void setError(
                 const S9sString &errorString,
                 const S9sString &errorCode = "ConnectError");
+
+        void printRequestForDebug(S9sVariantMap &request);
+
     private:
         bool startNodeJob(
                 const S9sString &command,
