@@ -20,6 +20,8 @@ PROVIDER_VERSION="9.6"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
