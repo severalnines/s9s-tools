@@ -799,7 +799,9 @@ function get_log_message_id()
     log_format+='${/log_specifics/job_instance/job_spec/command} '
     log_format+='\n'
 
-    lines=$(s9s log --list \
+    lines=$(s9s log \
+        --list \
+        --batch \
         --log-format="$log_format" \
         --cluster-id="$cluster_id" \
         --cmon-user=system \
@@ -865,12 +867,14 @@ function check_log_message()
             --cluster-id="$cluster_id"
 
         value=$(s9s log \
-            --list --long \
-            --log-format="$format_string" \
-            --message-id="$message_id" \
-            --cmon-user="system" \
-            --password="secret" \
-            --cluster-id="$cluster_id")
+                --list \
+                --long \
+                --batch \
+                --log-format="$format_string" \
+                --message-id="$message_id" \
+                --cmon-user="system" \
+                --password="secret" \
+                --cluster-id="$cluster_id")
 
         if [ "$value" == "$expected_value" ]; then
             success "  o Value for '$format_string' is '$value', ok."
@@ -987,49 +991,49 @@ function check_container()
         success "  o SSH access granted for user '$USER' on $container_ip, ok."
     fi
 
-    group=$(s9s container --list --container-format="%G\n" "$container_name")
+    group=$(s9s container --list --batch --container-format="%G\n" "$container_name")
     if [ -n "$expected_group" -a "$group" != "$expected_group" ]; then
         failure "  o The group should be '$expected_group', not '$group'."
     else
         success "  o The group of the container is $group, ok"
     fi
 
-    path=$(s9s container --list --container-format="%p\n" "$container_name")
+    path=$(s9s container --list --batch --container-format="%p\n" "$container_name")
     if [ -n "$expected_path" -a "$path" != "$expected_path" ]; then
         failure "  o The path should be '$expected_path', not '$path'."
     else
         success "  o The path of the container is $path, ok"
     fi
     
-    acl=$(s9s container --list --container-format="%l\n" "$container_name")
+    acl=$(s9s container --list --batch --container-format="%l\n" "$container_name")
     if [ -n "$expected_acl" -a "$acl" != "$expected_acl" ]; then
         failure "  o The acl should be '$expected_acl', not '$acl'."
     else
         success "  o The acl of the container is '$acl', ok"
     fi
 
-    cloud=$(s9s container --list --container-format="%c\n" "$container_name")
+    cloud=$(s9s container --list --batch --container-format="%c\n" "$container_name")
     if [ -n "$expected_cloud" -a "$cloud" != "$expected_cloud" ]; then
         failure "  o The cloud should be '$expected_cloud', not '$cloud'."
     else
         success "  o The cloud of the container is $cloud, ok"
     fi
 
-    state=$(s9s container --list --container-format="%S\n" "$container_name")
+    state=$(s9s container --list --batch --container-format="%S\n" "$container_name")
     if [ -n "$expected_state" -a "$state" != "$expected_state" ]; then
         failure "  o The state should be '$expected_state', not '$state'."
     else
         success "  o The state of the container is $state, ok"
     fi
 
-    parent=$(s9s container --list --container-format="%P\n" "$container_name")
+    parent=$(s9s container --list --batch --container-format="%P\n" "$container_name")
     if [ -n "$expected_parent" -a "$parent" != "$expected_parent" ]; then
         failure "  o The parent should be '$expected_parent', not '$parent'."
     else
         success "  o The parent of the container is $parent, ok"
     fi
 
-    prot=$(s9s container --list --container-format="%T\n" "$container_name")
+    prot=$(s9s container --list --batch --container-format="%T\n" "$container_name")
     if [ -n "$expected_prot" -a "$prot" != "$expected_prot" ]; then
         failure "  o The prot should be '$expected_prot', not '$prot'."
     else
@@ -1387,7 +1391,7 @@ function check_container_ids()
     #
     # Checking the container ids.
     #
-    node_ips=$(s9s node --list --long | grep "$filter" | awk '{ print $5 }')
+    node_ips=$(s9s node --list --long --batch | grep "$filter" | awk '{ print $5 }')
     for node_ip in $node_ips; do
         print_title "Checking Node $node_ip"
 
@@ -1499,6 +1503,7 @@ function wait_for_cluster_state()
     while true; do
         state=$(s9s cluster \
             --list \
+            --batch \
             --cluster-format="%S" \
             --cluster-name="$clusterName" \
             $user_option \
@@ -2234,7 +2239,7 @@ function check_node()
     echo "Checking node '$hostname'..."
 
     if [ -n "$ipaddress" ]; then
-        tmp=$(s9s node --list --node-format "%A\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%A\n" "$hostname")
 
         if [ "$tmp" == "$ipaddress" ]; then
             success "  o The IP of the node is $tmp, ok."
@@ -2244,7 +2249,7 @@ function check_node()
     fi
     
     if [ -n "$port" ]; then
-        tmp=$(s9s node --list --node-format "%P\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%P\n" "$hostname")
 
         if [ "$tmp" == "$port" ]; then
             success "  o The port of the node is $tmp, ok."
@@ -2254,7 +2259,7 @@ function check_node()
     fi
 
     if [ -n "$owner" ]; then
-        tmp=$(s9s node --list --node-format "%O\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%O\n" "$hostname")
 
         if [ "$tmp" == "$owner" ]; then
             success "  o The owner of the node is $tmp, ok."
@@ -2264,7 +2269,7 @@ function check_node()
     fi
 
     if [ -n "$group" ]; then
-        tmp=$(s9s node --list --node-format "%G\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%G\n" "$hostname")
 
         if [ "$tmp" == "$group" ]; then
             success "  o The group of the node is $tmp, ok."
@@ -2274,7 +2279,7 @@ function check_node()
     fi
 
     if [ -n "$cdt_path" ]; then
-        tmp=$(s9s node --list --node-format "%h\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%h\n" "$hostname")
 
         if [ "$tmp" == "$cdt_path" ]; then
             success "  o The CDT path of the node is $tmp, ok."
@@ -2285,7 +2290,7 @@ function check_node()
     fi
 
     if [ -n "$status" ]; then
-        tmp=$(s9s node --list --node-format "%S\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%S\n" "$hostname")
 
         if [ "$tmp" == "$status" ]; then
             success "  o The status of the node is $tmp, ok."
@@ -2295,7 +2300,7 @@ function check_node()
     fi
     
     if [ -n "$config" ]; then
-        tmp=$(s9s node --list --node-format "%C\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%C\n" "$hostname")
 
         if [ "$tmp" == "$config" ]; then
             success "  o The config file of the node is $tmp, ok."
@@ -2305,7 +2310,7 @@ function check_node()
     fi
     
     if [ -n "$no_maintenance" ]; then
-        tmp=$(s9s node --list --node-format "%a\n" "$hostname")
+        tmp=$(s9s node --list --batch --node-format "%a\n" "$hostname")
 
         if [ "$tmp" == "-" ]; then
             success "  o The maintenance of the node is '$tmp', ok."
@@ -2383,7 +2388,7 @@ function check_cluster()
     fi
 
     if [ -n "$config_file" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%C\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%C\n" "$cluster_name")
 
         if [ "$tmp" == "$config_file" ]; then
             success "  o The config file of the cluster is $tmp, ok."
@@ -2393,7 +2398,7 @@ function check_cluster()
     fi
     
     if [ -n "$log_file" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%L\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%L\n" "$cluster_name")
 
         if [ "$tmp" == "$log_file" ]; then
             success "  o The log file of the cluster is $tmp, ok."
@@ -2403,7 +2408,7 @@ function check_cluster()
     fi
     
     if [ -n "$owner" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%O\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%O\n" "$cluster_name")
 
         if [ "$tmp" == "$owner" ]; then
             success "  o The owner of the cluster is $tmp, ok."
@@ -2413,7 +2418,7 @@ function check_cluster()
     fi
     
     if [ -n "$group" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%G\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%G\n" "$cluster_name")
 
         if [ "$tmp" == "$group" ]; then
             success "  o The group of the cluster is $tmp, ok."
@@ -2423,7 +2428,7 @@ function check_cluster()
     fi
     
     if [ -n "$cdt_path" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%P\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%P\n" "$cluster_name")
 
         if [ "$tmp" == "$cdt_path" ]; then
             success "  o The CDT path of the cluster is $tmp, ok."
@@ -2433,7 +2438,7 @@ function check_cluster()
     fi
     
     if [ -n "$cluster_type" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%T\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%T\n" "$cluster_name")
 
         if [ "$tmp" == "$cluster_type" ]; then
             success "  o The type of the cluster is $tmp, ok."
@@ -2443,7 +2448,7 @@ function check_cluster()
     fi
 
     if [ -n "$cluster_state" ]; then
-        tmp=$(s9s cluster --list --cluster-format "%S\n" "$cluster_name")
+        tmp=$(s9s cluster --list --batch --cluster-format "%S\n" "$cluster_name")
 
         if [ "$tmp" == "$cluster_state" ]; then
             success "  o The state of the cluster is $tmp, ok."
@@ -2491,7 +2496,7 @@ function check_replication_state()
         return 1
     fi
 
-    state=$(s9s replication --list --link-format="%s\n" --slave=$slave)
+    state=$(s9s replication --list --batch --link-format="%s\n" --slave=$slave)
     if [ "$state" == "$expected_state" ]; then
         success "  o Replication state on $slave is $state, ok."
     else
@@ -2657,7 +2662,7 @@ function check_user()
     # Checking the authentication with a password.
     #
     if [ -n "$password" ]; then
-        tmp=$(s9s user --whoami --cmon-user="$user_name" --password="$password")
+        tmp=$(s9s user --whoami --batch --cmon-user="$user_name" --password="$password")
         if [ "$tmp" != "$user_name" ]; then
             failure "User $user_name can not log in with password."
         else
@@ -2669,7 +2674,7 @@ function check_user()
     # Checking the login with the key.
     #
     if [ -n "$check_key" ]; then
-        tmp=$(s9s user --whoami --cmon-user="$user_name")
+        tmp=$(s9s user --whoami --batch --cmon-user="$user_name")
         if [ "$tmp" != "$user_name" ]; then
             failure "User $user_name can not log in with key."
         else
@@ -2694,7 +2699,7 @@ function check_user()
     fi
 
     if [ -n "$option_full_name" ]; then
-        tmp=$(s9s user --list --user-format="%F\n" "$user_name" | tr ' ' '_')
+        tmp=$(s9s user --list --batch --user-format="%F\n" "$user_name" | tr ' ' '_')
         tmp=$(echo "$tmp" | tr '_' ' ')
         if [ "$tmp" != "$option_full_name" ]; then
             failure "The full name should be name $option_full_name, not $tmp."
@@ -2716,7 +2721,7 @@ function check_user()
     fi
 
     if [ -n "$option_dn" ]; then
-        tmp=$(s9s user --list --user-format="%d\n" "$user_name")
+        tmp=$(s9s user --list --batch --user-format="%d\n" "$user_name")
         if [ "$tmp" != "$option_dn" ]; then
             failure "Distinguished name should be name $option_dn, not $tmp."
         else
@@ -2725,7 +2730,7 @@ function check_user()
     fi
 
     if [ -n "$option_origin" ]; then
-        tmp=$(s9s user --list --user-format="%o\n" "$user_name")
+        tmp=$(s9s user --list --batch --user-format="%o\n" "$user_name")
         if [ "$tmp" != "$option_origin" ]; then
             failure "The origin should be '$option_origin' and not '$tmp'."
         else
@@ -2734,7 +2739,7 @@ function check_user()
     fi
     
     if [ -n "$option_cdt_path" ]; then
-        tmp=$(s9s user --list --user-format="%P\n" "$user_name")
+        tmp=$(s9s user --list --batch --user-format="%P\n" "$user_name")
         if [ "$tmp" != "$option_cdt_path" ]; then
             failure "The CDT path should be '$option_cdt_path' and not '$tmp'."
         else
@@ -2822,7 +2827,7 @@ function check_container_server()
     #mys9s tree --cat $file
     
     IFS=$'\n'
-    for line in $(s9s tree --cat $file)
+    for line in $(s9s tree --cat --batch $file)
     do
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print substr($0, index($0,$3))}')
@@ -2898,7 +2903,7 @@ function check_container_server()
     #    $file
 
     IFS=$'\n'
-    for line in $(s9s tree --cat --cmon-user=system --password=secret $file)
+    for line in $(s9s tree --cat --batch --cmon-user=system --password=secret $file)
     do
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print $3}')
@@ -3527,7 +3532,7 @@ function check_postgresql_account()
     
     if [ -n "$account_name" ]; then
         success "  o Test account is '$account_name', ok."
-        tmp=$(s9s account --list --cluster-id=1 "$account_name")
+        tmp=$(s9s account --list --cluster-id=1 --batch "$account_name")
         if [ "$tmp" == "$account_name" ]; then
             success "  o Account $account_name found in the list, ok."
         else
