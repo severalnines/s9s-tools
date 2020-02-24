@@ -17,6 +17,8 @@ OPTION_VENDOR="percona"
 
 nodes=""
 
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 
 cd $MYDIR
 source ./include.sh
