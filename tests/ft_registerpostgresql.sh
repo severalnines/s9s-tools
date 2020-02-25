@@ -16,6 +16,8 @@ CONTAINER_SERVER=""
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 cd $MYDIR
 source include.sh
 
