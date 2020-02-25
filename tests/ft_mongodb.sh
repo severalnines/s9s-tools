@@ -146,6 +146,7 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -175,6 +176,7 @@ function registerServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 #
@@ -186,6 +188,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a MongoDB Cluster on LXC"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -218,6 +221,7 @@ function createCluster()
     mys9s node --list --long
     mys9s node --stat 
     #mys9s node --list --print-json
+    end_verbatim
 }
 
 #
@@ -228,6 +232,7 @@ function testAddNode()
     local nodes
 
     print_title "Adding a node"
+    begin_verbatim
 
     #
     # Adding a node to the cluster.
@@ -240,6 +245,7 @@ function testAddNode()
         $LOG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -248,6 +254,7 @@ function testAddNode()
 function testRollingRestart()
 {
     print_title "Performing Rolling Restart"
+    begin_verbatim
 
     #
     # Calling for a rolling restart.
@@ -265,6 +272,7 @@ function testRollingRestart()
     mys9s node --list --long
     mys9s node --stat 
     #mys9s node --list --print-json
+    end_verbatim
 }
 
 #
@@ -273,10 +281,12 @@ function testRollingRestart()
 function destroyContainers()
 {
     print_title "Destroying Containers"
+    begin_verbatim
 
     mys9s container --delete --wait "$CONTAINER_NAME1"
     mys9s container --delete --wait "$CONTAINER_NAME2"
     #mys9s container --delete --wait "$CONTAINER_NAME3"
+    end_verbatim
 }
 
 #
