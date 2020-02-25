@@ -16,6 +16,8 @@ CONTAINER_SERVER=""
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 cd $MYDIR
 source include.sh
 
@@ -113,6 +115,7 @@ function testCreateCluster()
     local nodeName
 
     print_title "Creating a Cluster"
+    begin_verbatim
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy)
@@ -147,6 +150,7 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -157,6 +161,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -167,11 +172,13 @@ function testDrop()
         $LOG_OPTION
     
     check_exit_code $?
+    end_verbatim
 }
 
 function testRegister()
 {
     print_title "Registering an Existing Cluster"
+    begin_verbatim
 
     #
     # Registering the cluester that we just created and dropped.
@@ -188,6 +195,7 @@ function testRegister()
 
     mys9s cluster --list --long
     #s9s node --list --long
+    end_verbatim
 }
 
 #

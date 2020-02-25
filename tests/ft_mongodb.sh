@@ -188,6 +188,12 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a MongoDB Cluster on LXC"
+    cat <<EOF | paragraph
+  Here we create a mongodb cluster. For some reason the mongodb create_cluster
+  job is very different from other create_cluster jobs, there is no "nodes" for
+  some reason. 
+EOF
+
     begin_verbatim
 
     mys9s cluster \
