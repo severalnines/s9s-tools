@@ -17,6 +17,8 @@ cd $MYDIR
 source include.sh
 source shared_test_cases.sh
 
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 #
 # Prints usage information and exits.
 #
