@@ -4658,11 +4658,11 @@ S9sRpcClient::addProxySql(
 
     // The job_data describing the cluster.
     jobData["action"]   = "setupProxySql";
+    jobData["nodes"]    = nodesField(proxyNodes);
 
     if (options->hasProviderVersion())
         jobData["version"] = options->providerVersion();
         
-    jobData["nodes"]     = nodesField(proxyNodes);
 
     /*
      * Some information:
@@ -4753,20 +4753,12 @@ S9sRpcClient::addMaxScale(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
-    
-    #if 0
-    // FIXME: I am not sure older version of the controller support sending a
-    // node here.
-    jobData["node"] = hosts[0].toVariantMap();
-    #else
-    // FIXME: Once it is this, then that.
-    //jobData["hostname"] = maxScaleNodes[0].toNode().hostName();
-    jobData["server_address"] = maxScaleNodes[0].toNode().hostName();
-    #endif
+    jobData["nodes"]    = nodesField(maxScaleNodes);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "maxscale";
     jobSpec["job_data"]   = jobData;
+
     if (!options->schedule().empty())
         job["scheduled"] = options->schedule(); 
 
