@@ -3514,7 +3514,9 @@ S9sRpcClient::createGroupReplication(
 
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "group_replication";
-    jobData["mysql_hostnames"]  = hostNames;
+    jobData["nodes"]            = nodesField(hosts);
+    // This is the deprecated argument passing... the new is "nodes"
+    //jobData["mysql_hostnames"]  = hostNames;
     jobData["master_address"]   = hostNames[0].toString();
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
