@@ -342,6 +342,9 @@ enum S9sOptionType
     OptionUsr1,
     OptionNext,
     OptionCurrent,
+
+    OptionListQueries,
+    OptionTopQueries,
 };
 
 /**
@@ -3517,6 +3520,27 @@ S9sOptions::isListRequested() const
 {
     return getBool("list");
 }
+
+/**
+ * \returns true if the "list-queries" function is requested by providing the 
+ *   --list-queries command line option.
+ */
+bool
+S9sOptions::isListQueriesRequested() const
+{
+    return getBool("list_queries");
+}
+
+/**
+ * \returns true if the "top-queries" function is requested by providing the 
+ *   --top-queries command line option.
+ */
+bool
+S9sOptions::isTopQueriesRequested() const
+{
+    return getBool("top_queries");
+}
+
 
 /**
  * \returns true if the --current option was provided.
@@ -9264,6 +9288,12 @@ S9sOptions::checkOptionsProcess()
     if (isTopRequested())
         countOptions++;
 
+    if (isListQueriesRequested())
+        countOptions++;
+
+    if (isTopQueriesRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = 
@@ -9320,7 +9350,9 @@ S9sOptions::readOptionsProcess(
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
+        { "list-queries",     no_argument,       0,  OptionListQueries    },
         { "top",              no_argument,       0,  OptionTop            },
+        { "top-queries",      no_argument,       0,  OptionTopQueries     },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -9393,11 +9425,24 @@ S9sOptions::readOptionsProcess(
                 m_options["long"] = true;
                 break;
 
+            /*
+             * Main queries...
+             */
             case 'L': 
                 // --list
                 m_options["list"] = true;
                 break;
             
+            case OptionListQueries:
+                // --list-queries
+                m_options["list_queries"] = true;
+                break;
+
+            case OptionTopQueries:
+                // --top-queries
+                m_options["top_queries"] = true;
+                break;
+
             case 'h':
                 // -h, --human-readable
                 m_options["human_readable"] = true;

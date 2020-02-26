@@ -571,7 +571,6 @@ S9sRpcClient::getCluster(
 {
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request;
-    bool           retval;
 
     request["operation"]       = "getClusterInfo";
     request["with_hosts"]      = true;
@@ -584,9 +583,17 @@ S9sRpcClient::getCluster(
     if (!clusterName.empty())
         request["cluster_name"] = clusterName;
     
-    retval = executeRequest(uri, request);
-    
-    return retval;
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::getSqlProcesses()
+{
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request    = composeRequest();
+
+    request["operation"]       = "getSqlProcesses";
+    return executeRequest(uri, request);    
 }
 
 /**

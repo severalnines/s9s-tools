@@ -342,6 +342,11 @@ S9sRpcReply::users()
     return theList;
 }
 
+void
+S9sRpcReply::printSqlProcesses()
+{
+        printJsonFormat();
+}
 
 void
 S9sRpcReply::printCat()

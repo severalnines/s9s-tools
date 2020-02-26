@@ -892,6 +892,14 @@ S9sBusinessLogic::execute()
         } else if (options->isTopRequested())
         {
             executeTop(client);
+        } else if (options->isListQueriesRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getSqlProcesses();
+            client.setExitStatus();
+            reply = client.reply();
+            reply.printSqlProcesses();
         } else {
             PRINT_ERROR("Unknown process operation.");
         }

@@ -80,6 +80,8 @@ class S9sRpcClient
                 bool withSheetInfo  = true);
 
         bool getCluster(const S9sString &clusterName, const int clusterId);
+        bool getSqlProcesses();
+
         bool getTree(bool withDotDot = false);
         bool getDatabases();
 

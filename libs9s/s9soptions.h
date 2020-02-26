@@ -401,6 +401,8 @@ class S9sOptions
 
         bool isHelpRequested() const;
         bool isListRequested() const;
+        bool isListQueriesRequested() const;
+        bool isTopQueriesRequested() const;
         bool isCurrentRequested() const;
         bool isNextRequested() const;
         bool isEnableCmonHaRequested() const;

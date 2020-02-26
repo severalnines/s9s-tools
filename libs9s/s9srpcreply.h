@@ -91,6 +91,8 @@ class S9sRpcReply : public S9sVariantMap
         void printJobLogLong();
 
         void printCat();
+        void printSqlProcesses();
+
         void printAcl();
         
         void printReplicationList();
