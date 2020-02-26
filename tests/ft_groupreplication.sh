@@ -117,6 +117,7 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
@@ -149,6 +150,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -159,6 +162,7 @@ function testConfig()
     local exitCode
     
     print_title "Checking Configuration"
+    begin_verbatim
 
     #
     # Listing the configuration values.
@@ -172,6 +176,8 @@ function testConfig()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -184,6 +190,7 @@ function testAddNode()
     local exitCode
 
     print_title "Adding Node"
+    begin_verbatim
 
     printVerbose "Creating node..."
     nodeName=$(create_node --autodestroy)
@@ -208,6 +215,8 @@ function testAddNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -220,6 +229,7 @@ function testRemoveNode()
     fi
     
     print_title "Removing Node"
+    begin_verbatim
     
     #
     # Removing the last added node.
@@ -235,6 +245,8 @@ function testRemoveNode()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -245,6 +257,7 @@ function testRollingRestart()
     local exitCode
     
     print_title "Rolling Restart"
+    begin_verbatim
 
     #
     # Calling for a rolling restart.
@@ -259,6 +272,8 @@ function testRollingRestart()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -269,6 +284,7 @@ function testStop()
     local exitCode
 
     print_title "Stopping Cluster"
+    begin_verbatim
 
     #
     # Stopping the cluster.
@@ -283,6 +299,8 @@ function testStop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    
+    end_verbatim
 }
 
 #
@@ -293,6 +311,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -307,6 +326,8 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 #
