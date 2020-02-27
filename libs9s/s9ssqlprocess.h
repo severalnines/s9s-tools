@@ -26,5 +26,22 @@
  */
 class S9sSqlProcess : public S9sObject
 {
+    public:
+        S9sSqlProcess();
+        S9sSqlProcess(const S9sSqlProcess &orig);
+        S9sSqlProcess(const S9sVariantMap &properties);
+
+        virtual ~S9sSqlProcess();
+
+        S9sSqlProcess &operator=(const S9sVariantMap &rhs);
+        
+        virtual S9sString className() const;
+        int pid() const;
+        S9sString command() const;
+        S9sString userName() const;
+        int time() const;
+        S9sString instance() const;
+        S9sString hostName() const;
+        S9sString query(const S9sString &defaultValue) const;
 };
 

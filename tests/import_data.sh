@@ -62,8 +62,8 @@ done
 function testUploadData()
 {
     local sql_host=$1
-    local db_name="pipas1"
-    local user_name="pipas1"
+    local db_name="pipas1_$$"
+    local user_name="pipas1_$$"
     local password="p"
     local reply
     local count=0
@@ -93,8 +93,7 @@ function testUploadData()
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is $exitCode while creating a database."
-        return 1
+        failure "Exit code is $exitCode while creating account."
     fi
 
     #
@@ -117,7 +116,10 @@ function testUploadData()
     #
     # Here we upload some tables. This part needs test data...
     #
-    for file in /home/pipas/Desktop/stuff/databases/*.sql.gz; do
+    for file in \
+        /home/pipas/Desktop/stuff/databases/*.sql.gz \
+        /home/domain_names_ngtlds_diff_whois/*/*/*.sql.gz \
+        ; do
         if [ ! -f "$file" ]; then
             continue
         fi

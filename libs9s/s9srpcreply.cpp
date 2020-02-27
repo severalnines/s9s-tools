@@ -44,6 +44,7 @@
 #include "S9sContainer"
 #include "S9sStringList"
 #include "S9sReplication"
+#include "S9sSqlProcess"
 
 //#define DEBUG
 //#define WARNING
@@ -390,29 +391,103 @@ S9sRpcReply::printSqlProcesses()
 void 
 S9sRpcReply::printSqlProcessesLong()
 {
+    S9sOptions     *options  = S9sOptions::instance();    
     S9sVariantList  processes = operator[]("processes").toVariantList();
     S9sFormat       pidFormat;
     S9sFormat       commandFormat;
+    S9sFormat       timeFormat;
+    S9sFormat       userFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       instanceFormat;
+    S9sFormat       queryFormat;
+    int             nProcessess = 0;
+    S9sVariantMap   instances;
 
     for (size_t idx = 0u; idx < processes.size(); ++idx)
     {
         S9sVariantMap  processMap = processes[idx].toVariantMap();
-        S9sString      command = processMap["command"].toString();
-        int            pid = processMap["pid"].toInt();
+        S9sSqlProcess  process(processMap);
+        S9sString      command = process.command();
+        int            time = process.time();
+        int            pid = process.pid();
+        S9sString      user = process.userName();
+        S9sString      hostName = process.hostName();
+        S9sString      instance = process.instance();
+        S9sString      query = process.query("-");
+
+        query.replace("\n", "\\n");
 
         pidFormat.widen(pid);
         commandFormat.widen(command);
+        timeFormat.widen(time);
+        userFormat.widen(user);
+        hostNameFormat.widen(hostName);
+        instanceFormat.widen(instance);
+        //queryFormat.widen(query);
+
+        ++nProcessess;
+        instances[instance] = instances[instance].toInt() + 1;
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        pidFormat.widen("PID");
+        commandFormat.widen("TYPE");
+        timeFormat.widen("TIME");
+        userFormat.widen("ACCOUNT");
+        hostNameFormat.widen("HOSTNAME");
+        instanceFormat.widen("INSTANCE");
+        queryFormat.widen("QUERY");
+
+        printf("%s", headerColorBegin());
+        pidFormat.printf("PID");
+        commandFormat.printf("TYPE");
+        timeFormat.printf("TIME");
+
+        userFormat.printf("ACCOUNT");
+        hostNameFormat.printf("HOSTNAME");
+        instanceFormat.printf("INSTANCE");
+        queryFormat.printf("QUERY");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
     }
 
     for (size_t idx = 0u; idx < processes.size(); ++idx)
     {
         S9sVariantMap  processMap = processes[idx].toVariantMap();
-        S9sString      command = processMap["command"].toString();
-        int            pid = processMap["pid"].toInt();
+        S9sSqlProcess  process(processMap);
+        S9sString      command = process.command();
+        int            time = process.time();
+        int            pid = process.pid();
+        S9sString      user = process.userName();
+        S9sString      hostName = process.hostName();
+        S9sString      instance = process.instance();
+        S9sString      query = process.query("-");
+        
+        query.replace("\n", "\\n");
+
 
         pidFormat.printf(pid);
         commandFormat.printf(command);
+        timeFormat.printf(time);
+        
+        ::printf("%s", userColorBegin());
+        userFormat.printf(user);
+        ::printf("%s", userColorEnd());
+
+        hostNameFormat.printf(hostName);
+        instanceFormat.printf(instance);
+        queryFormat.printf(query);
+
         ::printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total: %s%'d%s processes on %s%zu%s instance(s).\n", 
+                numberColorBegin(), nProcessess, numberColorEnd(),
+                numberColorBegin(), instances.size(), numberColorEnd());
     }
 }
 
