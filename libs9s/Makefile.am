@@ -87,6 +87,8 @@ libs9s_public_h_headers =     \
 	s9sthread.h               \
 	S9sObject                 \
 	s9sobject.h               \
+	S9sSqlProcess             \
+	s9ssqlprocess.h           \
 	S9sProcess                \
 	s9sprocess.h              \
 	S9sSshCredentials         \
@@ -232,6 +234,7 @@ libs9s_a_SOURCES =            \
 	library.cpp               \
 	s9sdebug.cpp              \
 	s9sobject.cpp             \
+	s9ssqlprocess.cpp         \
 	s9sprocess.cpp            \
 	s9ssshcredentials.cpp     \
 	s9sstring.cpp             \

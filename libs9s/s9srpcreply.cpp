@@ -345,7 +345,75 @@ S9sRpcReply::users()
 void
 S9sRpcReply::printSqlProcesses()
 {
+    S9sOptions     *options  = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
         printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printSqlProcessesLong();
+    }
+}
+
+/**
+ *
+  "processes": [
+    {
+      "blocked_by_trx_id": "",
+      "client": "",
+      "command": "Sleep",
+      "currentTime": 1582721772,
+      "db": "",
+      "duration": 139929287899440,
+      "host": "",
+      "hostId": 1,
+      "hostname": "192.168.0.227",
+      "info": "",
+      "innodb_status": "",
+      "innodb_trx_id": "",
+      "instance": "192.168.0.227:3306",
+      "lastseen": 139929287899184,
+      "message": "",
+      "mysql_trx_id": 2,
+      "pid": 2,
+      "query": "",
+      "reportTs": 1582721772,
+      "sql": "",
+      "state": "WSREP aborter idle",
+      "time": 2292,
+      "user": "system user"
+    },
+ */
+void 
+S9sRpcReply::printSqlProcessesLong()
+{
+    S9sVariantList  processes = operator[]("processes").toVariantList();
+    S9sFormat       pidFormat;
+    S9sFormat       commandFormat;
+
+    for (size_t idx = 0u; idx < processes.size(); ++idx)
+    {
+        S9sVariantMap  processMap = processes[idx].toVariantMap();
+        S9sString      command = processMap["command"].toString();
+        int            pid = processMap["pid"].toInt();
+
+        pidFormat.widen(pid);
+        commandFormat.widen(command);
+    }
+
+    for (size_t idx = 0u; idx < processes.size(); ++idx)
+    {
+        S9sVariantMap  processMap = processes[idx].toVariantMap();
+        S9sString      command = processMap["command"].toString();
+        int            pid = processMap["pid"].toInt();
+
+        pidFormat.printf(pid);
+        commandFormat.printf(command);
+        ::printf("\n");
+    }
 }
 
 void

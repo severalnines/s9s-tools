@@ -334,6 +334,8 @@ class S9sRpcReply : public S9sVariantMap
         
         void printUserListBrief();
         void printUserListLong();
+
+        void printSqlProcessesLong();
         
         void printAccountListBrief();
         void printAccountListLong();
