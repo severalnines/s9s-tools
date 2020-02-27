@@ -25,6 +25,7 @@
 #include "S9sFormatter"
 #include "S9sRpcReply"
 #include "S9sProcess"
+#include "S9sSqlProcess"
 #include "S9sVector"
 
 class S9sRpcClient;
@@ -37,7 +38,25 @@ class S9sTopUi :
     public S9sFormatter
 {
     public:
-        S9sTopUi(S9sRpcClient &client);
+        enum SortOrder
+        {
+            PidOrder,
+            CpuUsage,
+            MemUsage,
+        };
+
+        enum ViewMode
+        {
+            // Showing the top OS processes...
+            OsProcesses,
+            // Showing the top SQL processes...
+            SqlProcesses,
+        };
+
+        S9sTopUi(
+                S9sRpcClient        &client, 
+                S9sTopUi::ViewMode   viewMode = OsProcesses);
+
         virtual ~S9sTopUi();
 
         virtual void processKey(int key);
@@ -45,21 +64,18 @@ class S9sTopUi :
 
         void executeTop();
 
-        enum  SortOrder
-        {
-            PidOrder,
-            CpuUsage,
-            MemUsage,
-        };
     protected:
         virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();
         
-        bool executeTopOnce();
-        void printProcessList(int maxLines);
+        bool getProcesses();
+        bool getSqlProcesses();
+        void printProcesses(int maxLines);
+        void printSqlProcesses(int maxLines);
 
     private:
+        ViewMode               m_viewMode;
         S9sRpcClient          &m_client;
         int                    m_nReplies;
 
@@ -69,9 +85,10 @@ class S9sTopUi :
         S9sRpcReply            m_cpuStatsReply;
         S9sRpcReply            m_memoryStatsReply;
         S9sRpcReply            m_processReply;
-        S9sVector<S9sProcess>  m_processes;
-        int                    m_clusterId;
-        S9sString              m_clusterName;
+        S9sVector<S9sProcess>     m_processes;
+        S9sVector<S9sSqlProcess>  m_sqlProcesses;
+        int                       m_clusterId;
+        S9sString                 m_clusterName;
 
         SortOrder              m_sortOrder;
         bool                   m_communicating;

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "S9sRpcClient"
+#include "S9sTopUi"
 
 /**
  * A class that is able to execute whatever the user requested through the
@@ -84,7 +85,7 @@ class S9sBusinessLogic
         void executeExecute(S9sRpcClient &client);
         void executeSystemCommand(S9sRpcClient &client);
 
-        void executeTop(S9sRpcClient &client);
+        void executeTop(S9sRpcClient &client, S9sTopUi::ViewMode mode);
         void executeProcessList(S9sRpcClient &client);
         void executePrintKeys(S9sRpcClient &client);
         void printBackupSchedules(S9sRpcClient &client);

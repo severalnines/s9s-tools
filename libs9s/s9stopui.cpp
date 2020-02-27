@@ -23,6 +23,7 @@
 #include "S9sOptions"
 #include "S9sDateTime"
 #include "S9sMutexLocker"
+#include "S9sSqlProcess"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -35,8 +36,10 @@
 struct termios orig_termios;
 
 S9sTopUi::S9sTopUi(
-        S9sRpcClient &client) :
+        S9sRpcClient       &client,
+        S9sTopUi::ViewMode  viewMode) :
     S9sDisplay(true),
+    m_viewMode(viewMode),
     m_client(client),
     m_nReplies(0),
     m_clustersReplyReceived(0),
@@ -145,6 +148,7 @@ S9sTopUi::refreshScreen()
 {
     startScreen();
     printHeader();
+    
     if (m_nReplies == 0)
         printMiddle("*** Waiting for data. ***");
     
@@ -198,17 +202,120 @@ S9sTopUi::printHeader()
 
     if (m_nReplies > 0)
     {
-        m_cpuStatsReply.printCpuStatLine1();
-        printNewLine();
+        switch (m_viewMode)
+        {
+            case OsProcesses:
+                m_cpuStatsReply.printCpuStatLine1();
+                printNewLine();
 
-        m_memoryStatsReply.printMemoryStatLine1();
-        printNewLine();
+                m_memoryStatsReply.printMemoryStatLine1();
+                printNewLine();
 
-        m_memoryStatsReply.printMemoryStatLine2();
+                m_memoryStatsReply.printMemoryStatLine2();
+                printNewLine();
+       
+                printProcesses(height() - 6);
+                break;
+
+            case SqlProcesses:
+                printSqlProcesses(height() - 6);
+                break;
+        }
+    }
+}
+
+static bool 
+compareSqlProcess(
+        const S9sSqlProcess &a,
+        const S9sSqlProcess &b)
+{
+    if (a.instance() != b.instance())
+        return a.instance() < b.instance();
+
+    return a.pid() < b.pid();
+}
+
+void 
+S9sTopUi::printSqlProcesses(
+        int maxLines)
+{
+    S9sFormat       pidFormat;
+    S9sFormat       commandFormat;
+    S9sFormat       timeFormat;
+    S9sFormat       userFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       instanceFormat;
+    int             nLines;
+
+    sort(m_sqlProcesses.begin(), m_sqlProcesses.end(), compareSqlProcess);
+
+    nLines = 0;
+    for (uint idx = 0u; idx < m_sqlProcesses.size(); ++idx)
+    {
+        S9sSqlProcess &process = m_sqlProcesses[idx];
+        int            pid = process.pid();
+        S9sString      command = process.command();
+        int            time = process.time();
+        S9sString      user = process.userName();
+        S9sString      hostName = process.hostName();
+        S9sString      instance = process.instance();
+
+        pidFormat.widen(pid);
+        userFormat.widen(user);
+        hostNameFormat.widen(hostName);
+        instanceFormat.widen(instance);
+        commandFormat.widen(command);
+        timeFormat.widen(time);
+
+        if (maxLines > 0 && nLines + 1 >= maxLines)
+            break;
+
+        ++nLines;
+    }
+
+    nLines = 0;
+    for (uint idx = 0u; idx < m_sqlProcesses.size(); ++idx)
+    {
+        S9sSqlProcess &process = m_sqlProcesses[idx];
+        int            pid = process.pid();
+        S9sString      user = process.userName();
+        S9sString      query = process.query("");
+        S9sString      hostName = process.hostName();
+        S9sString      instance = process.instance();
+        S9sString      command = process.command();
+        int            time = process.time();
+
+        query.replace("(\n", "(");
+        query.replace("\n ", " ");
+        query.replace("\n", "\\n");
+
+        pidFormat.printf(pid);
+        commandFormat.printf(command);
+        timeFormat.printf(time);
+        userFormat.printf(user);
+        hostNameFormat.printf(hostName);
+        instanceFormat.printf(instance);
+
+        if (!query.empty())
+        {
+            ::printf("%s",  "\033[38;5;3m");
+            ::printf("%s ", STR(query));
+            ::printf("%s",  TERM_NORMAL);
+        } else {
+            ::printf("- ");
+        }
+
         printNewLine();
         
-        printProcessList(height() - 6);
+        if (maxLines > 0 && nLines + 1 >= maxLines)
+            break;
+
+        ++nLines;
     }
+   
+    for (int n = nLines; n + 1 < maxLines; ++n)
+        printNewLine();
+
 }
 
 static bool 
@@ -241,8 +348,14 @@ compareProcessMem(
     return a.memUsage() > b.memUsage();
 }
 
+/**
+ * \param maxLines The number of lines we have on the screen for the printout.
+ *
+ * This is where we print the OS process list that was prepared by the
+ * getProcesses() method.
+ */
 void
-S9sTopUi::printProcessList(
+S9sTopUi::printProcesses(
         int maxLines)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -429,7 +542,17 @@ S9sTopUi::executeTop()
     {
         startTime = time(NULL);
 
-        success = executeTopOnce();
+        switch  (m_viewMode)
+        {
+            case OsProcesses:
+                success = getProcesses();
+                break;
+
+            case SqlProcesses:
+                success = getSqlProcesses();
+                break;
+        }
+
         if (!success)
             break;
         
@@ -438,15 +561,22 @@ S9sTopUi::executeTop()
     }
 }
 
+/**
+ * \returns True if everything went well, false on communication error.
+ *
+ * This method will get the OS processes from the controller. In fact this
+ * method will send multiple requests and will get more than the list of
+ * processes, but the important part is that this is what we use to refresh the
+ * data from the controller when showing the OS processes.
+ */
 bool
-S9sTopUi::executeTopOnce()
+S9sTopUi::getProcesses()
 {
-    S9sMutexLocker   locker(m_networkMutex);
-    S9sOptions      *options     = S9sOptions::instance();
-    S9sVariantList   hostList;
-    S9sString        clusterStatusText;
-    S9sRpcReply      reply;
-    
+    S9sMutexLocker         locker(m_networkMutex);
+    S9sOptions            *options     = S9sOptions::instance();
+    S9sVariantList         hostList;
+    S9sString              clusterStatusText;
+    S9sRpcReply            reply;
     S9sRpcReply            clustersReply;
     time_t                 clustersReplyReceived;
     S9sRpcReply            cpuStatsReply;
@@ -455,7 +585,6 @@ S9sTopUi::executeTopOnce()
     S9sVector<S9sProcess>  processes;
     int                    clusterId;
     S9sString              clusterName;
-
     bool                   success = true;
 
     m_communicating   = true;
@@ -517,7 +646,6 @@ S9sTopUi::executeTopOnce()
         return true;
 
     processReply = m_client.reply();
-   
     hostList = processReply["data"].toVariantList();
     for (uint idx = 0u; idx < hostList.size(); ++idx)
     {
@@ -540,22 +668,58 @@ S9sTopUi::executeTopOnce()
     }
 
     /*
-     *
+     * Pushing the received data into the object so that the screen refresh can
+     * print them.
      */
     m_mutex.lock(); 
-    m_clustersReply = clustersReply;
+
+    m_clustersReply         = clustersReply;
     m_clustersReplyReceived = clustersReplyReceived;
-    m_cpuStatsReply = cpuStatsReply;
-    m_memoryStatsReply = memoryStatsReply;
-    m_processReply = processReply;
-    m_processes = processes;
-    m_clusterId = clusterId;
-    m_clusterName = m_clustersReply.clusterName(m_clusterId);
+    m_cpuStatsReply         = cpuStatsReply;
+    m_memoryStatsReply      = memoryStatsReply;
+    m_processReply          = processReply;
+    m_processes             = processes;
+    m_clusterId             = clusterId;
+    m_clusterName           = m_clustersReply.clusterName(m_clusterId);
+
+    m_communicating         = false;
     m_nReplies++;
     m_refreshCounter++;
-    m_communicating = false;
+
     m_mutex.unlock();
 
     return true;
 }
 
+bool
+S9sTopUi::getSqlProcesses()
+{
+    S9sMutexLocker         locker(m_networkMutex);
+    //S9sOptions            *options     = S9sOptions::instance();
+    S9sRpcReply            getSqlProcessesReply;
+    S9sVariantList         variantList;
+    S9sVector<S9sSqlProcess> processList;
+
+    m_communicating   = true;
+    m_reloadRequested = false;
+    
+    m_client.getSqlProcesses();
+    getSqlProcessesReply = m_client.reply();
+
+    variantList = getSqlProcessesReply["processes"].toVariantList();
+    for (size_t idx = 0; idx < variantList.size(); ++idx)
+    {
+        S9sSqlProcess process = variantList[idx].toVariantMap();
+
+        processList << process;
+    }
+
+    m_mutex.lock();     
+    m_sqlProcesses = processList;
+    m_nReplies++;
+    m_refreshCounter++;
+    m_mutex.unlock();
+    
+    m_communicating   = false;
+    return true;
+}

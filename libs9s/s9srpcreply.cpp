@@ -392,6 +392,8 @@ void
 S9sRpcReply::printSqlProcessesLong()
 {
     S9sOptions     *options  = S9sOptions::instance();    
+    int             terminalWidth = options->terminalWidth();
+    int             isTerminal    = options->isTerminal();
     S9sVariantList  processes = operator[]("processes").toVariantList();
     S9sFormat       pidFormat;
     S9sFormat       commandFormat;
@@ -402,6 +404,7 @@ S9sRpcReply::printSqlProcessesLong()
     S9sFormat       queryFormat;
     int             nProcessess = 0;
     S9sVariantMap   instances;
+    int             nColumns    = 0;
 
     for (size_t idx = 0u; idx < processes.size(); ++idx)
     {
@@ -452,6 +455,13 @@ S9sRpcReply::printSqlProcessesLong()
 
         printf("\n");
     }
+        
+    nColumns += pidFormat.realWidth();
+    nColumns += commandFormat.realWidth();
+    nColumns += timeFormat.realWidth();
+    nColumns += userFormat.realWidth();
+    nColumns += hostNameFormat.realWidth();
+    nColumns += instanceFormat.realWidth();
 
     for (size_t idx = 0u; idx < processes.size(); ++idx)
     {
@@ -466,6 +476,17 @@ S9sRpcReply::printSqlProcessesLong()
         S9sString      query = process.query("-");
         
         query.replace("\n", "\\n");
+        
+        if (isTerminal && nColumns < terminalWidth)
+        {
+            int remaining  = terminalWidth - nColumns;
+            
+            if (remaining < (int) query.length())
+            {
+                query.resize(remaining - 1);
+                query += "…";
+            }
+        }
 
 
         pidFormat.printf(pid);

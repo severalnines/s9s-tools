@@ -891,7 +891,10 @@ S9sBusinessLogic::execute()
             executeProcessList(client);
         } else if (options->isTopRequested())
         {
-            executeTop(client);
+            executeTop(client, S9sTopUi::OsProcesses);
+        } else if (options->isTopQueriesRequested())
+        {
+            executeTop(client, S9sTopUi::SqlProcesses);
         } else if (options->isListQueriesRequested())
         {
             S9sRpcReply reply;
@@ -1714,9 +1717,10 @@ S9sBusinessLogic::executeNodeSet(
  */
 void 
 S9sBusinessLogic::executeTop(
-        S9sRpcClient &client)
+        S9sRpcClient       &client,
+        S9sTopUi::ViewMode  mode)
 {
-    S9sTopUi ui(client);
+    S9sTopUi ui(client, mode);
 
     ui.start();
     sleep(1);
