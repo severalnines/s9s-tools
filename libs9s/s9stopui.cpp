@@ -224,21 +224,11 @@ S9sTopUi::printHeader()
     }
 }
 
-static bool 
-compareSqlProcess(
-        const S9sSqlProcess &a,
-        const S9sSqlProcess &b)
-{
-    if (a.instance() != b.instance())
-        return a.instance() < b.instance();
-
-    return a.pid() < b.pid();
-}
-
 void 
 S9sTopUi::printSqlProcesses(
         int maxLines)
 {
+    S9sOptions     *options = S9sOptions::instance();
     S9sFormat       pidFormat;
     S9sFormat       commandFormat;
     S9sFormat       timeFormat;
@@ -247,7 +237,8 @@ S9sTopUi::printSqlProcesses(
     S9sFormat       instanceFormat;
     int             nLines;
 
-    sort(m_sqlProcesses.begin(), m_sqlProcesses.end(), compareSqlProcess);
+    sort(m_sqlProcesses.begin(), m_sqlProcesses.end(), 
+            S9sSqlProcess::compareSqlProcess);
 
     nLines = 0;
     for (uint idx = 0u; idx < m_sqlProcesses.size(); ++idx)
@@ -259,6 +250,9 @@ S9sTopUi::printSqlProcesses(
         S9sString      user = process.userName();
         S9sString      hostName = process.hostName();
         S9sString      instance = process.instance();
+        
+        if (!options->isStringMatchExtraArguments(command))
+            continue;
 
         pidFormat.widen(pid);
         userFormat.widen(user);
@@ -285,6 +279,9 @@ S9sTopUi::printSqlProcesses(
         S9sString      command = process.command();
         int            time = process.time();
 
+        if (!options->isStringMatchExtraArguments(command))
+            continue;
+
         query.replace("(\n", "(");
         query.replace("\n ", " ");
         query.replace("\n", "\\n");
@@ -292,13 +289,21 @@ S9sTopUi::printSqlProcesses(
         pidFormat.printf(pid);
         commandFormat.printf(command);
         timeFormat.printf(time);
+
+        ::printf("%s", XTERM_COLOR_ORANGE);
         userFormat.printf(user);
+        ::printf("%s", TERM_NORMAL);
+
+
+        ::printf("%s", XTERM_COLOR_GREEN);
         hostNameFormat.printf(hostName);
+        ::printf("%s", TERM_NORMAL);
+
         instanceFormat.printf(instance);
 
         if (!query.empty())
         {
-            ::printf("%s",  "\033[38;5;3m");
+            ::printf("%s",  XTERM_COLOR_SQL);
             ::printf("%s ", STR(query));
             ::printf("%s",  TERM_NORMAL);
         } else {

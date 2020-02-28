@@ -57,6 +57,20 @@ S9sSqlProcess::operator=(
     return *this;
 }
 
+/**
+ * This method can be used to sort the SQL process objects.
+ */
+bool
+S9sSqlProcess::compareSqlProcess(
+        const S9sSqlProcess &a,
+        const S9sSqlProcess &b)
+{
+    if (a.instance() != b.instance())
+        return a.instance() < b.instance();
+
+    return a.pid() < b.pid();
+}
+
 S9sString 
 S9sSqlProcess::className() const
 {

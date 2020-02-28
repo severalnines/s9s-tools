@@ -5514,7 +5514,9 @@ S9sOptions::printHelpProcess()
     printf(
 "Options for the \"process\" command:\n"
 "  --list                     List the processes.\n"
+"  --list-queries             List the database processes.\n"
 "  --top                      Continuosly print top processes.\n"
+"  --top-queries              Continuously print the database processes.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
 "  --limit=N                  Limit the number of processes shown.\n"

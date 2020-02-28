@@ -34,7 +34,12 @@ class S9sSqlProcess : public S9sObject
         virtual ~S9sSqlProcess();
 
         S9sSqlProcess &operator=(const S9sVariantMap &rhs);
-        
+
+        static bool 
+            compareSqlProcess(
+                    const S9sSqlProcess &a,
+                    const S9sSqlProcess &b);
+
         virtual S9sString className() const;
         int pid() const;
         S9sString command() const;

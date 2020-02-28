@@ -185,6 +185,7 @@ typedef enum S9sMessageLevel
 #define XTERM_COLOR_REGION_OK    "\033[2m\033[38;5;50m"
 #define XTERM_COLOR_REGION_FAIL  "\033[1m\033[38;5;9m"
 #define XTERM_COLOR_SELECTION    "\033[1m\033[48;5;4m"
+#define XTERM_COLOR_SQL          "\033[2m\033[95m"
 
 void 
 s9s_print_message (

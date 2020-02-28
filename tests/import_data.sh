@@ -68,7 +68,7 @@ function testUploadData()
     local reply
     local count=0
 
-    pip-say "Testing data upload on cluster."
+    print-title "Importing Data"
 
     #
     # Creating a new database on the cluster.

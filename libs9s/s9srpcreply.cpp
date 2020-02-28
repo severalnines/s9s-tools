@@ -394,7 +394,8 @@ S9sRpcReply::printSqlProcessesLong()
     S9sOptions     *options  = S9sOptions::instance();    
     int             terminalWidth = options->terminalWidth();
     int             isTerminal    = options->isTerminal();
-    S9sVariantList  processes = operator[]("processes").toVariantList();
+    S9sVariantList  variantList   = operator[]("processes").toVariantList();
+    S9sVector<S9sSqlProcess> processList;
     S9sFormat       pidFormat;
     S9sFormat       commandFormat;
     S9sFormat       timeFormat;
@@ -406,10 +407,22 @@ S9sRpcReply::printSqlProcessesLong()
     S9sVariantMap   instances;
     int             nColumns    = 0;
 
-    for (size_t idx = 0u; idx < processes.size(); ++idx)
+    /*
+     * Converting the variant list into process list.
+     */
+    for (size_t idx = 0; idx < variantList.size(); ++idx)
     {
-        S9sVariantMap  processMap = processes[idx].toVariantMap();
-        S9sSqlProcess  process(processMap);
+        S9sSqlProcess process = variantList[idx].toVariantMap();
+
+        processList << process;
+    }
+
+    /*
+     * Going through the list and preparing some data.
+     */
+    for (size_t idx = 0u; idx < processList.size(); ++idx)
+    {
+        S9sSqlProcess &process = processList[idx];
         S9sString      command = process.command();
         int            time = process.time();
         int            pid = process.pid();
@@ -432,6 +445,9 @@ S9sRpcReply::printSqlProcessesLong()
         instances[instance] = instances[instance].toInt() + 1;
     }
     
+    /*
+     * Printing the header.
+     */
     if (!options->isNoHeaderRequested())
     {
         pidFormat.widen("PID");
@@ -462,18 +478,21 @@ S9sRpcReply::printSqlProcessesLong()
     nColumns += userFormat.realWidth();
     nColumns += hostNameFormat.realWidth();
     nColumns += instanceFormat.realWidth();
+    nColumns += 1;
 
-    for (size_t idx = 0u; idx < processes.size(); ++idx)
+    /*
+     * Printing the actual list.
+     */
+    for (size_t idx = 0u; idx < processList.size(); ++idx)
     {
-        S9sVariantMap  processMap = processes[idx].toVariantMap();
-        S9sSqlProcess  process(processMap);
+        S9sSqlProcess &process = processList[idx];
         S9sString      command = process.command();
         int            time = process.time();
         int            pid = process.pid();
         S9sString      user = process.userName();
         S9sString      hostName = process.hostName();
         S9sString      instance = process.instance();
-        S9sString      query = process.query("-");
+        S9sString      query = process.query("");
         
         query.replace("\n", "\\n");
         
@@ -499,7 +518,15 @@ S9sRpcReply::printSqlProcessesLong()
 
         hostNameFormat.printf(hostName);
         instanceFormat.printf(instance);
-        queryFormat.printf(query);
+       
+        if (!query.empty())
+        {
+            ::printf("%s", sqlColorBegin());
+            queryFormat.printf(query);
+            ::printf("%s", sqlColorEnd());
+        } else {
+            queryFormat.printf("-");
+        }
 
         ::printf("\n");
     }
@@ -10406,6 +10433,24 @@ S9sRpcReply::userColorBegin()
 
 const char *
 S9sRpcReply::userColorEnd() 
+{
+    if (useSyntaxHighLight())
+        return TERM_NORMAL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::sqlColorBegin() 
+{
+    if (useSyntaxHighLight())
+        return XTERM_COLOR_SQL;
+
+    return "";
+}
+
+const char *
+S9sRpcReply::sqlColorEnd() 
 {
     if (useSyntaxHighLight())
         return TERM_NORMAL;
