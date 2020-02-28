@@ -5718,6 +5718,7 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
+"  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
 "  --create-account           Create a user account on the cluster.\n"
@@ -5733,6 +5734,7 @@ S9sOptions::printHelpCluster()
 "  --enable-recovery          Enable automatic recovery from a job.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --import-config            Collects configuration files from the nodes.\n"
+"  --list-config              Prints the configuration values of the cluster.\n"
 "  --list-databases           List the databases found on the cluster.\n"
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"

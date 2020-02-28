@@ -20,7 +20,7 @@ following:
 .\" Main options 
 .\"
 .TP
-.B \-\-add\-node
+.B --add-node
 Adds a new node (server) to the cluster or to be more precise creates a new
 job that will eventually add a new node to the cluster. The name (or IP 
 address) of the node should be specified using the \fB\-\-nodes\fR command 
@@ -36,7 +36,24 @@ s9s cluster \\
 .fi 
 
 .TP
-.B \-\^\-check\-hosts 
+.B --change-config
+This option can be used to change the configuration values for the cluster. The
+cluster configuration in this context is the Cmon Controller's configuration for
+the given cluster.
+
+.B
+.nf
+mys9s cluster \\
+    --change-config \\
+    --cluster-id=1 \\
+    --cmon-user="system" \\
+    --password="secret" \\
+    --opt-name="host_stats_collection_interval" \\
+    --opt-value="120"
+.fi
+
+.TP
+.B --check-hosts 
 This option can be used to check the hosts before creating a new cluster.
 
 .B EXAMPLE
@@ -187,9 +204,23 @@ s9s cluster \\
     --log
 .fi
 
+.TP
+.B --list-config
+This command line option can be used to print the configuration values for the
+cluster. The cluster configuration in this context is the Cmon Controller's
+configuration for the given cluster.
+
+.B EXAMPLE
+.nf
+    mys9s cluster \\
+        --list-config \\
+        --cluster-id=1 \\
+        --long \\
+        '*stats*'
+.fi
 
 .TP
-.B \-\^\-list\-databases
+.B --list-databases
 List the databases found on the cluster. Please note that if the cluster has a
 lot of databases this option might not show some of them. Sampling a huge number
 of databases would generate high load and so the controller has an upper limit
