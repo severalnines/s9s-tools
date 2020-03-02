@@ -200,7 +200,8 @@ Creating a cluster that we will save and restore in the next steps. Creating
 $OPTION_NUMBER_OF_NODES node(s).
 
 EOF
-    
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -249,6 +250,7 @@ EOF
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testCreatePostgre()
@@ -270,8 +272,8 @@ function testCreatePostgre()
     cat <<EOF
 Creating a cluster that we will save and restore in the next steps. Creating
 $OPTION_NUMBER_OF_NODES node(s).
-
 EOF
+    begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -323,6 +325,7 @@ EOF
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testSaveCluster()
@@ -333,8 +336,8 @@ function testSaveCluster()
     cat <<EOF
 Saving the cluster on the local controller into a tarball. Checking if the
 output file was created.
-
 EOF
+    begin_verbatim
 
     mys9s backup \
         --save-cluster-info \
@@ -350,6 +353,8 @@ EOF
     else
         success "  o File '$tgz_file' was created, ok"
     fi
+
+    end_verbatim
 }
 
 #
@@ -365,8 +370,8 @@ function testRestore()
     cat <<EOF
 This test will restore the saved cluster on a different controller (the
 secondary controller on $SECONDARY_CONTROLLER_IP. 
-
 EOF
+    begin_verbatim
 
     # Copying the tar.gz file to the secondary controller.
     echo "scp \"$local_file\" \"$SECONDARY_CONTROLLER_IP:$remote_file\""
@@ -383,17 +388,18 @@ EOF
         --log
 
     check_exit_code $?
-
+    end_verbatim
 
     #
     #
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+
     cat <<EOF
 Checking that the socondary controller ($SECONDARY_CONTROLLER_IP) is able to 
 manage the cluster. If so the cluster should be in STARTED state.
-
 EOF
+    begin_verbatim
 
     wait_for_cluster_started \
         --system \
@@ -420,6 +426,8 @@ EOF
     else
         success "  o The cluster is in started state, ok"
     fi
+
+    end_verbatim
 }
 
 function cleanup()
@@ -428,6 +436,7 @@ function cleanup()
     cat <<EOF
 Releasing previously allocated resources, deleting files, killing processes.
 EOF
+    begin_verbatim
 
     echo "PID for ssh: $SSH_PID"
     if [ -n "$SSH_PID" ]; then
@@ -439,6 +448,8 @@ EOF
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
+
+    end_verbatim
 }
 
 #
