@@ -204,11 +204,15 @@ function createContainer()
         failure "The container was not created or got no IP."
         s9s container --list --long
     fi
- 
+    
+    end_verbatim
+
     #
     # Checking if the owner can actually log in through ssh.
     #
     print_title "Checking SSH Access for '$USER'"
+    begin_verbatim
+
     is_server_running_ssh "$CONTAINER_IP" "$USER"
 
     if [ $? -ne 0 ]; then
@@ -217,10 +221,14 @@ function createContainer()
         success "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
     
+    end_verbatim
+
     #
     # Checking that sisko can log in.
     #
     print_title "Checking SSH Access for 'sisko'"
+    begin_verbatim
+
     ls -lha "$config_dir/sisko.key"
 
     is_server_running_ssh \
@@ -231,11 +239,14 @@ function createContainer()
     else
         echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
     fi
+    
+    end_verbatim
 
     #
     # Deleting the container we just created.
     #
     print_title "Deleting Container"
+    begin_verbatim
 
     mys9s container --delete $LOG_OPTION "$container_name"
     check_exit_code $?
@@ -260,6 +271,7 @@ function createCluster()
 EOF
     
     begin_verbatim
+
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -275,8 +287,9 @@ EOF
         $LOG_OPTION 
 
     check_exit_code $?
-    check_container_ids --galera-nodes
     end_verbatim
+
+    check_container_ids --galera-nodes
 
     #
     #
@@ -316,7 +329,7 @@ EOF
     # Check active alarms with the owner using the cluster ID.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+    if s9s alarm --list --long --cluster-id=1 --batch; then
         success "  o Owner can see the alarm about disconnected nodes, ok."
     else
         failure "Owner can't see the alarm?"
@@ -325,7 +338,7 @@ EOF
     # Active alarms, owner, no cluster ID.
     mys9s alarm --list --long 
     check_exit_code $?
-    if s9s alarm --list --long | grep -q "disconnected"; then
+    if s9s alarm --list --long | --batch; then
         success "  o Owner can see the alarm about disconnected nodes, ok."
     else
         failure "Owner can't see the alarm?"
@@ -364,7 +377,7 @@ EOF
     # No alarms, owner, cluster ID provided.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+    if s9s alarm --list --long --cluster-id=1 --batch; then
         failure "Alarm should have disappeared already."
     else
         success "  o Alarm disappeared, ok."
@@ -373,7 +386,7 @@ EOF
 
     mys9s alarm --list --long 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 | grep -q "disconnected"; then
+    if s9s alarm --list --long --cluster-id=1 --batch; then
         failure "Alarm should have disappeared already."
     else
         success "  o Alarm disappeared, ok."

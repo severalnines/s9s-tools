@@ -1396,6 +1396,7 @@ function check_container_ids()
     node_ips=$(s9s node --list --long --batch | grep "$filter" | awk '{ print $5 }')
     for node_ip in $node_ips; do
         print_title "Checking Node $node_ip"
+        begin_verbatim
 
         container_id=$(node_container_id "$node_ip")
         echo "      node_ip: $node_ip"
@@ -1408,6 +1409,7 @@ function check_container_ids()
         if [ "$container_id" == "-" ]; then
             failure "The container ID is '-'."
         fi
+        end_verbatim
     done
 }
 

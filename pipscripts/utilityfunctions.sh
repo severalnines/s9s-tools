@@ -778,7 +778,11 @@ function get_number_of_containers()
 #    fi
 #
 #    echo "$retval"
-    sudo ls -l /var/lib/lxc | grep ^d | wc -l
+    if [ -d "/var/lib/lxc" ]; then
+        sudo ls -l /var/lib/lxc | grep ^d | wc -l
+    else
+        echo 0
+    fi
 }
 
 function STR_DIRNAME()

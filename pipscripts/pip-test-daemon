@@ -107,10 +107,13 @@ function start_test()
     local option_s9s=""
     local retcode
 
+    printVerbose "Loading '$config_file'..."
     source "$config_file"
 
     # 
     # Getting the list of available servers.
+    #
+    printVerbose "Getting idle test servers"
     test_server=$(pip-server-control --list --idle)
     while [ -z "$test_server" ]; do
         test_server=$(pip-server-control --list --idle)
