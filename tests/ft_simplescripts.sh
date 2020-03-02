@@ -138,6 +138,7 @@ function main(jobData)
     return true;
 }
 EOF
+    begin_verbatim
 
     mys9s tree --mkdir /tests
     check_exit_code_no_job $?
@@ -155,6 +156,7 @@ EOF
     check_exit_code_no_job $?
 
     rm -f $tmp_file
+    end_verbatim
 }
 
 #
