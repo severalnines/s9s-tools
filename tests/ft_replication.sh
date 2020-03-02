@@ -223,7 +223,7 @@ function testCreateCluster()
         --slave          "$LAST_ADDED_NODE" \
         --state          "Online"
 
-    end_replication
+    end_verbatim
 }
 
 function testStageSlave()
@@ -259,7 +259,7 @@ EOF
         --slave          "$THIRD_ADDED_NODE" \
         --state          "Online"
 
-    end_replication
+    end_verbatim
 }
 
 #
@@ -350,7 +350,7 @@ function testUploadData()
         fi
     done
 
-    end_replication
+    end_verbatim
 }
 
 #
@@ -377,7 +377,7 @@ function testStop()
         failure "The exit code is ${exitCode}"
     fi
 
-    end_replication
+    end_verbatim
 }
 
 #
@@ -402,7 +402,7 @@ function testDrop()
         warning "The drop cluster job has failed."
     fi
 
-    end_replication
+    end_verbatim
 }
 
 #

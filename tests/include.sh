@@ -2505,6 +2505,8 @@ function check_replication_state()
         success "  o Replication state on $slave is $state, ok."
     else
         failure "Replication state is '$state', should be '$expected_state'."
+        mys9s replication --list --long
+        mys9s replication --list --long --slave=$slave
         return 1
     fi
 
