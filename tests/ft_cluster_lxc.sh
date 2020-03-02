@@ -329,7 +329,7 @@ EOF
     # Check active alarms with the owner using the cluster ID.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 --batch; then
+    if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
         success "  o Owner can see the alarm about disconnected nodes, ok."
     else
         failure "Owner can't see the alarm?"
@@ -338,7 +338,7 @@ EOF
     # Active alarms, owner, no cluster ID.
     mys9s alarm --list --long 
     check_exit_code $?
-    if s9s alarm --list --long | --batch; then
+    if s9s alarm --list --long --batch | grep CRITICAL; then
         success "  o Owner can see the alarm about disconnected nodes, ok."
     else
         failure "Owner can't see the alarm?"
@@ -377,7 +377,7 @@ EOF
     # No alarms, owner, cluster ID provided.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 --batch; then
+    if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
         failure "Alarm should have disappeared already."
     else
         success "  o Alarm disappeared, ok."
@@ -386,7 +386,7 @@ EOF
 
     mys9s alarm --list --long 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 --batch; then
+    if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
         failure "Alarm should have disappeared already."
     else
         success "  o Alarm disappeared, ok."

@@ -114,6 +114,7 @@ function start_test()
     # Getting the list of available servers.
     #
     printVerbose "Getting idle test servers"
+
     test_server=$(pip-server-control --list --idle)
     while [ -z "$test_server" ]; do
         test_server=$(pip-server-control --list --idle)
