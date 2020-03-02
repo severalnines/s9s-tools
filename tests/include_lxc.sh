@@ -9,7 +9,7 @@ function registerServer()
     begin_verbatim
 
     #
-    # Creating a container.
+    # Registering a container server.
     #
     mys9s server \
         --register \

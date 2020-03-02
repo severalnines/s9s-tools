@@ -16,8 +16,9 @@ OPTION_VENDOR="mariadb"
 PROVIDER_VERSION="10.2"
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 source ./shared_test_cases.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -124,34 +125,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-
-    #
-    # Checking the state and the class name... 
-    #
-    check_container_server \
-        --class        CmonLxcServer \
-        --server-name  "$CONTAINER_SERVER" \
-        --cloud        "lxc"
-}
-
 
 function createCluster()
 {

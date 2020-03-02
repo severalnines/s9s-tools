@@ -11,7 +11,8 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -114,25 +115,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-}
 
 function checkServerTree()
 {

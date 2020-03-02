@@ -11,8 +11,9 @@ CONTAINER_IP=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
-source include.sh
-source shared_test_cases.sh
+source ./include.sh
+source ./shared_test_cases.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -163,29 +164,6 @@ function createUser()
     if [ "$myself" != "$USER" ]; then
         failure "Whoami returns $myself instead of $USER."
     fi
-}
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container server.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-
-    check_container_server \
-        --server-name "$CONTAINER_SERVER" \
-        --class       "CmonLxcServer"
 }
 
 #

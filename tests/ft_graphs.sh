@@ -14,8 +14,9 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 
 cd $MYDIR
-source include.sh
-source shared_test_cases.sh
+source ./include.sh
+source ./shared_test_cases.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -119,47 +120,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-    begin_verbatim
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonLxcServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
-    end_verbatim
-}
 
 function createCluster()
 {
