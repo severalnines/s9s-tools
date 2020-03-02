@@ -29,6 +29,7 @@ OUTPUT_FILE="${MYBASENAME}_$$.tgz"
 
 cd $MYDIR
 source ./include.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -150,29 +151,6 @@ while true; do
 done
 
 #
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-
-    check_container_server \
-        --server-name "$CONTAINER_SERVER" \
-        --class       "CmonLxcServer"
-}
-
-#
 # This test will allocate a few nodes and install a new cluster.
 #
 function testCreateCluster()
@@ -183,7 +161,8 @@ function testCreateCluster()
     local node_name
 
     print_title "Creating a Galera Cluster"
-    
+    begin_verbatim
+ 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -232,6 +211,7 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testSaveCluster()
@@ -239,6 +219,8 @@ function testSaveCluster()
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Cluster"
+    begin_verbatim
+
     mys9s backup \
         --save-cluster-info \
         --cluster-id=1 \
@@ -253,6 +235,7 @@ function testSaveCluster()
     else
         success "  o File '$tgz_file' was created, ok"
     fi
+    end_verbatim
 }
 
 function testDropCluster()
@@ -263,6 +246,8 @@ Dropping the original cluster from the controller so that we can restore it from
 the saved file.
 
 EOF
+    
+    begin_verbatim
 
     mys9s cluster \
         --drop \
@@ -275,6 +260,7 @@ EOF
     tree /tmp/cmon_keys
 
     rm -rvf /tmp/cmon_keys
+    end_verbatim
 }
 
 function testRestoreCluster()
@@ -282,6 +268,7 @@ function testRestoreCluster()
     local local_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Restoring Cluster on $SECONDARY_CONTROLLER_IP"
+    begin_verbatim
 
     # Restoring the cluster on the remote controller.
     s9s backup \
@@ -291,12 +278,15 @@ function testRestoreCluster()
         --log
 
     check_exit_code $?
+    end_verbatim
 
 
     #
     # The cluster is now restored and should be soon in started state.
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    begin_verbatim
+
     wait_for_cluster_started "$CLUSTER_NAME"
     check_exit_code_no_job $?
     
@@ -313,6 +303,7 @@ function testRestoreCluster()
     
     ls -lha /tmp/cmon_keys
     tree /tmp/cmon_keys
+    end_verbatim
 }
 
 function cleanup()
@@ -325,6 +316,7 @@ Freeing previously allocated resources at the end of the test. Most importantly
 deleting created virtual machines.
 EOF
 
+    begin_verbatim
     #
     # Dropping the cluster.
     #
@@ -346,6 +338,8 @@ EOF
     for node in $(echo $CLUSTER_NODES | tr ';' ' '); do
         mys9s container --delete --wait $node
     done
+    
+    end_verbatim
 }
 
 #

@@ -14,7 +14,8 @@ PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -161,45 +162,6 @@ function createUser()
     if [ "$myself" != "$USER" ]; then
         failure "Whoami returns $myself instead of $USER."
     fi
-}
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-
-    mys9s server --list --long
-    check_exit_code_no_job $?
-
-    #
-    # Checking the class is very important.
-    #
-    class=$(\
-        s9s server --stat "$CONTAINER_SERVER" \
-        | grep "Class:" | awk '{print $2}')
-
-    if [ "$class" != "CmonLxcServer" ]; then
-        failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
-    fi
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 }
 
 #

@@ -6,6 +6,7 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -22,6 +23,11 @@ function registerServer()
     check_container_server \
         --class        CmonLxcServer \
         --server-name  "$CONTAINER_SERVER" \
-        --cloud        "lxc"
+        --cloud        "lxc" \
+        --class       "CmonLxcServer"
+
+    mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
+
+    end_verbatim    
 }
 
