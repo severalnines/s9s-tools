@@ -55,113 +55,158 @@ while true; do
     esac
 done
 
+SQL_CLASS=""
+SQL_HOST=""
+SQL_PORT=""
+
+db_name="pipas1_$$"
+user_name="pipas1_$$"
+password="p"
+
 #
 # This test will create a user and a database and then upload some data if the
 # data can be found on the local computer.
 #
-function testUploadData()
+function testCreateDatabase()
 {
-    local sql_host=$1
-    local db_name="pipas1_$$"
-    local user_name="pipas1_$$"
     local password="p"
     local reply
     local count=0
 
-    print-title "Importing Data"
+    print_title "Creating Database & Account"
 
     #
     # Creating a new database on the cluster.
     #
+
     mys9s cluster \
         --create-database \
+        --batch \
         --db-name=$db_name
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        return 1
+    else
+        success "  o Created database $db_name, ok."
     fi
-
+    
     #
     # Creating a new account on the cluster.
     #
     mys9s account \
         --create \
+        --batch \
         --account="$user_name:$password" \
         --privileges="$db_name.*:ALL"
     
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating account."
+    else
+        success "  o Created account $user_name, ok."
     fi
+}
 
-    #
-    # Executing a simple SQL statement using the account we created.
-    #
+function testCreateTable()
+{
+    local table_name="test_table"
+    local query
+
+    print_title "Creating SQL Table"
+
+    query="CREATE TABLE $table_name(NAME CHAR(255) NOT NULL, VALUE INT);"
+
     reply=$(\
         mysql \
             --disable-auto-rehash \
             --batch \
-            -h$sql_host \
+            -h$SQL_HOST \
             -u$user_name \
             -p$password \
             $db_name \
-            -e "SELECT 41+1" | tail -n +2 )
+            -e "$query")
 
-    if [ "$reply" != "42" ]; then
-        echo "Cluster failed to execute an SQL statement: '$reply'."
+    if [ $? -ne 0 ]; then
+        failure "Failed to create table"
+    else
+        success "  o Created table, ok."
     fi
+}
 
-    #
-    # Here we upload some tables. This part needs test data...
-    #
-    for file in \
-        /home/pipas/Desktop/stuff/databases/*.sql.gz \
-        /home/domain_names_ngtlds_diff_whois/*/*/*.sql.gz \
-        ; do
-        if [ ! -f "$file" ]; then
-            continue
+function testInsert()
+{
+    local table_name="test_table"
+    local query
+
+    #print_title "Creating SQL Table"
+
+    for file in *; do
+        query="INSERT INTO $table_name(NAME, VALUE) VALUES('$file', 10);"
+
+        reply=$(\
+            mysql \
+                --disable-auto-rehash \
+                --batch \
+                -h$SQL_HOST \
+                -u$user_name \
+                -p$password \
+                $db_name \
+                -e "$query")
+
+        if [ $? -ne 0 ]; then
+            failure "Failed to insert."
+            exit 5
+        else
+            success "  o success: $query."
         fi
 
-        printf "%'6d " "$count"
-        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
-        printf "\n"
-        zcat $file | mysql --batch -h$sql_host -u$user_name -pp $db_name
-
-        exitCode=$?
-        if [ "$exitCode" -ne 0 ]; then
-            failure "Exit code is $exitCode while uploading data."
-            break
-        fi
-
-        let count+=1
-        if [ "$count" -gt 999 ]; then
-            break
+        if [ -d "$file" ]; then
+            pushd $file >/dev/null 2>/dev/null
+            if [ $? -eq 0 ]; then
+                testInsert
+                popd >/dev/null 2>/dev/null
+            fi
         fi
     done
 }
 
-if [ -z "$SQL_HOST" ]; then
-    SQL_HOST=$(\
-        s9s node --list --properties="class_name=CmonGaleraHost" | \
-        head -n1)
-fi
+unset S9S_DEBUG_PRINT_REQUEST
 
-if [ -z "$SQL_HOST" ]; then
-    printError "Could not find SQL host."
-    exit 5
-fi
+function collectData()
+{
+    print_title "Collecting Data"
 
-if [ -z "$SQL_PORT" ]; then
-    SQL_PORT=$(s9s node --list --node-format="%P\n" "$SQL_HOST")
-fi
+    if [ -z "$SQL_HOST" ]; then
+        SQL_CLASS="CmonGaleraHost"
+        SQL_HOST=$(\
+            s9s node --list --properties="class_name=$SQL_HOST" | \
+            head -n1)
+    fi
 
-if [ -z "$SQL_PORT" ]; then
-    printError "Could not find SQL port."
-    exit 5
-fi
+    if [ -z "$SQL_HOST" ]; then
+        failure "Could not find SQL host."
+        return 1
+    else
+        success "  o Sql host is '$SQL_HOST', ok."
+    fi
 
-printVerbose " SQL_HOST : '$SQL_HOST'"
-printVerbose " SQL_PORT : $SQL_PORT"
-testUploadData "$SQL_HOST"
+    if [ -z "$SQL_PORT" ]; then
+        SQL_PORT=$(s9s node --list --node-format="%P\n" "$SQL_HOST")
+    fi
+
+    if [ -z "$SQL_PORT" ]; then
+        failure "Could not find SQL port."
+    else
+        success "  o SQL port is $SQL_PORT, ok."
+    fi
+}
+
+runFunctionalTest collectData
+runFunctionalTest testCreateDatabase
+runFunctionalTest testCreateTable
+
+pushd "/home"
+runFunctionalTest testInsert
+popd
+

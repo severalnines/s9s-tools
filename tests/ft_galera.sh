@@ -25,8 +25,6 @@ OPTION_VENDOR="percona"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
-export S9S_DEBUG_PRINT_REQUEST="true"
-
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh

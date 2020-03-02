@@ -23,8 +23,6 @@ CONTAINER_NAME3="${MYBASENAME}_node_3_$$"
 CONTAINER_NAME_HAPROXY_1="${MYBASENAME}_haproxy_1_$$"
 CONTAINER_NAME_HAPROXY_2="${MYBASENAME}_haproxy_2_$$"
 
-export S9S_DEBUG_PRINT_REQUEST="true"
-
 cd $MYDIR
 source include.sh
 

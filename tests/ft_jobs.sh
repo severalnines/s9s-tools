@@ -9,9 +9,6 @@ LOG_OPTION="--wait"
 cd $MYDIR
 source include.sh
 
-export S9S_DEBUG_PRINT_REQUEST="true"
-
-
 #
 # Prints usage information and exits.
 #
