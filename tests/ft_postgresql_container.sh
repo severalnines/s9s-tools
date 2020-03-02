@@ -128,6 +128,7 @@ function createUser()
     #
     #
     print_title "Creating a User"
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -161,6 +162,8 @@ function createUser()
     if [ "$myself" != "$USER" ]; then
         failure "Whoami returns $myself instead of $USER."
     fi
+
+    end_verbatim
 }
 
 #
@@ -176,6 +179,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -193,16 +197,20 @@ function createCluster()
 
     check_exit_code $?
     check_container_ids --postgresql-nodes
+    end_verbatim
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
-    sleep 10
+    begin_verbatim
+
+    mysleep 10
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
     mys9s node      --stat
+    end_verbatim
 }
 
 function removeCluster()
@@ -214,6 +222,8 @@ function removeCluster()
     # Dropping and deleting.
     #
     print_title "Dropping Cluster"
+    begin_verbatim
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     mys9s cluster \
@@ -233,6 +243,7 @@ function removeCluster()
     
     mys9s container --delete $LOG_OPTION "$container_name2"
     check_exit_code $?
+    end_verbatim
 }
 
 #
