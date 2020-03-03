@@ -1965,7 +1965,7 @@ S9sBusinessLogic::executeJobLog(
 
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-}
+    }
 }
 
 /**
@@ -2213,7 +2213,7 @@ S9sBusinessLogic::waitForJobWithLog(
          * Requested at most 300 log messages. If we have more we will print
          * them later in the next round.
          */
-        success = client.getJobLog(jobId, 300, nLogsPrinted);
+        success = client.getJobLog(jobId, 300, nLogsPrinted, false);
         if (success)
         {
             reply     = client.reply();

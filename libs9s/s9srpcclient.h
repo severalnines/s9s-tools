@@ -316,9 +316,10 @@ class S9sRpcClient
         bool getJobInstance(const int jobId);
         
         bool getJobLog(
-                const int jobId,
-                const int limit   = 0,
-                const int offset  = 0);
+                const int  jobId,
+                const int  limit   = 0,
+                const int  offset  = 0,
+                const bool isImportant = true);
 
         bool getLog();
         bool getLogStatistics();

@@ -149,6 +149,15 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on AWS"
+    cat <<EOF | paragraph
+  In this test we are creating a mysqlreplication cluster with a HaProxy load
+  balancer. The cluster will be created on virtual machines help by the AWS
+  cluster. So this test will create a cluster that does the following: (1)
+  creates virtual machines on the AWS cluster, (2) creates a replication cluster
+  on some of the nodes and (3) creates a HaProxy load balancer on the remaining
+  virtual machine.
+EOF
+
     begin_verbatim
 
     # These are the nodes we are going to destroy at the end of the tests.
@@ -240,11 +249,19 @@ function deleteContainer()
     local containers="$MY_CONTAINERS"
     local container
 
-#    containers+="ft_postgresql_aws_01_$$ "
-#    containers+="ft_postgresql_aws_02_$$ "
-#    containers+="ft_postgresql_aws_03_$$ "
-
     print_title "Deleting Containers"
+    if [ -n "$OPTION_INSTALL" ]; then
+        cat <<EOF | paragraph
+  The --install option was provided to the test script so containers on the AWS
+  cluster will not be deleted. Please delete them manually when they are not
+  needed any more.
+EOF
+    else
+        cat <<EOF | paragraph
+  Deleting the test containers created on the AWS cloud.
+EOF
+    fi
+
     begin_verbatim
 
     #
@@ -301,8 +318,8 @@ else
     runFunctionalTest createCluster
     #runFunctionalTest testAddNode
     #runFunctionalTest testAddHaproxy
-    #runFunctionalTest deleteContainer
-    #runFunctionalTest unregisterServer
+    runFunctionalTest deleteContainer
+    runFunctionalTest unregisterServer
 fi
 
 endTests

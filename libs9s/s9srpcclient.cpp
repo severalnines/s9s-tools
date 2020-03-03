@@ -1475,9 +1475,10 @@ S9sRpcClient::cloneJobInstance(
  */
 bool
 S9sRpcClient::getJobLog(
-        const int jobId,
-        const int limit,
-        const int offset)
+        const int  jobId,
+        const int  limit,
+        const int  offset,
+        const bool isImportant)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1498,7 +1499,7 @@ S9sRpcClient::getJobLog(
     if (offset != 0)
         request["offset"] = offset;
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, isImportant);
 
     return retval;
 
