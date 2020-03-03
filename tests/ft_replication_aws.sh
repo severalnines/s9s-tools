@@ -145,6 +145,8 @@ function createCluster()
 {
     local node001="ft_replication_aws_node001_$$"
     local node002="ft_replication_aws_haproxy_$$"
+    local haproxy_name
+
     #
     # Creating a Cluster.
     #
@@ -187,39 +189,30 @@ EOF
     fi
 
     mys9s node --list --long 
+    echo "$node001:"
     echo "  Public Ip: $(container_ip $node001)"
     echo "    Private: $(container_ip --private $node001)"
-    end_verbatim
-}
-
-#
-# This test will add one new node to the cluster.
-#
-function testAddNode()
-{
-    local node001="ft_postgresql_aws_01_$$"
-    local node001_ip=$(container_ip $node001)
-    local node002="ft_postgresql_aws_02_$$"
-
-    print_title "Adding a New Node"
-    begin_verbatim
-
-    MY_CONTAINERS+=" $node002"
-
-    #
-    # Adding a node to the cluster.
-    #
-    mys9s cluster \
-        --add-node \
-        --cluster-id=$CLUSTER_ID \
-        --nodes="$node001_ip?master;$node002?slave" \
-        --containers="$node002" \
-        --image="centos7" \
-        $LOG_OPTION
     
-    check_exit_code $?
+    echo "$node002:"
+    echo "  Public Ip: $(container_ip $node002)"
+    echo "    Private: $(container_ip --private $node002)"
+
+    for $(seq 1 10); do
+        haproxy_name=$(haproxy_node_name)
+        if [ -z "$haproxy_name" ]; then
+            warning "Can not find haproxy in cluster."
+            mys9s node --list --long
+        else
+            success "  o HaProxy node is $haproxy_name, ok."
+            break
+        fi
+
+        mysleep 60
+    done
+
     end_verbatim
 }
+
 
 function testAddHaproxy()
 {
@@ -307,7 +300,6 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
     #runFunctionalTest testAddHaproxy
 elif [ "$1" ]; then
     for testName in $*; do
@@ -316,7 +308,6 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddNode
     #runFunctionalTest testAddHaproxy
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
