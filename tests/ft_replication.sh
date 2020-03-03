@@ -234,7 +234,7 @@ function testStageSlave()
   then check if the job was properly executed.
 
 EOF
-    begin_replication
+    begin_verbatim
 
     mys9s replication --list --long
     check_replication_state \
@@ -275,7 +275,7 @@ function testUploadData()
     local count=0
 
     print_title "Testing data upload on cluster."
-    begin_replication
+    begin_verbatim
 
     #
     # Creating a new database on the cluster.
@@ -361,7 +361,7 @@ function testStop()
     local exitCode
 
     print_title "Stopping cluster"
-    begin_replication
+    begin_verbatim
 
     #
     # Stopping the cluster.
@@ -386,7 +386,7 @@ function testStop()
 function testDrop()
 {
     print_title "Dropping cluster"
-    begin_replication
+    begin_verbatim
 
     #
     # Starting the cluster.
