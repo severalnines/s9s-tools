@@ -197,7 +197,7 @@ EOF
     echo "  Public Ip: $(container_ip $node002)"
     echo "    Private: $(container_ip --private $node002)"
 
-    for $(seq 1 10); do
+    for i in $(seq 1 10); do
         haproxy_name=$(haproxy_node_name)
         if [ -z "$haproxy_name" ]; then
             warning "Can not find haproxy in cluster."
