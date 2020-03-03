@@ -773,6 +773,40 @@ S9sNode::role() const
 }
 
 /**
+ * \returns True if the class name suggests this is a container server.
+ */
+bool
+S9sNode::isContainerServer() const
+{
+    if (className() == "CmonLxcServer" ||
+            className() == "CmonCloudServer")
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * \returns True if the class name suggests this is a load balancer.
+ */
+bool
+S9sNode::isLoadBalaner() const
+{
+
+    if (className() == "CmonHaProxyHost" ||
+            className() == "CmonProxySqlHost" ||
+            className() == "CmonProxySqlHost" ||
+            className() == "CmonMaxScaleHost" ||
+            className() == "CmonKeepalivedHost")
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
  * \returns True if the host is a master.
  */
 bool

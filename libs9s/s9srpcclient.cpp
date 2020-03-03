@@ -9176,9 +9176,14 @@ S9sRpcClient::topologyField(
 
     for (uint idx = 0u; idx < nodes.size(); ++idx)
     {
-        const S9sNode &node = nodes[idx].toNode();
-        bool  isMaster      = node.property("master").toBoolean();
-        bool  isSlave       = node.property("slave").toBoolean();
+        const S9sNode &node       = nodes[idx].toNode();
+        const S9sString className = node.className();
+        bool  isMaster            = node.property("master").toBoolean();
+        bool  isSlave             = node.property("slave").toBoolean();
+
+        // Only data nodes supposed to have replication links.
+        if (node.isContainerServer() || node.isLoadBalaner())
+            continue;
 
         // If the user did not provide information about the master/slave status
         // we consider the first node a master and the others slave.
@@ -9187,11 +9192,6 @@ S9sRpcClient::topologyField(
             isMaster = idx == 0u;
             isSlave  = !isMaster;
         }
-        #if 0
-        S9S_WARNING("%-20s %-6s", 
-                STR(node.hostName()),
-                isMaster ? "master" : (isSlave ? "slave" : "-"));
-        #endif
 
         if (isMaster)
         {
