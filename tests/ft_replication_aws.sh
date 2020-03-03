@@ -204,6 +204,7 @@ EOF
             mys9s node --list --long
         else
             success "  o HaProxy node is $haproxy_name, ok."
+            mys9s node --list --long            
             break
         fi
 
