@@ -163,7 +163,7 @@ EOF
     begin_verbatim
 
     # These are the nodes we are going to destroy at the end of the tests.
-    MY_CONTAINER+=" $node001 $node002"
+    MY_CONTAINERS+=" $node001 $node002"
 
     mys9s cluster \
         --create \
@@ -213,27 +213,6 @@ EOF
     end_verbatim
 }
 
-
-function testAddHaproxy()
-{
-    local node003="ft_postgresql_aws_03_$$"
-
-    print_title "Creating a HaProxy Node"
-    begin_verbatim
-
-    MY_CONTAINERS+=" $node003"
-
-    # --os-user=s9s \
-
-    mys9s cluster --add-node \
-        --nodes="haproxy://$node003" \
-        --container="$node003" \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-
-    end_verbatim
-}
-
 #
 # This will delete the containers we created before.
 #
@@ -271,7 +250,7 @@ EOF
         check_exit_code $?
     done
 
-    s9s job --list
+    mys9s container --list --long
     end_verbatim
 }
 
@@ -300,7 +279,6 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddHaproxy
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -308,7 +286,6 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    #runFunctionalTest testAddHaproxy
     runFunctionalTest deleteContainer
     runFunctionalTest unregisterServer
 fi
