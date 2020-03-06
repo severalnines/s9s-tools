@@ -8657,6 +8657,9 @@ S9sRpcClient::composeJobData(
     
     if (options->hasForceOption())
         jobData["force"]  = options->force();
+    
+    if (!options->dataDir().empty())
+        jobData["datadir"] = options->dataDir();
 
     return jobData;
 }

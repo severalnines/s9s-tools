@@ -124,13 +124,13 @@ mys9s cluster \\
 .fi
 
 .TP
-
-.B \-\-create-report
+.B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
 available on the controller. If the \fB\-\-output-dir\fP command line option
 is provided the report will be created in the given directory on the
 controller host.
+
 To mask out all the passwords (with xxxxx) from the generated report, it is
 possible to specify \fB\-\-mask-passwords\fP command line option,
 or \fBmask_password\fP=true in the s9s configuration file.
@@ -679,19 +679,24 @@ supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or
 \fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
 
 .TP
-.BI \-\^\-config\-template= FILENAME
+.BI --config-template= FILENAME
 Use the specified file as configuration template to create the configuration
 file for the new cluster. Please note, that the \fB\-\^\-template\fP option is
 for the containers (virtual machines) of the nodes and has completely different
 meaning.
 
 .TP
-.BI \-\^\-donor= ADDRESS
+.BI --datadir= DIRECTORY
+The directory on the node(s) that will hold the data. The primary use for this
+command line option is to set the data directory path when a cluster is created.
+
+.TP
+.BI --donor= ADDRESS
 Currently this option is used when starting a cluster. It can be used to control
 which node will be started first and used for the others as donor.
 
 .TP
-.BI \-\-generate\-key 
+.BI --generate\-key 
 Create a new SSH keypair when creating new containers. If this command line
 option was provided a new SSH keypair will be created and registered for a new
 user account to provide SSH access to the new container(s). If the command

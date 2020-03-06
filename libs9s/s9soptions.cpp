@@ -262,6 +262,7 @@ enum S9sOptionType
     OptionImageOsUser,
     OptionIndividualFiles,
     OptionTestServer,
+    OptionDatadir,
     OptionBackupDatadir,
     
     OptionListImages,
@@ -3313,6 +3314,14 @@ S9sOptions::backupDatadir() const
     return getBool("backupDatadir");
 }
 
+/**
+ * \returns The value for the --datadir command line option.
+ */
+S9sString
+S9sOptions::dataDir()
+{
+    return getString("datadir");
+}
 
 
 /**
@@ -5758,6 +5767,7 @@ S9sOptions::printHelpCluster()
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
+"  --datadir=DIRECTORY        The directory on the node that holds the data.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
@@ -10974,6 +10984,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "config-template",  required_argument, 0, OptionConfigTemplate  },
+        { "datadir",          required_argument, 0, OptionDatadir         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-name",          required_argument, 0, OptionDbName          },
@@ -11451,6 +11462,11 @@ S9sOptions::readOptionsCluster(
             case OptionConfigTemplate:
                 // --config-template=FILE
                 m_options["config_template"] = optarg;
+                break;
+
+            case OptionDatadir:
+                // --datadir=DIRECTORY
+                m_options["datadir"] = optarg;
                 break;
 
             case OptionNoInstall:

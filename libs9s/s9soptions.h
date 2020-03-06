@@ -363,6 +363,7 @@ class S9sOptions
         bool fullPathRequested() const;
         bool toIndividualFiles() const;
         bool backupDatadir() const;
+        S9sString dataDir();
 
         bool useTls();
 
