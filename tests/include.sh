@@ -3438,7 +3438,8 @@ EOF
         warning "The return code is '$retcode'."
     fi
 
-    if [ "$lines" == "42" ]; then
+    clean_lines=$(echo "$lines" | tr -d ' ')
+    if [ "$clean_lines" == "42" ]; then
         success "  o The result is '$lines', ok."
     else
         warning "The result for 'select 41 + 1;' is '$lines'."
@@ -3569,7 +3570,7 @@ EOF
     #echo "$lines"
 
     clean_lines=$(echo "$lines" | tail -n 1);
-    clean_lines=$(echo $clean_lines);
+    clean_lines=$(echo $clean_lines | tr -d ' ');
     
     if [ "$retcode" -eq 0 ]; then
         success "  o The return code is 0, ok."
@@ -3577,7 +3578,7 @@ EOF
         warning "The return code is '$retcode'."
     fi
 
-    if [ "$lines" == "42" ]; then
+    if [ "$clean_lines" == "42" ]; then
         success "  o The result is '$lines', ok."
     else
         warning "The result for 'select 41 + 1;' is '$lines'."

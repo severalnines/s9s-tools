@@ -146,6 +146,12 @@ EOF
 
     begin_verbatim
 
+    NODES="$CONTAINER_NAME1;HaProxy://$CONTAINER_NAME_HAPROXY_1"
+    CONTAINERS="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME_HAPROXY_1"
+    
+    #NODES="$CONTAINER_NAME1;$CONTAINER_NAME2;$CONTAINER_NAME3;HaProxy://$CONTAINER_NAME_HAPROXY_1;HaProxy://$CONTAINER_NAME_HAPROXY_2"
+    #CONTAINERS="$CONTAINER_NAME1;$CONTAINER_NAME2;$CONTAINER_NAME3;$CONTAINER_NAME_HAPROXY_1;$CONTAINER_NAME_HAPROXY_2"
+
     # Creating the cluster.
     mys9s cluster \
         --create \
@@ -154,8 +160,8 @@ EOF
         --provider-version=$PROVIDER_VERSION \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --nodes="$CONTAINER_NAME1;HaProxy://$CONTAINER_NAME_HAPROXY_1" \
-        --containers="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME_HAPROXY_1" \
+        --nodes="$NODES" \
+        --containers="$CONTAINERS" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
