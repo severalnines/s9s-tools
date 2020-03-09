@@ -454,8 +454,8 @@ S9sRpcReply::printSqlProcessesLong()
         commandFormat.widen("TYPE");
         timeFormat.widen("TIME");
         userFormat.widen("ACCOUNT");
-        hostNameFormat.widen("HOSTNAME");
-        instanceFormat.widen("INSTANCE");
+        hostNameFormat.widen("CLIENT");
+        instanceFormat.widen("SERVER");
         queryFormat.widen("QUERY");
 
         printf("%s", headerColorBegin());
@@ -464,8 +464,8 @@ S9sRpcReply::printSqlProcessesLong()
         timeFormat.printf("TIME");
 
         userFormat.printf("ACCOUNT");
-        hostNameFormat.printf("HOSTNAME");
-        instanceFormat.printf("INSTANCE");
+        hostNameFormat.printf("CLIENT");
+        instanceFormat.printf("SERVER");
         queryFormat.printf("QUERY");
         printf("%s", headerColorEnd());
 
