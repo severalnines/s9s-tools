@@ -267,6 +267,12 @@ S9sTopUi::printSqlProcesses(
         ++nLines;
     }
 
+    // Better to use a wider column than flickering.
+    pidFormat.widen("9999999");
+    commandFormat.widen("Connect");
+    userFormat.widen("unauthenticated user");
+    hostNameFormat.widen("192.168.00.91:37950");
+
     nLines = 0;
     for (uint idx = 0u; idx < m_sqlProcesses.size(); ++idx)
     {
