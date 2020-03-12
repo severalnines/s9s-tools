@@ -4,10 +4,17 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 
+
+OPTION_PROXYSQL=""
+IS_MYSQL=""
+IS_POSTGRESQL=""
+CLUSTER_ID=""
+CLUSTER_TYPE=""
 SQL_CLASS=""
 SQL_HOST=""
 SQL_PORT=""
 
+DB_ALREADY_CREATED=""
 db_name="pipas1_$$"
 user_name="pipas1_$$"
 password="p"
@@ -16,6 +23,8 @@ cd $MYDIR
 source ./include.sh
 
 unset S9S_DEBUG_PRINT_REQUEST
+DONT_PRINT_TEST_MESSAGES="true"
+PRINT_COMMANDS="true"
 
 #
 # Prints usage information and exits.
@@ -28,8 +37,15 @@ Usage:
  
   $MYNAME - Tests the cluster under load.
 
- -h, --help       Print this help and exit.
- --verbose        Print more messages.
+  -h, --help       Print this help and exit.
+  --verbose        Print more messages.
+  --proxysql       Generate traffix through the ProxySql server.
+
+SUPPORTED TEST NAMES
+  collectData
+  testCreateDatabase
+  testCreateTable
+  testInsert
 
 EOF
     exit 1
@@ -37,7 +53,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose" \
+        -l "help,verbose,proxysql" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -55,6 +71,11 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            ;;
+
+        --proxysql)
+            OPTION_PROXYSQL="true"
+            shift
             ;;
 
         --)
@@ -76,6 +97,16 @@ function testCreateDatabase()
 
     print_title "Creating Database & Account"
 
+    if [ "$SQL_CLASS" == "CmonProxySqlHost" ]; then
+        cat <<EOF
+  The ProxySql is tested with pre-created database and account, so we are not
+  going to create them here.
+EOF
+        return 0
+    fi
+
+    mys9s node --list --long
+
     #
     # Creating a new database on the cluster.
     #
@@ -84,7 +115,7 @@ function testCreateDatabase()
     else
         mys9s cluster \
             --create-database \
-            --batch \
+            --cluster-id="$CLUSTER_ID" \
             --db-name=$db_name
     
         exitCode=$?
@@ -99,7 +130,7 @@ function testCreateDatabase()
         #
         mys9s account \
             --create \
-            --batch \
+            --cluster-id="$CLUSTER_ID" \
             --account="$user_name:$password" \
             --privileges="$db_name.*:ALL"
     
@@ -119,29 +150,24 @@ function testCreateTable()
 
     print_title "Creating SQL Table"
 
+
     if [ -z "$SQL_HOST" ]; then
         failure "No SQL host is set."
-    elif [ "$SQL_CLASS" == "CmonGaleraHost" ]; then
-        success "  o SQL class is $SQL_CLASS, ok."
-        query="CREATE TABLE $table_name(NAME CHAR(255) NOT NULL, VALUE INT);"
+    elif [ -n "$IS_MYSQL" ]; then
+        success "  o Using MySQL client, OK."
+        query="CREATE TABLE IF NOT EXISTS $table_name(NAME CHAR(255) NOT NULL, VALUE INT);"
 
         reply=$(\
-            mysql \
-                --disable-auto-rehash \
-                --batch \
-                -h$SQL_HOST \
-                -u$user_name \
-                -p$password \
-                $db_name \
-                -e "$query")
+            mysql -h$SQL_HOST -P$SQL_PORT -u$user_name -p$password $db_name -e "$query")
 
         if [ $? -ne 0 ]; then
             failure "Failed to create table"
+            failure "Command: mysql -h$SQL_HOST -P$SQL_PORT -u$user_name -p$password $db_name -e \"$query\""
         else
             success "  o Created table, ok."
         fi
-    elif [ "$SQL_CLASS" == "CmonPostgreSqlHost" ]; then
-        success "  o SQL class is $SQL_CLASS, ok."
+    elif [ -n "$IS_POSTGRESQL" ]; then
+        success "  o PostgreSQL client will be used, OK."
         query="CREATE TABLE $table_name(NAME CHAR(255) NOT NULL, VALUE INT);"
 
         reply=$( \
@@ -169,7 +195,6 @@ function testInsertMySql()
     local table_name="test_table"
     local query
     local file
-    #print_title "Creating SQL Table"
 
     for file in *; do
         if [ "$file" == "-" ]; then
@@ -179,14 +204,7 @@ function testInsertMySql()
         query="INSERT INTO $table_name(NAME, VALUE) VALUES('$file', 10);"
 
         reply=$(\
-            mysql \
-                --disable-auto-rehash \
-                --batch \
-                -h$SQL_HOST \
-                -u$user_name \
-                -p$password \
-                $db_name \
-                -e "$query")
+            mysql -h$SQL_HOST -P$SQL_PORT -u$user_name -p$password $db_name -e "$query")
 
         if [ $? -ne 0 ]; then
             failure "Failed to insert."
@@ -213,7 +231,6 @@ function testInsertPostgreSql()
 {
     local table_name="test_table"
     local query
-    #print_title "Creating SQL Table"
 
     for file in *; do
         if [ "$file" == "-" ]; then
@@ -288,9 +305,9 @@ function testInsert()
         failure "No SQL host is set."
     elif [ -z "$SQL_CLASS" ]; then
         failure "The class for SQL host is not set."
-    elif [ "$SQL_CLASS" == "CmonGaleraHost" ]; then
+    elif [ -n "$IS_MYSQL" ]; then
         testInsertMySql 
-    elif [ "$SQL_CLASS" == "CmonPostgreSqlHost" ]; then
+    elif [  -n "$IS_POSTGRESQL" ]; then
         testInsertPostgreSql
     else
         failure "SQL host class $SQL_CLASS is not handled here."
@@ -303,31 +320,80 @@ function testInsert()
 #
 function collectData()
 {
-    print_title "Finding the SQL Server"
+    print_title "Finding Information"
+  
+    #
+    # The cluster ID
+    #
+    CLUSTER_ID=$(\
+        s9s cluster --list --long --batch --cluster-format="%I\n" |\
+        head -n 1)
+    if [ -n "$CLUSTER_ID" ]; then
+        success "  o Cluster ID is $CLUSTER_ID, OK."
+    else
+        failure "Cluster ID was not found."
+    fi
+    
+    CLUSTER_TYPE=$(\
+        s9s cluster --list --long --batch --cluster-id=$CLUSTER_ID --cluster-format="%T\n")
+    if [ -n "$CLUSTER_TYPE" ]; then
+        success "  o Cluster type is $CLUSTER_TYPE, OK."
+    else
+        failure "Cluster type was not found."
+    fi
 
-    if [ -z "$SQL_HOST" ]; then
-        SQL_CLASS="CmonGaleraHost"
+    #
+    # The SQL HOST.
+    #
+    if [ -n "$OPTION_PROXYSQL" ]; then
+        SQL_CLASS="CmonProxySqlHost"
         SQL_HOST=$(\
             s9s node --list --properties="class_name=$SQL_CLASS" | \
             head -n1)
-    fi
+        #
+        # The following tests create this account and db in advance:
+        #   o ft_proxysql_connect.sh
+        #
+        user_name="pipas"
+        password="password"
+        db_name="test_database"
+        DB_ALREADY_CREATED="true"
 
-    if [ -z "$SQL_HOST" ]; then
-        SQL_CLASS="CmonPostgreSqlHost"
-        SQL_HOST=$(\
-            s9s node --list --properties="class_name=$SQL_CLASS" | \
-            head -n1)
-    fi
+        # 
+        SQL_PORT="6033"
+    else
+        if [ -z "$SQL_HOST" ]; then
+            SQL_CLASS="CmonGaleraHost"
+            SQL_HOST=$(\
+                s9s node --list --properties="class_name=$SQL_CLASS" | \
+                head -n1)
+        fi
 
+        if [ -z "$SQL_HOST" ]; then
+            SQL_CLASS="CmonPostgreSqlHost"
+            SQL_HOST=$(\
+                s9s node --list --properties="class_name=$SQL_CLASS" | \
+                head -n1)
+        fi
+    fi
 
     if [ -z "$SQL_HOST" ]; then
         failure "Could not find SQL host."
         SQL_CLASS=""
         return 1
     else
-        success "  o Sql host is '$SQL_HOST', ok."
+        success "  o SQL host is '$SQL_HOST', ok."
     fi
 
+    if [ -z "$SQL_CLASS" ]; then
+        failure "No SQL server class set."
+    else
+        success "  o SQL node class is $SQL_CLASS, OK."
+    fi
+
+    #
+    # The SQL port.
+    #
     if [ -z "$SQL_PORT" ]; then
         SQL_PORT=$(s9s node --list --node-format="%P\n" "$SQL_HOST")
     fi
@@ -337,13 +403,37 @@ function collectData()
     else
         success "  o SQL port is $SQL_PORT, ok."
     fi
+    
+    if [ "$SQL_CLASS" == "CmonGaleraHost" ]; then
+        IS_MYSQL="true"
+    elif [ "$SQL_CLASS" == "CmonPostgreSqlHost" ]; then
+        IS_POSTGRESQL="true"
+    elif [ "$SQL_CLASS" == "CmonProxySqlHost" -a \
+            "$CLUSTER_TYPE" == "GALERA" ]; then
+        IS_MYSQL="true"
+    fi
+
+    if [ -n "$IS_MYSQL" ]; then
+        success "  o MySQL communication will be used, OK."
+    elif [ -n "$IS_POSTGRESQL" ]; then
+        success "  o PostgreSQL communication will be used, OK."
+    else
+        failure "Could not determine what SQL client to use."
+    fi
 }
 
-runFunctionalTest collectData
-runFunctionalTest testCreateDatabase
-runFunctionalTest testCreateTable
+if [ "$1" ]; then
+    for testName in $*; do
+        runFunctionalTest "$testName"
+    done
+else
+    runFunctionalTest collectData
+    runFunctionalTest testCreateDatabase
+    runFunctionalTest testCreateTable
 
-pushd "$HOME"
-runFunctionalTest testInsert
-popd
+    pushd "$HOME"
+    runFunctionalTest testInsert
+    popd
+fi
+
 

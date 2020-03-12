@@ -495,7 +495,7 @@ function failure
         echo -en "$TEST_SUITE_NAME::$TEST_NAME(): "
         echo -e  "${XTERM_COLOR_RED}$1${TERM_NORMAL}"
     else
-        echo "FAILURE: $1"
+        echo -e  "${XTERM_COLOR_RED}$1${TERM_NORMAL}"
     fi
 
     let NUMBER_OF_PERFORMED_CHECKS+=1

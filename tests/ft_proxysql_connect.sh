@@ -46,11 +46,11 @@ Usage:
 SUPPORTED TESTS:
   o testPing           Pinging the controller.
   o testCreateCluster  Creates a cluster.
-  o testCreateDatabase Creates some accounts and databases.
+  o testCreateDatabase Creates some accounts and databases (pipas:password).
   o testAddProxySql    Adds a ProxySQL node.
-  o testConnect01      Tests if the ProxySQL accepts connections.
-  o testConnect02      Tests connections using the previously created account.
-  o testUploadData     Uploads data through the ProxySQL server.
+  o testConnect01      Connects ProxySql with proxydemo.
+  o testConnect02      Connects ProxySql with pipas.
+  o testUploadData     Uploads data through the ProxySQL server as proxydemo.
 
 EXAMPLE
  ./$MYNAME --print-commands --server=storage01 --reset-config --install
@@ -197,9 +197,15 @@ function testCreateCluster()
 #
 function testCreateDatabase()
 {
-    local userName
+    local userName="pipas"
+    local databaseName="test_database"
+    local userPassword="password"
 
     print_title "Creating Database"
+    cat <<EOF | paragraph
+EOF
+
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -207,7 +213,7 @@ function testCreateDatabase()
     mys9s cluster \
         --create-database \
         --cluster-id=$CLUSTER_ID \
-        --db-name="test_database" \
+        --db-name="$databaseName" \
         --batch
     
     check_exit_code_no_job $?
@@ -219,7 +225,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password@%" \
+        --account="$userName:$userPassword@%" \
         --privileges="*.*:ALL" \
         --batch
     
@@ -229,7 +235,7 @@ function testCreateDatabase()
         --create \
         --cluster-id=$CLUSTER_ID \
         --account="test_user1:password@192.%" \
-        --privileges="test_database.*:ALL" \
+        --privileges="$databaseName.*:ALL" \
         --batch
     
     check_exit_code_no_job $?
@@ -238,10 +244,11 @@ function testCreateDatabase()
         --create \
         --cluster-id=$CLUSTER_ID \
         --account="test_user2:password@10.10.1.23" \
-        --privileges="test_database.*:ALL" \
+        --privileges="$databaseName.*:ALL" \
         --batch
     
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 
@@ -426,6 +433,10 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
+        runFunctionalTest testCreateDatabase
+        runFunctionalTest testAddProxySql
+        runFunctionalTest testConnect01
+        runFunctionalTest testConnect02
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -433,16 +444,11 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testPing
-
     runFunctionalTest testCreateCluster
-
     runFunctionalTest testCreateDatabase
-
     runFunctionalTest testAddProxySql
-
     runFunctionalTest testConnect01
     runFunctionalTest testConnect02
-
     runFunctionalTest testUploadData
 fi
 
