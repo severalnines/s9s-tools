@@ -530,6 +530,9 @@ class S9sOptions
         bool isLogRequested() const;
 
         bool isStringMatchExtraArguments(const S9sString &theString) const;
+        bool isStringMatchToServerOption(const S9sString &theString) const;
+        bool isStringMatchToClientOption(const S9sString &theString) const;
+
         uint nExtraArguments() const;
         S9sString extraArgument(uint idx);
 

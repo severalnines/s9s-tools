@@ -346,6 +346,8 @@ enum S9sOptionType
 
     OptionListQueries,
     OptionTopQueries,
+    OptionServer,
+    OptionClient,
 };
 
 /**
@@ -4682,6 +4684,36 @@ S9sOptions::isStringMatchExtraArguments(
     return false;
 }
 
+bool
+S9sOptions::isStringMatchToServerOption(
+        const S9sString &theString) const
+{
+    S9sString pattern = getString("server");
+
+    if (pattern.empty())
+        return true;
+
+    if (fnmatch(STR(pattern), STR(theString), FNM_EXTMATCH) == 0)
+        return true;
+
+    return false;
+}
+
+bool
+S9sOptions::isStringMatchToClientOption(
+        const S9sString &theString) const
+{
+    S9sString pattern = getString("client");
+
+    if (pattern.empty())
+        return true;
+
+    if (fnmatch(STR(pattern), STR(theString), FNM_EXTMATCH) == 0)
+        return true;
+
+    return false;
+}
+
 /**
  * \returns The number of extra arguments, arguments that are not commands (e.g.
  *   'cluster' or 'user'), not command line options and not command line option
@@ -5527,8 +5559,10 @@ S9sOptions::printHelpProcess()
 "  --top                      Continuosly print top processes.\n"
 "  --top-queries              Continuously print the database processes.\n"
 "\n"
+"  --client=PATTERN           Show only the processes from matching clients.\n"
 "  --cluster-id=ID            The ID of the cluster to show.\n"
 "  --limit=N                  Limit the number of processes shown.\n"
+"  --server=PATTERN           Show only the processes from matching servers.\n"
 "  --sort-by-memory           Sort by resident size instead of CPU usage.\n"
 "  --update-freq=SECS         The screen update frequency for top.\n"
 "\n"
@@ -9369,7 +9403,9 @@ S9sOptions::readOptionsProcess(
         { "top-queries",      no_argument,       0,  OptionTopQueries     },
 
         // Cluster information
+        { "client",           required_argument, 0,  OptionClient         },
         { "cluster-id",       required_argument, 0, 'i'                   },
+        { "server",           required_argument, 0,  OptionServer         },
         { "update-freq",      required_argument, 0,  OptionUpdateFreq     },
 
         { 0, 0, 0, 0 }
@@ -9494,10 +9530,20 @@ S9sOptions::readOptionsProcess(
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
                 break;
+            
+            case OptionClient:
+                // --client=PATTERN
+                m_options["client"] = optarg;
+                break;
 
             case 'i':
                 // -i, --cluster-id=ID
                 m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case OptionServer:
+                // --server=PATTERN
+                m_options["server"] = optarg;
                 break;
 
             case OptionUpdateFreq:

@@ -224,6 +224,11 @@ S9sTopUi::printHeader()
     }
 }
 
+/**
+ * \param maxLines How many lines we are allowed to print.
+ *
+ * This is where we print the SQL processes in the interactive screen.
+ */
 void 
 S9sTopUi::printSqlProcesses(
         int maxLines)
@@ -248,10 +253,17 @@ S9sTopUi::printSqlProcesses(
         S9sString      command = process.command();
         int            time = process.time();
         S9sString      user = process.userName();
+        S9sString      query = process.query("");
         S9sString      hostName = process.hostName();
         S9sString      instance = process.instance();
         
-        if (!options->isStringMatchExtraArguments(command))
+        if (!options->isStringMatchExtraArguments(query))
+            continue;
+
+        if (!options->isStringMatchToServerOption(instance))
+            continue;
+
+        if (!options->isStringMatchToClientOption(hostName))
             continue;
 
         pidFormat.widen(pid);
@@ -285,7 +297,13 @@ S9sTopUi::printSqlProcesses(
         S9sString      command = process.command();
         int            time = process.time();
 
-        if (!options->isStringMatchExtraArguments(command))
+        if (!options->isStringMatchExtraArguments(query))
+            continue;
+        
+        if (!options->isStringMatchToServerOption(instance))
+            continue;
+
+        if (!options->isStringMatchToClientOption(hostName))
             continue;
 
         query.replace("(\n", "(");

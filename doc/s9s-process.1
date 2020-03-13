@@ -5,7 +5,7 @@ s9s-node \- Command line client for the Severalnines Clustercontrol server.
 .SH SYNOPSIS
 .B s9s-cluster
 .RI [OPTION]...
-.RI [EXECUTABLE]...
+.RI [FILTER]...
 .SH DESCRIPTION
 \fBs9s\fP  is a command line tool for ClusterControl, which can be used to
 deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
@@ -22,7 +22,9 @@ following:
 
 .TP
 .B -L, --list
-List the processes found on the nodes of a cluster.
+List the processes found on the nodes of a cluster. The optional filter argument
+in this case matched to the executable and only the matching processes are
+shown.
 
 .B EXAMPLE
 .nf
@@ -171,15 +173,42 @@ is not yet implemented.)
 .SS Other Options
 
 .TP
-.BI \-\-limit= N
+.BI --client= PATTERN
+Show only the processes that originate from clients that match the given
+pattern.
+
+.B EXAMPLE
+.nf
+s9s process \\
+    --list-queries \\
+    --cluster-id=1 \\
+    --client='192.168.0.127:*' \\
+    'INSERT*'
+.fi
+
+.TP
+.BI --limit= N
 Limit the number of processes shown in the list.
 
 .TP
-.BI \-\-sort-by-memory 
+.BI --server= PATTERN
+Show only the processes that are executed by servers that match the given
+pattern.
+
+.B EXAMPLE
+.nf
+s9s process \\
+    --list-queries \\
+    --cluster-id=1 \\
+    --server='192.168.0.81:*'
+.fi
+
+.TP
+.BI --sort-by-memory 
 Sort the processes by resident memory size instead of cpu usage.
 
 .TP
-.BI \-\-update-freq= INTEGER
+.BI --update-freq= INTEGER
 Update frequency for screen refresh in seconds.
 
 .\"
@@ -189,16 +218,3 @@ Update frequency for screen refresh in seconds.
 The s9s application will read and consider a number of environment variables.
 Please check s9s(1) for more information.
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-List the nodes managed by the controller:
-
-.nf
-# \fBs9s process \\
-    --top \\
-    --cluster-id=1\fR
-.fi

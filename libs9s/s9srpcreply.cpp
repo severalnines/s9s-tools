@@ -431,6 +431,15 @@ S9sRpcReply::printSqlProcessesLong()
         S9sString      instance = process.instance();
         S9sString      query = process.query("-");
 
+        if (!options->isStringMatchExtraArguments(query))
+            continue;
+
+        if (!options->isStringMatchToServerOption(instance))
+            continue;
+
+        if (!options->isStringMatchToClientOption(hostName))
+            continue;
+
         query.replace("\n", "\\n");
 
         pidFormat.widen(pid);
@@ -507,6 +516,14 @@ S9sRpcReply::printSqlProcessesLong()
             }
         }
 
+        if (!options->isStringMatchExtraArguments(query))
+            continue;
+        
+        if (!options->isStringMatchToServerOption(instance))
+            continue;
+
+        if (!options->isStringMatchToClientOption(hostName))
+            continue;
 
         pidFormat.printf(pid);
         commandFormat.printf(command);
@@ -1669,6 +1686,7 @@ S9sRpcReply::printProcessListLong(
 
         if (!options->isStringMatchExtraArguments(executable))
             continue;
+
 
         pidFormat.printf(pid);
 
