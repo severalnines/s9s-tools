@@ -317,6 +317,7 @@ enum S9sOptionType
     OptionShowFailed,
     OptionFirewalls,
     OptionSortByMemory,
+    OptionSortByTime,
     OptionOutputFile,
     OptionInputFile,
     OptionRegion,
@@ -5564,6 +5565,7 @@ S9sOptions::printHelpProcess()
 "  --limit=N                  Limit the number of processes shown.\n"
 "  --server=PATTERN           Show only the processes from matching servers.\n"
 "  --sort-by-memory           Sort by resident size instead of CPU usage.\n"
+"  --sort-by-time             Sort by process runtime.\n"
 "  --update-freq=SECS         The screen update frequency for top.\n"
 "\n"
     );
@@ -9395,6 +9397,7 @@ S9sOptions::readOptionsProcess(
         { "limit",            required_argument, 0, OptionLimit           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "sort-by-memory",   no_argument,       0, OptionSortByMemory    },
+        { "sort-by-time",     no_argument,       0, OptionSortByTime      },
 
         // Main Option
         { "list",             no_argument,       0, 'L'                   },
@@ -9501,6 +9504,11 @@ S9sOptions::readOptionsProcess(
             case OptionSortByMemory:
                 // --sort-by-memory
                 m_options["sort_by_memory"] = true;
+                break;
+            
+            case OptionSortByTime:
+                // --sort-by-time
+                m_options["sort_by_time"] = true;
                 break;
 
             case OptionConfigFile:

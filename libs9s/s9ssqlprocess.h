@@ -91,6 +91,11 @@ class S9sSqlProcess : public S9sObject
             compareSqlProcess(
                     const S9sSqlProcess &a,
                     const S9sSqlProcess &b);
+        
+        static bool 
+            compareSqlProcessByTime(
+                    const S9sSqlProcess &a,
+                    const S9sSqlProcess &b);
 
         virtual S9sString className() const;
         int pid() const;

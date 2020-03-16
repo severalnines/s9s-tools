@@ -13,6 +13,10 @@ CONTAINER_SERVER=""
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
+CONTAINER_NAME1="${MYBASENAME}_11_$$"
+CONTAINER_NAME2="${MYBASENAME}_12_$$"
+CONTAINER_NAME3="${MYBASENAME}_13_$$"
+
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
@@ -117,16 +121,21 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating MySQL Replication Cluster"
+    cat <<EOF | grep paragraph
+  This test will create some containers and install a group replication cluster
+  on top of them.
+EOF
+
     begin_verbatim
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$CONTAINER_NAME1")
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$CONTAINER_NAME2")
     nodes+="$nodeName;"
     
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy "$CONTAINER_NAME3")
     nodes+="$nodeName"
     
     #

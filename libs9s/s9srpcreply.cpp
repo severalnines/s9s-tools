@@ -417,6 +417,15 @@ S9sRpcReply::printSqlProcessesLong()
         processList << process;
     }
 
+    if (options->getBool("sort_by_time"))
+    {
+        sort(processList.begin(), processList.end(), 
+                S9sSqlProcess::compareSqlProcessByTime);
+    } else {
+        sort(processList.begin(), processList.end(), 
+                S9sSqlProcess::compareSqlProcess);
+    }
+
     /*
      * Going through the list and preparing some data.
      */

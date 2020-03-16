@@ -204,8 +204,18 @@ s9s process \\
 .fi
 
 .TP
-.BI --sort-by-memory 
+.B --sort-by-memory 
 Sort the processes by resident memory size instead of cpu usage.
+
+.TP
+.B --sort-by-time
+Sort the SQL queries by their runtime. The longer running queries are going to
+be on top.
+
+.B EXAMPLE
+.nf
+s9s process --list-queries --sort-by-time
+.fi
 
 .TP
 .BI --update-freq= INTEGER

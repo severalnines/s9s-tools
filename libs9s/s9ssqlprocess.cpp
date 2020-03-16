@@ -58,7 +58,9 @@ S9sSqlProcess::operator=(
 }
 
 /**
- * This method can be used to sort the SQL process objects.
+ * This method can be used to sort the SQL process objects. This method
+ * implements the default sorting order, first key is the SQL server, second is
+ * the process ID.
  */
 bool
 S9sSqlProcess::compareSqlProcess(
@@ -70,6 +72,22 @@ S9sSqlProcess::compareSqlProcess(
 
     return a.pid() < b.pid();
 }
+
+bool
+S9sSqlProcess::compareSqlProcessByTime(
+        const S9sSqlProcess &a,
+        const S9sSqlProcess &b)
+{
+    if (a.time() != b.time())
+        return a.time() > b.time();
+    
+    if (a.instance() != b.instance())
+        return a.instance() < b.instance();
+
+    return a.pid() < b.pid();
+}
+
+
 
 S9sString 
 S9sSqlProcess::className() const
