@@ -349,6 +349,13 @@ enum S9sOptionType
     OptionTopQueries,
     OptionServer,
     OptionClient,
+
+    OptionPrivate,
+    OptionAdminUser,
+    OptionAdminPassword,
+    OptionMonitorUser,
+    OptionMonitorPassword,
+    OptionImportAccount,
 };
 
 /**
@@ -2585,6 +2592,9 @@ S9sOptions::account() const
     if (m_options.contains("account"))
         retval = m_options.at("account").toAccount();
 
+    if (getBool("private"))
+        retval.setPrivate();
+    
     return retval;
 }
 
@@ -5750,8 +5760,10 @@ S9sOptions::printHelpAccount()
 "  --list                     List the accounts on the cluster.\n"
 "  --revoke                   Revoke privileges of the account.\n"
 "\n"
-"  --privileges=PRIVILEGES    The privileges for the account.\n"
 "  --account=ACCOUNT          The account itself.\n"
+"  --private                  Create a secured, more private account.\n"
+"  --privileges=PRIVILEGES    The privileges for the account.\n"
+"  --with-database            Create a database for the user.\n"
 "\n");
 }
 
@@ -10169,18 +10181,10 @@ S9sOptions::readOptionsAccount(
         { "cluster-name",     required_argument, 0, 'n'                   },
        
         // Options about the user.
-//        { "user-format",      required_argument, 0, OptionUserFormat      }, 
-//        { "old-password",     required_argument, 0, OptionOldPassword     }, 
-//        { "new-password",     required_argument, 0, OptionNewPassword     }, 
-//        { "public-key-file",  required_argument, 0, OptionPublicKeyFile   }, 
-//        { "public-key-name",  required_argument, 0, OptionPublicKeyName   }, 
-        
-        { "with-database",    no_argument,       0, OptionWithDatabase    },
-        { "db-name",          required_argument, 0, OptionDbName          },
-        { "privileges",       required_argument, 0, OptionPrivileges      },
         { "account",          required_argument, 0, OptionAccount,        },
-        { "limit",            required_argument, 0, OptionLimit          },
-//        { "offset",           required_argument, 0, OptionOffset         },
+        { "private",          no_argument,       0, OptionPrivate         },
+        { "privileges",       required_argument, 0, OptionPrivileges      },
+        { "with-database",    no_argument,       0, OptionWithDatabase    },
 
         { 0, 0, 0, 0 }
     };
@@ -10361,34 +10365,26 @@ S9sOptions::readOptionsAccount(
                 // --public-key-name=FILE
                 m_options["public_key_name"] = optarg;
                 break;
-            
-            case OptionWithDatabase:
-                // --with-database
-                m_options["with_database"] = true;
-                break;
-            
-            case OptionDbName:
-                // --db-name=NAME
-                m_options["db_name"] = optarg;
-                break;
-            
+           
+            /*
+             * Options about the account.
+             */
             case OptionAccount:
                 // --account=USERNAME
                 if (!setAccount(optarg))
                     return false;
-
-                break;
-            
-            case OptionLimit:
-                // --limit=NUMBER
-                m_options["limit"] = optarg;
-                break;
-            
-            case OptionOffset:
-                // --offset=NUMBER
-                m_options["offset"] = optarg;
                 break;
 
+            case OptionPrivate:
+                // --private
+                m_options["private"] = true;
+                break;
+
+            case OptionWithDatabase:
+                // --with-database
+                m_options["with_database"] = true;
+                break;
+ 
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;

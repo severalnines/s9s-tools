@@ -100,6 +100,13 @@ S9sAccount::password() const
     return S9sString();
 }
 
+void
+S9sAccount::setPrivate(
+        bool value)
+{
+    m_properties["private"] = value;
+}
+
 /**
  * FIXME: This is not used any more.
  */

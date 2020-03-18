@@ -97,7 +97,7 @@ function testCreateDatabase()
 
     print_title "Creating Database & Account"
 
-    if [ "$SQL_CLASS" == "CmonProxySqlHost" ]; then
+    if [ -n "$DB_ALREADY_CREATED" ]; then
         cat <<EOF
   The ProxySql is tested with pre-created database and account, so we are not
   going to create them here.
@@ -354,10 +354,10 @@ function collectData()
         # The following tests create this account and db in advance:
         #   o ft_proxysql_connect.sh
         #
-        user_name="pipas"
-        password="password"
-        db_name="test_database"
-        DB_ALREADY_CREATED="true"
+        #user_name="pipas"
+        #password="password"
+        #db_name="test_database"
+        #DB_ALREADY_CREATED="true"
 
         # 
         SQL_PORT="6033"

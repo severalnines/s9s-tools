@@ -17,7 +17,7 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
-.B \-\^\-create
+.B --create
 Creates a new account on the cluster. Please note, the account is an account of
 the cluster and not a user of the Cmon system.
 
@@ -31,16 +31,33 @@ mys9s account \\
 .fi
 
 .TP
-.B \-\^\-delete 
+.B --delete 
 Remove the account.
 
+.B EXAMPLE
+.nf
+# \fBs9s account \\
+    --delete \\
+    --cluster-id=1 \\
+    --account="joe"\fR
+.fi
+
 .TP
-.B \-\^\-grant
+.B --grant
 Grant privileges for an account on one or more databases.
 
 .TP
-.B \-L, \-\^\-list
+.B -L, --list
 Lists the accounts on the cluster.
+
+.B EXAMPLE
+.nf
+# \fBs9s account \\
+    --list \\
+    --long \\
+    --cluster-id=1\fR
+.fi
+
 
 .\"
 .\" The generic options that are supported by all the modes.
@@ -137,20 +154,22 @@ should be encoded as '%40'. Url encoded parts are supported anywhere in the
 string, usernames and passwords (and even hostnames) may also have special 
 characters.
 
-.TP
-.BI \-\^\-with-database
-Create a database for the new account while creating a new user account on the 
-cluster. The name of the database will be the same as the name of the account
-and all access rights will be granted for the account to use the database.
+.TP 
+.B --private
+Create a secure, more restricted account on the cluster. The actual
+interpretation of this flag depends on the controller, the current version is
+restricting the access to the ProxySql servers. The account that is created with
+the \fB\-\-private\fR option will not be imported into the ProxySql
+to have access through the ProxySql server immadiately after they created on 
+the cluster.
 
 .TP
-.BI \-\^\-privileges= EXPRESSION
+.BI --privileges= EXPRESSION
 Privileges to be granted to a user account on the server. The privileges are
 specified using a simple language that is interpreted by the Cmon Controller. 
 The language is specified as follows:
 
 .nf
-.RS
   expression: specification[;...] 
   
   specification: [object[,...]:]privilege[,...]
@@ -162,10 +181,8 @@ The language is specified as follows:
     | database_name.table_name
     | database_name
   }
-.RE
 .fi
 
-.RS
 Please note that an object name on itself is a database name (and not a table
 name) and multiple objects can be enumerated by using the ',' as separator. It
 is also important that multiple specifications can be enumerated using the
@@ -176,6 +193,13 @@ The expression \fB"MyDb:INSERT,UPDATE;Other:SELECT"\fP for example defines
 \fBSELECT\fP privilege on the \fBOther\fP database. The expression
 \fB"INSERT,UPDATE"\fP on the other hand would specify \fBINSERT\fP and
 \fBUPDATE\fP privileges on all databases and all tables.
+
+
+.TP
+.BI --with-database
+Create a database for the new account while creating a new user account on the 
+cluster. The name of the database will be the same as the name of the account
+and all access rights will be granted for the account to use the database.
 
 .\"
 .\" The environment variables.
@@ -189,50 +213,4 @@ CMON_CLUSTER_ID
 The numerical ID of the cluster to control, same as the \fB\-\-cluster\-id\fR
 command line option.
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-Here is an example showing how to create a new account with a password and a
-database on the cluster referenced by the cluster ID:
 
-.nf
-# \fBs9s account \\
-    --create \\
-    --cluster-id=1 \\
-    --account="joe:password" \\
-    --with-database\fR
-.fi
-
-The next example shows how to delete an account from the cluster.
-
-.nf
-# \fBs9s account \\
-    --delete \\
-    --cluster-id=1 \\
-    --account="joe"\fR
-.fi
-
-Here is how to show a detailed list of accounts that can be find on the
-specified cluster:
-
-.nf
-# \fBs9s account \\
-    --list \\
-    --long \\
-    --cluster-id=1\fR
-.fi
-
-Creating an account and granting certain access rights on the specified database
-that can be found on the cluster.
-
-.nf
-# \fBs9s account \\
-    --create \\
-    --cluster-id=1 \\
-    --account="pipas:password" \\
-    --privileges="mydatabase.*:INSERT,UPDATE" \\
-    --batch
-.fi

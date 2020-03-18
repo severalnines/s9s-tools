@@ -47,6 +47,8 @@ class S9sAccount
 
         void setWithDatabase(bool value);
 
+        void setPrivate(bool value = true);
+
         void setGrants(const S9sString &value);
         S9sString grants() const;
         S9sString grants(bool syntaxHighlight) const;
