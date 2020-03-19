@@ -887,6 +887,34 @@ s9s cluster \\
 Install the TimescaleDB option when creating a new cluster. This is currently
 only supported on PostgreSQL systems.
 
+.SH LOAD BALANCER OPTIONS
+The following command line options are closely related to load balancers. Please
+note that the controller may not interpret all these options for all the load
+balancer types.
+
+.TP
+.BI --admin-user= USERNAME
+The username for the administrator of load balancers. 
+
+.TP
+.BI --admin-password= PASSWORD
+The password for the administrator of load balancers.
+
+.TP
+.B --dont-import-accounts
+If this option is provided the database accounts will not be imported after the
+loadbalancer is installed and added to the cluster. The accounts can be imported
+later, but it is not going to be the part of the load balancer installation
+performed by the controller.
+
+.TP
+.BI --monitor-user= USERNAME
+The username of the monitoring user of the load balancer.
+
+.TP
+.BI --monitor-password= PASSWORD
+The password of the monitoring user of the load balancer.
+
 .\"
 .\"
 .\"
@@ -936,146 +964,3 @@ A short human readable description of the current state of the cluster.
 The s9s application will read and consider a number of environment variables.
 Please check s9s(1) for more information.
 
-.\" 
-.\" The examples. The are very helpful for people just started to use the
-.\" application.
-.\" 
-.SH EXAMPLES
-.PP
-Here is an example showing how to create a new cluster:
-
-.nf
-# \fBs9s cluster \\
-    --create \\
-    --controller=https://localhost:9556 \\
-    --cluster-type=galera \\
-    --vendor=percona \\
-    --nodes="192.168.1.104;192.168.1.107;192.168.1.108" \\
-    --provider-version=5.6 \\
-    --wait\fR
-.fi
-
-This command will create a new job on the controller to create a new cluster.
-Since the \fB--wait\fP command line option was provided it will wait until the
-job is finished, but the command line tool can be aborted before the job is
-finished, the job remains there and will be executed by the controller anyway.
-It is also possible to attach to the job using the job ID later or use the --log
-option to print the messages of the job.
-
-A similar example that will create a MySQL replication cluster with multiple
-master and slave nodes in it:
-
-.nf
-# \fBs9s cluster \\
-    --create \\
-    --cluster-type=mysqlreplication \\
-    --nodes=192.168.1.117?master;192.168.1.113?slave;192.168.1.115?slave;192.168.1.116?master;192.168.1.118?slave;192.168.1.119?slave; \\
-    --vendor=percona \\
-    --cluster-name=ft_replication_23986 \\
-    --provider-version=5.6 \\
-    --log\fR
-.fi
-
-Another example simply lists the clusters managed by the controller:
-
-.nf
-# \fBs9s cluster \\
-    --list \\
-    --long \\
-    --controller=https://localhost:9556 \\
-    --color=always\fR
-.fi
-
-Schedule a rolling restart of the cluster 20 minutes from now:
-
-.nf
-# \fBs9s cluster \\
-    --rolling-restart \\
-    --cluster-id=1 \\
-    --schedule="$(date -d 'now + 20 min')"\fR
-.fi
-
-Create a database on the cluster with the given name:
-
-.nf
-# \fBs9s cluster \\
-    --create-database \\
-    --cluster-id=2 \\
-    --db-name=database_name\fR
-.fi
-
-Create a database account on the cluster and also create a new database to be
-used by the new user. Grant all access on the new database for the new user:
-
-.nf
-# \fBs9s cluster \\
-    --create-account \\
-    --cluster-id=1 \\
-    --account=john:passwd@10.10.1.100 \\
-    --with-database\fR
-.fi
-
-The following example shows how the cluster format string can be used to print
-a customized the cluster list. The \fB\-\-cluster\-format\fR command line option
-is used here to produce a multi-line output:
-
-.nf
-# \fBs9s cluster \\
-    --list \\
-    --cluster-format="    ID : %05I \\nStatus : %S \\n  Name : %N\\n  Type : %T\\n Owner : %O/%G\\n\\n"\fR
-    ID : 00001 
-Status : STOPPED 
-  Name : ft_postgresqlstop_48273
-  Type : POSTGRESQL_SINGLE
- Owner : pipas/users
-.fi
-
-Easiest way to create a mongo cluster with highly recommended forced authentication:
-
-.nf
-# \fBs9s cluster \\
-    --create \\
-    --cluster-type=mongodb \\
-    --vendor=10gen \\
-    --provider-version=3.2 \\
-    --db-admin=adminuser \\
-    --db-admin-passwd=adminpwd \\
-    --nodes="192.168.1.11"\fR
-.fi
-
-A complete example for creating a sharded mongo cluster:
-
-.nf
-# \fBs9s cluster \\
-    --create \\
-    --cluster-type=mongodb \\
-    --vendor=10gen \\
-    --provider-version=3.2 \\
-    --db-admin=adminuser \\
-    --db-admin-passwd=adminpwd \\
-    --nodes="mongos://192.168.1.11;mongos://192.168.1.12;mongos://192.168.1.12;mongocfg://192.168.1.11;mongocfg://192.168.1.12;mongocfg://192.168.1.13;192.168.1.14?priority=5.0;192.168.1.15?arbiter_only=true;192.168.1.16?priority=2;192.168.1.17?rs=replset2;192.168.1.18?rs=replset2&arbiter_only=yes;192.168.1.19?rs=replset2&slave_delay=3&priority=0"\fR
-.fi
-
-Adding a data node to an existing mongo cluster's shard having replicaset name 'replset2':
-
-.nf
-# \fBs9s cluster \\
-    --add-node \\
-    --cluster-id=12 \\
-    --nodes=mongodb://192.168.1.20?rs=replset2\fR
-.fi
-
-The next example shows how to register a pre-installed cluster. The cluster type
-has to be provided as command line option and the list of nodes is also
-mandatory. These options are necessary so that the controller can check the
-nodes and find the details needed to manage the cluster.
-
-.nf
-# \fBs9s cluster \\
-    --register \\
-    --cluster-type=galera \\
-    --nodes=192.168.0.110;192.168.0.112 \\
-    --vendor=percona \\
-    --cluster-name=my_cluster_23466 \\
-    --wait\fR
-.fi

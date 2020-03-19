@@ -2816,6 +2816,7 @@ S9sRpcClient::createCluster()
 
     dbVersion    = options->providerVersion(
             options->clusterType() == "postgresql" ? "9.6" : "5.6");
+
     osUserName     = options->osUser();
     vendor         = options->vendor();
     osSudoPassword = options->osSudoPassword();
@@ -4673,24 +4674,6 @@ S9sRpcClient::addProxySql(
     if (options->hasProviderVersion())
         jobData["version"] = options->providerVersion();
         
-
-    /*
-     * Some information:
-        "db_database": "*.*",
-        "db_password": "cmon",
-        "db_privs": "",
-        "db_username": "cmon",
-    */
-    //printf("WARNING: admin/admin\n");
-    //printf("WARNING: proxy-monitor/proxy-monitor\n");
-
-    jobData["admin_user"]       = "proxysql-admin";
-    jobData["admin_password"]   = "proxysql-admin";
-    jobData["monitor_user"]     = "proxysql-monitor";
-    jobData["monitor_password"] = "proxysql-monitor";
-    jobData["import_accounts"]  = true;
-
-
     // The jobspec describing the command.
     jobSpec["command"]    = "proxysql";
     jobSpec["job_data"]   = jobData;
@@ -8661,6 +8644,28 @@ S9sRpcClient::composeJobData(
     if (!options->dataDir().empty())
         jobData["datadir"] = options->dataDir();
 
+    /*
+     * If the command line options has a proxysql node we add a number of
+     * options the proxysql jobs use. I hope this logic is airtight.
+     */
+    if (options->hasProxySql())
+    {
+        jobData["admin_user"]       = 
+            options->getString("admin_user", "proxysql-admin");
+
+        jobData["admin_password"]   = 
+            options->getString("admin_user", "proxysql-admin");
+    
+        jobData["monitor_user"]     = 
+             options->getString("monitor_user", "proxysql-monitor");
+
+        jobData["monitor_password"] = 
+            options->getString("monitor_password", "proxysql-monitor");
+
+        jobData["import_accounts"]  = 
+            !options->getBool("dont_import_accounts");
+    }
+
     return jobData;
 }
 
@@ -9345,4 +9350,5 @@ S9sRpcClient::timeStampString()
 
     return dt.toString();
 }
+
 

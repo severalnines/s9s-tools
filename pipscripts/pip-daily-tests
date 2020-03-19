@@ -197,6 +197,7 @@ ft_galerasimple.sh
 ft_jobs.sh
 ft_maintenance.sh
 ft_postgresqlsimple.sh
+ft_postgresqlsimple_11.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 

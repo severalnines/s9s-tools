@@ -123,6 +123,9 @@ class S9sOptions
         S9sVariantMap propertiesOption() const;
 
         bool setNodes(const S9sString &value);
+        S9sVariantList nodes() const;
+
+        bool hasProxySql() const;
 
         bool hasJobOptions() const;
 
@@ -134,7 +137,6 @@ class S9sOptions
         S9sVariant master() const;
         bool hasMaster() const;
 
-        S9sVariantList nodes() const;
         
         bool setServers(const S9sString &value);
         S9sVariantList servers() const;
@@ -583,7 +585,12 @@ class S9sOptions
         void printHelp();
         
         bool getBool(const char *key) const;
-        S9sString getString(const char *key) const;        
+
+        S9sString 
+            getString(
+                const char *key, 
+                const char *defaultValue = "") const;
+
         int getInt(const char *key) const;        
         S9sVariantMap getVariantMap(const char *key) const;
 

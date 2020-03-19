@@ -355,7 +355,7 @@ enum S9sOptionType
     OptionAdminPassword,
     OptionMonitorUser,
     OptionMonitorPassword,
-    OptionImportAccount,
+    OptionDontImportAccounts,
 };
 
 /**
@@ -1426,6 +1426,27 @@ S9sOptions::nodes() const
         return m_options.at("nodes").toVariantList();
 
     return S9sVariantList();
+}
+
+/**
+ * \returns True if the --nodes option holds at least one node with proxySql://
+ *   protocol.
+ */
+bool 
+S9sOptions::hasProxySql() const
+{
+    S9sVariantList hosts;
+    
+    hosts = nodes();
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol == "proxysql")
+            return true;
+    }
+
+    return false;
 }
 
 /**
@@ -5844,6 +5865,11 @@ S9sOptions::printHelpCluster()
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"  --admin-password=USERNAME  Admin password for ProxySql.\n"
+"  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"  --monitor-password=STRING  Monitor password for proxysql.\n"
+"  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "\n");
 }
 
@@ -11053,6 +11079,14 @@ S9sOptions::readOptionsCluster(
         { "vendor",           required_argument, 0, OptionVendor          },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+
+        // Options for ProxySql.
+        { "admin-user",       required_argument, 0, OptionAdminUser       },
+        { "admin-password",   required_argument, 0, OptionAdminPassword   },
+        { "monitor-user",     required_argument, 0, OptionMonitorUser     },
+        { "monitor-password", required_argument, 0, OptionMonitorPassword },
+        { "dont-import-accounts", no_argument,   0, OptionDontImportAccounts },
+
        
         // Options for containers.
         { "cloud",            required_argument, 0, OptionCloud           },
@@ -11527,6 +11561,34 @@ S9sOptions::readOptionsCluster(
             case OptionRemoteClusterId:
                 // --remote-cluster-id=ID
                 m_options["remote_cluster_id"] = optarg;
+                break;
+
+            /*
+             * Options for ProxySql.
+             */
+            case OptionAdminUser:
+                // --admin-user=USERNAME
+                m_options["admin_user"] = optarg;
+                break;
+            
+            case OptionAdminPassword:
+                // --admin-password=USERNAME
+                m_options["admin_password"] = optarg;
+                break;
+
+            case OptionMonitorUser:
+                // --monitor-user=STRING
+                m_options["monitor_user"] = optarg;
+                break;
+            
+            case OptionMonitorPassword:
+                // --monitor-password=STRING
+                m_options["monitor_password"] = optarg;
+                break;
+
+            case OptionDontImportAccounts:
+                // --dont-import-accounts
+                m_options["dont_import_accounts"] = true;
                 break;
 
             /*
@@ -14375,9 +14437,10 @@ S9sOptions::getBool(
 
 S9sString
 S9sOptions::getString(
-        const char *key) const
+        const char *key,
+        const char *defaultValue) const
 {
-    S9sString retval;
+    S9sString retval = defaultValue;
 
     if (m_options.contains(key))
         retval = m_options.at(key).toString();
