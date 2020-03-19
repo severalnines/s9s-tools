@@ -23,7 +23,7 @@ cat << EOF
 Usage: 
   $MYNAME [OPTION]... [TESTNAME]
  
-  $MYNAME - Test script for s9s to check cluster creation on containers.
+  $MYNAME - Test script for s9s create multiple clusters on containers.
 
  -h, --help       Print this help and exit.
  --verbose        Print more messages.
@@ -220,9 +220,8 @@ function createCluster1()
         --vendor=percona \
         --cloud=lxc \
         --nodes="$container1;$container2;$container3" \
-        --containers="$container1;$container2;$container3"
-
-    sleep 10
+        --containers="$container1;$container2;$container3" \
+        $LOG_OPTION
 }
 
 function createCluster2()
@@ -243,9 +242,8 @@ function createCluster2()
         --vendor=percona \
         --cloud=lxc \
         --nodes="$container1;$container2" \
-        --containers="$container1;$container2"
-    
-    sleep 10
+        --containers="$container1;$container2" \
+        $LOG_OPTION
 }
 
 function createCluster3()
@@ -266,9 +264,8 @@ function createCluster3()
         --vendor=mariadb \
         --cloud=lxc \
         --nodes="$container1;$container2" \
-        --containers="$container1;$container2"
-    
-    sleep 10
+        --containers="$container1;$container2" \
+        $LOG_OPTION
 }
 
 #
@@ -286,7 +283,6 @@ if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
     runFunctionalTest createCluster1
     runFunctionalTest createCluster2
-    runFunctionalTest createCluster3
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"

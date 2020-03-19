@@ -5877,11 +5877,14 @@ S9sOptions::printHelpCluster()
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
-"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"\n"
+"Load balancer related options\n"
 "  --admin-password=USERNAME  Admin password for ProxySql.\n"
-"  --monitor-user=STRING      Monitor user for ProxySql.\n"
-"  --monitor-password=STRING  Monitor password for proxysql.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql.\n"
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
+"  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
+"  --monitor-password=STRING  Monitor password for proxysql.\n"
+"  --monitor-user=STRING      Monitor user for ProxySql.\n"
 "\n");
 }
 
