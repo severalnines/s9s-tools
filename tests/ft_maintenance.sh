@@ -17,6 +17,8 @@ cd $MYDIR
 source include.sh
 source shared_test_cases.sh
 
+unset S9S_DEBUG_PRINT_REQUEST
+
 #
 # Prints usage information and exits.
 #
@@ -733,32 +735,45 @@ EOF
 function testDrop()
 {
     local exitCode
+    local n
 
     print_title "Dropping the cluster"
     cat <<EOF | paragraph
-  This just cleans up after the tests, dropping the cluster. This is not really
-  important, it is just an extra thing to check.
+  This test cleans up after the tests, dropping the cluster. Then the test
+  checks that there are no maintenance periods remain, they are all removed
+  together with the cluster and the nodes. Please note that the "remove cluster"
+  job on itself will register a maintenance period for the cluster, but this
+  maintenance period should be removed when the cluster is removed.
 EOF
 
     begin_verbatim
+        
+    mys9s maintenance --list --long
 
     if [ -n "$OPTION_INSTALL" ]; then
         echo "The --install option was provided, not dropping the cluster."
-        return 0
+    else
+        #
+        # Dropping the cluster.
+        #
+        mys9s cluster \
+            --drop \
+            --cluster-id=$CLUSTER_ID \
+            $LOG_OPTION
+    
+        check_exit_code_no_job $?
+
+        mys9s maintenance --list --long
+        n=$(s9s maintenance --list --long --batch | wc -l)
+        if [ $n -gt 0 ]; then
+            failure "There should be no maintenance."
+            s9s maintenance --list --long --batch
+        else
+            success "  o There are no maintenance periods, ok."
+        fi
     fi
 
-    #
-    # Dropping the cluster.
-    #
-    mys9s cluster \
-        --drop \
-        --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
-    
-    check_exit_code_no_job $?
-
     end_verbatim
-    return 0
 }
 
 #
