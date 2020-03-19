@@ -892,13 +892,16 @@ The following command line options are closely related to load balancers. Please
 note that the controller may not interpret all these options for all the load
 balancer types.
 
-.TP
-.BI --admin-user= USERNAME
-The username for the administrator of load balancers. 
+Please note that these command line optins are not mandatory, all settings have
+proper default values.
 
 .TP
 .BI --admin-password= PASSWORD
 The password for the administrator of load balancers.
+
+.TP
+.BI --admin-user= USERNAME
+The username for the administrator of load balancers. 
 
 .TP
 .B --dont-import-accounts
@@ -908,12 +911,16 @@ later, but it is not going to be the part of the load balancer installation
 performed by the controller.
 
 .TP
-.BI --monitor-user= USERNAME
-The username of the monitoring user of the load balancer.
+.BI --haproxy-config-template= FILENAME
+Configuration template for the HaProxy installation.
 
 .TP
 .BI --monitor-password= PASSWORD
 The password of the monitoring user of the load balancer.
+
+.TP
+.BI --monitor-user= USERNAME
+The username of the monitoring user of the load balancer.
 
 .\"
 .\"

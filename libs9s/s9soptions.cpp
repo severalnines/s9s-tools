@@ -329,6 +329,7 @@ enum S9sOptionType
     OptionCreateSnaphot,
     
     OptionConfigTemplate,
+    OptionHaProxyConfigTemplate,
     OptionNoInstall,
     OptionWithTimescaleDb,
     OptionToken,
@@ -2744,9 +2745,20 @@ S9sOptions::templateName() const
     return getString("template");
 }
 
+/**
+ * \param protocol The protocol for which the config template should be
+ *   returned, defaults to the empty string which will return the value for the
+ *   --config-template= option.
+ *
+ * "haproxy": Returns the value for --haproxy-config-template.
+ */
 S9sString
-S9sOptions::configTemplate() const
+S9sOptions::configTemplate(
+        const S9sString &protocol) const
 {
+    if (protocol.toLower() == "haproxy")
+        return getString("haproxy_config_template");
+
     return getString("config_template");
 }
 
@@ -11060,6 +11072,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "config-template",  required_argument, 0, OptionConfigTemplate  },
+        { "haproxy-config-template", required_argument, 0, OptionHaProxyConfigTemplate  },
         { "datadir",          required_argument, 0, OptionDatadir         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
@@ -11546,6 +11559,11 @@ S9sOptions::readOptionsCluster(
             case OptionConfigTemplate:
                 // --config-template=FILE
                 m_options["config_template"] = optarg;
+                break;
+            
+            case OptionHaProxyConfigTemplate:
+                // --haproxy-config-template=FILE
+                m_options["haproxy_config_template"] = optarg;
                 break;
 
             case OptionDatadir:

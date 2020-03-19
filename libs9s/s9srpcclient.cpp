@@ -8638,6 +8638,9 @@ S9sRpcClient::composeJobData(
     if (!options->configTemplate().empty())
         jobData["config_template"] = options->configTemplate();
     
+    if (!options->configTemplate("haproxy").empty())
+        jobData["haproxy_config_template"] = options->configTemplate("haproxy");
+ 
     if (options->hasForceOption())
         jobData["force"]  = options->force();
     

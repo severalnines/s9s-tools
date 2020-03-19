@@ -309,7 +309,7 @@ class S9sOptions
         bool maskPasswords() const;
         S9sString donor() const;
         S9sString templateName() const;
-        S9sString configTemplate() const;
+        S9sString configTemplate(const S9sString &protocol = "") const;
         S9sString token() const;
         bool noInstall() const;
         S9sString cloudName() const;
