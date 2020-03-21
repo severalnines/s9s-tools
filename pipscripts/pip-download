@@ -262,6 +262,8 @@ ft_ldapnogroups.sh
 ft_ndb.sh
 ft_replication_aws.sh
 ft_galerakill.sh
+ft_galerassl.sh
+
 EOF
 }
 

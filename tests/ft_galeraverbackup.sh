@@ -123,6 +123,8 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating a Galera Cluster"
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName"
     FIRST_ADDED_NODE=$nodeName
@@ -144,6 +146,7 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -152,6 +155,7 @@ function testCreateCluster()
 function testCreateBackup()
 {
     print_title "Taking backup of the Cluster"
+    begin_verbatim
 
     #
     # Creating a backup.
@@ -166,6 +170,7 @@ function testCreateBackup()
     check_exit_code $?
 
     mys9s backup --list --long | tail -n1
+    end_verbatim
 }
 
 #
@@ -174,6 +179,7 @@ function testCreateBackup()
 function testVerifyBackup()
 {
     print_title "Verifying the last created backup"
+    begin_verbatim
 
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
@@ -196,6 +202,7 @@ function testVerifyBackup()
     check_exit_code $?
 
     mys9s backup --list --long | tail -n1
+    end_verbatim
 }
 
 function testCreateClusterFromBackup()
@@ -205,6 +212,7 @@ function testCreateClusterFromBackup()
     local exitCode
 
     print_title "Creating Galera cluster from backup."
+    begin_verbatim
 
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
@@ -231,11 +239,13 @@ function testCreateClusterFromBackup()
     else
         failure "Cluster ID '$CLUSTER_ID_FROM_BACKUP' is invalid"
     fi
+    end_verbatim
 }
 
 function testDrop()
 {
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -246,11 +256,13 @@ function testDrop()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 function testDropFromBackup()
 {
     print_title "Dropping the Cluster created from backup"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -261,6 +273,7 @@ function testDropFromBackup()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
