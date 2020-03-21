@@ -111,6 +111,7 @@ fi
 function registerServer()
 {
     print_title "Registering Container Server"
+    begin_verbatim
 
     mys9s server \
         --register \
@@ -120,11 +121,13 @@ function registerServer()
 
     mys9s server --list --long
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function registerServerFails()
 {
     print_title "Registrations that should Fail"
+    begin_verbatim
 
     # Duplicate entries in one call.
     mys9s server \
@@ -155,6 +158,7 @@ function registerServerFails()
         failure "Registration should have failed (server already registered)"
         exit 1
     fi
+    end_verbatim
 }
 
 function createContainer()
@@ -164,6 +168,7 @@ function createContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -222,11 +227,13 @@ function createContainer()
 #        failure "The template is '$template', should be 'ubuntu'"
 #        exit 1
 #    fi
+    end_verbatim
 }
 
 function createServer()
 {
     print_title "Installing Container as Server"
+    begin_verbatim
 
     if [ -z "$CONTAINER_IP" ]; then
         failure "Container IP was not found."
@@ -254,6 +261,7 @@ function createServer()
 
     mys9s tree --tree
     mys9s server --list --long
+    end_verbatim
 }
 
 function createContainerInContainer()
@@ -263,6 +271,7 @@ function createContainerInContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -277,6 +286,7 @@ function createContainerInContainer()
     check_exit_code $?
 
     s9s container --list --long
+    end_verbatim
 }
 
 #
@@ -285,6 +295,7 @@ function createContainerInContainer()
 function deleteContainer()
 {
     print_title "Deleting Container"
+    begin_verbatim
 
     mys9s container \
         --delete \
@@ -296,6 +307,7 @@ function deleteContainer()
     check_exit_code $?
     
     mys9s container --list --long
+    end_verbatim
 }
 
 

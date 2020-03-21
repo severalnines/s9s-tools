@@ -263,7 +263,7 @@ ft_ndb.sh
 ft_replication_aws.sh
 ft_galerakill.sh
 ft_galerassl.sh
-
+ft_installserver.sh
 EOF
 }
 
