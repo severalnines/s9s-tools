@@ -239,8 +239,21 @@ ft_galera.sh
 ft_galera_mariadb_10.4.sh
 ft_cmonhabasic
 ft_cmonhabasic1
-ft_cmonhasimple
+ft_cmonhabasic3
+ft_cmonhadaemon
+ft_cmonhadaemon3
+ft_cmonhagalera
+ft_cmonhalxc1
+ft_cmonhadaemon2
+ft_cmonhadaemonbasic
+ft_cmonhadaemonping	
 ft_cmonhalxc
+ft_cmonhalxc2
+ft_cmonhalxc3
+ft_cmonhalxc4	
+ft_cmonhalxc5
+ft_cmonhapostgres
+ft_cmonhasimple
 ft_haproxy.sh
 ft_ldap.sh
 ft_ldaperror.sh
@@ -248,6 +261,7 @@ ft_ldapgroups.sh
 ft_ldapnogroups.sh
 ft_ndb.sh
 ft_replication_aws.sh
+ft_galerakill.sh
 EOF
 }
 

@@ -161,6 +161,7 @@ function testCreateCluster()
   This test will start a job to create a cluster, then it will kill the job and
   check if the job comes into aborted state.
 EOF
+    begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -218,6 +219,8 @@ EOF
     else
         failure "The job should be in 'ABORTED' state, not in '$job_state'."
     fi    
+
+    end_verbatim
 }
 
 #

@@ -378,8 +378,8 @@ function wake_server()
     if [ -n "$CONF_HOST_ILOM" ]; then
         printVerbose "Will use ILOM of ${CONF_HOST_NAME}."
         pip-say "Will use integrated lights out manager on ${CONF_HOST_NAME}."
-        # ILOM needs to start...
-        sleep 30
+        # ILOM needs time to start...
+        sleep 50
 
         pip-say "Calling ILOM to start ${CONF_HOST_NAME}."
         printVerbose "Using ILOM to start ${CONF_HOST_NAME}."

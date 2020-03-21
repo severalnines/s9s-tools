@@ -10,7 +10,10 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+
 PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
+
 N_DATABASE_NODE=1
 PROXY_SERVER=""
 
@@ -128,10 +131,73 @@ while true; do
     esac
 done
 
+function testCreateReplicationCluster()
+{
+    local nodes
+    local nodeName
+    local exitCode
+
+    #
+    #
+    #
+    print_title "Creating MySql Replication Cluster."
+    begin_verbatim
+
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_00_$$")
+    nodes+="$nodeName?master;"
+    FIRST_ADDED_NODE=$nodeName
+    
+    nodeName=$(create_node --autodestroy "${MYBASENAME}_01_$$")
+    SECOND_ADDED_NODE=$nodeName
+    nodes+="$nodeName?slave;"
+ 
+    #
+    # Creating a MySQL replication cluster.
+    #
+    mys9s cluster \
+        --create \
+        --cluster-type=mysqlreplication \
+        --nodes="$nodes" \
+        --vendor="$OPTION_VENDOR" \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version="$PROVIDER_VERSION" \
+        $LOG_OPTION
+
+    check_exit_code $?
+
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ "$CLUSTER_ID" -gt 0 ]; then
+        printVerbose "Cluster ID is $CLUSTER_ID"
+    else
+        failure "Cluster ID '$CLUSTER_ID' is invalid"
+    fi
+
+    wait_for_cluster_started "$CLUSTER_NAME" 
+
+    mys9s replication --list --long
+
+    check_cluster \
+        --cluster    "$CLUSTER_NAME" \
+        --owner      "pipas" \
+        --group      "testgroup" \
+        --cdt-path   "/" \
+        --type       "REPLICATION" \
+        --state      "STARTED" \
+        --config     "/tmp/cmon_1.cnf" \
+        --log        "/tmp/cmon_1.log"
+
+    check_replication_state \
+        --cluster-name   "$CLUSTER_NAME" \
+        --slave          "$SECOND_ADDED_NODE" \
+        --state          "Online"
+    
+    end_verbatim
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
-function testCreateCluster()
+function testCreateGaleraCluster()
 {
     local nodes
     local node
@@ -190,6 +256,11 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+}
+
+function testCreateCluster()
+{
+    testCreateReplicationCluster
 }
 
 #
@@ -267,6 +338,33 @@ function testAddProxySql()
     print_title "Adding a ProxySQL Node"
 
     nodeName=$(create_node --autodestroy "ft_proxysql_connect_proxy00_$$")
+    PROXY_SERVER="$nodeName"
+    nodes+="proxySql://$nodeName"
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$nodes" \
+        --log --debug
+    
+    check_exit_code $?
+}
+
+function testAddProxySql1()
+{
+    local node
+    local nodes
+    local nodeName
+
+    #
+    #
+    #
+    print_title "Adding a ProxySQL Node"
+
+    nodeName=$(create_node --autodestroy "ft_proxysql_connect_proxy01_$$")
     PROXY_SERVER="$nodeName"
     nodes+="proxySql://$nodeName"
 
@@ -435,8 +533,7 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateCluster
         runFunctionalTest testCreateDatabase
         runFunctionalTest testAddProxySql
-        runFunctionalTest testConnect01
-        runFunctionalTest testConnect02
+        runFunctionalTest testAddProxySql1
     fi
 elif [ "$1" ]; then
     for testName in $*; do

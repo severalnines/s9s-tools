@@ -451,6 +451,8 @@ function start()
         pip-say --beep "Computer secondary core is on-line."
     elif [ "\$(hostname)" == "core3" ]; then
         pip-say --beep "Computer tertiary core is on-line."
+    elif [ "\$(hostname)" == "core4" ]; then
+        pip-say --beep "Core4 is on-line."
     fi
 }
 
@@ -466,6 +468,8 @@ function stop()
         pip-say --beep "Computer secondary core is shutting down."
     elif [ "\$(hostname)" == "core3" ]; then
         pip-say --beep "Computer tertiary core is shutting down."
+    elif [ "\$(hostname)" == "core4" ]; then
+        pip-say --beep "Core4 is shutting down."
     fi
 }
 
