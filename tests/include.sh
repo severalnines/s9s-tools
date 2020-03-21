@@ -45,7 +45,7 @@ XTERM_COLOR_WHITE="\033[1;37m"
 TERM_COLOR_TITLE="\033[1m\033[37m"
 CMON_CONTAINER_NAMES=""
 
-export S9S_DEBUG_PRINT_REQUEST="true"
+#export S9S_DEBUG_PRINT_REQUEST="true"
 
 if [ -x ../s9s/s9s ]; then
     S9S="../s9s/s9s"
