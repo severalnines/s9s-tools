@@ -267,6 +267,8 @@ ft_galerassl.sh
 ft_installserver.sh
 ft_galera_c2c.sh
 ft_containers_lxc.sh
+ft_errors.sh
+ft_metatype.sh
 EOF
 }
 

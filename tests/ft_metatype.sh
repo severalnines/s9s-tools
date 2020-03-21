@@ -131,6 +131,8 @@ function testTypes()
     local cmonVerbatimFound
 
     print_title "Testing types"
+    begin_verbatim
+
     mys9s metatype --list
 
     output=$(s9s metatype --list)
@@ -157,7 +159,7 @@ function testTypes()
         failure "Metatype Long list does not match."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -171,6 +173,8 @@ function testProperties()
     local propertyName
 
     print_title "Testing properties"
+    begin_verbatim
+
     mys9s metatype --list-properties --type=CmonFile
 
     output=$(s9s metatype --list-properties --type=CmonFile)
@@ -200,7 +204,7 @@ function testProperties()
         failure "Property long list does not match."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
