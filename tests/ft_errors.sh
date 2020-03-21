@@ -135,7 +135,8 @@ function testJobOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The main options are mutually exclusive."
@@ -144,7 +145,8 @@ function testJobOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -165,7 +167,8 @@ function testBackupOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The main options are mutually exclusive."
@@ -174,7 +177,8 @@ function testBackupOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The cluster ID or the cluster name must be specified."
@@ -183,7 +187,8 @@ function testBackupOperations()
         failure "Error message not as expected when cluster id/name missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -204,7 +209,8 @@ function testClusterOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The main options are mutually exclusive."
@@ -213,7 +219,8 @@ function testClusterOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -234,7 +241,8 @@ function testNodeOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="Main command line options are mutually exclusive."
@@ -243,7 +251,8 @@ function testNodeOperations()
         failure "Error message mismatch when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     expected=$'Node list is empty while setting node.\nUse the --nodes command line option to provide the node list.'
@@ -252,7 +261,8 @@ function testNodeOperations()
         failure "Error message mismatch when setting unknown host"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected=$'Properties not provided while setting node.\nUse the --properties command line option to provide properties.'
@@ -261,7 +271,8 @@ function testNodeOperations()
         failure "Error message mismatch when setting unknown host properties."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -282,7 +293,8 @@ function testUserOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The main options are mutually exclusive."
@@ -291,7 +303,8 @@ function testUserOperations()
         failure "Error message not as expected when operation is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -311,7 +324,8 @@ function testMaintenanceOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The --list, --create and --delete options are mutually exclusive."
@@ -320,7 +334,8 @@ function testMaintenanceOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected=$'Missing UUID.\nUse the --uuid command line option to provide the UUID.'
@@ -329,7 +344,8 @@ function testMaintenanceOperations()
         failure "Error message not as expected when UUID is missing"
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0
@@ -349,7 +365,8 @@ function testProcessOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
     
     expected="The --list and --top options are mutually exclusive."
@@ -358,7 +375,8 @@ function testProcessOperations()
         failure "Error message not as expected when operation is missing."
         failure "expected : '$expected'"
         failure "output   : '$output'"
-        return 1
+    else
+        success "  o String '$expected' is found, OK."
     fi
 
     return 0

@@ -25,6 +25,7 @@ gzfile="${ymd}.tar.gz"
 
 N_TESTS_PASSED=0
 N_TESTS_FAILED=0
+N_MAILS_SENT=0
 
 REPORT_FILE="${ymd}.text"
 
@@ -264,7 +265,22 @@ ft_replication_aws.sh
 ft_galerakill.sh
 ft_galerassl.sh
 ft_installserver.sh
+ft_galera_c2c.sh
+ft_containers_lxc.sh
 EOF
+}
+
+function plural_test()
+{
+    local n="$1"
+
+    if [ "$n" == "0" ]; then
+        echo "no tests"
+    elif [ "$n" == "1" ]; then
+        echo "one test"
+    else
+        echo "$n tests"
+    fi
 }
 
 function email_body()
@@ -325,6 +341,7 @@ function send_mail_to_list()
     for recipient in $(cat "$MAIL_LIST_FILE"); do
         printVerbose "Sending email to ${recipient}..."
         email_body | ssmtp "$recipient"
+        let N_MAILS_SENT+=1
     done
 }
 
@@ -332,9 +349,10 @@ function send_mail_to_list()
 # Checking the command line option.
 #
 pip-say "It is $(date +%R)."
-pip-say "Preparing to send notifications about daily tests."
+pip-say "Preparing to download logs about tests."
 if [ -z "$OPTION_MAIL_LIST" -a -z "$OPTION_NO_MAIL" ]; then
     printError "One of the --mail-list or --no-mail options is mandatory."
+    pip-say "Command line option error found, aborting download program."
     exit 5
 fi
 
@@ -342,6 +360,7 @@ if [ -n "$OPTION_MAIL_LIST" ]; then
     MAIL_LIST_FILE="$HOME/.pip/${OPTION_MAIL_LIST}.list"
     if [ ! -f "$MAIL_LIST_FILE" ]; then
         printError "File '$MAIL_LIST_FILE' was not found..."
+        printError "File not found for $OPTION_MAIL_LIST, aborting.."
         exit 5
     fi
 fi
@@ -352,7 +371,7 @@ fi
 
 cd "$HOME/tests"
 if [ "$PWD" != "$HOME/tests" ]; then
-    pip-say "Downloading test results failed, directory was not found."
+    pip-say "Downloading test results failed, target directory was not found."
     printError "Could not create '$HOME/tests'..."
     exit 1
 fi
@@ -392,9 +411,20 @@ echo "{code}"
 if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
     pip-say "Found no test results."
     exit 6
+else
+    pip-say "Download succeeded, $(plural_test $N_TESTS_PASSED) passed, \
+        $(plural_test $N_TESTS_FAILED) failed."
 fi
 
 tar czf "${gzfile}" "$ymd"
 send_mail_to_list
 
-pip-say "Daily test results are sent to all the recipients."
+if [ "$N_MAILS_SENT" -eq 0 ]; then
+    pip-say "Download program finished, no notification was sent."
+elif [ "$N_MAILS_SENT" -eq 1 ]; then
+    pip-say "Download program finished, one notification was sent."
+else
+    pip-say "Download program finished, $N_MAILS_SENT notifications were sent."
+fi
+
+

@@ -173,6 +173,7 @@ function createMasterCluster()
     local master_cluster_id_option
 
     print_title "Creating the Master Cluster"
+    begin_verbatim
 
     #
     # Composing a list of container names.
@@ -228,6 +229,7 @@ function createMasterCluster()
     if [ -n "$master_cluster_id_option" ]; then
         mys9s replication --list
     fi
+    end_verbatim
 }
 
 #
@@ -241,6 +243,7 @@ function createSlaveCluster()
     local master_cluster_id_option
 
     print_title "Creating the Slave Cluster"
+    begin_verbatim
 
     #
     # Composing a list of container names.
@@ -291,6 +294,7 @@ function createSlaveCluster()
     if [ -n "$master_cluster_id_option" ]; then
         mys9s replication --list
     fi
+    end_verbatim
 }
 
 function testBinaryLog()
@@ -299,6 +303,7 @@ function testBinaryLog()
     local node_list
 
     print_title "Enabling Binary Logging"
+    begin_verbatim
 
     node_list=$(s9s node \
         --list --cluster-id=1 --long --batch | \
@@ -317,11 +322,13 @@ function testBinaryLog()
     done
         
     mys9s replication --list
+    end_verbatim
 }
 
 function testFailover()
 {
     print_title "Testing Failover"
+    begin_verbatim
 
     mys9s node --list --long
 
@@ -338,11 +345,13 @@ function testFailover()
     mys9s replication --list
     mysleep 60
     mys9s replication --list
+    end_verbatim
 }
 
 function testBack()
 {
     print_title "Testing Switch Back After Failover"
+    begin_verbatim
     
     mys9s node --list --long
 
@@ -361,6 +370,7 @@ function testBack()
     mys9s replication --list
 
     mys9s node --list --long
+    end_verbatim
 }
 
 #
