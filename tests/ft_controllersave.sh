@@ -200,6 +200,8 @@ function testCreateGalera()
     #
     #
     print_title "Creating a Galera Cluster"
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_gnode%03d_$$" "$node_serial")
 
@@ -243,6 +245,7 @@ function testCreateGalera()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME_GALERA"
+    end_verbatim
 }
 
 
@@ -262,6 +265,8 @@ function testCreatePostgre()
     #
     #
     print_title "Creating a PostgreSQL Cluster"
+    begin_verbatim
+
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_pnode%03d_$$" "$node_serial")
 
@@ -306,6 +311,7 @@ function testCreatePostgre()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME_POSTGRESQL"
+    end_verbatim
 }
 
 function testSave()
@@ -313,6 +319,8 @@ function testSave()
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Controller"
+    begin_verbatim
+
     mys9s cluster --list --long
     mys9s user --list --long
 
@@ -329,6 +337,7 @@ function testSave()
     else
         success "  o File '$tgz_file' was created, ok"
     fi
+    end_verbatim
 }
 
 #
@@ -341,6 +350,7 @@ function testRestore()
     local retcode
 
     print_title "Restoring Controller"
+    begin_verbatim
     
     # Copying the tar.gz file to the secondary controller.
     scp "$local_file" "$SECONDARY_CONTROLLER_IP:$remote_file"
@@ -357,20 +367,15 @@ function testRestore()
         --log
 
     check_exit_code $?
-#    while true; do
-#        sleep 60
-#        mys9s cluster \
-#            --stat \
-#            --controller=$SECONDARY_CONTROLLER_URL \
-#            --cmon-user=system \
-#            --password=secret 
-#    done
+    end_verbatim
 
     #
     # Checking the cluster state after it is restored.
     #
     print_title "Waiting until Cluster(s) Started"
-    sleep 20
+    begin_verbatim
+
+    mysleep 20
     s9s cluster \
         --list \
         --long \
@@ -420,11 +425,14 @@ function testRestore()
         --controller=$SECONDARY_CONTROLLER_URL \
         --cmon-user=system \
         --password=secret
+    
+    end_verbatim
 }
 
 function cleanup()
 {
     print_title "Cleaning Up"
+    begin_verbatim
 
     echo "PID for ssh: $SSH_PID"
     if [ -n "$SSH_PID" ]; then
@@ -436,6 +444,8 @@ function cleanup()
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
+    
+    end_verbatim
 }
 
 #
