@@ -118,6 +118,8 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating PostgreSQL Cluster"
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
@@ -146,6 +148,7 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -156,6 +159,8 @@ function testAddNode()
     local exitCode
 
     print_title "Adding Node"
+    begin_verbatim
+
     printVerbose "Creating node..."
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
@@ -170,6 +175,7 @@ function testAddNode()
         $LOG_OPTION
     
     check_exit_code $?   
+    end_verbatim
 }
 
 #
@@ -181,6 +187,7 @@ function testStopSlave()
     local timeLoop="0"
 
     print_title "Stopping Slave"
+    begin_verbatim
 
     #
     # Stopping the first added node. 
@@ -203,7 +210,7 @@ function testStopSlave()
         failure "Host state is '$state' instead of 'CmonHostShutDown'."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -216,6 +223,7 @@ function testStartSlave()
     local timeLoop="0"
 
     print_title "Starting Node"
+    begin_verbatim
 
     #
     # Starting the first added node. 
@@ -243,7 +251,7 @@ function testStartSlave()
         failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -272,7 +280,6 @@ function testStopDaemon()
         state=$(node_state "$LAST_ADDED_NODE")
         failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOffLine'."
         mys9s node --stat
-        exit 1
     fi
 
     #
@@ -285,6 +292,7 @@ function testStopDaemon()
         state=$(node_state "$LAST_ADDED_NODE")
         failure "Host '$LAST_ADDED_NODE' state is '$state' instead of 'CmonHostOnline'."
     fi
+    end_verbatim
 }
 
 #
@@ -295,6 +303,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -308,6 +317,8 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 #
