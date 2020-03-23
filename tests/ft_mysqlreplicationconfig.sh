@@ -108,6 +108,8 @@ function testCreateCluster()
     local exitCode
 
     print_title "Create MySQL Replication Cluster"
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName;"
     FIRST_ADDED_NODE=$nodeName
@@ -131,20 +133,15 @@ function testCreateCluster()
         --provider-version=5.6 \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-        mys9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 #
@@ -157,12 +154,14 @@ function checkController()
     local expected
 
     print_title "Checking Controller Config"
+    begin_verbatim
 
     controller_ip=$(s9s node --list --long | grep "^c" | awk '{print $5}')
     if [ -z "$controller_ip" ]; then
         failure "Controller was not found."
         mys9s node --list --long
-        exit 1
+    else
+        success "Controller was found."
     fi
   
     # Checking the configuration values of the controller.
@@ -196,7 +195,7 @@ function checkController()
         exit 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -211,6 +210,7 @@ function testSetConfig01()
     local name="max_connections"
 
     print_title "Changing configuration '$name'"
+    begin_verbatim
 
     #
     # Listing the configuration values. The exit code should be 0.
@@ -220,12 +220,7 @@ function testSetConfig01()
         --nodes=$FIRST_ADDED_NODE \
         max_*
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code_no_job $?
 
     #
     # Changing a configuration value.
@@ -237,11 +232,7 @@ function testSetConfig01()
         --opt-group=MYSQLD \
         --opt-value=$newValue 
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        exit 1
-    fi
+    check_exit_code_no_job $?
     
     #
     # Reading the configuration back. This time we only read one value.
@@ -252,19 +243,20 @@ function testSetConfig01()
             --opt-name=$name \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        mys9s node --list-config --nodes=$FIRST_ADDED_NODE $name
-        exit 1
-    fi
+    mys9s node \
+            --batch \
+            --list-config \
+            --opt-name=$name \
+            --nodes=$FIRST_ADDED_NODE 
+
+    check_exit_code_no_job $?
 
     if [ "$value" != "$newValue" ]; then
         failure "Configuration value should be $newValue not $value"
         mys9s node --list-config --nodes=$FIRST_ADDED_NODE $name
         exit 1
     fi
-
+    end_verbatim
 }
 
 #
@@ -279,6 +271,7 @@ function testSetConfig02()
     local name="max_heap_table_size"
 
     print_title "Changing configuration '$name'"
+    begin_verbatim
     
     mys9s node --list --long
 
@@ -292,11 +285,7 @@ function testSetConfig02()
         --opt-group=MYSQLD \
         --opt-value=$newValue
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code_no_job $?
     
     #
     # Reading the configuration back. This time we only read one value.
@@ -307,11 +296,13 @@ function testSetConfig02()
             --opt-name=$name \
             --nodes=$FIRST_ADDED_NODE |  awk '{print $3}')
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    mys9s node \
+            --batch \
+            --list-config \
+            --opt-name=$name \
+            --nodes=$FIRST_ADDED_NODE
+
+    check_exit_code_no_job $?
 
     if [ "$value" != "$newValue" ]; then
         failure "Configuration value should be $newValue not $value"
@@ -321,6 +312,8 @@ function testSetConfig02()
         --list-config \
         --nodes=$FIRST_ADDED_NODE \
         'max*'
+    
+    end_verbatim
 }
 
 #

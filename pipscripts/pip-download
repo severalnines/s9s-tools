@@ -281,6 +281,8 @@ ft_mongodb.sh
 ft_multiserver.sh
 ft_postgresqlslave.sh
 ft_postgresqlstop.sh
+ft_mysqlreplicationconfig.sh
+ft_groupreplication.sh
 EOF
 }
 

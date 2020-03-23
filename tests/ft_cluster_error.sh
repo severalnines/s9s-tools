@@ -129,6 +129,8 @@ function testCreateCluster()
     # Creating a Galera cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
+
     node_ip=$(create_node --autodestroy "$container_name")
 
     mys9s cluster \
@@ -144,10 +146,11 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 }
 
 function testAddNodeFail()
@@ -160,11 +163,14 @@ function testAddNodeFail()
     # Creating a Galera cluster.
     #
     print_title "Add Node that Should Fail"
+    begin_verbatim
+
     node_ip=$(create_node --autodestroy "$container_name")
     
     if [ -z "$node_ip" ]; then
         failure "Could not create container."
-        return 1
+    else
+        success "Container created..."
     fi
 
     #
@@ -176,12 +182,13 @@ function testAddNodeFail()
         --nodes="proysql://$node_ip" \
         $LOG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -eq 6 ]; then
-        echo "The exit code is $exitCode, ok."
+    if [ $? -ne 0 ]; then
+        success "  o Adding node with the wrong protocol failed, OK."
     else
-        failure "The exit code is $exitCode, not ok."
+        failure "The job should have failed, typo in protocol."
     fi
+
+    end_verbatim
 }
 
 #
