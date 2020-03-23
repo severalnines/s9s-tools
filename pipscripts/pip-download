@@ -231,6 +231,11 @@ ft_jobs.sh
 ft_maintenance.sh
 ft_postgresqlsimple_11.sh
 ft_postgresqlsimple.sh
+ft_postgresql_9.4.sh
+ft_postgresql_9.5.sh
+ft_postgresql_9.6.sh
+ft_postgresql_10.sh
+ft_postgresql_11.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 
@@ -269,6 +274,11 @@ ft_galera_c2c.sh
 ft_containers_lxc.sh
 ft_errors.sh
 ft_metatype.sh
+ft_controllersavelocal.sh
+ft_controllersavelocalmulti.sh
+ft_mongodb_3.4.sh
+ft_mongodb.sh
+ft_multiserver.sh
 EOF
 }
 
@@ -290,7 +300,7 @@ function email_body()
     local subject
 
     if [ "$N_TESTS_FAILED" == "0" ]; then
-        subject="Daily s9s test results (all green)."
+        subject="Daily s9s test results (all $N_TESTS_PASSED green)."
     elif [ "$N_TESTS_FAILED" == "1" ]; then
         subject="Daily s9s test results (1 failure)."
     else

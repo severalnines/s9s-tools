@@ -339,6 +339,7 @@ function wake_server()
     local pdu
     local config_file
     local output
+    local retcode
 
     if [ -z "$hostName" ]; then
         return 1
@@ -363,10 +364,10 @@ function wake_server()
         source "$config_file"
     fi
 
-    pip-say --beep "Starting up ${hostname}."
+    pip-say --beep "Controller is starting up ${hostname}."
 
-    pip-say "Powering on server $CONF_HOST_NAME through the power distribution unit."
     if [ -n "$CONF_HOST_PDU" ]; then
+        pip-say "Powering on server $CONF_HOST_NAME through the power distribution unit."
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
             printVerbose "Switching on PDU $pdu."
             pip-pdu-control --on $pdu
@@ -379,7 +380,7 @@ function wake_server()
         printVerbose "Will use ILOM of ${CONF_HOST_NAME}."
         pip-say "Will use integrated lights out manager on ${CONF_HOST_NAME}."
         # ILOM needs time to start...
-        sleep 50
+        sleep 60
 
         pip-say "Calling ILOM to start ${CONF_HOST_NAME}."
         printVerbose "Using ILOM to start ${CONF_HOST_NAME}."
@@ -403,8 +404,10 @@ EOF
         chmod +x "$file"
         
         output=$(timeout 15 $file)
-        if [ $? -ne 0 ]; then
-            pip-say "ILOM request failed, attempting to compensate."
+        retcode=$?
+
+        if [ "$retcode" -ne 0 ]; then
+            pip-say "ILOM request failed with error code $retcode, attempting to compensate."
             printWarning "output: $output"
             printWarning "The $file exited with error."
             sleep 30
@@ -412,9 +415,11 @@ EOF
 
             if [ $? -ne 0 ]; then
                 pip-say "The second ILOM request is failed, server is off-line."
+            else
+                pip-say "The second ILOM request succeeded."
             fi
         else
-            pip-say "ILOM request suceeded, server is fully powered now."
+            pip-say "ILOM request suceeded, server is booting."
         fi
 
         rm -f $file
@@ -427,7 +432,7 @@ EOF
         fi
 
         printVerbose "Waking server ${hostName} on ${macAddress}."
-        pip-say "Sending wake up message to host ${hostName}."
+        pip-say "Sending wake on lan message to host ${hostName}."
         wakeonlan "$macAddress" >/dev/null 2>/dev/null
     fi
 
