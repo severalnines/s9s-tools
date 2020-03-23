@@ -279,6 +279,8 @@ ft_controllersavelocalmulti.sh
 ft_mongodb_3.4.sh
 ft_mongodb.sh
 ft_multiserver.sh
+ft_postgresqlslave.sh
+ft_postgresqlstop.sh
 EOF
 }
 

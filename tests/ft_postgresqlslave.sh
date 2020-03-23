@@ -137,10 +137,7 @@ function testCreateCluster()
         --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -234,10 +231,7 @@ function testStartSlave()
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     wait_for_cluster_started "$CLUSTER_NAME"
 
@@ -313,10 +307,7 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     end_verbatim
 }

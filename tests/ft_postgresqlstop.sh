@@ -109,6 +109,7 @@ function testCreateCluster()
     local exitCode
 
     print_title "Creating a PostgreSQL cluster"
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy)
     nodes+="$nodeName:8089;"
@@ -127,13 +128,7 @@ function testCreateCluster()
         --provider-version="10" \
         $LOG_OPTION
 
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while creating cluster."
-        s9s job --log --job-id=1
-        exit 1
-    fi
+    check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
@@ -142,6 +137,7 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
         exit 1
     fi
+    end_verbatim
 }
 
 #
@@ -152,6 +148,7 @@ function testAddNode()
     local exitCode
 
     print_title "Adding a node"
+    begin_verbatim
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
 
@@ -164,12 +161,8 @@ function testAddNode()
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-        mys9s job --log --job-id=2
-    fi
+    check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -181,6 +174,7 @@ function testStopCluster()
     local state
 
     print_title "Stopping the cluster"
+    begin_verbatim
 
     #
     # Stopping the cluster and checking if the cluster state is 'STOPPED'.
@@ -190,11 +184,7 @@ function testStopCluster()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STOPPED" ]; then
@@ -207,6 +197,7 @@ function testStopCluster()
     #mys9s cluster \
     #    --stat \
     #    --cluster-id=$CLUSTER_ID 
+    end_verbatim
 }
 
 #
@@ -218,6 +209,7 @@ function testStartCluster()
     local state
 
     print_title "Starting the cluster"
+    begin_verbatim
 
     #
     # Starting the cluster and checking if the cluster state is 'STARTED'.
@@ -227,23 +219,14 @@ function testStartCluster()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
 
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STARTED" ]; then
         failure "The state should be 'STARTED' instead of '$state'."
     fi
 
-    #
-    # We then show the cluster stat so that the user can see the state.
-    #
-    #mys9s cluster \
-    #    --stat \
-    #    --cluster-id=$CLUSTER_ID 
+    end_verbatim
 }
 
 #
@@ -254,6 +237,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the cluster"
+    begin_verbatim
 
     #
     # Dropping the cluster.
@@ -263,11 +247,9 @@ function testDrop()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION
     
-    exitCode=$?
-    printVerbose "exitCode = $exitCode"
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode}"
-    fi
+    check_exit_code $?
+    
+    end_verbatim
 }
 
 #
