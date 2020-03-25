@@ -903,6 +903,14 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
             reply = client.reply();
             reply.printSqlProcesses();
+        } else if (options->isListDigestsRequested())
+        {
+            S9sRpcReply reply;
+            
+            client.getTopQueries();
+            client.setExitStatus();
+            reply = client.reply();
+            reply.printTopQueries();
         } else {
             PRINT_ERROR("Unknown process operation.");
         }

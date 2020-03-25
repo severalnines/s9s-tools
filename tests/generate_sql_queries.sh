@@ -368,6 +368,13 @@ function collectData()
                 s9s node --list --properties="class_name=$SQL_CLASS" | \
                 head -n1)
         fi
+        
+        if [ -z "$SQL_HOST" ]; then
+            SQL_CLASS="CmonMySqlHost"
+            SQL_HOST=$(\
+                s9s node --list --properties="class_name=$SQL_CLASS" | \
+                head -n1)
+        fi
 
         if [ -z "$SQL_HOST" ]; then
             SQL_CLASS="CmonPostgreSqlHost"
@@ -405,6 +412,8 @@ function collectData()
     fi
     
     if [ "$SQL_CLASS" == "CmonGaleraHost" ]; then
+        IS_MYSQL="true"
+    elif [ "$SQL_CLASS" == "CmonMySqlHost" ]; then
         IS_MYSQL="true"
     elif [ "$SQL_CLASS" == "CmonPostgreSqlHost" ]; then
         IS_POSTGRESQL="true"

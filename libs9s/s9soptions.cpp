@@ -350,6 +350,8 @@ enum S9sOptionType
     OptionTopQueries,
     OptionServer,
     OptionClient,
+    OptionListDigests,
+    OptionTopDigests,
 
     OptionPrivate,
     OptionAdminUser,
@@ -3596,6 +3598,17 @@ S9sOptions::isTopQueriesRequested() const
     return getBool("top_queries");
 }
 
+bool
+S9sOptions::isListDigestsRequested() const
+{
+    return getBool("list_digests");
+}
+
+bool
+S9sOptions::isTopDigestsRequested() const
+{
+    return getBool("top_digests");
+}
 
 /**
  * \returns true if the --current option was provided.
@@ -9396,6 +9409,12 @@ S9sOptions::checkOptionsProcess()
 
     if (isTopQueriesRequested())
         countOptions++;
+    
+    if (isListDigestsRequested())
+        countOptions++;
+
+    if (isTopDigestsRequested())
+        countOptions++;
 
     if (countOptions > 1)
     {
@@ -9453,8 +9472,10 @@ S9sOptions::readOptionsProcess(
         { "sort-by-time",     no_argument,       0, OptionSortByTime      },
 
         // Main Option
+        { "list-digests",     no_argument,       0,  OptionListDigests    },
         { "list",             no_argument,       0, 'L'                   },
         { "list-queries",     no_argument,       0,  OptionListQueries    },
+        { "top-digests",      no_argument,       0,  OptionTopDigests     },
         { "top",              no_argument,       0,  OptionTop            },
         { "top-queries",      no_argument,       0,  OptionTopQueries     },
 
@@ -9532,8 +9553,13 @@ S9sOptions::readOptionsProcess(
                 break;
 
             /*
-             * Main queries...
+             * Main options...
              */
+            case OptionListDigests:
+                // --list-digests
+                m_options["list_digests"] = true;
+                break;
+
             case 'L': 
                 // --list
                 m_options["list"] = true;
@@ -9542,6 +9568,11 @@ S9sOptions::readOptionsProcess(
             case OptionListQueries:
                 // --list-queries
                 m_options["list_queries"] = true;
+                break;
+            
+            case OptionTopDigests:
+                // --top-digests
+                m_options["top_digests"] = true;
                 break;
 
             case OptionTopQueries:

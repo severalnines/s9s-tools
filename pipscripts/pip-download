@@ -274,6 +274,8 @@ ft_galera_c2c.sh
 ft_containers_lxc.sh
 ft_errors.sh
 ft_metatype.sh
+ft_controllersave.sh
+ft_controllersavemulti.sh
 ft_controllersavelocal.sh
 ft_controllersavelocalmulti.sh
 ft_mongodb_3.4.sh
@@ -283,6 +285,7 @@ ft_postgresqlslave.sh
 ft_postgresqlstop.sh
 ft_mysqlreplicationconfig.sh
 ft_groupreplication.sh
+ft_cluster_error.sh
 EOF
 }
 

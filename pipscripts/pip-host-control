@@ -221,14 +221,27 @@ function get_memory_size()
 
 function get_disk_size()
 {
-    local number=""
-   
+    local device_home
+    local device_lxc
+
+    local number=0
+    local check_home
+
     if [ -d "/var/lib/lxc" ]; then
-        number=$(df "/var/lib/lxc" | tail -n1 | awk '{print $2}')
+        let number+=$(df "/var/lib/lxc" | tail -n1 | awk '{print $2}')
+        device_lxc=$(df "/var/lib/lxc" | tail -n1 | awk '{print $1}')
     fi
+        
+    device_home=$(df "/home" | tail -n1 | awk '{print $1}')
 
     if [ -z "$number" ]; then
-        number=$(df /home | tail -n1 | awk '{print $2}')
+        check_home="true"
+    elif [ "$device_lxc" != "$device_home" ]; then
+        check_home="true"
+    fi
+
+    if [ -n "$check_home" ]; then
+        let number+=$(df /home | tail -n1 | awk '{print $2}')
     fi
 
     let number/=1000

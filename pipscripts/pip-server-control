@@ -3,7 +3,7 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.5"
+VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 OPTION_DEVICE=""
@@ -20,6 +20,7 @@ fi
 SUM_SERVERS=0
 SUM_OFF_LINE_SERVERS=0
 SUM_TESTING_SERVERS=0
+SUM_PROTECTED_SERVERS=0
 SUM_IDLE_SERVERS=0
 SUM_CORES=0
 SUM_MEMORY=0
@@ -55,7 +56,7 @@ Usage:
   --ping               Check if the server is up.
   --shut-down          Shut down the server.
   --wake               Start the server.
-
+  
   LIST SPECIFIERS
   --print-containers   Print the permanent containers on the server(s).
   --print-files        Print the config files of the server(s). 
@@ -64,7 +65,7 @@ Usage:
   --long               Print detailed/long list.
   --print-json         Print the output in JSon format.
   --print-report       Print a summary at the end.
-  
+  --only-report        Print only the report, not the list.
   
   --user=USERNAME      Run the program in the name of the user.
   --wait               Wait for the server.
@@ -91,7 +92,7 @@ ARGS=$(\
     getopt \
         -o hvs:c:l \
         -l "help,verbose,version,log-file:,long,print-report,print-json,\
-list,wake,shut-down,ping,\
+only-report,list,wake,shut-down,ping,\
 print-files,print-containers,user:,wait,all,\
 disabled,idle,offline,online,protected,testing" \
         -- "$@")
@@ -153,6 +154,11 @@ while true; do
         --print-report)
             shift
             OPTION_PRINT_REPORT="yes"
+            ;;
+
+        --only-report)
+            shift
+            OPTION_ONLY_REPORT="true"
             ;;
 
         --print-json)
@@ -464,11 +470,8 @@ function shut_down_server()
 }
 
 #
-# topic: stat/t7500/resources
-# message: {"Load":0.37, "Memory": { "Total": 49449668, "Available": 30354284 }, "hostname":"t7500", "id": 0}
-#
-# topic: stat/t7500/disks
-# message: {"Sum": {"Total": 2129717536, "Used": 846944648, "Free": 1178812776, "Percent": 42}, "hostname": "t7500", "id": 0}
+# pip-server-control --ping --print-json host01
+# {"hostname": "host01", "status": "on"}
 #
 function ping_server()
 {
@@ -499,6 +502,10 @@ function print_header()
 {
     local extra_title
 
+    if [ -n "$OPTION_ONLY_REPORT" ]; then
+        return 0
+    fi
+
     echo -en $TERM_BOLD
     
     if [ -n "$OPTION_PRINT_FILES" ]; then
@@ -526,20 +533,37 @@ function print_summary()
     fi
 
     let disk_terabytes=SUM_DISK
-    let disk_terabytes/=1024
+    let disk_terabytes/=1000
 
-    printf "\n"
-    printf "Summary:\n"
-    printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
-    printf "       Testing: %'6d server(s)\n" "$SUM_TESTING_SERVERS" 
-    printf "          Idle: %'6d server(s)\n" "$SUM_IDLE_SERVERS" 
-    printf "      Off-line: %'6d server(s)\n" "$SUM_OFF_LINE_SERVERS" 
-    printf "    Containers: %'6d instance(s)\n" "$SUM_CONTAINERS"
-    printf "\n"
-    printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
-    printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
-    printf "   Total Disks: %6d TBytes\n" "$disk_terabytes"
-    printf "\n"
+    if [ -z "$OPTION_PRINT_JSON" ]; then
+        printf "\n"
+        printf "Summary:\n"
+        printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
+        printf "       Testing: %'6d server(s)\n" "$SUM_TESTING_SERVERS" 
+        printf "          Idle: %'6d server(s)\n" "$SUM_IDLE_SERVERS" 
+        printf "      Off-line: %'6d server(s)\n" "$SUM_OFF_LINE_SERVERS" 
+        printf "     Protected: %'6d server(s)\n" "$SUM_PROTECTED_SERVERS" 
+        printf "    Containers: %'6d instance(s)\n" "$SUM_CONTAINERS"
+        printf "\n"
+        printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
+        printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
+        printf "   Total Disks: %6d TBytes\n" "$disk_terabytes"
+        printf "\n"
+    else
+        cat <<EOF
+{
+  "servers": $SUM_SERVERS,
+  "testing": $SUM_TESTING_SERVERS,
+  "idle": $SUM_IDLE_SERVERS,
+  "offLine": $SUM_OFF_LINE_SERVERS,
+  "protected": $SUM_PROTECTED_SERVERS,
+  "containers": $SUM_CONTAINERS,
+  "processorThreads": $SUM_CORES,
+  "memoryGbytes": $SUM_MEMORY,
+  "diskTerabytes": $disk_terabytes
+}
+EOF
+    fi
 }
 
 SERVER_STAT_ROOT="$HOME/.pip-servers"
@@ -691,7 +715,12 @@ function print_host_list_long()
                 let SUM_TESTING_SERVERS+=1
                 let SUM_SERVERS+=1
                 ;;
-            
+           
+            PROTECTED)
+                let SUM_PROTECTED_SERVERS+=1
+                let SUM_SERVERS+=1
+                ;;
+
             IDLE)
                 let SUM_IDLE_SERVERS+=1
                 let SUM_SERVERS+=1
@@ -702,7 +731,14 @@ function print_host_list_long()
                 ;;
         esac
 
+        # If only the report needed we are not printing anything.
+        if [ -n "$OPTION_ONLY_REPORT" ]; then
+            continue
+        fi
 
+        #
+        # Printing the detailed list here.
+        #
         printf "$DEVICE_COLOR%-10s$TERM_NORMAL "  "$device_name"
         printf "$OWNER_COLOR%-10s$TERM_NORMAL "   "$category"
         #printf "$IP_COLOR%-13s$TERM_NORMAL "      "$CONF_HOST_URL"
@@ -871,7 +907,7 @@ if [ -n "$LIST_OPTION" ]; then
     printVerbose "Listing servers..."
     download_current_data
     
-    if [ -n "$LONG_OPTION" ]; then
+    if [ -n "$LONG_OPTION" -o -n "$OPTION_ONLY_REPORT" ]; then
         print_host_list_long
         print_summary
     else

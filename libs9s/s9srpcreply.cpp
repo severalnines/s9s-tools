@@ -344,6 +344,19 @@ S9sRpcReply::users()
 }
 
 void
+S9sRpcReply::printTopQueries()
+{
+    S9sOptions     *options  = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else {
+        printTopQueriesLong();
+    }
+}
+
+void
 S9sRpcReply::printSqlProcesses()
 {
     S9sOptions     *options  = S9sOptions::instance();
@@ -562,6 +575,78 @@ S9sRpcReply::printSqlProcessesLong()
         ::printf("Total: %s%'d%s processes on %s%zu%s instance(s).\n", 
                 numberColorBegin(), nProcessess, numberColorEnd(),
                 numberColorBegin(), instances.size(), numberColorEnd());
+    }
+}
+
+void 
+S9sRpcReply::printTopQueriesLong()
+{
+    S9sOptions     *options  = S9sOptions::instance();    
+    S9sVariantList  variantList   = operator[]("digests").toVariantList();
+    S9sFormat       countFormat;
+    S9sFormat       timeFormat;
+    S9sFormat       databaseFormat;
+    S9sFormat       patternFormat;
+    int             total = 0;
+
+    for (size_t idx = 0u; idx < variantList.size(); ++idx)
+    {
+        S9sVariantMap  map = variantList[idx].toVariantMap();
+        int            count = map["count"].toInt();
+        int            time = map["waitMillisSum"].toDouble();
+        S9sString      database = map["databaseName"].toString();
+        S9sString      pattern = map["statementPattern"].toString();
+
+        countFormat.widen(count);
+        timeFormat.widen(time);
+        databaseFormat.widen(database);
+        patternFormat.widen(pattern);
+
+        ++total;
+    }
+    
+    if (!options->isNoHeaderRequested())
+    {
+        countFormat.widen("COUNT");
+        timeFormat.widen("TIME");
+        databaseFormat.widen("DATABASE");
+        patternFormat.widen("STATEMENT PATTERN");
+        
+        printf("%s", headerColorBegin());
+        countFormat.printf("COUNT");
+        timeFormat.printf("TIME");
+        databaseFormat.printf("DATABASE");
+        patternFormat.printf("DIGEST PATTERN");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+    
+    for (size_t idx = 0u; idx < variantList.size(); ++idx)
+    {
+        S9sVariantMap  map = variantList[idx].toVariantMap();
+        int            count = map["count"].toInt();
+        int            time = map["waitMillisSum"].toDouble();
+        S9sString      database = map["databaseName"].toString();
+        S9sString      pattern = map["statementPattern"].toString();
+
+        countFormat.printf(count);
+        timeFormat.printf(time);
+        
+        ::printf("%s", "\033[33m");
+        databaseFormat.printf(database);
+        ::printf("%s", sqlColorEnd());
+
+        ::printf("%s", sqlColorBegin());
+        patternFormat.printf(pattern);
+        ::printf("%s", sqlColorEnd());
+        
+        ::printf("\n");
+    }
+    
+    if (!options->isBatchRequested())
+    {
+        ::printf("Total: %s%'d%s statement pattern(s).\n", 
+                numberColorBegin(), total, numberColorEnd());
     }
 }
 

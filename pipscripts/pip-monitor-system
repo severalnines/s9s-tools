@@ -230,17 +230,13 @@ function get_resources()
     echo "$message"
 }
 
-CONFIG_FILE=$(mqtt_config_file)
-if [ ! -f "$CONFIG_FILE" ]; then
-    printError "Config file '$CONFIG_FILE' not found."
+MQTT_CONFIG_FILE=$(mqtt_config_file)
+if [ ! -f "$MQTT_CONFIG_FILE" ]; then
+    printError "Config file '$MQTT_CONFIG_FILE' not found."
     exit 5
 else
-    printVerbose "Loading config file '$CONFIG_FILE'."
-    source "$CONFIG_FILE"
-    #printVerbose "    MQTT_SERVER=$MQTT_SERVER"
-    #printVerbose "      MQTT_PORT=$MQTT_PORT"
-    #printVerbose "      MQTT_USER=$MQTT_USER"
-    #printVerbose "  MQTT_PASSWORD=$MQTT_PASSWORD"
+    printVerbose "Loading config file '$MQTT_CONFIG_FILE'."
+    source "$MQTT_CONFIG_FILE"
 fi
 
 function check_install_mosquitto()

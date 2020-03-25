@@ -596,6 +596,16 @@ S9sRpcClient::getSqlProcesses()
     return executeRequest(uri, request);    
 }
 
+bool
+S9sRpcClient::getTopQueries()
+{
+    S9sString      uri = "/v2/clusters/";
+    S9sVariantMap  request    = composeRequest();
+
+    request["operation"]       = "getTopQueries";
+    return executeRequest(uri, request);    
+}
+
 /**
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).

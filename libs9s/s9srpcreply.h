@@ -91,6 +91,8 @@ class S9sRpcReply : public S9sVariantMap
         void printJobLogLong();
 
         void printCat();
+        
+        void printTopQueries();
         void printSqlProcesses();
 
         void printAcl();
@@ -339,6 +341,7 @@ class S9sRpcReply : public S9sVariantMap
         void printUserListLong();
 
         void printSqlProcessesLong();
+        void printTopQueriesLong();
         
         void printAccountListBrief();
         void printAccountListLong();
