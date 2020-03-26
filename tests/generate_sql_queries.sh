@@ -417,8 +417,7 @@ function collectData()
         IS_MYSQL="true"
     elif [ "$SQL_CLASS" == "CmonPostgreSqlHost" ]; then
         IS_POSTGRESQL="true"
-    elif [ "$SQL_CLASS" == "CmonProxySqlHost" -a \
-            "$CLUSTER_TYPE" == "GALERA" ]; then
+    elif [ "$SQL_CLASS" == "CmonProxySqlHost" ]; then
         IS_MYSQL="true"
     fi
 

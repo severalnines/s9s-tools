@@ -589,20 +589,33 @@ S9sRpcClient::getCluster(
 bool
 S9sRpcClient::getSqlProcesses()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request    = composeRequest();
 
     request["operation"]       = "getSqlProcesses";
+    
+    if (options->limit() >= 0)
+        request["limit"] = options->limit();
+
     return executeRequest(uri, request);    
 }
 
 bool
 S9sRpcClient::getTopQueries()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/clusters/";
     S9sVariantMap  request    = composeRequest();
 
     request["operation"]       = "getTopQueries";
+    
+    if (options->limit() >= 0)
+        request["limit"] = options->limit();
+    
+    if (options->offset() >= 0)
+        request["offset"] = options->offset();
+
     return executeRequest(uri, request);    
 }
 

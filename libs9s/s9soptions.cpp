@@ -9450,26 +9450,27 @@ S9sOptions::readOptionsProcess(
     struct option long_options[] =
     {
         // Generic Options
-        { "help",             no_argument,       0, OptionHelp            },
-        { "debug",            no_argument,       0, OptionDebug           },
-        { "verbose",          no_argument,       0, 'v'                   },
-        { "version",          no_argument,       0, 'V'                   },
+        { "batch",            no_argument,       0, OptionBatch           },
         { "cmon-user",        required_argument, 0, 'u'                   }, 
-        { "password",         required_argument, 0, 'p'                   }, 
-        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
-        { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
-        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
-        { "long",             no_argument,       0, 'l'                   },
-        { "print-json",       no_argument,       0,  OptionPrintJson      },
         { "color",            optional_argument, 0,  OptionColor          },
         { "config-file",      required_argument, 0,  OptionConfigFile     },
-        { "batch",            no_argument,       0, OptionBatch           },
-        { "no-header",        no_argument,       0, OptionNoHeader        },
-        { "limit",            required_argument, 0, OptionLimit           },
+        { "controller-port",  required_argument, 0, 'P'                   },
+        { "controller",       required_argument, 0, 'c'                   },
+        { "debug",            no_argument,       0, OptionDebug           },
+        { "help",             no_argument,       0, OptionHelp            },
         { "human-readable",   no_argument,       0, 'h'                   },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "long",             no_argument,       0, 'l'                   },
+        { "no-header",        no_argument,       0, OptionNoHeader        },
+        { "offset",           required_argument, 0, OptionOffset          },
+        { "password",         required_argument, 0, 'p'                   }, 
+        { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "sort-by-memory",   no_argument,       0, OptionSortByMemory    },
         { "sort-by-time",     no_argument,       0, OptionSortByTime      },
+        { "verbose",          no_argument,       0, 'v'                   },
+        { "version",          no_argument,       0, 'V'                   },
 
         // Main Option
         { "list-digests",     no_argument,       0,  OptionListDigests    },
@@ -9530,6 +9531,11 @@ S9sOptions::readOptionsProcess(
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
             
             case OptionPrivateKeyFile:
@@ -12183,7 +12189,6 @@ S9sOptions::readOptionsJob(
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "limit",            required_argument, 0, OptionLimit           },
         { "log-format",       required_argument, 0, OptionLogFormat       },
-        { "offset",           required_argument, 0, OptionOffset          },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "schedule",         required_argument, 0, OptionSchedule        },

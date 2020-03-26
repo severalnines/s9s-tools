@@ -586,23 +586,24 @@ S9sRpcReply::printTopQueriesLong()
     S9sFormat       countFormat;
     S9sFormat       timeFormat;
     S9sFormat       databaseFormat;
+    S9sFormat       instanceFormat;
     S9sFormat       patternFormat;
-    int             total = 0;
+    int             total = operator[]("total").toInt();
 
     for (size_t idx = 0u; idx < variantList.size(); ++idx)
     {
-        S9sVariantMap  map = variantList[idx].toVariantMap();
-        int            count = map["count"].toInt();
-        int            time = map["waitMillisSum"].toDouble();
+        S9sVariantMap  map      = variantList[idx].toVariantMap();
+        int            count    = map["count"].toInt();
+        int            time     = map["waitMillisSum"].toDouble();
         S9sString      database = map["databaseName"].toString();
-        S9sString      pattern = map["statementPattern"].toString();
+        S9sString      instance = map["instance"].toString();
+        S9sString      pattern  = map["statementPattern"].toString();
 
         countFormat.widen(count);
         timeFormat.widen(time);
         databaseFormat.widen(database);
+        instanceFormat.widen(instance);
         patternFormat.widen(pattern);
-
-        ++total;
     }
     
     if (!options->isNoHeaderRequested())
@@ -610,12 +611,14 @@ S9sRpcReply::printTopQueriesLong()
         countFormat.widen("COUNT");
         timeFormat.widen("TIME");
         databaseFormat.widen("DATABASE");
+        instanceFormat.widen("SERVER");
         patternFormat.widen("STATEMENT PATTERN");
         
         printf("%s", headerColorBegin());
         countFormat.printf("COUNT");
         timeFormat.printf("TIME");
         databaseFormat.printf("DATABASE");
+        instanceFormat.printf("SERVER");
         patternFormat.printf("DIGEST PATTERN");
         printf("%s", headerColorEnd());
         printf("\n");
@@ -623,11 +626,12 @@ S9sRpcReply::printTopQueriesLong()
     
     for (size_t idx = 0u; idx < variantList.size(); ++idx)
     {
-        S9sVariantMap  map = variantList[idx].toVariantMap();
-        int            count = map["count"].toInt();
-        int            time = map["waitMillisSum"].toDouble();
+        S9sVariantMap  map      = variantList[idx].toVariantMap();
+        int            count    = map["count"].toInt();
+        int            time     = map["waitMillisSum"].toDouble();
         S9sString      database = map["databaseName"].toString();
-        S9sString      pattern = map["statementPattern"].toString();
+        S9sString      instance = map["instance"].toString();
+        S9sString      pattern  = map["statementPattern"].toString();
 
         countFormat.printf(count);
         timeFormat.printf(time);
@@ -635,6 +639,8 @@ S9sRpcReply::printTopQueriesLong()
         ::printf("%s", "\033[33m");
         databaseFormat.printf(database);
         ::printf("%s", sqlColorEnd());
+        
+        instanceFormat.printf(instance);
 
         ::printf("%s", sqlColorBegin());
         patternFormat.printf(pattern);
