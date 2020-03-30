@@ -538,6 +538,7 @@ class S9sOptions
         bool isStringMatchToClientOption(const S9sString &theString) const;
 
         uint nExtraArguments() const;
+        S9sVariantList extraArguments() const;
         S9sString extraArgument(uint idx);
 
         bool useSyntaxHighlight();
@@ -717,7 +718,7 @@ class S9sOptions
         S9sVariantMap        m_options;
         S9sConfigFile        m_userConfig;
         S9sConfigFile        m_systemConfig;
-        S9sVector<S9sString> m_extraArguments;
+        S9sVariantList       m_extraArguments;
         S9sVariantMap        m_state;
         /* Reconstructed command line for debugging purposes. */
         S9sString            m_allOptions;

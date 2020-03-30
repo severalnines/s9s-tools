@@ -580,22 +580,38 @@ S9sRpcReply::printTopQueriesLong()
     S9sFormat       databaseFormat;
     S9sFormat       instanceFormat;
     S9sFormat       patternFormat;
+    S9sFormat       minFormat, avgFormat, maxFormat;
     int             total = operator[]("total").toInt();
 
     timeFormat.setUnit(S9sFormat::UnitMs);
     timeFormat.setHumanReadable(options->humanReadable());
+
+    minFormat.setUnit(S9sFormat::UnitMs);
+    minFormat.setHumanReadable(options->humanReadable());
+    
+    avgFormat.setUnit(S9sFormat::UnitMs);
+    avgFormat.setHumanReadable(options->humanReadable());
+    
+    maxFormat.setUnit(S9sFormat::UnitMs);
+    maxFormat.setHumanReadable(options->humanReadable());
 
     for (size_t idx = 0u; idx < variantList.size(); ++idx)
     {
         S9sVariantMap  map      = variantList[idx].toVariantMap();
         int            count    = map["count"].toInt();
         double         time     = map["waitMillisSum"].toDouble();
+        double         minTime  = map["waitMillisMin"].toDouble();
+        double         maxTime  = map["waitMillisMax"].toDouble();
+        double         avgTime  = map["waitMillisAvg"].toDouble();
         S9sString      database = map["databaseName"].toString();
         S9sString      instance = map["instance"].toString();
         S9sString      pattern  = map["statementPattern"].toString();
 
         countFormat.widen(count);
         timeFormat.widen(time);
+        minFormat.widen(minTime);
+        avgFormat.widen(avgTime);
+        maxFormat.widen(maxTime);
         databaseFormat.widen(database);
         instanceFormat.widen(instance);
         patternFormat.widen(pattern);
@@ -606,6 +622,9 @@ S9sRpcReply::printTopQueriesLong()
         printf("%s", headerColorBegin());
         countFormat.printHeader("COUNT");
         timeFormat.printHeader("TIME");
+        minFormat.printHeader("MIN");
+        avgFormat.printHeader("AVG");
+        maxFormat.printHeader("MAX");
         databaseFormat.printHeader("DATABASE");
         instanceFormat.printHeader("SERVER");
         patternFormat.printHeader("DIGEST PATTERN");
@@ -618,12 +637,18 @@ S9sRpcReply::printTopQueriesLong()
         S9sVariantMap  map      = variantList[idx].toVariantMap();
         int            count    = map["count"].toInt();
         double         time     = map["waitMillisSum"].toDouble();
+        double         minTime  = map["waitMillisMin"].toDouble();
+        double         maxTime  = map["waitMillisMax"].toDouble();
+        double         avgTime  = map["waitMillisAvg"].toDouble();
         S9sString      database = map["databaseName"].toString();
         S9sString      instance = map["instance"].toString();
         S9sString      pattern  = map["statementPattern"].toString();
 
         countFormat.printf(count);
         timeFormat.printf(time);
+        minFormat.printf(minTime);
+        avgFormat.printf(avgTime);
+        maxFormat.printf(maxTime);
         
         ::printf("%s", databaseColorBegin());
         databaseFormat.printf(database);

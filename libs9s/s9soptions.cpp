@@ -4732,7 +4732,7 @@ S9sOptions::isStringMatchExtraArguments(
 
     for (uint idx = 0u; idx < m_extraArguments.size(); ++idx)
     {
-        const S9sString &pattern = m_extraArguments[idx];
+        const S9sString &pattern = m_extraArguments[idx].toString();
 
         if (fnmatch(STR(pattern), STR(theString), FNM_EXTMATCH) == 0)
             return true;
@@ -4782,6 +4782,12 @@ S9sOptions::nExtraArguments() const
     return m_extraArguments.size();
 }
 
+S9sVariantList
+S9sOptions::extraArguments() const
+{
+    return m_extraArguments;
+}
+
 /**
  * \returns One extra argument by its index.
  *
@@ -4793,7 +4799,7 @@ S9sOptions::extraArgument(
         uint idx)
 {
     if (idx < m_extraArguments.size())
-        return m_extraArguments[idx];
+        return m_extraArguments[idx].toString();
 
     return S9sString();
 }

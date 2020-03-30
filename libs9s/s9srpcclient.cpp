@@ -609,7 +609,10 @@ S9sRpcClient::getTopQueries()
     S9sVariantMap  request    = composeRequest();
 
     request["operation"]       = "getTopQueries";
-    
+   
+    if (options->nExtraArguments() > 0u)
+        request["filterStrings"] = options->extraArguments();
+
     if (options->limit() >= 0)
         request["limit"] = options->limit();
     
