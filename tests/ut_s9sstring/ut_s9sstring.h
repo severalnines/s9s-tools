@@ -40,5 +40,6 @@ class UtS9sString : public S9sUnitTest
         bool testEscape();
         bool testSplit();
         bool testSizeString();
+        bool testMilliseconds();
 };
 

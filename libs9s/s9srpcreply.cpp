@@ -590,11 +590,14 @@ S9sRpcReply::printTopQueriesLong()
     S9sFormat       patternFormat;
     int             total = operator[]("total").toInt();
 
+    timeFormat.setUnit(S9sFormat::UnitMs);
+    timeFormat.setHumanReadable(options->humanReadable());
+
     for (size_t idx = 0u; idx < variantList.size(); ++idx)
     {
         S9sVariantMap  map      = variantList[idx].toVariantMap();
         int            count    = map["count"].toInt();
-        int            time     = map["waitMillisSum"].toDouble();
+        double         time     = map["waitMillisSum"].toDouble();
         S9sString      database = map["databaseName"].toString();
         S9sString      instance = map["instance"].toString();
         S9sString      pattern  = map["statementPattern"].toString();
@@ -608,18 +611,12 @@ S9sRpcReply::printTopQueriesLong()
     
     if (!options->isNoHeaderRequested())
     {
-        countFormat.widen("COUNT");
-        timeFormat.widen("TIME");
-        databaseFormat.widen("DATABASE");
-        instanceFormat.widen("SERVER");
-        patternFormat.widen("STATEMENT PATTERN");
-        
         printf("%s", headerColorBegin());
-        countFormat.printf("COUNT");
-        timeFormat.printf("TIME");
-        databaseFormat.printf("DATABASE");
-        instanceFormat.printf("SERVER");
-        patternFormat.printf("DIGEST PATTERN");
+        countFormat.printHeader("COUNT");
+        timeFormat.printHeader("TIME");
+        databaseFormat.printHeader("DATABASE");
+        instanceFormat.printHeader("SERVER");
+        patternFormat.printHeader("DIGEST PATTERN");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -628,7 +625,7 @@ S9sRpcReply::printTopQueriesLong()
     {
         S9sVariantMap  map      = variantList[idx].toVariantMap();
         int            count    = map["count"].toInt();
-        int            time     = map["waitMillisSum"].toDouble();
+        double         time     = map["waitMillisSum"].toDouble();
         S9sString      database = map["databaseName"].toString();
         S9sString      instance = map["instance"].toString();
         S9sString      pattern  = map["statementPattern"].toString();

@@ -35,6 +35,16 @@ class S9sFormat
             AlignCenter,
         };
 
+        enum Unit
+        {
+            /** No unit is set. */
+            UnitUnknown,
+            /** The number represents milliseconds. */
+            UnitMs,
+            /** The number represents bytes. */
+            UnitBytes,
+        };
+
         S9sFormat();
         S9sFormat(const char *colorStart, const char *colorEnd);
        
@@ -43,23 +53,33 @@ class S9sFormat
         void setColor(const char *colorStart, const char *colorEnd);
         void setRightJustify();
         void setCenterJustify();
+        void setUnit(const S9sFormat::Unit unit);
+        void setHumanReadable(const bool value);
 
         int realWidth() const;
 
         void setWidth(int width);
         void setEllipsize(bool ellipsize = true);
 
+        S9sString toString(const double value) const;
+
         void widen(const S9sString &value);
         void widen(const int value);
         void widen(const ulonglong value);
+        void widen(const double value);
 
         void printf(const int value) const;
         void printf(const ulonglong value) const;
         void printf(const S9sString &value, bool color = true) const;
+        void printf(const double value, bool color = true) const;
+        void printHeader(const S9sString &value);
+
 
         static S9sString toSizeString(const ulonglong value);
 
     private:
+        Unit        m_unit;
+        bool        m_humanreadable;
         int         m_width;
         bool        m_withFieldSeparator;
         const char *m_colorStart;

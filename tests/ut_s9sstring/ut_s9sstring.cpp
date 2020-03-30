@@ -57,6 +57,7 @@ UtS9sString::runTest(const char *testName)
     PERFORM_TEST(testEscape,        retval);
     PERFORM_TEST(testSplit,         retval);
     PERFORM_TEST(testSizeString,    retval);
+    PERFORM_TEST(testMilliseconds,  retval);
 
     return retval;
 }
@@ -401,6 +402,27 @@ UtS9sString::testSizeString()
     S9S_COMPARE(S9sFormat::toSizeString(1024 * 1024 * 1024), "1.0G");
     S9S_COMPARE(S9sFormat::toSizeString(1024ull * 1024 * 1024 * 1024), "1.0T");
 
+    return true;
+}
+
+bool
+UtS9sString::testMilliseconds()
+{
+    S9sFormat format;
+
+    format.setUnit(S9sFormat::UnitMs);
+    format.setHumanReadable(false);
+
+    S9S_COMPARE(format.toString(12.45), "12");
+    S9S_COMPARE(format.toString(12.00), "12");
+    S9S_COMPARE(format.toString(2756220.189), "2756220");
+    
+    format.setHumanReadable(true);
+    S9S_COMPARE(format.toString(12.45),       "12.45ms");
+    S9S_COMPARE(format.toString(1526.34),     "1.53s");
+    S9S_COMPARE(format.toString(2756220.189), "2756s");
+
+    S9S_COMPARE(format.toString(0.45),        "450us");
     return true;
 }
 

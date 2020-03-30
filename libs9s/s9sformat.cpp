@@ -33,6 +33,8 @@
 #define PETA (1024.0 * 1024.0 * 1024.0 * 1024.0 * 1024)
 
 S9sFormat::S9sFormat() :
+    m_unit(UnitUnknown),
+    m_humanreadable(false),
     m_width(0),
     m_withFieldSeparator(true),
     m_colorStart(0),
@@ -45,6 +47,8 @@ S9sFormat::S9sFormat() :
 S9sFormat::S9sFormat(
         const char *colorStart,
         const char *colorEnd) :
+    m_unit(UnitUnknown),
+    m_humanreadable(false),
     m_width(0),
     m_withFieldSeparator(true),
     m_colorStart(colorStart),
@@ -96,6 +100,20 @@ S9sFormat::setColor(
 {
     m_colorStart = colorStart;
     m_colorEnd   = colorEnd;
+}
+
+void
+S9sFormat::setUnit(
+        const S9sFormat::Unit unit)
+{
+    m_unit = unit;
+}
+
+void
+S9sFormat::setHumanReadable(
+        const bool value)
+{
+    m_humanreadable = value;
 }
 
 /**
@@ -165,6 +183,64 @@ S9sFormat::widen(
     widen(tmp);
 }
 
+void
+S9sFormat::widen(
+        const double value)
+{
+    S9sString tmp = toString(value);
+    
+    if ((int)tmp.terminalLength() > m_width)
+        m_width = (int) tmp.terminalLength();
+}
+
+/**
+ * \param value The value to convert to a string.
+ * \returns The formatted string without alignment, field separator and colors.
+ *
+ * Converts the double to string. Does not consider the width and the color of
+ * the column, but considers the unit and the human readable flag.
+ */
+S9sString
+S9sFormat::toString(
+        const double value) const
+{
+    S9sString retval;
+
+    switch (m_unit)
+    {
+        case UnitUnknown:
+            retval.sprintf("%g", value);
+            break;
+
+        case UnitMs:
+            if (!m_humanreadable)
+            {
+                retval.sprintf("%.0f", value);
+            } else {
+                if (value > 10000.0)
+                {
+                    retval.sprintf("%.0fs", value / 1000.0);
+                } else if (value > 1000.0)
+                {
+                    retval.sprintf("%.2fs", value / 1000.0);
+                } else if (value < 1.0)
+                {
+                    retval.sprintf("%.0fus", value * 1000.0);
+                } else {
+                    retval.sprintf("%.2fms", value);
+                }
+            }
+            break;
+        
+        case UnitBytes:
+            retval.sprintf("%.0f", value);
+            break;
+    }
+
+    return retval;
+}
+
+
 /**
  * Prints the value to the standard output, then prints the field separator.
  */
@@ -187,6 +263,8 @@ S9sFormat::printf(
     ::printf(STR(formatString), value);
 }
 
+
+
 /**
  * Prints the value to the standard output, then prints the field separator.
  */
@@ -199,12 +277,37 @@ S9sFormat::printf(
     if (m_width > 0)
         formatString.sprintf("%%%dllu", m_width);
     else
-        formatString.sprintf("%%llu", m_width);
+        formatString.sprintf("%%llu");
 
     if (m_withFieldSeparator)
         formatString += " ";
 
     ::printf(STR(formatString), value);
+}
+
+void
+S9sFormat::printf(
+        const double value,
+        bool         color) const
+{
+    S9sString myValue = toString(value);
+    S9sString formatString;
+
+    if (m_width > 0)
+        formatString.sprintf("%%%ds", m_width);
+    else
+        formatString.sprintf("%%s");
+
+    if (m_withFieldSeparator)
+        formatString += " ";
+    
+    if (color && m_colorStart != NULL)
+        ::printf("%s", m_colorStart);
+
+    ::printf(STR(formatString), STR(myValue));
+
+    if (color && m_colorEnd != NULL)
+        ::printf("%s", m_colorEnd);
 }
 
 /**
@@ -270,6 +373,16 @@ S9sFormat::printf(
 
     if (color && m_colorEnd != NULL)
         ::printf("%s", m_colorEnd);
+}
+
+void
+S9sFormat::printHeader(
+        const S9sString &value) 
+{
+    // The first thing that we print is the header, so it is not too late to
+    // widen the column here.
+    widen(value);
+    printf(STR(value), false);
 }
 
 /**
