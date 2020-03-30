@@ -3990,23 +3990,15 @@ S9sRpcReply::printDatabaseListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        sizeFormat.widen("SIZE");
-        nTablesFormat.widen("#TBL");
-        nRowsFormat.widen("#ROWS");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        clusterNameFormat.widen("CLUSTER");
-        nameFormat.widen("DATABASE");
-
         printf("%s", headerColorBegin());
 
-        sizeFormat.printf("SIZE");
-        nTablesFormat.printf("#TBL");
-        nRowsFormat.printf("#ROWS");
-        ownerFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        clusterNameFormat.printf("CLUSTER");
-        nameFormat.printf("DATABASE");
+        sizeFormat.printHeader("SIZE");
+        nTablesFormat.printHeader("#TBL");
+        nRowsFormat.printHeader("#ROWS");
+        ownerFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        clusterNameFormat.printHeader("CLUSTER");
+        nameFormat.printHeader("DATABASE");
  
         printf("%s", headerColorEnd());
         printf("\n");
@@ -4688,25 +4680,16 @@ S9sRpcReply::printPartitions(
      */
     if (!options->isNoHeaderRequested())
     {
-        totalFormat.widen("SIZE");
-        usedFormat.widen("USED");
-        freeFormat.widen("AVAIL");
-        percentFormat.widen("USE%");
-        hostnameFormat.widen("HOST");
-        filesystemFormat.widen("FS");
-        deviceFormat.widen("DEVICE");
-        mountpointFormat.widen("MOUNT POINT");
-
         printf("%s", headerColorBegin());
-        totalFormat.printf("SIZE");
-        usedFormat.printf("USED");
-        freeFormat.printf("AVAIL");
-        percentFormat.printf("USE%");
+        totalFormat.printHeader("SIZE");
+        usedFormat.printHeader("USED");
+        freeFormat.printHeader("AVAIL");
+        percentFormat.printHeader("USE%");
 
-        hostnameFormat.printf("HOST");
-        filesystemFormat.printf("FS");
-        deviceFormat.printf("DEVICE");
-        mountpointFormat.printf("MOUNT POINT");
+        hostnameFormat.printHeader("HOST");
+        filesystemFormat.printHeader("FS");
+        deviceFormat.printHeader("DEVICE");
+        mountpointFormat.printHeader("MOUNT POINT");
         printf("%s", headerColorEnd());
 
         printf("\n");
@@ -4987,20 +4970,13 @@ S9sRpcReply::printTemplates()
     
     if (!options->isNoHeaderRequested())
     {
-        cloudFormat.widen("CLD");
-        regionFormat.widen("REGION");
-        cpuFormat.widen("CPU");
-        memoryFormat.widen("MEMORY");
-        hostNameFormat.widen("SERVER");
-        nameFormat.widen("TEMPLATE");
-
         printf("%s", headerColorBegin());
-        cloudFormat.printf("CLD");
-        regionFormat.printf("REGION");
-        cpuFormat.printf("CPU");
-        memoryFormat.printf("MEMORY");
-        hostNameFormat.printf("SERVER");
-        nameFormat.printf("TEMPLATE", false);
+        cloudFormat.printHeader("CLD");
+        regionFormat.printHeader("REGION");
+        cpuFormat.printHeader("CPU");
+        memoryFormat.printHeader("MEMORY");
+        hostNameFormat.printHeader("SERVER");
+        nameFormat.printHeader("TEMPLATE");
         printf("%s", headerColorEnd());
         printf("\n");
 
@@ -5147,20 +5123,13 @@ S9sRpcReply::printSubnets()
     
     if (!options->isNoHeaderRequested())
     {
-        cloudFormat.widen("CLD");
-        regionFormat.widen("REGION");
-        hostNameFormat.widen("SERVER");
-        cidrFormat.widen("CIDR");
-        vpcFormat.widen("VPC");
-        idFormat.widen("ID");
-
         printf("%s", headerColorBegin());
-        cloudFormat.printf("CLD");
-        regionFormat.printf("REGION");
-        hostNameFormat.printf("SERVER");
-        cidrFormat.printf("CIDR", false);
-        vpcFormat.printf("VPC");
-        idFormat.printf("ID");
+        cloudFormat.printHeader("CLD");
+        regionFormat.printHeader("REGION");
+        hostNameFormat.printHeader("SERVER");
+        cidrFormat.printHeader("CIDR");
+        vpcFormat.printHeader("VPC");
+        idFormat.printHeader("ID");
         printf("%s", headerColorEnd());
         printf("\n");
 
@@ -5273,16 +5242,11 @@ S9sRpcReply::printRegions()
     
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        hasCredentialsFormat.widen("CRED");
-        providerFormat.widen("CLOUD");
-        hostNameFormat.widen("SERVER");
-        nameFormat.widen("REGION");
-
         printf("%s", headerColorBegin());
-        hasCredentialsFormat.printf("CRED");
-        providerFormat.printf("CLOUD");
-        hostNameFormat.printf("SERVER");
-        nameFormat.printf("REGION");
+        hasCredentialsFormat.printHeader("CRED");
+        providerFormat.printHeader("CLOUD");
+        hostNameFormat.printHeader("SERVER");
+        nameFormat.printHeader("REGION");
         printf("%s\n", headerColorEnd());
     }
     
@@ -10481,17 +10445,6 @@ S9sRpcReply::userColorEnd()
 
     return "";
 }
-
-#if 0
-const char *
-S9sRpcReply::databaseColorBegin() 
-{
-    if (useSyntaxHighLight())
-        return "\033[33m";
-
-    return "";
-}
-#endif
 
 const char *
 S9sRpcReply::sqlColorBegin() 
