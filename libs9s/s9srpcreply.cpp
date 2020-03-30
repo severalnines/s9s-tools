@@ -5392,16 +5392,11 @@ S9sRpcReply::printSheetsLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        nameFormat.widen("NAME");
-        
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        ownerFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        nameFormat.printf("NAME");
+        idFormat.printHeader("ID");
+        ownerFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        nameFormat.printHeader("NAME");
         printf("%s\n", headerColorEnd());
     }
 
@@ -5586,16 +5581,11 @@ S9sRpcReply::printImagesLong()
 
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        cloudFormat.widen("CLD");
-        regionFormat.widen("REGION");
-        hostNameFormat.widen("SERVER");
-        imageFormat.widen("IMAGE");
-
         printf("%s", headerColorBegin());
-        cloudFormat.printf("CLD");
-        regionFormat.printf("REGION");
-        hostNameFormat.printf("SERVER");
-        imageFormat.printf("IMAGE");
+        cloudFormat.printHeader("CLD");
+        regionFormat.printHeader("REGION");
+        hostNameFormat.printHeader("SERVER");
+        imageFormat.printHeader("IMAGE");
         printf("%s", headerColorEnd());
         printf("\n");
 
@@ -5773,21 +5763,14 @@ S9sRpcReply::printControllersLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        versionFormat.widen("VERSION");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        hostNameFormat.widen("CONTROLLER_NAME");
-        ipFormat.widen("IP");
-        portFormat.widen("PORT");
-        
         ::printf("%s", headerColorBegin());
         ::printf("S ");
-        versionFormat.printf("VERSION");
-        ownerFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        hostNameFormat.printf("NAME");
-        ipFormat.printf("IP", false);
-        portFormat.printf("PORT");
+        versionFormat.printHeader("VERSION");
+        ownerFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        hostNameFormat.printHeader("NAME");
+        ipFormat.printHeader("IP");
+        portFormat.printHeader("PORT");
 
         printf("COMMENT");
         printf("%s\n", headerColorEnd());
@@ -5961,22 +5944,14 @@ S9sRpcReply::printServersLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        protocolFormat.widen("CLD");
-        versionFormat.widen("VERSION");
-        nContainersFormat.widen("#C");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        hostNameFormat.widen("SERVER_NAME");
-        ipFormat.widen("IP");
-        
         printf("%s", headerColorBegin());
-        protocolFormat.printf("CLD");
-        versionFormat.printf("VERSION");
-        nContainersFormat.printf("#C");
-        ownerFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        hostNameFormat.printf("NAME");
-        ipFormat.printf("IP", false);
+        protocolFormat.printHeader("CLD");
+        versionFormat.printHeader("VERSION");
+        nContainersFormat.printHeader("#C");
+        ownerFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        hostNameFormat.printHeader("NAME");
+        ipFormat.printHeader("IP");
         printf("COMMENT");
         printf("%s\n", headerColorEnd());
     }
@@ -6239,21 +6214,14 @@ S9sRpcReply::printContainersLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        typeFormat.widen("CLD");
-        templateFormat.widen("TEMPLATE");
-        userFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        ipFormat.widen("IP ADDRESS");
-        parentFormat.widen("SERVER");
-
         printf("%s", headerColorBegin());
         printf("S ");
-        typeFormat.printf("CLD", false);
-        templateFormat.printf("TEMPLATE", false);
-        userFormat.printf("OWNER", false);
-        groupFormat.printf("GROUP", false);
-        ipFormat.printf("IP ADDRESS", false);
-        parentFormat.printf("SERVER", false);
+        typeFormat.printHeader("CLD");
+        templateFormat.printHeader("TEMPLATE");
+        userFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        ipFormat.printHeader("IP ADDRESS");
+        parentFormat.printHeader("SERVER");
         ::printf("NAME");
 
         printf("%s\n", headerColorEnd());
@@ -6989,15 +6957,11 @@ S9sRpcReply::printObjectListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        m_sizeFormat.widen("SIZE");
-        m_ownerFormat.widen("OWNER");
-        m_groupFormat.widen("GROUP");
-
         printf("%s", headerColorBegin());
         printf("MODE        ");
-        m_sizeFormat.printf("SIZE");
-        m_ownerFormat.printf("OWNER");
-        m_groupFormat.printf("GROUP");
+        m_sizeFormat.printHeader("SIZE");
+        m_ownerFormat.printHeader("OWNER");
+        m_groupFormat.printHeader("GROUP");
         printf("NAME");
         printf("%s\n", headerColorEnd());
 
@@ -7548,19 +7512,13 @@ S9sRpcReply::printNodeListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        versionFormat.widen("VERSION");
-        cidFormat.widen("CID");
-        clusterNameFormat.widen("CLUSTER");
-        hostNameFormat.widen("HOST");
-        portFormat.widen("PORT");
-
         printf("%s", headerColorBegin());
         printf("STAT ");
-        versionFormat.printf("VERSION");
-        cidFormat.printf("CID");
-        clusterNameFormat.printf("CLUSTER");
-        hostNameFormat.printf("HOST");
-        portFormat.printf("PORT");
+        versionFormat.printHeader("VERSION");
+        cidFormat.printHeader("CID");
+        clusterNameFormat.printHeader("CLUSTER");
+        hostNameFormat.printHeader("HOST");
+        portFormat.printHeader("PORT");
         printf("COMMENT");
         printf("%s\n", headerColorEnd());
     }
@@ -7733,22 +7691,14 @@ S9sRpcReply::printJobListBrief()
     //
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        cidFormat.widen("CID");
-        stateFormat.widen("STATE");
-        userFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        dateFormat.widen("CREATED");
-        percentFormat.widen("100%");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        cidFormat.printf("CID");
-        stateFormat.printf("STATE");
-        userFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        dateFormat.printf("CREATED");
-        percentFormat.printf("RDY");
+        idFormat.printHeader("ID");
+        cidFormat.printHeader("CID");
+        stateFormat.printHeader("STATE");
+        userFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        dateFormat.printHeader("CREATED");
+        percentFormat.printHeader("RDY");
         printf("TITLE");
 
         printf("%s", headerColorEnd());
@@ -8486,28 +8436,17 @@ S9sRpcReply::printBackupListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        idFormat.widen("ID");
-        parentIdFormat.widen("PI");
-        cidFormat.widen("CID");
-        verifyFormat.widen("V");
-        incrementalFormat.widen("I");
-        stateFormat.widen("STATE");
-        ownerFormat.widen("OWNER");
-        hostNameFormat.widen("HOSTNAME");
-        createdFormat.widen("CREATED");
-        sizeFormat.widen("SIZE");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        parentIdFormat.printf("PI");
-        cidFormat.printf("CID");
-        verifyFormat.printf("V");
-        incrementalFormat.printf("I");
-        stateFormat.printf("STATE");
-        ownerFormat.printf("OWNER");
-        hostNameFormat.printf("HOSTNAME");
-        createdFormat.printf("CREATED");
-        sizeFormat.printf("SIZE");
+        idFormat.printHeader("ID");
+        parentIdFormat.printHeader("PI");
+        cidFormat.printHeader("CID");
+        verifyFormat.printHeader("V");
+        incrementalFormat.printHeader("I");
+        stateFormat.printHeader("STATE");
+        ownerFormat.printHeader("OWNER");
+        hostNameFormat.printHeader("HOSTNAME");
+        createdFormat.printHeader("CREATED");
+        sizeFormat.printHeader("SIZE");
         printf("TITLE");
  
         printf("%s", headerColorEnd());
@@ -8773,28 +8712,17 @@ S9sRpcReply::printBackupListDatabasesLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        idFormat.widen("ID");
-        parentIdFormat.widen("PI");
-        cidFormat.widen("CID");
-        verifyFormat.widen("V");
-        incrementalFormat.widen("I");
-        stateFormat.widen("STATE");
-        ownerFormat.widen("OWNER");
-        hostNameFormat.widen("HOSTNAME");
-        createdFormat.widen("CREATED");
-        sizeFormat.widen("SIZE");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        parentIdFormat.printf("PI");
-        cidFormat.printf("CID");
-        verifyFormat.printf("V");
-        incrementalFormat.printf("I");
-        stateFormat.printf("STATE");
-        ownerFormat.printf("OWNER");
-        hostNameFormat.printf("HOSTNAME");
-        createdFormat.printf("CREATED");
-        sizeFormat.printf("SIZE");
+        idFormat.printHeader("ID");
+        parentIdFormat.printHeader("PI");
+        cidFormat.printHeader("CID");
+        verifyFormat.printHeader("V");
+        incrementalFormat.printHeader("I");
+        stateFormat.printHeader("STATE");
+        ownerFormat.printHeader("OWNER");
+        hostNameFormat.printHeader("HOSTNAME");
+        createdFormat.printHeader("CREATED");
+        sizeFormat.printHeader("SIZE");
         printf("DATABASES");
  
         printf("%s", headerColorEnd());
@@ -9113,28 +9041,17 @@ S9sRpcReply::printBackupListFilesLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        idFormat.widen("ID");
-        parentIdFormat.widen("PI");
-        cidFormat.widen("CID");
-        verifyFormat.widen("V");
-        incrementalFormat.widen("I");
-        stateFormat.widen("STATE");
-        ownerFormat.widen("OWNER");
-        hostNameFormat.widen("HOSTNAME");
-        createdFormat.widen("CREATED");
-        sizeFormat.widen("SIZE");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        parentIdFormat.printf("PI");
-        cidFormat.printf("CID");
-        verifyFormat.printf("V");
-        incrementalFormat.printf("I");
-        stateFormat.printf("STATE");
-        ownerFormat.printf("OWNER");
-        hostNameFormat.printf("HOSTNAME");
-        createdFormat.printf("CREATED");
-        sizeFormat.printf("SIZE");
+        idFormat.printHeader("ID");
+        parentIdFormat.printHeader("PI");
+        cidFormat.printHeader("CID");
+        verifyFormat.printHeader("V");
+        incrementalFormat.printHeader("I");
+        stateFormat.printHeader("STATE");
+        ownerFormat.printHeader("OWNER");
+        hostNameFormat.printHeader("HOSTNAME");
+        createdFormat.printHeader("CREATED");
+        sizeFormat.printHeader("SIZE");
         printf("FILENAME");
  
         printf("%s", headerColorEnd());
@@ -9374,21 +9291,14 @@ S9sRpcReply::printMaintenanceListLong()
     
     if (!options->isNoHeaderRequested())
     {
-        uuidFormat.widen("UUID");
-        ownerFormat.widen("OWNER");
-        groupOwnerFormat.widen("GROUP");
-        startFormat.widen("START");
-        endFormat.widen("END");
-        nameFormat.widen("HOST/CLUSTER");
-
         printf("%s", headerColorBegin());
         printf("ST ");
-        uuidFormat.printf("UUID");
-        ownerFormat.printf("OWNER");
-        groupOwnerFormat.printf("GROUP");
-        startFormat.printf("START");
-        endFormat.printf("END");
-        nameFormat.printf("HOST/CLUSTER");
+        uuidFormat.printHeader("UUID");
+        ownerFormat.printHeader("OWNER");
+        groupOwnerFormat.printHeader("GROUP");
+        startFormat.printHeader("START");
+        endFormat.printHeader("END");
+        nameFormat.printHeader("HOST/CLUSTER");
         printf("REASON");
         
         printf("%s", headerColorEnd());
@@ -9544,16 +9454,11 @@ S9sRpcReply::printGroupListLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        nameFormat.widen("NAME");
-        ownerFormat.widen("OWNER");
-        groupOwnerFormat.widen("GOWNER");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        ownerFormat.printf("OWNER");
-        groupOwnerFormat.printf("GOWNER");
-        nameFormat.printf("NAME");
+        idFormat.printHeader("ID");
+        ownerFormat.printHeader("OWNER");
+        groupOwnerFormat.printHeader("GOWNER");
+        nameFormat.printHeader("NAME");
         printf("%s", headerColorEnd());
 
         printf("\n");
