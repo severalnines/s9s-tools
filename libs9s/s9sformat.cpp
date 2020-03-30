@@ -223,6 +223,9 @@ S9sFormat::toString(
                 } else if (value > 1000.0)
                 {
                     retval.sprintf("%.2fs", value / 1000.0);
+                } else if (value > 100.0)
+                {
+                    retval.sprintf("%.0fms", value);
                 } else if (value < 1.0)
                 {
                     retval.sprintf("%.0fus", value * 1000.0);

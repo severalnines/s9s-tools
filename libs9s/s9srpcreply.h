@@ -246,6 +246,8 @@ class S9sRpcReply : public S9sVariantMap
         static const char *userColorBegin();
         static const char *userColorEnd();
         
+        //static const char *databaseColorBegin();
+        
         static const char *sqlColorBegin();
         static const char *sqlColorEnd();
 

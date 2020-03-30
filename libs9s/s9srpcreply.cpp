@@ -481,23 +481,15 @@ S9sRpcReply::printSqlProcessesLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        pidFormat.widen("PID");
-        commandFormat.widen("TYPE");
-        timeFormat.widen("TIME");
-        userFormat.widen("ACCOUNT");
-        hostNameFormat.widen("CLIENT");
-        instanceFormat.widen("SERVER");
-        queryFormat.widen("QUERY");
-
         printf("%s", headerColorBegin());
-        pidFormat.printf("PID");
-        commandFormat.printf("TYPE");
-        timeFormat.printf("TIME");
+        pidFormat.printHeader("PID");
+        commandFormat.printHeader("TYPE");
+        timeFormat.printHeader("TIME");
 
-        userFormat.printf("ACCOUNT");
-        hostNameFormat.printf("CLIENT");
-        instanceFormat.printf("SERVER");
-        queryFormat.printf("QUERY");
+        userFormat.printHeader("ACCOUNT");
+        hostNameFormat.printHeader("CLIENT");
+        instanceFormat.printHeader("SERVER");
+        queryFormat.printHeader("QUERY");
         printf("%s", headerColorEnd());
 
         printf("\n");
@@ -633,7 +625,7 @@ S9sRpcReply::printTopQueriesLong()
         countFormat.printf(count);
         timeFormat.printf(time);
         
-        ::printf("%s", "\033[33m");
+        ::printf("%s", databaseColorBegin());
         databaseFormat.printf(database);
         ::printf("%s", sqlColorEnd());
         
@@ -797,20 +789,13 @@ S9sRpcReply::printReplicationListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        clusterIdFormat.widen("CID");
-        slaveNameFormat.widen("SLAVE");
-        masterNameFormat.widen("MASTER");
-        linkStatusFormat.widen("STATUS");
-        masterClusterFormat.widen("MASTER_CLUSTER");
-        lagFormat.widen("LAG");
-
         printf("%s", headerColorBegin());
-        clusterIdFormat.printf("CID");
-        slaveNameFormat.printf("SLAVE");
-        masterNameFormat.printf("MASTER");
-        linkStatusFormat.printf("STATUS");
-        masterClusterFormat.printf("MASTER_CLUSTER"); 
-        lagFormat.printf("LAG"); 
+        clusterIdFormat.printHeader("CID");
+        slaveNameFormat.printHeader("SLAVE");
+        masterNameFormat.printHeader("MASTER");
+        linkStatusFormat.printHeader("STATUS");
+        masterClusterFormat.printHeader("MASTER_CLUSTER"); 
+        lagFormat.printHeader("LAG"); 
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -1332,16 +1317,11 @@ S9sRpcReply::printSupportedClusterListLong()
     
     if (!options->isNoHeaderRequested())
     {
-        nameFormat.widen("CLUSTER TYPE");
-        vendorNameFormat.widen("VENDOR");
-        versionFormat.widen("VERSION");
-        longNameFormat.widen("DESCRIPTION");
-
         ::printf("%s", headerColorBegin());
-        nameFormat.printf("CLUSTER TYPE", false);
-        vendorNameFormat.printf("VENDOR", false);
-        versionFormat.printf("VERSION", false);
-        longNameFormat.printf("DESCRIPTION", false);
+        nameFormat.printHeader("CLUSTER TYPE");
+        vendorNameFormat.printHeader("VENDOR");
+        versionFormat.printHeader("VERSION");
+        longNameFormat.printHeader("DESCRIPTION");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
@@ -1739,22 +1719,15 @@ S9sRpcReply::printProcessListLong(
     resFormat.setRightJustify();
 
     if (!options->isNoHeaderRequested())
-    {    
-        pidFormat.widen("PID");
-        userFormat.widen("USER");
-        hostFormat.widen("HOST");
-        priorityFormat.widen("PR");
-        virtFormat.widen("VIRT");
-        resFormat.widen("RES");
-
+    {
         printf("%s", headerColorBegin());
 
-        pidFormat.printf("PID");
-        userFormat.printf("USER");
-        hostFormat.printf("HOST");
-        priorityFormat.printf("PR");
-        virtFormat.printf("VIRT");
-        resFormat.printf("RES");
+        pidFormat.printHeader("PID");
+        userFormat.printHeader("USER");
+        hostFormat.printHeader("HOST");
+        priorityFormat.printHeader("PR");
+        virtFormat.printHeader("VIRT");
+        resFormat.printHeader("RES");
 
         ::printf("%s", "S   %CPU   %MEM COMMAND    ");
         ::printf("%s", TERM_NORMAL);
@@ -2206,18 +2179,12 @@ S9sRpcReply::printBackupSchedulesLong()
     
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        clusterIdFormat.widen("CID");
-        scheduleFormat.widen("REPEAT");
-        enabledFormat.widen("STATUS");
-        descriptionFormat.widen("DESCRIPTION");
-        
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        clusterIdFormat.printf("CID");
-        scheduleFormat.printf("REPEAT");
-        enabledFormat.printf("STATUS");
-        descriptionFormat.printf("DESCRIPTION");
+        idFormat.printHeader("ID");
+        clusterIdFormat.printHeader("CID");
+        scheduleFormat.printHeader("REPEAT");
+        enabledFormat.printHeader("STATUS");
+        descriptionFormat.printHeader("DESCRIPTION");
         printf("%s", headerColorEnd());
         printf("\n");        
     }
@@ -2492,25 +2459,20 @@ S9sRpcReply::printAccountListLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        accountNameFormat.widen("NAME");
-        hostNameFormat.widen("HOST");
-        passwordFormat.widen("P");
-        connectionsFormat.widen("CONN");
-        maxConnectionsFormat.widen("MAXC");
-
         printf("%s", headerColorBegin());
         // Johan asked for ''@'' format, this is a temporary solution for that.
+        // FIXME: Well, not temporary it seems, this code persists.
         #if 0
         accountNameFormat.printf("NAME");
         hostNameFormat.printf("HOST");
         #else
-        accountNameFormat.printf("NAME");
+        accountNameFormat.printHeader("NAME");
         //hostNameFormat.printf("");
         //printf(" ");
         #endif
-        passwordFormat.printf("P");
-        connectionsFormat.printf("CONN");
-        maxConnectionsFormat.printf("MAXC");
+        passwordFormat.printHeader("P");
+        connectionsFormat.printHeader("CONN");
+        maxConnectionsFormat.printHeader("MAXC");
         printf("GRANTS");
         printf("%s", headerColorEnd());
 
@@ -2784,12 +2746,9 @@ S9sRpcReply::printExtendedConfigLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        nameFormat.widen("NAME");
-        valueFormat.widen("VALUE");
-
         printf("%s", headerColorBegin());
-        nameFormat.printf("NAME");
-        valueFormat.printf("VALUE");
+        nameFormat.printHeader("NAME");
+        valueFormat.printHeader("VALUE");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -3021,14 +2980,10 @@ S9sRpcReply::printConfigLong()
      */
     if (!options->isNoHeaderRequested())
     {
-        sectionFormat.widen("GROUP");
-        nameFormat.widen("OPTION NAME");
-        valueFormat.widen("VALUE");
-        
         printf("%s", headerColorBegin());
-        sectionFormat.printf("GROUP");
-        nameFormat.printf("OPTION NAME");
-        valueFormat.printf("VALUE");
+        sectionFormat.printHeader("GROUP");
+        nameFormat.printHeader("OPTION NAME");
+        valueFormat.printHeader("VALUE");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -3211,14 +3166,10 @@ S9sRpcReply::printConfigBrief()
      */
     if (!options->isNoHeaderRequested())
     {
-        sectionFormat.widen("GROUP");
-        nameFormat.widen("OPTION NAME");
-        valueFormat.widen("VALUE");
-        
         printf("%s", headerColorBegin());
-        sectionFormat.printf("GROUP");
-        nameFormat.printf("OPTION NAME");
-        valueFormat.printf("VALUE");
+        sectionFormat.printHeader("GROUP");
+        nameFormat.printHeader("OPTION NAME");
+        valueFormat.printHeader("VALUE");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -3489,22 +3440,14 @@ S9sRpcReply::printAlarmListLong()
 
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        clusterIdFormat.widen("CID");
-        severityFormat.widen("SEVERITY");
-        componentNameFormat.widen("COMPONENT");
-        typeNameFormat.widen("TYPE");
-        hostNameFormat.widen("HOSTNAME");
-        titleFormat.widen("TITLE");
-        
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        clusterIdFormat.printf("CID");
-        severityFormat.printf("SEVERITY");
-        componentNameFormat.printf("COMPONENT");
-        typeNameFormat.printf("TYPE");
-        hostNameFormat.printf("HOSTNAME");
-        titleFormat.printf("TITLE");
+        idFormat.printHeader("ID");
+        clusterIdFormat.printHeader("CID");
+        severityFormat.printHeader("SEVERITY");
+        componentNameFormat.printHeader("COMPONENT");
+        typeNameFormat.printHeader("TYPE");
+        hostNameFormat.printHeader("HOSTNAME");
+        titleFormat.printHeader("TITLE");
         
         printf("%s", headerColorEnd());
         printf("\n");
@@ -3671,20 +3614,13 @@ S9sRpcReply::printClusterListLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        stateFormat.widen("STATE");
-        typeFormat.widen("TYPE");
-        ownerFormat.widen("OWNER");
-        groupFormat.widen("GROUP");
-        nameFormat.widen("NAME");
-
         printf("%s", headerColorBegin());
-        idFormat.printf("ID");
-        stateFormat.printf("STATE");
-        typeFormat.printf("TYPE");
-        ownerFormat.printf("OWNER");
-        groupFormat.printf("GROUP");
-        nameFormat.printf("NAME");
+        idFormat.printHeader("ID");
+        stateFormat.printHeader("STATE");
+        typeFormat.printHeader("TYPE");
+        ownerFormat.printHeader("OWNER");
+        groupFormat.printHeader("GROUP");
+        nameFormat.printHeader("NAME");
         printf("COMMENT");
         
         printf("%s", headerColorEnd());
@@ -3829,18 +3765,12 @@ S9sRpcReply::printReportListLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        idFormat.widen("ID");
-        cidFormat.widen("CID");
-        typeFormat.widen("TYPE");
-        createdFormat.widen("CREATED");
-        titleFormat.widen("TITLE");
-        
         printf("%s", headerColorBegin());
-        idFormat.printf("ID", false);
-        cidFormat.printf("CID", false);
-        typeFormat.printf("TYPE", false);
-        createdFormat.printf("CREATED", false);
-        titleFormat.printf("TITLE", false);
+        idFormat.printHeader("ID");
+        cidFormat.printHeader("CID");
+        typeFormat.printHeader("TYPE");
+        createdFormat.printHeader("CREATED");
+        titleFormat.printHeader("TITLE");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -3894,12 +3824,9 @@ S9sRpcReply::printReportTemplateListLong()
      */
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
-        typeFormat.widen("TYPE");
-        titleFormat.widen("TITLE");
-        
         ::printf("%s", headerColorBegin());
-        typeFormat.printf("TYPE", false);
-        titleFormat.printf("TITLE", false);
+        typeFormat.printHeader("TYPE");
+        titleFormat.printHeader("TITLE");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
@@ -10554,6 +10481,17 @@ S9sRpcReply::userColorEnd()
 
     return "";
 }
+
+#if 0
+const char *
+S9sRpcReply::databaseColorBegin() 
+{
+    if (useSyntaxHighLight())
+        return "\033[33m";
+
+    return "";
+}
+#endif
 
 const char *
 S9sRpcReply::sqlColorBegin() 
