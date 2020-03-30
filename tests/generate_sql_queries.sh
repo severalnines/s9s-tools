@@ -26,6 +26,14 @@ unset S9S_DEBUG_PRINT_REQUEST
 DONT_PRINT_TEST_MESSAGES="true"
 PRINT_COMMANDS="true"
 
+
+#run queres, 10 clients...  10000 seconds.. -j no idea.
+#pgbench -c 10 -j 2 -t 10000 
+
+
+
+
+
 #
 # Prints usage information and exits.
 #
