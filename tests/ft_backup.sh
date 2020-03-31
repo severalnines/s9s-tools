@@ -778,7 +778,6 @@ function testDeleteBackup()
 
 function testDeleteOld()
 {
-   
     # 
     # Here no backup will be deleted because the backup retention is 31 days and
     # we just created these backups.
@@ -786,7 +785,16 @@ function testDeleteOld()
     print_title "Deleting Old Backups (No Old Backups)"
 
     begin_verbatim
-    mys9s backup --delete-old --cluster-id=1 --job-tags=no_old_found --dry --log
+    mys9s backup \
+        --delete-old \
+        --cluster-id=1 \
+        --job-tags=no_old_found \
+        --dry \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+    
     job_id=$(\
         s9s job --list --batch --with-tags=no_old_found | \
         tail -n 1 | \

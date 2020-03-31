@@ -5617,6 +5617,7 @@ S9sOptions::printHelpProcess()
 
     printf(
 "Options for the \"process\" command:\n"
+"  --list-digests             Print statement patters/statement digests.\n"
 "  --list                     List the processes.\n"
 "  --list-queries             List the database processes.\n"
 "  --top                      Continuosly print top processes.\n"

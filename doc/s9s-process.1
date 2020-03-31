@@ -21,6 +21,23 @@ operation should be performed. This "main option" should be one of the
 following:
 
 .TP
+.B --list-digests
+Print statement digests together with statistical data showing how long it took
+them to be executed. The printed list will not contain individual SQL
+statements but patterns that collect multiple statements of similar form merged
+into groups by the similarities.
+
+.B EXAMPLE
+.nf
+s9s process \\
+    --list-digests \\
+    --cluster-id=1 \\
+    --human-readable \\
+    --limit=10  \\
+    '*:3306'
+.fi
+
+.TP
 .B -L, --list
 List the processes found on the nodes of a cluster. The optional filter argument
 in this case matched to the executable and only the matching processes are
