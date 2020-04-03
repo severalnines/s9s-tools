@@ -174,6 +174,7 @@ function testCreateBackup()
         --cluster-id=$CLUSTER_ID \
         --nodes="${FIRST_ADDED_NODE}" \
         --backup-directory=/tmp \
+        --backup-method=pg_basebackup \
         $LOG_OPTION \
         $DEBUG_OPTION
 
