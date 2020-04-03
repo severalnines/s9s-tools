@@ -235,12 +235,30 @@ function print_title()
 -------------------------------------------------------------------------------\
 -\033[0;39m"
     else
-        #echo "</pre>"
         echo ""
         echo ""
         echo ""
         echo "<h3>$number $*</h3>"
-        #echo "<pre>"
+    fi
+}
+
+#
+# Same as print_title(), but this is for second level titles.
+#
+function print_subtitle()
+{
+    local number
+    let t2_counter+=1
+
+    number="${t1_counter}.${t2_counter}"
+    if [ -t 1 ]; then
+        echo ""
+        echo -e "$TERM_COLOR_TITLE$number $*\033[0;39m"
+    else
+        echo ""
+        echo ""
+        echo ""
+        echo "<h4>$number $*</h4>"
     fi
 }
 
@@ -263,26 +281,6 @@ function paragraph()
     [ ! -t 1 ] && echo -n "<p>"
     cat | sed -e 's/^  //g'
     [ ! -t 1 ] && echo -ne "</p>\n\n" 
-}
-
-#
-# Same as print_title(), but this is for second level titles.
-#
-function print_subtitle()
-{
-    local number
-    let t2_counter+=1
-
-    number="${t1_counter}.${t2_counter}"
-    if [ -t 1 ]; then
-        echo ""
-        echo -e "$TERM_COLOR_TITLE$number $*\033[0;39m"
-    else
-        #echo "</pre>"
-        echo ""
-        echo "<h4>$number $*</h4>"
-        #echo "<pre>"
-    fi
 }
 
 #
@@ -424,6 +422,11 @@ function endTests ()
             echo ""
         fi
 
+        printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
+        printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
+        printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
+        printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
+
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
         exit_code=0
@@ -432,10 +435,12 @@ function endTests ()
             echo "FAILURE: $(basename $0 .sh)"
         else
             print_title "Report"
+            begin_verbatim
             echo -en "${XTERM_COLOR_RED}"
             echo -n  "Test $(basename $0) has failed."
             echo -en "${TERM_NORMAL}"
             echo ""
+            end_verbatim
         fi
     
         pip-host-control --status="Failed '$TEST_SUITE_NAME'."
@@ -3294,7 +3299,6 @@ function runFunctionalTest ()
     else
         # This is where we call the function that executes the test.
         $TEST_NAME $*
-        #print_log_messages
     fi
 
     if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then

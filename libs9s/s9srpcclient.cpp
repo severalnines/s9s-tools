@@ -8420,9 +8420,6 @@ S9sRpcClient::composeBackupJob()
     if (!options->subDirectory().empty())
         jobData["backupsubdir"]  = options->subDirectory();
 
-    if (!backupMethod.empty())
-        jobData["backup_method"] = backupMethod;
-   
     if (!options->backupUser().empty())
         jobData["backup_user"] = options->backupUser();
 
