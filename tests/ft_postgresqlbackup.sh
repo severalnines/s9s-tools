@@ -18,6 +18,11 @@ PROVIDER_VERSION="10"
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
+CONTAINER_NAME1="${MYBASENAME}_01_$$"
+CONTAINER_NAME2="${MYBASENAME}_01_$$"
+CONTAINER_NAME3="${MYBASENAME}_01_$$"
+CONTAINER_NAME4="${MYBASENAME}_01_$$"
+
 VERIFY_BACKUP_NODE=""
 
 # The IP of the node we added first and last. Empty if we did not.
@@ -114,7 +119,7 @@ function testCreateCluster()
     print_title "Creating PostgreSQL Cluster"
     begin_verbatim
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy $CONTAINER_NAME1)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
     
@@ -134,6 +139,13 @@ function testCreateCluster()
 
     check_exit_code $?
 
+    # Waiting until 
+    wait_for_cluster_started "$CLUSTER_NAME"
+    if [ $? -ne 0 ]; then
+        failure "The cluster failed to start."
+        mys9s cluster --stat
+    fi
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         success "Cluster ID is $CLUSTER_ID"
@@ -145,6 +157,9 @@ function testCreateCluster()
 
 #
 # Dropping the cluster from the controller.
+# backup method: pg_basebackup
+# verify backup: install software: true  terminate_db_server: false
+# verify backup: install software: false terminate_db_server: false
 #
 function testCreateBackup()
 {
@@ -294,8 +309,8 @@ else
     runFunctionalTest testCreateBackup
     runFunctionalTest testVerifyBackup
 
-    runFunctionalTest testCreateClusterFromBackup
-    runFunctionalTest testDropFromBackup
+    #runFunctionalTest testCreateClusterFromBackup
+    #runFunctionalTest testDropFromBackup
 
     runFunctionalTest testDrop
 fi
