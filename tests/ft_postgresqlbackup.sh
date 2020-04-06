@@ -182,6 +182,7 @@ function testCreateBackup()
 
     check_exit_code $?
 
+    mys9s node --list --long
     mys9s backup --list --long | tail -n1
     end_verbatim
 
@@ -233,6 +234,7 @@ EOF
         $DEBUG_OPTION
     
     check_exit_code $?
+    mys9s node --list --long
     end_verbatim
 
 }
