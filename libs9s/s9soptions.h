@@ -312,6 +312,8 @@ class S9sOptions
         S9sString configTemplate(const S9sString &protocol = "") const;
         S9sString token() const;
         bool noInstall() const;
+        bool noTerminate() const;
+        
         S9sString cloudName() const;
         S9sString subnetId() const;
         S9sString vpcId() const;

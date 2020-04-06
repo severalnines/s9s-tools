@@ -182,6 +182,47 @@ function testCreateBackup()
 
     mys9s backup --list --long | tail -n1
     end_verbatim
+
+    #
+    #
+    #
+    print_title "Verify Backup First Run"
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
+        tail -n1 | \
+        awk '{print $1}')
+
+    nodeName=$(create_node --autodestroy $CONTAINER_NAME2)
+    VERIFY_BACKUP_NODE="$nodeName:5432;"
+
+    mys9s backup \
+        --verify \
+        --cluster-id=${CLUSTER_ID} \
+        --backup-id=${backupId} \
+        --test-server="$VERIFY_BACKUP_NODE" \
+        --no-terminate \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    end_verbatim
+
+    #
+    # 
+    #
+    print_title "Verify Backup Second Run"
+    begin_verbatim
+
+    mys9s backup \
+        --verify \
+        --cluster-id=${CLUSTER_ID} \
+        --backup-id=${backupId} \
+        --test-server="$VERIFY_BACKUP_NODE" \
+        --no-terminate \
+        --no-install \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    end_verbatim
+
 }
 
 #

@@ -331,6 +331,7 @@ enum S9sOptionType
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
     OptionNoInstall,
+    OptionNoTerminate,
     OptionWithTimescaleDb,
     OptionToken,
     OptionNoWrap,
@@ -2777,6 +2778,13 @@ S9sOptions::noInstall() const
 {
     return getBool("no_install");
 }
+
+bool
+S9sOptions::noTerminate() const
+{
+    return getBool("no_terminate");
+}
+
 
 /**
  * \returns The value for the --cloud= command line option.
@@ -11127,6 +11135,7 @@ S9sOptions::readOptionsCluster(
         { "donor",            required_argument, 0, OptionDonor           },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "no-install",       no_argument,       0, OptionNoInstall       },
+        { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "objects",          required_argument, 0, OptionObjects         },
         { "opt-group",        required_argument, 0, OptionOptGroup        },
         { "opt-name",         required_argument, 0, OptionOptName         },
@@ -11621,6 +11630,11 @@ S9sOptions::readOptionsCluster(
             case OptionNoInstall:
                 // --no-install
                 m_options["no_install"] = true;
+                break;
+            
+            case OptionNoTerminate:
+                // --no-terminate
+                m_options["no_terminate"] = true;
                 break;
 
             case OptionRemoteClusterId:

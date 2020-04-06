@@ -6871,12 +6871,12 @@ S9sRpcClient::verifyBackup()
     
     title.sprintf("Verify Backup %d", options->backupId());
 
-    jobData["backupid"] = options->backupId();
-    jobData["server_address"] = options->testServer();
-    jobData["disable_firewall"] = true;
-    jobData["disable_selinux"] = true;
-    jobData["install_software"] = !options->noInstall();
-    jobData["terminate_db_server"] = true;
+    jobData["backupid"]            = options->backupId();
+    jobData["server_address"]      = options->testServer();
+    jobData["disable_firewall"]    = true;
+    jobData["disable_selinux"]     = true;
+    jobData["install_software"]    = !options->noInstall();
+    jobData["terminate_db_server"] = !options->noTerminate();
     
     // The jobspec describing the command.
     jobSpec["command"]    = "verify_backup";
