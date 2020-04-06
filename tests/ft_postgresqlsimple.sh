@@ -175,7 +175,6 @@ EOF
         mys9s cluster --stat
     fi
 
-
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"

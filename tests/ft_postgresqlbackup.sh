@@ -19,9 +19,9 @@ PROVIDER_VERSION="10"
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 CONTAINER_NAME1="${MYBASENAME}_01_$$"
-CONTAINER_NAME2="${MYBASENAME}_01_$$"
-CONTAINER_NAME3="${MYBASENAME}_01_$$"
-CONTAINER_NAME4="${MYBASENAME}_01_$$"
+CONTAINER_NAME2="${MYBASENAME}_02_$$"
+CONTAINER_NAME3="${MYBASENAME}_03_$$"
+CONTAINER_NAME4="${MYBASENAME}_04_$$"
 
 VERIFY_BACKUP_NODE=""
 
@@ -148,7 +148,7 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        success "Cluster ID is $CLUSTER_ID"
+        success "  o Cluster ID is $CLUSTER_ID, ok."
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -197,7 +197,7 @@ function testVerifyBackup()
         tail -n1 | \
         awk '{print $1}')
 
-    nodeName=$(create_node --autodestroy)
+    nodeName=$(create_node --autodestroy $CONTAINER_NAME2)
     VERIFY_BACKUP_NODE="$nodeName:5432;"
 
     #
@@ -217,45 +217,6 @@ function testVerifyBackup()
     end_verbatim
 }
 
-function testCreateClusterFromBackup()
-{
-    local nodes
-    local nodeName
-    local exitCode
-
-    print_title "Creating PostgreSQL cluster from backup."
-    begin_verbatim
-
-    backupId=$(\
-        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
-        tail -n1 | \
-        awk '{print $1}')
-
-    nodeName=$(create_node --autodestroy)
-    nodes+="$nodeName:8089;"
-    
-    mys9s cluster \
-        --create \
-        --cluster-type=postgresql \
-        --nodes="$nodes" \
-        --cluster-name="${CLUSTER_NAME}-frombackup" \
-        --db-admin="postmaster" \
-        --db-admin-passwd="passwd12" \
-        --provider-version="$PROVIDER_VERSION" \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-
-    check_exit_code $?
-
-    CLUSTER_ID_FROM_BACKUP=$(find_cluster_id "${CLUSTER_NAME}-frombackup")
-    if [ "$CLUSTER_ID_FROM_BACKUP" -gt 0 ]; then
-        success "Cluster ID is $CLUSTER_ID_FROM_BACKUP"
-    else
-        failure "Cluster ID '$CLUSTER_ID_FROM_BACKUP' is invalid"
-    fi
-    end_verbatim
-}
-
 function testDrop()
 {
     print_title "Dropping the Cluster"
@@ -267,24 +228,6 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-
-    check_exit_code $?
-    end_verbatim
-}
-
-function testDropFromBackup()
-{
-    print_title "Dropping the Cluster created from backup"
-    begin_verbatim
-
-    #
-    # Starting the cluster.
-    #
-    mys9s cluster \
-        --drop \
-        --cluster-id=$CLUSTER_ID_FROM_BACKUP \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -310,16 +253,7 @@ else
     runFunctionalTest testCreateBackup
     runFunctionalTest testVerifyBackup
 
-    #runFunctionalTest testCreateClusterFromBackup
-    #runFunctionalTest testDropFromBackup
-
     runFunctionalTest testDrop
-fi
-
-if [ "$FAILED" == "no" ]; then
-    echo "The test script is now finished. No errors were detected."
-else
-    echo "The test script is now finished. Some failures were detected."
 fi
 
 endTests

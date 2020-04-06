@@ -416,16 +416,13 @@ function endTests ()
             echo "SUCCESS: $(basename $0 .sh)"
         else
             print_title "Report"
+            begin_verbatim
+
             echo -en "${XTERM_COLOR_GREEN}"
             echo -n  "Test $(basename $0) is successful."
             echo -en "${TERM_NORMAL}"
             echo ""
         fi
-
-        printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
-        printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
-        printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
-        printf "     Failed: %'4d check(s)\n" "$NUMBER_OF_FAILED_CHECKS"
 
         pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
@@ -440,14 +437,12 @@ function endTests ()
             echo -n  "Test $(basename $0) has failed."
             echo -en "${TERM_NORMAL}"
             echo ""
-            end_verbatim
         fi
     
         pip-host-control --status="Failed '$TEST_SUITE_NAME'."
         exit_code=1
     fi
 
-    begin_verbatim
     printf "  Performed: %'4d check(s)\n" "$NUMBER_OF_PERFORMED_CHECKS"
     printf "    Success: %'4d check(s)\n" "$NUMBER_OF_SUCCESS_CHECKS"
     printf "    Warning: %'4d check(s)\n" "$NUMBER_OF_WARNING_CHECKS"
@@ -3153,6 +3148,11 @@ function clean_up_after_test()
     # Some closing logs.
     #
     print_title "Preparing to Exit"
+    cat <<EOF
+  The clean_up_after_test method is running now to clean up after the test
+  script.
+EOF
+
     if false; then
         mys9s tree \
             --cat \
@@ -3184,7 +3184,7 @@ function clean_up_after_test()
 
     # Destroying the nodes if we have to.
     if [ "$OPTION_LEAVE_NODES" ]; then
-        print_title "Leaving the Containers"
+        print_subtitle "Leaving the Containers"
         echo "The --leave-nodes option was provided, not destroying the "
         echo "containers."
         
@@ -3193,7 +3193,7 @@ function clean_up_after_test()
         echo " containers : $all_created_ip"
         end_verbatim
     elif [ "$OPTION_INSTALL" ]; then
-        print_title "Leaving the Containers"
+        print_subtitle "Leaving the Containers"
         echo "The --install option was provided, not destroying the "
         echo "containers."
         
@@ -3202,7 +3202,7 @@ function clean_up_after_test()
         echo " containers : $all_created_ip"
         end_verbatim
     elif [ "$all_created_ip" ]; then
-        print_title "Destroying the Containers"
+        print_subtitle "Destroying the Containers"
         
         begin_verbatim
         echo "     server : $CONTAINER_SERVER"
