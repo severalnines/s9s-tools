@@ -334,7 +334,8 @@ function email_body()
     echo "    <p>These test scrips can be found in the s9s-tools source "
     echo "under the tests/ subdirectory.</p>"
     echo "    <p>You may want to check the up to date test reports at "
-    echo "      <a href=\"$ref_url\">$ref_url</a></p>."
+    echo "      <a href=\"$ref_url\">$ref_url</a> (login name and password "
+    echo "      required).</p>"
     echo "    <pre>"
     cat $REPORT_FILE
     echo "    </pre>"

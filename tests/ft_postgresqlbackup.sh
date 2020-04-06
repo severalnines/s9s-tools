@@ -215,6 +215,13 @@ EOF
     check_exit_code $?
 
     mys9s node --list --long
+    mys9s node --stat
+    echo "There something strange here, let's wait for a while and check the"
+    echo " nodes again."
+    mysleep 60
+    mys9s node --list --long
+    mys9s node --stat
+
     end_verbatim
 
     #
