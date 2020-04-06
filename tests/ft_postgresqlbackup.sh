@@ -6,7 +6,7 @@ VERSION="0.0.1"
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
-LOG_OPTION="--wait"
+LOG_OPTION="--log"
 DEBUG_OPTION=""
 
 CLUSTER_NAME="${MYBASENAME}_$$"
@@ -294,7 +294,7 @@ else
     runFunctionalTest testCreateCluster
 
     runFunctionalTest testCreateBackup
-    runFunctionalTest testVerifyBackup
+    #runFunctionalTest testVerifyBackup
 
     runFunctionalTest testDrop
 fi
