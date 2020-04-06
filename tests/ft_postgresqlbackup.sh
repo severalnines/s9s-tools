@@ -152,6 +152,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    mys9s node --list --long
     end_verbatim
 }
 
@@ -187,6 +189,9 @@ function testCreateBackup()
     #
     #
     print_title "Verify Backup First Run"
+    cat <<EOF
+  This test will verify 
+EOF
     begin_verbatim
 
     backupId=$(\
@@ -206,6 +211,9 @@ function testCreateBackup()
         $LOG_OPTION \
         $DEBUG_OPTION
 
+    check_exit_code $?
+
+    mys9s node --list --long
     end_verbatim
 
     #
@@ -223,6 +231,8 @@ function testCreateBackup()
         --no-install \
         $LOG_OPTION \
         $DEBUG_OPTION
+    
+    check_exit_code $?
     end_verbatim
 
 }
