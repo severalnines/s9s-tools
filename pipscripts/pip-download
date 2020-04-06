@@ -306,6 +306,7 @@ function plural_test()
 function email_body()
 {
     local subject
+    local ref_url="https://80.98.196.73/ft_install/"
 
     if [ "$N_TESTS_FAILED" == "0" ]; then
         subject="Daily s9s test results (all $N_TESTS_PASSED green)."
@@ -332,6 +333,8 @@ function email_body()
     echo "git commit date in the last day or today are presented here.</p>"
     echo "    <p>These test scrips can be found in the s9s-tools source "
     echo "under the tests/ subdirectory.</p>"
+    echo "    <p>You may want to check the up to date test reports at "
+    echo "      <a href=\"$ref_url\">$ref_url</a></p>."
     echo "    <pre>"
     cat $REPORT_FILE
     echo "    </pre>"
