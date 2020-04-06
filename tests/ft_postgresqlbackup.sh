@@ -187,6 +187,8 @@ function testCreateBackup()
     #
     #
     print_title "Verify Backup First Run"
+    begin_verbatim
+
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
         tail -n1 | \
@@ -238,7 +240,7 @@ function testVerifyBackup()
         tail -n1 | \
         awk '{print $1}')
 
-    nodeName=$(create_node --autodestroy $CONTAINER_NAME2)
+    nodeName=$(create_node --autodestroy $CONTAINER_NAME3)
     VERIFY_BACKUP_NODE="$nodeName:5432;"
 
     #
