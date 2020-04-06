@@ -366,9 +366,11 @@ function testCreateCluster()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating cluster."
+        jobid=(s9s job --list --batch | tail -n 1 | awk '{print $1}')
         mys9s job --list
-        mys9s job --log --job-id=1
-        exit 1
+        mys9s job --log --job-id=$jobid
+        end_verbatim
+        return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
