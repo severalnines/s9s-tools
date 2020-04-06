@@ -236,11 +236,12 @@ ft_postgresql_9.5.sh
 ft_postgresql_9.6.sh
 ft_postgresql_10.sh
 ft_postgresql_11.sh
+ft_postgresqlbackup.sh
+ft_postgresqlfailover.sh
 ft_reports.sh
 ft_tree.sh
 ft_user.sh 
 ft_scripts.sh
-ft_postgresqlfailover.sh
 ft_galera.sh
 ft_galera_mariadb_10.4.sh
 ft_cmonhabasic

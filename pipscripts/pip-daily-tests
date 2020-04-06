@@ -202,7 +202,7 @@ ft_reports.sh
 ft_tree.sh
 ft_user.sh 
 ft_scripts.sh
-ft_ldap.sh
+ft_postgresqlbackup.sh
 EOF
 }
 
